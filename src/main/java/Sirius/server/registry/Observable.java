@@ -1,0 +1,131 @@
+package Sirius.server.registry;
+
+import java.util.Vector;
+import Sirius.server.observ.*;
+
+
+public class Observable
+{
+    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
+    
+    protected RemoteObservable rmobs;
+    
+    
+    /** Vector, der die registrierten Observer enthaelt **/
+    protected Vector observers;
+    
+    /** Flag, spielt beim Muster Observer, Observable eine Rolle **/
+    protected boolean changed;
+    
+    
+    
+    
+    
+    public Observable(RemoteObservable rmobs)
+    {
+        this.rmobs=rmobs;
+        
+        observers = new Vector(10,10);
+        
+        changed  = false;
+        
+        
+    }
+    
+    //===================================================================================
+    //==================== Implementierung des Interfaces Observable ====================
+    //===================================================================================
+    
+    /**Indicates that this object has no longer changed, or that it has already notified all of its observers
+     * of its most recent change, so that the hasChanged method will now return false. **/
+    public synchronized void clearChanged()
+    { changed = false; }
+    
+    /** Fragt den Status ab, ob sich etwas geaendert hat **/
+    public synchronized boolean hasChanged()
+    { return changed;}
+    
+    /** Markiert, das sich etwas in der Registry geaendert hat, die hasChanged-Methode liefert nun true **/
+    public synchronized void setChanged()
+    { changed = true; }
+    
+    /** liefert die Anzahl der registierten Observer/Beobachter
+     * @return Anzahl der Observer **/
+    public synchronized int countObservers()
+    { return observers.size(); }
+    
+    /** Fuegt einen Observer/Beobachter hinzu, dieser wird dann spaeter bei Aenderungen automatisch aktualisiert
+     * @param ob ein Objekt, welches das Sirius.Observ.RemoteObserver Interface implementiert **/
+    public synchronized void addObserver(RemoteObserver ob)
+    {
+        if(!observers.contains(ob))
+        {
+            observers.addElement(ob);
+            logger.debug(" Info Observer registered::"+ob.toString()+"\n");
+        }
+    }
+    
+    //-----------------------------------------------------------------------------------------------------
+    /** wenn ein Observer heruntergefahren wird, meldet er sich ueber diese Funktion bei der Registry als
+     * Observer ab. **/
+    public synchronized void deleteObserver(RemoteObserver ob)
+    {
+        
+        if(observers.contains(ob))
+        {
+            observers.removeElement(ob);
+            logger.debug("Info <REG> Observer removed::"+ob.toString()+"\n");
+        }
+        else
+            logger.debug("Info <REG> Observer not found"+ob);
+    }
+    
+    //-----------------------------------------------------------------------------------------------------
+    
+    /** loescht die Liste der Observer **/
+    public synchronized void deleteObservers()
+    { observers = new Vector(); }
+    
+    //-----------------------------------------------------------------------------------------------------
+    public void notifyObservers()
+    { performNotify(null); }
+    
+    //-----------------------------------------------------------------------------------------------------
+    public void notifyObservers(java.rmi.Remote r)
+    { performNotify(r); }
+    
+    //-----------------------------------------------------------------------------------------------------
+    public void notifyObservers(java.io.Serializable s)
+    { performNotify(s); }
+    
+    //-----------------------------------------------------------------------------------------------------
+    /** Diese Methode wird von {@link #notifyObservers() notifyObservers()},{@link #notifyObservers(Remote r)
+     * notifyObservers(Remote r)} und {@link #notifyObservers(Remote r) notifyObservers(Remote r)} aufgerufen.
+     * In dieser Methode werden alle registrierten Observer benachrichtigt **/
+    public void performNotify(java.lang.Object arg)
+    {
+        if (!hasChanged())
+        {
+            return;
+        }
+        else
+        {
+            
+            for(int i=0; i < observers.size(); i++)
+            {
+                try
+                {
+                    RemoteObserver r = (RemoteObserver)observers.elementAt(i);
+                    r.update(rmobs,arg);
+                }
+                catch (Exception e)
+                { logger.error("Exception in performNotify:: ",e);}
+            }
+            clearChanged();
+        }
+    }
+    
+    
+    
+    // end class
+}
