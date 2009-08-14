@@ -55,7 +55,7 @@
                                     <type>${project.packaging}</type>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>../cidsDistribution/lib/int</outputDirectory>
+                            <outputDirectory>../../cidsDistribution/lib/int</outputDirectory>
                             <stripVersion>true</stripVersion>
                         </configuration>
                     </execution>
