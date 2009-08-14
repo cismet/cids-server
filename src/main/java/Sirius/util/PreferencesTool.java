@@ -1,0 +1,221 @@
+/*
+ * PrefsMgr.java
+ *
+ * Created on 23. September 2003, 12:41
+ */
+
+package Sirius.util;
+
+import java.util.prefs.*;
+import java.net.Socket;
+//import org.apache.log4j.*;
+//import org.apache.log4j.net.SocketAppender;
+
+/**
+ * Setzt preferences in die BackingStore.
+ * @author  awindholz
+ */
+public class PreferencesTool {
+    
+//    private static Logger logger = Logger.getLogger(PreferencesTool.class);
+    private String pathName;
+    private boolean isSysNode = true;
+    
+    /**
+     * PathSepatrator
+     */
+    private static final String PS = "/";
+    
+    /** Creates a new instance of PreferencesTool.
+     */
+    public PreferencesTool() {
+//        BasicConfigurator.configure(new SocketAppender("localhost", 4445));
+    }
+    
+    /**
+     * @param key Schl\u00FCsselname dessen Wert abgefragt werden soll. Name ohne Pfad.
+     * @param defaultValue wert der Geliefert werden soll wenn der Schl\u00FCssel
+     * nicht gefunden wird.
+     *
+     * @return wert des Schl\u00FCssels oder defaultValue wenn keiner gefunden.
+     */
+    public String getPreference(String key, String defaultValue)
+    throws BackingStoreException {
+        
+        return getPreference(isSysNode, pathName + PS + key, defaultValue);
+    }
+    
+    /**
+     * Setzt den Knoten der zu verarbeiten ist. Die werte werden gesetzt
+     * ungeachtetdessen ob dieser knoter existiert oder nicht.
+     *
+     * @param isSysNode true: Knoten aus Systembaum, false: Knoten aus Userbaum.
+     * @pathName Path zu dem Knoten.
+     *
+     * @return false wenn \u00FCbergebener Knoten nicht gefunden wurde.
+     */
+    public boolean setData(boolean isSysNode, String pathName)
+    throws BackingStoreException {
+        
+        this.isSysNode = isSysNode;
+        this.pathName = pathName;
+        
+        return getRootNode(isSysNode).nodeExists(pathName);
+    }
+    
+    /**
+     * Setzt den Schl\u00FCssel und deren wert in die BackingStore.
+     */
+    public void setPreference(String key, String value)
+    throws BackingStoreException {
+        
+        setPreference(isSysNode, pathName + PS + key, value);
+    }
+    
+    /**
+     * Setzt belibig viele beliebige Schl\u00FCssel und deren Werte
+     *
+     * @param keys schl\u00FCsselnamen
+     * @param values Werte der Schl\u00FCssel.
+     *
+     * @throws wenn lengen der beiden Arrays ungleich
+     */
+    public void setPreferences(String[] keys, String[] values)
+    throws BackingStoreException {
+        setPreferences(isSysNode, pathName, keys, values);
+    }
+    
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    // Statischen Funktionen
+    /**
+     * Setzt belibig viele beliebige Schl\u00FCssel und deren Werte
+     *
+     * @param isSysNode ob es sich bei diesem Knoten um einen System oder User
+     * Knoten handelt.
+     * @param pathName pfad zu dem Knoten in den die Schl\u00FCsel gesetzt werden sollen.
+     * @param keys schl\u00FCsselnamen ohne pfadangaben.
+     * @param values Werte der Schl\u00FCssel.
+     *
+     * @throws wenn lengen der beiden Arrays ungleich
+     */
+    public static void setPreferences(boolean isSysNode, String pathName, String[] keys, String[] values)
+    throws BackingStoreException {
+        
+        if(keys.length != values.length) {
+            String meldung = "Ungleiche anzahl der Schl\u00FCssel und Werte" +
+            " wurden \u00FCbergeben zum setzen der Preferences in die backing store.";
+            
+            throw new BackingStoreException(meldung);
+        }
+        
+        for(int i =0; i < keys.length; i++) {
+            setPreference(isSysNode, pathName + PS + keys[i], values[i]);
+        }
+    }
+    
+    /**
+     * Laedt ein RootKnoten aus dem Backing Store.
+     *
+     * @param true(System) oder false(User).
+     *
+     * @return System-RootKnoten wenn true \u00FCbergeben wurde, User-RootKnoten wenn
+     * fasle \u00FCbergeben wurde.
+     */
+    private static Preferences getRootNode(boolean isSysNode) {
+        if(isSysNode) {
+            return Preferences.systemRoot();
+        } else {
+            return Preferences.userRoot();
+        }
+    }
+    
+    /**
+     * Laedt eine Einstellung in das Backing Store.
+     *
+     * @param key name der Eigenschaft.
+     * @param value wert der Eigenschaft.
+     */
+    public static void setPreference(boolean isSysNode, String qualifiedKey, String value)
+    throws BackingStoreException {
+        int index = qualifiedKey.lastIndexOf(PS);
+        Preferences prefs = getRootNode(isSysNode);
+        String key = qualifiedKey;
+        if(index > 0) {
+            String node = qualifiedKey.substring(0, index);
+            prefs = getRootNode(isSysNode).node(node);
+            key = qualifiedKey.substring(index + 1, qualifiedKey.length());
+        }
+        //        logger.info("Daten in BackingStore geschrieben: (" + key + ", " + value + ")");
+        prefs.put(key, value);
+        
+        // Update des Backing Stores erzwingen
+        prefs.flush();
+        
+    }
+    
+    /**
+     * Laedt eine Einstellung aus dem Backing Store.
+     *
+     * @param qualifiedKey vollqualifizierter name des Schl\u00FCssels.
+     * @param defaultValue wert der Geliefert werden soll wenn der Schl\u00FCssel
+     * nicht gefunden wird.
+     *
+     * @return wert des Schl\u00FCssels oder defaultValue wenn keiner gefunden.
+     */
+    public static String getPreference(boolean isSysNode, String qualifiedKey, String defaultValue)
+    throws BackingStoreException {
+        
+        int index = qualifiedKey.lastIndexOf(PS);
+        Preferences prefs = getRootNode(isSysNode);
+        String key = qualifiedKey;
+        if(index > 0) {
+            String node = qualifiedKey.substring(0, index);
+            prefs = getRootNode(isSysNode).node(node);
+            key = qualifiedKey.substring(index + 1, qualifiedKey.length());
+        }
+        
+//        logger.debug("Daten aus BackingStore auslesen: qulifiedKey: " + 
+//        qualifiedKey + " node: " + prefs.name() + " key: " + key);
+        String ret = prefs.get(key, defaultValue);
+//        logger.debug("Auslesen erfolgreich. Wert: " + ret);
+        
+        return ret;
+        
+    }
+    
+    /**
+     * Anzahl der Parameter muss ungerade sein. Erster parameter ist der Pfad
+     * zu dem Knoten in der BackingStore, dieser darf am Ende keinen Separator
+     * haben. Weiter folgen paarweise Name des Schl\u00FCssels und dessen Wert.
+     * Z.B. PreferencesTool {/RootNode/node, key1, wert1, key2, wert2}
+     */
+    public static void main(String[] args) {
+        try {
+            
+            if(args.length % 2 == 0) {
+                usage();
+                System.exit(-1);
+            }
+            
+            PreferencesTool pt = new PreferencesTool();
+            if(!pt.setData(true, args[0])) {
+                System.out.println("Info: Knoten " + args[0] + " existiert noch nicht.");
+            }
+            
+            for(int i = 1; i < args.length; i = i+2) {
+                pt.setPreference(args[i], args[i+1]);
+            }
+            
+            System.out.println("Werte wurden erfolgreich geschrieben.");
+            
+        } catch(Throwable e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void usage() {
+        System.out.println("Benutzung: ");
+        System.out.println("   java " + PreferencesTool.class.getName() + " <NODEPATH> " + "(<KEY> <VALUE>)+");
+    }
+}

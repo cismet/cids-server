@@ -1,0 +1,214 @@
+/*
+ * RemoteTester.java
+ *
+ * Created on 31. August 2004, 08:55
+ */
+
+package Sirius.server.middleware.impls.proxy;
+
+import Sirius.server.middleware.interfaces.proxy.SearchService;
+import Sirius.server.search.*;
+import java.rmi.*;
+import java.rmi.registry.*;
+import Sirius.server.middleware.interfaces.proxy.*;
+import Sirius.server.middleware.types.*;
+import Sirius.server.newuser.*;
+import Sirius.server.localserver.attribute.*;
+import Sirius.server.search.Query;
+import Sirius.server.search.SearchResult;
+import Sirius.server.sql.SystemStatement;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Vector;
+/**
+ *
+ * @author  schlob
+ */
+public class RemoteTester
+{
+    
+    /** Creates a new instance of RemoteTester */
+    public RemoteTester()
+    {
+    }
+    
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) throws Throwable
+    {
+        String domain = "WUNDA_BLAU";
+        
+       // security alles unsinn :-)
+        System.setSecurityManager(new RMISecurityManager()
+        {
+            public void checkConnect(String host, int port)
+            {}
+            public void checkConnect(String host, int port, Object context)
+            {}
+        });
+        
+     
+        // rmi registry lokaliseren
+        java.rmi.registry.Registry rmiRegistry = LocateRegistry.getRegistry(1099);
+        
+        // lookup des callservers
+        Remote r = (Remote) Naming.lookup("rmi://localhost/callServer");
+        
+        //  ich weiss, dass die server von callserver implementiert werden
+        SearchService ss=(SearchService)r;
+        CatalogueService cat = (CatalogueService)r;
+        MetaService meta = (MetaService)r;
+        UserService us = (UserService)r;
+
+//        System.out.println("server contacted :: "+r);
+        
+        //Benutzergruppe anlegen (muss auf dem Server existieren)
+        //UserGroup ug = new UserGroup(0,"Administratoren",domain );
+        
+        // user anlegen muss auf dem server existieren
+        //User u = new User(0,  "admin",domain, ug );
+        
+        //oder mit login
+        // ug_domain,ug_name,u_domain,u_name,password
+        User u = us.getUser(domain, "Administratoren", domain, "admin","x");
+        
+        System.out.println(u+ "  user token retrieved");
+        
+        
+        
+        //meta.getC
+        
+      
+        //Beispiel:
+        // hole alle Klassen einer Dom\u00E4ne
+        // hole dir dann f\u00FCr jede Klasse ein ObjektTemplate
+//        MetaClass[] cs = meta.getClasses(u,domain);
+//        
+//        for(int i=0;i<cs.length;i++)
+//        {
+//            System.out.println("NEW instance ::"+meta.getInstance(u,cs[i]));
+//            
+//        }
+        
+        
+        
+//        System.out.println("!!getInstance durchgelaufen !!");
+        
+        //Beispiel:
+        // Template f\u00FCr eine Object der ersten Klasse
+        //MetaObject mo = meta.getInstance(u,cs[0]);
+      MetaObject mo = meta.getMetaObject(u, 5646, 6, "WUNDA_BLAU");
+       System.out.println("metaobject::"+mo);
+
+// alle attribute des Objects
+       // ObjectAttribute[] attribs = mo.getAttribs();
+        
+        
+       java.util.Collection col1 =  mo.getTraversedAttributesByType(Class.forName(""));
+       java.util.Collection col2 =  mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"));
+       java.util.Collection col3 =  mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"),1);
+        java.util.Collection col4 =  mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"),2);
+         java.util.Collection col5 =  mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"),3);
+       
+       
+       Iterator iter = col1.iterator();
+       System.out.println("!!!!!!!!!!!! traversiert !!!!!!!!!!!!!!!!!!!");
+       while(iter.hasNext())
+           System.out.println(iter.next());
+ 
+     
+    iter = col2.iterator();
+        System.out.println("!!!!!!!!!!!! level 0 !!!!!!!!!!!!!!!!!!!");
+       while(iter.hasNext())
+           System.out.println(iter.next());
+      
+      iter = col3.iterator();
+        System.out.println("!!!!!!!!!!!! level 1 !!!!!!!!!!!!!!!!!!!");
+       while(iter.hasNext())
+           System.out.println(iter.next());
+        
+        iter = col4.iterator();
+        System.out.println("!!!!!!!!!!!! level 2 !!!!!!!!!!!!!!!!!!!");
+       while(iter.hasNext())
+           System.out.println(iter.next());
+        
+        iter = col5.iterator();
+        System.out.println("!!!!!!!!!!!! level 3 !!!!!!!!!!!!!!!!!!!");
+       while(iter.hasNext())
+           System.out.println(iter.next());
+       
+    }     } 
+        
+        
+////        // Ausgabe ob das Attribut aus einem String erzeugt werden kann -- macht hier jetzt keinen Sinn soll nur ein Beispiel sein
+////        for(int i=0;i<attribs.length;i++)
+////            System.out.println(attribs[i].getName()+" ::  "+attribs[i] +" :: "+ attribs[i].isStringCreateable()+"  :: "+attribs[i].objectCreator);
+////        
+//     
+////        System.out.println("catalog test");
+////        
+////        // besorge alle einstiegsknoten von servern auf denen u bekannt ist
+////        Node[] roots = cat.getRoots(u);
+////        
+////        for(int i =0;i<roots.length;i++)
+////            System.out.println(roots[i]);
+////        
+////        //n\u00E4chstes level des ersten root knotens
+////        if(roots.length>0)
+////        {
+////            Node[] childs = cat.getChildren(u,roots[0].getID(), roots[0].getDomain());
+////            
+////            System.out.println("Kinder von "+roots[0]);
+////            
+////            for(int i=0;i< childs.length;i++)
+////                System.out.println(childs[i]);
+////        
+////        }
+//        
+//        //SystemStatement sysS=new SystemStatement(true,1,"",false,SearchResult.COLLECTION,"select distinct lage_oder_kategorie  from luftbildschraegaufnahmen");
+//        //Query q=new Query(sysS, "WUNDA_BLAU");
+////        Query q=new Query(new QueryIdentifier("WUNDA_BLAU","singleStringQuery"));
+////        HashMap h=new HashMap();
+////        h.put("whereclause", "1=1");
+////        h.put("field", "lage_oder_kategorie");
+////        h.put("table", "luftbildschraegaufnahmen");
+////       
+////        q.setParameters(h);
+////        q.setResultType(SearchResult.COLLECTION);
+////        
+////        HashMap searchOptions=ss.getSearchOptions(u,"WUNDA_BLAU");
+////        SearchOption so=(SearchOption)searchOptions.get("singleStringQuery@WUNDA_BLAU");
+////        so.setDefaultSearchParameter("whereclause", "1=1");
+////        so.setDefaultSearchParameter("field", "lage_oder_kategorie");
+////        so.setDefaultSearchParameter("table", "luftbildschraegaufnahmen");
+////        so.getQuery().setResultType(SearchResult.COLLECTION);
+////        
+////        so.addUserGroup("0");
+//        
+////        SearchOption[] soa=new SearchOption[1];
+////        soa[0]=so;
+////        SearchResult sr=ss.search(u, new String[]{}, soa);
+////        
+////       
+////        System.out.println(sr.getResult());
+////        System.out.println(sr.getResult().getClass());
+////        Vector v=(Vector)sr.getResult();
+////        Iterator it=v.iterator();
+////        while (it.hasNext()) {
+////            Object o=it.next();
+////            if (o instanceof String) {
+////                System.out.println(o.toString());
+////            }
+////            else if (o instanceof String[]) {
+////                String[] sa=(String[])o;
+////                System.out.println("[]"+sa[0]);
+////            }
+////            
+////        }
+////        
+////    }
+//    
+//    
+//    
+//    
