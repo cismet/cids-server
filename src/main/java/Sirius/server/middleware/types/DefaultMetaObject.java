@@ -40,6 +40,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
     private MetaClass metaClass;
     private transient Hashtable classes;
 
+
     public Hashtable getAllClasses() {
         return classes;
     }
@@ -60,7 +61,6 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
         if (o instanceof DefaultMetaObject) {
             //this.status = ((MetaObject) o).status;
             this.classes = ((DefaultMetaObject) o).classes;
-
         } else {
             //this.status = NO_STATUS;
         }
@@ -205,7 +205,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
      * @return
      */
     public String toString(HashMap classes) {
-        return metaClass.getToStringConverter().convert(this, classes);
+            return metaClass.getToStringConverter().convert(this, classes);
     }
 
     /**
