@@ -161,7 +161,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class
 
             try {
                 String tableNamePreparedForClassName = getTableName().substring(0, 1).toUpperCase() + getTableName().substring(1).toLowerCase();
-                lazyClassName = toStringConverterPrefix + domain + "." + tableNamePreparedForClassName + toStringConverterPostfix;
+                lazyClassName = toStringConverterPrefix + (domain + ".").toLowerCase() + tableNamePreparedForClassName + toStringConverterPostfix;
                 converterClass = BlacklistClassloading.forName(lazyClassName);
             } catch (Exception e) {
                 logger.debug("no lazy toStringConverter found (" + lazyClassName + ")");
@@ -170,7 +170,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class
             if (converterClass == null && toString != null) {
                 converterClass = BlacklistClassloading.forName(toString.trim());
             }
-            if (de.cismet.cids.tools.tostring.ToStringConverter.class.isAssignableFrom(converterClass)) {
+            if (converterClass != null && de.cismet.cids.tools.tostring.ToStringConverter.class.isAssignableFrom(converterClass)) {
                 this.toStringConverter = (ToStringConverter) converterClass.newInstance();
             } else if (logger != null) {
                 logger.debug(" customized stringconverter could not be loaded as ClassQualifer ist not a valid ToSTringconverter " + toString);

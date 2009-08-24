@@ -18,6 +18,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyDescriptor;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -244,9 +245,10 @@ public class CidsBean implements PropertyChangeListener {
      */
     public void setProperty(final String name, final Object value) throws Exception {
         try {
+            //TODO seems to call nonexisting properties on array classes?
             PropertyUtils.setProperty(this, name, value);
         } catch (Exception e) {
-            log.error("Fehler in setProperty:" + name + "\n" + getMOString(), e);
+            log.error("Fehler in setProperty:" + name + "\n", e);
         }
     }
 
