@@ -105,7 +105,7 @@ public abstract class Node implements java.io.Serializable, Groupable //Comparab
      * getter for name
      * @return name
      */
-    public final String getName() {
+    public String getName() {
         return name;
     }
 
