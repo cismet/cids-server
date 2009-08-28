@@ -4,6 +4,7 @@ import Sirius.util.*;
 import Sirius.server.newuser.permission.*;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 //import org.apache.commons.lang.builder.ToStringBuilder;
+
 /**
  *Superclass of all NodeTypes used as RMI return value
  *is not to be instaniated and therfore declared abstract
@@ -41,10 +42,10 @@ public abstract class Node implements java.io.Serializable, Groupable //Comparab
     protected boolean dynamic;
     protected String dynamicChildrenStatement;    //indicates whether the dynamicChildrenStatement contains sorting so no further sorting should be performed
     protected boolean sqlSort = false;
-    protected int classId=-1;
-    protected int iconFactory=-1;
-    protected boolean derivePermissionsFromClass=false;
-    protected String iconString=null;
+    protected int classId = -1;
+    protected int iconFactory = -1;
+    protected boolean derivePermissionsFromClass = false;
+    protected String iconString = null;
 
     /**
      * constructor
@@ -54,7 +55,7 @@ public abstract class Node implements java.io.Serializable, Groupable //Comparab
      * @param description description
      * @param leaf has no children
      */
-    public Node(int id, String name, String domain, String description, boolean leaf, Policy policy, int iconFactory,String icon,boolean derivePermissionsFromClass) {
+    public Node(int id, String name, String domain, String description, boolean leaf, Policy policy, int iconFactory, String icon, boolean derivePermissionsFromClass) {
 
         this.id = id;
         this.domain = domain;
@@ -62,11 +63,12 @@ public abstract class Node implements java.io.Serializable, Groupable //Comparab
         this.description = description;
         this.leaf = leaf;
         this.permissions = new PermissionHolder(policy);
-        this.iconFactory=iconFactory;
-        this.derivePermissionsFromClass=derivePermissionsFromClass;
-        this.iconString=icon;
+        this.iconFactory = iconFactory;
+        this.derivePermissionsFromClass = derivePermissionsFromClass;
+        this.iconString = icon;
     }
 //------------------------------------------------------------------------------------------
+
     /**
      * getter for group
      * @return grouping information
@@ -138,6 +140,10 @@ public abstract class Node implements java.io.Serializable, Groupable //Comparab
      * @return string representation
      */
     public String toString() {
+//        System.out.println("toString : "+name);
+//        if(log != null) {
+//            log.fatal("toString : "+name);
+//        }
         return name;
     }
 
@@ -162,6 +168,12 @@ public abstract class Node implements java.io.Serializable, Groupable //Comparab
      * @param name New value of property name.
      */
     public void setName(String name) {
+//        log.fatal("setName(" + name + ")", new Exception());
+//        if (log != null) {
+//            log.fatal("setName() to " + name);
+//        } else {
+//            System.out.println("getName() returns " + name);
+//        }
         this.name = name;
     }
 
@@ -228,8 +240,9 @@ public abstract class Node implements java.io.Serializable, Groupable //Comparab
     public int getClassId() {
         return classId;
     }
+
     public void setClassId(int classId) {
-        this.classId=classId;
+        this.classId = classId;
     }
 
     public boolean isDerivePermissionsFromClass() {
@@ -255,7 +268,4 @@ public abstract class Node implements java.io.Serializable, Groupable //Comparab
     public void setIconString(String iconString) {
         this.iconString = iconString;
     }
-    
-    
-    
 }
