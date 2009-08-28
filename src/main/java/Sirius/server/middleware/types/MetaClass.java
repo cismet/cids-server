@@ -1,6 +1,5 @@
 package Sirius.server.middleware.types;
 
-
 import Sirius.server.localserver.attribute.AttributeVector;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
@@ -8,6 +7,7 @@ import Sirius.util.Editable;
 import Sirius.util.Groupable;
 import Sirius.util.Renderable;
 import de.cismet.cids.tools.tostring.ToStringConverter;
+import de.cismet.tools.BlacklistClassloading;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 
@@ -28,6 +28,8 @@ public class MetaClass extends Sirius.server.localserver._class.Class
      */
     protected String domain;
     private transient Class javaClass = null;
+    private static String toStringConverterPrefix = "de.cismet.cids.custom.tostringconverter.";
+    private static String toStringConverterPostfix = "ToStringConverter";
 
     //-------------------------------------------------------------------
     /**
@@ -154,21 +156,30 @@ public class MetaClass extends Sirius.server.localserver._class.Class
                 logger.debug("try to load stringconverter if not null : " + toString);
             }
 
-            if (toString != null) {
-                java.lang.Class c = java.lang.Class.forName(toString.trim());
+            Class converterClass = null;
+            String lazyClassName = null;
 
-                if (de.cismet.cids.tools.tostring.ToStringConverter.class.isAssignableFrom(c)) {
-                    this.toStringConverter = (ToStringConverter) c.newInstance();
-                } else if (logger != null) {
-                    logger.debug(" customized stringconverter could not be loaded as ClassQualifer ist not a valid ToSTringconverter " + toString);
-                }
-            } else // no toString defined set to Standard
-            {
+            try {
+                String tableNamePreparedForClassName = getTableName().substring(0, 1).toUpperCase() + getTableName().substring(1).toLowerCase();
+                lazyClassName = toStringConverterPrefix + (domain + ".").toLowerCase() + tableNamePreparedForClassName + toStringConverterPostfix;
+                converterClass = BlacklistClassloading.forName(lazyClassName);
+            } catch (Exception e) {
+                logger.debug("no lazy toStringConverter found (" + lazyClassName + ")");
+            }
+
+            if (converterClass == null && toString != null) {
+                converterClass = BlacklistClassloading.forName(toString.trim());
+            }
+            if (converterClass != null && de.cismet.cids.tools.tostring.ToStringConverter.class.isAssignableFrom(converterClass)) {
+                this.toStringConverter = (ToStringConverter) converterClass.newInstance();
+            } else if (logger != null) {
+                logger.debug(" customized stringconverter could not be loaded as ClassQualifer ist not a valid ToSTringconverter " + toString);
+            }
+
+            if (converterClass == null) {
                 this.toStringConverter = new ToStringConverter();
                 logger.debug(" default stringconverter loaded: reference is :" + this.toStringConverter);
             }
-
-
 
         } catch (Exception e) {
 
@@ -235,7 +246,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class
                 oAttr.setReferencesObject(mai.isForeignKey());
 
                 oAttr.setIsPrimaryKey(mai.getFieldName().equalsIgnoreCase(getPrimaryKey()));
-                if (oAttr.isPrimaryKey()){
+                if (oAttr.isPrimaryKey()) {
                     oAttr.setValue(-1);
                 }
                 oAttr.setOptional(mai.isOptional());
@@ -250,7 +261,4 @@ public class MetaClass extends Sirius.server.localserver._class.Class
             return null;
         }
     }
-
-
-
 }

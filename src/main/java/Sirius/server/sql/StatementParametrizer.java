@@ -52,7 +52,7 @@ public class StatementParametrizer
 		//ersetze wildcards f\u00FCr like
 			statement = statement.trim();
 
-			final char auf = 'ค';
+			final char auf = 'ยง';
 			final char zu = '$';
 			String parameter = new String("");
 			String join = new String();

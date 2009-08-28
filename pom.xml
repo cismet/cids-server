@@ -2,80 +2,42 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>de.cismet.maven</groupId>
+        <artifactId>cismetParent</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
     <groupId>de.cismet.cids</groupId>
     <artifactId>cidsServer</artifactId>
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
     <name>cidsServer</name>
-    <url>http://www.cismet.de</url>
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.0.2</version>
-                <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jarsigner-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>rmic-maven-plugin</artifactId>
+                <version>1.0</version>
                 <executions>
                     <execution>
-                        <id>sign</id>
+                        <id>rmi compilation</id>
                         <goals>
-                            <goal>sign</goal>
+                            <goal>rmic</goal>                           
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <keystore>${keystore.path}</keystore>
-                    <alias>cismet</alias>
-                    <storepass>${keystore.pass}</storepass>
+                <configuration>                   
+                    <outputDirectory>${project.build.outputDirectory}</outputDirectory>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-installed</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>${project.artifactId}</artifactId>
-                                    <version>${project.version}</version>
-                                    <type>${project.packaging}</type>
-                                </artifactItem>
-                            </artifactItems>
-                            <outputDirectory>../cidsDistribution/lib/int</outputDirectory>
-                            <stripVersion>true</stripVersion>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
-    <distributionManagement>
-        <snapshotRepository>
-            <id>cismet-eig-repo</id>
-            <name>Local Artifactory repository on thebuilder</name>
-            <url>http://thebuilder:8180/artifactory/cismet-libs-snapshots-local</url>
-        </snapshotRepository>
-    </distributionManagement>
     <dependencies>
         <dependency>
             <groupId>de.cismet.commons</groupId>
             <artifactId>cismetCommons</artifactId>
             <version>1.0-SNAPSHOT</version>
-        </dependency>             
+        </dependency>
         <!--ToDo use newest Version see issue0000892-->
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -86,12 +48,12 @@
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
             <version>1.8.0</version>
-        </dependency>   
+        </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
             <version>2.4</version>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>de.cismet.commons</groupId>
             <artifactId>cismetGuiCommons</artifactId>
