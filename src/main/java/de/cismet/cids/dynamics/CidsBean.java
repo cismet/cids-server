@@ -205,11 +205,12 @@ public class CidsBean implements PropertyChangeListener {
 
     /**
      * call this method to delete the subobject and remove all the references
-     * it will not delete subobjects
+     * it will not delete subobjects of the object itself
      * @throws java.lang.Exception
      */
     public void delete() throws Exception {
         metaObject.setStatus(MetaObject.TO_DELETE);
+        metaObject.setChanged(true);
         if (backlinkObject != null) {
 
             ObjectAttribute backlinkOA = backlinkObject.getMetaObject().getAttributeByFieldName(backlinkFieldname);
