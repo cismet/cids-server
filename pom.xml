@@ -1,41 +1,26 @@
-
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
-        <groupId>de.cismet.maven</groupId>
-        <artifactId>cismetParent</artifactId>
+        <groupId>de.cismet.cids</groupId>
+        <artifactId>cids-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
+
     <groupId>de.cismet.cids</groupId>
-    <artifactId>cidsServer</artifactId>
-    <packaging>jar</packaging>
+    <artifactId>cids-server</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>cidsServer</name>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>rmic-maven-plugin</artifactId>
-                <version>1.0</version>
-                <executions>
-                    <execution>
-                        <id>rmi compilation</id>
-                        <goals>
-                            <goal>rmic</goal>                           
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>                   
-                    <outputDirectory>${project.build.outputDirectory}</outputDirectory>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <packaging>jar</packaging>
+
+    <name>cids Server</name>
+    <description>!!! description pending !!!</description>
+
     <dependencies>
         <dependency>
             <groupId>de.cismet.commons</groupId>
-            <artifactId>cismetCommons</artifactId>
+            <artifactId>cismet-commons</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <!--ToDo use newest Version see issue0000892-->
@@ -56,7 +41,7 @@
         </dependency>
         <dependency>
             <groupId>de.cismet.commons</groupId>
-            <artifactId>cismetGuiCommons</artifactId>
+            <artifactId>cismet-gui-commons</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
@@ -66,7 +51,7 @@
         </dependency>
         <dependency>
             <groupId>de.cismet.cids</groupId>
-            <artifactId>cidsJdbc</artifactId>
+            <artifactId>cids-jdbc</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
@@ -80,6 +65,28 @@
             <version>1.2.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>rmic-maven-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <id>rmi compilation</id>
+                        <goals>
+                            <goal>rmic</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                </configuration>
+            </plugin>
+        </plugins>
+        <finalName>cidsServer</finalName>
+    </build>
 </project>
 
 
