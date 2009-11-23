@@ -512,7 +512,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
     // creates an Instance of a MetaObject with all attribute values set to default
     public MetaObject getInstance(User user, MetaClass c) throws RemoteException {
-        logger.debug("user :: " + user + "  class " + c);
+        logger.debug("usergetInstance :: " + user + "  class " + c);
         try {
             Sirius.server.localserver.object.Object o = dbServer.getObjectFactory().getInstance(c.getID());
             if (o != null) {
