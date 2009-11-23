@@ -598,7 +598,10 @@ public class PersistenceManager {
                             } else {
                                 valueList += komma + "NULL";
                             }   //-->Hell
-                        } else {//value == null
+                        }else if (mAttr[i].isArray()){
+                            valueList += komma + rootPk;
+                        }
+                        else {//value == null
                             valueList += komma + "NULL";
                         }
 
