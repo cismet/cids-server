@@ -14,7 +14,7 @@ import org.openide.util.Lookup;
  */
 public final class DefaultMetaObject extends Sirius.server.localserver.object.DefaultObject implements MetaObject {
 
-    private transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
+    private transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
     /**
      * domain (localserver) of where this object is hosted
      */
@@ -40,8 +40,10 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
     private MetaClass metaClass;
     private transient Hashtable classes;
 
-
     public Hashtable getAllClasses() {
+        if (classes == null) {
+            setAllClasses();
+        }
         return classes;
     }
     private transient CidsBean bean = null;
@@ -190,10 +192,14 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
             if (oa.getMai().isArray()) {
                 MetaObject dummyObject = (MetaObject) oa.getValue();
                 String backreferenceFieldName = oa.getMai().getArrayKeyFieldName();
-                ObjectAttribute[] dummyEntries = dummyObject.getAttribs();
-                for (ObjectAttribute dummyEntry : dummyEntries) {
-                    MetaObject dummyEntryMO = (MetaObject) dummyEntry.getValue();
-                    dummyEntryMO.getAttributeByFieldName(backreferenceFieldName).setValue(primaryKey);
+                try {
+                    ObjectAttribute[] dummyEntries = dummyObject.getAttribs();
+                    for (ObjectAttribute dummyEntry : dummyEntries) {
+                        MetaObject dummyEntryMO = (MetaObject) dummyEntry.getValue();
+                        dummyEntryMO.getAttributeByFieldName(backreferenceFieldName).setValue(primaryKey);
+                    }
+                } catch (Exception e) {
+                    getLogger().debug("no dummyobject for "+oa.getMai().getFieldName());
                 }
             }
         }
@@ -205,8 +211,10 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
      * @return
      */
     public String toString(HashMap classes) {
-            return metaClass.getToStringConverter().convert(this, classes);
+        return metaClass.getToStringConverter().convert(this, classes);
     }
+
+    
 
     /**
      * getter for classKey
@@ -351,15 +359,15 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
     public Collection getURLs(Collection classKeys) {
 
 
-        if (logger != null) {
-            logger.debug("enter getURLS");
+        if (log != null) {
+            log.debug("enter getURLS");
         }
         ArrayList l = new ArrayList();
 
         if (classKeys.contains(this.getClassKey()))// class is an URL
         {
-            if (logger != null) {
-                logger.debug("getURL meta object is a url");
+            if (log != null) {
+                log.debug("getURL meta object is a url");
             }
             UrlConverter u2s = new UrlConverter();
 
@@ -384,8 +392,8 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
             }
 
         }
-        if (logger != null) {
-            logger.debug("end getURLS list contains elementcount = " + l.size());
+        if (log != null) {
+            log.debug("end getURLS list contains elementcount = " + l.size());
         }
         return l;
 
@@ -394,16 +402,16 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
     public Collection getURLsByName(Collection classKeys, Collection urlNames) {
 
 
-        if (logger != null) {
-            logger.debug("enter getURLS");
+        if (log != null) {
+            log.debug("enter getURLS");
         }
         ArrayList l = new ArrayList();
 
 
         if (classKeys.contains(this.getClassKey()))// class is an URL
         {
-            if (logger != null) {
-                logger.debug("getURL meta object is a url will not search attributes");
+            if (log != null) {
+                log.debug("getURL meta object is a url will not search attributes");
             }
             UrlConverter u2s = new UrlConverter();
 
@@ -432,8 +440,8 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
             }
 
         }
-        if (logger != null) {
-            logger.debug("end getURLS list contains elementcount = " + l.size());
+        if (log != null) {
+            log.debug("end getURLS list contains elementcount = " + l.size());
         }
         return l;
 
@@ -462,11 +470,11 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
             try {
                 MetaClassCacheService classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
                 if (classCacheService == null) {
-                    logger.fatal("MetaClassCacheService �ber Lookup nicht gefunden");
+                    log.warn("MetaClassCacheService ueber Lookup nicht gefunden");
                 }
                 classes = classCacheService.getAllClasses(domain);
             } catch (Exception e) {
-                logger.error("Fehler beim Setzen der Klassen.", e);
+                log.error("Fehler beim Setzen der Klassen.", e);
             }
         }
         if (classes != null) {
@@ -499,8 +507,8 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
      */
     public String toString() {
         setLogger();
-        if (logger != null) {
-            logger.debug("MetaClass gesetzt ? " + metaClass);
+        if (log != null) {
+            log.debug("MetaClass gesetzt ? " + metaClass);
         }
 
         if (getMetaClass() != null) {
@@ -508,14 +516,14 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
             if (getMetaClass().getToStringConverter() != null) {
                 return getMetaClass().getToStringConverter().convert(this);
             } else {
-                logger.warn("kein Stringvonverter gesetzt");
+                log.warn("kein Stringvonverter gesetzt");
                 return "";
             }
         } else {
-            if (logger != null) {
-                logger.warn("keine Klasse und daher kein StringConverter f\u00FCr dieses MetaObject gesetzt : " + this.getID());
+            if (log != null) {
+                log.warn("keine Klasse und daher kein StringConverter f\u00FCr dieses MetaObject gesetzt : " + this.getID());
             }
-            logger.error("Metaclass was null classId=" + classID);
+            log.error("Metaclass was null classId=" + classID);
             return "Metaclass was null";
         }
 
@@ -525,8 +533,8 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
     }
 
     public void setLogger() {
-        if (logger == null) {
-            logger = org.apache.log4j.Logger.getLogger(this.getClass());
+        if (log == null) {
+            log = org.apache.log4j.Logger.getLogger(this.getClass());
         }
         ObjectAttribute[] attrs = this.getAttribs();
 
@@ -539,10 +547,10 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
     }
 
     public org.apache.log4j.Logger getLogger() {
-        if (logger == null) {
+        if (log == null) {
             setLogger();
         }
-        return logger;
+        return log;
 
     }
 
