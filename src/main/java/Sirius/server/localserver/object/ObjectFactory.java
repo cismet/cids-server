@@ -11,6 +11,7 @@ import java.util.*;
 import java.sql.*;
 import Sirius.server.localserver.attribute.*;
 import Sirius.server.middleware.types.AbstractAttributeRepresentationFormater;
+import Sirius.server.middleware.types.DefaultMetaObject;
 import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.StringPatternFormater;
 import Sirius.server.newuser.*;
@@ -394,7 +395,7 @@ public class ObjectFactory {
     }
 
     public Sirius.server.localserver.object.Object getInstance(int classId) throws Exception {
-
+        logger.debug("getInstance("+classId+") aufgerufen",new CurrentStackTrace());
         Sirius.server.localserver._class.Class c = classCache.getClass(classId);
 
         Sirius.server.localserver.object.Object o = new Sirius.server.localserver.object.DefaultObject(-1, classId);
@@ -476,7 +477,7 @@ public class ObjectFactory {
 
         }
 
-
+        logger.debug("ergebniss von getINstance()"+new DefaultMetaObject(o, "LOCAL"));
         return o;
 
 
