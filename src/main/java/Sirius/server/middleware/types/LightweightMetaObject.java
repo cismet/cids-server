@@ -53,7 +53,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
         }
     }
 
-    public final Object getAttribute(final String aName) {
+    public final Object getLWAttribute(final String aName) {
         return attributesMap.get(aName);
     }
 
