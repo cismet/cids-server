@@ -91,6 +91,7 @@ public class BeanFactory {
     public CidsBean createBean(final MetaObject metaObject) throws Exception {
         Class javaClass = null;
         try {
+            // TODO getmetaClass kann null liefern wenn keine Rechte vorhanden sind
             javaClass = metaObject.getMetaClass().getJavaClass();
 
             final CidsBean bean = (CidsBean) javaClass.newInstance();
