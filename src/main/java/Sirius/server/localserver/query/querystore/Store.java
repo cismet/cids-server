@@ -83,7 +83,7 @@ public class Store
             
             getUserGroupInfo=con.prepareStatement("SELECT ug_id,query_store_id FROM cs_query_store_ug_assoc,cs_query_store WHERE user_id = ? and cs_query_store.id = cs_query_store_ug_assoc.query_store_id");
             
-            getUserGroupQueryInfo=con.prepareStatement("SELECT id,name,file_name FROM cs_query_store_ug_assoc,cs_query_store WHERE ug_id = ? and cs_query_store.id = cs_query_store_ug_assoc.query_store_id");
+            getUserGroupQueryInfo=con.prepareStatement("SELECT qs.id, qs.name,qs.file_name FROM cs_query_store_ug_assoc qsa, cs_query_store qs WHERE qsa.ug_id = ? and qs.id = qsa.query_store_id");
             
             getUserQuery=con.prepareStatement("SELECT file_name,name FROM cs_query_store WHERE id = ? ");
             
