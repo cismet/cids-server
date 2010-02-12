@@ -8,17 +8,20 @@
  */
 package Sirius.server.localserver.object;
 
-import Sirius.server.middleware.types.*;
-import Sirius.server.newuser.*;
-import java.sql.*;
-import Sirius.server.search.*;
-import Sirius.server.localserver.attribute.*;
-import Sirius.server.localserver.*;
-import java.util.*;
-import Sirius.server.property.*;
+
+import Sirius.server.localserver.DBServer;
+import Sirius.server.localserver.attribute.MemberAttributeInfo;
+import Sirius.server.localserver.attribute.ObjectAttribute;
+import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.middleware.types.MetaObject;
+import Sirius.server.newuser.User;
+import Sirius.server.newuser.UserGroup;
 import com.vividsolutions.jts.geom.Geometry;
-import de.cismet.cismap.commons.jtsgeometryfactories.*;
+import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
 import de.cismet.tools.CurrentStackTrace;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  *
@@ -27,6 +30,32 @@ import de.cismet.tools.CurrentStackTrace;
 public class PersistenceManager {
 
     private transient final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
+
+    public static final String DEL_ATTR_STRING =
+            "DELETE FROM cs_attr_string "
+            + "WHERE class_id = ? AND object_id = ?";
+    public static final String DEL_ATTR_MAPPING =
+            "DELETE FROM cs_all_attr_mapping "
+            + "WHERE class_id = ? AND object_id = ?";
+
+    public static final String INS_ATTR_STRING =
+            "INSERT INTO cs_attr_string "
+            + "(class_id, object_id, attr_id, string_val) VALUES (?, ?, ?, ?)";
+    public static final String INS_ATTR_MAPPING =
+            "INSERT INTO cs_all_attr_mapping "
+            + "(class_id, object_id, attr_class_id, attr_object_id) VALUES "
+            + "(?, ?, ?, ?)";
+
+    public static final String UP_ATTR_STRING =
+            "UPDATE cs_attr_string "
+            + "SET string_val = ? "
+            + "WHERE class_id = ? AND object_id = ? AND attr_id = ?";
+    public static final String UP_ATTR_MAPPING =
+            "UPDATE cs_all_attr_mapping "
+            + "SET attr_object_id = ? "
+            + "WHERE class_id = ? AND object_id = ? AND attr_class_id = ?";
+
+
     /** Creates a new instance of PersistenceManager */
     protected DBServer dbServer;
     protected TransactionHelper transactionHelper;
@@ -117,7 +146,14 @@ public class PersistenceManager {
                 // now delete all subObjects
                 result += deleteSubObjects(user, mo);
 
+                /*
+                 * since the meta-jdbc driver is obsolete the index must be
+                 * refreshed by the server explicitly
+                 */
+                deleteIndex(mo);
+
                 transactionHelper.commit(); // stimmt das ??
+
 
                 return result;
             } catch (Exception e) {
@@ -334,6 +370,12 @@ public class PersistenceManager {
                 logger.info("sql " + sql);
 
                 transactionHelper.getConnection().createStatement().executeUpdate(sql);
+
+                /*
+                 * since the meta-jdbc driver is obsolete the index must be
+                 * refreshed by the server explicitly
+                 */
+                updateIndex(mo);
 
                 transactionHelper.commit();
             }
@@ -635,6 +677,12 @@ public class PersistenceManager {
             logger.info("sql: " + sql);
             s.executeUpdate(sql);
 
+            /*
+             * since the meta-jdbc driver is obsolete the index must be
+             * refreshed by the server explicitly
+             */
+            insertIndex(mo);
+
             transactionHelper.commit();
 
 
@@ -642,6 +690,341 @@ public class PersistenceManager {
         } else {
             logger.debug("User " + user + "is not insert to update MetaObject " + mo.getID() + "." + mo.getClassKey(), new CurrentStackTrace());
             return -1;
+        }
+    }
+
+    /**
+     * mscholl:
+     * Deletes the index from cs_attr_string and cs_all_attr_mapping for a given
+     * metaobject. If the metaobject does not contain a metaclass it is skipped.
+     *
+     * @param mo the metaobject which will be deleted
+     * @throws java.sql.SQLException if an error occurs during index deletion
+     */
+    private void deleteIndex(final MetaObject mo) throws SQLException
+    {
+        if(mo == null)
+        {
+            throw new NullPointerException("MetaObject must not be null");
+        }else if(mo.isDummy())
+        {
+            // don't do anything with a dummy object
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("delete index for dummy won't be done");
+            }
+            return;
+        }else if(logger.isInfoEnabled())
+        {
+            logger.info("delete index for MetaObject: " + mo);
+        }
+        PreparedStatement psAttrString = null;
+        PreparedStatement psAttrMap = null;
+        try
+        {
+            // prepare the update statements
+            psAttrString = transactionHelper.getConnection()
+                    .prepareStatement(DEL_ATTR_STRING);
+            psAttrMap = transactionHelper.getConnection()
+                    .prepareStatement(DEL_ATTR_MAPPING);
+            
+            // set the appropriate param values
+            psAttrString.setInt(1, mo.getClassID());
+            psAttrString.setInt(2, mo.getID());
+            psAttrMap.setInt(1, mo.getClassID());
+            psAttrMap.setInt(2, mo.getID());
+            
+            // execute the deletion
+            final int strRows = psAttrString.executeUpdate();
+            final int mapRows = psAttrMap.executeUpdate();
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("cs_attr_string: deleted " + strRows + " rows");
+                logger.debug("cs_all_attr_mapping: deleted " + mapRows 
+                        + " rows");
+            }
+        }catch(final SQLException e)
+        {
+            logger.error("could not delete index for object '" + mo.getID() 
+                    + "' of class '" + mo.getClass() + "'", e);
+            throw e;
+        }finally
+        {
+            closeStatements(psAttrString, psAttrMap);
+        }
+    }
+
+    /**
+     * mscholl:
+     * Updates the index of cs_attr_string and cs_all_attr_mapping for the given
+     * metaobject. Update for a certain attribute will only be done if the
+     * attribute is changed.
+     *
+     * @param mo the metaobject which will be updated
+     * @throws java.sql.SQLException if an error occurs during index update
+     */
+    private void updateIndex(final MetaObject mo) throws SQLException
+    {
+        if(mo == null)
+        {
+            throw new NullPointerException("MetaObject must not be null");
+        }else if(mo.isDummy())
+        {
+            // don't do anything with a dummy object
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("update index for dummy won't be done");
+            }
+            return;
+        }else if(logger.isInfoEnabled())
+        {
+            logger.info("update index for MetaObject: " + mo);
+        }
+        PreparedStatement psAttrString = null;
+        PreparedStatement psAttrMap = null;
+        try
+        {
+            for(final ObjectAttribute attr : mo.getAttribs())
+            {
+                final MemberAttributeInfo mai = attr.getMai();
+                if(mai.isIndexed() && attr.isChanged())
+                {
+                    // set the appropriate param values according to the field
+                    // value
+                    if(mai.isForeignKey())
+                    {
+                        // lazily prepare the statement
+                        if(psAttrMap == null)
+                        {
+                            psAttrMap = transactionHelper.getConnection()
+                                    .prepareStatement(UP_ATTR_MAPPING);
+                        }
+                        // if field represents a foreign key the attribute value
+                        // is assumed to be a MetaObject
+                        final MetaObject value = (MetaObject)attr.getValue();
+                        psAttrMap.setInt(1, value.getID());
+                        psAttrMap.setInt(2, mo.getClassID());
+                        psAttrMap.setInt(3, mo.getID());
+                        psAttrMap.setInt(4, value.getClassID());
+                        psAttrMap.addBatch();
+                        if(logger.isDebugEnabled())
+                        {
+                            // create debug statement
+                            final String debugStmt = UP_ATTR_MAPPING
+                                    .replaceFirst("\\?", "" + value.getID())
+                                    .replaceFirst("\\?", "" + mo.getClassID())
+                                    .replaceFirst("\\?", "" + mo.getID())
+                                    .replaceFirst("\\?", ""
+                                    + value.getClassID());
+                            logger.debug("added to batch: " + debugStmt);
+                        }
+                    }else
+                    {
+                        // lazily prepare the statement
+                        if(psAttrString == null)
+                        {
+                            psAttrString = transactionHelper.getConnection()
+                                    .prepareStatement(UP_ATTR_STRING);
+                        }
+                        // interpret the fields value as a string
+                        psAttrString.setString(1, attr.getValue().toString());
+                        psAttrString.setInt(2, mo.getClassID());
+                        psAttrString.setInt(3, mo.getID());
+                        psAttrString.setInt(4, mai.getId());
+                        psAttrString.addBatch();
+                        if(logger.isDebugEnabled())
+                        {
+                            // create debug statement
+                            final String debugStmt = UP_ATTR_MAPPING
+                                    .replaceFirst("\\?", "" + attr.getValue())
+                                    .replaceFirst("\\?", "" + mo.getClassID())
+                                    .replaceFirst("\\?", "" + mo.getID())
+                                    .replaceFirst("\\?", "" + mai.getId());
+                            logger.debug("added to batch: " + debugStmt);
+                        }
+                    }
+                }
+            }
+
+            // execute the batches if there are indexed fields
+            if(psAttrString != null)
+            {
+                final int[] strRows = psAttrString.executeBatch();
+                if(logger.isDebugEnabled())
+                {
+                    int updateCount = 0;
+                    for(final int row : strRows)
+                    {
+                        updateCount += row;
+                    }
+                    logger.debug("cs_attr_string: updated " + updateCount
+                            + " rows");
+                }
+            }
+            if(psAttrMap != null)
+            {
+                final int[] mapRows = psAttrMap.executeBatch();
+                if(logger.isDebugEnabled())
+                {
+                    int updateCount = 0;
+                    for(final int row : mapRows)
+                    {
+                        updateCount += row;
+                    }
+                    logger.debug("cs_all_attr_mapping: updated " + updateCount
+                            + " rows");
+                }
+            }
+        }catch(final SQLException e)
+        {
+            logger.error("could not insert index for object '" + mo.getID()
+                    + "' of class '" + mo.getClass() + "'", e);
+            throw e;
+        }finally
+        {
+            closeStatements(psAttrString, psAttrMap);
+        }
+    }
+
+    /**
+     * mscholl:
+     * Inserts the index in cs_attr_string and cs_all_attr_mapping for the given
+     * metaobject. If the metaobject does not contain a metaclass it is skipped.
+     *
+     * @param mo the metaobject which will be newly created
+     * @throws java.sql.SQLException if an error occurs during index insertion
+     */
+    private void insertIndex(final MetaObject mo) throws SQLException
+    {
+        if(mo == null)
+        {
+            throw new NullPointerException("MetaObject must not be null");
+        }else if(mo.isDummy())
+        {
+            // don't do anything with a dummy object
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("insert index for dummy won't be done");
+            }
+            return;
+        }else if(logger.isInfoEnabled())
+        {
+            logger.info("insert index for MetaObject: " + mo);
+        }
+        try
+        {
+            // we just want to make sure that there is no index present for the
+            // given object
+            deleteIndex(mo);
+        }catch(final SQLException e)
+        {
+            logger.error("could not delete index before insert index", e);
+            throw e;
+        }
+        PreparedStatement psAttrString = null;
+        PreparedStatement psAttrMap = null;
+        try
+        {
+            for(final ObjectAttribute attr : mo.getAttribs())
+            {
+                final MemberAttributeInfo mai = attr.getMai();
+                if(mai.isIndexed())
+                {
+                    // set the appropriate param values according to the field
+                    // value
+                    if(mai.isForeignKey())
+                    {
+                        // lazily prepare the statement
+                        if(psAttrMap == null)
+                        {
+                            psAttrMap = transactionHelper.getConnection()
+                                    .prepareStatement(INS_ATTR_MAPPING);
+                        }
+                        psAttrMap.setInt(1, mo.getClassID());
+                        psAttrMap.setInt(2, mo.getID());
+                        // if field represents a foreign key the attribute value
+                        // is assumed to be a MetaObject
+                        final MetaObject value = (MetaObject)attr.getValue();
+                        psAttrMap.setInt(3, value.getClassID());
+                        psAttrMap.setInt(4, value.getID());
+                        psAttrMap.addBatch();
+                    }else
+                    {
+                        // lazily prepare the statement
+                        if(psAttrString == null)
+                        {
+                            psAttrString = transactionHelper.getConnection()
+                                    .prepareStatement(INS_ATTR_STRING);
+                        }
+                        psAttrString.setInt(1, mo.getClassID());
+                        psAttrString.setInt(2, mo.getID());
+                        psAttrString.setInt(3, mai.getId());
+                        // interpret the fields value as a string
+                        psAttrString.setString(4, attr.getValue().toString());
+                        psAttrString.addBatch();
+                    }
+                }
+            }
+
+            // execute the batches if there are indexed fields
+            if(psAttrString != null)
+            {
+                final int[] strRows = psAttrString.executeBatch();
+                if(logger.isDebugEnabled())
+                {
+                    int insertCount = 0;
+                    for(final int row : strRows)
+                    {
+                        insertCount += row;
+                    }
+                    logger.debug("cs_attr_string: inserted " + insertCount 
+                            + " rows");
+                }
+            }
+            if(psAttrMap != null)
+            {
+                final int[] mapRows = psAttrMap.executeBatch();
+                if(logger.isDebugEnabled())
+                {
+                    int insertCount = 0;
+                    for(final int row : mapRows)
+                    {
+                        insertCount += row;
+                    }
+                    logger.debug("cs_all_attr_mapping: inserted " + insertCount
+                            + " rows");
+                }
+            }
+        }catch(final SQLException e)
+        {
+            logger.error("could not insert index for object '" + mo.getID()
+                    + "' of class '" + mo.getClass() + "'", e);
+            throw e;
+        }finally
+        {
+            closeStatements(psAttrString, psAttrMap);
+        }
+    }
+
+    private void closeStatement(final Statement s)
+    {
+        if(s != null)
+        {
+            try
+            {
+                s.close();
+            }catch(final SQLException e)
+            {
+                logger.warn("could not close statement", e);
+            }
+        }
+    }
+
+    private void closeStatements(final Statement ... s)
+    {
+        for(final Statement stmt : s)
+        {
+            closeStatement(stmt);
         }
     }
 }

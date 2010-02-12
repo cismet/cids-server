@@ -44,7 +44,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
     
     /** Aufruf des entsprechenden Superkonstruktors **/
-    public ServerProperties(FileInputStream inputStream) throws IOException
+    public ServerProperties(final InputStream inputStream) throws IOException
     { super(inputStream); }
     
     /** Aufruf des entsprechenden Superkonstruktors **/
