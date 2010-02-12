@@ -5,8 +5,8 @@
  */
 package Sirius.server.localserver.attribute;
 
-import Sirius.server.middleware.types.MetaClass;
-import Sirius.util.*;
+import Sirius.util.Mapable;
+
 
 /**
  *
@@ -41,8 +41,29 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
     private String renderer;
     private String javaclassname = null;
 
+    public MemberAttributeInfo()
+    {
+        this(-1, -1, -1, null, null, false, false, -1, false, false, false,
+                null, null, null, -1);
+    }
+
     /** Creates a new instance of MemberAttributeInfo */
-    public MemberAttributeInfo(int id, int classId, int typeId, String name, String fieldName, boolean foreignKey, boolean substitute, int foreignKeyClassId, boolean visible, boolean indexed, boolean isArray, String arrayKeyFieldName, String fromString, String toString, int position) {
+    public MemberAttributeInfo(
+            final int id,
+            final int classId,
+            final int typeId, 
+            final String name,
+            final String fieldName,
+            final boolean foreignKey,
+            final boolean substitute,
+            final int foreignKeyClassId,
+            final boolean visible,
+            final boolean indexed,
+            final boolean isArray,
+            final String arrayKeyFieldName,
+            final String fromString,
+            final String toString,
+            final int position) {
 
         this.id = id;
         this.classId = classId;
@@ -176,11 +197,13 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
         this.visible = visible;
     }
 
+    @Override
     public Object getKey() {
 
         return id + "@" + classId;
     }
 
+    @Override
     public Object constructKey(Mapable m) {
         if (m instanceof MemberAttributeInfo) {
             return m.getKey();
