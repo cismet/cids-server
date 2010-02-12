@@ -1,28 +1,50 @@
 package Sirius.server.middleware.impls.domainserver;
 
-import Sirius.server.middleware.types.*;
+
+import Sirius.server.Server;
+import Sirius.server.ServerExit;
+import Sirius.server.ServerExitError;
+import Sirius.server.ServerType;
 import Sirius.server.localserver.tree.NodeReferenceList;
-import Sirius.server.middleware.interfaces.domainserver.*;
-import Sirius.server.localserver.method.*;
-import Sirius.server.localserver.*;
-import Sirius.server.naming.*;
-import Sirius.server.newuser.*;
-import Sirius.server.localserver.user.*;
-import Sirius.server.search.*;
-import Sirius.server.property.*;
-import Sirius.server.*;
-import Sirius.server.sql.*;
-import java.net.*;
-import java.util.*;
-import java.rmi.*;
-import java.rmi.server.*;
-import java.rmi.registry.*;
-import Sirius.server.search.store.*;
-import Sirius.server.localserver.query.querystore.*;
-import Sirius.server.localserver.query.*;
+import Sirius.server.localserver.DBServer;
+import Sirius.server.localserver.method.MethodMap;
+import Sirius.server.localserver.query.QueryCache;
+import Sirius.server.localserver.query.querystore.Store;
+import Sirius.server.localserver.user.UserStore;
+import Sirius.server.middleware.interfaces.domainserver.CatalogueService;
+import Sirius.server.middleware.interfaces.domainserver.MetaService;
+import Sirius.server.middleware.interfaces.domainserver.QueryStore;
+import Sirius.server.middleware.interfaces.domainserver.SearchService;
+import Sirius.server.middleware.interfaces.domainserver.SystemService;
+import Sirius.server.middleware.interfaces.domainserver.UserService;
+import Sirius.server.middleware.types.DefaultMetaObject;
+import Sirius.server.middleware.types.LightweightMetaObject;
+import Sirius.server.middleware.types.Link;
+import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.middleware.types.MetaObject;
+import Sirius.server.middleware.types.Node;
+import Sirius.server.naming.NameServer;
+import Sirius.server.newuser.User;
+import Sirius.server.newuser.UserGroup;
+import Sirius.server.newuser.UserServer;
+import Sirius.server.property.ServerProperties;
+import Sirius.server.search.Query;
+import Sirius.server.search.SearchResult;
+import Sirius.server.search.Seeker;
+import Sirius.server.search.store.Info;
+import Sirius.server.search.store.QueryData;
+import Sirius.server.sql.SystemStatement;
+import java.net.InetAddress;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RMISecurityManager;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
+import java.util.MissingResourceException;
+import org.apache.log4j.PropertyConfigurator;
 
-
-import org.apache.log4j.*;
 
 public class DomainServerImpl extends UnicastRemoteObject implements CatalogueService, MetaService, SystemService, UserService, QueryStore, SearchService { //ActionListener
 
@@ -134,6 +156,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 //            throw new RemoteException(e.getMessage());
 //        }
 //    }
+    @Override
     public NodeReferenceList getChildren(Node node, User user) throws RemoteException {
 
 
@@ -168,6 +191,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 //    }
 
     //---------------------------------------------------------------------------------------------------
+    @Override
     public NodeReferenceList getRoots(User user) throws RemoteException {
         try {
             if (userstore.validateUser(user)) {
@@ -185,6 +209,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
     }
 
+    @Override
     public Node addNode(Node node, Link parent, User user) throws RemoteException {
         try {
             return dbServer.getTree().addNode(node, parent, user);
@@ -195,6 +220,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
     }
 
+    @Override
     public boolean deleteNode(Node node, User user) throws RemoteException {
         try {
             return dbServer.getTree().deleteNode(node, user);
@@ -209,6 +235,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
     }
 
+    @Override
     public boolean addLink(Node from, Node to, User user) throws RemoteException {
         try {
             return dbServer.getTree().addLink(from, to, user);
@@ -221,6 +248,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         }
     }
 
+    @Override
     public boolean deleteLink(Node from, Node to, User user) throws RemoteException {
 
         try {
@@ -254,6 +282,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     //////////////////End   CatalogueService/////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////
     //---------------------------------------------------------------------------------------------------
+    @Override
     public Node[] getNodes(User user, int[] ids) throws RemoteException {
         try {
             return dbServer.getNodes(ids, user.getUserGroup());
@@ -284,6 +313,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 //    }
 //    
     //---------------------------------------------------------------------------------------------------
+    @Override
     public NodeReferenceList getClassTreeNodes(User user) throws RemoteException {
         try {
             if (userstore.validateUser(user)) {
@@ -301,6 +331,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     }
 
     //---------------------------------------------------------------------------------------------------
+    @Override
     public MetaClass[] getClasses(User user) throws RemoteException {
         try {	//if(userstore.validateUser(user))
             return dbServer.getClasses(user.getUserGroup());
@@ -315,6 +346,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     }
 
     //---------------------------------------------------------------------------------------------------
+    @Override
     public MetaClass getClass(User user, int classID) throws RemoteException {
         try {	//if(userstore.validateUser(user))
             return dbServer.getClass(user.getUserGroup(), classID);
@@ -329,6 +361,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         }
     }
 
+    @Override
     public MetaClass getClassByTableName(User user, String tableName) throws RemoteException {
         try {	//if(userstore.validateUser(user))
             return dbServer.getClassByTableName(user.getUserGroup(), tableName);
@@ -372,6 +405,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     //////////////////Begin   Metaservice/////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////
     // retrieves a Meta data object( as Node)  referenced by a symbolic pointer to the MIS
+    @Override
     public Node getMetaObjectNode(User usr, int nodeID) throws RemoteException {
         int[] tmp = {nodeID};
 
@@ -382,6 +416,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
     // retrieves a Meta data object  referenced by a symbolic pointer to the MIS
     // MetaObject ersetzt DefaultObject
+    @Override
     public MetaObject getMetaObject(User usr, int objectID, int classID)
             throws RemoteException {
 
@@ -389,6 +424,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     }
 
     // retrieves Meta data objects with meta data matching query (Search)
+    @Override
     public MetaObject[] getMetaObject(User usr, Query query) throws RemoteException {
 
         try {
@@ -405,6 +441,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     }
     // retrieves Meta data objects with meta data matching query (Search)
 
+    @Override
     public MetaObject[] getMetaObject(User usr, String query) throws RemoteException {
 
         //      return getMetaObject( usr,new Query(new  SystemStatement(true,-1,"",false,SearchResult.NODE,query),usr.getDomain() )  );
@@ -416,6 +453,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
     /* MetaService - MetaJDBC*/
     // inserts metaObject in the MIS
+    @Override
     public MetaObject insertMetaObject(User user, MetaObject metaObject) throws RemoteException {
         if (logger != null) {
             logger.debug("<html>insert MetaObject for User :+:" + user + "  MO " + metaObject.getDebugString() + "</html>");
@@ -433,6 +471,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         }
     }
 
+    @Override
     public int insertMetaObject(User user, Query query) throws RemoteException {
         try {
             // XXX unterst\u00FCtzt keine batch queries
@@ -450,6 +489,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         }
     }
 
+    @Override
     public int updateMetaObject(User user, MetaObject metaObject) throws RemoteException {
         logger.debug("<html><body>update called for :+: <p>" + metaObject.getDebugString() + "</p></body></html>");
         try {
@@ -471,6 +511,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
     // insertion, deletion or update of meta data according to the query returns how many object's are effected
     // XXX New Method XXX dummy
+    @Override
     public int update(User user, String metaSQL) throws RemoteException {
 
         try {
@@ -491,6 +532,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
     }
 
+    @Override
     public int deleteMetaObject(User user, MetaObject metaObject) throws RemoteException {
 
         logger.debug("delete called for" + metaObject);
@@ -511,6 +553,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     /* /MetaService - MetaJDBC*/
 
     // creates an Instance of a MetaObject with all attribute values set to default
+    @Override
     public MetaObject getInstance(User user, MetaClass c) throws RemoteException {
         logger.debug("usergetInstance :: " + user + "  class " + c);
         try {
@@ -533,11 +576,13 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
     // retrieves Meta data objects with meta data matching query (Search)
     // Query not yet defined but will be MetaSQL
+    @Override
     public Node[] getMetaObjectNode(User usr, String query) throws RemoteException {
         return getMetaObjectNode(usr, new Query(new SystemStatement(true, -1, "", false, SearchResult.NODE, query), usr.getDomain()));
     }
 
     // retrieves Meta data objects with meta data matching query (Search)
+    @Override
     public Node[] getMetaObjectNode(User usr, Query query) throws RemoteException {
         try {
             // user sp\u00E4ter erweitern
@@ -551,6 +596,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
     }
 
+    @Override
     public MethodMap getMethods(User user) throws RemoteException {
         //  if(userstore.validateUser(user))
         return dbServer.getMethods(); // dbServer.getMethods(user.getuserGroup()); // instead
@@ -559,6 +605,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
     }
 
+    @Override
     public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(int classId, User user, String[] representationFields, String representationPattern) throws RemoteException {
         try {
             return dbServer.getObjectFactory().getAllLightweightMetaObjectsForClass(classId, user, representationFields, representationPattern);
@@ -567,6 +614,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         }
     }
 
+    @Override
     public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(int classId, User user, String[] representationFields) throws RemoteException {
         try {
             return dbServer.getObjectFactory().getAllLightweightMetaObjectsForClass(classId, user, representationFields);
@@ -575,6 +623,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         }
     }
 
+    @Override
     public LightweightMetaObject[] getLightweightMetaObjectsByQuery(int classId, User user, String query, String[] representationFields, String representationPattern) throws RemoteException {
         try {
             return dbServer.getObjectFactory().getLightweightMetaObjectsByQuery(classId, user, query, representationFields, representationPattern);
@@ -583,6 +632,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         }
     }
 
+    @Override
     public LightweightMetaObject[] getLightweightMetaObjectsByQuery(int classId, User user, String query, String[] representationFields) throws RemoteException {
         try {
             return dbServer.getObjectFactory().getLightweightMetaObjectsByQuery(classId, user, query, representationFields);
@@ -609,6 +659,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     ///////////////////////////////////////////////////////////////////////////////////
     //////////////////Begin     Systemservice/////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////
+    @Override
     public Sirius.util.image.Image[] getDefaultIcons() throws RemoteException {
         return properties.getDefaultIcons();
     }
@@ -620,6 +671,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     //////////////////Begin     UserService/////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////
     //---------------------------------------------------------------------------------------------------
+    @Override
     public boolean changePassword(User user, String oldPassword, String newPassword) throws RemoteException {
 
         try {
@@ -633,6 +685,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     }
     //---------------------------------------------------------------------------------------------------
 
+    @Override
     public boolean validateUser(User user, String password) throws RemoteException {
 
         try {
@@ -651,23 +704,28 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     ///////////////////////////////////////////////////////////////////////////////////
     //////////////////Begin QueryStoreservice/////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////
+    @Override
     public boolean delete(int id) throws RemoteException {
         return queryStore.delete(id);
     }
 
+    @Override
     public QueryData getQuery(int id) throws RemoteException {
 
         return queryStore.getQuery(id);
     }
 
+    @Override
     public Info[] getQueryInfos(UserGroup userGroup) throws RemoteException {
         return queryStore.getQueryInfos(userGroup);
     }
 
+    @Override
     public Info[] getQueryInfos(User user) throws RemoteException {
         return queryStore.getQueryInfos(user);
     }
 
+    @Override
     public boolean storeQuery(User user, QueryData data) throws RemoteException {
         return queryStore.storeQuery(user, data);
     }
@@ -684,6 +742,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     //
     //    }
     //add single query root and leaf returns a query_id
+    @Override
     public int addQuery(String name, String description, String statement, int resultType, char isUpdate, char isBatch, char isRoot, char isUnion) throws RemoteException {
         try {
             return queryCache.addQuery(name, description, statement, resultType, isUpdate, isBatch, isRoot, isUnion);
@@ -693,6 +752,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         }
     }
 
+    @Override
     public int addQuery(String name, String description, String statement) throws RemoteException {
         try {
             return queryCache.addQuery(name, description, statement);
@@ -702,6 +762,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         }
     }
 
+    @Override
     public boolean addQueryParameter(int queryId, int typeId, String paramkey, String description, char isQueryResult, int queryPosition) throws RemoteException {
         try {
             return queryCache.addQueryParameter(queryId, typeId, paramkey, description, isQueryResult, queryPosition);
@@ -712,6 +773,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     }
 
     //position set in order of the addition
+    @Override
     public boolean addQueryParameter(int queryId, String paramkey, String description) throws RemoteException {
         try {
             return queryCache.addQueryParameter(queryId, paramkey, description);
@@ -721,6 +783,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         }
     }
 
+    @Override
     public HashMap getSearchOptions(User user) throws RemoteException {
         HashMap r = queryCache.getSearchOptions();
         logger.debug("in Domainserverimpl :: " + r);
@@ -729,6 +792,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
+    @Override
     public SearchResult search(User user, int[] classIds, Query query) throws RemoteException {
 
         try {
@@ -764,11 +828,11 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
                     logger.info("\n<LS> registered at SiriusRegistry " + registryIPs[i] + " with " + lsName + "  " + ip);
 
-                    UserStore userstore = dbServer.getUserStore();
+                    UserStore userStore = dbServer.getUserStore();
 
-                    userServer.registerUsers(userstore.getUsers());
-                    userServer.registerUserGroups(userstore.getUserGroups());
-                    userServer.registerUserMemberships(userstore.getMemberships());
+                    userServer.registerUsers(userStore.getUsers());
+                    userServer.registerUserGroups(userStore.getUserGroups());
+                    userServer.registerUserMemberships(userStore.getMemberships());
 
                     registered++;
                     logger.info("<LS> users registered at SiriusRegistry" + registryIPs[i] + " with " + lsName + "  " + ip);
@@ -897,9 +961,6 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
             System.out.println("<LS> ConfigFile: " + args[0]);
 
-            if (System.getSecurityManager() == null) {
-                System.setSecurityManager(new RMISecurityManager());
-            }
 
             // abfragen, ob schon eine  RMI Registry exitiert.
             java.rmi.registry.Registry rmiRegistry;
@@ -927,6 +988,9 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
             }
 
+            if (System.getSecurityManager() == null) {
+                System.setSecurityManager(new RMISecurityManager());
+            }
 
             new DomainServerImpl(new ServerProperties(args[0]));
 
