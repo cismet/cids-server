@@ -1,16 +1,20 @@
 package Sirius.server.sql;
 
 
+import Sirius.server.ServerExitError;
+import Sirius.server.search.Query;
 import de.cismet.tools.Sorter;
-import java.sql.*;
-import java.net.URL;
-import java.math.*;
-import java.util.*;
-import Sirius.util.*;
-import Sirius.server.property.*;
-import Sirius.server.search.*;
-import Sirius.server.*;
-import Sirius.server.search.searchparameter.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Collection;
+import java.util.MissingResourceException;
+import java.util.StringTokenizer;
+import org.apache.log4j.Logger;
+import org.openide.util.NbBundle;
 
 
 
@@ -28,7 +32,8 @@ import Sirius.server.search.searchparameter.*;
 
 public class DBConnection
 {
-    private transient final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
+    private static final transient Logger LOG = Logger.getLogger(
+            DBConnection.class);
     
     
     public static boolean charToBool(char bool)
@@ -62,7 +67,7 @@ public class DBConnection
         try
         {
             
-            logger.debug("driver  :" + dbc.driver);
+            LOG.debug("driver  :" + dbc.driver);
             
             
             Class.forName(dbc.driver); // can raise an ClassNotFoundExc.
@@ -74,11 +79,11 @@ public class DBConnection
             {
                 ((org.postgresql.PGConnection)con).addDataType("geometry","org.postgis.PGgeometry"); 
                 ((org.postgresql.PGConnection)con).addDataType("box3d","org.postgis.PGbox3d");
-                logger.debug("postgis datatypes added to connection");
+                LOG.debug("postgis datatypes added to connection");
                 
             }
             
-            logger.debug("connection established to "+this.dbc);
+            LOG.debug("connection established to "+this.dbc);
             
             
             cache = new StatementCache(con);
@@ -92,19 +97,19 @@ public class DBConnection
         catch(java.lang.ClassNotFoundException e)
         {
             
-            logger.error("<LS> ERROR :: "+e.getMessage()+" Driver Not Found",e );
+            LOG.error("<LS> ERROR :: "+e.getMessage()+" Driver Not Found",e );
             throw new ServerExitError(" Driver Not Found" ,e);
         }
         catch(java.sql.SQLException e)
         {
             ExceptionHandler.handle(e);
-            logger.error("<LS> ERROR :: could not connect to "+dbc,e);
+            LOG.error("<LS> ERROR :: could not connect to "+dbc,e);
             throw new ServerExitError(" could not connect to db" ,e);
         }
         
         catch (java.lang.Exception e)
         {
-            logger.error("<LS> ERROR :: "+e.getMessage(), e);
+            LOG.error("<LS> ERROR :: "+e.getMessage(), e);
             throw new ServerExitError(e);
             
         }
@@ -166,8 +171,44 @@ public class DBConnection
     public Connection getConnection()
     {return con;}
     
-    
-  
+    public ResultSet submitInternalQuery(final String descriptor,
+            final Object... parameters) throws
+            SQLException
+    {
+        try
+        {
+            final String stmt =
+                    NbBundle.getMessage(DBConnection.class, descriptor);
+            final PreparedStatement ps = con.prepareStatement(stmt);
+            if(parameters.length !=
+                    ps.getParameterMetaData().getParameterCount())
+            {
+                final String message =
+                        "parameter count mismmatch for descriptor '" // NOI18N
+                        + descriptor
+                        + "', Statement: " // NOI18N
+                        + stmt
+                        + ", Statement param count: " // NOI18N
+                        + ps.getParameterMetaData().getParameterCount()
+                        + ", given param count: " // NOI18N
+                        + parameters.length;
+                LOG.error(message);
+                throw new IllegalArgumentException(message);
+                        
+            }
+            for(int i = 0; i < parameters.length; ++i)
+            {
+                ps.setObject(i + 1, parameters[i]);
+            }
+            return ps.executeQuery();
+        }catch(final MissingResourceException e)
+        {
+            final String message = "invalid descriptor: " + descriptor;// NOI18N
+            LOG.error(message, e);
+            throw new IllegalArgumentException(message, e);
+        }
+    }
+
     ////////////////////////////////////////
     
     
@@ -206,19 +247,19 @@ public class DBConnection
     
     public ResultSet submitQuery(String descriptor,java.lang.Object[] parameters)
     {
-        logger.debug("submitQuery: " + descriptor);
+        LOG.debug("submitQuery: " + descriptor);
         
         try
         {
             String sqlStmnt = fetchStatement(descriptor);
             sqlStmnt = QueryParametrizer.parametrize(sqlStmnt,parameters);
-            logger.debug("info :: "+sqlStmnt);
+            LOG.debug("info :: "+sqlStmnt);
             
             return (con.createStatement()).executeQuery(sqlStmnt);
         }
         catch(Exception e)
         {
-            logger.error(" Fehler bei SubmitQuery",e);
+            LOG.error(" Fehler bei SubmitQuery",e);
             ExceptionHandler.handle(e);
             
         }
@@ -266,11 +307,11 @@ public class DBConnection
     
     public ResultSet submitQuery(int sqlID,java.lang.Object[] parameters) throws java.sql.SQLException,Exception
     {
-        logger.debug("submitQuery: " + sqlID);
+        LOG.debug("submitQuery: " + sqlID);
         
         String sqlStmnt = fetchStatement(sqlID);
         
-        logger.debug("Statement :"+sqlStmnt );
+        LOG.debug("Statement :"+sqlStmnt );
         
         try
         {
@@ -278,10 +319,10 @@ public class DBConnection
         }
         catch(Exception e)
         {
-           logger.error(e);
+           LOG.error(e);
             throw e;
         }
-        logger.debug("Statement :"+sqlStmnt );
+        LOG.debug("Statement :"+sqlStmnt );
         return (con.createStatement()).executeQuery(sqlStmnt);
         
     }
@@ -290,10 +331,10 @@ public class DBConnection
     
     public ResultSet submitQuery(Query q)throws java.sql.SQLException,Exception
     {
-        logger.debug("submitQuery: " + q.getKey() + ", batch: " + q.isBatch());
+        LOG.debug("submitQuery: " + q.getKey() + ", batch: " + q.isBatch());
         
         
-        logger.debug("query object :: "+q);
+        LOG.debug("query object :: "+q);
         Collection tmp = q.getParameterList();
         
         
@@ -314,7 +355,7 @@ public class DBConnection
     
     public int submitUpdate(Query q)throws java.sql.SQLException,Exception
     {
-        logger.debug("submitUpdate: " + q.getKey() + ", batch: " + q.isBatch());
+        LOG.debug("submitUpdate: " + q.getKey() + ", batch: " + q.isBatch());
         
         Collection tmp = q.getParameterList();
         Comparable[] params = (Comparable[])tmp.toArray(new Comparable[tmp.size()]);
@@ -366,7 +407,7 @@ public class DBConnection
     
     public int submitUpdate(String descriptor,java.lang.Object[] parameters) throws java.sql.SQLException,Exception// returns abs(rows effected)
     {
-        logger.debug("submitUpdate: " + descriptor);
+        LOG.debug("submitUpdate: " + descriptor);
         
         String sqlStmnt = fetchStatement(descriptor);
         
@@ -376,7 +417,7 @@ public class DBConnection
             sqlStmnt = QueryParametrizer.parametrize(sqlStmnt,parameters);
         }catch(Exception e)
         {
-           logger.error(e);
+           LOG.error(e);
             throw e;
         }
         
@@ -419,7 +460,7 @@ public class DBConnection
     
     public int submitUpdate(int sqlID,java.lang.Object[] parameters) throws java.sql.SQLException,Exception// returns abs(rows effected)
     {
-       logger.debug("submitUpdate: " + sqlID);
+       LOG.debug("submitUpdate: " + sqlID);
         
         String sqlStmnt = fetchStatement(sqlID);
         
@@ -428,7 +469,7 @@ public class DBConnection
             sqlStmnt = QueryParametrizer.parametrize(sqlStmnt,parameters);
         }catch(Exception e)
         {
-            logger.error(e);
+            LOG.error(e);
             throw e;
         }
         
@@ -456,7 +497,7 @@ public class DBConnection
     public String fetchStatement(String descriptor) throws java.sql.SQLException,Exception
     {
         
-        logger.debug("fetchStatement: " + descriptor);
+        LOG.debug("fetchStatement: " + descriptor);
 /*
 if(!dbc.cacheStatements)
 {
@@ -508,7 +549,7 @@ if(!dbc.cacheStatements)
     public  String fetchStatement(int sqlID) throws java.sql.SQLException,Exception
     
     {
-      logger.debug("fetchStatement: " + sqlID);
+      LOG.debug("fetchStatement: " + sqlID);
 /*
 if(!dbc.cacheStatements)
 {
@@ -549,7 +590,7 @@ if(!dbc.cacheStatements)
     
     public ResultSet executeQuery(Query q) throws java.sql.SQLException,Exception
     {
-        logger.debug("executeQuery: " + q.getKey() + ", batch: " + q.isBatch());
+        LOG.debug("executeQuery: " + q.getKey() + ", batch: " + q.isBatch());
         
         if(q.getStatement()==null) // sql aus dem cache
             return submitQuery(q);
@@ -571,11 +612,11 @@ if(!dbc.cacheStatements)
             }
             catch(Exception e)
             {
-               logger.error(e);
+               LOG.error(e);
                 throw e;
             }
             
-           logger.debug("INFO executeQuery :: "+sqlStmnt );
+           LOG.debug("INFO executeQuery :: "+sqlStmnt );
             return (con.createStatement()).executeQuery(sqlStmnt);
             
             
@@ -594,7 +635,7 @@ if(!dbc.cacheStatements)
     
     public int submitUpdateBatch(int qid,java.lang.Object[] parameters)throws java.sql.SQLException,Exception
     {
-        logger.debug("submitUpdateBatch: " + qid);
+        LOG.debug("submitUpdateBatch: " + qid);
         
         String updateBatch = fetchStatement(qid);
         
@@ -604,7 +645,7 @@ if(!dbc.cacheStatements)
             updateBatch = QueryParametrizer.parametrize(updateBatch,parameters);
         }catch(Exception e)
         {
-           logger.error(e);
+           LOG.error(e);
             throw e;
         }
         
@@ -631,7 +672,7 @@ if(!dbc.cacheStatements)
     
     public int submitUpdateBatch(String queryname,java.lang.Object[] parameters)throws java.sql.SQLException,Exception
     {
-       logger.debug("submitUpdateBatch: " + queryname);
+       LOG.debug("submitUpdateBatch: " + queryname);
         
         String updateBatch = fetchStatement(queryname);
         
@@ -641,7 +682,7 @@ if(!dbc.cacheStatements)
             updateBatch = QueryParametrizer.parametrize(updateBatch,parameters);
         }catch(Exception e)
         {
-            logger.error(e);
+            LOG.error(e);
             throw e;
         }
         
@@ -660,4 +701,44 @@ if(!dbc.cacheStatements)
         
         return rowsEffected;
     }
-}// end class DBCOnnection
+
+    public static void closeResultSets(final ResultSet... sets)
+    {
+        if(sets != null)
+        {
+            for(final ResultSet set : sets)
+            {
+                try
+                {
+                    if(set != null)
+                    {
+                        set.close();
+                    }
+                }catch(final SQLException e)
+                {
+                    LOG.warn("could not close resultset: " + set, e);
+                }
+            }
+        }
+    }
+
+    public static void closeStatements(final Statement... stmts)
+    {
+        if(stmts != null)
+        {
+            for(final Statement stmt : stmts)
+            {
+                try
+                {
+                    if(stmt != null)
+                    {
+                        stmt.close();
+                    }
+                }catch(final SQLException e)
+                {
+                    LOG.warn("could not close statement: " + stmt, e);
+                }
+            }
+        }
+    }
+}

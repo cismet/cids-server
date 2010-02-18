@@ -5,10 +5,12 @@ import Sirius.server.sql.*;
 import Sirius.server.property.*;
 import java.sql.*;
 import java.util.*;
+import org.apache.log4j.Logger;
 
-public class UserStore
+public final class UserStore
 {
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
+    private static final transient Logger LOG = Logger.getLogger(
+            UserStore.class);
     
     
     protected DBConnectionPool conPool;
@@ -54,7 +56,7 @@ public class UserStore
                 }
                 catch(Exception e)
                 {
-                    logger.error(e);
+                    LOG.error(e);
                     
                     if(e instanceof java.sql.SQLException)
                         throw e;
@@ -84,7 +86,7 @@ public class UserStore
                 }
                 catch(Exception e)
                 {
-                    logger.error(e);
+                    LOG.error(e);
                     
                     if(e instanceof java.sql.SQLException)
                         throw e;
@@ -126,7 +128,7 @@ public class UserStore
                 }
                 catch(Exception e)
                 {
-                    logger.error(e);
+                    LOG.error(e);
                     
                     if(e instanceof java.sql.SQLException)
                         throw e;
@@ -149,7 +151,7 @@ public class UserStore
         catch (java.lang.Exception e)
         {
             ExceptionHandler.handle(e);
-            logger.error("<LS> ERROR ::  in membership statement"+ e.getMessage(),e);
+            LOG.error("<LS> ERROR ::  in membership statement"+ e.getMessage(),e);
             
         }
         
@@ -231,32 +233,22 @@ public class UserStore
     
     //--------------------------------------------------------------------------
     
-    public boolean validateUserPassword(User user,String password) throws Exception
+    public boolean validateUserPassword(final User user, final String password)
+            throws 
+            SQLException
     {
-        
-        DBConnection con = conPool.getConnection();
-        
-        java.lang.Object[] params = new java.lang.Object[2];
-        
-        params[0] = user.getName().trim().toLowerCase();
-        params[1] = password.trim().toLowerCase();
-        
-        logger.debug("Name :" + params[0]+"Passwort :"+ params[1]);
-        
-        ResultSet result = con.submitQuery("verify_user_password",params);
-        
-        logger.debug("Result there ?"+result);
-        
-        if( result.next())
-            if(result.getInt(1)>0)
-                return true;
-        
-        return false;
-        
+        final DBConnection con = conPool.getConnection();
+        ResultSet result = null;
+        try
+        {
+            // TODO: should username and password be trimmed?
+            result = con.submitInternalQuery("verify_user_password",
+                    user.getName().trim().toLowerCase(),
+                    password.trim().toLowerCase());
+            return result.next() && result.getInt(1) == 1;
+        }finally
+        {
+            DBConnection.closeResultSets(result);
+        }
     }
-    
-    
-    
-    
-    
 }
