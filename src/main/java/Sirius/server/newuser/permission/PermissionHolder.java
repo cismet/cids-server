@@ -1,90 +1,140 @@
+/*
+ * PermissionHolder.java, encoding: UTF-8
+ *
+ * Copyright (C) by:
+ *
+ *----------------------------
+ * cismet GmbH
+ * Altenkesslerstr. 17
+ * Gebaeude D2
+ * 66115 Saarbruecken
+ * http://www.cismet.de
+ *----------------------------
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * See: http://www.gnu.org/licenses/lgpl.txt
+ *
+ *----------------------------
+ * Author:
+ * thorsten.hell@cismet.de
+ * martin.scholl@cismet.de
+ *----------------------------
+ *
+ * Created on ???
+ *
+ */
+
 package Sirius.server.newuser.permission;
 
 import Sirius.server.newuser.UserGroup;
+import Sirius.util.Mapable;
 import de.cismet.tools.collections.MultiMap;
-import Sirius.util.*;
 import de.cismet.tools.CurrentStackTrace;
-import de.cismet.tools.collections.SyncLinkedList;
-import java.util.*;
+import java.io.Serializable;
+import org.apache.log4j.Logger;
 
 /**
- * Bei der Intstanzierung eines PermissionHolders erlaubt dieser zunaechst jeglichen Zugriff (hasPermission ist immer wahr)
- * Sobald ein Recht f\u00FCr ein PermissionHolder Object gesetzt wird (addPermission), werden allen anderen Schluesseln die Rechte
+ * Bei der Intstanzierung eines PermissionHolders erlaubt dieser zunaechst
+ * jeglichen Zugriff (hasPermission ist immer wahr)
+ * Sobald ein Recht für ein PermissionHolder Objekt gesetzt
+ * wird (addPermission), werden allen anderen Schluesseln die Rechte
  * entzogen (restricted = true).
- *
  */
-public class PermissionHolder implements java.io.Serializable {
+public final class PermissionHolder implements Serializable {
 
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
-    private Policy policy;
+    private static final transient Logger LOG = Logger.getLogger(
+            PermissionHolder.class);
+
     public static final int READ = 0;
     public static final int WRITE = 1;
-    public static Permission READPERMISSION = new Permission(0, "read");
-    public static Permission WRITEPERMISSION = new Permission(1, "write");
-    /** usergroup maps visible yes/no	*/
-    protected MultiMap permissions;
-    ///** visible in general			*/
-    //  protected boolean restricted;
-    private PermissionHolder() {
+    public static final Permission READPERMISSION =
+            new Permission(READ, "read"); // NOI18N
+    public static final Permission WRITEPERMISSION =
+            new Permission(WRITE, "write"); // NOI18N
 
+    /** usergroup maps visible yes/no	*/
+    private final MultiMap permissions;
+    private Policy policy;
+
+    private PermissionHolder() {
         permissions = new MultiMap();
-    //	  restricted  = false;
     }
 
-    public PermissionHolder(Policy policy) {
+    public PermissionHolder(final Policy policy) {
         this.policy = policy;
         permissions = new MultiMap();
-    //	  restricted  = false;
     }
-    //-----------------------------------------------------------------------------
-    /**  adds an permission reference by lsname+class or method or attribute id*/
-    public final void addPermission(Mapable m) {
+
+    /**  
+     * adds an permission reference by lsname+class or method or attribute id
+     */
+    public void addPermission(final Mapable m) {
 
         permissions.put(m.getKey().toString(), READPERMISSION);
     }
-    //------------------------------------------------------------------
-    public final void addPermissions(PermissionHolder perms) {
+
+    public void addPermissions(final PermissionHolder perms) {
         this.permissions.putAll(perms.permissions);
     }
 
-    public final void addPermission(UserGroup ug, Permission perm) {
+    public void addPermission(final UserGroup ug, final Permission perm) {
 
         addPermission(ug.getKey().toString(), perm);
     }
 
-    public final void addPermission(Mapable m, Permission perm) {
+    public void addPermission(final Mapable m, final Permission perm) {
 
         addPermission(m.getKey().toString(), perm);
     }
 
-    public final void addPermission(Object key, Permission perm) {
-        //logger.debug("addPermissison ::  "+key+"  "+perm);
+    public void addPermission(final Object key, final Permission perm) {
         permissions.put(key.toString(), perm);
     }
 
-    public final boolean hasReadPermission(UserGroup ug) {
+    public boolean hasReadPermission(final UserGroup ug) {
         try {
             return hasPermission(ug.getKey().toString(), READPERMISSION);
-        } catch (Exception e) {
-             if (logger!=null) logger.error("Error in hasReadPermission (ug=" + ug + "). Will return false.", e);
+        } catch (final Exception e) {
+            LOG.error("error in hasReadPermission (ug = " // NOI18N
+                    + ug
+                    + "). Will return false.", e); // NOI18N
             return false;
         }
     }
 
-    public final boolean hasWritePermission(UserGroup ug) {
+    public boolean hasWritePermission(final UserGroup ug) {
         try {
             return hasPermission(ug.getKey().toString(), READPERMISSION);
-        } catch (Exception e) {
-            logger.error("Error in hasWritePermission (ug=" + ug + "). Will return false.", e);
+        } catch (final Exception e) {
+            LOG.error("Error in hasWritePermission (ug = " // NOI18N
+                    + ug
+                    + "). Will return false.", e); // NOI18N
             return false;
         }
 
     }
 
-    /**	checks if theres a Permission for an ordered pair of lsname+id	*/
-    public final boolean hasPermission(Object key, Permission perm) throws Exception {
+    /**	
+     * checks if theres a Permission for an ordered pair of lsname+id
+     */
+    public boolean hasPermission(final Object key, final Permission perm) {
         if (getPolicy()==null) {
-            logger.warn("No Policy was set. Set PARANOID Policy. Attention. This could lead to something that you not want.",new CurrentStackTrace());
+            LOG.warn("No Policy was set. Set PARANOID Policy. " // NOI18N
+                    + "Attention. This could lead to something " // NOI18N
+                    + "that you not want.", new CurrentStackTrace());
             setPolicy(Policy.createParanoidPolicy());
         }
         if (containsPermission(key, perm)) {
@@ -98,36 +148,11 @@ public class PermissionHolder implements java.io.Serializable {
         return policy;
     }
 
-    public void setPolicy(Policy policy) {
+    public void setPolicy(final Policy policy) {
         this.policy = policy;
     }
-    //------------------------------------------------------------------------------
-    protected boolean containsPermission(Object key, Permission perm) {
+
+    private boolean containsPermission(final Object key, final Permission perm){
         return permissions.contains(key, perm);
     }
-
-//    public String toString() {
-//        String tmp = " KEYS :: \n";
-//        Iterator iter = permissions.values().iterator();
-//        Iterator keyIter = permissions.keySet().iterator();
-//
-//
-//        while (keyIter.hasNext()) {
-//            tmp += keyIter.next() + "\n";
-//        }
-//        tmp += "----------------\nValues :: \n";
-//        while (iter.hasNext()) {
-//            SyncLinkedList l = (SyncLinkedList) iter.next();
-//
-//            Iterator subIter = l.iterator();
-//
-//            while (subIter.hasNext()) {
-//                tmp += subIter.next() + "\n";
-//            }
-//
-//        }
-//
-//        return tmp;
-//
-//    }
 }
