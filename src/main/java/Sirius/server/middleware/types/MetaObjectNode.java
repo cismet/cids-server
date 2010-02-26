@@ -11,7 +11,7 @@ public class MetaObjectNode extends Node implements Comparable
     
     
     
-    protected MetaObject theObject;
+    protected volatile MetaObject theObject;
     
 //-----------------------------------------------
     
