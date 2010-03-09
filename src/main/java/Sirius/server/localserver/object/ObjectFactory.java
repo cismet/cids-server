@@ -204,15 +204,17 @@ public class ObjectFactory {
             // retrive name of the column of this attribute
             fieldName = mai.getFieldName();
 
+
+
             // logger.debug("versuche attr "+fieldName+"hinzuzuf\u00FCgen");
 
+            if (!mai.isExtensionAttribute()) {
 
-
-            if (!(mai.isForeignKey())) // simple attribute can be directly retrieved from the resultset
-            {
-                // SQLObject fetched as is; from the field with fieldname
-                //logger.debug("simple attribute");
-                // !!!!! umstellung auf PostgisGeometry
+                if (!(mai.isForeignKey())) // simple attribute can be directly retrieved from the resultset
+                {
+                    // SQLObject fetched as is; from the field with fieldname
+                    //logger.debug("simple attribute");
+                    // !!!!! umstellung auf PostgisGeometry
 //                if(mai.getTypeId()==236|| mai.getTypeId()==268) // Polygon
 //                {
 //                    attrValue=rs.getString(fieldName);
@@ -230,74 +232,77 @@ public class ObjectFactory {
 //
 //                }
 //                else
-                attrValue = rs.getObject(fieldName);
+                    attrValue = rs.getObject(fieldName);
 
-                //  if(attrValue!=null)logger.debug("Klasse des Attributs "+attrValue.getClass());
+                    //  if(attrValue!=null)logger.debug("Klasse des Attributs "+attrValue.getClass());
 
-                try {
-                    if (attrValue != null) {
-                        logger.debug("Klasse des Attributs " + mai.getName() + " (innerhalb der Konvertierungsabfrage)" + attrValue.getClass());
-                    } else {
-                        logger.debug("Klasse des Attributs " + mai.getName() + " = null");
-                    }
-                    if (attrValue instanceof org.postgis.PGgeometry) //TODO assignable from machen
-                    // attrValue = de.cismet.tools.postgis.FeatureConverter.convert( ( (org.postgis.PGgeometry)attrValue).getGeometry());
-                    {
-                        logger.debug("Konvertiere in JTS: " + mai.getName() + " (" + attrValue.getClass() + ")  = " + attrValue);
-                        attrValue = PostGisGeometryFactory.createJtsGeometry(((org.postgis.PGgeometry) attrValue).getGeometry());
-                    }
-                    if (attrValue != null) {
-                        logger.debug("Klasse des Attributs " + mai.getName() + " (innerhalb der Konvertierungsabfrage)" + attrValue.getClass());
-                    } else {
-                        logger.debug("Klasse des Attributs " + mai.getName() + " = null");
-                    }
-                } catch (Exception ex) {
-                    logger.error("Fehler beim konvertieren in ein serialisierbares Geoobject setzt attr auf NULL wert war:" + attrValue, ex);
-                    attrValue = null;
-                }
-            } else// isForeignKey therfore retrieve DefaultObject (recursion)
-            {
-
-
-                if (mai.isArray()) // isForeignKey && isArray
-                {
-                    // create Array of Objects
-                    //logger.debug("isArray");
-
-                    String referenceKey = rs.getString(fieldName);
-
-                    if (referenceKey != null) {
-                        attrValue = getMetaObjectArray(referenceKey, mai, objectId);
-                    } else {
+                    try {
+                        if (attrValue != null) {
+                            logger.debug("Klasse des Attributs " + mai.getName() + " (innerhalb der Konvertierungsabfrage)" + attrValue.getClass());
+                        } else {
+                            logger.debug("Klasse des Attributs " + mai.getName() + " = null");
+                        }
+                        if (attrValue instanceof org.postgis.PGgeometry) //TODO assignable from machen
+                        // attrValue = de.cismet.tools.postgis.FeatureConverter.convert( ( (org.postgis.PGgeometry)attrValue).getGeometry());
+                        {
+                            logger.debug("Konvertiere in JTS: " + mai.getName() + " (" + attrValue.getClass() + ")  = " + attrValue);
+                            attrValue = PostGisGeometryFactory.createJtsGeometry(((org.postgis.PGgeometry) attrValue).getGeometry());
+                        }
+                        if (attrValue != null) {
+                            logger.debug("Klasse des Attributs " + mai.getName() + " (innerhalb der Konvertierungsabfrage)" + attrValue.getClass());
+                        } else {
+                            logger.debug("Klasse des Attributs " + mai.getName() + " = null");
+                        }
+                    } catch (Exception ex) {
+                        logger.error("Fehler beim konvertieren in ein serialisierbares Geoobject setzt attr auf NULL wert war:" + attrValue, ex);
                         attrValue = null;
                     }
-                } else // isForeignkey DefaultObject can be retrieved as usual
+                } else// isForeignKey therfore retrieve DefaultObject (recursion)
                 {
-                    // retrieve foreign key
 
-                    if (rs.getObject(fieldName) == null) // wenn null dann unterbrechen der rekursion
+
+                    if (mai.isArray()) // isForeignKey && isArray
                     {
-                        attrValue = null;
-                        logger.debug("getObject f\u00FCr " + fieldName + "ergab null, setzte attrValue auf null");
+                        // create Array of Objects
+                        //logger.debug("isArray");
 
-                    } else {
+                        String referenceKey = rs.getString(fieldName);
 
-                        int o_id = rs.getInt(fieldName);
-                        //logger.debug("attribute is object");
-                        try {
-                            attrValue = getObject(o_id, mai.getForeignKeyClassId());
-                        } catch (Exception e) {
-                            logger.error("getObject Rekursion unterbrochen fuer oid" + o_id + "  MAI " + mai, e);
+                        if (referenceKey != null) {
+                            attrValue = getMetaObjectArray(referenceKey, mai, objectId);
+                        } else {
                             attrValue = null;
                         }
+                    } else // isForeignkey DefaultObject can be retrieved as usual
+                    {
+                        // retrieve foreign key
+
+                        if (rs.getObject(fieldName) == null) // wenn null dann unterbrechen der rekursion
+                        {
+                            attrValue = null;
+                            logger.debug("getObject f\u00FCr " + fieldName + "ergab null, setzte attrValue auf null");
+
+                        } else {
+
+                            int o_id = rs.getInt(fieldName);
+                            //logger.debug("attribute is object");
+                            try {
+                                attrValue = getObject(o_id, mai.getForeignKeyClassId());
+                            } catch (Exception e) {
+                                logger.error("getObject Rekursion unterbrochen fuer oid" + o_id + "  MAI " + mai, e);
+                                attrValue = null;
+                            }
+
+                        }
+
 
                     }
 
-
                 }
-
             }
-
+            else {
+                attrValue=null;
+            }
 
 
             ObjectAttribute oAttr = new ObjectAttribute(mai, objectId, attrValue, c.getAttributePolicy());
@@ -316,12 +321,17 @@ public class ObjectFactory {
             // bei gelegenheit raus da es im Konstruktor von MetaObject gesetzt wird
             oAttr.setClassKey(mai.getForeignKeyClassId() + "@" + classCache.getProperties().getServerName());
 
-            // spaltenindex f\u00FCr sql metadaten abfragen
-            int colNo = rs.findColumn(fieldName);
+            if (!mai.isExtensionAttribute()) {
+                // spaltenindex f\u00FCr sql metadaten abfragen
+                int colNo = rs.findColumn(fieldName);
 
-            // java type retrieved by getObject
-            String javaType = rs.getMetaData().getColumnClassName(colNo);
-            oAttr.setJavaType(javaType);
+                // java type retrieved by getObject
+                String javaType = rs.getMetaData().getColumnClassName(colNo);
+                oAttr.setJavaType(javaType);
+            }
+            else {
+                oAttr.setJavaType(java.lang.Object.class.getCanonicalName());
+            }
 
             try {
 
@@ -395,7 +405,7 @@ public class ObjectFactory {
     }
 
     public Sirius.server.localserver.object.Object getInstance(int classId) throws Exception {
-        logger.debug("getInstance("+classId+") aufgerufen",new CurrentStackTrace());
+        logger.debug("getInstance(" + classId + ") aufgerufen", new CurrentStackTrace());
         Sirius.server.localserver._class.Class c = classCache.getClass(classId);
 
         Sirius.server.localserver.object.Object o = new Sirius.server.localserver.object.DefaultObject(-1, classId);
@@ -477,7 +487,7 @@ public class ObjectFactory {
 
         }
 
-        logger.debug("ergebniss von getINstance()"+new DefaultMetaObject(o, "LOCAL"));
+        logger.debug("ergebniss von getINstance()" + new DefaultMetaObject(o, "LOCAL"));
         return o;
 
 

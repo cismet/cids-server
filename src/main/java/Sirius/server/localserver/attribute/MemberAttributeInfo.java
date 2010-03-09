@@ -40,6 +40,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
     protected int position;
     private String renderer;
     private String javaclassname = null;
+    private boolean extensionAttribute=false;
 
     public MemberAttributeInfo()
     {
@@ -380,4 +381,14 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
     public void setJavaclassname(String javaclassname) {
         this.javaclassname = javaclassname;
     }
+
+    public boolean isExtensionAttribute() {
+        return extensionAttribute;
+    }
+
+    public void setExtensionAttribute(boolean extensionAttribute) {
+        this.extensionAttribute = extensionAttribute;
+    }
+
+    
 }

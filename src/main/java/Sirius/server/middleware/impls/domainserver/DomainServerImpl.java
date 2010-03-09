@@ -1,6 +1,5 @@
 package Sirius.server.middleware.impls.domainserver;
 
-
 import Sirius.server.Server;
 import Sirius.server.ServerExit;
 import Sirius.server.ServerExitError;
@@ -44,7 +43,9 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.MissingResourceException;
 import org.apache.log4j.PropertyConfigurator;
-
+import de.cismet.cids.objectextension.ObjectExtensionFactory;
+import de.cismet.tools.BlacklistClassloading;
+import java.util.Hashtable;
 
 public class DomainServerImpl extends UnicastRemoteObject implements CatalogueService, MetaService, SystemService, UserService, QueryStore, SearchService { //ActionListener
 
@@ -387,17 +388,58 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             throw new RemoteException(e.getMessage());
         }
     }
+    private static final String EXTENSION_FACTORY_PREFIX = "de.cismet.cids.custom.extensionfactories.";
+
+    private String getExtensionFactoryClassnameByCOnvention(final MetaObject mo) {
+        String className = mo.getMetaClass().getTableName().toLowerCase();
+        className = className.substring(0, 1).toUpperCase() + className.substring(1);
+        return EXTENSION_FACTORY_PREFIX + mo.getDomain().toLowerCase() + "." + className+"ExtensionFactory";
+    }
 
     //---------------------------------------------------------------------------------------------------
     public MetaObject getObject(User user, String objectID) throws RemoteException {
         try {
-            return dbServer.getObject(objectID, user.getUserGroup());
+            MetaObject mo = dbServer.getObject(objectID, user.getUserGroup());
+
+            final MetaClass[] classes = dbServer.getClasses(user.getUserGroup());
+            mo.setAllClasses(getClassHashTable(classes, serverInfo.getName()));
+
+            //Check if Object can be extended
+            if (mo.getMetaClass().hasExtensionAttributes()) {
+                //TODO:Check if there is a ExtensionFactory
+                String className = getExtensionFactoryClassnameByCOnvention(mo);
+
+                Class extensionFactoryClass = BlacklistClassloading.forName(className);
+
+                if (extensionFactoryClass != null) {
+                    ObjectExtensionFactory ef = (ObjectExtensionFactory) extensionFactoryClass.newInstance();
+                    try {
+                        ef.extend(mo.getBean());
+                    } catch (Exception e) {
+                        logger.error("Error during ObjectExtension", e);
+                    }
+                }
+            }
+            return mo;
         } catch (Throwable e) {
             if (logger != null) {
                 logger.error(e, e);
             }
             throw new RemoteException(e.getMessage());
         }
+    }
+
+    public static Hashtable getClassHashTable(MetaClass[] classes, String serverName) {
+
+        Hashtable classHash = new Hashtable();
+        for (int i = 0; i < classes.length; i++) {
+            String key = new String(serverName + classes[i].getID());
+            if (!classHash.containsKey(key)) {
+                classHash.put(key, classes[i]);
+            }
+        }
+
+        return classHash;
     }
 
     //---------------------------------------------------------------------------------------------------

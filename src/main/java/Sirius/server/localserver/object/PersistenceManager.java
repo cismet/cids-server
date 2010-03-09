@@ -371,15 +371,16 @@ public class PersistenceManager {
                     valueString = "'" + valueString + "'";
                 }
 
-                // update feldname hinzuf\u00FCgen
-                sql += komma + mai.getFieldName() + " = " + valueString;
+                // update feldname hinzufuegen
+                // wenn nicht extension attribute
+                if (!mai.isExtensionAttribute()) {
+                    sql += komma + mai.getFieldName() + " = " + valueString;
 
-                updateCounter++;
+                    updateCounter++;
 
-
-                // komma zwischen fieldname = value,* zum ersten mal im 2ten durchlauf gesetzt
-                komma = ",";
-
+                    // komma zwischen fieldname = value,* zum ersten mal im 2ten durchlauf gesetzt
+                    komma = ",";
+                }
 
             } // ender der for schleife \u00FCber alle attribute
 
@@ -580,115 +581,117 @@ public class PersistenceManager {
 
                 }
 
-                // f\u00FCge feldinfo f\u00FCr diese attribut dem insert stmnt hinzu
-                attrNameList += komma + mai.getFieldName();
+                // fuege feldinfo fuer diese attribut dem insert stmnt hinzu
+                // wenn nicht extension attr
+                if (!mai.isExtensionAttribute()) {
+                    attrNameList += komma + mai.getFieldName();
 
-                // initialisieren defaultValue
-                String defaultVal = persistenceHelper.getDefaultValue(mai, value);
+                    // initialisieren defaultValue
+                    String defaultVal = persistenceHelper.getDefaultValue(mai, value);
 
-                if (!mAttr[i].referencesObject()) // zeigt auf kein Objekt also auch eigener schl\u00FCssel
-                {
-                    // hier werden alle einfache felder abgehandelt
-                    // (keine Objektreferenzen)
-                    if (value == null) {
-                        // use defaultvalue
-                        valueList += komma + defaultVal;
-                    } else {
+                    if (!mAttr[i].referencesObject()) // zeigt auf kein Objekt also auch eigener schl\u00FCssel
+                    {
+                        // hier werden alle einfache felder abgehandelt
+                        // (keine Objektreferenzen)
+                        if (value == null) {
+                            // use defaultvalue
+                            valueList += komma + defaultVal;
+                        } else {
+                            try {
+                                // contains fieldvalue and komma
+                                String val = "";
+
+                                if (!persistenceHelper.toBeQuoted(mai, value)) {
+                                    // no quotation
+                                    val += komma + value.toString();
+                                } else {
+                                    // if not isGeometry simply add quotes
+                                    if (!persistenceHelper.GEOMETRY.isAssignableFrom(value.getClass())) {
+                                        val += komma + ("'" + value.toString() + "'");
+                                    } else {
+                                        val += komma + ("'" + PostGisGeometryFactory.getPostGisCompliantDbString((Geometry) value) + "'");
+                                    }
+                                }
+
+
+                                valueList += val;
+
+                            } catch (java.util.MissingResourceException e) {
+                                logger.error("Exception when trying to retrieve list of quoted types insert unsafe therefore rollback", e);
+                                transactionHelper.rollback();
+                            }
+                        }
+
+
+
+                    } else if (!mAttr[i].isPrimaryKey()) // hier zeigt auf MetaObjekt
+                    {
+
+                        // null was dann???
+
+
+
+
+                        // besorge Schl\u00FCssel
+                        Sirius.server.localserver._class.Class c = dbServer.getClass(mai.getForeignKeyClassId());
+
+                        String attrTab = c.getTableName();
+
+                        String pk = c.getPrimaryKey();
+
+
+                        MetaObject moAttr = (MetaObject) value;
                         try {
-                            // contains fieldvalue and komma
-                            String val = "";
+                            // rekursion
+                            // wenn value null wird das feld null gesetzt und die rekursion nicht aufgerufen
+                            if (value != null) {
+                                int status = moAttr.getStatus();
 
-                            if (!persistenceHelper.toBeQuoted(mai, value)) {
-                                // no quotation
-                                val += komma + value.toString();
-                            } else {
-                                // if not isGeometry simply add quotes
-                                if (!persistenceHelper.GEOMETRY.isAssignableFrom(value.getClass())) {
-                                    val += komma + ("'" + value.toString() + "'");
-                                } else {
-                                    val += komma + ("'" + PostGisGeometryFactory.getPostGisCompliantDbString((Geometry) value) + "'");
+                                Integer o_id = moAttr.getID();
+
+                                if (status == MetaObject.NEW) {
+                                    if (!moAttr.isDummy()) {
+                                        o_id = insertMetaObject(user, moAttr);
+                                    } else {
+
+                                        o_id = mo.getID();
+                                        //setzen der id in den jt-objekten noch zu machen
+                                        insertMetaObjectArray(user, moAttr);
+
+                                    }
+                                }// noch zu testen
+                                else if (status == MetaObject.TO_DELETE) {
+                                    o_id = null;
+                                    deleteMetaObject(user, moAttr);
                                 }
-                            }
+                                //else bei update NOP
 
-
-                            valueList += val;
-
-                        } catch (java.util.MissingResourceException e) {
-                            logger.error("Exception when trying to retrieve list of quoted types insert unsafe therefore rollback", e);
-                            transactionHelper.rollback();
-                        }
-                    }
-
-
-
-                } else if (!mAttr[i].isPrimaryKey()) // hier zeigt auf MetaObjekt
-                {
-
-                    // null was dann???
-
-
-
-
-                    // besorge Schl\u00FCssel
-                    Sirius.server.localserver._class.Class c = dbServer.getClass(mai.getForeignKeyClassId());
-
-                    String attrTab = c.getTableName();
-
-                    String pk = c.getPrimaryKey();
-
-
-                    MetaObject moAttr = (MetaObject) value;
-                    try {
-                        // rekursion
-                        // wenn value null wird das feld null gesetzt und die rekursion nicht aufgerufen
-                        if (value != null) {
-                            int status = moAttr.getStatus();
-
-                            Integer o_id = moAttr.getID();
-
-                            if (status == MetaObject.NEW) {
-                                if (!moAttr.isDummy()) {
-                                    o_id = insertMetaObject(user, moAttr);
+                                // foreignkey wird hier gesetzt
+                                if (status != MetaObject.TEMPLATE) { //Hell <--
+                                    valueList += komma + o_id; //Orig
                                 } else {
-
-                                    o_id = mo.getID();
-                                    //setzen der id in den jt-objekten noch zu machen
-                                    insertMetaObjectArray(user, moAttr);
-
-                                }
-                            }// noch zu testen
-                            else if (status == MetaObject.TO_DELETE) {
-                                o_id = null;
-                                deleteMetaObject(user, moAttr);
-                            }
-                            //else bei update NOP
-
-                            // foreignkey wird hier gesetzt
-                            if (status != MetaObject.TEMPLATE) { //Hell <--
-                                valueList += komma + o_id; //Orig
-                            } else {
+                                    valueList += komma + "NULL";
+                                }   //-->Hell
+                            } else if (mAttr[i].isArray()) {
+                                valueList += komma + rootPk;
+                            } else {//value == null
                                 valueList += komma + "NULL";
-                            }   //-->Hell
-                        }else if (mAttr[i].isArray()){
-                            valueList += komma + rootPk;
-                        }
-                        else {//value == null
-                            valueList += komma + "NULL";
+                            }
+
+                        } catch (Exception e) {
+                            String error = "rekursion in insert mo unterbrochen moAttr::" + moAttr + " MAI" + mai;
+                            System.err.println(error);
+                            e.printStackTrace();
+                            logger.error(error, e);
+                            throw e;
                         }
 
-                    } catch (Exception e) {
-                        String error = "rekursion in insert mo unterbrochen moAttr::" + moAttr + " MAI" + mai;
-                        System.err.println(error);
-                        e.printStackTrace();
-                        logger.error(error, e);
-                        throw e;
+
                     }
 
-
+                    // wird erst im 2ten durchlauf gesetzt damit nach der klammer nicht direkt ein komma kommt
+                    komma = ",";
                 }
-
-                // wird erst im 2ten durchlauf gesetzt damit nach der klammer nicht direkt ein komma kommt
-                komma = ",";
 
             } // ende der iteration \u00FCber alle attribute
 

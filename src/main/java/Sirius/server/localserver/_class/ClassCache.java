@@ -342,7 +342,7 @@ public class ClassCache {
 
                 //Hell
                 String complexEditor;
-
+                boolean extensionAttribute=false;
 
                 id = rs.getInt("id");
                 name = rs.getString("name");
@@ -408,6 +408,13 @@ public class ClassCache {
 
                 array = rs.getBoolean("isarray");
 
+                try{
+                    extensionAttribute=rs.getBoolean("extension_attr");
+                }
+                catch (Exception skip){
+
+                }
+
 
 
 
@@ -423,7 +430,10 @@ public class ClassCache {
                 if (mai.getJavaclassname()!=null && mai.getJavaclassname().equals(org.postgis.PGgeometry.class.getName())){
                     mai.setJavaclassname(com.vividsolutions.jts.geom.Geometry.class.getName());
                 }
-
+                mai.setExtensionAttribute(extensionAttribute);
+                if (mai.isExtensionAttribute()){
+                    mai.setJavaclassname(java.lang.Object.class.getCanonicalName());
+                }
                 //mai.setRenderer(renderer);
 
                 //  int cId =rs.getInt("class_id");

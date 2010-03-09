@@ -1,5 +1,6 @@
 package Sirius.server.middleware.types;
 
+import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.localserver.attribute.AttributeVector;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
@@ -30,8 +31,9 @@ public class MetaClass extends Sirius.server.localserver._class.Class
     private transient Class javaClass = null;
     private static String toStringConverterPrefix = "de.cismet.cids.custom.tostringconverter.";
     private static String toStringConverterPostfix = "ToStringConverter";
-
+    private Boolean hasExtensionAttributes = null;
     //-------------------------------------------------------------------
+
     /**
      * constuructor adding the domain
      * @param c "server" class
@@ -260,5 +262,23 @@ public class MetaClass extends Sirius.server.localserver._class.Class
             getLogger().error("Fehler in getEmptyInstance", e);
             return null;
         }
+    }
+
+    public boolean hasExtensionAttributes() {
+        if (hasExtensionAttributes == null) {
+            Iterator iter = getMemberAttributeInfos().values().iterator();
+            while (iter.hasNext()) {
+                MemberAttributeInfo mai = (MemberAttributeInfo) iter.next();
+                if (mai.isExtensionAttribute()) {
+                    hasExtensionAttributes = true;
+                    break;
+                }
+            }
+            if (hasExtensionAttributes == null) {
+                hasExtensionAttributes = false;
+            }
+        }
+        return hasExtensionAttributes;
+
     }
 }

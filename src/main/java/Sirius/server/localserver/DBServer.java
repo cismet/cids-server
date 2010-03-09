@@ -15,6 +15,7 @@ import Sirius.server.property.*;
 import Sirius.server.middleware.types.*;
 import Sirius.server.newuser.permission.PolicyHolder;
 
+
 public class DBServer implements java.io.Serializable {
 
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
@@ -107,11 +108,12 @@ public class DBServer implements java.io.Serializable {
     }
 
     public MetaClass getClassByTableName(UserGroup ug, String tableName) throws Throwable {
-        Sirius.server.localserver._class.Class c =classes.getClassNyTableName(ug, tableName);
-        if (c!=null)
-            return new MetaClass( c,properties.getServerName());
-        else
-        return null;
+        Sirius.server.localserver._class.Class c = classes.getClassNyTableName(ug, tableName);
+        if (c != null) {
+            return new MetaClass(c, properties.getServerName());
+        } else {
+            return null;
+        }
 
     }
 
@@ -177,14 +179,17 @@ public class DBServer implements java.io.Serializable {
 
 
         //An dieser Stelle wird die Referenz neu gesetzt. Deshalb funzt getParent() der ObjectAttributes nicht richtig
-        //zus�tzlich erzeugt auch die filter Methode eine neue Adresse
+        //zusaetzlich erzeugt auch die filter Methode eine neue Adresse
         Sirius.server.localserver.object.Object o = objects.getObject(oId, cId, ug);
 
         if (o != null) {
 
             MetaObject mo = new DefaultMetaObject(o.filter(ug), properties.getServerName());
-          //  mo.setMetaClass(new MetaClass(classes.getClass(cId), properties.getServerName()));
+            //  mo.setMetaClass(new MetaClass(classes.getClass(cId), properties.getServerName()));
+
             mo.setAllClasses(classes.getClassHashMap());
+
+            
             return mo;
         } else {
             return null;
@@ -288,3 +293,4 @@ public class DBServer implements java.io.Serializable {
         return properties;
     }
 }// end class DBServer
+
