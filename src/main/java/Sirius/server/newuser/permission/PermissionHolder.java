@@ -117,7 +117,7 @@ public final class PermissionHolder implements Serializable {
 
     public boolean hasWritePermission(final UserGroup ug) {
         try {
-            return hasPermission(ug.getKey().toString(), READPERMISSION);
+            return hasPermission(ug.getKey().toString(), WRITEPERMISSION);
         } catch (final Exception e) {
             LOG.error("Error in hasWritePermission (ug = " // NOI18N
                     + ug
