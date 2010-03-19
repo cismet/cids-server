@@ -1,70 +1,67 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * StringResultHandler.java
  *
  * Created on 9. Februar 2004, 13:58
  */
-
 package Sirius.server.sql;
 import java.sql.*;
+
 import java.util.*;
+
 import Sirius.server.search.*;
 
-
 /**
+ * DOCUMENT ME!
  *
- * @author  schlob
+ * @author   schlob
+ * @version  $Revision$, $Date$
  */
 public class StringResultHandler extends DefaultResultHandler {
-    
-    /** Creates a new instance of StringResultHandler */
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new instance of StringResultHandler.
+     */
     public StringResultHandler() {
         super();
     }
-    
-    
-      public Object handle(ResultSet rs, Query q) throws SQLException, Exception
-        {
-   
 
-            Vector handledResult = new Vector(100,100);
+    //~ Methods ----------------------------------------------------------------
 
-             // konstruktorparameter  
+    public Object handle(ResultSet rs, Query q) throws SQLException, Exception {
+        Vector handledResult = new Vector(100, 100);
 
-            int length =rs.getMetaData().getColumnCount();
-             //rs.beforeFirst();
-             
-            if(length == 1)
-            {
-             while(rs.next())
-                {
-                      handledResult.add(rs.getString(1));
+        // konstruktorparameter
 
-                }
-            
+        int length = rs.getMetaData().getColumnCount();
+        // rs.beforeFirst();
+
+        if (length == 1) {
+            while (rs.next()) {
+                handledResult.add(rs.getString(1));
             }
-            else
-            {
+        } else {
+            while (rs.next()) {
+                String[] values = new String[length];
 
-           
-                while(rs.next())
-                {
-                     String[] values = new String[length];
-
-                for(int i =0; i <values.length;i++)
-                    values[i]=rs.getString(i+1);
+                for (int i = 0; i < values.length; i++) {
+                    values[i] = rs.getString(i + 1);
+                }
 
                 handledResult.add(values);
-
-                }
             }
+        }
 
-           handledResult.trimToSize();
-
-
-
+        handledResult.trimToSize();
 
         return handledResult;
-
-        }
-    
+    }
 }

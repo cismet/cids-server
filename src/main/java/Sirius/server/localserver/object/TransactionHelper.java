@@ -1,151 +1,117 @@
-/*
- * TransactionHelper.java
- *
- * Created on 3. Juni 2006, 12:59
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.server.localserver.object;
 
 import Sirius.server.property.ServerProperties;
 import Sirius.server.sql.DBConnection;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Properties;
 
 /**
+ * DOCUMENT ME!
  *
- * @author schlob
+ * @author   schlob
+ * @version  $Revision$, $Date$
  */
-public class TransactionHelper
-{
-    
-       
-    protected Connection con;
-    protected boolean workBegun;
-    
-    /** prohibit usage of standard constructor*/
-    private TransactionHelper(){}
-    
-        /**
-     * Creates a new instance of TransactionHelper
-     */
-    TransactionHelper(DBConnection dbcon,ServerProperties properties) throws Exception
-    {
-        this.con=createMetaJDBCConnection(dbcon,properties);
+public class TransactionHelper {
 
-       
-        workBegun=false;
-    
+    //~ Instance fields --------------------------------------------------------
+
+    private final transient Connection con;
+    private boolean workBegun;
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new instance of TransactionHelper.
+     *
+     * @param  dbcon       DOCUMENT ME!
+     * @param  properties  DOCUMENT ME!
+     */
+    TransactionHelper(final DBConnection dbcon, final ServerProperties properties) {
+        this.con = dbcon.getConnection();
+        workBegun = false;
     }
-    
-    
-    public void setWorkBegun(boolean workBegun)
-    {
-        this.workBegun=workBegun;
+
+    /**
+     * prohibit usage of standard constructor.
+     *
+     * @throws  UnsupportedOperationException  DOCUMENT ME!
+     */
+    private TransactionHelper() {
+        throw new UnsupportedOperationException("don't use this!"); // NOI18N
     }
-    
-    public boolean getWorkBegun()
-    {
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  workBegun  DOCUMENT ME!
+     */
+    public void setWorkBegun(final boolean workBegun) {
+        this.workBegun = workBegun;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean getWorkBegun() {
         return workBegun;
-    
     }
-    
-    public Connection getConnection()
-    {
-            return con;
-    
-    
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Connection getConnection() {
+        return con;
     }
-    
-    
-    
-    void rollback(/*Connection con , Savepoint s*/) throws SQLException
-    {
-        
-        
-        
-        if(workBegun)
-        {con.rollback();
-         // con.releaseSavepoint(s);
-         con.setAutoCommit(true);
-         
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    void rollback() throws SQLException {
+        if (workBegun) {
+            con.rollback();
+            con.setAutoCommit(true);
         }
-        workBegun=false;
-        
-        
-        
+        workBegun = false;
     }
-    
-   void beginWork(/*Connection con */) throws SQLException
-    {
-        if(!workBegun)
-        {
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    void beginWork() throws SQLException {
+        if (!workBegun) {
             con.setAutoCommit(false);
-            
-            con.createStatement().execute("begin");
-            workBegun=true;
+            con.createStatement().execute("begin"); // NOI18N
+            workBegun = true;
         }
-        
-        
     }
-    
-    void commit(/*Connection con*/) throws SQLException
-    {
-        if(workBegun)
-        {
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    void commit() throws SQLException {
+        if (workBegun) {
             con.commit();
             con.setAutoCommit(true);
         }
-        
-        
-    }
-    
-      /**
-     * Erzeugt eine Verbindung zur DB \u00FCber MetaJDBCTreiber.
-     */
-    private Connection createMetaJDBCConnection(Sirius.server.sql.DBConnection dbCon,ServerProperties properties) throws ClassNotFoundException, SQLException
-    {
-        
-//        String metaJDBCURL = "jdbc:cidsDB:system://";
-//        String metaJDBCDriver = "Sirius.metajdbc.driver.CidsDriver";
-//
-//        Properties info = new Properties();
-//
-//        // Sirius.server.sql.DBConnection dbCon = dbServer.getActiveDBConnection();
-//
-//        info.put("jdbc_driver", dbCon.getDriver());
-//        info.put("db_url", dbCon.getURL());
-//        info.put("user", dbCon.getUser());
-//        info.put("password", dbCon.getPassword());
-//
-//        info.put("auto_id", "true");
-//
-//        // ServerProperties properties = dbServer.getProperties();
-//
-//        //
-//        String prop;
-//
-//        if ((prop = properties.getLog4jPropertyFile()) != null) {
-//            info.put("log4j_prop_file", prop);
-//        }
-//
-//        //if((prop = properties.getMetaJDBC_CacheType()) != null) xxxxxxxxxxxxxxx
-//        info.put("cache_type", "none");
-//
-//        if ((prop = properties.getMetaJDBC_schema()) != null) {
-//            info.put("schema", prop);
-//        }
-//
-//        Class.forName(metaJDBCDriver);
-//        return DriverManager.getConnection(metaJDBCURL, info);
-        return dbCon.getConnection();
-        //ACHTUNG
-        //HELL
-        //METAJDBC abgeschaltet
-
     }
 }

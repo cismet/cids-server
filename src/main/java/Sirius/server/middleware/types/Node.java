@@ -1,62 +1,82 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.server.middleware.types;
 
 import Sirius.util.*;
+
 import Sirius.server.newuser.permission.*;
+
 import org.apache.commons.lang.builder.HashCodeBuilder;
 //import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
- *Superclass of all NodeTypes used as RMI return value
- *is not to be instaniated and therfore declared abstract
- *if you want to instantiate an organisatory Node use it's extension PureNode
+ * Superclass of all NodeTypes used as RMI return value is not to be instaniated and therfore declared abstract if you
+ * want to instantiate an organisatory Node use it's extension PureNode.
+ *
+ * @version  $Revision$, $Date$
  */
-public abstract class Node implements java.io.Serializable, Groupable //Comparable
+public abstract class Node implements java.io.Serializable, Groupable // Comparable
 {
 
-    private final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
-    /**
-     * id
-     */
+    //~ Instance fields --------------------------------------------------------
+
+    /** id. */
     protected int id;
-    /**
-     * domain
-     */
+    /** domain. */
     protected String domain;
     /**
-     * indicates wheter this node is a leaf (has no children) by default has children as this will cause the least problems
+     * indicates wheter this node is a leaf (has no children) by default has children as this will cause the least
+     * problems.
      */
     protected boolean leaf = false;
-    /**
-     * name
-     */
+    /** name. */
     protected String name;
-    /**
-     * description
-     */
+    /** description. */
     protected String description;
     protected boolean isValid = true;
-    /**
-     * container for permissions
-     */
-    PermissionHolder permissions;
     protected boolean dynamic;
-    protected String dynamicChildrenStatement;    //indicates whether the dynamicChildrenStatement contains sorting so no further sorting should be performed
+    protected String dynamicChildrenStatement; // indicates whether the dynamicChildrenStatement contains sorting so no
+                                               // further sorting should be performed
     protected boolean sqlSort = false;
     protected int classId = -1;
     protected int iconFactory = -1;
     protected boolean derivePermissionsFromClass = false;
     protected String iconString = null;
+    /** container for permissions. */
+    PermissionHolder permissions;
+
+    private final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
+
+    //~ Constructors -----------------------------------------------------------
 
     /**
-     * constructor
-     * @param id id
-     * @param name name
-     * @param domain domain
-     * @param description description
-     * @param leaf has no children
+     * constructor.
+     *
+     * @param  id                          id
+     * @param  name                        name
+     * @param  domain                      domain
+     * @param  description                 description
+     * @param  leaf                        has no children
+     * @param  policy                      DOCUMENT ME!
+     * @param  iconFactory                 DOCUMENT ME!
+     * @param  icon                        DOCUMENT ME!
+     * @param  derivePermissionsFromClass  DOCUMENT ME!
      */
-    public Node(int id, String name, String domain, String description, boolean leaf, Policy policy, int iconFactory, String icon, boolean derivePermissionsFromClass) {
-
+    public Node(
+            int id,
+            String name,
+            String domain,
+            String description,
+            boolean leaf,
+            Policy policy,
+            int iconFactory,
+            String icon,
+            boolean derivePermissionsFromClass) {
         this.id = id;
         this.domain = domain;
         this.name = name;
@@ -69,75 +89,93 @@ public abstract class Node implements java.io.Serializable, Groupable //Comparab
     }
 //------------------------------------------------------------------------------------------
 
+    //~ Methods ----------------------------------------------------------------
+
     /**
-     * getter for group
-     * @return grouping information
+     * getter for group.
+     *
+     * @return  grouping information
      */
     public String getGroup() {
         return domain;
     }
 
     /**
-     * getter for id
-     * @return id
+     * getter for id.
+     *
+     * @return  id
      */
     public final int getId() {
         return id;
     }
 
     /**
-     * getter for domain
-     * @return domain
+     * getter for domain.
+     *
+     * @return  domain
      */
     public final String getDomain() {
         return domain;
     }
 
     /**
-     * getter for leaf
-     * @return has no child nodes
+     * getter for leaf.
+     *
+     * @return  has no child nodes
      */
     public boolean isLeaf() {
-
         return leaf;
-
     }
 
     /**
-     * getter for name
-     * @return name
+     * getter for name.
+     *
+     * @return  name
      */
     public String getName() {
         return name;
     }
 
     /**
-     * getter for description
-     * @return description
+     * getter for description.
+     *
+     * @return  description
      */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public final boolean isValid() {
         return isValid;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  isValid  DOCUMENT ME!
+     */
     public final void validate(boolean isValid) {
         this.isValid = isValid;
     }
 
     /**
-     * setter for leaf property
-     * @param leaf has no child nodes
+     * setter for leaf property.
+     *
+     * @param  leaf  has no child nodes
      */
     public void setLeaf(boolean leaf) {
         this.leaf = leaf;
     }
 
     /**
-     * retrieve string represntation of this node
-     * @return string representation
+     * retrieve string represntation of this node.
+     *
+     * @return  string representation
      */
     public String toString() {
 //        System.out.println("toString : "+name);
@@ -149,7 +187,8 @@ public abstract class Node implements java.io.Serializable, Groupable //Comparab
 
     /**
      * Getter for property permissions.
-     * @return Value of property permissions.
+     *
+     * @return  Value of property permissions.
      */
     public PermissionHolder getPermissions() {
         return permissions;
@@ -157,7 +196,8 @@ public abstract class Node implements java.io.Serializable, Groupable //Comparab
 
     /**
      * Setter for property permissions.
-     * @param permissions New value of property permissions.
+     *
+     * @param  permissions  New value of property permissions.
      */
     public void setPermissions(PermissionHolder permissions) {
         this.permissions = permissions;
@@ -165,7 +205,8 @@ public abstract class Node implements java.io.Serializable, Groupable //Comparab
 
     /**
      * Setter for property name.
-     * @param name New value of property name.
+     *
+     * @param  name  New value of property name.
      */
     public void setName(String name) {
 //        log.fatal("setName(" + name + ")", new Exception());
@@ -178,13 +219,15 @@ public abstract class Node implements java.io.Serializable, Groupable //Comparab
     }
 
     /**
-     * comparable
-     * @param o other object
-     * @return ordinal relation
+     * comparable.
+     *
+     * @param   o  other object
+     *
+     * @return  ordinal relation
      */
     public int compareTo(Object o) {
-        //return ((Node)o).id-this.id;
-        return this.name.compareTo(((Node) o).name);
+        // return ((Node)o).id-this.id;
+        return this.name.compareTo(((Node)o).name);
     }
 
     public int hashCode() {
@@ -194,77 +237,146 @@ public abstract class Node implements java.io.Serializable, Groupable //Comparab
         hb.append(domain);
 
         return hb.toHashCode();
-
     }
 
     /**
-     * equals
-     * @param o other object
-     * @return whether this equals o
+     * equals.
+     *
+     * @param   other  o other object
+     *
+     * @return  whether this equals o
      */
     public boolean equals(Object other) {
-
         if (!(other instanceof Node)) {
             return false;
         }
-        Node o = (Node) other;
+        Node o = (Node)other;
 
-        return id == o.id && domain.equals(o.domain);
-
+        return (id == o.id) && domain.equals(o.domain);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public boolean isDynamic() {
         return dynamic;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  dynamic  DOCUMENT ME!
+     */
     public void setDynamic(boolean dynamic) {
         this.dynamic = dynamic;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public String getDynamicChildrenStatement() {
         return dynamicChildrenStatement;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  dynamicChildrenStatement  DOCUMENT ME!
+     */
     public void setDynamicChildrenStatement(String dynamicChildrenStatement) {
         this.dynamicChildrenStatement = dynamicChildrenStatement;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public boolean isSqlSort() {
         return sqlSort;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  sqlSort  DOCUMENT ME!
+     */
     public void setSqlSort(boolean sqlSort) {
         this.sqlSort = sqlSort;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public int getClassId() {
         return classId;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  classId  DOCUMENT ME!
+     */
     public void setClassId(int classId) {
         this.classId = classId;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public boolean isDerivePermissionsFromClass() {
         return derivePermissionsFromClass;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  derivePermissionsFromClass  DOCUMENT ME!
+     */
     public void setDerivePermissionsFromClass(boolean derivePermissionsFromClass) {
         this.derivePermissionsFromClass = derivePermissionsFromClass;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public int getIconFactory() {
         return iconFactory;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  iconFactory  DOCUMENT ME!
+     */
     public void setIconFactory(int iconFactory) {
         this.iconFactory = iconFactory;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public String getIconString() {
         return iconString;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  iconString  DOCUMENT ME!
+     */
     public void setIconString(String iconString) {
         this.iconString = iconString;
     }

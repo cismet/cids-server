@@ -1,54 +1,86 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.server.middleware.types;
 
-
-
 import Sirius.server.newuser.permission.*;
+
 import Sirius.util.*;
 
-public class Link implements java.io.Serializable,Groupable
-{
+/**
+ * DOCUMENT ME!
+ *
+ * @version  $Revision$, $Date$
+ */
+public class Link implements java.io.Serializable, Groupable {
+
+    //~ Instance fields --------------------------------------------------------
+
     // protected int id;
     protected int nodeId;
     protected boolean remote;
     protected String domain;
-    
-    public Link(int nodeId, String domain)
-    {
-        this.nodeId=nodeId;
-        this.domain=domain;
-        
-        
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new Link object.
+     *
+     * @param  nodeId  DOCUMENT ME!
+     * @param  domain  DOCUMENT ME!
+     */
+    public Link(int nodeId, String domain) {
+        this.nodeId = nodeId;
+        this.domain = domain;
     }
-    
-    
-    
-    public String getGroup()
-    {return domain;}
-    
-    public String getDomain()
-    {return domain;}
-    
-    
-    public int getNodeId()
-    {return nodeId;}
-    
-    public int getId()
-    {return getNodeId();}
-    
-    public boolean isRemote()
-    {
+
+    //~ Methods ----------------------------------------------------------------
+
+    public String getGroup() {
+        return domain;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getDomain() {
+        return domain;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public int getNodeId() {
+        return nodeId;
+    }
+
+    public int getId() {
+        return getNodeId();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean isRemote() {
         return remote;
     }
-    
-    public void setRemote(boolean remote)
-    {
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  remote  DOCUMENT ME!
+     */
+    public void setRemote(boolean remote) {
         this.remote = remote;
     }
-    
-    
-    
-    
-    
-    
-    
 }

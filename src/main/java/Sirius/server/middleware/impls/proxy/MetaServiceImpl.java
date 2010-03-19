@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * MetaServiceImpl.java
  *
@@ -6,6 +13,7 @@
 package Sirius.server.middleware.impls.proxy;
 
 import java.rmi.*;
+
 import Sirius.server.newuser.*;
 import Sirius.server.*;
 import Sirius.server.naming.NameServer;
@@ -19,55 +27,121 @@ import Sirius.server.middleware.types.MetaObject;
 //import Sirius.middleware.interfaces.domainserver.*;
 import Sirius.server.newuser.permission.Policy;
 import Sirius.server.search.*;
+
 import Sirius.util.NodeComparator;
 
 /**
+ * DOCUMENT ME!
  *
- * @author  awindholz
+ * @author   awindholz
+ * @version  $Revision$, $Date$
  */
 public class MetaServiceImpl {
 
-    private transient final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
+    //~ Instance fields --------------------------------------------------------
+
+    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
     private java.util.Hashtable activeLocalServers;
     private NameServer nameServer;
     private Server[] localServers;
     // resolves Query tree
     private QueryExecuter qex;
 
-    /** Creates a new instance of MetaServiceImpl */
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new instance of MetaServiceImpl.
+     *
+     * @param   activeLocalServers  DOCUMENT ME!
+     * @param   nameServer          DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public MetaServiceImpl(
             java.util.Hashtable activeLocalServers,
             NameServer nameServer /*,
-            Sirius.Server.Server[] localServers*/) throws RemoteException {
+                                   *Sirius.Server.Server[] localServers*/) throws RemoteException {
         this.activeLocalServers = activeLocalServers;
         this.nameServer = nameServer;
-        //        this.localServers = localServers;
+        // this.localServers = localServers;
         this.localServers = nameServer.getServers(ServerType.LOCALSERVER);
         qex = new QueryExecuter(activeLocalServers);
     }
 
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user     DOCUMENT ME!
+     * @param   classID  DOCUMENT ME!
+     * @param   domain   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public MetaClass getClass(User user, int classID, String domain) throws RemoteException {
         if (logger != null) {
-            logger.debug("getClass ::" + classID + " user::" + user + " domain::" + domain);
+            if (logger.isDebugEnabled()) {
+                logger.debug("getClass ::" + classID + " user::" + user + " domain::" + domain);
+            }
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(domain)).getClass(user, classID);
+        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain)).getClass(
+                user,
+                classID);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user       DOCUMENT ME!
+     * @param   tableName  DOCUMENT ME!
+     * @param   domain     DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public MetaClass getClassByTableName(User user, String tableName, String domain) throws RemoteException {
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(domain)).getClassByTableName(user, tableName);
+        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain))
+                    .getClassByTableName(user, tableName);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user    DOCUMENT ME!
+     * @param   domain  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public MetaClass[] getClasses(User user, String domain) throws RemoteException {
         if (logger != null) {
-            logger.debug("getClasses for User : " + user);
+            if (logger.isDebugEnabled()) {
+                logger.debug("getClasses for User : " + user);
+            }
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(domain)).getClasses(user);
-
+        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain))
+                    .getClasses(user);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public Node[] getClassTreeNodes(User user) throws RemoteException {
         if (logger != null) {
-            logger.debug("<CS> getClassTreeNodes for user" + user);
+            if (logger.isDebugEnabled()) {
+                logger.debug("<CS> getClassTreeNodes for user" + user);
+            }
         }
 
         java.util.Vector ctns = new java.util.Vector(10, 10);
@@ -77,16 +151,22 @@ public class MetaServiceImpl {
         int size = 0;
         try {
             if (logger != null) {
-                logger.debug("<CS> iter: " + iter);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("<CS> iter: " + iter);
+                }
             }
 
             while (iter.hasNext()) {
                 try {
-                    NodeReferenceList children = (NodeReferenceList) ((Sirius.server.middleware.interfaces.domainserver.MetaService) iter.next()).getClassTreeNodes(user);
+                    NodeReferenceList children = (NodeReferenceList)
+                        ((Sirius.server.middleware.interfaces.domainserver.MetaService)iter.next()).getClassTreeNodes(
+                            user);
 
-                    if (children != null && children.getLocalNodes() != null) {
+                    if ((children != null) && (children.getLocalNodes() != null)) {
                         Node[] tmp = children.getLocalNodes();
-                        logger.debug("<CS> found valid localserver delivers topnodes ::" + tmp.length);
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("<CS> found valid localserver delivers topnodes ::" + tmp.length);
+                        }
                         size += tmp.length;
                         ctns.addElement(tmp);
                     }
@@ -97,7 +177,7 @@ public class MetaServiceImpl {
             classNodes = new Node[size];
 
             for (int i = 0; i < ctns.size(); i++) {
-                Node[] tmp = (Node[]) ctns.get(i);
+                Node[] tmp = (Node[])ctns.get(i);
 
                 for (int j = 0; j < tmp.length; j++) {
                     --size;
@@ -107,7 +187,6 @@ public class MetaServiceImpl {
         } catch (Exception e) {
             if (logger != null) {
                 logger.error("<CS> getTopNodes(user):", e);
-
             }
             throw new RemoteException("<CS> getTopNodes(user)", e);
         }
@@ -116,16 +195,38 @@ public class MetaServiceImpl {
         return classNodes;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user             DOCUMENT ME!
+     * @param   localServerName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public Node[] getClassTreeNodes(User user, String localServerName) throws RemoteException {
         if (logger != null) {
-            logger.debug("<CS> getClassTreeNode for user" + user);
+            if (logger.isDebugEnabled()) {
+                logger.debug("<CS> getClassTreeNode for user" + user);
+            }
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(localServerName)).getClassTreeNodes(user).getLocalNodes();
+        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(localServerName))
+                    .getClassTreeNodes(user).getLocalNodes();
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public String[] getDomains() throws RemoteException {
         if (logger != null) {
-            logger.debug("<CS> getDomains gerufen ");
+            if (logger.isDebugEnabled()) {
+                logger.debug("<CS> getDomains gerufen ");
+            }
         }
         Server[] ls = nameServer.getServers(ServerType.LOCALSERVER);
 
@@ -140,22 +241,44 @@ public class MetaServiceImpl {
         return lsnames;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr     DOCUMENT ME!
+     * @param   nodeID  DOCUMENT ME!
+     * @param   lsName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public Node getMetaObjectNode(User usr, int nodeID, String lsName) throws RemoteException {
         // usr wird nicht beachtet fuer spaetere anpassungen
 
         if (logger != null) {
-            logger.debug("<CS> getMetaObjectNode for user" + usr + "node ::" + nodeID + " domain" + lsName);
+            if (logger.isDebugEnabled()) {
+                logger.debug("<CS> getMetaObjectNode for user" + usr + "node ::" + nodeID + " domain" + lsName);
+            }
         }
         java.lang.Object name = activeLocalServers.get(lsName);
         Node n = null;
-        int ids[] = new int[1];
+        int[] ids = new int[1];
         ids[0] = nodeID;
 
         if (name != null) {
-            n = ((Sirius.server.middleware.interfaces.domainserver.CatalogueService) name).getNodes(usr, ids)[0];
-
+            n = ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)name).getNodes(usr, ids)[0];
         } else {
-            Node error = new MetaNode(ids[0], lsName, lsName + " not available!", lsName + " not available!", true, Policy.createWIKIPolicy(), -1, null, false, -1);
+            Node error = new MetaNode(
+                    ids[0],
+                    lsName,
+                    lsName + " not available!",
+                    lsName + " not available!",
+                    true,
+                    Policy.createWIKIPolicy(),
+                    -1,
+                    null,
+                    false,
+                    -1);
             error.validate(false);
             n = error;
         }
@@ -163,138 +286,386 @@ public class MetaServiceImpl {
         return n;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr    DOCUMENT ME!
+     * @param   query  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public Node[] getMetaObjectNode(User usr, String query) throws RemoteException {
         if (logger != null) {
-            logger.debug("<CS> getMetaObjectNode for user" + usr + "queryString ::" + query);
+            if (logger.isDebugEnabled()) {
+                logger.debug("<CS> getMetaObjectNode for user" + usr + "queryString ::" + query);
+            }
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(usr.getDomain())).getMetaObjectNode(usr, query);
+        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(usr.getDomain()))
+                    .getMetaObjectNode(usr, query);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr    DOCUMENT ME!
+     * @param   query  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public Node[] getMetaObjectNode(User usr, Query query) throws RemoteException {
         if (logger != null) {
-            logger.debug("<CS> getMetaObjectNode for user" + usr + "query ::" + query);
+            if (logger.isDebugEnabled()) {
+                logger.debug("<CS> getMetaObjectNode for user" + usr + "query ::" + query);
+            }
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(usr.getDomain())).getMetaObjectNode(usr, query);
-
+        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(usr.getDomain()))
+                    .getMetaObjectNode(usr, query);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr    DOCUMENT ME!
+     * @param   query  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public MetaObject[] getMetaObject(User usr, String query) throws RemoteException {
         if (logger != null) {
-            logger.debug("<CS> getMetaObject for user" + usr + "queryString ::" + query);
+            if (logger.isDebugEnabled()) {
+                logger.debug("<CS> getMetaObject for user" + usr + "queryString ::" + query);
+            }
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(usr.getDomain())).getMetaObject(usr, query);
+        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(usr.getDomain()))
+                    .getMetaObject(usr, query);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr    DOCUMENT ME!
+     * @param   query  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public MetaObject[] getMetaObject(User usr, Query query) throws RemoteException {
         if (logger != null) {
-            logger.debug("<CS> getMetaObject for user" + usr + "query ::" + query);
+            if (logger.isDebugEnabled()) {
+                logger.debug("<CS> getMetaObject for user" + usr + "query ::" + query);
+            }
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(usr.getDomain())).getMetaObject(usr, query);
-
+        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(usr.getDomain()))
+                    .getMetaObject(usr, query);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr       DOCUMENT ME!
+     * @param   objectID  DOCUMENT ME!
+     * @param   classID   DOCUMENT ME!
+     * @param   domain    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public MetaObject getMetaObject(User usr, int objectID, int classID, String domain) throws RemoteException {
         if (logger != null) {
-            logger.debug("<CS> getMetaObject for user" + usr + "objectID ::" + objectID + " classID" + classID + " domain::" + domain);
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                    "<CS> getMetaObject for user" + usr + "objectID ::" + objectID + " classID" + classID + " domain::"
+                    + domain);
+            }
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(domain)).getMetaObject(usr, objectID, classID);
+        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain))
+                    .getMetaObject(usr, objectID, classID);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user        DOCUMENT ME!
+     * @param   metaObject  DOCUMENT ME!
+     * @param   domain      DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public MetaObject insertMetaObject(User user, MetaObject metaObject, String domain) throws RemoteException {
         if (logger != null) {
             if (logger != null) {
-                logger.debug("<CS>insertMetaObject  for user" + user + "metaObject ::" + metaObject + " domain::" + domain);
+                if (logger.isDebugEnabled()) {
+                    logger.debug(
+                        "<CS>insertMetaObject  for user" + user + "metaObject ::" + metaObject + " domain::" + domain);
+                }
             }
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(domain)).insertMetaObject(user, metaObject);
+        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain))
+                    .insertMetaObject(user, metaObject);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user    DOCUMENT ME!
+     * @param   query   DOCUMENT ME!
+     * @param   domain  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public int insertMetaObject(User user, Query query, String domain) throws RemoteException {
         if (logger != null) {
-            logger.debug("<CS>insertMetaObject  for user" + user + "query ::" + query + " domain::" + domain);
+            if (logger.isDebugEnabled()) {
+                logger.debug("<CS>insertMetaObject  for user" + user + "query ::" + query + " domain::" + domain);
+            }
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(domain)).insertMetaObject(user, query);
+        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain))
+                    .insertMetaObject(user, query);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user        DOCUMENT ME!
+     * @param   metaObject  DOCUMENT ME!
+     * @param   domain      DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public int deleteMetaObject(User user, MetaObject metaObject, String domain) throws RemoteException {
         if (logger != null) {
-            logger.debug("<CS>delete MetaObject  for user" + user + "metaObject ::" + metaObject + " domain::" + domain);
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                    "<CS>delete MetaObject  for user" + user + "metaObject ::" + metaObject + " domain::" + domain);
+            }
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(domain)).deleteMetaObject(user, metaObject);
+        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain))
+                    .deleteMetaObject(user, metaObject);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user        DOCUMENT ME!
+     * @param   metaObject  DOCUMENT ME!
+     * @param   domain      DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public int updateMetaObject(User user, MetaObject metaObject, String domain) throws RemoteException {
         if (logger != null) {
-            logger.debug("<CS>updateMetaObject  for user" + user + "metaObject ::" + metaObject + " domain::" + domain);
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                    "<CS>updateMetaObject  for user" + user + "metaObject ::" + metaObject + " domain::" + domain);
+            }
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(domain)).updateMetaObject(user, metaObject);
+        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain))
+                    .updateMetaObject(user, metaObject);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user     DOCUMENT ME!
+     * @param   metaSQL  DOCUMENT ME!
+     * @param   domain   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public int update(User user, String metaSQL, String domain) throws RemoteException {
         if (logger != null) {
-            logger.debug("<CS>update  for user" + user + "metaSQL ::" + metaSQL + " domain::" + domain);
+            if (logger.isDebugEnabled()) {
+                logger.debug("<CS>update  for user" + user + "metaSQL ::" + metaSQL + " domain::" + domain);
+            }
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(domain)).update(user, metaSQL);
+        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain)).update(
+                user,
+                metaSQL);
     }
-
-    // creates an Instance of a MetaObject with all attribute values set to default
+    /**
+     * creates an Instance of a MetaObject with all attribute values set to default.
+     *
+     * @param   user  DOCUMENT ME!
+     * @param   c     DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public MetaObject getInstance(User user, MetaClass c) throws RemoteException {
         if (logger != null) {
-            logger.debug("<CS>getInstance  for user" + user + "metaClass ::" + c);
+            if (logger.isDebugEnabled()) {
+                logger.debug("<CS>getInstance  for user" + user + "metaClass ::" + c);
+            }
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(c.getDomain())).getInstance(user, c);
-
+        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(c.getDomain()))
+                    .getInstance(user, c);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public MethodMap getMethods(User user) throws RemoteException {
         if (logger != null) {
-            logger.debug("<CS>getMethods for user" + user);
+            if (logger.isDebugEnabled()) {
+                logger.debug("<CS>getMethods for user" + user);
+            }
         }
 
         MethodMap result = new MethodMap();
         for (int i = 0; i < localServers.length; i++) {
-            Sirius.server.middleware.interfaces.domainserver.MetaService s = (Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(localServers[i].getName().trim());
+            Sirius.server.middleware.interfaces.domainserver.MetaService s =
+                (Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(
+                    localServers[i].getName().trim());
             result.putAll(s.getMethods(user));
         }
 
         return result;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user    DOCUMENT ME!
+     * @param   lsName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public MethodMap getMethods(User user, String lsName) throws RemoteException {
         if (logger != null) {
-            logger.debug("<CS>getMethods for user" + user + " domain::" + lsName);
+            if (logger.isDebugEnabled()) {
+                logger.debug("<CS>getMethods for user" + user + " domain::" + lsName);
+            }
         }
-        Sirius.server.middleware.interfaces.domainserver.MetaService s = (Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(lsName.trim());
+        Sirius.server.middleware.interfaces.domainserver.MetaService s =
+            (Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(lsName.trim());
         return s.getMethods(user);
     }
-
-    //---!!!
-    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(int classId, User user, String[] representationFields, String representationPattern) throws RemoteException {
-        Sirius.server.middleware.interfaces.domainserver.MetaService s = (Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(user.getDomain());
+    /**
+     * ---!!!
+     *
+     * @param   classId                DOCUMENT ME!
+     * @param   user                   DOCUMENT ME!
+     * @param   representationFields   DOCUMENT ME!
+     * @param   representationPattern  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(
+            int classId,
+            User user,
+            String[] representationFields,
+            String representationPattern) throws RemoteException {
+        Sirius.server.middleware.interfaces.domainserver.MetaService s =
+            (Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(user.getDomain());
         return s.getAllLightweightMetaObjectsForClass(classId, user, representationFields, representationPattern);
     }
 
-    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(int classId, User user, String[] representationFields) throws RemoteException {
-        Sirius.server.middleware.interfaces.domainserver.MetaService s = (Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(user.getDomain());
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   classId               DOCUMENT ME!
+     * @param   user                  DOCUMENT ME!
+     * @param   representationFields  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(
+            int classId,
+            User user,
+            String[] representationFields) throws RemoteException {
+        Sirius.server.middleware.interfaces.domainserver.MetaService s =
+            (Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(user.getDomain());
         return s.getAllLightweightMetaObjectsForClass(classId, user, representationFields);
     }
 
-    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(int classId, User user, String query, String[] representationFields, String representationPattern) throws RemoteException {
-        Sirius.server.middleware.interfaces.domainserver.MetaService s = (Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(user.getDomain());
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   classId                DOCUMENT ME!
+     * @param   user                   DOCUMENT ME!
+     * @param   query                  DOCUMENT ME!
+     * @param   representationFields   DOCUMENT ME!
+     * @param   representationPattern  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(
+            int classId,
+            User user,
+            String query,
+            String[] representationFields,
+            String representationPattern) throws RemoteException {
+        Sirius.server.middleware.interfaces.domainserver.MetaService s =
+            (Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(user.getDomain());
         return s.getLightweightMetaObjectsByQuery(classId, user, query, representationFields, representationPattern);
     }
 
-    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(int classId, User user, String query, String[] representationFields) throws RemoteException {
-        Sirius.server.middleware.interfaces.domainserver.MetaService s = (Sirius.server.middleware.interfaces.domainserver.MetaService) activeLocalServers.get(user.getDomain());
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   classId               DOCUMENT ME!
+     * @param   user                  DOCUMENT ME!
+     * @param   query                 DOCUMENT ME!
+     * @param   representationFields  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(
+            int classId,
+            User user,
+            String query,
+            String[] representationFields) throws RemoteException {
+        Sirius.server.middleware.interfaces.domainserver.MetaService s =
+            (Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(user.getDomain());
         return s.getLightweightMetaObjectsByQuery(classId, user, query, representationFields);
     }
-
-    // private Fkt-en
+    /**
+     * private Fkt-en.
+     *
+     * @param  ls  DOCUMENT ME!
+     */
     private void validateLocalServers(Server[] ls) {
         // aktualliseren der lokalserver wann immer ein Client anfragt
 
         if (logger != null) {
-            logger.debug("<CS>private function validateLocalServer gerufen");
+            if (logger.isDebugEnabled()) {
+                logger.debug("<CS>private function validateLocalServer gerufen");
+            }
         }
         localServers = ls;
 

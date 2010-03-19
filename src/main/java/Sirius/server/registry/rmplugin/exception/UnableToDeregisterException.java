@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * UnableToDeregister.java
  *
@@ -6,22 +13,31 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-
 package Sirius.server.registry.rmplugin.exception;
 
 /**
+ * DOCUMENT ME!
  *
- * @author Sebastian
+ * @author   Sebastian
+ * @version  $Revision$, $Date$
  */
 public class UnableToDeregisterException extends Exception {
-    
-    /** Creates a new instance of UnableToDeregister */
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new instance of UnableToDeregister.
+     */
     public UnableToDeregisterException() {
-    super();
+        super();
     }
-    
+
+    /**
+     * Creates a new UnableToDeregisterException object.
+     *
+     * @param  message  DOCUMENT ME!
+     */
     public UnableToDeregisterException(String message) {
-    super(message);
+        super(message);
     }
-    
 }

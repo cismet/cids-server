@@ -1,46 +1,70 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.server.localserver.attribute;
 
 import Sirius.server.newuser.permission.Policy;
 
+/**
+ * DOCUMENT ME!
+ *
+ * @version  $Revision$, $Date$
+ */
+public class ClassAttribute extends Attribute implements java.io.Serializable {
 
-public class ClassAttribute extends Attribute implements java.io.Serializable
-{
+    //~ Static fields/initializers ---------------------------------------------
+
 /////////////////members//////////////////////////////////////////
 
-protected int classID;
+    protected int classID;
 
-protected int typeID;
+    protected int typeID;
 
 //protected String fieldName;
 
 //protected int foreignKeyClassID;
 
+    //~ Constructors -----------------------------------------------------------
 
- 
-
-///////////////constructor///////////////////////////////////////
-
-public ClassAttribute(String id,  int classID, String name, int typeID,Policy policy)
-{
-        super(id,name,"",policy);
+    /**
+     * /////////////constructor///////////////////////////////////////
+     *
+     * @param  id       DOCUMENT ME!
+     * @param  classID  DOCUMENT ME!
+     * @param  name     DOCUMENT ME!
+     * @param  typeID   DOCUMENT ME!
+     * @param  policy   DOCUMENT ME!
+     */
+    public ClassAttribute(String id, int classID, String name, int typeID, Policy policy) {
+        super(id, name, "", policy);
         this.classID = classID;
-        super.visible =true;
-        this.typeID=typeID;
-}
+        super.visible = true;
+        this.typeID = typeID;
+    }
 
+    //~ Methods ----------------------------------------------------------------
 
+    /**
+     * ///////////////////////methods///////////////////////////////////
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final int getClassID() {
+        return classID;
+    }
 
-/////////////////////////methods///////////////////////////////////
-
-public final int getClassID(){return classID;}
-
-/** Getter for property fieldName.
- * @return Value of property fieldName.
- *
- */
-//public final java.lang.String getFieldName() {
-//    return fieldName;
-//}
+    /**
+     * Getter for property fieldName.
+     *
+     * @return  Value of property fieldName.
+     */
+// public final java.lang.String getFieldName() {
+// return fieldName;
+// }
 //
 ///** Setter for property fieldName.
 // * @param fieldName New value of property fieldName.
@@ -66,20 +90,21 @@ public final int getClassID(){return classID;}
 //    this.foreignKeyClassID = foreignKeyClassID;
 //}
 
-/** Getter for property typeID.
- * @return Value of property typeID.
- *
- */
-public final int getTypeID() {
-    return typeID;
-}
+    /**
+     * Getter for property typeID.
+     *
+     * @return  Value of property typeID.
+     */
+    public final int getTypeID() {
+        return typeID;
+    }
 
-/** Setter for property typeID.
- * @param typeID New value of property typeID.
- *
- */
-public final void setTypeID(int typeID) {
-    this.typeID = typeID;
-}
-
+    /**
+     * Setter for property typeID.
+     *
+     * @param  typeID  New value of property typeID.
+     */
+    public final void setTypeID(int typeID) {
+        this.typeID = typeID;
+    }
 }

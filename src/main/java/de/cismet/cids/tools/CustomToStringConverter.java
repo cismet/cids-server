@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * CustomToStringConverter.java
  *
@@ -10,31 +17,50 @@ package de.cismet.cids.tools;
 
 import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.middleware.types.MetaObject;
+
 import de.cismet.cids.annotations.CidsAttribute;
+
 import de.cismet.cids.dynamics.CidsBean;
+
 import de.cismet.cids.tools.tostring.*;
+
 import java.lang.reflect.Field;
+
 import java.util.Vector;
 
 /**
+ * DOCUMENT ME!
  *
- * @author hell
+ * @author   hell
+ * @version  $Revision$, $Date$
  */
 public abstract class CustomToStringConverter extends ToStringConverter implements java.io.Serializable {
 
-    private transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
+    //~ Instance fields --------------------------------------------------------
+
     protected CidsBean cidsBean = null;
 
+    private transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public abstract String createString();
 
     public String convert(de.cismet.cids.tools.tostring.StringConvertable o) {
         if (o instanceof MetaObject) {
-            cidsBean = ((MetaObject) o).getBean();
+            cidsBean = ((MetaObject)o).getBean();
         }
         if (log == null) {
             log = org.apache.log4j.Logger.getLogger(this.getClass());
         }
-        log.debug("convert in CustomToStringConverter ");
+        if (log.isDebugEnabled()) {
+            log.debug("convert in CustomToStringConverter ");
+        }
         String stringRepresentation = "";
         Class customToString = this.getClass();
         Field[] fields = customToString.getDeclaredFields();
@@ -45,15 +71,15 @@ public abstract class CustomToStringConverter extends ToStringConverter implemen
                     String attributeName = ca.value();
                     Object value = null;
                     if (o instanceof MetaObject) {
-                        MetaObject mo = (MetaObject) o;
+                        MetaObject mo = (MetaObject)o;
                         value = StaticCidsUtilities.getValueOfAttributeByString(attributeName, mo);
                     } else {
-                        Attribute attr = (Attribute) o;
+                        Attribute attr = (Attribute)o;
                         value = StaticCidsUtilities.getValueOfAttributeByString(attributeName, attr);
                         Vector v = new Vector();
 //                        v.add("LALA");
 //                        v.add("S");
-//                        
+//
 //                        value=v;
                     }
                     f.set(this, value);
@@ -68,7 +94,6 @@ public abstract class CustomToStringConverter extends ToStringConverter implemen
             log.warn("Error in a ToStringConverter", e);
             stringRepresentation = null;
         }
-
 
         return stringRepresentation;
     }

@@ -1,383 +1,479 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.server.localserver.attribute;
 
 import Sirius.server.newuser.permission.*;
+
 import Sirius.util.*;
+
 import Sirius.server.middleware.types.*;
+
 import de.cismet.cids.tools.tostring.StringConvertable;
 import de.cismet.cids.tools.tostring.ToStringConverter;
 
-public abstract class Attribute implements Mapable, java.io.Serializable,StringConvertable
-{
-    private transient final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
-    /////////////////members////////////////////////////////
-    
-    //warum string?? totaler unsinn bei Gelgenheit nochmal int (vorher checken was mit class_attribs ist)
+/**
+ * DOCUMENT ME!
+ *
+ * @version  $Revision$, $Date$
+ */
+public abstract class Attribute implements Mapable, java.io.Serializable, StringConvertable {
+
+    //~ Instance fields --------------------------------------------------------
+
+    // warum string?? totaler unsinn bei Gelgenheit nochmal int (vorher checken was mit class_attribs ist)
     // id des Attributs (des Datensatzes in cs_attr)
-    protected String id; //Hell: String wird glaube ich bei den Arrays benoetigt: id+"."+counter
-    
+    protected String id; // Hell: String wird glaube ich bei den Arrays benoetigt: id+"."+counter
+
     protected String name;
-    
+
     protected String description;
-    
-    protected  boolean visible;
-    
+
+    protected boolean visible;
+
     protected PermissionHolder permissions;
-    
+
     // attribute is foreign key
-    protected boolean referencesObject=false;
-    
+    protected boolean referencesObject = false;
+
     protected boolean substitute;
-    
-    /** This attributes value*/
+
+    /** This attributes value. */
     protected java.lang.Object value;
-    
-    /** The Classkey of the value if the value is a metaobject*/
+
+    /** The Classkey of the value if the value is a metaobject. */
     protected String classKey = null;
-    
+
     // sql type
     protected int typeId;
-    
+
     protected boolean changed;
-    
-    protected boolean isPrimaryKey=false;
-    
+
+    protected boolean isPrimaryKey = false;
+
     protected String javaType;
-    
-    protected boolean isArray=false;
-    
+
+    protected boolean isArray = false;
+
     protected transient ToStringConverter toStringConverter;
-    
-    //protected String defaultValue="";
-    
-    protected boolean optional=false;
-    
-   
-    
-    
-    ////////////////constructors/////////////////////////////
-    
-    public Attribute(String id,  String name, String description,Policy policy)
-    {
-        this.id = id;
-        
-        this.name = name;
-        this.description = description;
-        this.permissions = new PermissionHolder(policy);
-        this.visible = true;
-        this.referencesObject=false;
-    }
-    
-    public Attribute(String id,String name, String description, PermissionHolder permissions)
-    {
-        this(id,name,description,(Policy)null);
-        this.permissions = permissions;
-    }
-    
-    public Attribute(String id,String name, String description,boolean visible,Policy policy)
-    {
-        this(id,name,description,policy);
-        this.visible = visible;
-    }
-    
-    
-    public Attribute(String id, String name, String description, PermissionHolder permissions,boolean visible)
-    {
-        this(id,name,description,permissions);
-        this.visible = visible;
-    }
-    
-    
-    public Attribute(Attribute a)
-    {
-        
+
+    // protected String defaultValue="";
+
+    protected boolean optional = false;
+    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
+    /////////////////members////////////////////////////////
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new Attribute object.
+     *
+     * @param  a  DOCUMENT ME!
+     */
+    public Attribute(Attribute a) {
         this.id = a.id;
         this.name = new String(a.name).trim();
         this.description = description;
         this.permissions = a.getPermissions();
         this.visible = a.visible;
-        this.referencesObject=a.referencesObject;
-        
-        
-        
+        this.referencesObject = a.referencesObject;
     }
-    
-    
-    
-    
-    ////////////////methods//////////////////////////////////////////
-    
-    final public String getID()
-    {return id;}
-    
+
+    /**
+     * //////////////constructors/////////////////////////////
+     *
+     * @param  id           DOCUMENT ME!
+     * @param  name         DOCUMENT ME!
+     * @param  description  DOCUMENT ME!
+     * @param  policy       DOCUMENT ME!
+     */
+    public Attribute(String id, String name, String description, Policy policy) {
+        this.id = id;
+
+        this.name = name;
+        this.description = description;
+        this.permissions = new PermissionHolder(policy);
+        this.visible = true;
+        this.referencesObject = false;
+    }
+
+    /**
+     * Creates a new Attribute object.
+     *
+     * @param  id           DOCUMENT ME!
+     * @param  name         DOCUMENT ME!
+     * @param  description  DOCUMENT ME!
+     * @param  permissions  DOCUMENT ME!
+     */
+    public Attribute(String id, String name, String description, PermissionHolder permissions) {
+        this(id, name, description, (Policy)null);
+        this.permissions = permissions;
+    }
+
+    /**
+     * Creates a new Attribute object.
+     *
+     * @param  id           DOCUMENT ME!
+     * @param  name         DOCUMENT ME!
+     * @param  description  DOCUMENT ME!
+     * @param  visible      DOCUMENT ME!
+     * @param  policy       DOCUMENT ME!
+     */
+    public Attribute(String id, String name, String description, boolean visible, Policy policy) {
+        this(id, name, description, policy);
+        this.visible = visible;
+    }
+
+    /**
+     * Creates a new Attribute object.
+     *
+     * @param  id           DOCUMENT ME!
+     * @param  name         DOCUMENT ME!
+     * @param  description  DOCUMENT ME!
+     * @param  permissions  DOCUMENT ME!
+     * @param  visible      DOCUMENT ME!
+     */
+    public Attribute(String id, String name, String description, PermissionHolder permissions, boolean visible) {
+        this(id, name, description, permissions);
+        this.visible = visible;
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * //////////////methods//////////////////////////////////////////
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getID() {
+        return id;
+    }
+
     // Mapable schl\u00FCssel \u00E4ndern xxx
-    public Object getKey()
-    {return id+"";}
-    
-    final public java.lang.Object getValue()
-    {return value;}
-    
-    final public String getName()
-    {return name;}
-    
-    final public String  getDescription()
-    {return description;}
-    
-    final public boolean isVisible()
-    {return visible;}
-    
-    
-    final public PermissionHolder getPermissions()
-    {return permissions;}
-    
-    final public boolean referencesObject()
-    {return referencesObject;}
-    
-    final public void setReferencesObject(boolean b)
-    {referencesObject=b;}
-    
-    final public void setPermissions(PermissionHolder permissions)
-    {this.permissions = permissions;}
-    
-    
+    public Object getKey() {
+        return id + "";
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final java.lang.Object getValue() {
+        return value;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getName() {
+        return name;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getDescription() {
+        return description;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final boolean isVisible() {
+        return visible;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final PermissionHolder getPermissions() {
+        return permissions;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final boolean referencesObject() {
+        return referencesObject;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  b  DOCUMENT ME!
+     */
+    public final void setReferencesObject(boolean b) {
+        referencesObject = b;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  permissions  DOCUMENT ME!
+     */
+    public final void setPermissions(PermissionHolder permissions) {
+        this.permissions = permissions;
+    }
+
 //    final public void addPermission(Mapable userGroup)
 //    {
 //        permissions.addPermission(userGroup);
 //    }
 //
-    
-    
-    /** Setter for property value.
-     * @param value New value of property value.
+
+    /**
+     * Setter for property value.
      *
+     * @param  value  New value of property value.
      */
-    public void setValue(java.lang.Object value)
-    {
+    public void setValue(java.lang.Object value) {
         this.value = value;
     }
-    
-    public Object constructKey(Mapable m)
-    {
-        if(m instanceof Attribute)
+
+    public Object constructKey(Mapable m) {
+        if (m instanceof Attribute) {
             return m.getKey();
-        else
+        } else {
             return null;
+        }
     }
-    
-    
-    public String toString()
-    {
-        if( value!=null )
-        {
-            if(toStringConverter!=null)
-                
-            {
+
+    public String toString() {
+        if (value != null) {
+            if (toStringConverter != null) {
                 return toStringConverter.convert(this);
-            }
-            else if (referencesObject /*&& value!=null*/ && value instanceof MetaObject)
-            {
+            } else if (referencesObject /*&& value!=null*/ && (value instanceof MetaObject)) {
                 return ((MetaObject)value).toString();
-            }
-            else
-            {
+            } else {
                 return value.toString();
             }
-        }
-        else
-        {
+        } else {
             return "";
         }
-        
     }
-    
-    /** Setter for property visible.
-     * @param visible New value of property visible.
+
+    /**
+     * Setter for property visible.
      *
+     * @param  visible  New value of property visible.
      */
-    public void setVisible(boolean visible)
-    {
+    public void setVisible(boolean visible) {
         this.visible = visible;
     }
-    
-    
+
     /**
      * Getter for property substitute.
-     * @return Value of property substitute.
+     *
+     * @return  Value of property substitute.
      */
-    public boolean isSubstitute()
-    {
+    public boolean isSubstitute() {
         return substitute;
     }
-    
+
     /**
      * Setter for property substitute.
-     * @param substitute New value of property substitute.
+     *
+     * @param  substitute  New value of property substitute.
      */
-    public void setSubstitute(boolean substitute)
-    {
+    public void setSubstitute(boolean substitute) {
         this.substitute = substitute;
     }
-    
-    
-    public String getClassKey()
-    {
-        if(classKey != null)
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getClassKey() {
+        if (classKey != null) {
             return classKey;
+        }
 //         else if(referencesObject && value!= null && value instanceof MetaObject)
 //            return ((MetaObject)value).getClassKey();
-        
-        else
-        {
-            if(logger!=null) logger.error("Attribute Value kein Type f\u00FCr getCLassKey ::" +value.getClass());
+        else {
+            if (logger != null) {
+                logger.error("Attribute Value kein Type f\u00FCr getCLassKey ::" + value.getClass());
+            }
             return null;
         }
-        
-        
-        
     }
-    
+
     /**
      * Setter for property classKey.
-     * @param classKey New value of property classKey.
+     *
+     * @param  classKey  New value of property classKey.
      */
-    public void setClassKey(java.lang.String classKey)
-    {
+    public void setClassKey(java.lang.String classKey) {
         this.classKey = classKey;
     }
-    
-    
-    public void setTypeId(int typeId)
-    {
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  typeId  DOCUMENT ME!
+     */
+    public void setTypeId(int typeId) {
         this.typeId = typeId;
     }
-    
+
     /**
      * Getter for property typeId.
-     * @return Value of property typeId.
+     *
+     * @return  Value of property typeId.
      */
-    public int getTypeId()
-    {
+    public int getTypeId() {
         return typeId;
     }
-    
+
     /**
      * Getter for property changed.
-     * @return Value of property changed.
+     *
+     * @return  Value of property changed.
      */
-    public boolean isChanged()
-    {
+    public boolean isChanged() {
         return changed;
     }
-    
+
     /**
      * Setter for property changed.
-     * @param changed New value of property changed.
+     *
+     * @param  changed  New value of property changed.
      */
-    public void setChanged(boolean changed)
-    {
+    public void setChanged(boolean changed) {
         this.changed = changed;
     }
-    
-    
-    
-    public void setValuesNull()
-    {
-        if(!referencesObject )
-        {    value=null;
-             logger.debug("would set "+value+ " to null");
-        }
-        else
+
+    /**
+     * DOCUMENT ME!
+     */
+    public void setValuesNull() {
+        if (!referencesObject) {
+            value = null;
+            if (logger.isDebugEnabled()) {
+                logger.debug("would set " + value + " to null");
+            }
+        } else {
             ((Sirius.server.localserver.object.Object)value).setValuesNull();
-        
-        
+        }
     }
-    
+
     /**
      * Getter for property isPrimaryKey.
-     * @return Value of property isPrimaryKey.
+     *
+     * @return  Value of property isPrimaryKey.
      */
-    public boolean isPrimaryKey()
-    {
+    public boolean isPrimaryKey() {
         return isPrimaryKey;
     }
-    
+
     /**
      * Setter for property isPrimaryKey.
-     * @param isPrimaryKey New value of property isPrimaryKey.
+     *
+     * @param  isPrimaryKey  New value of property isPrimaryKey.
      */
-    public void setIsPrimaryKey(boolean isPrimaryKey)
-    {
+    public void setIsPrimaryKey(boolean isPrimaryKey) {
         this.isPrimaryKey = isPrimaryKey;
     }
-    
+
     /**
      * Getter for property javaType.
-     * @return Value of property javaType.
+     *
+     * @return  Value of property javaType.
      */
-    public java.lang.String getJavaType()
-    {
+    public java.lang.String getJavaType() {
         return javaType;
     }
-    
+
     /**
      * Setter for property javaType.
-     * @param javaType New value of property javaType.
+     *
+     * @param  javaType  New value of property javaType.
      */
-    public void setJavaType(java.lang.String javaType)
-    {
+    public void setJavaType(java.lang.String javaType) {
         this.javaType = javaType;
     }
-    
-    
+
     /**
      * Getter for property isArray.
-     * @return Value of property isArray.
+     *
+     * @return  Value of property isArray.
      */
-    public boolean isArray()
-    {
+    public boolean isArray() {
         return isArray;
     }
-    
+
     /**
      * Setter for property isArray.
-     * @param isArray New value of property isArray.
+     *
+     * @param  isArray  New value of property isArray.
      */
-    public void setIsArray(boolean isArray)
-    {
+    public void setIsArray(boolean isArray) {
         this.isArray = isArray;
     }
-    
-    public void setId(String id)
-    {
-        this.id=id;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  id  DOCUMENT ME!
+     */
+    public void setId(String id) {
+        this.id = id;
     }
-    
-    public void printMe()
-    {System.out.println(name +" : "+value );}
-    
+
+    /**
+     * DOCUMENT ME!
+     */
+    public void printMe() {
+        System.out.println(name + " : " + value);
+    }
+
     /**
      * Getter for property toString.
-     * @return Value of property toString.
+     *
+     * @return  Value of property toString.
      */
-    public de.cismet.cids.tools.tostring.ToStringConverter getToStringConverter()
-    {
+    public de.cismet.cids.tools.tostring.ToStringConverter getToStringConverter() {
         return toStringConverter;
     }
-    
+
     /**
      * Setter for property toString.
-     * @param toString New value of property toString.
+     *
+     * @param  toString  New value of property toString.
      */
-    public void setToString(de.cismet.cids.tools.tostring.ToStringConverter toString)
-    {
+    public void setToString(de.cismet.cids.tools.tostring.ToStringConverter toString) {
         this.toStringConverter = toStringConverter;
     }
-    
-    // public void setDefaultValue(String val){this.defaultValue=val;}
-    public void setOptional(boolean optional)
-    {this.optional=optional;}
-    
-    public boolean isOptional()
-    {return optional;}
-    
-    
+    /**
+     * public void setDefaultValue(String val){this.defaultValue=val;}.
+     *
+     * @param  optional  DOCUMENT ME!
+     */
+    public void setOptional(boolean optional) {
+        this.optional = optional;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean isOptional() {
+        return optional;
+    }
 }

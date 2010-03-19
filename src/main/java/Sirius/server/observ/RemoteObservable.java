@@ -1,22 +1,83 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.server.observ;
 
 import java.rmi.*;
+
 import java.io.*;
 
-public interface RemoteObservable extends Remote
-{
-	void addObserver(RemoteObserver ob) throws RemoteException;
+/**
+ * DOCUMENT ME!
+ *
+ * @version  $Revision$, $Date$
+ */
+public interface RemoteObservable extends Remote {
 
- 	void deleteObserver(RemoteObserver ob) throws RemoteException;
+    //~ Methods ----------------------------------------------------------------
 
-	int countObservers() throws RemoteException;
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   ob  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    void addObserver(RemoteObserver ob) throws RemoteException;
 
-	void notifyObservers() throws RemoteException;
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   ob  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    void deleteObserver(RemoteObserver ob) throws RemoteException;
 
-	void notifyObservers(Remote arg) throws RemoteException;
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    int countObservers() throws RemoteException;
 
- 	void notifyObservers(Serializable arg) throws RemoteException;
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    void notifyObservers() throws RemoteException;
 
-	boolean hasChanged() throws RemoteException;
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   arg  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    void notifyObservers(Remote arg) throws RemoteException;
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   arg  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    void notifyObservers(Serializable arg) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    boolean hasChanged() throws RemoteException;
 }

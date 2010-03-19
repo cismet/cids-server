@@ -1,47 +1,58 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * AdressStringConverter.java
  *
  * Created on 11. Mai 2004, 13:31
  */
-
 package de.cismet.cids.tools.tostring;
 import Sirius.server.localserver.attribute.*;
 /**
+ * DOCUMENT ME!
  *
- * @author  schlob
+ * @author   schlob
+ * @version  $Revision$, $Date$
  */
-public class BetriebStringConverter extends ToStringConverter implements java.io.Serializable
-{
-    
-    /** Creates a new instance of AdressStringConverter */
-    public BetriebStringConverter()
-    {
+public class BetriebStringConverter extends ToStringConverter implements java.io.Serializable {
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new instance of AdressStringConverter.
+     */
+    public BetriebStringConverter() {
         super();
     }
-    
-    
-    public  String convert(Sirius.server.localserver.object.Object o)
-    {
-        String stringRepresentation="";
-        
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   o  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String convert(Sirius.server.localserver.object.Object o) {
+        String stringRepresentation = "";
+
         ObjectAttribute[] attrs = o.getAttribs();
-        
-        for(int i = 0; i< attrs.length;i++)
-        {
-            
-            if(attrs[i].getName().equalsIgnoreCase("name"))
-                stringRepresentation+=( attrs[i].toString() + " ");
-            
-            else //surpress
+
+        for (int i = 0; i < attrs.length; i++) {
+            if (attrs[i].getName().equalsIgnoreCase("name")) {
+                stringRepresentation += (attrs[i].toString() + " ");
+            } else // surpress
             {
-                //stringRepresentation+=( attrs[i].toString() + "?");
-                //System.err.println("unerwartetes Attribut implements StringConverter");
+                // stringRepresentation+=( attrs[i].toString() + "?");
+                // System.err.println("unerwartetes Attribut implements StringConverter");
             }
-            
-            
         }
-        
+
         return stringRepresentation;
     }
-    
 }

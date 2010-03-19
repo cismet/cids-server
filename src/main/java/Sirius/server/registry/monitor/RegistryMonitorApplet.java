@@ -1,7 +1,14 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.server.registry.monitor;
 
-
 import Sirius.util.*;
+
 import Sirius.server.naming.*;
 import Sirius.server.newuser.*;
 import Sirius.server.*;
@@ -11,34 +18,33 @@ import java.rmi.*;
 import java.rmi.server.*;
 
 import java.util.*;
+
 import java.awt.*;
 import java.awt.event.*;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
+/**
+ * Der RegistryMonitor ist ein Frontend fuer die Registry (Sirius.Registry) Der Monitor stellt die Server, die beim der
+ * Registry registriert sind, in einer Tabelle dar. Dabei fragt der Monitor die Registry zyklisch ab, um die
+ * Anzeigetabellen aktuell zu halten. Das UpdateIntervall ist einstellbar. Ausserdem ist ein manuelles Update jederzeit
+ * m\u00F6glich.
+ *
+ * @author   Bernd Kiefer
+ * @version  1.0 letzte Aenderung: 01.08.2000
+ */
+public class RegistryMonitorApplet extends JApplet {
 
-/** Der RegistryMonitor ist ein Frontend fuer die Registry (Sirius.Registry)
-		Der Monitor stellt die Server, die beim der Registry registriert sind,
-		in einer Tabelle dar. Dabei fragt der Monitor die Registry zyklisch
-		ab, um die Anzeigetabellen aktuell zu halten. Das UpdateIntervall ist einstellbar.
-		Ausserdem ist ein manuelles Update jederzeit m\u00F6glich.
-		@author Bernd Kiefer
-		@version 1.0
+    //~ Instance fields --------------------------------------------------------
 
-		letzte Aenderung: 01.08.2000
-**/
-public class RegistryMonitorApplet extends JApplet 
-{
-	protected RegistryMonitor registryMonitor;
-	
-	public void init()
-	{
-	 registryMonitor = new RegistryMonitor(getParameter("RegistryIP"));
-	 getContentPane().add(registryMonitor);	
-	}
-}	
-	 
+    protected RegistryMonitor registryMonitor;
 
+    //~ Methods ----------------------------------------------------------------
 
-
+    public void init() {
+        registryMonitor = new RegistryMonitor(getParameter("RegistryIP"));
+        getContentPane().add(registryMonitor);
+    }
+}

@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -5,34 +12,41 @@
 package Sirius.server.newuser.permission;
 
 import de.cismet.tools.CurrentStackTrace;
+
 import java.io.Serializable;
+
 import java.util.HashMap;
 
-
 /**
+ * DOCUMENT ME!
  *
- * @author hell
+ * @author   hell
+ * @version  $Revision$, $Date$
  */
 public class Policy implements Serializable {
 
-    private final static int PARANOID = 0;
-    private final static int WIKI = 1;
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final int PARANOID = 0;
+    private static final int WIKI = 1;
+
+    //~ Instance fields --------------------------------------------------------
+
+    HashMap<Permission, Boolean> policyMap = new HashMap<Permission, Boolean>();
     private int helpermode = 0;
     private int dbID = -1;
     private String name;
     private transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
-    HashMap<Permission, Boolean> policyMap = new HashMap<Permission, Boolean>();
 
-    private Policy() {
-    }
+    //~ Constructors -----------------------------------------------------------
 
-    private Policy(int helperMode) {
-        this.helpermode = helperMode;
-        if (helperMode != 0 && helpermode != 1) {
-            throw new UnsupportedOperationException("Nur PARANOID oder WIKI moeglich");
-        }
-    }
-
+    /**
+     * Creates a new Policy object.
+     *
+     * @param  policyMap   DOCUMENT ME!
+     * @param  dbID        DOCUMENT ME!
+     * @param  policyName  DOCUMENT ME!
+     */
     public Policy(HashMap<Permission, Boolean> policyMap, int dbID, String policyName) {
         this.policyMap = policyMap;
         this.dbID = dbID;
@@ -40,53 +54,105 @@ public class Policy implements Serializable {
     }
 
     /**
-     * Returns the decision if there is no permission set in the permission 
-     * table according to the policy
-     * @param permission
-     * @return
+     * Creates a new Policy object.
+     */
+    private Policy() {
+    }
+
+    /**
+     * Creates a new Policy object.
+     *
+     * @param   helperMode  DOCUMENT ME!
+     *
+     * @throws  UnsupportedOperationException  DOCUMENT ME!
+     */
+    private Policy(int helperMode) {
+        this.helpermode = helperMode;
+        if ((helperMode != 0) && (helpermode != 1)) {
+            throw new UnsupportedOperationException("Nur PARANOID oder WIKI moeglich");
+        }
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * Returns the decision if there is no permission set in the permission table according to the policy.
+     *
+     * @param   permission  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      */
     public boolean getDecisionIfNoEntryIsFound(Permission permission) {
         Boolean r = policyMap.get(permission);
         if (r != null) {
-            getLog().debug("getDecisionIfNoEntryIsFound(" + permission.getKey() + ") returns:" + r+" --> Policy="+name,new CurrentStackTrace());
+            if (getLog().isDebugEnabled()) {
+                getLog().debug(
+                    "getDecisionIfNoEntryIsFound(" + permission.getKey() + ") returns:" + r + " --> Policy=" + name,
+                    new CurrentStackTrace());
+            }
             return r;
         } else {
             if (helpermode == WIKI) {
-                getLog().debug("getDecisionIfNoEntryIsFound(" + permission.getKey() + ") returns true because of Manunal WIKI Policy", new CurrentStackTrace());
+                if (getLog().isDebugEnabled()) {
+                    getLog().debug(
+                        "getDecisionIfNoEntryIsFound(" + permission.getKey()
+                        + ") returns true because of Manunal WIKI Policy",
+                        new CurrentStackTrace());
+                }
                 return true;
             } else {
-                getLog().debug("getDecisionIfNoEntryIsFound(" + permission.getKey() + ") returns false because of PARANOID Policy or Bug", new CurrentStackTrace());
-                return false; //Safety first
+                if (getLog().isDebugEnabled()) {
+                    getLog().debug(
+                        "getDecisionIfNoEntryIsFound(" + permission.getKey()
+                        + ") returns false because of PARANOID Policy or Bug",
+                        new CurrentStackTrace());
+                }
+                return false; // Safety first
             }
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public int getDbID() {
         return dbID;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public String getName() {
         return name;
     }
 
     /**
-     * Creates a Paranoid Policy ;-)
-     * 
-     * @return Policy which is alwas returning false if there is no Permission set
+     * Creates a Paranoid Policy ;-).
+     *
+     * @return  Policy which is alwas returning false if there is no Permission set
      */
     public static Policy createParanoidPolicy() {
         return new Policy();
     }
 
     /**
-     * Creates a WIKI Policy 
-     * 
-     * @return Policy which is alwas returning true if there is no Permission set
+     * Creates a WIKI Policy.
+     *
+     * @return  Policy which is alwas returning true if there is no Permission set
      */
     public static Policy createWIKIPolicy() {
         return new Policy(WIKI);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     private org.apache.log4j.Logger getLog() {
         if (logger == null) {
             logger = org.apache.log4j.Logger.getLogger(this.getClass());
@@ -105,7 +171,8 @@ public class Policy implements Serializable {
             }
             r += ") ";
         }
-        r += "defaultvalues: "+name+"= read-->" + getDecisionIfNoEntryIsFound(PermissionHolder.READPERMISSION) + " write-->" + getDecisionIfNoEntryIsFound(PermissionHolder.WRITEPERMISSION);
+        r += "defaultvalues: " + name + "= read-->" + getDecisionIfNoEntryIsFound(PermissionHolder.READPERMISSION)
+            + " write-->" + getDecisionIfNoEntryIsFound(PermissionHolder.WRITEPERMISSION);
         return r;
     }
 }

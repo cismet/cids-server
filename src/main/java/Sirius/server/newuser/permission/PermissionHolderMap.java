@@ -1,34 +1,73 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.server.newuser.permission;
 import Sirius.util.*;
 
-public class PermissionHolderMap extends java.util.Hashtable
-{
-	public PermissionHolderMap(int size, float loadFactor){super(size,loadFactor);}
-        
-        public PermissionHolderMap(int size){super(size);}
+/**
+ * DOCUMENT ME!
+ *
+ * @version  $Revision$, $Date$
+ */
+public class PermissionHolderMap extends java.util.Hashtable {
 
-	public PermissionHolder getPermissionHolder(String key)
-	{
-		return (PermissionHolder)get(key);
+    //~ Constructors -----------------------------------------------------------
 
-	}
+    /**
+     * Creates a new PermissionHolderMap object.
+     *
+     * @param  size  DOCUMENT ME!
+     */
+    public PermissionHolderMap(int size) {
+        super(size);
+    }
+    /**
+     * Creates a new PermissionHolderMap object.
+     *
+     * @param  size        DOCUMENT ME!
+     * @param  loadFactor  DOCUMENT ME!
+     */
+    public PermissionHolderMap(int size, float loadFactor) {
+        super(size, loadFactor);
+    }
 
-	public void add(String key , PermissionHolder ph)
-	{
-		put(key,ph);
-	}
-        
-        
-        public void add(Mapable m)
-        {
-                put(m.getKey(), m);
-        
-        
-        }
+    //~ Methods ----------------------------------------------------------------
 
-	public void rehash(){super.rehash();}
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   key  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public PermissionHolder getPermissionHolder(String key) {
+        return (PermissionHolder)get(key);
+    }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  key  DOCUMENT ME!
+     * @param  ph   DOCUMENT ME!
+     */
+    public void add(String key, PermissionHolder ph) {
+        put(key, ph);
+    }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  m  DOCUMENT ME!
+     */
+    public void add(Mapable m) {
+        put(m.getKey(), m);
+    }
 
-
+    public void rehash() {
+        super.rehash();
+    }
 }

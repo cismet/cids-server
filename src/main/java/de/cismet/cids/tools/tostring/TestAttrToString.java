@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * TestAttrToString.java
  *
@@ -6,25 +13,27 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-
 package de.cismet.cids.tools.tostring;
 
 /**
+ * DOCUMENT ME!
  *
- * @author schlob
+ * @author   schlob
+ * @version  $Revision$, $Date$
  */
-public class TestAttrToString extends GeometryStringConverter
-{
-    
-    /** Creates a new instance of TestAttrToString */
-    public TestAttrToString()
-    {
+public class TestAttrToString extends GeometryStringConverter {
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new instance of TestAttrToString.
+     */
+    public TestAttrToString() {
     }
-    
-    public  String convert(de.cismet.cids.tools.tostring.StringConvertable o)
-    {
-            return "TestMops";
-    
+
+    //~ Methods ----------------------------------------------------------------
+
+    public String convert(de.cismet.cids.tools.tostring.StringConvertable o) {
+        return "TestMops";
     }
-    
 }

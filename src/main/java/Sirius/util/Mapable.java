@@ -1,22 +1,40 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * BasicMetaSet.java
  *
  * Created on 11. November 2003, 17:08
  */
-
 package Sirius.util;
 import java.lang.*;
 /**
+ * DOCUMENT ME!
  *
- * @author  schlob
+ * @author   schlob
+ * @version  $Revision$, $Date$
  */
 public interface Mapable {
-    
-  
-   
-   public Object getKey();
-   
-   public Object constructKey(Mapable m);  
-  
-    
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    Object getKey();
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   m  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    Object constructKey(Mapable m);
 }

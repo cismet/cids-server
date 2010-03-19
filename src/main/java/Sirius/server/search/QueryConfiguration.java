@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * QueryPlan.java
  *
@@ -6,41 +13,60 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-
 package Sirius.server.search;
 
 /**
+ * DOCUMENT ME!
  *
- * @author schlob
+ * @author   schlob
+ * @version  $Revision$, $Date$
  */
-public class QueryConfiguration
-{
+public class QueryConfiguration {
+
+    //~ Instance fields --------------------------------------------------------
+
     private Query query;
     private String[] classIds;
-   
-    
-    /** Creates a new instance of Querycofniguration */
-    public QueryConfiguration(Query query, String[] classIds)
-    {
-        this.query=query;
-        this.classIds=classIds;
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new instance of Querycofniguration.
+     *
+     * @param  query     DOCUMENT ME!
+     * @param  classIds  DOCUMENT ME!
+     */
+    public QueryConfiguration(Query query, String[] classIds) {
+        this.query = query;
+        this.classIds = classIds;
     }
 
-    public Query getQuery()
-    {
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Query getQuery() {
         return query;
     }
 
-    public String[] getClassIds()
-    {
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String[] getClassIds() {
         return classIds;
     }
 
-    public void setClassIds(String[] classIds)
-    {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  classIds  DOCUMENT ME!
+     */
+    public void setClassIds(String[] classIds) {
         this.classIds = classIds;
     }
-    
-    
-    
 }

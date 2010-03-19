@@ -1,38 +1,72 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.server.localserver._class;
 
 import java.sql.*;
+
 import Sirius.server.sql.*;
+
 import Sirius.util.*;
+
 import Sirius.server.localserver.attribute.*;
+
 import Sirius.util.image.*;
+
 import java.util.*;
+
 import Sirius.server.newuser.*;
 import Sirius.server.newuser.permission.*;
 import Sirius.server.*;
 import Sirius.server.property.*;
 
+/**
+ * DOCUMENT ME!
+ *
+ * @version  $Revision$, $Date$
+ */
 public class ClassCache {
 
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
-    /** contains all cached objects */
+    //~ Instance fields --------------------------------------------------------
+
+    /** contains all cached objects. */
     protected ClassMap classes;
     protected HashMap<String, Sirius.server.localserver._class.Class> classesByTableName;
     protected HashMap classAttribs;
     protected PolicyHolder policyHolder;
-    /** conatains this local servers class and object icons load with the method loadIcons which is called in the constructor*/
+    /**
+     * conatains this local servers class and object icons load with the method loadIcons which is called in the
+     * constructor.
+     */
     protected IntMapsImage icons = new IntMapsImage(20, 0.7f);
     protected ServerProperties properties;
 
-    //-----------------------------------
-    public ClassCache(DBConnectionPool conPool, ServerProperties properties, PolicyHolder policyHolder) throws Throwable {
+    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * -----------------------------------
+     *
+     * @param   conPool       DOCUMENT ME!
+     * @param   properties    DOCUMENT ME!
+     * @param   policyHolder  DOCUMENT ME!
+     *
+     * @throws  Throwable  DOCUMENT ME!
+     */
+    public ClassCache(DBConnectionPool conPool, ServerProperties properties, PolicyHolder policyHolder)
+        throws Throwable {
         this.properties = properties;
 
         this.policyHolder = policyHolder;
 
         loadIcons(conPool);
 
-        classes = new ClassMap(20);  // allocation of the hashtable
-
+        classes = new ClassMap(20); // allocation of the hashtable
 
         classesByTableName = new HashMap<String, Sirius.server.localserver._class.Class>();
 
@@ -43,25 +77,20 @@ public class ClassCache {
             ResultSet classTable = con.submitQuery("get_all_classes", new Object[0]); // getAllClasses
 
             if (classTable == null) {
-
-                logger.error("<LS> ERROR :: Klassen konten nicht geladen werden fataler Fehler das Programm beendet sich");
-                throw new ServerExitError("Klassen konten nicht geladen werden fataler Fehler das Programm beendet sich");
-
+                logger.error(
+                    "<LS> ERROR :: Klassen konten nicht geladen werden fataler Fehler das Programm beendet sich");
+                throw new ServerExitError(
+                    "Klassen konten nicht geladen werden fataler Fehler das Programm beendet sich");
             }
 
-            while (classTable.next())//add all objects to the hashtable
+            while (classTable.next()) // add all objects to the hashtable
             {
-
-
                 Image object_i = null;
                 Image class_i = null;
 
                 try {
-
                     object_i = icons.getImageValue(classTable.getInt("object_icon_id"));
-
                 } catch (Exception e) {
-
                     logger.error("<LS> ERROR ::  !!Setting objectIcon  to default!!", e);
 
                     object_i = new Image();
@@ -72,10 +101,7 @@ public class ClassCache {
                 }
 
                 try {
-
                     class_i = icons.getImageValue(classTable.getInt("class_icon_id"));
-
-
                 } catch (Exception e) {
                     logger.error("<LS> ERROR :: !!Setting classIcon to default!!!!", e);
 
@@ -97,7 +123,6 @@ public class ClassCache {
                     policy = policyHolder.getServerPolicy(policyId);
                 }
 
-
                 Object attrPolicyTester = classTable.getObject("attribute_policy");
                 Policy attributePolicy = null;
                 if (attrPolicyTester == null) {
@@ -110,33 +135,41 @@ public class ClassCache {
                     attributePolicy = policyHolder.getServerPolicy(properties.getServerPolicy());
                 }
 
-                Class tmp = new Class(classTable.getInt("id"), className, classTable.getString("descr"), class_i, object_i, classTable.getString("table_name"), classTable.getString("primary_key_field"), toStringQualifier, policy, attributePolicy);
-
-                logger.debug("to string for Class :" + className + " :: " + toStringQualifier);
-                //Hell
+                Class tmp = new Class(
+                        classTable.getInt("id"),
+                        className,
+                        classTable.getString("descr"),
+                        class_i,
+                        object_i,
+                        classTable.getString("table_name"),
+                        classTable.getString("primary_key_field"),
+                        toStringQualifier,
+                        policy,
+                        attributePolicy);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("to string for Class :" + className + " :: " + toStringQualifier);
+                }
+                // Hell
                 tmp.setEditor(classTable.getString("editorqualifier"));
                 tmp.setRenderer(classTable.getString("RendererQualifier"));
                 try {
                     boolean arrayElementLink = classTable.getBoolean("array_link");
                     tmp.setArrayElementLink(arrayElementLink);
-                    logger.debug("isArrayElementLink set to :" + arrayElementLink);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("isArrayElementLink set to :" + arrayElementLink);
+                    }
                 } catch (Exception e) {
                     logger.error("Fehler bei arrayElementLink wahrscheinlich alte DB Version", e);
                 }
 
-
                 classes.add(tmp.getID(), tmp);
                 classesByTableName.put(tmp.getTableName().toLowerCase(), tmp);
-
-
-            }// end while
+            } // end while
 
             classTable.close();
             classes.rehash();
-
         } catch (java.lang.Exception e) {
             ExceptionHandler.handle(e);
-
         }
 
         addClassPermissions(conPool);
@@ -147,68 +180,116 @@ public class ClassCache {
 
         addMemberInfos(conPool);
 
-    //addClassSearchMasks(conPool);
+        // addClassSearchMasks(conPool);
+    } // end of constructor
 
+    //~ Methods ----------------------------------------------------------------
 
-
-
-
-    }// end of constructor
-
-    //-----------------------------------------------------------------------------
+    /**
+     * -----------------------------------------------------------------------------
+     *
+     * @return  DOCUMENT ME!
+     */
     public final int size() {
         return classes.size();
     }
 
-    final public Class getClass(int id) throws Exception {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   id  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public final Class getClass(int id) throws Exception {
         return classes.getClass(id);
     }
 
-    final public Class getClassByTableName(String tableName) throws Exception {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   tableName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public final Class getClassByTableName(String tableName) throws Exception {
         return classesByTableName.get(tableName);
     }
-
-    //-----------------------------------------------------------------------------
-    final public Vector getAllClasses() {
+    /**
+     * -----------------------------------------------------------------------------
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final Vector getAllClasses() {
         return classes.getAll();
     }
-
-    //-----------------------------------------------------------------------------
-    final public Class getClass(UserGroup ug, int id) throws Exception {
+    /**
+     * -----------------------------------------------------------------------------
+     *
+     * @param   ug  DOCUMENT ME!
+     * @param   id  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public final Class getClass(UserGroup ug, int id) throws Exception {
         Class c = classes.getClass(id);
 
-        if (c != null && c.getPermissions().hasPermission(ug.getKey(), PermissionHolder.READPERMISSION)) {
+        if ((c != null) && c.getPermissions().hasPermission(ug.getKey(), PermissionHolder.READPERMISSION)) {
             return c;
         }
 
-
         return null;
-
     }
 
-    final public Class getClassNyTableName(UserGroup ug,String tableName) throws Exception {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   ug         DOCUMENT ME!
+     * @param   tableName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public final Class getClassNyTableName(UserGroup ug, String tableName) throws Exception {
         Class c = getClassByTableName(tableName);
 
-        if (c != null && c.getPermissions().hasPermission(ug.getKey(), PermissionHolder.READPERMISSION)) {
+        if ((c != null) && c.getPermissions().hasPermission(ug.getKey(), PermissionHolder.READPERMISSION)) {
             return c;
         }
 
-
         return null;
-
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public Hashtable getClassHashMap() {
         return classes;
     }
-
-    //-----------------------------------------------------------------------------
-    final public Vector getAllClasses(UserGroup ug) throws Exception {
+    /**
+     * -----------------------------------------------------------------------------
+     *
+     * @param   ug  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public final Vector getAllClasses(UserGroup ug) throws Exception {
         Vector all = getAllClasses();
         Vector cs = new Vector(all.size());
 
         for (int i = 0; i < all.size(); i++) {
-            Class c = (Class) all.get(i);
+            Class c = (Class)all.get(i);
             if (c.getPermissions().hasReadPermission(ug)) {
                 cs.addElement(c);
             }
@@ -216,29 +297,25 @@ public class ClassCache {
 
         cs.trimToSize();
         return cs;
-
     }
 
-    //-----------------------------------------------------------------------------
-    /**Only to be called by the constructor*/
-    final private void addAttributes(DBConnectionPool conPool) {
+    // -----------------------------------------------------------------------------
+    /**
+     * Only to be called by the constructor.
+     *
+     * @param  conPool  DOCUMENT ME!
+     */
+    private void addAttributes(DBConnectionPool conPool) {
         DBConnection con = conPool.getConnection();
         try {
-
             ResultSet attribTable = con.submitQuery("get_all_class_attributes", new Object[0]);
-
-
-
 
             int id = 0;
             int classID = 0;
 
-
             int typeID = 0;
 
-
             while (attribTable.next()) {
-
                 String name = null;
                 java.lang.Object value = null;
                 ClassAttribute attrib = null;
@@ -249,8 +326,6 @@ public class ClassCache {
                 typeID = attribTable.getInt("type_id");
                 value = attribTable.getString("attr_value");
 
-
-
                 attrib = new ClassAttribute(id + "", classID, name, typeID, classes.getClass(classID).getPolicy());
                 attrib.setValue(value);
                 classes.getClass(attrib.getClassID()).addAttribute(attrib);
@@ -259,19 +334,19 @@ public class ClassCache {
 
             attribTable.close();
 
-        //  addAttributePermissions(conPool);
-
-
+            // addAttributePermissions(conPool);
         } catch (java.lang.Exception e) {
             ExceptionHandler.handle(e);
             logger.error("<LS> ERROR :: classcache  get_all_class_attributes", e);
-
         }
-
     }
 
-    final private void addMemberInfos(DBConnectionPool conPool) {
-
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  conPool  DOCUMENT ME!
+     */
+    private void addMemberInfos(DBConnectionPool conPool) {
         DBConnection con = conPool.getConnection();
 
         HashMap<Integer, HashMap<String, String>> classfieldtypes = new HashMap<Integer, HashMap<String, String>>();
@@ -279,7 +354,6 @@ public class ClassCache {
         Vector<Sirius.server.localserver._class.Class> vc = getAllClasses();
 
         try {
-
             for (Sirius.server.localserver._class.Class c : vc) {
                 HashMap<String, String> fieldtypes = classfieldtypes.get(c.getID());
                 if (fieldtypes == null) {
@@ -300,8 +374,7 @@ public class ClassCache {
                 resultset.close();
                 s.close();
             }
-            //logger.fatal(classfieldtypes);
-
+            // logger.fatal(classfieldtypes);
 
             ResultSet rs = con.submitQuery("get_attribute_info", new Object[0]);
 
@@ -326,23 +399,19 @@ public class ClassCache {
 
             int position = 0;
 
-
-
-
-
             while (rs.next()) {
                 String name;
                 String fieldName;
                 String arrayKey;
                 String editor;
-                String toString;// toString
+                String toString; // toString
                 String defaultValue;
                 String fromString;
-                //  String renderer;
+                // String renderer;
 
-                //Hell
+                // Hell
                 String complexEditor;
-                boolean extensionAttribute=false;
+                boolean extensionAttribute = false;
 
                 id = rs.getInt("id");
                 name = rs.getString("name");
@@ -380,7 +449,6 @@ public class ClassCache {
 //                if(renderer!=null)
 //                    renderer=renderer.trim();
 
-
                 defaultValue = rs.getString("default_value");
                 if (defaultValue != null) {
                     defaultValue = defaultValue.trim();
@@ -390,8 +458,6 @@ public class ClassCache {
                 if (fromString != null) {
                     fromString = fromString.trim();
                 }
-
-
 
                 foreignKey = rs.getBoolean("foreign_key");
 
@@ -408,18 +474,28 @@ public class ClassCache {
 
                 array = rs.getBoolean("isarray");
 
-                try{
-                    extensionAttribute=rs.getBoolean("extension_attr");
-                }
-                catch (Exception skip){
-
+                try {
+                    extensionAttribute = rs.getBoolean("extension_attr");
+                } catch (Exception skip) {
                 }
 
-
-
-
-                //xxx array stuff to be added
-                mai = new MemberAttributeInfo(id, classId, typeId, name, fieldName, foreignKey, substitute, foreignKeyClassId, visible, indexed, array, arrayKey, fromString, toString, position);
+                // xxx array stuff to be added
+                mai = new MemberAttributeInfo(
+                        id,
+                        classId,
+                        typeId,
+                        name,
+                        fieldName,
+                        foreignKey,
+                        substitute,
+                        foreignKeyClassId,
+                        visible,
+                        indexed,
+                        array,
+                        arrayKey,
+                        fromString,
+                        toString,
+                        position);
 
                 mai.setOptional(optional);
 
@@ -427,129 +503,121 @@ public class ClassCache {
                 mai.setComplexEditor(complexEditor);
 
                 mai.setJavaclassname(classfieldtypes.get(classId).get(fieldName.toLowerCase()));
-                if (mai.getJavaclassname()!=null && mai.getJavaclassname().equals(org.postgis.PGgeometry.class.getName())){
+                if (
+                    (mai.getJavaclassname() != null)
+                            && mai.getJavaclassname().equals(org.postgis.PGgeometry.class.getName())) {
                     mai.setJavaclassname(com.vividsolutions.jts.geom.Geometry.class.getName());
                 }
                 mai.setExtensionAttribute(extensionAttribute);
-                if (mai.isExtensionAttribute()){
+                if (mai.isExtensionAttribute()) {
                     mai.setJavaclassname(java.lang.Object.class.getCanonicalName());
                 }
-                //mai.setRenderer(renderer);
+                // mai.setRenderer(renderer);
 
-                //  int cId =rs.getInt("class_id");
+                // int cId =rs.getInt("class_id");
 
                 Sirius.server.localserver._class.Class c = classes.getClass(classId);
                 // classes.getClass(cId);
-
-
-
-
 
                 if (c != null) {
                     c.addMemberAttributeInfo(mai);
                 } else {
                     logger.warn("Falscher Eintrag f\u00FCr addMemberInfos f\u00FCr Klasse::" + classId);
                 }
-
-
             }
 
             rs.close();
-
-
         } catch (java.lang.Exception e) {
             ExceptionHandler.handle(e);
             logger.error("<LS> ERROR :: addMemberinfos", e);
-
         }
-
-
-
     }
 
-    /**Only to be called by the constructor*/
-    final private void addMethodIDs(DBConnectionPool conPool) {
+    /**
+     * Only to be called by the constructor.
+     *
+     * @param  conPool  DOCUMENT ME!
+     */
+    private void addMethodIDs(DBConnectionPool conPool) {
         DBConnection con = conPool.getConnection();
         try {
-
             ResultSet methodTable = con.submitQuery("get_all_class_method_ids", new Object[0]);
 
             while (methodTable.next()) {
-
                 int classId = methodTable.getInt("class_id");
-                Sirius.server.localserver._class.Class c =
-                        classes.getClass(classId);
+                Sirius.server.localserver._class.Class c = classes.getClass(classId);
 
                 int methodId = methodTable.getInt("method_id");
 
                 if (c != null) {
                     c.addMethodID(methodId);
                 } else {
-                    logger.warn("Eintrag in der Klassen/Methoden tabelle fehlerhaft Klasse" + classId + " Methode :" + methodId);
+                    logger.warn(
+                        "Eintrag in der Klassen/Methoden tabelle fehlerhaft Klasse" + classId + " Methode :"
+                        + methodId);
                 }
             }
 
             methodTable.close();
-
-
         } catch (java.lang.Exception e) {
             ExceptionHandler.handle(e);
             logger.error("<LS> ERROR :: get_all_class_method_ids", e);
-
         }
-
     }
 
-    final protected void loadIcons(DBConnectionPool conPool) {
-        String iconDirectory, separator;
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  conPool  DOCUMENT ME!
+     */
+    protected final void loadIcons(DBConnectionPool conPool) {
+        String iconDirectory;
+        String separator;
         Image tmpImage;
-
 
         try {
             iconDirectory = properties.getIconDirectory();
         } catch (Exception e) {
-            logger.error("<LS> ERROR ::  Keyvalue ICONDIRECTORY in ConfigFile is missing\n<LS> ERROR ::  set ICONDIRECTORY to . ", e);
+            logger.error(
+                "<LS> ERROR ::  Keyvalue ICONDIRECTORY in ConfigFile is missing\n<LS> ERROR ::  set ICONDIRECTORY to . ",
+                e);
             iconDirectory = ".";
         }
         try {
-            //separator=properties.getFileseparator();
+            // separator=properties.getFileseparator();
             separator = System.getProperty("file.separator");
         } catch (Exception e) {
-            logger.error("<LS> ERROR ::  KeyValue SEPARATOR in ConfigFile is missing\n<LS> ERROR ::  set DEFAULTSEPARATOR = \\", e);
+            logger.error(
+                "<LS> ERROR ::  KeyValue SEPARATOR in ConfigFile is missing\n<LS> ERROR ::  set DEFAULTSEPARATOR = \\",
+                e);
             separator = "\\";
         }
 
         DBConnection con = conPool.getConnection();
         try {
-
             ResultSet imgTable = con.submitQuery("get_all_images", new Object[0]);
 
-
             while (imgTable.next()) {
-                //icons.add(imgTable.getInt("id"),new Image(properties.getIconDirectory()+"\\"+imgTable.getString("data").trim()));
+                // icons.add(imgTable.getInt("id"),new
+                // Image(properties.getIconDirectory()+"\\"+imgTable.getString("data").trim()));
                 tmpImage = new Image(iconDirectory + separator + imgTable.getString("file_name").trim());
                 icons.add(imgTable.getInt("id"), tmpImage);
             }
 
-
-
             imgTable.close();
-
-
         } catch (java.lang.Exception e) {
             ExceptionHandler.handle(e);
             logger.error("<LS> ERROR :: get_all_icons", e);
-
         }
-
-
     }
-
-    //--------------------------------------------------------------------------
-    final private void addClassPermissions(DBConnectionPool conPool) {
+    /**
+     * --------------------------------------------------------------------------
+     *
+     * @param  conPool  DOCUMENT ME!
+     */
+    private void addClassPermissions(DBConnectionPool conPool) {
         DBConnection con = conPool.getConnection();
         try {
-
             ResultSet permTable = con.submitQuery("get_all_class_permissions", new Object[0]);
 
             String lsName = properties.getServerName();
@@ -560,31 +628,31 @@ public class ClassCache {
                 String lsHome = permTable.getString("domainname").trim();
                 int permId = permTable.getInt("permission");
                 String permKey = permTable.getString("key");
-                //String permPolicy = permTable.getString("policy");
+                // String permPolicy = permTable.getString("policy");
 
                 if (lsHome.equalsIgnoreCase("local")) {
                     lsHome = new String(lsName);
                 }
+                if (logger.isDebugEnabled()) {
+                    logger.debug("==permId set ======! " + permId);
+                }
 
-                logger.debug("==permId set ======! " + permId);
-
-                classes.getClass(permTable.getInt("class_id")).getPermissions().addPermission(new UserGroup(ug_id, ug_name, lsHome), new Permission(permId, permKey));
+                classes.getClass(permTable.getInt("class_id")).getPermissions()
+                        .addPermission(new UserGroup(ug_id, ug_name, lsHome), new Permission(permId, permKey));
             }
 
             permTable.close();
-
-
         } catch (java.lang.Exception e) {
             ExceptionHandler.handle(e);
             logger.error("<LS> ERROR :: addClassPermissions", e);
-
         }
-
-
     }
-
-    //-----------------------------------------------------------------------------
+    /**
+     * -----------------------------------------------------------------------------
+     *
+     * @return  DOCUMENT ME!
+     */
     public ServerProperties getProperties() {
         return properties;
     }
-}// end of class
+} // end of class

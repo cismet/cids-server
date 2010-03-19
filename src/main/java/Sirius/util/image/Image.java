@@ -1,83 +1,107 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.util.image;
-
 
 import java.io.*;
 
+/**
+ * DOCUMENT ME!
+ *
+ * @version  $Revision$, $Date$
+ */
+public class Image implements java.io.Serializable {
 
-public class Image implements java.io.Serializable
-{
+    //~ Instance fields --------------------------------------------------------
+
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
     /////////////////members//////////////////////////////////
-    
+
     private byte[] imageData;
     private String name;
     private String description;
-    
-    
-    
-    ///////////////////constructor///////////////////////////////
-    
-    public Image(String filepath)
-    {
-        this(new File(filepath));
-    }
-    
-    
-    
-    public Image(File inFile)
-    {
-        try
-        {
-            
-            InputStream stream;
-            name = inFile.getName();
-            description = new String("nn");
-            imageData = new byte[(int) inFile.length()];
-            stream = new FileInputStream(inFile);
-            
-            //read the file into imageData
-            int bytesRead = stream.read(imageData,0,(int) inFile.length());
-            
-            if (bytesRead == -1) // error occured during readingprocess
-                throw new Exception("read fehlgeschlagen");
-            else if (bytesRead != (int) inFile.length())
-                throw new Exception("Bildinformation wahrscheinlich Fehlerhaft");
-            
-            stream.close();
-        }
-        catch(java.io.FileNotFoundException fnfe)
-        {
-            logger.warn(" File not found: ",fnfe);
-            System.err.println("INFO :: File not found: "+fnfe.getMessage());
-        }
-        
-        catch(Exception e)
-        {  logger.error(e);  }
-        
-        
-    }
-    
-    
-    public Image()
-    {
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new Image object.
+     */
+    public Image() {
         imageData = new byte[0];
         name = "noname";
         description = "nodescription";
     }
-    
-    
-    
-    
-    //////////////////methods////////////////////////////////////////////////
-    
-    final public byte[] getImageData()
-    {return imageData;}
-    
-    
-    final public String getName()
-    {return name;}
-    
-    final public String getDescription()
-    {return description;}
-    
+
+    /**
+     * /////////////////constructor///////////////////////////////
+     *
+     * @param  filepath  DOCUMENT ME!
+     */
+    public Image(String filepath) {
+        this(new File(filepath));
+    }
+
+    /**
+     * Creates a new Image object.
+     *
+     * @param  inFile  DOCUMENT ME!
+     */
+    public Image(File inFile) {
+        try {
+            InputStream stream;
+            name = inFile.getName();
+            description = new String("nn");
+            imageData = new byte[(int)inFile.length()];
+            stream = new FileInputStream(inFile);
+
+            // read the file into imageData
+            int bytesRead = stream.read(imageData, 0, (int)inFile.length());
+
+            if (bytesRead == -1) { // error occured during readingprocess
+                throw new Exception("read fehlgeschlagen");
+            } else if (bytesRead != (int)inFile.length()) {
+                throw new Exception("Bildinformation wahrscheinlich Fehlerhaft");
+            }
+
+            stream.close();
+        } catch (java.io.FileNotFoundException fnfe) {
+            logger.warn(" File not found: ", fnfe);
+            System.err.println("INFO :: File not found: " + fnfe.getMessage());
+        } catch (Exception e) {
+            logger.error(e);
+        }
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * ////////////////methods////////////////////////////////////////////////
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final byte[] getImageData() {
+        return imageData;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getName() {
+        return name;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getDescription() {
+        return description;
+    }
 }

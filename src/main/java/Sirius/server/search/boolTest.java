@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * boolTest.java
  *
@@ -6,40 +13,59 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-
 package Sirius.server.search;
 
 /**
+ * DOCUMENT ME!
  *
- * @author schlob
+ * @author   schlob
+ * @version  $Revision$, $Date$
  */
-public class boolTest
-{
+public class boolTest {
+
+    //~ Instance fields --------------------------------------------------------
+
     private boolean c = false;
-    /** Creates a new instance of boolTest */
-    public boolTest()
-    {
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new instance of boolTest.
+     */
+    public boolTest() {
     }
-    
-    public void setC(boolean c)
-    {this.c=c;}
-    
-    public boolean getC()
-    {return c;}
-    
-    public static void main(String[] args)
-    {
-        
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  c  DOCUMENT ME!
+     */
+    public void setC(boolean c) {
+        this.c = c;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean getC() {
+        return c;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  args  DOCUMENT ME!
+     */
+    public static void main(String[] args) {
         boolTest b = new boolTest();
-        
+
         System.out.println(b.getC());
-       boolean a = true;
+        boolean a = true;
         b.setC(a);
-          System.out.println(b.getC());
-        
-        
-        
+        System.out.println(b.getC());
     }
-       
-    
 }

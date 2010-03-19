@@ -1,73 +1,54 @@
-/*
- * DBConnectionTest.java, encoding: UTF-8
- *
- * Copyright (C) by:
- *
- *----------------------------
- * cismet GmbH
- * Altenkesslerstr. 17
- * Gebaeude D2
- * 66115 Saarbruecken
- * http://www.cismet.de
- *----------------------------
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * See: http://www.gnu.org/licenses/lgpl.txt
- *
- *----------------------------
- * Author:
- * martin.scholl@cismet.de
- *----------------------------
- *
- * Created on 18/02/2010
- *
- */
-
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.server.sql;
 
 import java.sql.ResultSet;
+
 import java.util.Properties;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 /**
+ * DOCUMENT ME!
  *
- * @author martin.scholl@cismet.de
+ * @author   martin.scholl@cismet.de
+ * @version  $Revision$, $Date$
  */
-public class DBConnectionTest
-{
+public class DBConnectionTest {
+
+    //~ Static fields/initializers ---------------------------------------------
+
     private static final transient Logger LOG = Logger.getLogger(
             DBConnectionTest.class);
-    private static final String TEST = "TEST "; // NOI18N
+    private static final String TEST = "TEST ";           // NOI18N
     private static final DBClassifier DB_CLASSIFIER = new DBClassifier(
-                "jdbc:postgresql://kif:5432/wuli_server_dev", // NOI18N
-                "postgres", // NOI18N
-                "x", // NOI18N
-                "org.postgresql.Driver"); // NOI18N
+            "jdbc:postgresql://kif:5432/wuli_server_dev", // NOI18N
+            "postgres",                                   // NOI18N
+            "x",                                          // NOI18N
+            "org.postgresql.Driver");                     // NOI18N
 
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     */
     @BeforeClass
-    public static void setUpClass()
-    {
+    public static void setUpClass() {
         final Properties p = new Properties();
         p.put("log4j.appender.Remote", "org.apache.log4j.net.SocketAppender");
         p.put("log4j.appender.Remote.remoteHost", "localhost");
@@ -77,31 +58,42 @@ public class DBConnectionTest
         PropertyConfigurator.configure(p);
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @AfterClass
-    public static void tearDownClass()
-    {
+    public static void tearDownClass() {
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Before
-    public void setUp()
-    {
+    public void setUp() {
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @After
-    public void tearDown()
-    {
+    public void tearDown() {
     }
 
-    private String getCurrentMethodName()
-    {
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String getCurrentMethodName() {
         return new Throwable().getStackTrace()[1].getMethodName();
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Test
-    public void testCharToBool()
-    {
-        if(LOG.isInfoEnabled())
-        {
+    public void testCharToBool() {
+        if (LOG.isInfoEnabled()) {
             LOG.info(TEST + getCurrentMethodName());
         }
         final String message = "char was: ";
@@ -117,230 +109,243 @@ public class DBConnectionTest
         assertFalse(message + c, DBConnection.charToBool(c));
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Test
-    public void testStringToBool()
-    {
-        if(LOG.isInfoEnabled())
-        {
+    public void testStringToBool() {
+        if (LOG.isInfoEnabled()) {
             LOG.info(TEST + getCurrentMethodName());
         }
         final String message = "String was: ";
-        final String[] trues = new String[]
-        {
-            "t", "T", "tT", "Tt", "T23asdjk", "t32987tjng§", "T.yjflsajg"
-        };
-        for(final String s : trues)
-        {
+        final String[] trues = new String[] { "t", "T", "tT", "Tt", "T23asdjk", "t32987tjng§", "T.yjflsajg" };
+        for (final String s : trues) {
             assertTrue(message + s, DBConnection.stringToBool(s));
         }
-        final String[] falses = new String[]
-        {
-            "a", "A", "Aasdf", "afdg4rgf", "..fdas", "///", "\\", "\t", " "
-        };
-        for(final String s : falses)
-        {
+        final String[] falses = new String[] { "a", "A", "Aasdf", "afdg4rgf", "..fdas", "///", "\\", "\t", " " };
+        for (final String s : falses) {
             assertFalse(message + s, DBConnection.stringToBool(s));
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  Throwable  DOCUMENT ME!
+     */
     @Test
-    public void testSubmitInternalQueryOK() throws Throwable
-    {
-        if(LOG.isInfoEnabled())
-        {
+    public void testSubmitInternalQueryOK() throws Throwable {
+        if (LOG.isInfoEnabled()) {
             LOG.info(TEST + getCurrentMethodName());
         }
         final DBConnection con = new DBConnection(DB_CLASSIFIER);
-        ResultSet set1= null;
-        try
-        {
+        ResultSet set1 = null;
+        try {
             set1 = con.submitInternalQuery(
-                    "verify_user_password", "admin", "sb");
-            if(set1.next())
-            {
+                    "verify_user_password",
+                    "admin",
+                    "sb");
+            if (set1.next()) {
                 assertEquals("not exactly one user found", 1, set1.getInt(1));
-            }else
-            {
+            } else {
                 fail("illegal resultset state");
             }
-        }finally
-        {
+        } finally {
             DBConnection.closeResultSets(set1);
         }
     }
 
-    @Test(expected=IllegalArgumentException.class)
-    public void testSubmitInternalQueryInvalidDescriptor() throws Throwable
-    {
-        if(LOG.isInfoEnabled())
-        {
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  Throwable  DOCUMENT ME!
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testSubmitInternalQueryInvalidDescriptor() throws Throwable {
+        if (LOG.isInfoEnabled()) {
             LOG.info(TEST + getCurrentMethodName());
         }
         final DBConnection con = new DBConnection(DB_CLASSIFIER);
-        ResultSet set1= null;
-        try
-        {
+        ResultSet set1 = null;
+        try {
             set1 = con.submitInternalQuery("x", "admin", "sb");
-        }finally
-        {
+        } finally {
             DBConnection.closeResultSets(set1);
         }
     }
 
-    @Test(expected=IllegalArgumentException.class)
-    public void testSubmitInternalQueryTooManyParams() throws Throwable
-    {
-        if(LOG.isInfoEnabled())
-        {
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  Throwable  DOCUMENT ME!
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testSubmitInternalQueryTooManyParams() throws Throwable {
+        if (LOG.isInfoEnabled()) {
             LOG.info(TEST + getCurrentMethodName());
         }
         final DBConnection con = new DBConnection(DB_CLASSIFIER);
-        ResultSet set1= null;
-        try
-        {
+        ResultSet set1 = null;
+        try {
             set1 = con.submitInternalQuery(
-                    "verify_user_password", "admin", "sb", "sb");
-        }finally
-        {
+                    "verify_user_password",
+                    "admin",
+                    "sb",
+                    "sb");
+        } finally {
             DBConnection.closeResultSets(set1);
         }
     }
 
-    @Test(expected=IllegalArgumentException.class)
-    public void testSubmitInternalQueryTooLessParams() throws Throwable
-    {
-        if(LOG.isInfoEnabled())
-        {
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  Throwable  DOCUMENT ME!
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testSubmitInternalQueryTooLessParams() throws Throwable {
+        if (LOG.isInfoEnabled()) {
             LOG.info(TEST + getCurrentMethodName());
         }
         final DBConnection con = new DBConnection(DB_CLASSIFIER);
-        ResultSet set1= null;
-        try
-        {
+        ResultSet set1 = null;
+        try {
             set1 = con.submitInternalQuery(
-                    "verify_user_password", "admin");
-        }finally
-        {
+                    "verify_user_password",
+                    "admin");
+        } finally {
             DBConnection.closeResultSets(set1);
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Ignore
     @Test
-    public void testSubmitQuery_String_ObjectArr()
-    {
-        if(LOG.isInfoEnabled())
-        {
+    public void testSubmitQuery_String_ObjectArr() {
+        if (LOG.isInfoEnabled()) {
             LOG.info("TEST " + getCurrentMethodName());
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Ignore
     @Test
-    public void testSubmitQuery_int_ObjectArr()
-    {
-        if(LOG.isInfoEnabled())
-        {
+    public void testSubmitQuery_int_ObjectArr() {
+        if (LOG.isInfoEnabled()) {
             LOG.info("TEST " + getCurrentMethodName());
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Ignore
     @Test
-    public void testSubmitQuery_Query()
-    {
-        if(LOG.isInfoEnabled())
-        {
+    public void testSubmitQuery_Query() {
+        if (LOG.isInfoEnabled()) {
             LOG.info("TEST " + getCurrentMethodName());
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Ignore
     @Test
-    public void testSubmitUpdate_Query()
-    {
-        if(LOG.isInfoEnabled())
-        {
+    public void testSubmitUpdate_Query() {
+        if (LOG.isInfoEnabled()) {
             LOG.info("TEST " + getCurrentMethodName());
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Ignore
     @Test
-    public void testSubmitUpdate_String_ObjectArr()
-    {
-        if(LOG.isInfoEnabled())
-        {
+    public void testSubmitUpdate_String_ObjectArr() {
+        if (LOG.isInfoEnabled()) {
             LOG.info("TEST " + getCurrentMethodName());
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Ignore
     @Test
-    public void testSubmitUpdate_int_ObjectArr()
-    {
-        if(LOG.isInfoEnabled())
-        {
+    public void testSubmitUpdate_int_ObjectArr() {
+        if (LOG.isInfoEnabled()) {
             LOG.info("TEST " + getCurrentMethodName());
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Ignore
     @Test
-    public void testFetchStatement_String()
-    {
-        if(LOG.isInfoEnabled())
-        {
+    public void testFetchStatement_String() {
+        if (LOG.isInfoEnabled()) {
             LOG.info("TEST " + getCurrentMethodName());
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Ignore
     @Test
-    public void testFetchStatement_int()
-    {
-        if(LOG.isInfoEnabled())
-        {
+    public void testFetchStatement_int() {
+        if (LOG.isInfoEnabled()) {
             LOG.info("TEST " + getCurrentMethodName());
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Ignore
     @Test
-    public void testGetStatementCache()
-    {
-        if(LOG.isInfoEnabled())
-        {
+    public void testGetStatementCache() {
+        if (LOG.isInfoEnabled()) {
             LOG.info("TEST " + getCurrentMethodName());
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Ignore
     @Test
-    public void testExecuteQuery()
-    {
-        if(LOG.isInfoEnabled())
-        {
+    public void testExecuteQuery() {
+        if (LOG.isInfoEnabled()) {
             LOG.info("TEST " + getCurrentMethodName());
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Ignore
     @Test
-    public void testSubmitUpdateBatch_int_ObjectArr()
-    {
-        if(LOG.isInfoEnabled())
-        {
+    public void testSubmitUpdateBatch_int_ObjectArr() {
+        if (LOG.isInfoEnabled()) {
             LOG.info("TEST " + getCurrentMethodName());
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Ignore
     @Test
-    public void testSubmitUpdateBatch_String_ObjectArr()
-    {
-        if(LOG.isInfoEnabled())
-        {
+    public void testSubmitUpdateBatch_String_ObjectArr() {
+        if (LOG.isInfoEnabled()) {
             LOG.info("TEST " + getCurrentMethodName());
         }
     }

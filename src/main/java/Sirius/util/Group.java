@@ -1,46 +1,74 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.util;
 
-public class Group
-{
-	private String group;
-	private int[] items;
+/**
+ * DOCUMENT ME!
+ *
+ * @version  $Revision$, $Date$
+ */
+public class Group {
 
+    //~ Instance fields --------------------------------------------------------
 
+    private String group;
+    private int[] items;
 
-	public Group(String group,Groupable[] items)
-	{
-		this.group = group;
-		this.items = getIDs(items);
+    //~ Constructors -----------------------------------------------------------
 
-	}
+    /**
+     * Creates a new Group object.
+     *
+     * @param  group  DOCUMENT ME!
+     * @param  items  DOCUMENT ME!
+     */
+    public Group(String group, Groupable[] items) {
+        this.group = group;
+        this.items = getIDs(items);
+    }
 
-//-------------------------------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
-	private final int[] getIDs(Groupable[] items)
-	{
+    /**
+     * -------------------------------------------------------------------------------
+     *
+     * @param   items  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private int[] getIDs(Groupable[] items) {
+        int[] ids = new int[items.length];
 
+        // extract ids from groupables
+        for (int i = 0; i < ids.length; i++) {
+            ids[i] = items[i].getId();
+        }
 
-		int[] ids = new int[items.length];
-
-		//extract ids from groupables
-		for(int i =0;i<ids.length;i++)
-		{
-			ids[i] = items[i].getId();
-
-		}
-
-		return ids;
-
-	}
+        return ids;
+    }
 
 //------------------------------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getGroup() {
+        return group;
+    }
 
-public final String getGroup(){return group;}
-
-public final int[] getIDs(){return items;}
-
-
-
-
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final int[] getIDs() {
+        return items;
+    }
 }

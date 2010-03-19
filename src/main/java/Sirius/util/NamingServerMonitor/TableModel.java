@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 //------------------------------------------------------------------------------
 //
 // Project   : NamingServerMonitor
@@ -7,48 +14,69 @@
 //
 //------------------------------------------------------------------------------
 //
-
 package Sirius.util.NamingServerMonitor;
 
 import javax.swing.table.*;
+
 import java.util.*;
 
-	
-	
-public class TableModel extends DefaultTableModel
-{
- public TableModel(java.lang.Object[][] bounds,java.lang.Object[] cnames)
- { super(bounds,cnames); }
+/**
+ * DOCUMENT ME!
+ *
+ * @version  $Revision$, $Date$
+ */
+public class TableModel extends DefaultTableModel {
 
- public TableModel()
- { super(); }
+    //~ Constructors -----------------------------------------------------------
 
- public boolean isCellEditable(int row, int column)
- {return false;}
-	
-	
- public static java.lang.Object[][] convertToMatrix(String[] bounds)
- {
-	java.lang.Object[][] matrix = new java.lang.Object[bounds.length][];
-	for(int i =0; i<bounds.length;i++)
-	{
-		java.lang.Object[] columnVals= new java.lang.Object[1];
-		columnVals[0] = bounds[i];
-		
-		matrix[i] = columnVals;
- 	}
- return matrix;
+    /**
+     * Creates a new TableModel object.
+     */
+    public TableModel() {
+        super();
+    }
+    /**
+     * Creates a new TableModel object.
+     *
+     * @param  bounds  DOCUMENT ME!
+     * @param  cnames  DOCUMENT ME!
+     */
+    public TableModel(java.lang.Object[][] bounds, java.lang.Object[] cnames) {
+        super(bounds, cnames);
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    public boolean isCellEditable(int row, int column) {
+        return false;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   bounds  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static java.lang.Object[][] convertToMatrix(String[] bounds) {
+        java.lang.Object[][] matrix = new java.lang.Object[bounds.length][];
+        for (int i = 0; i < bounds.length; i++) {
+            java.lang.Object[] columnVals = new java.lang.Object[1];
+            columnVals[0] = bounds[i];
+
+            matrix[i] = columnVals;
+        }
+        return matrix;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   obs  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static java.util.Vector convertToVector(java.lang.Object[] obs) {
+        return DefaultTableModel.convertToVector(obs);
+    }
 }
-
-
-
-		
-		
-	
- 
- public static java.util.Vector convertToVector(java.lang.Object obs[])
- {
-	return DefaultTableModel.convertToVector(obs);
- }
-}
-

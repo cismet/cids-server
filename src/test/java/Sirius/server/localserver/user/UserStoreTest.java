@@ -1,63 +1,40 @@
-/*
- *  UserStoreTest.java, encoding: UTF-8
- *
- * Copyright (C) by:
- *
- *----------------------------
- * cismet GmbH
- * Altenkesslerstr. 17
- * Gebaeude D2
- * 66115 Saarbruecken
- * http://www.cismet.de
- *----------------------------
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * See: http://www.gnu.org/licenses/lgpl.txt
- *
- *----------------------------
- * Author:
- * martin.scholl@cismet.de
- *----------------------------
- *
- * Created on 18/02/2010
- *
- */
-
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.server.localserver.user;
 
 import Sirius.server.newuser.User;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.sql.DBConnectionPool;
+
 import java.util.Properties;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 /**
+ * DOCUMENT ME!
  *
- * @author mscholl
+ * @author   mscholl
+ * @version  $Revision$, $Date$
  */
-public class UserStoreTest
-{
+public class UserStoreTest {
+
+    //~ Static fields/initializers ---------------------------------------------
+
     private static final transient Logger LOG = Logger.getLogger(
             UserStoreTest.class);
     private static final String TEST = "TEST ";
@@ -65,9 +42,15 @@ public class UserStoreTest
     private static ServerProperties props;
     private static DBConnectionPool pool;
 
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  Throwable  DOCUMENT ME!
+     */
     @BeforeClass
-    public static void setUpClass() throws Throwable
-    {
+    public static void setUpClass() throws Throwable {
         final Properties p = new Properties();
         p.put("log4j.appender.Remote", "org.apache.log4j.net.SocketAppender");
         p.put("log4j.appender.Remote.remoteHost", "localhost");
@@ -75,95 +58,129 @@ public class UserStoreTest
         p.put("log4j.appender.Remote.locationInfo", "true");
         p.put("log4j.rootLogger", "ALL,Remote");
         PropertyConfigurator.configure(p);
-        props = new ServerProperties(UserStoreTest.class.getResourceAsStream(
-                "/Sirius/server/localserver/object/" // NOI18N
-                + "runtime.properties")); // NOI18N
+        props = new ServerProperties(
+                UserStoreTest.class.getResourceAsStream(
+                    "/Sirius/server/localserver/object/" // NOI18N
+                    + "runtime.properties"));            // NOI18N
         pool = new DBConnectionPool(props);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
     @AfterClass
-    public static void tearDownClass() throws Exception
-    {
+    public static void tearDownClass() throws Exception {
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Before
-    public void setUp()
-    {
+    public void setUp() {
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @After
-    public void tearDown()
-    {
+    public void tearDown() {
     }
 
-    private String getCurrentMethodName()
-    {
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String getCurrentMethodName() {
         return new Throwable().getStackTrace()[1].getMethodName();
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Ignore
     @Test
-    public void testGetUsers()
-    {
+    public void testGetUsers() {
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Ignore
     @Test
-    public void testGetUserGroups()
-    {
+    public void testGetUserGroups() {
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Ignore
     @Test
-    public void testGetMemberships()
-    {
+    public void testGetMemberships() {
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
     @Ignore
     @Test
-    public void testChangePassword() throws Exception
-    {
+    public void testChangePassword() throws Exception {
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     @Ignore
     @Test
-    public void testValidateUser()
-    {
+    public void testValidateUser() {
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  Throwable  DOCUMENT ME!
+     */
     @Test
-    public void testValidateUserPassword_OK() throws Throwable
-    {
-        if(LOG.isInfoEnabled())
-        {
+    public void testValidateUserPassword_OK() throws Throwable {
+        if (LOG.isInfoEnabled()) {
             LOG.info(TEST + getCurrentMethodName());
         }
         final UserStore us = new UserStore(pool, props);
         assertTrue("invalid user + password",
-                us.validateUserPassword(new User(-1, "admin", null), "sb"));
+            us.validateUserPassword(new User(-1, "admin", null), "sb"));
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  Throwable  DOCUMENT ME!
+     */
     @Test
-    public void testValidateUserPassword_invalidPW() throws Throwable
-    {
-        if(LOG.isInfoEnabled())
-        {
+    public void testValidateUserPassword_invalidPW() throws Throwable {
+        if (LOG.isInfoEnabled()) {
             LOG.info(TEST + getCurrentMethodName());
         }
         final UserStore us = new UserStore(pool, props);
         assertFalse("valid user + password",
-                us.validateUserPassword(new User(-1, "admin", null), "s"));
+            us.validateUserPassword(new User(-1, "admin", null), "s"));
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  Throwable  DOCUMENT ME!
+     */
     @Test
-    public void testValidateUserPassword_invalidUser() throws Throwable
-    {
-        if(LOG.isInfoEnabled())
-        {
+    public void testValidateUserPassword_invalidUser() throws Throwable {
+        if (LOG.isInfoEnabled()) {
             LOG.info(TEST + getCurrentMethodName());
         }
         final UserStore us = new UserStore(pool, props);
         assertFalse("valid user + password",
-                us.validateUserPassword(new User(-1, "invalid", null), "s"));
+            us.validateUserPassword(new User(-1, "invalid", null), "s"));
     }
 }

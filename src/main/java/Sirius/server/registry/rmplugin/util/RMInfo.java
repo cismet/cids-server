@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * RMInfo.java
  *
@@ -6,38 +13,60 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-
 package Sirius.server.registry.rmplugin.util;
 
 import java.io.Serializable;
+
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.URI;
+
 import java.text.SimpleDateFormat;
+
 import java.util.Date;
 import java.util.TimeZone;
 
 /**
+ * DOCUMENT ME!
  *
- * @author Sebastian
- * TODO Refactor
+ * @author   Sebastian TODO Refactor
+ * @version  $Revision$, $Date$
  */
 public class RMInfo implements Serializable {
-    
-    
+
+    //~ Instance fields --------------------------------------------------------
+
     private String userName;
     private String userGroup;
     private String userDomain;
-    private int    port;
+    private int port;
     private InetAddress address;
     private URI rmiAddress;
     private String key;
     private InetAddress ip;
     private long onlineSince;
-    
-    
-    /** Creates a new instance of RMInfo */
-    public RMInfo(String userName,String userGroup,String userDomain,int port,long onlineSince,InetAddress ip,URI rmiAddress) {
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new instance of RMInfo.
+     *
+     * @param  userName     DOCUMENT ME!
+     * @param  userGroup    DOCUMENT ME!
+     * @param  userDomain   DOCUMENT ME!
+     * @param  port         DOCUMENT ME!
+     * @param  onlineSince  DOCUMENT ME!
+     * @param  ip           DOCUMENT ME!
+     * @param  rmiAddress   DOCUMENT ME!
+     */
+    public RMInfo(
+            String userName,
+            String userGroup,
+            String userDomain,
+            int port,
+            long onlineSince,
+            InetAddress ip,
+            URI rmiAddress) {
         this.userName = userName;
         this.userGroup = userGroup;
         this.userDomain = userDomain;
@@ -47,37 +76,57 @@ public class RMInfo implements Serializable {
         this.ip = ip;
         key = userName + "@" + userGroup + "@" + userDomain;
     }
-    
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public String getUserName() {
         return userName;
     }
-    
-    
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public String getUserGroup() {
         return userGroup;
     }
-    
-    
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public int getPort() {
         return port;
     }
-    
-    
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public URI getRmiAddress() {
         return rmiAddress;
     }
-    
-    
-    
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public String getKey() {
         return key;
     }
-    
-    
-    
+
     public boolean equals(Object obj) {
-        if(obj instanceof RMInfo){
-            if(rmiAddress.equals(((RMInfo) obj).getRmiAddress())){
+        if (obj instanceof RMInfo) {
+            if (rmiAddress.equals(((RMInfo)obj).getRmiAddress())) {
                 return true;
             } else {
                 return false;
@@ -86,41 +135,80 @@ public class RMInfo implements Serializable {
             return false;
         }
     }
-    
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public long getOnlineSince() {
         return onlineSince;
     }
-    
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public InetAddress getIp() {
         return ip;
     }
-    
-    public long getOnlineTimeInMillis(){
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public long getOnlineTimeInMillis() {
         return (System.currentTimeMillis() - onlineSince);
     }
-    
-    public long getOnlineTimeInSeconds(){
-        return (System.currentTimeMillis() - onlineSince)/1000;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public long getOnlineTimeInSeconds() {
+        return (System.currentTimeMillis() - onlineSince) / 1000;
     }
-    
-    public String getOnlineTimeAsText(){
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getOnlineTimeAsText() {
         long currentTime = System.currentTimeMillis();
-        SimpleDateFormat dateFormat =
-                new SimpleDateFormat("HH:mm:ss");
-        
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
         long elapsed = currentTime - onlineSince;
         return dateFormat.format(new Date(elapsed));
     }
-    
-    public String getIP(){
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getIP() {
         return ip.getHostAddress();
     }
-    
-    public String getHost(){
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getHost() {
         return ip.getHostName();
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public String getUserDomain() {
         return userDomain;
     }

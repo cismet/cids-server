@@ -1,120 +1,128 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * AdressStringConverter.java
  *
  * Created on 11. Mai 2004, 13:31
  */
-
 package de.cismet.cids.tools.tostring;
 import Sirius.server.localserver.attribute.*;
+
+
 //import de.cismet.tools.postgis.*;
 import java.util.*;
 
 import com.vividsolutions.jts.geom.*;
 /**
+ * DOCUMENT ME!
  *
- * @author  schlob
+ * @author   schlob
+ * @version  $Revision$, $Date$
  */
-public class GeometryStringConverter extends ToStringConverter implements java.io.Serializable
-{
+public class GeometryStringConverter extends ToStringConverter implements java.io.Serializable {
+
+    //~ Static fields/initializers ---------------------------------------------
+
     protected static String GEOM_CLASS = "com.vividsolutions.jts.geom.Geometry";
-    //SRID=-1;POLYGON((191232 243117,191232 243119,191234 243117,191232 243117))
-    private static  transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(GeometryStringConverter.class);
-    
-    
-    public GeometryStringConverter()
-    {
+    // SRID=-1;POLYGON((191232 243117,191232 243119,191234 243117,191232 243117))
+    private static transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(
+            GeometryStringConverter.class);
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new GeometryStringConverter object.
+     */
+    public GeometryStringConverter() {
         super();
     }
-    
-    
-    public  String convert(de.cismet.cids.tools.tostring.StringConvertable o)
-    {
-        if(logger==null)
+
+    //~ Methods ----------------------------------------------------------------
+
+    public String convert(de.cismet.cids.tools.tostring.StringConvertable o) {
+        if (logger == null) {
             logger = org.apache.log4j.Logger.getLogger(GeometryStringConverter.class);
-        //!!!! attention o.toString will cause stack overflow :-)
-        
-        if(logger!=null)logger.debug("convert of GeometryStringconverter called");
-        
-//       return convert( ((ObjectAttribute)o).getValue().toString());   if (o instanceof Sirius.server.localserver.attribute.ObjectAttribute)
-        if (o instanceof Sirius.server.localserver.attribute.ObjectAttribute)
-        {
-             if(logger!=null)logger.debug(" o instanceof ObjectAttribute");
-            
-            java.lang.Object attrObj = ((ObjectAttribute)o).getValue();
-            
-            if(attrObj instanceof Geometry)
-            {
-                  if(logger!=null)logger.debug(" o instanceof Geometry");
-                
-                return ((Geometry)attrObj).toText();
+        }
+        // !!!! attention o.toString will cause stack overflow :-)
+
+        if (logger != null) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("convert of GeometryStringconverter called");
             }
-            
-            else if (attrObj instanceof Sirius.server.localserver.object.Object)
-            {
-                  if(logger!=null)logger.debug(" o instanceof ServerObject");
-                try
-                {
+        }
+
+//       return convert( ((ObjectAttribute)o).getValue().toString());   if (o instanceof Sirius.server.localserver.attribute.ObjectAttribute)
+        if (o instanceof Sirius.server.localserver.attribute.ObjectAttribute) {
+            if (logger != null) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug(" o instanceof ObjectAttribute");
+                }
+            }
+
+            java.lang.Object attrObj = ((ObjectAttribute)o).getValue();
+
+            if (attrObj instanceof Geometry) {
+                if (logger != null) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(" o instanceof Geometry");
+                    }
+                }
+
+                return ((Geometry)attrObj).toText();
+            } else if (attrObj instanceof Sirius.server.localserver.object.Object) {
+                if (logger != null) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(" o instanceof ServerObject");
+                    }
+                }
+                try {
                     // problem welches attribut solls sein
-                    
-                    Collection c = ((Sirius.server.localserver.object.Object)attrObj).getAttributesByType(Class.forName(GEOM_CLASS));
+
+                    Collection c = ((Sirius.server.localserver.object.Object)attrObj).getAttributesByType(
+                            Class.forName(GEOM_CLASS));
                     // nimm das erste
                     Iterator<Sirius.server.localserver.attribute.ObjectAttribute> iter = c.iterator();
-                    
-                    if(iter.hasNext())
+
+                    if (iter.hasNext()) {
                         return convert((StringConvertable)iter.next());
-                    
-                    
+                    }
+                } catch (ClassNotFoundException ex) {
+                    return "Wrong Type not convertable Class Not Found " + ex.getMessage();
                 }
-                catch (ClassNotFoundException ex)
-                {
-                    return "Wrong Type not convertable Class Not Found "+ex.getMessage();
-                }
-                
-                
-                
-            }
-            else // irgendwas
+            } else // irgendwas
             {
-                  if(logger!=null)logger.error("Fehler im erstellen der Stringrepr\u00E4sentation");
+                if (logger != null) {
+                    logger.error("Fehler im erstellen der Stringrepr\u00E4sentation");
+                }
                 return "Fehler im erstellen der Stringrep\u00E4sentation";
             }
-            
-        }
-        else if (o instanceof Sirius.server.localserver.object.Object)
-        {
-            try
-            {
+        } else if (o instanceof Sirius.server.localserver.object.Object) {
+            try {
                 // problem welches attribut solls sein
-                
-                Collection c = ((Sirius.server.localserver.object.Object)o).getAttributesByType(Class.forName(GEOM_CLASS));
+
+                Collection c = ((Sirius.server.localserver.object.Object)o).getAttributesByType(
+                        Class.forName(GEOM_CLASS));
                 // nimm das erste
                 Iterator<Sirius.server.localserver.attribute.ObjectAttribute> iter = c.iterator();
-                
-                if(iter.hasNext())
+
+                if (iter.hasNext()) {
                     return convert((StringConvertable)iter.next());
-                else
+                } else {
                     return "NO GeoAttribute found in Object";
-                
-                
-            }
-            catch (ClassNotFoundException ex)
-            {
-                return "Wrong Type not convertable Class Not Found "+ex.getMessage();
+                }
+            } catch (ClassNotFoundException ex) {
+                return "Wrong Type not convertable Class Not Found " + ex.getMessage();
             }
         }
-        
-        
-        
-        
-        return "Wrong Type not convertable ::"+o.getClass();
-        
-        
+
+        return "Wrong Type not convertable ::" + o.getClass();
     }
-    
-    
-    
-    
-    
+
 //     public  String convert(String o)
 //    {
 //        String stringRepresentation="";
@@ -170,10 +178,7 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
 //
 //        return stringRepresentation;
 //    }
-    
-    
-    
-    
+
 //    public static void main(String[] args)
 //    {
 //

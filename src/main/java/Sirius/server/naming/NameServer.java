@@ -1,32 +1,124 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.server.naming;
 
 import java.rmi.*;
+
 import Sirius.server.*;
+
 import java.util.HashMap;
 
-public interface NameServer extends Remote
-{
-    public boolean registerServer(int serverTyp, String name, String ip)
-    throws RemoteException;
-    
-    public boolean registerServer(int serverTyp, String name, String ip, String port)
-    throws RemoteException;
-    
-    public boolean unregisterServer( int serverTyp, String name, String ip)
-    throws RemoteException;
-    
-    public boolean unregisterServer( int serverTyp, String name, String ip, String port)
-    throws RemoteException;
-    
-    public HashMap<String,String> getServerIPs(int serverTyp)
-    throws RemoteException;
-    
-    public String getServerIP(int serverTyp, String name)
-    throws RemoteException;
-    
-    public Server[] getServers(int serverTyp)
-    throws RemoteException;
-    
-    public Server getServer(int serverTyp, String serverName)
-    throws RemoteException;
+/**
+ * DOCUMENT ME!
+ *
+ * @version  $Revision$, $Date$
+ */
+public interface NameServer extends Remote {
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   serverTyp  DOCUMENT ME!
+     * @param   name       DOCUMENT ME!
+     * @param   ip         DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    boolean registerServer(int serverTyp, String name, String ip) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   serverTyp  DOCUMENT ME!
+     * @param   name       DOCUMENT ME!
+     * @param   ip         DOCUMENT ME!
+     * @param   port       DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    boolean registerServer(int serverTyp, String name, String ip, String port) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   serverTyp  DOCUMENT ME!
+     * @param   name       DOCUMENT ME!
+     * @param   ip         DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    boolean unregisterServer(int serverTyp, String name, String ip) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   serverTyp  DOCUMENT ME!
+     * @param   name       DOCUMENT ME!
+     * @param   ip         DOCUMENT ME!
+     * @param   port       DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    boolean unregisterServer(int serverTyp, String name, String ip, String port) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   serverTyp  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    HashMap<String, String> getServerIPs(int serverTyp) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   serverTyp  DOCUMENT ME!
+     * @param   name       DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    String getServerIP(int serverTyp, String name) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   serverTyp  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    Server[] getServers(int serverTyp) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   serverTyp   DOCUMENT ME!
+     * @param   serverName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    Server getServer(int serverTyp, String serverName) throws RemoteException;
 }
