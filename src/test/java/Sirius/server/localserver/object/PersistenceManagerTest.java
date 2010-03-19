@@ -401,9 +401,11 @@ public class PersistenceManagerTest
         mai1.setId(DEFAULT_ID);
         mai1.setForeignKey(true);
         mai1.setIndexed(true);
+        mai1.setForeignKeyClassId(classId + 1);
         final MemberAttributeInfo mai2 = new MemberAttributeInfo();
         mai2.setClassId(DEFAULT_CLASS_ID);
         mai2.setId(DEFAULT_ID + 1);
+        mai2.setForeignKeyClassId(classId + 2);
         final DefaultMetaObject m1 = new DefaultMetaObject(
                 new DefaultObject(objectId + 1, classId + 1), "NODOMAIN");
         final DefaultMetaObject m2 = new DefaultMetaObject(
@@ -427,11 +429,13 @@ public class PersistenceManagerTest
         mai1.setId(DEFAULT_ID);
         mai1.setForeignKey(true);
         mai1.setIndexed(true);
+        mai1.setForeignKeyClassId(classId + 1);
         final MemberAttributeInfo mai2 = new MemberAttributeInfo();
         mai2.setClassId(DEFAULT_CLASS_ID);
         mai2.setId(DEFAULT_ID + 1);
         mai2.setIndexed(true);
         mai2.setForeignKey(true);
+        mai2.setForeignKeyClassId(classId + 2);
         final DefaultMetaObject m1 = new DefaultMetaObject(
                 new DefaultObject(objectId + 1, classId + 1), "NODOMAIN");
         final DefaultMetaObject m2 = new DefaultMetaObject(
@@ -477,11 +481,13 @@ public class PersistenceManagerTest
         mai3.setId(DEFAULT_ID + 2);
         mai3.setForeignKey(true);
         mai3.setIndexed(true);
+        mai3.setForeignKeyClassId(classId + 1);
         final MemberAttributeInfo mai4 = new MemberAttributeInfo();
         mai4.setClassId(DEFAULT_CLASS_ID);
         mai4.setId(DEFAULT_ID + 3);
         mai4.setIndexed(true);
         mai4.setForeignKey(true);
+        mai4.setForeignKeyClassId(classId + 2);
         dO.addAttribute(new ObjectAttribute(
                 mai1, DEFAULT_OBJECT_ID, val1, Policy.createWIKIPolicy()));
         dO.addAttribute(new ObjectAttribute(
