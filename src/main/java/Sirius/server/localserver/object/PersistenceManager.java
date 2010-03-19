@@ -793,7 +793,7 @@ public final class PersistenceManager {
                         // if field represents a foreign key the attribute value
                         // is assumed to be a MetaObject
                         final MetaObject value = (MetaObject)attr.getValue();
-                        psAttrMap.setInt(1, value == null ? null : value.getID());
+                        psAttrMap.setInt(1, value == null ? -1 : value.getID());
                         psAttrMap.setInt(2, mo.getClassID());
                         psAttrMap.setInt(3, mo.getID());
                         psAttrMap.setInt(4, mai.getForeignKeyClassId());
@@ -802,7 +802,7 @@ public final class PersistenceManager {
                             // create debug statement
                             final String debugStmt = UP_ATTR_MAPPING.replaceFirst(
                                         DEBUG_REPLACE,
-                                        String.valueOf(value == null ? null : value.getID()))
+                                        String.valueOf(value == null ? -1 : value.getID()))
                                         .replaceFirst(DEBUG_REPLACE, String.valueOf(mo.getClassID()))
                                         .replaceFirst(DEBUG_REPLACE, String.valueOf(mo.getID()))
                                         .replaceFirst(DEBUG_REPLACE, String.valueOf(mai.getForeignKeyClassId()));
@@ -814,7 +814,7 @@ public final class PersistenceManager {
                             psAttrString = transactionHelper.getConnection().prepareStatement(UP_ATTR_STRING);
                         }
                         // interpret the fields value as a string
-                        psAttrString.setString(1, String.valueOf(attr.getValue()));
+                        psAttrString.setString(1, attr.getValue() == null ? NULL : String.valueOf(attr.getValue()));
                         psAttrString.setInt(2, mo.getClassID());
                         psAttrString.setInt(3, mo.getID());
                         psAttrString.setInt(4, mai.getId());
@@ -914,7 +914,7 @@ public final class PersistenceManager {
                         // if field represents a foreign key the attribute value
                         // is assumed to be a MetaObject
                         final MetaObject value = (MetaObject)attr.getValue();
-                        psAttrMap.setInt(4, (value == null) ? null : value.getID());
+                        psAttrMap.setInt(4, (value == null) ? -1 : value.getID());
                         psAttrMap.addBatch();
                     } else {
                         // lazily prepare the statement
@@ -925,7 +925,7 @@ public final class PersistenceManager {
                         psAttrString.setInt(2, mo.getID());
                         psAttrString.setInt(3, mai.getId());
                         // interpret the fields value as a string
-                        psAttrString.setString(4, String.valueOf(attr.getValue()));
+                        psAttrString.setString(4, attr.getValue() == null ? NULL : String.valueOf(attr.getValue()));
                         psAttrString.addBatch();
                     }
                 }
