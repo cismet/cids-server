@@ -74,8 +74,7 @@ public class CidsBean implements PropertyChangeListener {
             return false;
         }
         final CidsBean other = (CidsBean) obj;
-
-        return other.metaObject.getID() == metaObject.getID() && other.metaObject.getMetaClass().getID() == metaObject.getMetaClass().getID();
+        return metaObject.equals(other.metaObject);
     }
 
     @Override

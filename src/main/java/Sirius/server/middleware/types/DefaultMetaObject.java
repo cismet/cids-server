@@ -199,7 +199,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
                         dummyEntryMO.getAttributeByFieldName(backreferenceFieldName).setValue(primaryKey);
                     }
                 } catch (Exception e) {
-                    getLogger().debug("no dummyobject for "+oa.getMai().getFieldName());
+                    getLogger().debug("no dummyobject for " + oa.getMai().getFieldName());
                 }
             }
         }
@@ -213,8 +213,6 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
     public String toString(HashMap classes) {
         return metaClass.getToStringConverter().convert(this, classes);
     }
-
-    
 
     /**
      * getter for classKey
@@ -570,11 +568,11 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
         String ret = "";
         //System.out.println("class :: "+classID+"object :: " +objectID+"  atrubutes"+ attribHash);
         // border=\"1\"  bgcolor=\"#E0E0E0\"
-        ret = "<table border=\"1\" rules=\"all\" cellspacing=\"0\" cellpadding=\"2\"> <tr><th colspan=\"2\" align=\"left\">class = " + classID +
-                "<br>object id =" + objectID +
-                "<br>status = " + getStatusDebugString() +
-                "<br>dummy = " + isDummy() +
-                "</th></tr>";
+        ret = "<table border=\"1\" rules=\"all\" cellspacing=\"0\" cellpadding=\"2\"> <tr><th colspan=\"2\" align=\"left\">class = " + classID
+                + "<br>object id =" + objectID
+                + "<br>status = " + getStatusDebugString()
+                + "<br>dummy = " + isDummy()
+                + "</th></tr>";
 
         ObjectAttribute[] as = getAttribs();
         ret += "";
@@ -594,9 +592,9 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
 
     public String getPropertyString() {
         String ret = "";
-        ret = "Properties:(" + classID +
-                "," + objectID +
-                "):\n";
+        ret = "Properties:(" + classID
+                + "," + objectID
+                + "):\n";
 
         ObjectAttribute[] as = getAttribs();
         for (int i = 0; i < as.length; i++) {
@@ -647,7 +645,12 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
 //            if ((getClassID() == tmp.getClassID()) && (getID() == tmp.getID()) && getDomain().equals(tmp.getDomain()) != equals(obj)) {
 //                logger.fatal("Different Equals: " + toString() + "\n VS \n" + obj);
 //            }
-            return (getClassID() == tmp.getClassID()) && (getID() == tmp.getID()) && getDomain().equals(tmp.getDomain());
+            if (getID() != -1) {
+                return (getClassID() == tmp.getClassID()) && (getID() == tmp.getID()) && getDomain().equals(tmp.getDomain());
+            } else {
+                //new CidBeans have all ID == -1. in this case we compare for reference equality
+                return this == obj;
+            }
         }
         return false;
     }
