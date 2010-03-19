@@ -834,20 +834,19 @@ public class PersistenceManager {
                         // if field represents a foreign key the attribute value
                         // is assumed to be a MetaObject
                         final MetaObject value = (MetaObject)attr.getValue();
-                        psAttrMap.setInt(1, value.getID());
+                        psAttrMap.setInt(1, value == null ? null : value.getID());
                         psAttrMap.setInt(2, mo.getClassID());
                         psAttrMap.setInt(3, mo.getID());
-                        psAttrMap.setInt(4, value.getClassID());
+                        psAttrMap.setInt(4, mai.getForeignKeyClassId());
                         psAttrMap.addBatch();
                         if(logger.isDebugEnabled())
                         {
                             // create debug statement
                             final String debugStmt = UP_ATTR_MAPPING
-                                    .replaceFirst("\\?", "" + value.getID())
+                                    .replaceFirst("\\?", "" + (value == null ? "null" : value.getID()))
                                     .replaceFirst("\\?", "" + mo.getClassID())
                                     .replaceFirst("\\?", "" + mo.getID())
-                                    .replaceFirst("\\?", ""
-                                    + value.getClassID());
+                                    .replaceFirst("\\?", "" + mai.getForeignKeyClassId());
                             logger.debug("added to batch: " + debugStmt);
                         }
                     }else
@@ -859,7 +858,7 @@ public class PersistenceManager {
                                     .prepareStatement(UP_ATTR_STRING);
                         }
                         // interpret the fields value as a string
-                        psAttrString.setString(1, attr.getValue().toString());
+                        psAttrString.setString(1, String.valueOf(attr.getValue()));
                         psAttrString.setInt(2, mo.getClassID());
                         psAttrString.setInt(3, mo.getID());
                         psAttrString.setInt(4, mai.getId());
@@ -974,11 +973,11 @@ public class PersistenceManager {
                         }
                         psAttrMap.setInt(1, mo.getClassID());
                         psAttrMap.setInt(2, mo.getID());
+                        psAttrMap.setInt(3, mai.getForeignKeyClassId());
                         // if field represents a foreign key the attribute value
                         // is assumed to be a MetaObject
                         final MetaObject value = (MetaObject)attr.getValue();
-                        psAttrMap.setInt(3, value.getClassID());
-                        psAttrMap.setInt(4, value.getID());
+                        psAttrMap.setInt(4, value == null ? null : value.getID());
                         psAttrMap.addBatch();
                     }else
                     {
@@ -992,7 +991,7 @@ public class PersistenceManager {
                         psAttrString.setInt(2, mo.getID());
                         psAttrString.setInt(3, mai.getId());
                         // interpret the fields value as a string
-                        psAttrString.setString(4, attr.getValue().toString());
+                        psAttrString.setString(4, String.valueOf(attr.getValue()));
                         psAttrString.addBatch();
                     }
                 }
