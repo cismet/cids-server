@@ -34,8 +34,8 @@ public class ObjectAttribute extends Attribute implements Mapable,
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static String toStringConverterPrefix = "de.cismet.cids.custom.tostringconverter.";
-    private static String toStringConverterPostfix = "ToStringConverter";
+    private static String toStringConverterPrefix = "de.cismet.cids.custom.tostringconverter.";   // NOI18N
+    private static String toStringConverterPostfix = "ToStringConverter";   // NOI18N
 
     //~ Instance fields --------------------------------------------------------
 
@@ -67,7 +67,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
      */
     public ObjectAttribute(MemberAttributeInfo mai, int objectID, java.lang.Object value, Policy policy) {
         // id????
-        this(mai.getId() + "", mai, objectID, value, policy);
+        this(mai.getId() + "", mai, objectID, value, policy);   // NOI18N
     }
     /**
      * /////////////constructor///////////////////////////////////////
@@ -175,7 +175,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
 
     // mapable
     public java.lang.Object getKey() {
-        return id + "@" + classID;
+        return id + "@" + classID;   // NOI18N
     }
 
     public Object constructKey(Mapable m) {
@@ -207,10 +207,10 @@ public class ObjectAttribute extends Attribute implements Mapable,
 
     public String getComplexEditor() {
         if (this.complexEditor == null) {
-            complexEditor = "Sirius.navigator.ui.attributes.editor.metaobject.DefaultComplexMetaAttributeEditor";
+            complexEditor = "Sirius.navigator.ui.attributes.editor.metaobject.DefaultComplexMetaAttributeEditor";   // NOI18N
         }
         if (this.editor == null) {
-            editor = "Sirius.navigator.ui.attributes.editor.metaobject.DefaultSimpleComplexMetaAttributeEditor";
+            editor = "Sirius.navigator.ui.attributes.editor.metaobject.DefaultSimpleComplexMetaAttributeEditor";   // NOI18N
         }
         if (this.referencesObject()) {
             return complexEditor;
@@ -244,15 +244,15 @@ public class ObjectAttribute extends Attribute implements Mapable,
             toStringConverter = loadToStringConverterByClassName(classNameToLoad);
             if (toStringConverter == null) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Could not load ToStringConverter for Attribute " + mai.name + " by convention.");
+                    logger.debug("Could not load ToStringConverter for Attribute " + mai.name + " by convention.");   // NOI18N
                 }
                 classNameToLoad = getToStringConverterClassNameByConfiguration();
                 toStringConverter = loadToStringConverterByClassName(classNameToLoad);
                 if (toStringConverter == null) {
                     if (logger.isDebugEnabled()) {
                         logger.debug(
-                            "Could not load ToStringConverter for Attribute " + mai.name
-                            + " by configuration. Using default");
+                            "Could not load ToStringConverter for Attribute " + mai.name   // NOI18N
+                            + " by configuration. Using default");   // NOI18N
                     }
                     toStringConverter = new ToStringConverter();
                 }
@@ -288,11 +288,11 @@ public class ObjectAttribute extends Attribute implements Mapable,
             final String fieldNamePreparedForClassName = fieldnameToLower.substring(0, 1).toUpperCase()
                 + fieldnameToLower.substring(1);
             final StringBuffer lazyClassName = new StringBuffer(toStringConverterPrefix).append(domainToLower)
-                        .append(".").append(tabletoLower).append(".").append(fieldNamePreparedForClassName)
+                        .append(".").append(tabletoLower).append(".").append(fieldNamePreparedForClassName)   // NOI18N
                         .append(toStringConverterPostfix);
             return lazyClassName.toString();
         } else {
-            logger.warn("Attribute parent object is not a MetaObject on " + mai.getName() + "!");
+            logger.warn("Attribute parent object is not a MetaObject on " + mai.getName() + "!");   // NOI18N
         }
         return null;
     }
@@ -312,12 +312,12 @@ public class ObjectAttribute extends Attribute implements Mapable,
                     if (ToStringConverter.class.isAssignableFrom(converterClass)) {
                         return (ToStringConverter)converterClass.newInstance();
                     } else {
-                        logger.warn("Class " + className + " is not subtype of ToStringConverter!");
+                        logger.warn("Class " + className + " is not subtype of ToStringConverter!");   // NOI18N
                     }
                 }
             } catch (Throwable t) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Error while trying to load ToStringConverter " + className.toString() + " !", t);
+                    logger.debug("Error while trying to load ToStringConverter " + className.toString() + " !", t);   // NOI18N
                 }
             }
         }
@@ -328,7 +328,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
     public String toString() {
         setLogger();
         if (logger.isDebugEnabled()) {
-            logger.debug("entered toString for ObjectAttribute value=" + value);
+            logger.debug("entered toString for ObjectAttribute value=" + value);   // NOI18N
         }
 
         if (value != null) {
@@ -339,8 +339,8 @@ public class ObjectAttribute extends Attribute implements Mapable,
                 return value.toString();
             }
         }
-        logger.warn("Value is null!");
-        return "";
+        logger.warn("Value is null!");   // NOI18N
+        return "";   // NOI18N
     }
     /**
      * muss total neu gemacht werden.
@@ -352,26 +352,26 @@ public class ObjectAttribute extends Attribute implements Mapable,
         if (fromString != null) {
             try {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("<LS> info :: try to load fromString if not null : " + fromString);
+                    logger.debug("<LS> info :: try to load fromString if not null : " + fromString);   // NOI18N
                 }
 
-                java.lang.Class c0 = java.lang.Class.forName("Sirius.util.FromStringCreator");
+                java.lang.Class c0 = java.lang.Class.forName("Sirius.util.FromStringCreator");   // NOI18N
                 java.lang.Class c = java.lang.Class.forName(fromString.trim());
 
                 if (c0.isAssignableFrom(c)) {
                     this.objectCreator = (FromStringCreator)c.newInstance();
                     if (logger.isDebugEnabled()) {
-                        logger.debug(this.objectCreator + "vom typ" + fromString + " erfolgreich zugewiesen");
+                        logger.debug(this.objectCreator + "vom typ" + fromString + " erfolgreich zugewiesen");   // NOI18N
                     }
                 } else {
                     logger.warn(
-                        "<LS> info ::  fromSTringObjectCreator " + fromString + "nicht geladen: reference is :"
+                        "<LS> info ::  fromSTringObjectCreator " + fromString + "nicht geladen: reference is :"   // NOI18N
                         + this.objectCreator);
                 }
             } catch (Exception e) {
                 logger.error(
-                    "<LS> ERROR :: " + fromString + " f\u00FCr Klasse " + name
-                    + " konnte nicht geladen werden set string converter to Default ",
+                    "<LS> ERROR :: " + fromString + " for class " + name   // NOI18N
+                    + " could not be loaded. Set string converter to Default ",   // NOI18N
                     e);
             }
         } else // fromString==null nicht gesetz aber value evtl vorhanden

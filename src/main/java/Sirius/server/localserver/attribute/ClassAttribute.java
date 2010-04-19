@@ -40,7 +40,7 @@ public class ClassAttribute extends Attribute implements java.io.Serializable {
      * @param  policy   DOCUMENT ME!
      */
     public ClassAttribute(String id, int classID, String name, int typeID, Policy policy) {
-        super(id, name, "", policy);
+        super(id, name, "", policy);   // NOI18N 
         this.classID = classID;
         super.visible = true;
         this.typeID = typeID;
