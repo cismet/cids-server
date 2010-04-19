@@ -53,32 +53,32 @@ public class PolicyHolder implements Serializable {
         try {
             ResultSet serverPolicies = con.getConnection().createStatement()
                         .executeQuery(
-                            "SELECT "
-                            + "cs_policy.id as policyid, "
-                            + "cs_policy.name,"
-                            + "cs_permission.id as permissionid,"
-                            + "cs_permission.key,"
-                            + "default_value "
-                            + "FROM "
-                            + "cs_permission,"
-                            + "cs_policy,"
-                            + "cs_policy_rule "
-                            + "WHERE "
-                            + "cs_policy_rule.permission= cs_permission.id "
-                            + "and cs_policy_rule.policy= cs_policy.id ");
+                            "SELECT "   // NOI18N
+                            + "cs_policy.id as policyid, "   // NOI18N
+                            + "cs_policy.name,"   // NOI18N
+                            + "cs_permission.id as permissionid,"   // NOI18N
+                            + "cs_permission.key,"   // NOI18N
+                            + "default_value "   // NOI18N
+                            + "FROM "   // NOI18N
+                            + "cs_permission,"   // NOI18N
+                            + "cs_policy,"   // NOI18N
+                            + "cs_policy_rule "   // NOI18N
+                            + "WHERE "   // NOI18N
+                            + "cs_policy_rule.permission= cs_permission.id "   // NOI18N
+                            + "and cs_policy_rule.policy= cs_policy.id ");   // NOI18N
             if (serverPolicies == null) {
                 log.error(
-                    "<LS> ERROR :: Serverpolicies konten nicht geladen werden fataler Fehler das Programm beendet sich");
+                    "<LS> ERROR :: Serverpolicies could not be loaded. Fatal Error. Program exits");   // NOI18N
                 throw new ServerExitError(
-                    "Serverpolicies konten nicht geladen werden fataler Fehler das Programm beendet sich");
+                    "Serverpolicies could not be loaded. Fatal Error. Program exits");   // NOI18N
             }
 
             while (serverPolicies.next()) {
-                String policyName = serverPolicies.getString("name");
-                int policyId = serverPolicies.getInt("policyid");
-                int permId = serverPolicies.getInt("permissionid");
-                String permissionKey = serverPolicies.getString("key");
-                boolean defaultvalue = serverPolicies.getBoolean("default_value");
+                String policyName = serverPolicies.getString("name");   // NOI18N
+                int policyId = serverPolicies.getInt("policyid");   // NOI18N
+                int permId = serverPolicies.getInt("permissionid");   // NOI18N
+                String permissionKey = serverPolicies.getString("key");   // NOI18N
+                boolean defaultvalue = serverPolicies.getBoolean("default_value");   // NOI18N
                 Permission p = new Permission(permId, permissionKey);
                 if (!policyHolder.containsKey(policyName)) {
                     HashMap<Permission, Boolean> policyMap = new HashMap<Permission, Boolean>();
@@ -89,11 +89,11 @@ public class PolicyHolder implements Serializable {
                 idReverseMapper.put(policyName, policyId);
             }
 
-            log.info("Serverpolicies: " + policyHolder);
+            log.info("Serverpolicies: " + policyHolder);   // NOI18N
         } catch (Exception e) {
             // Safetyfirst
-            log.error("Fehler beim Analysieren der Serverpolicies", e);
-            throw new ServerExitError("Fehler beim Analysieren der Serverpolicies", e);
+            log.error("Error while analysing server policies", e);   // NOI18N
+            throw new ServerExitError("Error while analysing server policies", e);   // NOI18N
         }
     }
 

@@ -69,7 +69,7 @@ public class Policy implements Serializable {
     private Policy(int helperMode) {
         this.helpermode = helperMode;
         if ((helperMode != 0) && (helpermode != 1)) {
-            throw new UnsupportedOperationException("Nur PARANOID oder WIKI moeglich");
+            throw new UnsupportedOperationException("Only PARANOID or WIKI possible");   // NOI18N
         }
     }
 
@@ -87,7 +87,7 @@ public class Policy implements Serializable {
         if (r != null) {
             if (getLog().isDebugEnabled()) {
                 getLog().debug(
-                    "getDecisionIfNoEntryIsFound(" + permission.getKey() + ") returns:" + r + " --> Policy=" + name,
+                    "getDecisionIfNoEntryIsFound(" + permission.getKey() + ") returns:" + r + " --> Policy=" + name,   // NOI18N
                     new CurrentStackTrace());
             }
             return r;
@@ -95,16 +95,16 @@ public class Policy implements Serializable {
             if (helpermode == WIKI) {
                 if (getLog().isDebugEnabled()) {
                     getLog().debug(
-                        "getDecisionIfNoEntryIsFound(" + permission.getKey()
-                        + ") returns true because of Manunal WIKI Policy",
+                        "getDecisionIfNoEntryIsFound(" + permission.getKey()   // NOI18N
+                        + ") returns true because of Manunal WIKI Policy",   // NOI18N
                         new CurrentStackTrace());
                 }
                 return true;
             } else {
                 if (getLog().isDebugEnabled()) {
                     getLog().debug(
-                        "getDecisionIfNoEntryIsFound(" + permission.getKey()
-                        + ") returns false because of PARANOID Policy or Bug",
+                        "getDecisionIfNoEntryIsFound(" + permission.getKey()   // NOI18N
+                        + ") returns false because of PARANOID Policy or Bug",   // NOI18N
                         new CurrentStackTrace());
                 }
                 return false; // Safety first
@@ -161,18 +161,18 @@ public class Policy implements Serializable {
     }
 
     public String toString() {
-        String r = "Policy: ";
+        String r = "Policy: ";   // NOI18N
         if (dbID == -1) {
-            r += "(artificial: ";
+            r += "(artificial: ";   // NOI18N
             if (helpermode == 1) {
-                r += "WIKI";
+                r += "WIKI";   // NOI18N
             } else {
-                r += "PARANOID";
+                r += "PARANOID";   // NOI18N
             }
-            r += ") ";
+            r += ") ";   // NOI18N
         }
-        r += "defaultvalues: " + name + "= read-->" + getDecisionIfNoEntryIsFound(PermissionHolder.READPERMISSION)
-            + " write-->" + getDecisionIfNoEntryIsFound(PermissionHolder.WRITEPERMISSION);
+        r += "defaultvalues: " + name + "= read-->" + getDecisionIfNoEntryIsFound(PermissionHolder.READPERMISSION)   // NOI18N
+            + " write-->" + getDecisionIfNoEntryIsFound(PermissionHolder.WRITEPERMISSION);   // NOI18N
         return r;
     }
 }

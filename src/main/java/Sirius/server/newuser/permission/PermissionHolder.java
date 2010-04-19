@@ -162,7 +162,7 @@ public final class PermissionHolder implements Serializable {
             LOG.warn(
                 "No Policy was set. Set PARANOID Policy. "   // NOI18N
                 + "Attention. This could lead to something " // NOI18N
-                + "that you not want.",
+                + "that you not want.",                      // NOI18N
                 new CurrentStackTrace());
             setPolicy(Policy.createParanoidPolicy());
         }
