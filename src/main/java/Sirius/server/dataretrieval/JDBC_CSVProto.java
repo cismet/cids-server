@@ -90,7 +90,7 @@ public class JDBC_CSVProto extends JDBC_XMLProto {
      */
     protected DataObject createDataObject(ResultSet rs, String query, String name) throws DataRetrievalException {
         try {
-            File csvFile = createFile(new JdbcCSVFileFilter(), "csv");
+            File csvFile = createFile(new JdbcCSVFileFilter(), "csv");  // NOI18N
             PrintWriter pWriter = new PrintWriter(new FileWriter(csvFile));
             if (deleteOnExit) {
                 csvFile.deleteOnExit();
@@ -98,16 +98,16 @@ public class JDBC_CSVProto extends JDBC_XMLProto {
 
             csvTool.toCSV(rs, pWriter);
 
-            String info = "CSV-File with struktur of the delivered ResultSet. "
-                + "Contents of the file as byte sequence.";
+            String info = "CSV-File with struktur of the delivered ResultSet. "  // NOI18N
+                + "Contents of the file as byte sequence.";  // NOI18N
 
-            String do_name = name + ".csv";
+            String do_name = name + ".csv";  // NOI18N
 
             return new DataObject(toBytes(csvFile), info, do_name);
         } catch (Exception e) {
             // Noch nicht iO
-            String message = "Error occurs during creating an CSV-File, "
-                + "from determined ResultSet. Original message: " + e.getMessage();
+            String message = "Error occurs during creating an CSV-File, "  // NOI18N
+                + "from determined ResultSet. Original message: " + e.getMessage();  // NOI18N
             throw new DataRetrievalException(message, e, logger);
         }
     }
@@ -118,7 +118,7 @@ public class JDBC_CSVProto extends JDBC_XMLProto {
      * @return  jdbc_CSV;
      */
     public String getDataSourceClass() {
-        return "jdbc_csv";
+        return "jdbc_csv";  // NOI18N
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -150,8 +150,8 @@ public class JDBC_CSVProto extends JDBC_XMLProto {
          *          otherwise.
          */
         public boolean accept(File dir, String name) {
-            if (name.startsWith("jdbc")
-                        && name.endsWith(".csv")) {
+            if (name.startsWith("jdbc")  // NOI18N
+                        && name.endsWith(".csv")) {  // NOI18N
                 return true;
             }
 

@@ -28,7 +28,7 @@ public class CSVTool {
 
     //~ Instance fields --------------------------------------------------------
 
-    private String delimiter_ = ",";
+    private String delimiter_ = ",";  // NOI18N
     private boolean withColNames_ = true;
 
     //~ Constructors -----------------------------------------------------------
@@ -123,7 +123,7 @@ public class CSVTool {
                 pWriter.print(wert.trim());
             }
 
-            pWriter.print(",");
+            pWriter.print(",");  // NOI18N
         }
 
         wert = resultSet.getString(columnCount);
@@ -132,6 +132,6 @@ public class CSVTool {
             pWriter.print(wert.trim());
         }
 
-        pWriter.println("");
+        pWriter.println("");  // NOI18N
     }
 }

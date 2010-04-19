@@ -71,14 +71,14 @@ public class FTPProto implements MetaObjectProto {
 
         s_url = Parametrizer.parametrize(s_url, metaDataObject);
 
-        String login = (String)protoDelegator.getSingleValue(param_mo, "login");
-        String password = (String)protoDelegator.getSingleValue(param_mo, "password");
+        String login = (String)protoDelegator.getSingleValue(param_mo, "login");  // NOI18N
+        String password = (String)protoDelegator.getSingleValue(param_mo, "password");  // NOI18N
 
         String fileName = metaDataObject.getName();
 
         if (fileName == null) {
-            String message = "Name of dataobjekt was not found."
-                + "The name must agree with the file name.";
+            String message = "Name of dataobjekt was not found."  // NOI18N
+                + "The name must agree with the file name.";  // NOI18N
 
             throw new DataRetrievalException(message, logger);
         }
@@ -110,7 +110,7 @@ public class FTPProto implements MetaObjectProto {
             throw new DataRetrievalException(e.getMessage(), logger);
         }
 
-        return new DataObject(data, "ftp", fileName.trim());
+        return new DataObject(data, "ftp", fileName.trim());  // NOI18N
     }
 
     /**
@@ -150,7 +150,7 @@ public class FTPProto implements MetaObjectProto {
     }
 
     public String getDataSourceClass() {
-        return "ftp";
+        return "ftp";  // NOI18N
     }
 } // end class
 // ------------------------------ SENSE ------------------------------------ //

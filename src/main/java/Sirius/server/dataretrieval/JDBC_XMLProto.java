@@ -39,7 +39,7 @@ public class JDBC_XMLProto extends JDBCProto {
     //~ Static fields/initializers ---------------------------------------------
 
     private static Logger logger = Logger.getLogger(JDBC_XMLProto.class);
-    public static final String SQL_NULL = "SQL.NuLL";
+    public static final String SQL_NULL = "SQL.NuLL";  // NOI18N
 
     //~ Instance fields --------------------------------------------------------
 
@@ -80,7 +80,7 @@ public class JDBC_XMLProto extends JDBCProto {
      */
     protected DataObject createDataObject(ResultSet rs, String query) throws DataRetrievalException {
         try {
-            File xmlFile = createFile(new JdbcXmlFileFilter(), "xml");
+            File xmlFile = createFile(new JdbcXmlFileFilter(), "xml");  // NOI18N
             PrintWriter pWriter = new PrintWriter(new FileWriter(xmlFile));
             if (deleteOnExit) {
                 xmlFile.deleteOnExit();
@@ -88,16 +88,16 @@ public class JDBC_XMLProto extends JDBCProto {
 
             writeResult(rs, pWriter);
 
-            String info = "XML-File with struktur of the delivered ResultSet. "
-                + "Contents of the file as byte sequence..";
+            String info = "XML-File with struktur of the delivered ResultSet. "  // NOI18N
+                + "Contents of the file as byte sequence..";  // NOI18N
 
-            String do_name = System.currentTimeMillis() + ".xml";
+            String do_name = System.currentTimeMillis() + ".xml";  // NOI18N
 
             return new DataObject(toBytes(xmlFile), info, do_name);
         } catch (Exception e) {
             // Noch nicht iO
-            String message = "Error occurs during creating an XML document, "
-                + "from determined ResultSet. Original message:" + e.getMessage();
+            String message = "Error occurs during creating an XML document, "  // NOI18N
+                + "from determined ResultSet. Original message:" + e.getMessage();  // NOI18N
             throw new DataRetrievalException(message, e, logger);
         }
     }
@@ -117,8 +117,8 @@ public class JDBC_XMLProto extends JDBCProto {
      */
     protected synchronized File createFile(FilenameFilter filter, String erweiterung) throws IOException {
         File file;
-        String tmpPath = System.getProperty("java.io.tmpdir")
-            + System.getProperty("file.separator");
+        String tmpPath = System.getProperty("java.io.tmpdir")  // NOI18N
+            + System.getProperty("file.separator");  // NOI18N
 
         int count = 0;
 
@@ -140,10 +140,10 @@ public class JDBC_XMLProto extends JDBCProto {
             }
         }
 
-        String fileName = "jdbc" + ++maxZahl + "." + erweiterung;
+        String fileName = "jdbc" + ++maxZahl + "." + erweiterung;  // NOI18N
         file = new File(tmpPath + fileName);
         if (logger.isDebugEnabled()) {
-            logger.debug("Anlegen der Datei f\u00FCr " + erweiterung + "-ResultSet: " + tmpPath + fileName);
+            logger.debug("Anlegen der Datei f\u00FCr " + erweiterung + "-ResultSet: " + tmpPath + fileName);  // NOI18N
         }
 
         return file;
@@ -177,15 +177,15 @@ public class JDBC_XMLProto extends JDBCProto {
      * @throws  SQLException  DOCUMENT ME!
      */
     private void writeResult(ResultSet resultSet, PrintWriter pWriter) throws IOException, SQLException {
-        pWriter.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        pWriter.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");  // NOI18N
         pWriter.println();
-        pWriter.println("<RESULT>");
+        pWriter.println("<RESULT>");  // NOI18N
 
         while (resultSet.next()) {
             writeRow(resultSet, pWriter);
         }
 
-        pWriter.println("</RESULT>");
+        pWriter.println("</RESULT>");  // NOI18N
         pWriter.flush();
     }
 
@@ -202,10 +202,10 @@ public class JDBC_XMLProto extends JDBCProto {
         ResultSetMetaData rsmd = resultSet.getMetaData();
         int columnCount = rsmd.getColumnCount();
 
-        pWriter.println("\t<ROW>");
+        pWriter.println("\t<ROW>");  // NOI18N
 
         for (int i = 1; i <= columnCount; i++) {
-            pWriter.print("\t\t<FIELD name='" + rsmd.getColumnName(i).trim() + "'>");
+            pWriter.print("\t\t<FIELD name='" + rsmd.getColumnName(i).trim() + "'>");  // NOI18N
             String wert = resultSet.getString(i);
             if (resultSet.wasNull()) {
                 pWriter.print(SQL_NULL);
@@ -213,11 +213,11 @@ public class JDBC_XMLProto extends JDBCProto {
                 pWriter.print(wert.trim());
             }
 
-            pWriter.println("</FIELD>");
+            pWriter.println("</FIELD>");  // NOI18N
         }
 
-        pWriter.println("\t</ROW>");
-        pWriter.println("");
+        pWriter.println("\t</ROW>");  // NOI18N
+        pWriter.println("");  // NOI18N
     }
 
     /**
@@ -226,7 +226,7 @@ public class JDBC_XMLProto extends JDBCProto {
      * @return  jdbc_xml;
      */
     public String getDataSourceClass() {
-        return "jdbc_xml";
+        return "jdbc_xml";  // NOI18N
     }
 
     /**
@@ -290,8 +290,8 @@ public class JDBC_XMLProto extends JDBCProto {
          *          otherwise.
          */
         public boolean accept(File dir, String name) {
-            if (name.startsWith("jdbc")
-                        && name.endsWith(".xml")) {
+            if (name.startsWith("jdbc")  // NOI18N
+                        && name.endsWith(".xml")) {  // NOI18N
                 return true;
             }
 
