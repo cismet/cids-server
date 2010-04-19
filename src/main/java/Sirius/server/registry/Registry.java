@@ -126,24 +126,24 @@ public class Registry extends UnicastRemoteObject implements NameServer,
             String[] list = rmiRegistry.list();
 
             if (list.length > 0) {
-                System.out.println("<Reg> STATUS registerd with RMIRegistry:");
+                System.out.println("<Reg> STATUS registerd with RMIRegistry:");  // NOI18N
             }
 
-            String l = "";
+            String l = "";  // NOI18N
             for (int i = 0; i < list.length; i++) {
-                l += ("\t" + list[i]);
+                l += ("\t" + list[i]);  // NOI18N
             }
 
             logger.info(l);
 
-            System.out.println("<REG> Bind SiriusRegistry on RMIRegistry as nameServer and userServer");
-            logger.info("<REG> Bind SiriusRegistry on RMIRegistry as nameServer and userServer");
+            System.out.println("<REG> Bind SiriusRegistry on RMIRegistry as nameServer and userServer");  // NOI18N
+            logger.info("<REG> Bind SiriusRegistry on RMIRegistry as nameServer and userServer");  // NOI18N
 
             // pd:
-            Naming.bind("rmi://localhost:" + port + "/userServer", this);
-            Naming.bind("rmi://localhost:" + port + "/nameServer", this);
+            Naming.bind("rmi://localhost:" + port + "/userServer", this);  // NOI18N
+            Naming.bind("rmi://localhost:" + port + "/nameServer", this);  // NOI18N
 
-            System.out.println("<REG> ----------Sirius.Registry.Registry STARTED!!!----------\n");
+            System.out.println("<REG> ----------Sirius.Registry.Registry STARTED!!!----------\n");  // NOI18N
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             throw new ServerExitError(e);
@@ -174,13 +174,13 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public boolean registerServer(int typ, String name, String ip) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("registerServer gerufen f\u00FCr ::" + name + " ip:" + ip);
+            logger.debug("registerServer called for ::" + name + " ip:" + ip);  // NOI18N
         }
         try {
             if (sm.registerServer(typ, name, ip)) {
                 obs.setChanged();
                 obs.notifyObservers();
-                status.addMessage("Neuer Server", name + " insgesamt ::" + sm.getServerCount(typ) + " Typ " + typ);
+                status.addMessage("New Server", name + " altogether ::" + sm.getServerCount(typ) + " Typ " + typ);  // NOI18N
                 return true;
             }
         } catch (Exception e) {
@@ -207,13 +207,13 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public boolean registerServer(int typ, String name, String ip, String port) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("registerServer gerufen f\u00FCr ::" + name + " ip:" + ip);
+            logger.debug("registerServer called for ::" + name + " ip:" + ip);  // NOI18N
         }
         try {
             if (sm.registerServer(typ, name, ip, port)) {
                 obs.setChanged();
                 obs.notifyObservers();
-                status.addMessage("Neuer Server", name + " insgesamt ::" + sm.getServerCount(typ) + " Typ " + typ);
+                status.addMessage("New Server", name + " altogether ::" + sm.getServerCount(typ) + " Typ " + typ);  // NOI18N
                 return true;
             }
         } catch (Exception e) {
@@ -239,13 +239,13 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public boolean unregisterServer(int typ, String name, String ip) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("unregisterServer gerufen f\u00FCr ::" + name + " ip:" + ip);
+            logger.debug("unregisterServer called for ::" + name + " ip:" + ip);  // NOI18N
         }
         try {
             if (sm.unregisterServer(typ, name, ip)) {
                 obs.setChanged();
                 obs.notifyObservers();
-                status.addMessage("Server abgemeldet", name + " insgesamt ::" + sm.getServerCount(typ) + " Typ " + typ);
+                status.addMessage("Server signed off", name + " altogether ::" + sm.getServerCount(typ) + " Typ " + typ);  // NOI18N
                 return true;
             }
         } catch (Exception e) {
@@ -270,13 +270,13 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public boolean unregisterServer(int typ, String name, String ip, String port) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("unregisterServer gerufen f\u00FCr ::" + name + " ip:" + ip);
+            logger.debug("unregisterServer called for ::" + name + " ip:" + ip);  // NOI18N
         }
         try {
             if (sm.unregisterServer(typ, name, ip, port)) {
                 obs.setChanged();
                 obs.notifyObservers();
-                status.addMessage("Server abgemeldet", name + " insgesamt ::" + sm.getServerCount(typ) + " Typ " + typ);
+                status.addMessage("Server signed off", name + " altogether ::" + sm.getServerCount(typ) + " Typ " + typ);  // NOI18N
                 return true;
             }
         } catch (Exception e) {
@@ -298,7 +298,7 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public HashMap<String, String> getServerIPs(int typ) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("getServerIps gerufen f\u00FCr servertyp::" + typ);
+            logger.debug("getServerIps called for servertyp::" + typ);  // NOI18N
         }
         try {
             return sm.getServerIPs(typ);
@@ -322,7 +322,7 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public String getServerIP(int typ, String name) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("getServerIp gerufen f\u00FCr servertyp::" + typ + " servername:" + name);
+            logger.debug("getServerIp called for servertyp::" + typ + " servername:" + name);  // NOI18N
         }
         try {
             return sm.getServerIP(typ, name);
@@ -345,7 +345,7 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public Server[] getServers(int typ) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("getServers gerufen f\u00FCr servertyp::" + typ);
+            logger.debug("getServers called for servertyp::" + typ);  // NOI18N
         }
         try {
             return sm.getServers(typ);
@@ -367,7 +367,7 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public Server getServer(int typ, String name) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("getServer gerufen f\u00FCr servertyp::" + typ + " servername:" + name);
+            logger.debug("getServer called for servertyp::" + typ + " servername:" + name);  // NOI18N
         }
         try {
             return sm.getServer(typ, name);
@@ -389,7 +389,7 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public Vector getUsers() throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("getUsers gerufen");
+            logger.debug("getUsers called");  // NOI18N
         }
         try {
             return um.getUsers();
@@ -420,7 +420,7 @@ public class Registry extends UnicastRemoteObject implements NameServer,
             String userName,
             String password) throws RemoteException, UserException {
         if (logger.isDebugEnabled()) {
-            logger.debug("getUser gerufen f\u00FCr user" + userName);
+            logger.debug("getUser called for user" + userName);  // NOI18N
         }
         User user = null;
         Remote remoteServer = null;
@@ -462,13 +462,13 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public void registerUser(User user) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("registerUser gerufen f\u00FCr user::" + user);
+            logger.debug("registerUser called for user::" + user);  // NOI18N
         }
         try {
             um.registerUser(user);
             // status.addMessage("Benutzer hinzugef\u00FCgt","Gruppen :: "+ user.toString() +"\nBenutzer  System
             // insgesamt ::"+um.getUserCount()+ " in "+ um.getUserGroupCount()+ " Benutzergruppen");
-            status.addMessage("Benutzer hinzugef\u00FCgt", "Gruppen :: " + user.toString() + "\nBenutzer ");
+            status.addMessage("User added", "Groups :: " + user.toString() + "\nUser ");  // NOI18N
         } catch (Exception e) {
             logger.error(e);
             throw new RemoteException(e.getMessage(), e);
@@ -484,15 +484,15 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public void registerUsers(Vector users) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("registerUsers gerufen");
+            logger.debug("registerUsers called");  // NOI18N
         }
         try {
             um.registerUsers(users);
             // status.addMessage("Benutzer hinzugef\u00FCgt","Gruppen :: "+ users.toString() +"\nBenutzer  System
             // insgesamt ::"+um.getUserCount()+ " in "+ um.getUserGroupCount()+ " Benutzergruppen");
             status.addMessage(
-                "Benutzer hinzugef\u00FCgt",
-                "Gruppen :: " + users.toString() + "\nBenutzer  System insgesamt ::");
+                "User added",  // NOI18N
+                "Groups :: " + users.toString() + "\nUsers  System altogether ::");  // NOI18N
         } catch (Exception e) {
             logger.error(e);
             throw new RemoteException(e.getMessage(), e);
@@ -508,13 +508,13 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public void unregisterUsers(Vector users) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("unregisterUsers gerufen");
+            logger.debug("unregisterUsers called");  // NOI18N
         }
         try {
             um.unregisterUsers(users);
             // status.addMessage("Benutzer entfernt","Benutzer :: "+ users.toString() +"\nBenutzer  System insgesamt
             // ::"+um.getUserCount()+ " in "+ um.getUserGroupCount()+ " Benutzergruppen");
-            status.addMessage("Benutzer hinzugef\u00FCgt", "Gruppen :: " + users.toString() + "\nBenutzer");
+            status.addMessage("User added", "Groups :: " + users.toString() + "\nUsers");  // NOI18N
         } catch (Exception e) {
             logger.error(e);
             throw new RemoteException(e.getMessage(), e);
@@ -532,13 +532,13 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public void unregisterUser(User user) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("unregisterUser gerufen f\u00FCr user::" + user);
+            logger.debug("unregisterUser called for user::" + user);  // NOI18N
         }
         try {
             um.unregisterUser(user);
             // status.addMessage("Benutzer entfernt","Benutzer :: "+ user.toString() +"\nBenutzer implements System
             // insgesamt ::"+um.getUserCount()+ " in "+ um.getUserGroupCount()+ " Benutzergruppen");
-            status.addMessage("Benutzer entfernt", "Benutzer :: " + user.toString() + "\nBenutzer ");
+            status.addMessage("User removed", "User :: " + user.toString() + "\nUsers ");  // NOI18N
         } catch (Exception e) {
             logger.error(e);
             throw new RemoteException(e.getMessage(), e);
@@ -554,13 +554,13 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public void registerUserGroup(UserGroup userGroup) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("registerUserGroup gerufen f\u00FCr userGroup::" + userGroup);
+            logger.debug("registerUserGroup called for userGroup::" + userGroup);  // NOI18N
         }
         try {
             um.registerUserGroup(userGroup);
             // status.addMessage("Benutzergruppe hinzugef\u00FCgt","Gruppen :: "+ userGroup.toString() +"\nBenutzer
             // implements System insgesamt ::"+um.getUserCount()+ " in "+ um.getUserGroupCount()+ " Benutzergruppen");
-            status.addMessage("Benutzer entfernt", "Benutzer :: " + userGroup.toString() + "\nBenutzer");
+            status.addMessage("User removed", "User :: " + userGroup.toString() + "\nUsers");  // NOI18N
         } catch (Exception e) {
             logger.error(e);
             throw new RemoteException(e.getMessage(), e);
@@ -576,12 +576,12 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public void registerUserGroups(Vector userGroups) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("registerUserGroups gerufen");
+            logger.debug("registerUserGroups called");  // NOI18N
         }
         try {
             um.registerUserGroups(userGroups);
 
-            status.addMessage("Benutzergruppe hinzugef\u00FCgt", "Gruppen :: " + userGroups.toString());
+            status.addMessage("Usergroup added", "Groups :: " + userGroups.toString());  // NOI18N
         } catch (Exception e) {
             logger.error(e);
             throw new RemoteException(e.getMessage(), e);
@@ -597,13 +597,13 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public void unregisterUserGroups(Vector userGroups) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("unregisterUserGroups gerufen");
+            logger.debug("unregisterUserGroups called");  // NOI18N
         }
         try {
             um.unregisterUserGroups(userGroups);
             // status.addMessage("Benutzergruppen entfernt","Benutzergruppen :: "+ userGroups.toString() +"\nBenutzer
             // System insgesamt ::"+um.getUserCount()+ " in "+ um.getUserGroupCount()+ " Benutzergruppen");
-            status.addMessage("Benutzergruppen entfernt", "Benutzergruppen :: " + userGroups.toString());
+            status.addMessage("Usergroups removed", "Usergroups :: " + userGroups.toString());  // NOI18N
         } catch (Exception e) {
             logger.error(e);
             throw new RemoteException(e.getMessage(), e);
@@ -621,11 +621,11 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public void unregisterUserGroup(UserGroup userGroup) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("unregisterUserGroup gerufen f\u00FCr userGroup" + userGroup);
+            logger.debug("unregisterUserGroup called for userGroup" + userGroup);  // NOI18N
         }
         try {
             um.unregisterUserGroup(userGroup);
-            status.addMessage("Benutzergruppe entfernt", "Benutzergruppen :: " + userGroup.toString());
+            status.addMessage("Usergroup removed", "Usergroups :: " + userGroup.toString());  // NOI18N
         } catch (Exception e) {
             logger.error(e);
             throw new RemoteException(e.getMessage(), e);
@@ -643,7 +643,7 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public boolean registerUserMembership(Membership membership) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("registerUserMembership gerufen f\u00FCr membership" + membership);
+            logger.debug("registerUserMembership called for membership" + membership);  // NOI18N
         }
         try {
             return um.registerUserMembership(membership);
@@ -662,7 +662,7 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public void registerUserMemberships(Vector memberships) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("registerUserMemberships gerufen");
+            logger.debug("registerUserMemberships called");  // NOI18N
         }
         try {
             um.registerUserMemberships(memberships);
@@ -683,7 +683,7 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public Vector getUserGroups() throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("getUserGroups gerufen");
+            logger.debug("getUserGroups called");  // NOI18N
         }
         try {
             return um.getUserGroups();
@@ -706,7 +706,7 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public Vector getUserGroupNames(User user) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("getUserGroupNames gerufen f\u00FCr user::" + user);
+            logger.debug("getUserGroupNames called for user::" + user);  // NOI18N
         }
         try {
             return um.getUserGroupNames(user);
@@ -730,7 +730,7 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public Vector getUserGroupNames(String userName, String lsName) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("getUserGroupNames gerufen f\u00FCr userName::" + userName);
+            logger.debug("getUserGroupNames called for userName::" + userName);  // NOI18N
         }
         try {
             return um.getUserGroupNames(userName, lsName);
@@ -870,13 +870,13 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      */
     public void shutdown() throws Throwable {
         try {
-            Naming.unbind("rmi://localhost:" + port + "/userServer");
-            Naming.unbind("rmi://localhost:" + port + "/nameServer");
+            Naming.unbind("rmi://localhost:" + port + "/userServer");  // NOI18N
+            Naming.unbind("rmi://localhost:" + port + "/nameServer");  // NOI18N
             rmRegistryServer.stopRMRegistryServer();
             rmiRegistry = null;
             System.gc();
 
-            throw new ServerExit("Server ist regul\u00E4r beendet worden");
+            throw new ServerExit("Server exited regularly");  // NOI18N
         } catch (Exception e) {
             throw new ServerExitError(e);
         }
@@ -905,7 +905,7 @@ public class Registry extends UnicastRemoteObject implements NameServer,
         try {
             if (args == null) {
                 throw new ServerExitError(
-                    "args == null keine Kommandozeilenparameter \u00FCbergeben (Configfile / port)");
+                    "args == null no commandline parameter given (Configfile / port)");  // NOI18N
             } else if (args.length > 0) {
                 port = Integer.valueOf(args[0]).intValue();
             }

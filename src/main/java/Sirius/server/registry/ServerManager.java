@@ -52,7 +52,7 @@ public class ServerManager {
      * @throws  Exception  DOCUMENT ME!
      */
     public boolean registerServer(int serverTyp, String name, String ip) throws Exception {
-        return registerServer(serverTyp, name, "");
+        return registerServer(serverTyp, name, "");  // NOI18N
     }
 
     /**
@@ -87,7 +87,7 @@ public class ServerManager {
      * @throws  Exception  DOCUMENT ME!
      */
     public boolean unregisterServer(int serverTyp, String name, String ip) throws Exception {
-        return unregisterServer(serverTyp, name, "");
+        return unregisterServer(serverTyp, name, "");  // NOI18N
     }
 
     /**
