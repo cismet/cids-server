@@ -201,7 +201,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  Servername*
      */
     public final String getServerName() {
-        return this.getString("serverName");
+        return this.getString("serverName");  // NOI18N
     }
 
     /**
@@ -210,7 +210,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final int getServerPort() {
-        return new Integer(this.getString("serverPort")).intValue();
+        return new Integer(this.getString("serverPort")).intValue();  // NOI18N
     }
 
     /**
@@ -219,7 +219,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getDefaultIconDir() {
-        return this.getString("defaultIconDirectory");
+        return this.getString("defaultIconDirectory");  // NOI18N
     }
 
     /**
@@ -228,7 +228,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getIconDirectory() {
-        return this.getObject("iconDirectory").toString();
+        return this.getObject("iconDirectory").toString();  // NOI18N
     }
 
     /**
@@ -237,7 +237,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getQueryStoreDirectory() {
-        return this.getObject("queryStoreDirectory").toString();
+        return this.getObject("queryStoreDirectory").toString();  // NOI18N
     }
 
     /**
@@ -246,7 +246,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getDbConnectionString() {
-        return this.getString("connection.url");
+        return this.getString("connection.url");  // NOI18N
     }
 
     /**
@@ -255,7 +255,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final int getPoolSize() {
-        return getInt("connection.pool_size");
+        return getInt("connection.pool_size");  // NOI18N
     }
 
     /**
@@ -264,7 +264,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getJDBCDriver() {
-        return this.getString("connection.driver_class");
+        return this.getString("connection.driver_class");  // NOI18N
     }
 
     /**
@@ -273,7 +273,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getSQLDialect() {
-        return this.getString("dialect");
+        return this.getString("dialect");  // NOI18N
     }
 
     /**
@@ -282,7 +282,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getDbPassword() {
-        return PasswordEncrypter.decryptString(this.getString("connection.password"));
+        return PasswordEncrypter.decryptString(this.getString("connection.password"));  // NOI18N
     }
 
     /**
@@ -291,7 +291,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getDbUser() {
-        return this.getString("connection.username");
+        return this.getString("connection.username");  // NOI18N
     }
 
     /**
@@ -300,7 +300,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getFileSeparator() {
-        return this.getString("fileSeparator");
+        return this.getString("fileSeparator");  // NOI18N
     }
 
     /**
@@ -309,7 +309,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String[] getRegistryIps() {
-        return this.getStrings("registryIPs");
+        return this.getStrings("registryIPs");  // NOI18N
     }
 
     /**
@@ -318,7 +318,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getRMIRegistryPort() {
-        return this.getString("rmiRegistryPort");
+        return this.getString("rmiRegistryPort");  // NOI18N
     }
 
     /**
@@ -327,7 +327,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getStartMode() {
-        return this.getString("startMode");
+        return this.getString("startMode");  // NOI18N
     }
 
     /**
@@ -336,7 +336,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getServerPolicy() {
-        return this.getString("serverPolicy");
+        return this.getString("serverPolicy");  // NOI18N
     }
     /**
      * DOCUMENT ME!
@@ -344,7 +344,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getClassNodePolicy() {
-        return this.getString("classNodePolicy");
+        return this.getString("classNodePolicy");  // NOI18N
     }
     /**
      * DOCUMENT ME!
@@ -352,7 +352,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getPureNodePolicy() {
-        return this.getString("pureNodePolicy");
+        return this.getString("pureNodePolicy");  // NOI18N
     }
     /**
      * DOCUMENT ME!
@@ -360,7 +360,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getAttributePolicy() {
-        return this.getString("attributePolicy");
+        return this.getString("attributePolicy");  // NOI18N
     }
 
     /**
@@ -369,7 +369,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final int[] getQuotedTypes() {
-        return this.getInts("quotedTypes");
+        return this.getInts("quotedTypes");  // NOI18N
     }
 
     /*  MetaJDBC-Treiber */
@@ -381,7 +381,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final String getMetaJDBC_CacheType() {
         try {
-            return this.getString("cache_type");
+            return this.getString("cache_type");  // NOI18N
         } catch (Exception e) {
             return null;
         }
@@ -394,7 +394,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final String getLog4jPropertyFile() {
         try {
-            return this.getString("log4j_prop_file");
+            return this.getString("log4j_prop_file");  // NOI18N
         } catch (Exception e) {
             return null;
         }
@@ -407,7 +407,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final String getMetaJDBC_schema() {
         try {
-            return this.getString("schema");
+            return this.getString("schema");  // NOI18N
         } catch (Exception e) {
             return null;
         }
@@ -426,8 +426,8 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
 
         // File file = new File("p:\\Metaservice\\Sirius\\System\\imgDefault");
         if (logger.isDebugEnabled()) {
-            logger.debug("<SRVProperties> call getDefaultIcons");
-            logger.debug("<SRVProperties> get DefaultIcons from Path: " + getDefaultIconDir() + file.exists());
+            logger.debug("<SRVProperties> call getDefaultIcons");  // NOI18N
+            logger.debug("<SRVProperties> get DefaultIcons from Path: " + getDefaultIconDir() + file.exists());  // NOI18N
         }
 
         File[] images = new File[0];
@@ -436,7 +436,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
         try {
             if (file.isDirectory()) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("<SRVProperties> valid Directory");
+                    logger.debug("<SRVProperties> valid Directory");  // NOI18N
                 }
 
                 /**
@@ -448,20 +448,20 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
                 // System.out.println(file.listFiles());
                 images = file.listFiles();
                 if (logger.isDebugEnabled()) {
-                    logger.debug("<SRVProperties> found " + images.length + " icons");
+                    logger.debug("<SRVProperties> found " + images.length + " icons");  // NOI18N
                 }
                 sImages = new Image[images.length];
 
-                String s = "";
+                String s = "";  // NOI18N
                 for (int i = 0; i < images.length; i++) {
-                    s += (images[i].getName() + ";");
+                    s += (images[i].getName() + ";");  // NOI18N
                     if (logger.isDebugEnabled()) {
                         logger.debug(s);
                     }
                     sImages[i] = new Image(images[i].getAbsolutePath());
                 }
             } else {
-                throw new Exception("file is not an Directory");
+                throw new Exception("file is not an Directory");  // NOI18N
             }
         } catch (Exception e) {
             logger.error(e);
@@ -480,7 +480,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  Stringarray mit den einzelnen Tokens*
      */
     public String[] getStrings(String key) {
-        StringTokenizer tokenizer = new StringTokenizer(this.getString(key), ";");
+        StringTokenizer tokenizer = new StringTokenizer(this.getString(key), ";");  // NOI18N
         String[] stringArray = new String[tokenizer.countTokens()];
         int i = 0;
 
@@ -525,7 +525,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
         java.lang.Object[] objects = (Object[])Array.newInstance(c.getClass(), args.length);
 
         for (int i = 0; i < args.length; i++) {
-            objects[i] = c.createObject(args[i], ",");
+            objects[i] = c.createObject(args[i], ",");  // NOI18N
         }
 
         return objects;
@@ -539,7 +539,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public int[] getInts(String key) {
-        StringTokenizer tokenizer = new StringTokenizer(this.getString(key), ";");
+        StringTokenizer tokenizer = new StringTokenizer(this.getString(key), ";");  // NOI18N
 
         int[] intArray = new int[tokenizer.countTokens()];
 
