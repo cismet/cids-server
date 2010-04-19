@@ -73,13 +73,13 @@ public class UserServiceImpl {
             String userName,
             String password) throws RemoteException, UserException {
         if (logger.isDebugEnabled()) {
-            logger.debug("getUser gerufen f\u00FCr user::" + userName);
+            logger.debug("getUser calles for user::" + userName);   // NOI18N
 
-            logger.debug("userLsName:" + userLsName);
-            logger.debug("userName:" + userName);
-            logger.debug("userGroupLsName:" + userGroupLsName);
-            logger.debug("userGroupName:" + userGroupName);
-            logger.debug("password:" + password);
+            logger.debug("userLsName:" + userLsName);   // NOI18N
+            logger.debug("userName:" + userName);   // NOI18N
+            logger.debug("userGroupLsName:" + userGroupLsName);   // NOI18N
+            logger.debug("userGroupName:" + userGroupName);   // NOI18N
+            logger.debug("password:" + password);   // NOI18N
         }
         User u = userServer.getUser(userLsName, userName, userGroupLsName, userGroupName, password);
 
@@ -93,7 +93,7 @@ public class UserServiceImpl {
                 validated = us.validateUser(u, password);
             } else {
                 throw new UserException(
-                    "Login fehlgeschlagen, Heimatserver des Users nicht erreichbar :: " + password,
+                    "Login failed, home server of the user is not reachable :: " + password,   // NOI18N
                     false,
                     false,
                     false,
@@ -105,7 +105,7 @@ public class UserServiceImpl {
             return u;
         }
 
-        throw new UserException("Login fehlgeschlagen, Passwort falsch :: " + password, false, true, false, false);
+        throw new UserException("Login failed, Passwort wrong :: " + password, false, true, false, false);   // NOI18N
     }
 
     /**
@@ -117,7 +117,7 @@ public class UserServiceImpl {
      */
     public Vector getUserGroupNames() throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("getUserGroupName gerufen");
+            logger.debug("getUserGroupName called");   // NOI18N
         }
 
         Vector names = new Vector(20, 20);
@@ -153,7 +153,7 @@ public class UserServiceImpl {
      */
     public Vector getUserGroupNames(String userName, String lsHome) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("getUserGroupNames gerufen for :username:" + userName);
+            logger.debug("getUserGroupNames called for :username:" + userName);   // NOI18N
         }
         return userServer.getUserGroupNames(userName.trim(), lsHome.trim());
     }
@@ -173,7 +173,7 @@ public class UserServiceImpl {
     public boolean changePassword(User user, String oldPassword, String newPassword) throws RemoteException,
         UserException {
         if (logger.isDebugEnabled()) {
-            logger.debug("changePassword gerufen for :user:" + user);
+            logger.debug("changePassword called for :user:" + user);   // NOI18N
         }
         return ((Sirius.server.middleware.interfaces.domainserver.UserService)activeLocalServers.get(user.getDomain()))
                     .changePassword(user, oldPassword, newPassword);

@@ -73,7 +73,7 @@ public class SearchServiceImpl {
      */
     public java.util.HashMap getSearchOptions(User user) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("getSearchOptions searchService gerufen User:: " + user);
+            logger.debug("getSearchOptions searchService gerufen User:: " + user);   // NOI18N
         }
         // umstelen auf activelocalservrs sp\u00E4ter
         Server[] localServers = nameServer.getServers(ServerType.LOCALSERVER);
@@ -83,18 +83,18 @@ public class SearchServiceImpl {
         for (int i = 0; i < localServers.length; i++) {
             serverName = localServers[i].getName();
             if (logger.isDebugEnabled()) {
-                logger.debug("localserver Suchoptionen " + serverName + " searchoptions ::");
+                logger.debug("localserver Suchoptionen " + serverName + " searchoptions ::");   // NOI18N
             }
 
             HashMap options = getSearchOptions(user, serverName);
             if (logger.isDebugEnabled()) {
-                logger.debug("localserver Suchoptionen " + serverName + " searchoptions ::" + options);
+                logger.debug("localserver Suchoptionen " + serverName + " searchoptions ::" + options);   // NOI18N
             }
 
             result.putAll(options);
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("Search Options ::" + result);
+            logger.debug("Search Options ::" + result);   // NOI18N
         }
         return result;
     }
@@ -111,7 +111,7 @@ public class SearchServiceImpl {
      */
     public java.util.HashMap getSearchOptions(User user, String domain) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("getSearchOptions searchService gerufen User:: " + user + " domain::" + domain);
+            logger.debug("getSearchOptions searchService called User:: " + user + " domain::" + domain);   // NOI18N
         }
         return ((Sirius.server.middleware.interfaces.domainserver.SearchService)activeLocalServers.get(domain))
                     .getSearchOptions(user);
@@ -151,7 +151,7 @@ public class SearchServiceImpl {
             char isRoot,
             char isUnion) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("addQuery searchService gerufen User:: " + user + " queryName ::" + name);
+            logger.debug("addQuery searchService called User:: " + user + " queryName ::" + name);   // NOI18N
         }
         String domain = user.getDomain();
         Sirius.server.middleware.interfaces.domainserver.SearchService s =
@@ -174,7 +174,7 @@ public class SearchServiceImpl {
      */
     public int addQuery(User user, String name, String description, String statement) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("addQuery searchService gerufen User:: " + user + " queryName ::" + name);
+            logger.debug("addQuery searchService called User:: " + user + " queryName ::" + name);   // NOI18N
         }
 
         String domain = user.getDomain();
@@ -209,7 +209,7 @@ public class SearchServiceImpl {
             int queryPosition) throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug(
-                "addQueryParameter searchService gerufen User:: " + user + " queryId ::" + queryId + " paramKey::"
+                "addQueryParameter searchService called User:: " + user + " queryId ::" + queryId + " paramKey::"   // NOI18N
                 + paramkey);
         }
         String domain = user.getDomain();
@@ -233,7 +233,7 @@ public class SearchServiceImpl {
         throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug(
-                "addQueryParameter searchService gerufen User:: " + user + " queryId ::" + queryId + " paramKey::"
+                "addQueryParameter searchService called User:: " + user + " queryId ::" + queryId + " paramKey::"   // NOI18N
                 + paramkey);
         }
         String domain = user.getDomain();
@@ -257,22 +257,22 @@ public class SearchServiceImpl {
     public SearchResult search(User user, String[] classIds, Sirius.server.search.SearchOption[] searchOptions)
         throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("search in searchService gerufen User:: " + user);
+            logger.debug("search in searchService called User:: " + user);   // NOI18N
         }
 
         SearchResult v = new SearchResult(new MetaObjectNode[0]);
         if (logger.isDebugEnabled()) {
-            logger.debug("Queryplaner instnziiert");
+            logger.debug("Queryplanner intantiated");   // NOI18N
         }
 
         QueryPlaner qp = new QueryPlaner(classIds, searchOptions);
         if (logger.isDebugEnabled()) {
-            logger.debug("Querypl\u00E4ne abgerufen");
+            logger.debug("Queryplans retrieved");   // NOI18N
         }
 
         Collection<ArrayList<QueryConfiguration>> qps = qp.getQueryPlans();
         if (logger.isDebugEnabled()) {
-            logger.debug("Querypl\u00E4ne abgerufen" + qps);
+            logger.debug("Queryplans retrieved" + qps);   // NOI18N
         }
 
         Iterator<ArrayList<QueryConfiguration>> iter = qps.iterator();
@@ -301,7 +301,7 @@ public class SearchServiceImpl {
      */
     public SearchResult searchX(User user, ArrayList<QueryConfiguration> qList) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("search in searchService gerufen User:: " + user);
+            logger.debug("search in searchService called User:: " + user);   // NOI18N
         }
 
         SearchResult v = new SearchResult(new MetaObjectNode[0]);
@@ -317,17 +317,17 @@ public class SearchServiceImpl {
                 String[] classIds = qcs[i].getClassIds();
 
                 // debugtext
-                String deb = "";
+                String deb = "";   // NOI18N
                 for (int it = 0; it < classIds.length; it++) {
-                    deb += classIds[it] + "\n";
+                    deb += classIds[it] + "\n";   // NOI18N
                 }
                 if (logger.isDebugEnabled()) {
-                    logger.debug("classids fro query" + q + " are" + deb);
+                    logger.debug("classids fro query" + q + " are" + deb);   // NOI18N
                 }
 
                 HashMap params = q.getParameters();
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Parameter ::" + q + " isconjunction??" + q.isConjunction());
+                    logger.debug("Parameter ::" + q + " isconjunction??" + q.isConjunction());   // NOI18N
                 }
 
                 SearchResult result = (SearchResult)qex.executeQuery(user, classIds, q);

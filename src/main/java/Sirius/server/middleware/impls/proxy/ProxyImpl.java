@@ -85,7 +85,7 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
             this.properties = properties;
             this.registryIps = properties.getRegistryIps();
 
-            nameServer = (NameServer)Naming.lookup("rmi://" + registryIps[0] + "/nameServer");
+            nameServer = (NameServer)Naming.lookup("rmi://" + registryIps[0] + "/nameServer");   // NOI18N
 
             userServer = (UserServer)nameServer; // Naming.lookup("rmi://"+registryIps[0]+"/userServer");
 
@@ -93,7 +93,7 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
 
             Server[] localServers = nameServer.getServers(ServerType.LOCALSERVER);
             if (logger.isDebugEnabled()) {
-                logger.debug("<CS> " + localServers.length + " LocalServer received from SiriusRegistry");
+                logger.debug("<CS> " + localServers.length + " LocalServer received from SiriusRegistry");   // NOI18N
             }
 
             for (int i = 0; i < localServers.length; i++) {
@@ -101,7 +101,7 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
                 String name = localServers[i].getName();
                 String lookupString = localServers[i].getRMIAddress();
                 if (logger.isDebugEnabled()) {
-                    logger.debug("<CS> lookup: " + lookupString);
+                    logger.debug("<CS> lookup: " + lookupString);   // NOI18N
                 }
 
                 Remote localServer = (Remote)Naming.lookup(lookupString);
@@ -168,7 +168,7 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
 // }
     public Node[] getChildren(Node node, User usr) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("getChildren f\u00FCr" + node);
+            logger.debug("getChildren for" + node);   // NOI18N
         }
         return catService.getChildren(node, usr);
     }
@@ -464,7 +464,7 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
             ServerType.CALLSERVER,
             properties.getServerName(),
             InetAddress.getLocalHost().getHostAddress(),
-            "1099"); // localSERvername in callSERname
+            "1099"); // localSERvername in callSERname   // NOI18N
     }
 
     /**
@@ -474,20 +474,20 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
      */
     void registerAsObserver(String siriusRegistryIP) {
         if (logger.isDebugEnabled()) {
-            logger.debug(" Info <CS> registerAsObserver:: " + siriusRegistryIP);
+            logger.debug(" Info <CS> registerAsObserver:: " + siriusRegistryIP);   // NOI18N
         }
         try {
-            RemoteObservable server = (RemoteObservable)Naming.lookup("rmi://" + siriusRegistryIP + "/nameServer");
+            RemoteObservable server = (RemoteObservable)Naming.lookup("rmi://" + siriusRegistryIP + "/nameServer");   // NOI18N
             server.addObserver(this);
             if (logger.isDebugEnabled()) {
-                logger.debug("Info <CS> added as observer");
+                logger.debug("Info <CS> added as observer");   // NOI18N
             }
         } catch (NotBoundException nbe) {
-            System.err.println("<CS> No SiriusRegistry bound on RMIRegistry at " + siriusRegistryIP);
-            logger.error("<CS> No SiriusRegistry bound on RMIRegistry at " + siriusRegistryIP, nbe);
+            System.err.println("<CS> No SiriusRegistry bound on RMIRegistry at " + siriusRegistryIP);   // NOI18N
+            logger.error("<CS> No SiriusRegistry bound on RMIRegistry at " + siriusRegistryIP, nbe);   // NOI18N
         } catch (RemoteException re) {
-            System.err.println("<CS> RMIRegistry on " + siriusRegistryIP + " could not be contacted");
-            logger.error("<CS> RMIRegistry on " + siriusRegistryIP + " could not be contacted", re);
+            System.err.println("<CS> RMIRegistry on " + siriusRegistryIP + " could not be contacted");   // NOI18N
+            logger.error("<CS> RMIRegistry on " + siriusRegistryIP + " could not be contacted", re);   // NOI18N
         } catch (Exception e) {
             logger.error(e);
         }
@@ -499,10 +499,10 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
      */
     void unregisterAsObserver(String siriusRegistryIP) {
         try {
-            RemoteObservable server = (RemoteObservable)Naming.lookup("rmi://" + siriusRegistryIP + "/nameServer");
+            RemoteObservable server = (RemoteObservable)Naming.lookup("rmi://" + siriusRegistryIP + "/nameServer");   // NOI18N
             server.deleteObserver(this);
             if (logger.isDebugEnabled()) {
-                logger.debug("Info <CS> removed as observer");
+                logger.debug("Info <CS> removed as observer");   // NOI18N
             }
         } catch (Exception e) {
             logger.error(e);

@@ -69,14 +69,14 @@ public class RemoteObserverImpl {
      */
     public void update(RemoteObservable obs, java.lang.Object arg) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("Info <CS> Observer::update\n");
+            logger.debug("Info <CS> Observer::update\n");   // NOI18N
         }
 
         try {
             Server[] localServers;
             localServers = nameServer.getServers(ServerType.LOCALSERVER);
             if (logger.isDebugEnabled()) {
-                logger.debug("<CS> Verfuegbare LocalServer:");
+                logger.debug("<CS> Available LocalServer:");   // NOI18N
             }
 
             activeLocalServers.clear();
@@ -85,18 +85,18 @@ public class RemoteObserverImpl {
                 Remote localServer = (Remote)Naming.lookup(localServers[i].getRMIAddress());
                 activeLocalServers.put(localServers[i].getName(), localServer);
                 if (logger.isDebugEnabled()) {
-                    logger.debug("\t" + localServers[i].getName());
+                    logger.debug("\t" + localServers[i].getName());   // NOI18N
                 }
             }
             if (logger.isDebugEnabled()) {
-                logger.debug("<CS> Observer::update beendet\n");
+                logger.debug("<CS> Observer::update beendet\n");   // NOI18N
             }
         } catch (java.rmi.NotBoundException nbe) {
             logger.error(nbe);
-            throw new RemoteException(nbe.getMessage() + "Fehler in Update\n\n");
+            throw new RemoteException(nbe.getMessage() + "Error in Update\n\n");   // NOI18N
         } catch (Exception e) {
             logger.error(e);
-            throw new RemoteException(e.getMessage() + "Fehler in update");
+            throw new RemoteException(e.getMessage() + "Error in update");   // NOI18N
         }
     }
 }

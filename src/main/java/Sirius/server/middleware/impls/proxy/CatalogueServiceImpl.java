@@ -75,8 +75,8 @@ public class CatalogueServiceImpl {
                 return c.getLocalNodes();
             }
 
-            if (logger != null) {
-                logger.info("<CS> Anzahl Remote links bei getchildren :" + links.length);
+            if (logger != null && logger.isInfoEnabled()) {
+                logger.info("<CS> Number of remote links at getchildren :" + links.length);   // NOI18N
             }
 
             // group Links by lsName
@@ -92,8 +92,8 @@ public class CatalogueServiceImpl {
             for (int i = 0; i < groupedLinks.length; i++) {
                 String lsName = groupedLinks[i].getGroup();
 
-                if (logger != null) {
-                    logger.info(lsName + " kriegt anfrage nach knoten");
+                if (logger != null && logger.isInfoEnabled()) {
+                    logger.info(lsName + " gets request for node");   // NOI18N
                 }
 
                 Sirius.server.middleware.interfaces.domainserver.CatalogueService ls =
@@ -107,15 +107,15 @@ public class CatalogueServiceImpl {
                 {
                     if (logger != null) {
                         if (logger.isDebugEnabled()) {
-                            logger.debug("System :" + ls + " not available");
+                            logger.debug("System :" + ls + " not available");   // NOI18N
                         }
                     }
 
                     MetaNode error = new MetaNode(
                             0,
                             lsName,
-                            lsName + " not available!",
-                            lsName + " not available!",
+                            lsName + " not available!",   // NOI18N
+                            lsName + " not available!",   // NOI18N
                             true,
                             Policy.createParanoidPolicy(),
                             -1,
@@ -174,7 +174,7 @@ public class CatalogueServiceImpl {
      */
     public Node[] getRoots(User user, String localServerName) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("getRoots called " + localServerName);
+            logger.debug("getRoots called " + localServerName);   // NOI18N
         }
         return ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)activeLocalServers.get(
                     localServerName)).getRoots(user).getLocalNodes();
@@ -191,7 +191,7 @@ public class CatalogueServiceImpl {
      */
     public Node[] getRoots(User user) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("<CS> getRoots user" + user);
+            logger.debug("<CS> getRoots user" + user);   // NOI18N
         }
 
         java.util.Vector tops = new java.util.Vector(10, 10);
@@ -201,7 +201,7 @@ public class CatalogueServiceImpl {
         int size = 0;
         try {
             if (logger.isDebugEnabled()) {
-                logger.debug("<CS> iterator for active local servers in getRoots: " + iter);
+                logger.debug("<CS> iterator for active local servers in getRoots: " + iter);   // NOI18N
             }
 
             while (iter.hasNext()) {
@@ -211,7 +211,7 @@ public class CatalogueServiceImpl {
                 if ((children != null) && (children.getLocalNodes() != null)) {
                     Node[] tmp = children.getLocalNodes();
                     if (logger.isDebugEnabled()) {
-                        logger.debug("<CS> found valid localserver delivers topnodes ::" + tmp.length);
+                        logger.debug("<CS> found valid localserver delivers topnodes ::" + tmp.length);   // NOI18N
                     }
                     size += tmp.length;
                     tops.addElement(tmp);
@@ -230,10 +230,10 @@ public class CatalogueServiceImpl {
             }
         } catch (Exception e) {
             if (logger != null) {
-                logger.error("<CS> getTopNodes(user):", e);
+                logger.error("<CS> getTopNodes(user):", e);   // NOI18N
             }
 
-            throw new RemoteException("<CS> getTopNodes(user)", e);
+            throw new RemoteException("<CS> getTopNodes(user)", e);   // NOI18N
         }
 
         java.util.Arrays.sort(topNodes, new NodeComparator());
@@ -249,7 +249,7 @@ public class CatalogueServiceImpl {
      */
     private Group[] group(Groupable[] toBeGrouped) {
         if (logger.isDebugEnabled()) {
-            logger.debug("private function group called ");
+            logger.debug("private function group called ");   // NOI18N
         }
         java.util.Hashtable grouped = new java.util.Hashtable(100);
 
@@ -305,7 +305,7 @@ public class CatalogueServiceImpl {
      */
     public Node addNode(Node node, Link parent, User user) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("addNode called node:" + node + "parentLink ::" + parent + " user::" + user);
+            logger.debug("addNode called node:" + node + "parentLink ::" + parent + " user::" + user);   // NOI18N
         }
         return
             ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)activeLocalServers.get(
@@ -324,7 +324,7 @@ public class CatalogueServiceImpl {
      */
     public boolean deleteNode(Node node, User user) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("delete Node called node:" + node + " user::" + user);
+            logger.debug("delete Node called node:" + node + " user::" + user);   // NOI18N
         }
         return
             ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)activeLocalServers.get(
@@ -344,7 +344,7 @@ public class CatalogueServiceImpl {
      */
     public boolean addLink(Node from, Node to, User user) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("addLink called nodeFrom:" + from + "nodeTo ::" + to + " user::" + user);
+            logger.debug("addLink called nodeFrom:" + from + "nodeTo ::" + to + " user::" + user);   // NOI18N
         }
         return
             ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)activeLocalServers.get(
@@ -364,7 +364,7 @@ public class CatalogueServiceImpl {
      */
     public boolean deleteLink(Node from, Node to, User user) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("deleteLink called nodeFrom:" + from + "nodeTo ::" + to + " user::" + user);
+            logger.debug("deleteLink called nodeFrom:" + from + "nodeTo ::" + to + " user::" + user);   // NOI18N
         }
         return
             ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)activeLocalServers.get(
