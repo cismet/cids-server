@@ -60,7 +60,7 @@ public class ServerListHash extends Hashtable {
      */
     private void init() {
         // Debug xxx not necessary if Xoption for Garbagecollector ist set
-        new ServerType("", 1);
+        new ServerType("", 1);  // NOI18N
 
         int[] types = ServerType.getAllServerTypes();
 
@@ -82,7 +82,7 @@ public class ServerListHash extends Hashtable {
     public boolean addServer(int serverTyp, String name, String ip, String port) {
         Server s = findServer(serverTyp, name /*,ip,port*/);
         if (logger.isDebugEnabled()) {
-            logger.debug("server there? " + name + " not null?" + s);
+            logger.debug("server there? " + name + " not null?" + s);  // NOI18N
         }
 
         if (s == null) // not found
@@ -96,8 +96,8 @@ public class ServerListHash extends Hashtable {
         }
 
         logger.error(
-            "tried to add server " + name + " " + ip + " " + port
-            + " but it's already there - or servertype is not defined type::" + serverTyp + " " + s);
+            "tried to add server " + name + " " + ip + " " + port  // NOI18N
+            + " but it's already there - or servertype is not defined type::" + serverTyp + " " + s);  // NOI18N
         return false;
     }
 

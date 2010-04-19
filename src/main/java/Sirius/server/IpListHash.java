@@ -53,7 +53,7 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
      */
     private void init() {
         // debug make sure class is loaded xxx
-        new ServerType("", 1);
+        new ServerType("", 1);  // NOI18N
 
         int[] types = ServerType.getAllServerTypes();
 
@@ -79,7 +79,7 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
     public boolean addServerIP(int serverTyp, String name, String ip, String port) throws Exception {
         // vorsicht xxx ip port werden ueberschrieben
         if (!contains(serverTyp, name, ip, port)) {
-            getServerIPs(serverTyp).put(name, ip + ":" + port);
+            getServerIPs(serverTyp).put(name, ip + ":" + port);  // NOI18N
             return true;
         } else {
             return false;
@@ -102,7 +102,7 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
         HashMap<String, String> sms = getServerIPs(serverTyp);
 
         if (sms.containsKey(name)) {
-            if (sms.get(name).equals(ip + ":" + port)) {
+            if (sms.get(name).equals(ip + ":" + port)) {  // NOI18N
                 return true;
             }
         }
