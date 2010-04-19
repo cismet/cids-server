@@ -52,10 +52,10 @@ public class RegistryMonitor extends JPanel implements Runnable {
     private String registryIP;
 
     /** Die Tabellenueberschriften fuer die Anzeigetabellen Server.* */
-    private java.lang.Object[] columnnamesForServer = { "Name", "IP", "Port" };
+    private java.lang.Object[] columnnamesForServer = { "Name", "IP", "Port" };  // NOI18N
 
     /** Die Tabellenueberschriften fuer die Anzeigetabelle User.* */
-    private java.lang.Object[] columnnamesForUser = { "ID", "Name", "local Servername", "Usergroup", "Admin" };
+    private java.lang.Object[] columnnamesForUser = { "ID", "Name", "local Servername", "Usergroup", "Admin" };  // NOI18N
 
     /** umgewandelter Typ: Sirius.Server.Server[] nach java.lang.Object[][] * */
     private Server[] callServer;
@@ -111,11 +111,11 @@ public class RegistryMonitor extends JPanel implements Runnable {
         messageLabel = new JLabel();
 
         // ueberschrift fuer den Monitor
-        panelHeader = "RegistryMonitor  " + registryIP;
+        panelHeader = org.openide.util.NbBundle.getMessage(RegistryMonitor.class, "RegistryMonitor.panelHeader", registryIP);
 
         try {
             // Referenz auf NameServer und UserServer der Registry erzeugen
-            nameServer = (NameServer)Naming.lookup("rmi://" + registryIP + "/nameServer");
+            nameServer = (NameServer)Naming.lookup("rmi://" + registryIP + "/nameServer");  // NOI18N
             userServer = (UserServer)nameServer; // (UserServer) Naming.lookup("rmi://"+registryIP+"/userServer");
 
             // abfragen der aktiven Server
@@ -131,15 +131,16 @@ public class RegistryMonitor extends JPanel implements Runnable {
             initMainPanel();
 
             // update-Schleife starten
-            new Thread(this, "updateThread").start();
+            new Thread(this, "updateThread").start();  // NOI18N
         } catch (Exception e) {
             // wenn CentralServer auf IP-Adresse nicht vorhanden, Panel wird trotzdem initialisiert
-            messageLabel.setText("There is no SiriusRegistry on " + registryIP);
+            messageLabel.setText(org.openide.util.NbBundle.getMessage(RegistryMonitor.class,"RegistryMonitor.messageLabel.text.noregistry", registryIP));  // NOI18N
+
 
             initMainPanel();
 
             // start der update-Schleife
-            new Thread(this, "updateThread").start();
+            new Thread(this, "updateThread").start();  // NOI18N
         }
     }
 
@@ -162,7 +163,7 @@ public class RegistryMonitor extends JPanel implements Runnable {
     private void update() {
         try {
             // Referenz wird neu angelegt, um zu pr\u00FCfen, ob der SiriusRegistry noch laeuft
-            nameServer = (NameServer)Naming.lookup("rmi://" + registryIP + "/nameServer");
+            nameServer = (NameServer)Naming.lookup("rmi://" + registryIP + "/nameServer");  // NOI18N
 
             // get all Servers
             callServer = nameServer.getServers(ServerType.CALLSERVER);
@@ -173,7 +174,8 @@ public class RegistryMonitor extends JPanel implements Runnable {
             users = new Vector(userServer.getUsers());
         } catch (Exception e) {
             messageLabel.setForeground(Color.red);
-            message("SiriusRegistry on " + registryIP + " is down or not available!!");
+            message(org.openide.util.NbBundle.getMessage(RegistryMonitor.class,"RegistryMonitor.messageLabel.text.registrydown", registryIP));   // NOI18N
+
         }
     }
 
@@ -197,7 +199,7 @@ public class RegistryMonitor extends JPanel implements Runnable {
             // tmTranslServers.setDataVector(MonitorTableModel.convertToMatrix(translServer),columnnamesForServer);
             tmUserServers.setDataVector(MonitorTableModel.convertToMatrix(users), columnnamesForUser);
 
-            message("last update: " + (new Date(System.currentTimeMillis())));
+            message(org.openide.util.NbBundle.getMessage(RegistryMonitor.class,"RegistryMonitor.messageLabel.text.lastupdate", new Date(System.currentTimeMillis()))); // NOI18N
         } catch (IllegalArgumentException e) {
             localServerTable.setModel(new MonitorTableModel());
             callServerTable.setModel(new MonitorTableModel());
@@ -234,27 +236,35 @@ public class RegistryMonitor extends JPanel implements Runnable {
             userTable = new JTable(new MonitorTableModel());
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("initmainPanel");
+            System.err.println("initmainPanel");  // NOI18N
         }
 
         // JTabbedPane erzeugen und Tabellen hinzufuegen
         JTabbedPane allServerPane = new JTabbedPane();
-        allServerPane.add("LocalServers", new JScrollPane(localServerTable));
-        allServerPane.add("CallServers", new JScrollPane(callServerTable));
+        allServerPane.add(
+                org.openide.util.NbBundle.getMessage(RegistryMonitor.class,"RegistryMonitor.initMainPanel().allServerPane.tab1.title"),  // NOI18N
+                new JScrollPane(localServerTable));
+        allServerPane.add(
+                org.openide.util.NbBundle.getMessage(RegistryMonitor.class,"RegistryMonitor.initMainPanel().allServerPane.tab2.title"),  // NOI18N
+                new JScrollPane(callServerTable));
         // allServerPane.add("TranslationServers", new JScrollPane(translServerTable));
-        allServerPane.add("ProtocolServers", new JScrollPane(protocolServerTable));
-        allServerPane.add("Users", new JScrollPane(userTable));
+        allServerPane.add(
+                org.openide.util.NbBundle.getMessage(RegistryMonitor.class,"RegistryMonitor.initMainPanel().allServerPane.tab3.title"),  // NOI18N
+                new JScrollPane(protocolServerTable));
+        allServerPane.add(
+                org.openide.util.NbBundle.getMessage(RegistryMonitor.class,"RegistryMonitor.initMainPanel().allServerPane.tab4.title"),  // NOI18N
+                new JScrollPane(userTable));
 
         // UpdateButton fuer manuelles Update
-        JButton updateButton = new JButton("update");
+        JButton updateButton = new JButton(org.openide.util.NbBundle.getMessage(RegistryMonitor.class,"RegistryMonitor.initMainPanel().updateButton.text"));  // NOI18N
         updateButton.addActionListener(new MonitorUpdateListener(this));
 
         // Panel fuer updateIntervall Einstellungen
         JPanel timePanel = new JPanel();
         ButtonGroup buttonGroup = new ButtonGroup();
-        JRadioButton oneMin = (new JRadioButton("all 1 Minute"));
-        JRadioButton fiveMin = new JRadioButton("all 5 Minutes");
-        JRadioButton tenMin = new JRadioButton("all 10 Minutes");
+        JRadioButton oneMin = (new JRadioButton(org.openide.util.NbBundle.getMessage(RegistryMonitor.class,"RegistryMonitor.initMainPanel().oneMin.text")));  // NOI18N
+        JRadioButton fiveMin = new JRadioButton(org.openide.util.NbBundle.getMessage(RegistryMonitor.class,"RegistryMonitor.initMainPanel().fiveMin.text"));  // NOI18N
+        JRadioButton tenMin = new JRadioButton(org.openide.util.NbBundle.getMessage(RegistryMonitor.class,"RegistryMonitor.initMainPanel().tenMin.text"));  // NOI18N
         MonitorIntervallListener il = new MonitorIntervallListener(this);
         oneMin.addActionListener(il);
         fiveMin.addActionListener(il);
@@ -268,11 +278,13 @@ public class RegistryMonitor extends JPanel implements Runnable {
         timePanel.add(oneMin);
         timePanel.add(fiveMin);
         timePanel.add(tenMin);
-        timePanel.setBorder(BorderFactory.createTitledBorder("Intervall for automatical update"));
+        timePanel.setBorder(BorderFactory.createTitledBorder(
+                org.openide.util.NbBundle.getMessage(RegistryMonitor.class,"RegistryMonitor.initMainPanel().timePanel.border.title")));  // NOI18N
 
         // MessageLabel und MessagePanel
         JPanel messagePanel = new JPanel();
-        messagePanel.setBorder(BorderFactory.createTitledBorder("Messages"));
+        messagePanel.setBorder(BorderFactory.createTitledBorder(
+                org.openide.util.NbBundle.getMessage(RegistryMonitor.class,"RegistryMonitor.initMainPanel().messagePanel.border.title")));  // NOI18N
         messagePanel.add(messageLabel);
 
         JPanel buttonAndMessagePanel = new JPanel();
@@ -298,7 +310,7 @@ public class RegistryMonitor extends JPanel implements Runnable {
             try {
                 Thread t = Thread.currentThread();
                 messageLabel.setForeground(new Color(102, 102, 153));
-                message("last update: " + (new Date(System.currentTimeMillis())));
+                message(org.openide.util.NbBundle.getMessage(RegistryMonitor.class,"RegistryMonitor.messageLabel.text.lastupdate", new Date(System.currentTimeMillis())));  // NOI18N
                 t.sleep(updateIntervall * 1000);
                 updateTables();
             } catch (InterruptedException e) {
@@ -323,8 +335,8 @@ public class RegistryMonitor extends JPanel implements Runnable {
      */
     public static void main(String[] args) {
         // RegistryMonitor monitor = new RegistryMonitor(args[0]);
-        RegistryMonitor monitor = new RegistryMonitor("192.168.0.1");
-        JFrame frame = new JFrame("RegistryMonitor");
+        RegistryMonitor monitor = new RegistryMonitor("192.168.0.1");   // NOI18N
+        JFrame frame = new JFrame(org.openide.util.NbBundle.getMessage(RegistryMonitor.class,"RegistryMonitor.main(String[]).frame.title"));  // NOI18N
 
         frame.getContentPane().add(monitor);
         frame.setSize(400, 400);

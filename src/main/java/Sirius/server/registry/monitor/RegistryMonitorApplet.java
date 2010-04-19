@@ -44,7 +44,7 @@ public class RegistryMonitorApplet extends JApplet {
     //~ Methods ----------------------------------------------------------------
 
     public void init() {
-        registryMonitor = new RegistryMonitor(getParameter("RegistryIP"));
+        registryMonitor = new RegistryMonitor(getParameter("RegistryIP"));  // NOI18N
         getContentPane().add(registryMonitor);
     }
 }
