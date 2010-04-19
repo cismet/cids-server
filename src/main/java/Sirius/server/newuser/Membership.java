@@ -45,7 +45,7 @@ public class Membership implements Serializable, Mapable {
     //~ Methods ----------------------------------------------------------------
 
     public String toString() {
-        return login + "/" + userDomain + "/" + ug + "/" + ugDomain;
+        return login + "/" + userDomain + "/" + ug + "/" + ugDomain;   // NOI18N
     }
 
     public boolean equals(java.lang.Object mem) {
@@ -131,7 +131,7 @@ public class Membership implements Serializable, Mapable {
     }
 
     public Object getKey() {
-        return login + "@" + userDomain + "€" + ug + "@" + ugDomain;
+        return login + "@" + userDomain + "€" + ug + "@" + ugDomain;   // NOI18N
     }
 
     /**
@@ -140,7 +140,7 @@ public class Membership implements Serializable, Mapable {
      * @return  DOCUMENT ME!
      */
     public Object getUserKey() {
-        return login + "@" + userDomain;
+        return login + "@" + userDomain;   // NOI18N
     }
 
     /**
@@ -149,7 +149,7 @@ public class Membership implements Serializable, Mapable {
      * @return  DOCUMENT ME!
      */
     public Object getUserGroupkey() {
-        return ug + "@" + ugDomain;
+        return ug + "@" + ugDomain;   // NOI18N
     }
 
 // end equals

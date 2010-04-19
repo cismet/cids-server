@@ -49,22 +49,22 @@ public class UserManager implements Sirius.server.newuser.UserServer {
         throws java.rmi.RemoteException, UserException {
         User u = (User)users.get(constructKey(user, userDomain));
         if (logger.isDebugEnabled()) {
-            logger.debug("user found :: " + u + " for " + user + " " + userDomain + "user available " + users);
+            logger.debug("user found :: " + u + " for " + user + " " + userDomain + "user available " + users);   // NOI18N
         }
 
         // check ob membership
         if (u == null) {
             throw new UserException(
-                "UserException::no User::" + user + "," + userDomain + "," + userGroup + "," + userGroupDomain
-                + " registered",
+                "UserException::no User::" + user + "," + userDomain + "," + userGroup + "," + userGroupDomain   // NOI18N
+                + " registered",   // NOI18N
                 true,
                 false,
                 false,
                 false);
         } else if (!memberships.containsKey(u.getRegistryKey())) {
             throw new UserException(
-                "UserException::no User::" + user + "," + userDomain + "," + userGroup + "," + userGroupDomain
-                + " registered",
+                "UserException::no User::" + user + "," + userDomain + "," + userGroup + "," + userGroupDomain   // NOI18N
+                + " registered",   // NOI18N
                 true,
                 false,
                 false,
@@ -83,7 +83,7 @@ public class UserManager implements Sirius.server.newuser.UserServer {
                 if (i == (l.size() - 1)) // last element and no break
                 {
                     throw new UserException(
-                        "UserException::no UserGroup::" + userGroup + "," + userGroupDomain,
+                        "UserException::no UserGroup::" + userGroup + "," + userGroupDomain,   // NOI18N
                         false,
                         false,
                         true,
@@ -104,7 +104,7 @@ public class UserManager implements Sirius.server.newuser.UserServer {
                             // -- "+domain);
             if (logger != null) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("no  user " + user);
+                    logger.debug("no  user " + user);   // NOI18N
                 }
             }
             return new Vector(0);
@@ -117,7 +117,7 @@ public class UserManager implements Sirius.server.newuser.UserServer {
                                                       // Usergroup for ::"+userName + " -- "+domain);
             if (logger != null) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("no  user " + userName + "or no domain " + domain);
+                    logger.debug("no  user " + userName + "or no domain " + domain);   // NOI18N
                 }
             }
             return new Vector(0);
@@ -129,7 +129,7 @@ public class UserManager implements Sirius.server.newuser.UserServer {
                          // "+domain);
             if (logger != null) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("no usergroup for user " + userName);
+                    logger.debug("no usergroup for user " + userName);   // NOI18N
                 }
             }
             return new Vector(0);
@@ -166,14 +166,14 @@ public class UserManager implements Sirius.server.newuser.UserServer {
 
     public void registerUser(User user) throws java.rmi.RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("register user " + user);
+            logger.debug("register user " + user);   // NOI18N
         }
         users.put(user.getRegistryKey(), user);
     }
 
     public void registerUserGroup(UserGroup userGroup) throws java.rmi.RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("register userGroup " + userGroup);
+            logger.debug("register userGroup " + userGroup);   // NOI18N
         }
         ugs.put(userGroup.getKey(), userGroup);
     }
@@ -186,7 +186,7 @@ public class UserManager implements Sirius.server.newuser.UserServer {
 
     public boolean registerUserMembership(Membership membership) throws java.rmi.RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("register Membership " + membership);
+            logger.debug("register Membership " + membership);   // NOI18N
         }
         memberships.put(membership.getUserKey(), membership);
         return true; // unsinn
@@ -239,7 +239,7 @@ public class UserManager implements Sirius.server.newuser.UserServer {
         if ((first == null) || (second == null)) {
             return null;
         } else {
-            return first + "@" + second;
+            return first + "@" + second;   // NOI18N
         }
     }
 
