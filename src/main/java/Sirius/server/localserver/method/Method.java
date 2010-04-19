@@ -63,7 +63,7 @@ public class Method implements java.io.Serializable, Cloneable, Mapable {
             policy = Policy.createParanoidPolicy();
         }
         permissions = new PermissionHolder(policy);
-        description = "";
+        description = "";   // NOI18N
         this.c_multiple = c_multiple; // beliebig viele klassen beliebig viele Objekte
         this.o_multiple = o_multiple; // 1 klasse mehrer Objekte
     }
@@ -131,7 +131,7 @@ public class Method implements java.io.Serializable, Cloneable, Mapable {
     }
 
     public Object getKey() {
-        return method_id + "@" + plugin_id;
+        return method_id + "@" + plugin_id;   // NOI18N
     }
 
     /**
@@ -153,7 +153,7 @@ public class Method implements java.io.Serializable, Cloneable, Mapable {
     }
 
     public String toString() {
-        return "Name ::" + getKey() + " id::" + id;
+        return "Name ::" + getKey() + " id::" + id;   // NOI18N
     }
 
     /**
@@ -186,7 +186,7 @@ public class Method implements java.io.Serializable, Cloneable, Mapable {
     public void addClassKey(String key) {
         if (logger != null) {
             if (logger.isDebugEnabled()) {
-                logger.debug("add class key" + key + " to method " + this);
+                logger.debug("add class key" + key + " to method " + this);   // NOI18N
             }
         }
         classKeys.add(key);
