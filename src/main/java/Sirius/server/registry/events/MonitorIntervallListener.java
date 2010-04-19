@@ -62,11 +62,11 @@ public class MonitorIntervallListener implements ActionListener {
 
     public void actionPerformed(ActionEvent event) {
         String command = event.getActionCommand();
-        if (command.equals("all 1 Minute")) {
+        if (command.equals("all 1 Minute")) {  // NOI18N
             registryMonitor.setUpdateIntervall(60);
-        } else if (command.equals("all 5 Minutes")) {
+        } else if (command.equals("all 5 Minutes")) {  // NOI18N
             registryMonitor.setUpdateIntervall(300);
-        } else if (command.equals("all 10 Minutes")) {
+        } else if (command.equals("all 10 Minutes")) {  // NOI18N
             registryMonitor.setUpdateIntervall(600);
         }
     }
