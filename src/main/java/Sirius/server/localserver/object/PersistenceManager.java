@@ -189,7 +189,7 @@ public final class PersistenceManager {
                     new CurrentStackTrace());
             }
             // TODO: shouldn't that return -1 or similar to indicate that nothing has been done?
-            throw new SecurityException("not allowed to insert meta object");
+            throw new SecurityException("not allowed to insert meta object");   // NOI18N
         }
     }
 
@@ -262,7 +262,7 @@ public final class PersistenceManager {
             }
             // variables for sql statement
             final StringBuffer paramStmt = new StringBuffer("UPDATE "); // NOI18N
-            String sep = "";
+            String sep = "";   // NOI18N
             // retrieve class object
             final MetaClass metaClass = dbServer.getClass(mo.getClassID());
             // add table name and set clause
@@ -343,7 +343,7 @@ public final class PersistenceManager {
                 ++updateCounter;
 
                 // comma between 'fieldname = ?, ' set in first iteration
-                sep = ",";
+                sep = ",";   // NOI18N
             }
 
             if (updateCounter > 0) {
@@ -388,7 +388,7 @@ public final class PersistenceManager {
                     "'" + user + "' is not allowed to update MetaObject " + mo.getID() + "." + mo.getClassKey(), // NOI18N
                     new CurrentStackTrace());
             }
-            throw new SecurityException("not allowed to insert meta object");
+            throw new SecurityException("not allowed to insert meta object");   // NOI18N
         }
     }
 
@@ -461,12 +461,12 @@ public final class PersistenceManager {
                         // should never occur
                         // TODO: consider LOG fatal
                         LOG.error(
-                            "error f\u00FCr array element " + metaObject + " hat ung\u00FCltigen status ::" + status);
+                            "error for array element " + metaObject + " has invalid status ::" + status);   // NOI18N
                         // TODO: throw illegalstateexception?
                     }
                 }
             } else {
-                LOG.warn("ArrayElement is no MetaObject and won't be inserted");
+                LOG.warn("ArrayElement is no MetaObject and won't be inserted");   // NOI18N
             }
         }
 
@@ -570,7 +570,7 @@ public final class PersistenceManager {
             mo.setArrayKey2PrimaryKey();
 
             final ArrayList values = new ArrayList(mAttr.length);
-            String sep = "";
+            String sep = "";   // NOI18N
             // iterate all attributes to create insert statement
             for (int i = 0; i < mAttr.length; i++) {
                 // attribute value
@@ -652,7 +652,7 @@ public final class PersistenceManager {
                 sep = ", "; // NOI18N
             }
             // finalise param stmt
-            sep = "";
+            sep = "";   // NOI18N
             paramSql.append(") VALUES (");        // NOI18N
             for (int i = 0; i < values.size(); ++i) {
                 paramSql.append(sep).append('?'); // NOI18N
@@ -699,7 +699,7 @@ public final class PersistenceManager {
                     "'" + user + "' is not allowed to insert MO " + mo.getID() + "." + mo.getClassKey(), // NOI18N
                     new CurrentStackTrace());
             }
-            throw new SecurityException("not allowed to insert meta object");
+            throw new SecurityException("not allowed to insert meta object");   // NOI18N
         }
     }
 
@@ -747,7 +747,7 @@ public final class PersistenceManager {
         } catch (final SQLException e) {
             LOG.error(
                 "could not delete index for object '" + mo.getID()              // NOI18N
-                + "' of class '" + mo.getClass() + "'",
+                + "' of class '" + mo.getClass() + "'",                         // NOI18N
                 e);                                                             // NOI18N
             // TODO: consider to wrap exception
             throw e;
@@ -857,7 +857,7 @@ public final class PersistenceManager {
         } catch (final SQLException e) {
             LOG.error(
                 "could not insert index for object '" + mo.getID()                      // NOI18N
-                + "' of class '" + mo.getClass() + "'",
+                + "' of class '" + mo.getClass() + "'",                                 // NOI18N
                 e);                                                                     // NOI18N
             // TODO: consider to wrap exception
             throw e;
@@ -955,7 +955,7 @@ public final class PersistenceManager {
         } catch (final SQLException e) {
             LOG.error(
                 "could not insert index for object '" + mo.getID()                       // NOI18N
-                + "' of class '" + mo.getClass() + "'",
+                + "' of class '" + mo.getClass() + "'",                                  // NOI18N
                 e);                                                                      // NOI18N
             throw e;
         } finally {

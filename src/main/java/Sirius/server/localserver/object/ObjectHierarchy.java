@@ -55,24 +55,24 @@ public class ObjectHierarchy {
         Statement stmnt = con.createStatement();
         // schl\u00FCssel , vatertabellen name , Atrributname
         String initLookupTable =
-            "select  a.foreign_key_references_to as child,a.class_id as father,c.primary_key_field as pk,c.table_name,a.field_name  from cs_attr a,cs_class  c where a.foreign_key ='T' and  a.class_id = c.id   and a.indexed=true ";
+            "select  a.foreign_key_references_to as child,a.class_id as father,c.primary_key_field as pk,c.table_name,a.field_name  from cs_attr a,cs_class  c where a.foreign_key ='T' and  a.class_id = c.id   and a.indexed=true ";   // NOI18N
         // and a.indexed=true
         // and ( a.isarray is null or a.isarray = 'F') rausgenommen
         ResultSet rs = stmnt.executeQuery(initLookupTable);
 
         while (rs.next()) {
-            Integer key = new Integer(rs.getInt("child"));
+            Integer key = new Integer(rs.getInt("child"));   // NOI18N
 
-            String pk = rs.getString("pk");
+            String pk = rs.getString("pk");   // NOI18N
 
-            int father = rs.getInt("father");
+            int father = rs.getInt("father");   // NOI18N
 
             // konstruiere select string f\u00FCr Vaterobjekt mit Auswahlkriterium = Objektid des Attributes
 
-            String value = "Select " + father + " as class_id ," + pk + " as object_id" + " from "
-                + rs.getString("table_name") + " where " + rs.getString("field_name") + " = ";
+            String value = "Select " + father + " as class_id ," + pk + " as object_id" + " from "   // NOI18N
+                + rs.getString("table_name") + " where " + rs.getString("field_name") + " = ";   // NOI18N
             if (logger.isDebugEnabled()) {
-                logger.debug(" get Father key :: " + key + " value :: " + value);
+                logger.debug(" get Father key :: " + key + " value :: " + value);   // NOI18N
             }
             fatherStmnts.put(key, value);
 
@@ -82,25 +82,25 @@ public class ObjectHierarchy {
         // init array stmns notwendig da array merkmal nicht der primary key ist
 
         String initArrayLookupTable =
-            "select cf.primary_key_field as father_pk,cc.primary_key_field as child_pk,a.array_key, a.foreign_key_references_to as child,a.class_id as father,cf.table_name as father_table, cc.table_name as child_table,a.field_name as attribute  from cs_attr a,cs_class  cf, cs_class cc where a.foreign_key ='T' and  a.class_id = cf.id and isarray ='T' and a.foreign_key_references_to =cc.id";
+            "select cf.primary_key_field as father_pk,cc.primary_key_field as child_pk,a.array_key, a.foreign_key_references_to as child,a.class_id as father,cf.table_name as father_table, cc.table_name as child_table,a.field_name as attribute  from cs_attr a,cs_class  cf, cs_class cc where a.foreign_key ='T' and  a.class_id = cf.id and isarray ='T' and a.foreign_key_references_to =cc.id";   // NOI18N
 
         rs = stmnt.executeQuery(initArrayLookupTable);
 
         while (rs.next()) {
-            String arrayKey = rs.getString("array_key");
-            Integer key = new Integer(rs.getInt("child"));
-            String father_pk = rs.getString("father_pk");
-            int father = rs.getInt("father");
-            String attribute = rs.getString("attribute");
-            String child_table = rs.getString("child_table");
-            String father_table = rs.getString("father_table");
-            String child_pk = rs.getString("child_pk");
+            String arrayKey = rs.getString("array_key");   // NOI18N
+            Integer key = new Integer(rs.getInt("child"));   // NOI18N
+            String father_pk = rs.getString("father_pk");   // NOI18N
+            int father = rs.getInt("father");   // NOI18N
+            String attribute = rs.getString("attribute");   // NOI18N
+            String child_table = rs.getString("child_table");   // NOI18N
+            String father_table = rs.getString("father_table");   // NOI18N
+            String child_pk = rs.getString("child_pk");   // NOI18N
 
-            String value = "Select " + father + " as class_id ," + father_pk + " as object_id" + " from " + father_table
-                + " where " + attribute + " in "
-                + " (select " + arrayKey + " from " + child_table + " where  " + child_pk + " = "; // ? )
+            String value = "Select " + father + " as class_id ," + father_pk + " as object_id" + " from " + father_table   // NOI18N
+                + " where " + attribute + " in "   // NOI18N
+                + " (select " + arrayKey + " from " + child_table + " where  " + child_pk + " = "; // ? )   // NOI18N
             if (logger.isDebugEnabled()) {
-                logger.debug(" get Array Father key :: " + key + " value :: " + value);
+                logger.debug(" get Array Father key :: " + key + " value :: " + value);   // NOI18N
             }
 
             arrayFatherStmnts.put(key, value);
@@ -249,7 +249,7 @@ public class ObjectHierarchy {
 
             result = new ArrayList(statements.size());
             while (iter.hasNext()) {
-                result.add(iter.next().toString() + objectId + ")");
+                result.add(iter.next().toString() + objectId + ")");   // NOI18N
             }
         }
 

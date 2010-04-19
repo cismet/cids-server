@@ -75,7 +75,7 @@ public class DefaultObject implements Object {
             this.referencingObjectAttribute = o.getReferencingObjectAttribute();
             this.status = o.getStatus();
         } else {
-            logger.error("object null default object angelegt");
+            logger.error("object null default object created");   // NOI18N
         }
     }
 
@@ -160,7 +160,7 @@ public class DefaultObject implements Object {
      * @return  eindeutiger Schl\u00FCssel innerhalb einer domain (i.d.R. objectID@classID)
      */
     public java.lang.Object getKey() {
-        return objectID + "@" + classID;
+        return objectID + "@" + classID;   // NOI18N
     }
     // -------------------------------------------------------------------------
 
@@ -185,10 +185,10 @@ public class DefaultObject implements Object {
                    // (Unsinnsbeschr\u00E4nkung)
         {
             anyAttribute.setOptional(false);
-            if (logger != null) {
+            if (logger != null && logger.isInfoEnabled()) {
                 logger.info(
-                    "optional set to false for attribute : " + anyAttribute
-                    + " because it belongs to a arrayLink (dummy)");
+                    "optional set to false for attribute : " + anyAttribute   // NOI18N
+                    + " because it belongs to a arrayLink (dummy)");   // NOI18N
             }
         }
 
@@ -413,7 +413,7 @@ public class DefaultObject implements Object {
             try {
                 addAttribute(objectAttributes[i]);
             } catch (Exception e) {
-                logger.error("add attribute", e);
+                logger.error("add attribute", e);   // NOI18N
             }
         }
     }
@@ -590,7 +590,7 @@ public class DefaultObject implements Object {
 //                logger = org.apache.log4j.Logger.getLogger(MetaObject.this.getClass());
 //            logger.debug("setStatus() : Status alt :" + getStatusDebugString(this.status) + "  .. Status neu:" + getStatusDebugString(status) + "\n" + getDebugString());
         } catch (Exception e) {
-            getLogger().error("Fehler beim Setzen des Status", e);
+            getLogger().error("Error while setting status", e);   // NOI18N 
         }
         if (this.status == NEW) {
 //            logger.debug("Status New ist nicht ver\u00E4nderbar auch nicht mit :" + getStatusDebugString(status));
@@ -613,27 +613,27 @@ public class DefaultObject implements Object {
      * @return  DOCUMENT ME!
      */
     protected static String getStatusDebugString(int status) {
-        String statusString = "unknown";
+        String statusString = "unknown";   // NOI18N
 
         switch (status) {
             case 0: {
-                statusString = "No Status";
+                statusString = "No Status";   // NOI18N
                 break;
             }
             case 1: {
-                statusString = "New";
+                statusString = "New";   // NOI18N
                 break;
             }
             case 2: {
-                statusString = "Modified";
+                statusString = "Modified";   // NOI18N
                 break;
             }
             case 3: {
-                statusString = "To Delete";
+                statusString = "To Delete";   // NOI18N
                 break;
             }
             case 4: {
-                statusString = "Template";
+                statusString = "Template";   // NOI18N
                 break;
             }
         }

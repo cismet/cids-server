@@ -46,7 +46,7 @@ public class PersistenceHelper {
     static {
         logger = org.apache.log4j.Logger.getLogger(PersistenceHelper.class);
         try {
-            GEOMETRY = Class.forName("com.vividsolutions.jts.geom.Geometry");
+            GEOMETRY = Class.forName("com.vividsolutions.jts.geom.Geometry");   // NOI18N
         } catch (ClassNotFoundException ex) {
             logger.error(ex);
         }
@@ -83,7 +83,7 @@ public class PersistenceHelper {
             return ((GEOMETRY.isAssignableFrom(value.getClass()) || (value instanceof java.sql.Date)
                                 || (value instanceof java.util.Date)
                                 || ((value instanceof java.lang.String)
-                                    && !((String)value).startsWith("GeometryFromText"))
+                                    && !((String)value).startsWith("GeometryFromText"))   // NOI18N
                                 || (value instanceof java.lang.Boolean)
                                 || (value instanceof java.lang.Character)));
         }
@@ -144,7 +144,7 @@ public class PersistenceHelper {
     int getNextID(String tableName, String key) throws SQLException {
         Connection con = dbServer.getActiveDBConnection().getConnection();
         // String query = "SELECT MAX(" + key + ") FROM " + tableName;
-        String query = "SELECT NEXTVAL('" + tableName.toUpperCase() + "_SEQ')";
+        String query = "SELECT NEXTVAL('" + tableName.toUpperCase() + "_SEQ')";   // NOI18N
 
         // logger.debug("next value key "+query);
 
@@ -178,19 +178,19 @@ public class PersistenceHelper {
         String defaultVal = mai.getDefaultValue();
 
         if (defaultVal == null) {
-            defaultVal = "NULL";
+            defaultVal = "NULL";   // NOI18N
         }
         try {
             if (toBeQuoted(mai, value)) {
-                defaultVal = "'" + defaultVal + "'";
+                defaultVal = "'" + defaultVal + "'";   // NOI18N
             }
         } catch (java.util.MissingResourceException e) {
             logger.error(
-                "Exception when trying to retrieve list of quoted types insert unsafe therefore default will be set to null (unquoted) this may lead to an SQL-Exception",
+                "Exception when trying to retrieve list of quoted types insert unsafe therefore default will be set to null (unquoted) this may lead to an SQL-Exception",   // NOI18N
                 e);
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("defaultValue :: " + defaultVal);
+            logger.debug("defaultValue :: " + defaultVal);   // NOI18N
         }
 
         return defaultVal;
@@ -219,7 +219,7 @@ public class PersistenceHelper {
 
             if (logger != null) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("primary key ::" + primaryKey);
+                    logger.debug("primary key ::" + primaryKey);   // NOI18N
                 }
             }
 
@@ -227,11 +227,11 @@ public class PersistenceHelper {
             {
                 if (
                     (val == null)
-                            || ((val != null) && val.toString().trim().equals("-1")
+                            || ((val != null) && val.toString().trim().equals("-1")   // NOI18N
                                 && (val instanceof java.lang.Integer))) {
                     if (logger != null) {
                         if (logger.isDebugEnabled()) {
-                            logger.debug("primary key is null set val to primaryKey::" + val);
+                            logger.debug("primary key is null set val to primaryKey::" + val);   // NOI18N
                         }
                     }
                     oa.setValue(new Integer(primaryKey));
@@ -241,8 +241,8 @@ public class PersistenceHelper {
                 }
             } else {
                 logger.info(
-                    "primary key name :: " + priK + " :: for class :: " + metaClass
-                    + " :: is ambigious and only one attribute with this name is primary key");
+                    "primary key name :: " + priK + " :: for class :: " + metaClass   // NOI18N
+                    + " :: is ambigious and only one attribute with this name is primary key");   // NOI18N
             }
         }
     }
