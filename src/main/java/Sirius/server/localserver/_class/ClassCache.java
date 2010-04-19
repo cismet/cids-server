@@ -74,13 +74,13 @@ public class ClassCache {
 
         DBConnection con = conPool.getConnection();
         try {
-            ResultSet classTable = con.submitQuery("get_all_classes", new Object[0]); // getAllClasses
+            ResultSet classTable = con.submitQuery("get_all_classes", new Object[0]);   // NOI18N // getAllClasses
 
             if (classTable == null) {
                 logger.error(
-                    "<LS> ERROR :: Klassen konten nicht geladen werden fataler Fehler das Programm beendet sich");
+                    "<LS> ERROR :: Fatal Error: classes could not be loaded. Program exits");   // NOI18N
                 throw new ServerExitError(
-                    "Klassen konten nicht geladen werden fataler Fehler das Programm beendet sich");
+                    "Fatal Error: classes could not be loaded. Program exits");   // NOI18N
             }
 
             while (classTable.next()) // add all objects to the hashtable
@@ -89,9 +89,9 @@ public class ClassCache {
                 Image class_i = null;
 
                 try {
-                    object_i = icons.getImageValue(classTable.getInt("object_icon_id"));
+                    object_i = icons.getImageValue(classTable.getInt("object_icon_id"));   // NOI18N
                 } catch (Exception e) {
-                    logger.error("<LS> ERROR ::  !!Setting objectIcon  to default!!", e);
+                    logger.error("<LS> ERROR ::  !!Setting objectIcon  to default!!", e);   // NOI18N
 
                     object_i = new Image();
 
@@ -101,9 +101,9 @@ public class ClassCache {
                 }
 
                 try {
-                    class_i = icons.getImageValue(classTable.getInt("class_icon_id"));
+                    class_i = icons.getImageValue(classTable.getInt("class_icon_id"));   // NOI18N
                 } catch (Exception e) {
-                    logger.error("<LS> ERROR :: !!Setting classIcon to default!!!!", e);
+                    logger.error("<LS> ERROR :: !!Setting classIcon to default!!!!", e);   // NOI18N
 
                     class_i = new Image();
 
@@ -112,23 +112,23 @@ public class ClassCache {
                     }
                 }
 
-                String toStringQualifier = classTable.getString("tostringqualifier");
-                String className = classTable.getString("name").trim();
-                Object policyTester = classTable.getObject("policy");
+                String toStringQualifier = classTable.getString("tostringqualifier");   // NOI18N
+                String className = classTable.getString("name").trim();   // NOI18N
+                Object policyTester = classTable.getObject("policy");   // NOI18N
                 Policy policy = null;
                 if (policyTester == null) {
                     policy = policyHolder.getServerPolicy(properties.getServerPolicy());
                 } else {
-                    int policyId = classTable.getInt("policy");
+                    int policyId = classTable.getInt("policy");   // NOI18N
                     policy = policyHolder.getServerPolicy(policyId);
                 }
 
-                Object attrPolicyTester = classTable.getObject("attribute_policy");
+                Object attrPolicyTester = classTable.getObject("attribute_policy");   // NOI18N
                 Policy attributePolicy = null;
                 if (attrPolicyTester == null) {
                     attributePolicy = policyHolder.getServerPolicy(properties.getAttributePolicy());
                 } else {
-                    int policyId = classTable.getInt("attribute_policy");
+                    int policyId = classTable.getInt("attribute_policy");   // NOI18N
                     attributePolicy = policyHolder.getServerPolicy(policyId);
                 }
                 if (attributePolicy == null) {
@@ -136,30 +136,30 @@ public class ClassCache {
                 }
 
                 Class tmp = new Class(
-                        classTable.getInt("id"),
+                        classTable.getInt("id"),   // NOI18N
                         className,
-                        classTable.getString("descr"),
+                        classTable.getString("descr"),   // NOI18N
                         class_i,
                         object_i,
-                        classTable.getString("table_name"),
-                        classTable.getString("primary_key_field"),
+                        classTable.getString("table_name"),   // NOI18N
+                        classTable.getString("primary_key_field"),   // NOI18N
                         toStringQualifier,
                         policy,
                         attributePolicy);
                 if (logger.isDebugEnabled()) {
-                    logger.debug("to string for Class :" + className + " :: " + toStringQualifier);
+                    logger.debug("to string for Class :" + className + " :: " + toStringQualifier);   // NOI18N
                 }
                 // Hell
-                tmp.setEditor(classTable.getString("editorqualifier"));
-                tmp.setRenderer(classTable.getString("RendererQualifier"));
+                tmp.setEditor(classTable.getString("editorqualifier"));   // NOI18N
+                tmp.setRenderer(classTable.getString("RendererQualifier"));   // NOI18N
                 try {
-                    boolean arrayElementLink = classTable.getBoolean("array_link");
+                    boolean arrayElementLink = classTable.getBoolean("array_link");   // NOI18N
                     tmp.setArrayElementLink(arrayElementLink);
                     if (logger.isDebugEnabled()) {
-                        logger.debug("isArrayElementLink set to :" + arrayElementLink);
+                        logger.debug("isArrayElementLink set to :" + arrayElementLink);   // NOI18N
                     }
                 } catch (Exception e) {
-                    logger.error("Fehler bei arrayElementLink wahrscheinlich alte DB Version", e);
+                    logger.error("Error at arrayElementLink probably old DB version", e);   // NOI18N
                 }
 
                 classes.add(tmp.getID(), tmp);
@@ -308,7 +308,7 @@ public class ClassCache {
     private void addAttributes(DBConnectionPool conPool) {
         DBConnection con = conPool.getConnection();
         try {
-            ResultSet attribTable = con.submitQuery("get_all_class_attributes", new Object[0]);
+            ResultSet attribTable = con.submitQuery("get_all_class_attributes", new Object[0]);   // NOI18N
 
             int id = 0;
             int classID = 0;
@@ -320,13 +320,13 @@ public class ClassCache {
                 java.lang.Object value = null;
                 ClassAttribute attrib = null;
 
-                id = attribTable.getInt("id");
-                classID = attribTable.getInt("class_id");
-                name = attribTable.getString("attr_key");
-                typeID = attribTable.getInt("type_id");
-                value = attribTable.getString("attr_value");
+                id = attribTable.getInt("id");   // NOI18N
+                classID = attribTable.getInt("class_id");   // NOI18N
+                name = attribTable.getString("attr_key");   // NOI18N
+                typeID = attribTable.getInt("type_id");   // NOI18N
+                value = attribTable.getString("attr_value");   // NOI18N
 
-                attrib = new ClassAttribute(id + "", classID, name, typeID, classes.getClass(classID).getPolicy());
+                attrib = new ClassAttribute(id + "", classID, name, typeID, classes.getClass(classID).getPolicy());   // NOI18N 
                 attrib.setValue(value);
                 classes.getClass(attrib.getClassID()).addAttribute(attrib);
                 classAttribs.put(new Integer(attrib.getID()), attrib);
@@ -337,7 +337,7 @@ public class ClassCache {
             // addAttributePermissions(conPool);
         } catch (java.lang.Exception e) {
             ExceptionHandler.handle(e);
-            logger.error("<LS> ERROR :: classcache  get_all_class_attributes", e);
+            logger.error("<LS> ERROR :: classcache  get_all_class_attributes", e);   // NOI18N
         }
     }
 
@@ -362,7 +362,7 @@ public class ClassCache {
                 }
                 Statement s = con.getConnection().createStatement();
                 String sql = c.getGetDefaultInstanceStmnt();
-                sql.replaceAll("\\?", "1=2");
+                sql.replaceAll("\\?", "1=2");   // NOI18N
                 ResultSet resultset = s.executeQuery(sql);
                 ResultSetMetaData rsmd = resultset.getMetaData();
 
@@ -376,7 +376,7 @@ public class ClassCache {
             }
             // logger.fatal(classfieldtypes);
 
-            ResultSet rs = con.submitQuery("get_attribute_info", new Object[0]);
+            ResultSet rs = con.submitQuery("get_attribute_info", new Object[0]);   // NOI18N
 
             MemberAttributeInfo mai = null;
 
@@ -413,34 +413,34 @@ public class ClassCache {
                 String complexEditor;
                 boolean extensionAttribute = false;
 
-                id = rs.getInt("id");
-                name = rs.getString("name");
-                classId = rs.getInt("class_id");
-                typeId = rs.getInt("type_id");
-                position = rs.getInt("pos");
+                id = rs.getInt("id");   // NOI18N
+                name = rs.getString("name");   // NOI18N
+                classId = rs.getInt("class_id");   // NOI18N
+                typeId = rs.getInt("type_id");   // NOI18N
+                position = rs.getInt("pos");   // NOI18N
 
-                fieldName = rs.getString("field_name");
+                fieldName = rs.getString("field_name");   // NOI18N
                 if (fieldName != null) {
                     fieldName = fieldName.trim();
                 }
 
-                arrayKey = rs.getString("array_key");
+                arrayKey = rs.getString("array_key");   // NOI18N
                 if (arrayKey != null) {
                     arrayKey = arrayKey.trim();
                 }
 
-                toString = rs.getString("toStringString");
+                toString = rs.getString("toStringString");   // NOI18N
                 if (toString != null) {
                     toString = toString.trim();
                 }
 
                 // editor xxx
-                editor = rs.getString("editor_class");
+                editor = rs.getString("editor_class");   // NOI18N
                 if (editor != null) {
                     editor = editor.trim();
                 }
 
-                complexEditor = rs.getString("complexeditorclass");
+                complexEditor = rs.getString("complexeditorclass");   // NOI18N
                 if (complexEditor != null) {
                     complexEditor = complexEditor.trim();
                 }
@@ -449,33 +449,33 @@ public class ClassCache {
 //                if(renderer!=null)
 //                    renderer=renderer.trim();
 
-                defaultValue = rs.getString("default_value");
+                defaultValue = rs.getString("default_value");   // NOI18N
                 if (defaultValue != null) {
                     defaultValue = defaultValue.trim();
                 }
 
-                fromString = rs.getString("from_string_class");
+                fromString = rs.getString("from_string_class");   // NOI18N
                 if (fromString != null) {
                     fromString = fromString.trim();
                 }
 
-                foreignKey = rs.getBoolean("foreign_key");
+                foreignKey = rs.getBoolean("foreign_key");   // NOI18N
 
-                substitute = rs.getBoolean("substitute");
+                substitute = rs.getBoolean("substitute");   // NOI18N
 
-                visible = rs.getBoolean("visible");
+                visible = rs.getBoolean("visible");   // NOI18N
 
-                optional = rs.getBoolean("optional");
+                optional = rs.getBoolean("optional");   // NOI18N
 
                 // permission = DBConnection.stringToBool(rs.getString("permission"));
-                indexed = rs.getBoolean("indexed");
+                indexed = rs.getBoolean("indexed");   // NOI18N
 
-                foreignKeyClassId = rs.getInt("foreign_key_references_to");
+                foreignKeyClassId = rs.getInt("foreign_key_references_to");   // NOI18N
 
-                array = rs.getBoolean("isarray");
+                array = rs.getBoolean("isarray");   // NOI18N
 
                 try {
-                    extensionAttribute = rs.getBoolean("extension_attr");
+                    extensionAttribute = rs.getBoolean("extension_attr");   // NOI18N
                 } catch (Exception skip) {
                 }
 
@@ -522,14 +522,14 @@ public class ClassCache {
                 if (c != null) {
                     c.addMemberAttributeInfo(mai);
                 } else {
-                    logger.warn("Falscher Eintrag f\u00FCr addMemberInfos f\u00FCr Klasse::" + classId);
+                    logger.warn("Wrong addMemberInfos entry for class::" + classId);   // NOI18N
                 }
             }
 
             rs.close();
         } catch (java.lang.Exception e) {
             ExceptionHandler.handle(e);
-            logger.error("<LS> ERROR :: addMemberinfos", e);
+            logger.error("<LS> ERROR :: addMemberinfos", e);   // NOI18N
         }
     }
 
@@ -541,19 +541,19 @@ public class ClassCache {
     private void addMethodIDs(DBConnectionPool conPool) {
         DBConnection con = conPool.getConnection();
         try {
-            ResultSet methodTable = con.submitQuery("get_all_class_method_ids", new Object[0]);
+            ResultSet methodTable = con.submitQuery("get_all_class_method_ids", new Object[0]);   // NOI18N
 
             while (methodTable.next()) {
-                int classId = methodTable.getInt("class_id");
+                int classId = methodTable.getInt("class_id");   // NOI18N
                 Sirius.server.localserver._class.Class c = classes.getClass(classId);
 
-                int methodId = methodTable.getInt("method_id");
+                int methodId = methodTable.getInt("method_id");   // NOI18N
 
                 if (c != null) {
                     c.addMethodID(methodId);
                 } else {
                     logger.warn(
-                        "Eintrag in der Klassen/Methoden tabelle fehlerhaft Klasse" + classId + " Methode :"
+                        "Wrong entry in classes/methods table: Class" + classId + " Method :"   // NOI18N
                         + methodId);
                 }
             }
@@ -561,7 +561,7 @@ public class ClassCache {
             methodTable.close();
         } catch (java.lang.Exception e) {
             ExceptionHandler.handle(e);
-            logger.error("<LS> ERROR :: get_all_class_method_ids", e);
+            logger.error("<LS> ERROR :: get_all_class_method_ids", e);   // NOI18N
         }
     }
 
@@ -579,35 +579,35 @@ public class ClassCache {
             iconDirectory = properties.getIconDirectory();
         } catch (Exception e) {
             logger.error(
-                "<LS> ERROR ::  Keyvalue ICONDIRECTORY in ConfigFile is missing\n<LS> ERROR ::  set ICONDIRECTORY to . ",
+                "<LS> ERROR ::  Keyvalue ICONDIRECTORY in ConfigFile is missing\n<LS> ERROR ::  set ICONDIRECTORY to . ",   // NOI18N
                 e);
-            iconDirectory = ".";
+            iconDirectory = ".";   // NOI18N
         }
         try {
             // separator=properties.getFileseparator();
-            separator = System.getProperty("file.separator");
+            separator = System.getProperty("file.separator");   // NOI18N
         } catch (Exception e) {
             logger.error(
-                "<LS> ERROR ::  KeyValue SEPARATOR in ConfigFile is missing\n<LS> ERROR ::  set DEFAULTSEPARATOR = \\",
+                "<LS> ERROR ::  KeyValue SEPARATOR in ConfigFile is missing\n<LS> ERROR ::  set DEFAULTSEPARATOR = \\",   // NOI18N
                 e);
-            separator = "\\";
+            separator = "\\";   // NOI18N
         }
 
         DBConnection con = conPool.getConnection();
         try {
-            ResultSet imgTable = con.submitQuery("get_all_images", new Object[0]);
+            ResultSet imgTable = con.submitQuery("get_all_images", new Object[0]);   // NOI18N
 
             while (imgTable.next()) {
                 // icons.add(imgTable.getInt("id"),new
                 // Image(properties.getIconDirectory()+"\\"+imgTable.getString("data").trim()));
-                tmpImage = new Image(iconDirectory + separator + imgTable.getString("file_name").trim());
-                icons.add(imgTable.getInt("id"), tmpImage);
+                tmpImage = new Image(iconDirectory + separator + imgTable.getString("file_name").trim());   // NOI18N
+                icons.add(imgTable.getInt("id"), tmpImage);   // NOI18N
             }
 
             imgTable.close();
         } catch (java.lang.Exception e) {
             ExceptionHandler.handle(e);
-            logger.error("<LS> ERROR :: get_all_icons", e);
+            logger.error("<LS> ERROR :: get_all_icons", e);   // NOI18N
         }
     }
     /**
@@ -618,33 +618,33 @@ public class ClassCache {
     private void addClassPermissions(DBConnectionPool conPool) {
         DBConnection con = conPool.getConnection();
         try {
-            ResultSet permTable = con.submitQuery("get_all_class_permissions", new Object[0]);
+            ResultSet permTable = con.submitQuery("get_all_class_permissions", new Object[0]);   // NOI18N
 
             String lsName = properties.getServerName();
 
             while (permTable.next()) {
-                int ug_id = permTable.getInt("ug_id");
-                String ug_name = permTable.getString("ug_name");
-                String lsHome = permTable.getString("domainname").trim();
-                int permId = permTable.getInt("permission");
-                String permKey = permTable.getString("key");
+                int ug_id = permTable.getInt("ug_id");   // NOI18N
+                String ug_name = permTable.getString("ug_name");   // NOI18N
+                String lsHome = permTable.getString("domainname").trim();   // NOI18N
+                int permId = permTable.getInt("permission");   // NOI18N
+                String permKey = permTable.getString("key");   // NOI18N
                 // String permPolicy = permTable.getString("policy");
 
-                if (lsHome.equalsIgnoreCase("local")) {
+                if (lsHome.equalsIgnoreCase("local")) {   // NOI18N
                     lsHome = new String(lsName);
                 }
                 if (logger.isDebugEnabled()) {
-                    logger.debug("==permId set ======! " + permId);
+                    logger.debug("==permId set ======! " + permId);   // NOI18N
                 }
 
-                classes.getClass(permTable.getInt("class_id")).getPermissions()
+                classes.getClass(permTable.getInt("class_id")).getPermissions()   // NOI18N
                         .addPermission(new UserGroup(ug_id, ug_name, lsHome), new Permission(permId, permKey));
             }
 
             permTable.close();
         } catch (java.lang.Exception e) {
             ExceptionHandler.handle(e);
-            logger.error("<LS> ERROR :: addClassPermissions", e);
+            logger.error("<LS> ERROR :: addClassPermissions", e);   // NOI18N 
         }
     }
     /**
