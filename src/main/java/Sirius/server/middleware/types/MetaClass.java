@@ -35,8 +35,8 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static String toStringConverterPrefix = "de.cismet.cids.custom.tostringconverter.";
-    private static String toStringConverterPostfix = "ToStringConverter";
+    private static String toStringConverterPrefix = "de.cismet.cids.custom.tostringconverter.";   // NOI18N
+    private static String toStringConverterPostfix = "ToStringConverter";   // NOI18N
 
     //~ Instance fields --------------------------------------------------------
 
@@ -136,7 +136,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
      * @return  key
      */
     public Object getKey() {
-        return id + "@" + domain;
+        return id + "@" + domain;   // NOI18N
     }
 
     /**
@@ -189,7 +189,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
         try {
             if (logger != null) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("try to load stringconverter if not null : " + toString);
+                    logger.debug("try to load stringconverter if not null : " + toString);   // NOI18N
                 }
             }
 
@@ -199,12 +199,12 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
             try {
                 String tableNamePreparedForClassName = getTableName().substring(0, 1).toUpperCase()
                     + getTableName().substring(1).toLowerCase();
-                lazyClassName = toStringConverterPrefix + (domain + ".").toLowerCase() + tableNamePreparedForClassName
+                lazyClassName = toStringConverterPrefix + (domain + ".").toLowerCase() + tableNamePreparedForClassName   // NOI18N
                     + toStringConverterPostfix;
                 converterClass = BlacklistClassloading.forName(lazyClassName);
             } catch (Exception e) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("no lazy toStringConverter found (" + lazyClassName + ")");
+                    logger.debug("no lazy toStringConverter found (" + lazyClassName + ")");   // NOI18N
                 }
             }
 
@@ -218,7 +218,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
             } else if (logger != null) {
                 if (logger.isDebugEnabled()) {
                     logger.debug(
-                        " customized stringconverter could not be loaded as ClassQualifer ist not a valid ToSTringconverter "
+                        " customized stringconverter could not be loaded as ClassQualifer ist not a valid ToSTringconverter "   // NOI18N
                         + toString);
                 }
             }
@@ -226,14 +226,14 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
             if (converterClass == null) {
                 this.toStringConverter = new ToStringConverter();
                 if (logger.isDebugEnabled()) {
-                    logger.debug(" default stringconverter loaded: reference is :" + this.toStringConverter);
+                    logger.debug(" default stringconverter loaded: reference is :" + this.toStringConverter);   // NOI18N
                 }
             }
         } catch (Exception e) {
             if (logger != null) {
                 logger.error(
-                    toString + " f\u00FCr Klasse " + name
-                    + " konnte nicht geladen werden set string converter to Default ",
+                    toString + " for Klasse " + name   // NOI18N
+                    + " could not be loaded. Set string converter to Default ",   // NOI18N
                     e);
             }
             this.toStringConverter = new ToStringConverter();
@@ -275,7 +275,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
             try {
                 javaClass = BeanFactory.getInstance().getJavaClass(this);
             } catch (Exception e) {
-                getLogger().error("Javaklasse fuer " + this.getName() + " konnte nicht erzeugt werden.", e);
+                getLogger().error("Javaclass for " + this.getName() + " could not be created.", e);   // NOI18N
             }
         }
         return javaClass;
@@ -309,13 +309,13 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
                 }
                 oAttr.setOptional(mai.isOptional());
 
-                oAttr.setClassKey(mai.getForeignKeyClassId() + "@" + domain);
+                oAttr.setClassKey(mai.getForeignKeyClassId() + "@" + domain);   // NOI18N
                 o.addAttribute(oAttr);
             }
 
             return new DefaultMetaObject(o, getDomain());
         } catch (Exception e) {
-            getLogger().error("Fehler in getEmptyInstance", e);
+            getLogger().error("Error in getEmptyInstance", e);   // NOI18N
             return null;
         }
     }

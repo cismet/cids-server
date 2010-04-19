@@ -139,7 +139,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
      * @return  name
      */
     public String getName() {
-        Collection c = getAttributeByName(new String("name"), 1);
+        Collection c = getAttributeByName(new String("name"), 1);   // NOI18N
 
         Iterator iter = c.iterator();
         Attribute a = null;
@@ -164,7 +164,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
      * @return  description
      */
     public String getDescription() {
-        Collection c = getAttributeByName(new String("description"), 1);
+        Collection c = getAttributeByName(new String("description"), 1);   // NOI18N
 
         Iterator iter = c.iterator();
 
@@ -207,7 +207,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
                     }
                 } catch (Exception e) {
                     if (getLogger().isDebugEnabled()) {
-                        getLogger().debug("no dummyobject for " + oa.getMai().getFieldName());
+                        getLogger().debug("no dummyobject for " + oa.getMai().getFieldName());   // NOI18N
                     }
                 }
             }
@@ -231,7 +231,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
      * @return  classKey
      */
     public String getClassKey() {
-        return super.classID + "@" + domain;
+        return super.classID + "@" + domain;   // NOI18N
     }
 
     /**
@@ -377,7 +377,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
     public Collection getURLs(Collection classKeys) {
         if (log != null) {
             if (log.isDebugEnabled()) {
-                log.debug("enter getURLS");
+                log.debug("enter getURLS");   // NOI18N
             }
         }
         ArrayList l = new ArrayList();
@@ -386,7 +386,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
         {
             if (log != null) {
                 if (log.isDebugEnabled()) {
-                    log.debug("getURL meta object is a url");
+                    log.debug("getURL meta object is a url");   // NOI18N
                 }
             }
             UrlConverter u2s = new UrlConverter();
@@ -412,7 +412,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
         }
         if (log != null) {
             if (log.isDebugEnabled()) {
-                log.debug("end getURLS list contains elementcount = " + l.size());
+                log.debug("end getURLS list contains elementcount = " + l.size());   // NOI18N
             }
         }
         return l;
@@ -421,7 +421,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
     public Collection getURLsByName(Collection classKeys, Collection urlNames) {
         if (log != null) {
             if (log.isDebugEnabled()) {
-                log.debug("enter getURLS");
+                log.debug("enter getURLS");   // NOI18N
             }
         }
         ArrayList l = new ArrayList();
@@ -430,7 +430,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
         {
             if (log != null) {
                 if (log.isDebugEnabled()) {
-                    log.debug("getURL meta object is a url will not search attributes");
+                    log.debug("getURL meta object is a url will not search attributes");   // NOI18N
                 }
             }
             UrlConverter u2s = new UrlConverter();
@@ -460,7 +460,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
         }
         if (log != null) {
             if (log.isDebugEnabled()) {
-                log.debug("end getURLS list contains elementcount = " + l.size());
+                log.debug("end getURLS list contains elementcount = " + l.size());   // NOI18N
             }
         }
         return l;
@@ -485,17 +485,17 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
     public void setAllClasses() {
         if (classes == null) {
             if (getLogger().isDebugEnabled()) {
-                getLogger().debug("Classcache noch nicht gesetzt. Setze Classcache der Domain:" + domain);
+                getLogger().debug("Classcache not set yet. Setting classcache in Domain:" + domain);   // NOI18N
             }
 
             try {
                 MetaClassCacheService classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
                 if (classCacheService == null) {
-                    log.warn("MetaClassCacheService ueber Lookup nicht gefunden");
+                    log.warn("MetaClassCacheService not found via lookup");   // NOI18N
                 }
                 classes = classCacheService.getAllClasses(domain);
             } catch (Exception e) {
-                log.error("Fehler beim Setzen der Klassen.", e);
+                log.error("Error while setting classes.", e);   // NOI18N
             }
         }
         if (classes != null) {
@@ -530,7 +530,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
         setLogger();
         if (log != null) {
             if (log.isDebugEnabled()) {
-                log.debug("MetaClass gesetzt ? " + metaClass);
+                log.debug("MetaClass set ? " + metaClass);   // NOI18N
             }
         }
 
@@ -538,16 +538,16 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
             if (getMetaClass().getToStringConverter() != null) {
                 return getMetaClass().getToStringConverter().convert(this);
             } else {
-                log.warn("kein Stringvonverter gesetzt");
-                return "";
+                log.warn("no Stringvonverter set");   // NOI18N
+                return "";   // NOI18N
             }
         } else {
             if (log != null) {
                 log.warn(
-                    "keine Klasse und daher kein StringConverter f\u00FCr dieses MetaObject gesetzt : " + this.getID());
+                    "no class and therefore no StringConverter set for this MetaObject : " + this.getID());   // NOI18N
             }
-            log.error("Metaclass was null classId=" + classID);
-            return "Metaclass was null";
+            log.error("Metaclass was null classId=" + classID);   // NOI18N
+            return "Metaclass was null";   // NOI18N
         }
     }
 
@@ -584,61 +584,61 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
      */
     private String getColorForChangedFlag(boolean changed) {
         if (changed) {
-            return "\"#D62408\""; // red
+            return "\"#D62408\""; // red   // NOI18N
         } else {
-            return "\"#FFFFFF\""; // white
+            return "\"#FFFFFF\""; // white   // NOI18N
         }
     }
 
     public String getDebugString() {
-        String ret = "";
+        String ret = "";   // NOI18N
         // System.out.println("class :: "+classID+"object :: " +objectID+"  atrubutes"+ attribHash);
         // border=\"1\"  bgcolor=\"#E0E0E0\"
         ret =
-            "<table border=\"1\" rules=\"all\" cellspacing=\"0\" cellpadding=\"2\"> <tr><th colspan=\"2\" align=\"left\">class = "
+            "<table border=\"1\" rules=\"all\" cellspacing=\"0\" cellpadding=\"2\"> <tr><th colspan=\"2\" align=\"left\">class = "   // NOI18N
             + classID
-            + "<br>object id =" + objectID
-            + "<br>status = " + getStatusDebugString()
-            + "<br>dummy = " + isDummy()
-            + "</th></tr>";
+            + "<br>object id =" + objectID   // NOI18N
+            + "<br>status = " + getStatusDebugString()   // NOI18N
+            + "<br>dummy = " + isDummy()   // NOI18N
+            + "</th></tr>";   // NOI18N
 
         ObjectAttribute[] as = getAttribs();
-        ret += "";
+        ret += "";   // NOI18N
         for (int i = 0; i < as.length; i++) {
             if (as[i].referencesObject() && (as[i].getValue() != null)) {
-                ret += "<tr><td bgcolor=" + getColorForChangedFlag(as[i].isChanged())
-                    + " valign=\"top\" align=\"right\">" + as[i].getName() + "</td><td bgcolor="
-                    + getColorForChangedFlag(as[i].isChanged()) + " valign=\"top\" align=\"right\">["
-                    + as[i].getMai().getFieldName() + "]</td><td>" + ((MetaObject)as[i].getValue()).getDebugString()
-                    + "</td></tr>";
+                ret += "<tr><td bgcolor=" + getColorForChangedFlag(as[i].isChanged())   // NOI18N
+                    + " valign=\"top\" align=\"right\">" + as[i].getName() + "</td><td bgcolor="   // NOI18N
+                    + getColorForChangedFlag(as[i].isChanged()) + " valign=\"top\" align=\"right\">["   // NOI18N
+                    + as[i].getMai().getFieldName() + "]</td><td>" + ((MetaObject)as[i].getValue()).getDebugString()   // NOI18N
+                    + "</td></tr>";   // NOI18N
             } else {
-                ret += "<tr><td bgcolor=" + getColorForChangedFlag(as[i].isChanged())
-                    + " valign=\"top\" align=\"right\">" + as[i].getName() + "</td><td bgcolor="
-                    + getColorForChangedFlag(as[i].isChanged()) + " valign=\"top\" align=\"right\">["
-                    + as[i].getMai().getFieldName() + "]</td><td>" + as[i].toString() + "</td></tr>";
+                ret += "<tr><td bgcolor=" + getColorForChangedFlag(as[i].isChanged())   // NOI18N
+                    + " valign=\"top\" align=\"right\">" + as[i].getName() + "</td><td bgcolor="   // NOI18N
+                    + getColorForChangedFlag(as[i].isChanged()) + " valign=\"top\" align=\"right\">["   // NOI18N
+                    + as[i].getMai().getFieldName() + "]</td><td>" + as[i].toString() + "</td></tr>";   // NOI18N
             }
         }
-        ret += "";
-        ret += "</table>";
+        ret += "";   // NOI18N
+        ret += "</table>";   // NOI18N
         return ret;
     }
 
     public String getPropertyString() {
-        String ret = "";
-        ret = "Properties:(" + classID
-            + "," + objectID
-            + "):\n";
+        String ret = "";   // NOI18N
+        ret = "Properties:(" + classID   // NOI18N
+            + "," + objectID   // NOI18N
+            + "):\n";   // NOI18N
 
         ObjectAttribute[] as = getAttribs();
         for (int i = 0; i < as.length; i++) {
             if (as[i].referencesObject() && (as[i].getValue() != null)) {
-                ret += as[i].getMai().getFieldName() + "-->" + ((MetaObject)as[i].getValue()).getPropertyString();
+                ret += as[i].getMai().getFieldName() + "-->" + ((MetaObject)as[i].getValue()).getPropertyString();   // NOI18N
                 if (((MetaObject)as[i].getValue()).getStatus() == DefaultMetaObject.TO_DELETE) {
-                    ret += "**deleteted**";
+                    ret += "**deleteted**";   // NOI18N
                 }
-                ret += "\n";
+                ret += "\n";   // NOI18N
             } else {
-                ret += as[i].getMai().getFieldName() + "=" + as[i].toString() + "\n";
+                ret += as[i].getMai().getFieldName() + "=" + as[i].toString() + "\n";   // NOI18N
             }
         }
         return ret;
@@ -650,7 +650,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
             String testerPS = tester.getPropertyString();
             return (thisPS.equals(testerPS));
         } catch (Exception ex) {
-            getLogger().error("Error in propertyEquals " + ex);
+            getLogger().error("Error in propertyEquals " + ex);   // NOI18N
         }
         return false;
     }
@@ -660,7 +660,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
             try {
                 bean = BeanFactory.getInstance().createBean(this);
             } catch (Exception e) {
-                getLogger().error("Fehler beim Erzeugen der JavaBean eines MetaObjects \n" + getDebugString(), e);
+                getLogger().error("Error while creating JavaBean of a MetaObject \n" + getDebugString(), e);   // NOI18N
             }
         }
         return bean;

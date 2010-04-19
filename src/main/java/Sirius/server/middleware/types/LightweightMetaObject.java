@@ -504,7 +504,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
             formater.setAttributes(attributesMap);
             representation = formater.getRepresentation();
         } else {
-            representation = "FORMATER IS NULL! (cID=" + classID + ", oID=" + objectID + ")";
+            representation = "FORMATER IS NULL! (cID=" + classID + ", oID=" + objectID + ")";   // NOI18N
         }
     }
 
@@ -539,8 +539,8 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     private MetaObject fetchRealMetaObject() throws Exception {
         if (metaService == null) {
             throw new IllegalStateException(
-                "Can not retrieve MetaObject, as Metaservice for LightweightMetaObject \"" + toString()
-                + "\" is null!");
+                "Can not retrieve MetaObject, as Metaservice for LightweightMetaObject \"" + toString()   // NOI18N
+                + "\" is null!");   // NOI18N
         }
         return metaService.getMetaObject(getUser(), getObjectID(), getClassID(), getUser().getDomain());
     }
@@ -607,7 +607,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      * @return  DOCUMENT ME!
      */
     public int compareTo(LightweightMetaObject o) {
-        return representation.compareTo(o + "");
+        return representation.compareTo(o + "");   // NOI18N
     }
 
     /**
@@ -676,6 +676,6 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     }
 
     public String getClassKey() {
-        return classID + "@" + getUser().getDomain();
+        return classID + "@" + getUser().getDomain();   // NOI18N
     }
 }

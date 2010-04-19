@@ -56,7 +56,7 @@ public abstract class AbstractAttributeRepresentationFormater implements Seriali
      */
     public final Object getAttribute(String aName) {
         if (attributes == null) {
-            throw new IllegalStateException("Attribute map has not been initialized (is null)!");
+            throw new IllegalStateException("Attribute map has not been initialized (is null)!");   // NOI18N
         }
         if (aName != null) {
             aName = aName.toLowerCase();
