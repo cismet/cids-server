@@ -65,37 +65,37 @@ public class DBServer implements java.io.Serializable {
     public DBServer(ServerProperties properties) throws Throwable {
         this.properties = properties;
         if (logger.isDebugEnabled()) {
-            logger.debug("Info :: DBServer instantiate connectionPool");
+            logger.debug("Info :: DBServer instantiate connectionPool");  // NOI18N
         }
 
         connectionPool = new DBConnectionPool(properties);
         if (logger.isDebugEnabled()) {
-            logger.debug("DBServer connectionPool instantiated :: Instantiate PolicyHolder ");
+            logger.debug("DBServer connectionPool instantiated :: Instantiate PolicyHolder ");  // NOI18N
         }
 
         policyHolder = new PolicyHolder(connectionPool);
         if (logger.isDebugEnabled()) {
-            logger.debug("DBServer PolicyHolder instantiated :: Instantiate ClassCache ");
+            logger.debug("DBServer PolicyHolder instantiated :: Instantiate ClassCache ");  // NOI18N
         }
         // needs tob instaniated before the OcjectFactory
         classes = new ClassCache(connectionPool, properties, policyHolder);
         if (logger.isDebugEnabled()) {
-            logger.debug("DBServer ClassCache instantiated :: Instantiate ObjectFactory ");
+            logger.debug("DBServer ClassCache instantiated :: Instantiate ObjectFactory ");  // NOI18N
         }
 
         objects = new ObjectFactory(connectionPool, classes);
         if (logger.isDebugEnabled()) {
-            logger.debug("DBServerObjectFactory instantiated :: Instantiate Tree ");
+            logger.debug("DBServerObjectFactory instantiated :: Instantiate Tree ");  // NOI18N
         }
 
         tree = new VirtualTree(connectionPool, properties, this, policyHolder, classes);
         if (logger.isDebugEnabled()) {
-            logger.debug("DBServer Tree instantiated :: Instantiate methodCache ");
+            logger.debug("DBServer Tree instantiated :: Instantiate methodCache ");  // NOI18N
         }
 
         methods = new MethodCache(connectionPool, properties);
         if (logger.isDebugEnabled()) {
-            logger.debug("DBServer MethodCache instantiated :: Instantiate UserService ");
+            logger.debug("DBServer MethodCache instantiated :: Instantiate UserService ");  // NOI18N
         }
 
         userstore = new UserStore(connectionPool, properties);
@@ -262,7 +262,7 @@ public class DBServer implements java.io.Serializable {
         int oId;
         int cId;
 
-        String[] ids = objectID.split("@");
+        String[] ids = objectID.split("@");  // NOI18N
         oId = new Integer(ids[0]).intValue();
         cId = new Integer(ids[1]).intValue();
 
