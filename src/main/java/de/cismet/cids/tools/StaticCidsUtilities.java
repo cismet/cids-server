@@ -49,17 +49,17 @@ public class StaticCidsUtilities {
      */
     public static Object getValueOfAttributeByString(String attributeName, Attribute attr) {
         if (log.isDebugEnabled()) {
-            log.debug("getValueOfAttributeByString(String attributeName,Attribute attr)");
+            log.debug("getValueOfAttributeByString(String attributeName,Attribute attr)");//NOI18N
         }
-        String[] attrNames = attributeName.split("\\.");
+        String[] attrNames = attributeName.split("\\.");//NOI18N
         if (attrNames.length == 1) {
             return attr.getValue();
         } else {
             MetaObject deeper = null;
             for (int i = 0; i < attrNames.length; ++i) {
                 String attrN = attrNames[i];
-                if (attrN.endsWith("[]")) {
-                    String nameWithoutBrackets = attrN.replaceAll("\\[\\]", "");
+                if (attrN.endsWith("[]")) {//NOI18N
+                    String nameWithoutBrackets = attrN.replaceAll("\\[\\]", "");//NOI18N
                     Attribute ma = null;
                     if (i == 0) {
                         ma = attr;
@@ -71,29 +71,29 @@ public class StaticCidsUtilities {
                             ma.getValue();
                         ObjectAttribute[] oa = moZwischen.getAttribs();
                         // String wieder zusammenkleben
-                        String reGlued = "";
+                        String reGlued = "";//NOI18N
                         for (int j = i + 1; j < attrNames.length; ++j) {
                             reGlued += attrNames[j];
                             if (j < (attrNames.length - 1)) {
-                                reGlued += ".";
+                                reGlued += ".";//NOI18N
                             }
                         }
                         // Check ob ein Vector oder ne HashMap zur\u00FCckgeliefert werden m\u00FCssen
-                        String[] again = reGlued.split("\\.");
-                        if ((again.length >= 2) && again[1].matches(".+\\[.+\\]")) {
+                        String[] again = reGlued.split("\\.");//NOI18N
+                        if ((again.length >= 2) && again[1].matches(".+\\[.+\\]")) {//NOI18N
                             // Es muss ne HashMap geliefert werden weil der Arraykram noch weitergeht
 
                             // Key Attribut der HashMap rausfinden
-                            String keyAttrName = again[1].replaceAll(".*\\[", "");
-                            keyAttrName = keyAttrName.replaceAll("\\]", "");
+                            String keyAttrName = again[1].replaceAll(".*\\[", "");//NOI18N
+                            keyAttrName = keyAttrName.replaceAll("\\]", "");//NOI18N
                             HashMap arrayEintraege = new HashMap();
 
                             // keyAttr muss zwischen den Klammer entfernt werden, aber nur beim 2ten Eintrag
-                            String reReClued = again[0] + "." + again[1].replaceAll("\\[.*\\]", "") + "[].";
+                            String reReClued = again[0] + "." + again[1].replaceAll("\\[.*\\]", "") + "[].";//NOI18N
                             for (int j = 2; j < again.length; ++j) {
                                 reReClued += again[j];
                                 if (j < (again.length - 1)) {
-                                    reReClued += ".";
+                                    reReClued += ".";//NOI18N
                                 }
                             }
 
@@ -103,7 +103,7 @@ public class StaticCidsUtilities {
                                             && (((MetaObject)(arrayEintrag.getValue())).getStatus()
                                                 != MetaObject.TO_DELETE)) {
                                     Object key = getValueOfAttributeByString(
-                                            again[0] + "." + keyAttrName,
+                                            again[0] + "." + keyAttrName,//NOI18N
                                             (MetaObject)arrayEintrag.getValue());
                                     Object val = getValueOfAttributeByString(
                                             reReClued,
@@ -153,7 +153,7 @@ public class StaticCidsUtilities {
                             return ma.getValue();
                         }
                     } else {
-                        log.error("Falscher Attributname: " + attrN + " (Renderer wird nicht komplett funktionieren)");
+                        log.error("Wrong attribute name: " + attrN + " (Renderer will not work properly)");//NOI18N
                     }
                 }
             }
@@ -170,7 +170,7 @@ public class StaticCidsUtilities {
      * @return  DOCUMENT ME!
      */
     public static Object getValueOfAttributeByString(String attributeName, MetaObject mo) {
-        String[] attrNames = attributeName.split("\\.");
+        String[] attrNames = attributeName.split("\\.");//NOI18N
         try {
             if (attrNames.length == 1) {
                 Attribute ma = (Attribute)mo.getAttributeByName(attributeName, 1).toArray()[0];
@@ -179,36 +179,36 @@ public class StaticCidsUtilities {
                 MetaObject deeper = mo;
                 for (int i = 0; i < attrNames.length; ++i) {
                     String attrN = attrNames[i];
-                    if (attrN.endsWith("[]")) {
-                        String nameWithoutBrackets = attrN.replaceAll("\\[\\]", "");
+                    if (attrN.endsWith("[]")) {//NOI18N
+                        String nameWithoutBrackets = attrN.replaceAll("\\[\\]", "");//NOI18N
                         Attribute ma = (Attribute)deeper.getAttributeByName(nameWithoutBrackets, 1).toArray()[0];
                         if (ma.isArray()) {
                             MetaObject moZwischen = (MetaObject)ma.getValue();
                             ObjectAttribute[] oa = moZwischen.getAttribs();
                             // String wieder zusammenkleben
-                            String reGlued = "";
+                            String reGlued = "";//NOI18N
                             for (int j = i + 1; j < attrNames.length; ++j) {
                                 reGlued += attrNames[j];
                                 if (j < (attrNames.length - 1)) {
-                                    reGlued += ".";
+                                    reGlued += ".";//NOI18N
                                 }
                             }
                             // Check ob ein Vector oder ne HashMap zur\u00FCckgeliefert werden m\u00FCssen
-                            String[] again = reGlued.split("\\.");
-                            if ((again.length >= 2) && again[1].matches(".+\\[.+\\]")) {
+                            String[] again = reGlued.split("\\.");//NOI18N
+                            if ((again.length >= 2) && again[1].matches(".+\\[.+\\]")) {//NOI18N
                                 // Es muss ne HashMap geliefert werden weil der Arraykram noch weitergeht
 
                                 // Key Attribut der HashMap rausfinden
-                                String keyAttrName = again[1].replaceAll(".*\\[", "");
-                                keyAttrName = keyAttrName.replaceAll("\\]", "");
+                                String keyAttrName = again[1].replaceAll(".*\\[", "");//NOI18N
+                                keyAttrName = keyAttrName.replaceAll("\\]", "");//NOI18N
                                 HashMap arrayEintraege = new HashMap();
 
                                 // keyAttr muss zwischen den Klammer entfernt werden, aber nur beim 2ten Eintrag
-                                String reReClued = again[0] + "." + again[1].replaceAll("\\[.*\\]", "") + "[].";
+                                String reReClued = again[0] + "." + again[1].replaceAll("\\[.*\\]", "") + "[].";//NOI18N
                                 for (int j = 2; j < again.length; ++j) {
                                     reReClued += again[j];
                                     if (j < (again.length - 1)) {
-                                        reReClued += ".";
+                                        reReClued += ".";//NOI18N
                                     }
                                 }
 
@@ -218,7 +218,7 @@ public class StaticCidsUtilities {
                                                 && (((MetaObject)(arrayEintrag.getValue())).getStatus()
                                                     != MetaObject.TO_DELETE)) {
                                         Object key = getValueOfAttributeByString(
-                                                again[0] + "." + keyAttrName,
+                                                again[0] + "." + keyAttrName,//NOI18N
                                                 (MetaObject)arrayEintrag.getValue());
                                         Object val = getValueOfAttributeByString(
                                                 reReClued,
@@ -264,7 +264,7 @@ public class StaticCidsUtilities {
                             }
                         } else {
                             log.error(
-                                "Falscher Attributname: " + attrN + " (Renderer wird nicht komplett funktionieren)",
+                                "Wrong attribute name: " + attrN + " (Renderer will not work properly)",//NOI18N
                                 new CurrentStackTrace());
                         }
                     }
@@ -272,7 +272,7 @@ public class StaticCidsUtilities {
             }
         } catch (Exception e) {
             log.error(
-                "Fehler in getValueOfAttributeByString(" + attributeName + ",MetaObject)\nMetaobject="
+                "Error in getValueOfAttributeByString(" + attributeName + ",MetaObject)\nMetaobject="//NOI18N
                 + mo.getDebugString(),
                 e);
         }
@@ -287,7 +287,7 @@ public class StaticCidsUtilities {
      * @return  DOCUMENT ME!
      */
     public static String debugPrintMetaObject(MetaObject mo) {
-        String ret = "";
+        String ret = "";//NOI18N
         return ret;
     }
 }

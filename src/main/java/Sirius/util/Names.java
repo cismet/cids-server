@@ -39,9 +39,9 @@ public class Names extends Sirius.metajdbc.interpreter.cids.area.system.Names {
 
         //~ Static fields/initializers -----------------------------------------
 
-        private static final String tableName = "URL";
+        private static final String tableName = "URL";//NOI18N
 
-        public static final String URL_BASE_ID = "url_base_id";
+        public static final String URL_BASE_ID = "url_base_id";//NOI18N
 
         //~ Methods ------------------------------------------------------------
 
@@ -64,11 +64,11 @@ public class Names extends Sirius.metajdbc.interpreter.cids.area.system.Names {
 
         //~ Static fields/initializers -----------------------------------------
 
-        private static final String tableName = "URL_BASE";
+        private static final String tableName = "URL_BASE";//NOI18N
 
-        public static final String PROT_PREFIX = "prot_prefix";
-        public static final String SERVER = "server";
-        public static final String PATH = "path";
+        public static final String PROT_PREFIX = "prot_prefix";//NOI18N
+        public static final String SERVER = "server";//NOI18N
+        public static final String PATH = "path";//NOI18N
 
         //~ Methods ------------------------------------------------------------
 
@@ -92,9 +92,9 @@ public class Names extends Sirius.metajdbc.interpreter.cids.area.system.Names {
 
         //~ Static fields/initializers -----------------------------------------
 
-        private static final String tableName = "DATA_OBJECT_TYPE";
+        private static final String tableName = "DATA_OBJECT_TYPE";//NOI18N
 
-        public static final String ACCESS_PARAMETER = "ACCESS_PARAMETER";
+        public static final String ACCESS_PARAMETER = "ACCESS_PARAMETER";//NOI18N
 
         //~ Methods ------------------------------------------------------------
 
@@ -117,9 +117,9 @@ public class Names extends Sirius.metajdbc.interpreter.cids.area.system.Names {
 
         //~ Static fields/initializers -----------------------------------------
 
-        private static final String tableName = "ACCESS_PARAMETER";
+        private static final String tableName = "ACCESS_PARAMETER";//NOI18N
 
-        public static final String DATA_SOURCE_CLASS = "DATA_SOURCE_CLASS";
+        public static final String DATA_SOURCE_CLASS = "DATA_SOURCE_CLASS";//NOI18N
 
         //~ Methods ------------------------------------------------------------
 

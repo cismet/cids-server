@@ -59,9 +59,9 @@ public abstract class CustomToStringConverter extends ToStringConverter implemen
             log = org.apache.log4j.Logger.getLogger(this.getClass());
         }
         if (log.isDebugEnabled()) {
-            log.debug("convert in CustomToStringConverter ");
+            log.debug("convert in CustomToStringConverter ");//NOI18N
         }
-        String stringRepresentation = "";
+        String stringRepresentation = "";//NOI18N
         Class customToString = this.getClass();
         Field[] fields = customToString.getDeclaredFields();
         for (Field f : fields) {
@@ -84,14 +84,14 @@ public abstract class CustomToStringConverter extends ToStringConverter implemen
                     }
                     f.set(this, value);
                 } catch (Exception e) {
-                    log.warn("Fehler beim Zuweisen in toStringMethode", e);
+                    log.warn("Error while assigning something in toStringMethode", e);//NOI18N
                 }
             }
         }
         try {
             stringRepresentation = createString();
         } catch (Exception e) {
-            log.warn("Error in a ToStringConverter", e);
+            log.warn("Error in a ToStringConverter", e);//NOI18N
             stringRepresentation = null;
         }
 

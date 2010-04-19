@@ -34,6 +34,6 @@ public class TestAttrToString extends GeometryStringConverter {
     //~ Methods ----------------------------------------------------------------
 
     public String convert(de.cismet.cids.tools.tostring.StringConvertable o) {
-        return "TestMops";
+        return "TestMops";//NOI18N
     }
 }

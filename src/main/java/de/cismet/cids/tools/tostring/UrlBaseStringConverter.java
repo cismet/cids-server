@@ -39,15 +39,15 @@ public class UrlBaseStringConverter extends ToStringConverter implements java.io
      * @return  DOCUMENT ME!
      */
     public String convert(Sirius.server.localserver.object.Object o) {
-        String stringRepresentation = "";
+        String stringRepresentation = "";//NOI18N
 
         ObjectAttribute[] attrs = o.getAttribs();
 
         for (int i = 0; i < attrs.length; i++) {
             if (
-                attrs[i].getName().equalsIgnoreCase("prot_prefix")
-                        || attrs[i].getName().equalsIgnoreCase("server")
-                        || attrs[i].getName().equalsIgnoreCase("path")) {
+                attrs[i].getName().equalsIgnoreCase("prot_prefix")//NOI18N
+                        || attrs[i].getName().equalsIgnoreCase("server")//NOI18N
+                        || attrs[i].getName().equalsIgnoreCase("path")) {//NOI18N
                 stringRepresentation += (attrs[i].toString());
             } else // surpress
             {

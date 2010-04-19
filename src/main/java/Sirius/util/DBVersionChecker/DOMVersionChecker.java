@@ -70,7 +70,7 @@ public class DOMVersionChecker implements VersionChecker {
             readVersionsXML();
             setDB(cfg.readLine(), cfg.readLine(), cfg.readLine(), cfg.readLine());
         } catch (IOException e) {
-            System.err.println("Fehler beim Lesen des configfiles: " + e);
+            System.err.println(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.DOMVersionChecker(String).error") + e);
             System.exit(1);
         }
     }
@@ -122,35 +122,29 @@ public class DOMVersionChecker implements VersionChecker {
      */
     public static void main(String[] args) {
         try {
-            String nL = System.getProperty("line.separator");
+            String nL = System.getProperty("line.separator");//NOI18N
             if (args.length < 2) {
                 System.err.println(
-                    "Aufruf:" + nL
-                    + " a) PROG <configfile> generiere <neuer Vesionsname>" + nL
-                    + " b) PROG <configfile> version" + nL
-                    + " c) PROG <configfile> vergleiche <Versionsname>" + nL + nL
-                    + "    Achtung - im Fall a) wird die im configfile angegebene " + nL
-                    + "    XML Datei neu erzeugt und muss in die Versionsliste " + nL
-                    + "    aufgenommen werden");
+                    org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.main(String[]).helpText", new Object[] {nL}) );//NOI18N
                 System.exit(0);
             }
 
             DOMVersionChecker instance = new DOMVersionChecker(args[0]);
-            if (args[1].equals("version")) {
+            if (args[1].equals("version")) {//NOI18N
                 String version = instance.checkVersion();
                 if (version != null) {
-                    System.out.println("Gefundene Version: " + version);
+                    System.out.println(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.main(String[]).foundVersion") + version);
                 } else {
                     System.out.println(
-                        "F\u00FCr die angegebene Datenbank wurde keine \u00FCbereinstimmende Definition gefunden.");
+                        org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.main(String[])..noProperVersion"));
                 }
-            } else if (args[1].equals("generiere")) {
+            } else if (args[1].equals("generiere")) {//NOI18N
                 instance.writeVersionXML(instance.xmlFile, args[2]);
-            } else if (args[1].equals("vergleiche")) {
+            } else if (args[1].equals("vergleiche")) {//NOI18N
                 if (instance.compareWithVersion(args[2])) {
-                    System.out.println("Vollst\u00E4ndige \u00DCbereinstimmung gefunden.");
+                    System.out.println(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.main(String[]).accordanceFound"));
                 } else {
-                    System.out.println("Versionen stimmen nicht \u00FCberein:");
+                    System.out.println(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.main(String[]).noAccordanceFound"));
                     ArrayList diff = instance.getDifferences();
                     Iterator it = diff.iterator();
                     while (it.hasNext()) {
@@ -230,7 +224,7 @@ public class DOMVersionChecker implements VersionChecker {
     public boolean compareWithVersion(String version) throws DBVersionException {
         TreeMap tables = (TreeMap)versionMap.get(version);
         if (tables == null) {
-            throw new DBVersionException("Unbekannte Version");
+            throw new DBVersionException(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion(String).DBVersionException"));//NOI18N
         }
 
         differences.clear();
@@ -247,12 +241,12 @@ public class DOMVersionChecker implements VersionChecker {
             if (xmlIter.hasNext()) { // pr\u00FCfen ob es \u00FCberhaupt noch Eintr\u00E4ge im XML gibt
                 xmlTable = (String)xmlIter.next();
             } else {
-                differences.add("Tabelle <" + dbTable + "> in der DB aber nicht im XML");
+                differences.add(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion.differences.tableOnlyInDB", new Object[] {dbTable}));//NOI18N
                 continue;
             }
 
             while (dbTable.compareTo(xmlTable) < 0) { // da beide gleich sortiert sind fehlen Eintr\u00E4ge im XML
-                differences.add("Tabelle <" + dbTable + "> in der DB aber nicht im XML");
+                differences.add(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion.differences.tableOnlyInDB", new Object[] {dbTable}));//NOI18N
                 if (dbIter.hasNext()) {
                     dbTable = (String)dbIter.next();
                 } else {
@@ -261,7 +255,7 @@ public class DOMVersionChecker implements VersionChecker {
             }
 
             while (dbTable.compareTo(xmlTable) > 0) { // im XML sind Eintr\u00E4ge die nicht in der DB sind
-                differences.add("Tabelle <" + dbTable + "> im XML aber nicht in der DB");
+                differences.add(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion.differences.TableOnlyInXML", new Object[] {dbTable}));//NOI18N
                 if (xmlIter.hasNext()) {
                     xmlTable = (String)xmlIter.next();
                 } else {
@@ -286,13 +280,13 @@ public class DOMVersionChecker implements VersionChecker {
                         xmlColumn = (String)xmlColumnsIter.next();
                     } else {
                         differences.add(
-                            "Tabelle <" + dbTable + "> Spalte <" + dbColumn + "> in der DB aber nicht im XML");
+                            org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion.differences.ColumnOnlyInDB", new Object[] {dbTable, dbColumn}));//NOI18N
                         continue;
                     }
 
                     while (dbColumn.compareTo(xmlColumn) < 0) {
                         differences.add(
-                            "Tabelle <" + dbTable + "> Spalte <" + dbColumn + "> in der DB aber nicht in XML");
+                            org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion.differences.ColumnOnlyInDB", new Object[] {dbTable, dbColumn}));//NOI18N
                         if (dbColumnsIter.hasNext()) {
                             dbColumn = (String)dbColumnsIter.next();
                         } else {
@@ -302,7 +296,7 @@ public class DOMVersionChecker implements VersionChecker {
 
                     while (dbColumn.compareTo(xmlColumn) > 0) {
                         differences.add(
-                            "Tabelle <" + dbTable + "> Spalte <" + dbColumn + "> in XML aber nicht in der DB");
+                            org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion.differences.ColumnOnlyInXML", new Object[] {dbTable, dbColumn}));//NOI18N
                         if (xmlColumnsIter.hasNext()) {
                             xmlColumn = (String)xmlColumnsIter.next();
                         } else {
@@ -314,34 +308,29 @@ public class DOMVersionChecker implements VersionChecker {
                         TreeMap dbColumnData = (TreeMap)dbColumnMap.get(dbColumn);
                         TreeMap xmlColumnData = (TreeMap)xmlColumnMap.get(xmlColumn);
 
-                        if (xmlColumnData.get("nullable") != null) {
+                        if (xmlColumnData.get("nullable") != null) {//NOI18N
                             if (
-                                ((String)dbColumnData.get("nullable")).compareTo(
-                                            xmlColumnData.get("nullable").toString())
+                                ((String)dbColumnData.get("nullable")).compareTo(//NOI18N
+                                            xmlColumnData.get("nullable").toString())//NOI18N
                                         != 0) {
-                                differences.add(
-                                    "Tabelle <" + dbTable + "> Spalte <" + dbColumn + "> nullable db: "
-                                    + dbColumnData.get("nullable") + " / xml: " + xmlColumnData.get("nullable"));
+                                differences.add(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion.nullableDiffers", new Object[] {dbTable, dbColumn, dbColumnData.get("nullable"), xmlColumnData.get("nullable")}));//NOI18N
                             }
                         }
 
-                        if (xmlColumnData.get("size") != null) {
+                        if (xmlColumnData.get("size") != null) {//NOI18N
                             if (
-                                ((String)dbColumnData.get("size")).compareTo(xmlColumnData.get("size").toString())
+                                ((String)dbColumnData.get("size")).compareTo(xmlColumnData.get("size").toString())//NOI18N
                                         != 0) {
-                                differences.add(
-                                    "Tabelle <" + dbTable + "> Spalte <" + dbColumn + "> size db: "
-                                    + dbColumnData.get("size") + " / xml: " + xmlColumnData.get("size"));
+                                differences.add(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion.sizeDiffers", new Object[] {dbTable, dbColumn, dbColumnData.get("size"), xmlColumnData.get("size")}));//NOI18N
                             }
                         }
 
-                        if (xmlColumnData.get("type") != null) {
+                        if (xmlColumnData.get("type") != null) {//NOI18N
                             if (
-                                ((String)dbColumnData.get("type")).compareTo(xmlColumnData.get("type").toString())
+                                ((String)dbColumnData.get("type")).compareTo(xmlColumnData.get("type").toString())//NOI18N
                                         != 0) {
                                 differences.add(
-                                    "Tabelle <" + dbTable + "> Spalte <" + dbColumn + "> type db: "
-                                    + dbColumnData.get("type") + " / xml: " + xmlColumnData.get("type"));
+                                    org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion.typeDiffers", new Object[] {dbTable, dbColumn, dbColumnData.get("type"), xmlColumnData.get("type")}));//NOI18N
                             }
                         }
                     }
@@ -393,40 +382,40 @@ public class DOMVersionChecker implements VersionChecker {
     public void writeVersionXML(String fileName, String versionName) {
         try {
             FileWriter xml = new FileWriter(fileName);
-            ResultSet tables = meta.getTables(null, null, "%", null);
+            ResultSet tables = meta.getTables(null, null, "%", null);//NOI18N
 
-            xml.write("\t<Version name=\"" + versionName + "\">\n");
+            xml.write("\t<Version name=\"" + versionName + "\">\n");//NOI18N
 
             while (tables.next()) {
-                if (tables.getString("TABLE_TYPE").compareTo("TABLE") != 0) { // Spezielle Tabellentypen wie views
+                if (tables.getString("TABLE_TYPE").compareTo("TABLE") != 0) { // Spezielle Tabellentypen wie views//NOI18N
                                                                               // \u00FCberspringen
                     continue;
                 }
 
-                xml.write("\t\t<InternTable name=\"" + tables.getString("TABLE_NAME") + "\">\n");
+                xml.write("\t\t<InternTable name=\"" + tables.getString("TABLE_NAME") + "\">\n");//NOI18N
 
-                ResultSet columns = meta.getColumns(null, null, tables.getString("TABLE_NAME"), "%");
+                ResultSet columns = meta.getColumns(null, null, tables.getString("TABLE_NAME"), "%");//NOI18N
 
                 while (columns.next()) {
-                    xml.write("\t\t\t<Column nullable=\"");
+                    xml.write("\t\t\t<Column nullable=\"");//NOI18N
 
-                    if (columns.getString("IS_NULLABLE").equals("YES")) {
-                        xml.write("true");
-                    } else if (columns.getString("IS_NULLABLE").equals("NO")) {
-                        xml.write("false");
+                    if (columns.getString("IS_NULLABLE").equals("YES")) {//NOI18N
+                        xml.write("true");//NOI18N
+                    } else if (columns.getString("IS_NULLABLE").equals("NO")) {//NOI18N
+                        xml.write("false");//NOI18N
                     } else { // DB MetaInfo API garantiert keine eindeutige Aussagen
-                        xml.write("unknown");
+                        xml.write("unknown");//NOI18N
                     }
 
-                    xml.write("\" type=\"" + columns.getString("TYPE_NAME"));
-                    xml.write("\" size=\"" + columns.getString("COLUMN_SIZE"));
-                    xml.write("\">" + columns.getString("COLUMN_NAME") + "</Column>\n");
+                    xml.write("\" type=\"" + columns.getString("TYPE_NAME"));//NOI18N
+                    xml.write("\" size=\"" + columns.getString("COLUMN_SIZE"));//NOI18N
+                    xml.write("\">" + columns.getString("COLUMN_NAME") + "</Column>\n");//NOI18N
                 }
 
-                xml.write("\t\t</InternTable>\n");
+                xml.write("\t\t</InternTable>\n");//NOI18N
             }
 
-            xml.write("\t</Version>\n");
+            xml.write("\t</Version>\n");//NOI18N
             xml.close();
         } catch (Exception e) {
             System.err.println(e);
@@ -451,37 +440,37 @@ public class DOMVersionChecker implements VersionChecker {
             File test = new File(xmlFile);
             if (!test.exists()) {
                 System.out.println(
-                    "Keine XML Informationen zum einlesen gefunden, falls neue erzeugt werden sollen ist dies korrekt.");
+                    org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.readVersionsXML().noXMLFound"));//NOI18N
                 return;
             }
             Document xml = parser.build(test);
             Element datamodel = xml.getRootElement();
 
-            List versions = datamodel.getChildren("Version");
+            List versions = datamodel.getChildren("Version");//NOI18N
             Iterator versionsIter = versions.iterator();
             while (versionsIter.hasNext()) {
                 Element version = (Element)versionsIter.next();
-                List tables = version.getChildren("InternTable");
+                List tables = version.getChildren("InternTable");//NOI18N
                 Iterator tablesIter = tables.iterator();
                 TreeMap tableMap = new TreeMap();
 
                 while (tablesIter.hasNext()) {
                     Element table = (Element)tablesIter.next();
-                    List columns = table.getChildren("Column");
+                    List columns = table.getChildren("Column");//NOI18N
                     Iterator columnsIter = columns.iterator();
                     TreeMap columnMap = new TreeMap();
 
                     while (columnsIter.hasNext()) {
                         Element column = (Element)columnsIter.next();
                         TreeMap columnData = new TreeMap();
-                        columnData.put("nullable", column.getAttributeValue("nullable"));
-                        columnData.put("size", column.getAttributeValue("size"));
-                        columnData.put("type", column.getAttributeValue("type"));
+                        columnData.put("nullable", column.getAttributeValue("nullable"));//NOI18N
+                        columnData.put("size", column.getAttributeValue("size"));//NOI18N
+                        columnData.put("type", column.getAttributeValue("type"));//NOI18N
                         columnMap.put(column.getText(), columnData);
                     }
-                    tableMap.put(table.getAttributeValue("name"), columnMap);
+                    tableMap.put(table.getAttributeValue("name"), columnMap);//NOI18N
                 }
-                versionMap.put(version.getAttributeValue("name"), tableMap);
+                versionMap.put(version.getAttributeValue("name"), tableMap);//NOI18N
             }
         } catch (Exception e) {
             System.err.println(e);
@@ -493,32 +482,32 @@ public class DOMVersionChecker implements VersionChecker {
      */
     private void readDBStructure() {
         try {
-            ResultSet tables = meta.getTables(null, null, "%", null);
+            ResultSet tables = meta.getTables(null, null, "%", null);//NOI18N
 
             while (tables.next()) {
-                if (tables.getString("TABLE_TYPE").compareTo("TABLE") != 0) {
+                if (tables.getString("TABLE_TYPE").compareTo("TABLE") != 0) {//NOI18N
                     continue;
                 }
 
-                ResultSet columns = meta.getColumns(null, null, tables.getString("TABLE_NAME"), "%");
+                ResultSet columns = meta.getColumns(null, null, tables.getString("TABLE_NAME"), "%");//NOI18N
                 TreeMap columnsMap = new TreeMap();
 
                 while (columns.next()) {
                     TreeMap columnData = new TreeMap();
 
-                    if (columns.getString("IS_NULLABLE").equals("YES")) {
-                        columnData.put("nullable", "true");
-                    } else if (columns.getString("IS_NULLABLE").equals("NO")) {
-                        columnData.put("nullable", "false");
+                    if (columns.getString("IS_NULLABLE").equals("YES")) {//NOI18N
+                        columnData.put("nullable", "true");//NOI18N
+                    } else if (columns.getString("IS_NULLABLE").equals("NO")) {//NOI18N
+                        columnData.put("nullable", "false");//NOI18N
                     } else {
-                        columnData.put("nullable", "unknown");
+                        columnData.put("nullable", "unknown");//NOI18N
                     }
 
-                    columnData.put("size", columns.getString("COLUMN_SIZE"));
-                    columnData.put("type", columns.getString("TYPE_NAME"));
-                    columnsMap.put(columns.getString("COLUMN_NAME"), columnData);
+                    columnData.put("size", columns.getString("COLUMN_SIZE"));//NOI18N
+                    columnData.put("type", columns.getString("TYPE_NAME"));//NOI18N
+                    columnsMap.put(columns.getString("COLUMN_NAME"), columnData);//NOI18N
                 }
-                dbStructure.put(tables.getString("TABLE_NAME"), columnsMap);
+                dbStructure.put(tables.getString("TABLE_NAME"), columnsMap);//NOI18N
             }
         } catch (Exception e) {
             System.err.println(e);

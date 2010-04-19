@@ -39,10 +39,10 @@ public class DateFromString extends FromStringCreator implements java.io.Seriali
     public Object create(String dateString, Object hull) throws Exception {
         ObjectAttribute oa = (ObjectAttribute)hull;
 
-        if (dateString.equalsIgnoreCase("now") || dateString.equalsIgnoreCase(" ")) {
+        if (dateString.equalsIgnoreCase("now") || dateString.equalsIgnoreCase(" ")) {//NOI18N
             oa.setValue(new Date(System.currentTimeMillis()));
             return oa;
-        } else if (dateString.equalsIgnoreCase("")) {
+        } else if (dateString.equalsIgnoreCase("")) {//NOI18N
             oa.setValue(null);
             return oa;
         } else {
@@ -52,7 +52,7 @@ public class DateFromString extends FromStringCreator implements java.io.Seriali
 //            {
             java.text.SimpleDateFormat formater = new java.text.SimpleDateFormat();
 
-            formater.applyPattern("dd.mm.yy");
+            formater.applyPattern("dd.mm.yy");//NOI18N
 
             millis = formater.parse(dateString).getTime(); // Date.parse(dateString); }catch(Exception
                                                            // e){e.printStackTrace();System.err.println("Date format

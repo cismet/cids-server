@@ -28,7 +28,7 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
 
     //~ Static fields/initializers ---------------------------------------------
 
-    protected static String GEOM_CLASS = "com.vividsolutions.jts.geom.Geometry";
+    protected static String GEOM_CLASS = "com.vividsolutions.jts.geom.Geometry";//NOI18N
     // SRID=-1;POLYGON((191232 243117,191232 243119,191234 243117,191232 243117))
     private static transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(
             GeometryStringConverter.class);
@@ -52,7 +52,7 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
 
         if (logger != null) {
             if (logger.isDebugEnabled()) {
-                logger.debug("convert of GeometryStringconverter called");
+                logger.debug("convert of GeometryStringconverter called");//NOI18N
             }
         }
 
@@ -60,7 +60,7 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
         if (o instanceof Sirius.server.localserver.attribute.ObjectAttribute) {
             if (logger != null) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug(" o instanceof ObjectAttribute");
+                    logger.debug(" o instanceof ObjectAttribute");//NOI18N
                 }
             }
 
@@ -69,7 +69,7 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
             if (attrObj instanceof Geometry) {
                 if (logger != null) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug(" o instanceof Geometry");
+                        logger.debug(" o instanceof Geometry");//NOI18N
                     }
                 }
 
@@ -77,7 +77,7 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
             } else if (attrObj instanceof Sirius.server.localserver.object.Object) {
                 if (logger != null) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug(" o instanceof ServerObject");
+                        logger.debug(" o instanceof ServerObject");//NOI18N
                     }
                 }
                 try {
@@ -92,12 +92,12 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
                         return convert((StringConvertable)iter.next());
                     }
                 } catch (ClassNotFoundException ex) {
-                    return "Wrong Type not convertable Class Not Found " + ex.getMessage();
+                    return "Wrong Type not convertable Class Not Found " + ex.getMessage();//NOI18N
                 }
             } else // irgendwas
             {
                 if (logger != null) {
-                    logger.error("Fehler im erstellen der Stringrepr\u00E4sentation");
+                    logger.error("Error while creating the string representation");//NOI18N
                 }
                 return "Fehler im erstellen der Stringrep\u00E4sentation";
             }

@@ -37,7 +37,7 @@ public class BoundingBoxStringConverter extends ToStringConverter implements jav
     //~ Methods ----------------------------------------------------------------
 
     public String convert(de.cismet.cids.tools.tostring.StringConvertable o) {
-        String stringRepresentation = "";
+        String stringRepresentation = "";//NOI18N
         ObjectAttribute[] attrs = null;
 
         if (o instanceof Sirius.server.localserver.object.Object) {
@@ -49,17 +49,17 @@ public class BoundingBoxStringConverter extends ToStringConverter implements jav
         }
 
         for (int i = 0; i < attrs.length; i++) {
-            if (attrs[i].getName().equalsIgnoreCase("x1")) {
-                stringRepresentation += ("(" + attrs[i].toString() + ",");
-            } else if (attrs[i].getName().equalsIgnoreCase("x2") || attrs[i].getName().equalsIgnoreCase("y1")) {
-                stringRepresentation += (attrs[i].toString() + ",");
-            } else if (attrs[i].getName().equalsIgnoreCase("y2")) {
-                stringRepresentation += (attrs[i].toString() + ")");
+            if (attrs[i].getName().equalsIgnoreCase("x1")) {//NOI18N
+                stringRepresentation += ("(" + attrs[i].toString() + ",");//NOI18N
+            } else if (attrs[i].getName().equalsIgnoreCase("x2") || attrs[i].getName().equalsIgnoreCase("y1")) {//NOI18N
+                stringRepresentation += (attrs[i].toString() + ",");//NOI18N
+            } else if (attrs[i].getName().equalsIgnoreCase("y2")) {//NOI18N
+                stringRepresentation += (attrs[i].toString() + ")");//NOI18N
             } else // surpress
             {
                 if (logger.isDebugEnabled()) {
                     // stringRepresentation+=( attrs[i].toString() + "?");
-                    logger.debug("unerwartetes Attribut implements StringConverter");
+                    logger.debug("unexpected attribute implements StringConverter");//NOI18N
                 }
 
                 // return
@@ -69,7 +69,7 @@ public class BoundingBoxStringConverter extends ToStringConverter implements jav
         if (stringRepresentation.length() > 0) {
             return stringRepresentation;
         } else {
-            return "(,,,)";
+            return "(,,,)";//NOI18N
         }
     }
 }

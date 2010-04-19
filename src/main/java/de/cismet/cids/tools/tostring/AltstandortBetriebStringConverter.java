@@ -39,13 +39,13 @@ public class AltstandortBetriebStringConverter extends ToStringConverter impleme
      * @return  DOCUMENT ME!
      */
     public String convert(Sirius.server.localserver.object.Object o) {
-        String stringRepresentation = "";
+        String stringRepresentation = "";//NOI18N
 
         ObjectAttribute[] attrs = o.getAttribs();
 
         for (int i = 0; i < attrs.length; i++) {
-            if (attrs[i].getName().equalsIgnoreCase("Betrieb") || attrs[i].getName().equalsIgnoreCase("Betriebe")) {
-                stringRepresentation += (attrs[i].toString() + " ");
+            if (attrs[i].getName().equalsIgnoreCase("Betrieb") || attrs[i].getName().equalsIgnoreCase("Betriebe")) {//NOI18N
+                stringRepresentation += (attrs[i].toString() + " ");//NOI18N
             } else // surpress
             {
                 // stringRepresentation+=( attrs[i].toString() + "?");

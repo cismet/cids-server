@@ -40,10 +40,10 @@ public class ToStringConverter implements java.io.Serializable {
      * @return  DOCUMENT ME!
      */
     public String convert(Sirius.server.localserver.object.Object o, HashMap classes) {
-        String stringRepresentation = "";
+        String stringRepresentation = "";//NOI18N
 
         // ObjectAttribute[] attrs = o.getAttribs();
-        Collection names = o.getAttributeByName("name", 1);
+        Collection names = o.getAttributeByName("name", 1);//NOI18N
         Iterator iter = names.iterator();
 
         if (iter.hasNext()) {
@@ -77,20 +77,20 @@ public class ToStringConverter implements java.io.Serializable {
 
         if (logger != null) {
             if (logger.isDebugEnabled()) {
-                logger.debug("convert von ToStringconverter gerufen");
+                logger.debug("convert invoked from ToStringconverter");//NOI18N
             }
         }
 
-        String stringRepresentation = "";
+        String stringRepresentation = "";//NOI18N
 
         if (o instanceof Sirius.server.localserver.object.Object) {
-            Collection names = ((Sirius.server.localserver.object.Object)o).getAttributeByName("name", 1);
+            Collection names = ((Sirius.server.localserver.object.Object)o).getAttributeByName("name", 1);//NOI18N
             Iterator iter = names.iterator();
 
             if (iter.hasNext()) {
                 stringRepresentation += ((ObjectAttribute)iter.next()).getValue();
             } else {
-                stringRepresentation += "";
+                stringRepresentation += "";//NOI18N
             }
 //            ObjectAttribute[] attrs = ((Sirius.server.localserver.object.Object)o).getAttribs();
 //
@@ -104,13 +104,13 @@ public class ToStringConverter implements java.io.Serializable {
         } else if (o instanceof Sirius.server.localserver.attribute.ObjectAttribute) {
             if (logger != null) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("call convert for ObjectAttribute");
+                    logger.debug("call convert for ObjectAttribute");//NOI18N
                 }
             }
             stringRepresentation += ((ObjectAttribute)o).getValue();
         } else {
             if (logger != null) {
-                logger.warn("Unknown Type for StringConversion ::" + o.getClass());
+                logger.warn("Unknown Type for StringConversion ::" + o.getClass());//NOI18N
             }
         }
 

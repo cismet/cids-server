@@ -133,7 +133,7 @@ public class CidsBean implements PropertyChangeListener {
 
     @Override
     public int hashCode() {
-        String s = metaObject.getID() + "." + metaObject.getMetaClass().getID() + "." + metaObject.getDomain();
+        String s = metaObject.getID() + "." + metaObject.getMetaClass().getID() + "." + metaObject.getDomain();//NOI18N
         return s.hashCode();
     }
 
@@ -143,7 +143,7 @@ public class CidsBean implements PropertyChangeListener {
      * @return  DOCUMENT ME!
      */
     public String toObjectString() {
-        return getClass().getName() + "@" + Integer.toHexString(hashCode());
+        return getClass().getName() + "@" + Integer.toHexString(hashCode());//NOI18N
     }
 
     /**
@@ -198,7 +198,7 @@ public class CidsBean implements PropertyChangeListener {
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
     public CidsBean addNewArrayElement(String property) {
-        throw new UnsupportedOperationException("Not yet implemented.");
+        throw new UnsupportedOperationException("Not yet implemented.");//NOI18N
     }
 
     /**
@@ -212,7 +212,7 @@ public class CidsBean implements PropertyChangeListener {
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
     public CidsBean addArrayElement(String property, CidsBean arrayElement) {
-        throw new UnsupportedOperationException("Not yet implemented.");
+        throw new UnsupportedOperationException("Not yet implemented.");//NOI18N
     }
 
     /**
@@ -281,7 +281,7 @@ public class CidsBean implements PropertyChangeListener {
             oa.setValue(value);
         }
         if (log.isDebugEnabled()) {
-            log.debug("a property changed:" + metaObject.getDebugString());
+            log.debug("a property changed:" + metaObject.getDebugString());//NOI18N
         }
         if (((oldValue == null) && (value != null)) || ((oldValue != null) && !oldValue.equals(value))) {
             oa.setChanged(true);
@@ -290,7 +290,7 @@ public class CidsBean implements PropertyChangeListener {
             ObjectAttribute referencingOA = metaObject.getReferencingObjectAttribute();
             walkUpAndSetChangedAndModified(referencingOA);
         } else {
-            log.info("set with the same value. no status change required (" + field + ":" + value + ")");
+            log.info("set with the same value. no status change required (" + field + ":" + value + ")");//NOI18N
         }
     }
 
@@ -351,7 +351,7 @@ public class CidsBean implements PropertyChangeListener {
             CidsBean newOne = mc.getEmptyInstance().getBean();
             setProperty(name, newOne);
         } else {
-            throw new RuntimeException("Could not lookup MetaClassCacheService");
+            throw new RuntimeException("Could not lookup MetaClassCacheService");//NOI18N
         }
     }
 
@@ -368,7 +368,7 @@ public class CidsBean implements PropertyChangeListener {
             // TODO seems to call nonexisting properties on array classes?
             PropertyUtils.setProperty(this, name, value);
         } catch (Exception e) {
-            log.error("Fehler in setProperty:" + name + "\n", e);
+            log.error("Error in setProperty:" + name + "\n", e);//NOI18N
         }
     }
 
@@ -383,7 +383,7 @@ public class CidsBean implements PropertyChangeListener {
         try {
             return PropertyUtils.getProperty(this, name);
         } catch (Exception e) {
-            log.error("Fehler in getproperty:" + name, e);
+            log.error("Error in getproperty:" + name, e);//NOI18N
         }
         return null;
     }
@@ -457,7 +457,7 @@ public class CidsBean implements PropertyChangeListener {
                         // MAI des ArrayFeldes des Hauptobjektes
                         MemberAttributeInfo mai = oa.getMai();
                         ObjectAttribute dummyOA = new ObjectAttribute(
-                                mai.getId() + "." + ++counter,
+                                mai.getId() + "." + ++counter,//NOI18N
                                 mai,
                                 -1,
                                 arrayElement,
@@ -467,13 +467,13 @@ public class CidsBean implements PropertyChangeListener {
                         dummy.addAttribute(dummyOA);
                         arrayElement.setReferencingObjectAttribute(dummyOA);
                     } else {
-                        throw new IllegalArgumentException("Every element of an array must be a CidsBean");
+                        throw new IllegalArgumentException("Every element of an array must be a CidsBean");//NOI18N
                     }
                 } else {
-                    throw new IllegalArgumentException("ObservableList is not registered as Array");
+                    throw new IllegalArgumentException("ObservableList is not registered as Array");//NOI18N
                 }
             } catch (Exception e) {
-                log.error("Fehler in listElementsAdded", e);
+                log.error("Error in listElementsAdded", e);//NOI18N
             }
         }
     }
@@ -550,7 +550,7 @@ public class CidsBean implements PropertyChangeListener {
      */
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
-            PropertyDescriptor pd = new PropertyDescriptor("MOString", CidsBean.class);
+            PropertyDescriptor pd = new PropertyDescriptor("MOString", CidsBean.class);//NOI18N
             return new PropertyDescriptor[] { pd };
         } catch (IntrospectionException e) {
             throw new Error(e.toString());

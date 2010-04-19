@@ -76,16 +76,16 @@ public class Parametrizer {
      */
     public static String parametrize(String string, MetaObject metaObject) throws DataRetrievalException {
         if (logger.isDebugEnabled()) {
-            logger.debug("vorm Parametrisieren: " + string);
+            logger.debug("before parameterise: " + string);//NOI18N
             // MetaObjectWrapper mow = new MetaObjectWrapper(mo);
         }
 
         int anfIndex = 0;
         int endIndex = -1;
         int nameOrID;
-        String parametrizedStr = "";
-        String id = "id";
-        String name = "name";
+        String parametrizedStr = "";//NOI18N
+        String id = "id";//NOI18N
+        String name = "name";//NOI18N
 
         /* werden Daten abgelent die beschreiben wie das Attribut addressiert
          * werden soll: \u00FCber namen oder id, sowie der Wert. adressierung[0]: String "name" | "id" adressierung[1]:
@@ -100,7 +100,7 @@ public class Parametrizer {
          */
         if (string.indexOf(auf, 0) == -1) {
             if (logger.isDebugEnabled()) {
-                logger.debug("nach dem Parametrisieren: " + string);
+                logger.debug("after parameterise: " + string);//NOI18N
             }
             return string;
         }
@@ -131,18 +131,18 @@ public class Parametrizer {
                 ObjectAttribute[] mas = findAttributeByName(metaObject, adressierung[1]);
                 parametrizedStr = parametrizeElements(parametrizedStr, mas);
             } else {
-                String meldung = "Fehler bei Paramentrisierung. Identifier: " + adressierung[0]
-                    + " wird bei Parametrisierung nicht unterst\u00FCtzt. Benutzen Sie "
-                    + "\"name\" oder \"id\".";
+                String meldung = "Error while parameterising. Identifier: " + adressierung[0]//NOI18N
+                    + " is not supported during the parameterisation. Use "//NOI18N
+                    + "\"name\" or \"id\".";//NOI18N
                 throw new DataRetrievalException(meldung, logger);
             }
         }
 
         parametrizedStr += string.substring(endIndex + 1, string.length());
 
-        System.out.println("nach dem Parametrisieren: " + parametrizedStr);
+        System.out.println("after parameterise: " + parametrizedStr);//NOI18N
         if (logger.isDebugEnabled()) {
-            logger.debug("nach dem Parametrisieren: " + parametrizedStr);
+            logger.debug("after parameterise: " + parametrizedStr);//NOI18N
         }
 
         return parametrizedStr;

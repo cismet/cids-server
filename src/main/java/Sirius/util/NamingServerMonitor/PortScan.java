@@ -70,11 +70,11 @@ public class PortScan {
     public void scanStandardPort(String name) {
         try {
             socket = new Socket(name, 1099);
-            System.out.println("Registry auf Standartport");
+            System.out.println("Registry on default port");//NOI18N
             socket.close();
             setPort(1099);
         } catch (Exception e) {
-            System.out.println("Registry nicht auf Standardport -> PortScan wird durchgef\u00FChrt");
+            System.out.println("Registry not on default port -> PortScan will be executed");//NOI18N
             scanAll(name);
         }
 
@@ -99,7 +99,7 @@ public class PortScan {
                 // bounds = new String[rmiRegistry.list().length];
                 // bounds = rmiRegistry.list();
                 socket = new Socket(name, j);
-                System.out.println("Port in Benutzung: " + j);
+                System.out.println("Port in usage: " + j);//NOI18N
                 socket.close();
 
                 if (isRegistry(j)) {
@@ -112,7 +112,7 @@ public class PortScan {
                 }
                 // ports.addElement(new Integer(j));
             } catch (IOException ex) {
-                System.out.println("port frei: " + j);
+                System.out.println("port free: " + j);//NOI18N
             }
         }
 
@@ -135,9 +135,9 @@ public class PortScan {
             rmiRegistry = LocateRegistry.getRegistry(hostName, number);
             // port=number;
             // setPort(number);
-            System.out.println("Registry gefunden auf port: " + number);
+            System.out.println("Registry found on port: " + number);//NOI18N
         } catch (Exception exc) {
-            System.out.println("Registry nicht auf port: " + number);
+            System.out.println("Registry not on port: " + number);//NOI18N
         }
 
         return true;
@@ -173,7 +173,7 @@ public class PortScan {
      * @param  args  DOCUMENT ME!
      */
     public static void main(String[] args) {
-        PortScan portscan = new PortScan("134.96.158.160");
+        PortScan portscan = new PortScan("134.96.158.160");//NOI18N
     }
 //----------------------------------------------------------------------------
 }

@@ -42,14 +42,14 @@ public class StrassStringConverter extends ToStringConverter implements java.io.
     public String convert(de.cismet.cids.tools.tostring.StringConvertable o) {
         MetaObject mo = (MetaObject)o;
 
-        String stringRepresentation = "";
+        String stringRepresentation = "";//NOI18N
 
-        Collection<Attribute> attrs = mo.getAttributeByName("NAME", 1);
+        Collection<Attribute> attrs = mo.getAttributeByName("NAME", 1);//NOI18N
 
         if (!attrs.isEmpty()) {
             Attribute attr = attrs.iterator().next();
 
-            stringRepresentation += (attr.toString() + " ");
+            stringRepresentation += (attr.toString() + " ");//NOI18N
         }
 
         return stringRepresentation;
