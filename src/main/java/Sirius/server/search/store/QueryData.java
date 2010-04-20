@@ -29,7 +29,7 @@ public class QueryData extends QueryInfo implements java.io.Serializable, Info {
      * erzeugt leeres QueryObject mit der Id -1.*
      */
     public QueryData() {
-        this(-1, "", "", "", new byte[0]);
+        this(-1, "", "", "", new byte[0]);//NOI18N
     }
 
     // --------------------------------------------------------------------
@@ -43,7 +43,7 @@ public class QueryData extends QueryInfo implements java.io.Serializable, Info {
      * @param  data    DOCUMENT ME!
      */
     public QueryData(int id, String domain, String name, byte[] data) {
-        super(id, name, domain, "");
+        super(id, name, domain, "");//NOI18N
         this.data = data;
     }
 
@@ -93,7 +93,7 @@ public class QueryData extends QueryInfo implements java.io.Serializable, Info {
      * @return  DOCUMENT ME!
      */
     public String toString() {
-        return "id:" + id + " lsName: " + domain + " name:" + name + " length: " + data.length;
+        return "id:" + id + " lsName: " + domain + " name:" + name + " length: " + data.length;//NOI18N
     }
 
     /**

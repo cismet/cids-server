@@ -47,7 +47,7 @@ public class StatementMap extends Hashtable {
         super.put(Key, value);
 
         if (!super.containsKey(Key)) {
-            throw new java.lang.Exception("Couldn't add SystemStatement ID:" + key);
+            throw new java.lang.Exception("Couldn't add SystemStatement ID:" + key);//NOI18N
         }
     } // end add
 
@@ -70,10 +70,10 @@ public class StatementMap extends Hashtable {
                 return (SystemStatement)candidate;
             }
 
-            throw new java.lang.NullPointerException("Entry is not a SystemStatement ID:" + key);
+            throw new java.lang.NullPointerException("Entry is not a SystemStatement ID:" + key);//NOI18N
         } // endif
 
-        throw new java.lang.NullPointerException("No entry ID :" + key); // to be changed in further versions when
+        throw new java.lang.NullPointerException("No entry ID :" + key); // to be changed in further versions when//NOI18N
                                                                          // exception concept is accomplished
     }                                                                    // end getStatemnt
 

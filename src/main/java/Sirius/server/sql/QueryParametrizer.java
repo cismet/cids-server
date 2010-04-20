@@ -40,7 +40,7 @@ public class QueryParametrizer {
         if (statement != null) {
             statement = statement.trim();
         } else {
-            logger.error("Stmnt in parametrizer NUll");
+            logger.error("Stmnt in parametrizer NUll");//NOI18N
         }
 
         // nothing to parametrize
@@ -48,7 +48,7 @@ public class QueryParametrizer {
             return statement;
         }
 
-        String parametrizedStmnt = "";
+        String parametrizedStmnt = "";//NOI18N
 
         final char chr = '?';
 
@@ -70,7 +70,7 @@ public class QueryParametrizer {
 
         parametrizedStmnt += statement.substring(start, statement.length()); // rest after last '?'
         if (logger.isDebugEnabled()) {
-            logger.debug("INFO Stment :  " + parametrizedStmnt);
+            logger.debug("INFO Stment :  " + parametrizedStmnt);//NOI18N
         }
 
         return parametrizedStmnt;

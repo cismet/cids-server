@@ -241,12 +241,12 @@ public class DOMVersionChecker implements VersionChecker {
             if (xmlIter.hasNext()) { // pr\u00FCfen ob es \u00FCberhaupt noch Eintr\u00E4ge im XML gibt
                 xmlTable = (String)xmlIter.next();
             } else {
-                differences.add(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion.differences.tableOnlyInDB", new Object[] {dbTable}));//NOI18N
+                differences.add(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion(String).differences.tableOnlyInDB", new Object[] {dbTable}));//NOI18N
                 continue;
             }
 
             while (dbTable.compareTo(xmlTable) < 0) { // da beide gleich sortiert sind fehlen Eintr\u00E4ge im XML
-                differences.add(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion.differences.tableOnlyInDB", new Object[] {dbTable}));//NOI18N
+                differences.add(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion(String).differences.tableOnlyInDB", new Object[] {dbTable}));//NOI18N
                 if (dbIter.hasNext()) {
                     dbTable = (String)dbIter.next();
                 } else {
@@ -255,7 +255,7 @@ public class DOMVersionChecker implements VersionChecker {
             }
 
             while (dbTable.compareTo(xmlTable) > 0) { // im XML sind Eintr\u00E4ge die nicht in der DB sind
-                differences.add(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion.differences.TableOnlyInXML", new Object[] {dbTable}));//NOI18N
+                differences.add(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion(String).differences.TableOnlyInXML", new Object[] {dbTable}));//NOI18N
                 if (xmlIter.hasNext()) {
                     xmlTable = (String)xmlIter.next();
                 } else {
@@ -280,13 +280,13 @@ public class DOMVersionChecker implements VersionChecker {
                         xmlColumn = (String)xmlColumnsIter.next();
                     } else {
                         differences.add(
-                            org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion.differences.ColumnOnlyInDB", new Object[] {dbTable, dbColumn}));//NOI18N
+                            org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion(String).differences.ColumnOnlyInDB", new Object[] {dbTable, dbColumn}));//NOI18N
                         continue;
                     }
 
                     while (dbColumn.compareTo(xmlColumn) < 0) {
                         differences.add(
-                            org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion.differences.ColumnOnlyInDB", new Object[] {dbTable, dbColumn}));//NOI18N
+                            org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion(String).differences.ColumnOnlyInDB", new Object[] {dbTable, dbColumn}));//NOI18N
                         if (dbColumnsIter.hasNext()) {
                             dbColumn = (String)dbColumnsIter.next();
                         } else {
@@ -296,7 +296,7 @@ public class DOMVersionChecker implements VersionChecker {
 
                     while (dbColumn.compareTo(xmlColumn) > 0) {
                         differences.add(
-                            org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion.differences.ColumnOnlyInXML", new Object[] {dbTable, dbColumn}));//NOI18N
+                            org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion(String).differences.ColumnOnlyInXML", new Object[] {dbTable, dbColumn}));//NOI18N
                         if (xmlColumnsIter.hasNext()) {
                             xmlColumn = (String)xmlColumnsIter.next();
                         } else {
@@ -313,7 +313,7 @@ public class DOMVersionChecker implements VersionChecker {
                                 ((String)dbColumnData.get("nullable")).compareTo(//NOI18N
                                             xmlColumnData.get("nullable").toString())//NOI18N
                                         != 0) {
-                                differences.add(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion.nullableDiffers", new Object[] {dbTable, dbColumn, dbColumnData.get("nullable"), xmlColumnData.get("nullable")}));//NOI18N
+                                differences.add(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion(String).nullableDiffers", new Object[] {dbTable, dbColumn, dbColumnData.get("nullable"), xmlColumnData.get("nullable")}));//NOI18N
                             }
                         }
 
@@ -321,7 +321,7 @@ public class DOMVersionChecker implements VersionChecker {
                             if (
                                 ((String)dbColumnData.get("size")).compareTo(xmlColumnData.get("size").toString())//NOI18N
                                         != 0) {
-                                differences.add(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion.sizeDiffers", new Object[] {dbTable, dbColumn, dbColumnData.get("size"), xmlColumnData.get("size")}));//NOI18N
+                                differences.add(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion(String).sizeDiffers", new Object[] {dbTable, dbColumn, dbColumnData.get("size"), xmlColumnData.get("size")}));//NOI18N
                             }
                         }
 
@@ -330,7 +330,7 @@ public class DOMVersionChecker implements VersionChecker {
                                 ((String)dbColumnData.get("type")).compareTo(xmlColumnData.get("type").toString())//NOI18N
                                         != 0) {
                                 differences.add(
-                                    org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion.typeDiffers", new Object[] {dbTable, dbColumn, dbColumnData.get("type"), xmlColumnData.get("type")}));//NOI18N
+                                    org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion(String).typeDiffers", new Object[] {dbTable, dbColumn, dbColumnData.get("type"), xmlColumnData.get("type")}));//NOI18N
                             }
                         }
                     }

@@ -83,14 +83,14 @@ public class RMRegistryServerImpl implements RMRegistryServer {
      * @throws  Exception  java.lang.Exception This method forwards any uncatched exception
      */
     public void startRMRegistryServer(int port) throws Exception {
-        System.out.println("<RMREG> Initializing Remote Messenger Registry");
-        log.info("<RMREG> Initializing Remote Messenger Registry");
+        System.out.println("<RMREG> Initializing Remote Messenger Registry");//NOI18N
+        log.info("<RMREG> Initializing Remote Messenger Registry");//NOI18N
         RMRegistryServer ser = (RMRegistryServer)UnicastRemoteObject.exportObject(this, port);
         reg = LocateRegistry.getRegistry(port);
-        System.out.println("<RMREG> Bind RMRegistryServer on RMIRegistry as RMRegistryServer");
-        log.info("<RMREG> Bind RMRegistryServer on RMIRegistry as RMRegistryServer");
-        reg.rebind("RMRegistryServer", ser);
-        System.out.println("<RMREG> ----------RMRegistryServer STARTED!!!----------\n");
+        System.out.println("<RMREG> Bind RMRegistryServer on RMIRegistry as RMRegistryServer");//NOI18N
+        log.info("<RMREG> Bind RMRegistryServer on RMIRegistry as RMRegistryServer");//NOI18N
+        reg.rebind("RMRegistryServer", ser);//NOI18N
+        System.out.println("<RMREG> ----------RMRegistryServer STARTED!!!----------\n");//NOI18N
     }
 
     /**
@@ -100,12 +100,12 @@ public class RMRegistryServerImpl implements RMRegistryServer {
      *                     instance
      */
     public void stopRMRegistryServer() throws Exception {
-        System.out.println("<RMREG> Shutting down the Remote Messenger Registry");
-        log.info("<RMREG> Shutting down the Remote Messenger Registry");
-        System.out.println("<RMREG> Unbind RMRegistryServer on RMIRegistry");
-        log.info("<RMREG> Unbind RMRegistryServer on RMIRegistry");
-        reg.unbind("RMRegistryServer");
-        System.out.println("<RMREG> ----------RMRegistryServer STOPPED!!!----------\n");
+        System.out.println("<RMREG> Shutting down the Remote Messenger Registry");//NOI18N
+        log.info("<RMREG> Shutting down the Remote Messenger Registry");//NOI18N
+        System.out.println("<RMREG> Unbind RMRegistryServer on RMIRegistry");//NOI18N
+        log.info("<RMREG> Unbind RMRegistryServer on RMIRegistry");//NOI18N
+        reg.unbind("RMRegistryServer");//NOI18N
+        System.out.println("<RMREG> ----------RMRegistryServer STOPPED!!!----------\n");//NOI18N
     }
 
     /**
@@ -120,7 +120,7 @@ public class RMRegistryServerImpl implements RMRegistryServer {
      */
     public boolean available(String target) {
         if (log.isDebugEnabled()) {
-            log.debug("is Adressat " + target + " verf\u00FCgbar ?");
+            log.debug("is addressee " + target + " available ?");//NOI18N
         }
         Enumeration<String> keys = activeClients.keys();
         String targetUser = null;
@@ -136,12 +136,12 @@ public class RMRegistryServerImpl implements RMRegistryServer {
 
         if (targetUser != null) {
             if (log.isDebugEnabled()) {
-                log.debug("Adressat " + target + " verf\u00FCgbar");
+                log.debug("addressee " + target + " available");//NOI18N
             }
             return true;
         } else {
             if (log.isDebugEnabled()) {
-                log.debug("Adressat " + target + " nicht verf\u00FCgbar");
+                log.debug("addressee " + target + " nicht available");//NOI18N
             }
             return false;
         }
@@ -160,7 +160,7 @@ public class RMRegistryServerImpl implements RMRegistryServer {
      */
     public boolean available(String target, String ipAddress) {
         if (log.isDebugEnabled()) {
-            log.debug("is Adressat " + target + " verf\u00FCgbar ?");
+            log.debug("is addressee " + target + " available ?");//NOI18N
         }
         Enumeration<String> keys = activeClients.keys();
         String targetUser = null;
@@ -184,12 +184,12 @@ public class RMRegistryServerImpl implements RMRegistryServer {
         }
         if (targetUser != null) {
             if (log.isDebugEnabled()) {
-                log.debug("Adressat " + target + " verf\u00FCgbar");
+                log.debug("addressee " + target + " available");//NOI18N
             }
             return true;
         } else {
             if (log.isDebugEnabled()) {
-                log.debug("Adressat " + target + " nicht verf\u00FCgbar");
+                log.debug("addressee " + target + " not available");//NOI18N
             }
             return false;
         }
@@ -219,7 +219,7 @@ public class RMRegistryServerImpl implements RMRegistryServer {
         Exception ex = null;
         total = 0;
         if (log.isDebugEnabled()) {
-            log.debug("Nachricht senden an " + target);
+            log.debug("send message to " + target);//NOI18N
         }
         Enumeration<String> keys = activeClients.keys();
         String targetUser = null;
@@ -233,21 +233,21 @@ public class RMRegistryServerImpl implements RMRegistryServer {
                         RMInfo info = it.next();
                         if (info != null) {
                             if (log.isDebugEnabled()) {
-                                log.debug("RMInfo Objekt ist ungleich null");
+                                log.debug("RMInfo Objekt is not null");//NOI18N
                             }
                             try {
                                 if (log.isDebugEnabled()) {
-                                    log.debug("RMIAddress:" + info.getRmiAddress().toString());
+                                    log.debug("RMIAddress:" + info.getRmiAddress().toString());//NOI18N
                                 }
                                 RMessenger messenger = (RMessenger)Naming.lookup(info.getRmiAddress().toString());
                                 messenger.sendMessage(message, title);
                                 if (log.isDebugEnabled()) {
-                                    log.debug("Senden der Message erfolgreich");
+                                    log.debug("Message successfully sent");//NOI18N
                                 }
                                 total++;
                             } catch (Exception e) {
                                 // if(total>0)total--;
-                                log.error("Fehler beim \u00FCbermitteln der Nachricht an " + target, e);
+                                log.error("Error while transmitting the message to " + target, e);//NOI18N
                                 // throw new UnableToSendMessageException("Sending Message to target "+target+" fails,
                                 // one or more messages are maybe not delivered"+e.toString());
                                 ex = e;
@@ -260,9 +260,9 @@ public class RMRegistryServerImpl implements RMRegistryServer {
         }
         if (flagSendProblem) {
             throw new UnableToSendMessageException(
-                "Sending Message to target " + target
-                + " fails, one or more messages are maybe not delivered\n Exception:\n" + ex.toString()
-                + "\n Total sended: " + total,
+                "Sending Message to target " + target //NOI18N
+                + " fails, one or more messages are maybe not delivered\n Exception:\n" + ex.toString() //NOI18N
+                + "\n Total sended: " + total, //NOI18N
                 total);
         }
         return total;
@@ -292,7 +292,7 @@ public class RMRegistryServerImpl implements RMRegistryServer {
         Exception ex = null;
         total = 0;
         if (log.isDebugEnabled()) {
-            log.debug("Nachricht senden an " + target);
+            log.debug("Send message to " + target);//NOI18N
         }
         Enumeration<String> keys = activeClients.keys();
         String targetUser = null;
@@ -306,21 +306,21 @@ public class RMRegistryServerImpl implements RMRegistryServer {
                         RMInfo info = it.next();
                         if ((info != null) && info.getIP().equals(ipAddress)) {
                             if (log.isDebugEnabled()) {
-                                log.debug("RMInfo Objekt ist ungleich null");
+                                log.debug("RMInfo object is not null");//NOI18N
                             }
                             try {
                                 if (log.isDebugEnabled()) {
-                                    log.debug("RMIAddress:" + info.getRmiAddress().toString());
+                                    log.debug("RMIAddress:" + info.getRmiAddress().toString());//NOI18N
                                 }
                                 RMessenger messenger = (RMessenger)Naming.lookup(info.getRmiAddress().toString());
                                 messenger.sendMessage(message, title);
                                 if (log.isDebugEnabled()) {
-                                    log.debug("Senden der Message erfolgreich");
+                                    log.debug("Message successfully sent");//NOI18N
                                 }
                                 total++;
                             } catch (Exception e) {
                                 // if(total>0)total--;
-                                log.error("Fehler beim \u00FCbermitteln der Nachricht an " + target, e);
+                                log.error("Error while transmitting the message to " + target, e);//NOI18N
                                 ex = e;
                                 flagSendProblem = true;
                             }
@@ -331,9 +331,9 @@ public class RMRegistryServerImpl implements RMRegistryServer {
         }
         if (flagSendProblem) {
             throw new UnableToSendMessageException(
-                "Sending Message to target " + target
-                + " fails, one or more messages are maybe not delivered\n Exception:\n" + ex.toString()
-                + "\n Total sended: " + total,
+                "Sending Message to target " + target //NOI18N
+                + " fails, one or more messages are maybe not delivered\n Exception:\n" + ex.toString() //NOI18N
+                + "\n Total sended: " + total, //NOI18N
                 total);
         }
         return total;
@@ -349,7 +349,7 @@ public class RMRegistryServerImpl implements RMRegistryServer {
     public void register(RMInfo info) {
         String key = info.getKey();
         if (log.isDebugEnabled()) {
-            log.debug(key + " hat sich beim RMRegistryServer registriert");
+            log.debug(key + " has registered at the RMRegistryServer");//NOI18N
         }
         // activeUsers.put(key,info);
         Vector<RMInfo> tmp = activeClients.get(info.getKey());
@@ -397,7 +397,7 @@ public class RMRegistryServerImpl implements RMRegistryServer {
     public void deregister(RMInfo info) throws UnableToDeregisterException {
         String key = info.getKey();
         if (log.isDebugEnabled()) {
-            log.debug(key + " versucht sich beim RMRegistryServer abzumelden");
+            log.debug(key + " tries to sign out from the RMRegistryServer");//NOI18N
             // activeUsers.remove(key);
         }
         Vector<RMInfo> tmp = activeClients.get(info.getKey());
@@ -405,26 +405,26 @@ public class RMRegistryServerImpl implements RMRegistryServer {
             synchronized (tmp) {
                 int index = tmp.indexOf(info);
                 if (log.isDebugEnabled()) {
-                    log.debug("Index des Objektes ist:" + index);
+                    log.debug("Index of the object is:" + index);//NOI18N
                 }
 
                 if (index != -1) {
                     tmp.remove(index);
                     if (log.isDebugEnabled()) {
-                        log.debug(key + " ist RMRegistryServer abgemeldet");
+                        log.debug(key + " is RMRegistryServer signed out");//NOI18N
                     }
                 } else {
                     if (log.isDebugEnabled()) {
-                        log.debug(key + " kein solcher user im RMRegistryServer");
+                        log.debug(key + " no such user in RMRegistryServer");//NOI18N
                     }
-                    throw new UnableToDeregisterException("User is not in registry");
+                    throw new UnableToDeregisterException("User is not in registry");//NOI18N
                 }
             }
         } else {
             if (log.isDebugEnabled()) {
-                log.debug(key + " kein solcher user im RMRegistryServer");
+                log.debug(key + " no such user in RMRegistryServer");//NOI18N
             }
-            throw new UnableToDeregisterException("User is not in registry");
+            throw new UnableToDeregisterException("User is not in registry");//NOI18N
         }
     }
 
@@ -550,10 +550,10 @@ public class RMRegistryServerImpl implements RMRegistryServer {
     private String extractDomainName(String string) {
         String substring;
         try {
-            int start = string.lastIndexOf("@");
+            int start = string.lastIndexOf("@");//NOI18N
             substring = string.substring(start + 1, string.length());
         } catch (Exception e) {
-            log.error("Fehler beim extrahieren der Domain aus:" + string);
+            log.error("Error while extracting the domain from:" + string);//NOI18N
             return null;
         }
         return substring;
@@ -569,11 +569,11 @@ public class RMRegistryServerImpl implements RMRegistryServer {
     private String extractGroupName(String string) {
         String substring;
         try {
-            int start = string.indexOf("@");
-            int end = string.lastIndexOf("@");
+            int start = string.indexOf("@");//NOI18N
+            int end = string.lastIndexOf("@");//NOI18N
             substring = string.substring(start + 1, end);
         } catch (Exception e) {
-            log.error("Fehler beim extrahieren der Gruppe aus:" + string);
+            log.error("Error while extracting the group from:" + string);//NOI18N
             return null;
         }
         return substring;
@@ -589,10 +589,10 @@ public class RMRegistryServerImpl implements RMRegistryServer {
     private String extractUserName(String string) {
         String substring;
         try {
-            int end = string.indexOf("@");
+            int end = string.indexOf("@");//NOI18N
             substring = string.substring(0, end);
         } catch (Exception e) {
-            log.error("Fehler beim extrahieren der Gruppe aus:" + string);
+            log.error("Error while extracting the group from:" + string);//NOI18N
             return null;
         }
         return substring;
@@ -606,17 +606,17 @@ public class RMRegistryServerImpl implements RMRegistryServer {
         if (updateThread != null) {
             if (!updateThread.isAlive()) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Starting update thread");
+                    log.debug("Starting update thread");//NOI18N
                 }
                 updateThread.run();
             } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("Update thread already running");
+                    log.debug("Update thread already running");//NOI18N
                 }
             }
         } else {
             if (log.isDebugEnabled()) {
-                log.debug("Creating new update thread");
+                log.debug("Creating new update thread");//NOI18N
             }
             updateThread = new Thread() {
 
@@ -633,7 +633,7 @@ public class RMRegistryServerImpl implements RMRegistryServer {
      */
     private void update() {
         if (log.isDebugEnabled()) {
-            log.debug("Updating Registry...");
+            log.debug("Updating Registry...");//NOI18N
         }
         Enumeration<String> keys = activeClients.keys();
         while (keys.hasMoreElements()) {
@@ -651,8 +651,8 @@ public class RMRegistryServerImpl implements RMRegistryServer {
                         } catch (Exception e) {
                             if (log.isDebugEnabled()) {
                                 log.debug(
-                                    "Exception during Registry Update: Entry --> " + user.getRmiAddress().toString()
-                                    + " removing entry",
+                                    "Exception during Registry Update: Entry --> " + user.getRmiAddress().toString()//NOI18N
+                                    + " removing entry",//NOI18N
                                     e);
                             }
                             activeClients.remove(user.getKey());
@@ -662,7 +662,7 @@ public class RMRegistryServerImpl implements RMRegistryServer {
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("Updating Registry beendet");
+            log.debug("Updating Registry finished");//NOI18N
         }
     }
 
@@ -671,11 +671,11 @@ public class RMRegistryServerImpl implements RMRegistryServer {
      */
     public void logCurrentRegistry() {
         if (log.isDebugEnabled()) {
-            log.debug("logging Registry...");
+            log.debug("logging Registry...");//NOI18N
         }
         Enumeration<String> keys = activeClients.keys();
         if (log.isDebugEnabled()) {
-            log.debug("Registry:");
+            log.debug("Registry:");//NOI18N
         }
         while (keys.hasMoreElements()) {
             String current = keys.nextElement();
@@ -688,7 +688,7 @@ public class RMRegistryServerImpl implements RMRegistryServer {
                     if (user != null) {
                         if (log.isDebugEnabled()) {
                             log.debug(
-                                current + " : " + user.getRmiAddress() + " --> online since "
+                                current + " : " + user.getRmiAddress() + " --> online since "//NOI18N
                                 + user.getOnlineTimeAsText());
                         }
                     }
@@ -696,7 +696,7 @@ public class RMRegistryServerImpl implements RMRegistryServer {
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("Logging Registry beendet");
+            log.debug("Logging Registry finished");//NOI18N
         }
     }
 

@@ -40,11 +40,11 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      */
     public DBClassifier() {
         noOfConnections = 0;
-        url = "";
-        login = "";
-        pwd = "";
-        driver = "org.postgresql.Driver";
-        setSqlDialect("org.hibernate.dialect.PostgreSQLDialect");
+        url = "";//NOI18N
+        login = "";//NOI18N
+        pwd = "";//NOI18N
+        driver = "org.postgresql.Driver";//NOI18N
+        setSqlDialect("org.hibernate.dialect.PostgreSQLDialect");//NOI18N
     }
 
     /**
@@ -113,7 +113,7 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
     /////////////////////////////////////////////////////////////////////////
 
     public String toString() {
-        return url + "|" + login + "|" + pwd + "|" + driver + "|" + noOfConnections;
+        return url + "|" + login + "|" + pwd + "|" + driver + "|" + noOfConnections;//NOI18N
     }
 
     /**

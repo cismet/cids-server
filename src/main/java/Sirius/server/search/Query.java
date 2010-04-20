@@ -238,7 +238,7 @@ public class Query implements Mapable, java.io.Serializable {
             if (p != null) {
                 p.setValue(parameter.getValue());
             } else {
-                throw new Exception("Parameter " + parameter.getKey() + " in query " + qid + " nicht vorhanden");
+                throw new Exception("Parameter " + parameter.getKey() + " in query " + qid + " not existent");//NOI18N
             }
         }
     }
@@ -262,7 +262,7 @@ public class Query implements Mapable, java.io.Serializable {
             if (p != null) {
                 p.setValue(value);
             } else {
-                throw new Exception("Parameter " + key + " in query " + qid + " nicht vorhanden");
+                throw new Exception("Parameter " + key + " in query " + qid + " not existent");//NOI18N
             }
         }
     }
@@ -330,7 +330,7 @@ public class Query implements Mapable, java.io.Serializable {
 
             // value not set and no result of a subQuery (to be set during execution)
             if ((ref.getValue() == null) && !ref.isQueryResult()) {
-                logger.error("SearchParameter Value not set :" + ref.getKey());
+                logger.error("SearchParameter Value not set :" + ref.getKey());//NOI18N
                 return false;
             }
         }
@@ -468,7 +468,7 @@ public class Query implements Mapable, java.io.Serializable {
     }
 
     public String toString() {
-        return getKey().toString() + "\n parameter :: \n" + parameters;
+        return getKey().toString() + "\n parameter :: \n" + parameters;//NOI18N
     }
 
     /**

@@ -171,14 +171,13 @@ public class Parametrizer {
             case 0: {
                 attrID = parseID(attrName);
 
-                visitor = new ForAttrIDAndObjName(qualifiedAttrName[0], attrID + "");
+                visitor = new ForAttrIDAndObjName(qualifiedAttrName[0], attrID + "");//NOI18N
                 ret = (ObjectAttribute[])metaObject.accept(visitor, null);
 
                 if (ret.length != 1) {
-                    meldung = "Fehler beim parameterizieren des Attributes "
-                        + attrName + ". Es wurden mehrere passende Attribue ermittelt,"
-                        + " Qulaifizieren Sie den Attribut mit dem Namen des zugeh\u00F6rigen"
-                        + " MetaObjektes.";
+                    meldung = "Error while parameterising the attribute "//NOI18N
+                        + attrName + ". Several matched attributes was determined,"//NOI18N
+                        + " Qualify the attribute with the name of the corresponding meto object";//NOI18N
                     throw new DataRetrievalException(meldung, logger);
                 }
 
@@ -186,21 +185,21 @@ public class Parametrizer {
             }
 
             case 1: {
-                meldung = "Fehler beim parameterizieren des Attributes "
-                    + attrName + ". Attribut-ID muss qualifiziert werden.";
+                meldung = "Error while parameterising the attribute "//NOI18N
+                    + attrName + ". Attribut ID must be qualified.";//NOI18N
                 throw new DataRetrievalException(meldung, logger);
             }
 
             case 2: {
                 attrID = parseID(qualifiedAttrName[1]);
 
-                visitor = new ForAttrIDAndObjName(qualifiedAttrName[0], attrID + "");
+                visitor = new ForAttrIDAndObjName(qualifiedAttrName[0], attrID + "");//NOI18N
                 ret = (ObjectAttribute[])metaObject.accept(visitor, null);
 
                 if (ret.length != 1) {
-                    meldung = "Fehler bei Paramentrisierung. Anzahl der "
-                        + "gefundenen ObjectAttribute(" + ret.length + ") f\u00FCr  Attribut-ID "
-                        + attrName + " erlaubt keine weitere Parametrisierung des Strings. ";
+                    meldung = "Error while parameterising. The count of  "//NOI18N
+                        + "found object attributes(" + ret.length + ") for  Attribut ID "//NOI18N
+                        + attrName + " does not allow a further parameterising of the String. ";//NOI18N
                     throw new DataRetrievalException(meldung, logger);
                 }
 
@@ -208,14 +207,14 @@ public class Parametrizer {
             }
 
             case 3: {
-                meldung = "Fehler bei Paramentrisierung. Drei Teilelemente im"
-                    + " Parameternamen entdeckt. Qualifizierung der Parameternamen"
-                    + " nach dom\u00E4ne wird z.Zt. micht unterst\u00FCtzt.";
+                meldung = "Error while parameterising. Three sub elements within the "//NOI18N
+                    + " parameter name found. Qualification of the parameter names"//NOI18N
+                    + " according to the domain is not supported, at the moment.";//NOI18N
                 throw new DataRetrievalException(meldung, logger);
             }
 
             default: {
-                meldung = "Viel zu viele punkte im Parameternamen.";
+                meldung = "To many dots within the parameter name";//NOI18N
                 throw new DataRetrievalException(meldung, logger);
             }
         }
@@ -235,8 +234,8 @@ public class Parametrizer {
         try {
             return Integer.parseInt(attrID);
         } catch (NumberFormatException e) {
-            String message = "Fehler beim Parametrisieren. Attribut ID "
-                + attrID + " ist keine Ganzzahl.";
+            String message = "Error while parameterising. Attribut ID "//NOI18N
+                + attrID + " is no integer.";//NOI18N
             throw new DataRetrievalException(message, e, logger);
         }
     }
@@ -292,21 +291,21 @@ public class Parametrizer {
             }
 
             case 3: {
-                meldung = "Fehler bei Paramentrisierung. Drei Teilelemente im"
-                    + " Parameternamen entdeckt. Qualifizierung der Parameternamen"
-                    + " nach dom\u00E4ne wird z.Zt. micht unterst\u00FCtzt.";
+                meldung = "Error while parameterising the attribute. Three sub elements within "//NOI18N
+                    + "the parameter name found. Qualification of the parameter names"//NOI18N
+                    + " according to domains is not supported at the moment.";//NOI18N
                 throw new DataRetrievalException(meldung, logger);
             }
 
             default: {
-                meldung = "Viel zu viele punkte im Parameternamen.";
+                meldung = "To many dots in the parameter name.";//NOI18N
                 throw new DataRetrievalException(meldung, logger);
             }
         }
 
         if (ret.length == 0) {
-            String message = "Fehler bei Paramentrisierung. Attribut "
-                + attrName + " konnte nicht gefunden werden.";
+            String message = "Error while parameterising. Attribut "//NOI18N
+                + attrName + " cannot be found.";//NOI18N
             throw new DataRetrievalException(message, logger);
         }
 
@@ -351,28 +350,28 @@ public class Parametrizer {
         parametrized = parametrized.trim();
 
         String lastTerm = parametrized.substring(
-                    parametrized.lastIndexOf(" "),
+                    parametrized.lastIndexOf(" "),//NOI18N
                     parametrized.length()).trim();
 
-        if (!lastTerm.equalsIgnoreCase("=") && !lastTerm.equalsIgnoreCase("IN")) {
-            String meldung = "Fehler bei Paramentrisierung. Die Suche nach"
-                + " einem Attribut ergab mehrere Treffer, ein Term = oder IN wurde"
-                + " vor dem Platzhalter erwartet, ist jedoch nicht vorhanden.";
+        if (!lastTerm.equalsIgnoreCase("=") && !lastTerm.equalsIgnoreCase("IN")) {//NOI18N
+            String meldung = "Error while parameterising. the search for"//NOI18N
+                + " an attribute resulted in several matches, a Term = or IN was"//NOI18N
+                + " expected before the wild-card character, but it does not exist.";//NOI18N
             throw new DataRetrievalException(meldung, logger);
         }
 
-        parametrized = parametrized.substring(0, parametrized.lastIndexOf(" "));
+        parametrized = parametrized.substring(0, parametrized.lastIndexOf(" "));//NOI18N
 
-        parametrized += " IN (";
+        parametrized += " IN (";//NOI18N
 
         for (int i = 0; i < (mas.length - 1); i++) {
             parametrized += mas[i].getValue().toString();
-            parametrized += ", ";
+            parametrized += ", ";//NOI18N
         }
 
         parametrized += mas[mas.length - 1].getValue().toString();
 
-        return parametrized + ")";
+        return parametrized + ")";//NOI18N
     }
 
     /**
@@ -389,16 +388,16 @@ public class Parametrizer {
      * @throws  DataRetrievalException  DOCUMENT ME!
      */
     private static String[] splitParam(String paltzhalter) throws DataRetrievalException {
-        String delim = "=";
+        String delim = "=";//NOI18N
 
         String str = paltzhalter.substring(1, paltzhalter.length() - 1).trim();
 
         String[] strAr = str.split(delim);
 
         if (strAr.length != 2) {
-            String meldung = "Fehler bei Paramentrisierung. Der gefundenen Parameter "
-                + paltzhalter + " konnte nicht verarbeitet werden. \u00DCberpr\u00FCfen Sie die Syntax der "
-                + " Parameterangabe.";
+            String meldung = "Error while parameterising. The found parameter "//NOI18N
+                + paltzhalter + " could not processed. Check the syntax of the  "//NOI18N
+                + " given parameter.";//NOI18N
             throw new DataRetrievalException(meldung, logger);
         }
 
@@ -421,17 +420,17 @@ public class Parametrizer {
     private static String[] splitAttributeName(String attrName) throws DataRetrievalException {
         // falls der Name des Attributes als ".<name>" angegeben wurde,
         // wird eine Exception ausgel\u00F6sst.
-        if (attrName.trim().endsWith(".")) {
-            String meldung = "Fehler beim parameterizieren des Attributes "
-                + attrName + ". Attribut-name/-id syntaktisch nicht korrekt.";
+        if (attrName.trim().endsWith(".")) {//NOI18N
+            String meldung = "Error while parameterising the attribute "//NOI18N
+                + attrName + ". The syntax of the  attribut name/id is not correct.";//NOI18N
             throw new DataRetrievalException(meldung, logger);
         }
 
-        String[] strAr = attrName.trim().split("\\.");
+        String[] strAr = attrName.trim().split("\\.");//NOI18N
 
-        if ((strAr.length == 2) && strAr[0].equals("")) {
-            String meldung = "Fehler beim parameterizieren des Attributes "
-                + attrName + ". Attribut-name/-id syntaktisch nicht korrekt.";
+        if ((strAr.length == 2) && strAr[0].equals("")) {//NOI18N
+            String meldung = "Error while parameterising the attribute "//NOI18N
+                + attrName + ". The syntax of the  attribut name/id is not correct.";//NOI18N
             throw new DataRetrievalException(meldung, logger);
         }
 

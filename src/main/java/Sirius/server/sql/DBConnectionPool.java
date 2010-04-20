@@ -51,14 +51,14 @@ public class DBConnectionPool {
 
             cons.add(con);
 
-            logger.info("Info :: " + dbc + " allows " + maxCons + " connections 0 means unlimited");
+            logger.info("Info :: " + dbc + " allows " + maxCons + " connections 0 means unlimited");//NOI18N
 
             if ((maxCons < dbc.noOfConnections) && (maxCons != 0)) // 0 means unlimited
             {
                 dbc.setNoOfConnections(maxCons);
                 logger.error(
-                    "\n requested number of identical connections exceeds maxConnections of the db" + "\n"
-                    + " or jdbcdriver and therefore ist set to maximum possible");
+                    "\n requested number of identical connections exceeds maxConnections of the db" + "\n"//NOI18N
+                    + " or jdbcdriver and therefore ist set to maximum possible");//NOI18N
             }
         }
     }
@@ -122,7 +122,7 @@ public class DBConnectionPool {
                 // close connection
                 iter.next().getConnection().close();
             } catch (SQLException e) {
-                logger.error("<LS> ERROR :: could not close connection - try to close the next one", e);
+                logger.error("<LS> ERROR :: could not close connection - try to close the next one", e);//NOI18N
             }
         }
 

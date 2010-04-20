@@ -100,7 +100,7 @@ public class DefaultSearchParameter implements SearchParameter, Comparable, java
         if (value instanceof java.util.Collection) {
             return (java.util.Collection)value;
         } else {
-            throw new Exception("no Collection");
+            throw new Exception("no Collection");//NOI18N
         }
     }
 

@@ -59,7 +59,7 @@ public class RMUser implements Serializable {
         this.ipAddress = ipAddress;
         this.userGroup = group;
         this.userDomain = Domain;
-        qualifiedName = userName + "@" + userGroup + "@" + userDomain;
+        qualifiedName = userName + "@" + userGroup + "@" + userDomain;//NOI18N
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -89,9 +89,9 @@ public class RMUser implements Serializable {
      */
     public String getOnlineTimeAsString() {
         // long currentTime = System.currentTimeMillis();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");//NOI18N
 
-        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));//NOI18N
         // long elapsed = currentTime - onlineTime;
         return dateFormat.format(new Date(onlineTime));
     }
