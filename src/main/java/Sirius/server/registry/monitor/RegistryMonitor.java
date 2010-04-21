@@ -111,7 +111,7 @@ public class RegistryMonitor extends JPanel implements Runnable {
         messageLabel = new JLabel();
 
         // ueberschrift fuer den Monitor
-        panelHeader = org.openide.util.NbBundle.getMessage(RegistryMonitor.class, "RegistryMonitor.panelHeader", registryIP);
+        panelHeader = org.openide.util.NbBundle.getMessage(RegistryMonitor.class, "RegistryMonitor.panelHeader", registryIP);//NOI18N
 
         try {
             // Referenz auf NameServer und UserServer der Registry erzeugen

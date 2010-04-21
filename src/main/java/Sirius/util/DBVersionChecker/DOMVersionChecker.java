@@ -70,7 +70,7 @@ public class DOMVersionChecker implements VersionChecker {
             readVersionsXML();
             setDB(cfg.readLine(), cfg.readLine(), cfg.readLine(), cfg.readLine());
         } catch (IOException e) {
-            System.err.println(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.DOMVersionChecker(String).error") + e);
+            System.err.println(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.DOMVersionChecker(String).error") + e);//NOI18N
             System.exit(1);
         }
     }
@@ -133,18 +133,18 @@ public class DOMVersionChecker implements VersionChecker {
             if (args[1].equals("version")) {//NOI18N
                 String version = instance.checkVersion();
                 if (version != null) {
-                    System.out.println(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.main(String[]).foundVersion") + version);
+                    System.out.println(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.main(String[]).foundVersion", new Object[]{version}));//NOI18N
                 } else {
                     System.out.println(
-                        org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.main(String[])..noProperVersion"));
+                        org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.main(String[])..noProperVersion"));//NOI18N
                 }
             } else if (args[1].equals("generiere")) {//NOI18N
                 instance.writeVersionXML(instance.xmlFile, args[2]);
             } else if (args[1].equals("vergleiche")) {//NOI18N
                 if (instance.compareWithVersion(args[2])) {
-                    System.out.println(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.main(String[]).accordanceFound"));
+                    System.out.println(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.main(String[]).accordanceFound"));//NOI18N
                 } else {
-                    System.out.println(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.main(String[]).noAccordanceFound"));
+                    System.out.println(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.main(String[]).noAccordanceFound"));//NOI18N
                     ArrayList diff = instance.getDifferences();
                     Iterator it = diff.iterator();
                     while (it.hasNext()) {
