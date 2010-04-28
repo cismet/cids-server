@@ -239,7 +239,7 @@ public class StartProxy {
     public void shutdown() throws Throwable {
         try {
             callServer.unregisterAsObserver(siriusRegistryIP);
-            callServer.nameServer.unregisterServer(
+            callServer.getNameServer().unregisterServer(
                 ServerType.CALLSERVER,
                 serverInfo.getName(),
                 serverInfo.getIP(),
