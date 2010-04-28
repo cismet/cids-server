@@ -17,6 +17,7 @@ import Sirius.server.localserver.method.MethodMap;
 import Sirius.server.localserver.query.QueryCache;
 import Sirius.server.localserver.query.querystore.Store;
 import Sirius.server.localserver.user.UserStore;
+import Sirius.server.middleware.impls.proxy.StartProxy;
 import Sirius.server.middleware.interfaces.domainserver.CatalogueService;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.interfaces.domainserver.QueryStore;
@@ -56,6 +57,8 @@ import java.util.MissingResourceException;
 import org.apache.log4j.PropertyConfigurator;
 
 import de.cismet.cids.objectextension.ObjectExtensionFactory;
+import de.cismet.cids.server.DefaultServerExceptionHandler;
+import de.cismet.cids.server.ws.rest.RESTfulSerialInterface;
 
 import de.cismet.tools.BlacklistClassloading;
 
@@ -1088,6 +1091,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
      * @throws  ServerExitError  DOCUMENT ME!
      */
     public static void main(String[] args) throws Throwable {
+
+        // first of all register the default exception handler for all threads
+        Thread.setDefaultUncaughtExceptionHandler(new DefaultServerExceptionHandler());
+        
         ServerProperties properties = null;
         int rmiPort;
 
@@ -1130,7 +1137,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
             if (properties.getStartMode().equalsIgnoreCase("simple")) {
                 new Sirius.server.registry.Registry(rmiPort);
-                new Sirius.server.middleware.impls.proxy.StartProxy(args[0]);
+                StartProxy.getServerInstance(args[0]);
             }
 
             if (System.getSecurityManager() == null) {

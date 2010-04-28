@@ -7,55 +7,53 @@
 ****************************************************/
 package Sirius.server.middleware.impls.proxy;
 
-import java.rmi.*;
-import java.rmi.server.*;
-import java.rmi.registry.*;
+import Sirius.server.Server;
+import Sirius.server.ServerExit;
+import Sirius.server.ServerExitError;
+import Sirius.server.ServerStatus;
+import Sirius.server.ServerType;
+import Sirius.server.property.ServerProperties;
 
-import javax.swing.*;
+import de.cismet.cids.server.CallServerService;
 
-import java.awt.event.*;
-import java.awt.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
-import java.net.*;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 
-import java.util.*;
+import java.rmi.AlreadyBoundException;
+import java.rmi.Naming;
+import java.rmi.RMISecurityManager;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
-import Sirius.server.registry.*;
-import Sirius.server.property.*;
-import Sirius.server.middleware.interfaces.proxy.*;
-import Sirius.server.middleware.impls.proxy.*;
-import Sirius.server.observ.*;
-import Sirius.server.*;
+import java.util.MissingResourceException;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-public class StartProxy {
+public final class StartProxy {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    protected static StartProxy THIS;
+    private static final transient Logger LOG = Logger.getLogger(StartProxy.class);
+
+    private static StartProxy instance;
 
     //~ Instance fields --------------------------------------------------------
 
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
-
-    private SystemService systemServer;
-    private UserService userServer;
-    private MetaService metaServer;
-    private ProxyImpl callServer;
-
-    private String siriusRegistryIP;
-
-    // private JFrame frame;
-    // private JTextArea textArea;
-    private ServerProperties properties;
-    private Server serverInfo;
-    private ServerStatus status;
+    private final transient ProxyImpl callServer;
+    private final transient String siriusRegistryIP;
+    private final transient Server serverInfo;
+    private final transient ServerStatus status;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -64,114 +62,63 @@ public class StartProxy {
      *
      * @param   configFile  DOCUMENT ME!
      *
-     * @throws  Throwable        DOCUMENT ME!
      * @throws  ServerExitError  DOCUMENT ME!
      */
-    public StartProxy(String configFile) throws Throwable {
-        String[] ips = { "localhost" };
-        String rmiPort = "1099";
+    private StartProxy(final String configFile) throws ServerExitError {
+        // initialise server properties
+        final ServerProperties properties = initServerProperties(configFile);
 
-        properties = new ServerProperties(configFile);
-
-        String fileName;
-        if (((fileName = properties.getLog4jPropertyFile()) != null) && !fileName.equals("")) {
+        // init log4j
+        final String fileName = properties.getLog4jPropertyFile();
+        if ((fileName != null) && !fileName.isEmpty()) {
             PropertyConfigurator.configure(fileName);
         }
 
-        try {
-            ips = properties.getRegistryIps();
-        } catch (MissingResourceException mre) {
-            System.err.println(
-                "<CS> Value for Key " + mre.getMessage() + " in ConfigFile " + configFile + " is missing");
-            logger.error(
-                "<CS> Value for Key " + mre.getMessage() + " in ConfigFile " + configFile + " is missing",
-                mre);
+        // init server registry ip
+        siriusRegistryIP = initServerRegistryIP(properties);
 
-            throw new ServerExitError(mre);
+        // TODO: why sout???
+        System.out.println("<CS> INFO: siriusRegistryIP:: " + siriusRegistryIP); // NOI18N
+        System.out.println("<CS> INFO: configFile:: " + configFile);             // NOI18N
+        if (LOG.isInfoEnabled()) {
+            LOG.info("<CS> INFO: siriusRegistryIP:: " + siriusRegistryIP);       // NOI18N
+            LOG.info("<CS> INFO: configFile:: " + configFile);                   // NOI18N
         }
 
-        this.siriusRegistryIP = ips[0];
+        // init server
+        serverInfo = initServer(properties);
 
-        System.out.println("<CS> INFO siriusRegistryIP:: " + siriusRegistryIP);
-        logger.info("<CS> INFO siriusRegistryIP:: " + siriusRegistryIP);
-        System.out.println("<CS> INFO configFile:: " + configFile);
-        logger.info("<CS> INFO configFile:: " + configFile);
-
-        try {
-            rmiPort = properties.getRMIRegistryPort();
-            serverInfo = new Server(
-                    ServerType.CALLSERVER,
-                    properties.getServerName(),
-                    InetAddress.getLocalHost().getHostAddress(),
-                    rmiPort);
-        } catch (MissingResourceException mre) {
-            System.err.println(
-                "Info <CS> Value for Key " + mre.getMessage() + " in ConfigFile " + configFile + " is missing");
-            logger.error(
-                "Info <CS> Value for Key " + mre.getMessage() + " in ConfigFile " + configFile + " is missing",
-                mre);
-
-            System.out.println("Info <CS> Set Default RMIPort to 1099");
-            if (logger.isDebugEnabled()) {
-                logger.debug("Info <CS> Set Default RMIPort to 1099");
-            }
-
-            rmiPort = "1099";
-            serverInfo = new Server(
-                    ServerType.CALLSERVER,
-                    properties.getServerName(),
-                    InetAddress.getLocalHost().getHostAddress(),
-                    rmiPort);
-        }
-
+        // create a securitymanager if it is not registered yet
         if (System.getSecurityManager() == null) {
             System.setSecurityManager(new RMISecurityManager());
         }
 
-        // abfragen, ob schon eine  RMI Registry exitiert.
-        java.rmi.registry.Registry rmiRegistry;
+        // init RMI registry
+        final Registry rmiRegistry = initRegistry(Integer.valueOf(serverInfo.getRMIPort()));
 
-        try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Info <CS> getRMIRegistry on Port " + rmiPort);
+        // create and bind callserver instance
+        callServer = createAndBindProxy(properties);
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("<CS> RMIRegistry does exist...");                                           // NOI18N
+            final String[] list;
+            try {
+                list = rmiRegistry.list();
+                final StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < list.length; i++) {
+                    sb.append('\t').append(list[i]);
+                }
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(" Info <CS> Already registered with RMIRegistry: " + sb.toString()); // NOI18N
+                }
+            } catch (final Exception ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("cannot list registered services", ex);                              // NOI18N
+                }
             }
-            rmiRegistry = LocateRegistry.getRegistry(new Integer(rmiPort).intValue());
-            // wenn keine Registry vorhanden, wird an dieser Stelle Exception ausgeloest
-        } catch (RemoteException e) {
-            // wenn nicht, neue Registry starten und auf portnummer setzen
-            System.err.println(e.getMessage() + " \n" + "Info <CS> no RMIRegistry on Port " + rmiPort + " available");
-            logger.error("Info <CS> no RMIRegistry on Port " + rmiPort + " available", e);
-            System.out.println("Info <CS> create RMIRegistry on Port " + rmiPort);
-            logger.info("Info <CS> create RMIRegistry on Port " + rmiPort);
-
-            rmiRegistry = LocateRegistry.createRegistry(new Integer(rmiPort).intValue());
         }
 
-        callServer = new ProxyImpl(properties);
-
-        Naming.bind("callServer", callServer);
-
-        String[] list = rmiRegistry.list();
-        int number = rmiRegistry.list().length;
-        if (logger.isDebugEnabled()) {
-            logger.debug("<CS> RMIRegistry does exist...");
-            logger.debug(" Info <CS> Already registered with RMIRegistry:");
-        }
-
-        if (logger.isDebugEnabled()) {
-            String t = "";
-            for (int i = 0; i < number; i++) {
-                t += ("\t" + list[i]);
-            }
-
-            logger.debug(t);
-        }
-
-        // ------------------------------------------
-
-        // initFrame();
         status = new ServerStatus();
-        THIS = this;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -179,10 +126,181 @@ public class StartProxy {
     /**
      * DOCUMENT ME!
      *
+     * @param   configFile  DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
+     *
+     * @throws  ServerExitError  DOCUMENT ME!
      */
-    public static final StartProxy getServerInstance() {
-        return THIS;
+    private ServerProperties initServerProperties(final String configFile) throws ServerExitError {
+        try {
+            return new ServerProperties(configFile);
+        } catch (final FileNotFoundException ex) {
+            final String message = "given configFile does not exist: " + configFile; // NOI18N
+            LOG.fatal(message, ex);
+            throw new ServerExitError(message, ex);
+        } catch (final IOException ex) {
+            final String message = "error while reading config: " + configFile;      // NOI18N
+            LOG.fatal(message, ex);
+            throw new ServerExitError(message, ex);
+        }
+    }
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   properties  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  ServerExitError  DOCUMENT ME!
+     */
+    private String initServerRegistryIP(final ServerProperties properties) throws ServerExitError {
+        try {
+            final String[] ips = properties.getRegistryIps();
+            if (ips.length == 0) {
+                final String message = "registry IPs not set in config file, server exit"; // NOI18N
+                LOG.fatal(message);
+                throw new ServerExitError(message);
+            } else {
+                final String ip = ips[0];
+                if (LOG.isInfoEnabled()) {
+                    LOG.info("using registry ip: " + ip);                                  // NOI18N
+                }
+
+                return ip;
+            }
+        } catch (final MissingResourceException mre) {
+            final String message = "<CS> FATAL: value for key '" + mre.getMessage() + "' is missing"; // NOI18N
+            // TODO: why serr???
+            System.err.println(message);
+            LOG.fatal(message, mre);
+            throw new ServerExitError(mre);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   properties  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  ServerExitError  DOCUMENT ME!
+     */
+    private Server initServer(final ServerProperties properties) throws ServerExitError {
+        try {
+            String rmiPort;
+            try {
+                rmiPort = properties.getRMIRegistryPort();
+            } catch (final MissingResourceException mre) {
+                final String warning = "<CS> WARN: value for key " + mre.getMessage() + " is missing"; // NOI18N
+                // TODO: why serr???
+                System.err.println(warning);
+                LOG.warn(warning, mre);
+
+                // defaulting to standard port 1099
+                final String message = "<CS> INFO: set default RMI port: 1099"; // NOI18N
+                System.out.println(message);
+                if (LOG.isInfoEnabled()) {
+                    LOG.info(message);
+                }
+                rmiPort = "1099";                                               // NOI18N
+            }
+
+            return new Server(
+                    ServerType.CALLSERVER,
+                    properties.getServerName(),
+                    InetAddress.getLocalHost().getHostAddress(),
+                    rmiPort);
+        } catch (final UnknownHostException e) {
+            final String message = "SEVERE: could not find host address for localhost"; // NOI18N
+            LOG.fatal(message, e);
+            throw new ServerExitError(message, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   port  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  ServerExitError  DOCUMENT ME!
+     */
+    private Registry initRegistry(final int port) throws ServerExitError {
+        try {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("<CS> DEBUG: getRMIRegistry on port " + port); // NOI18N
+            }
+
+            return LocateRegistry.getRegistry(port);
+        } catch (final RemoteException e) {
+            // no registry present, create new registry on rmiPort
+            final String info = "<CS> INFO: no RMIRegistry on port " + port + " available"; // NOI18N
+            final String message = "<CS> INFO: create RMIRegistry on port " + port;         // NOI18N
+            // TODO: why serr???
+            System.out.println(e.getMessage() + " \n" + info); // NOI18N
+            System.out.println(message);
+            if (LOG.isInfoEnabled()) {
+                LOG.info(info, e);
+                LOG.info(message);
+            }
+
+            try {
+                return LocateRegistry.createRegistry(port);
+            } catch (final RemoteException ex) {
+                final String fatal = "SEVERE: cannot create registry on port: " + port; // NOI18N
+                LOG.fatal(fatal, ex);
+                throw new ServerExitError(fatal, ex);
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   properties  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  ServerExitError  DOCUMENT ME!
+     */
+    private ProxyImpl createAndBindProxy(final ServerProperties properties) throws ServerExitError {
+        try {
+            final ProxyImpl proxy = new ProxyImpl(properties);
+            Naming.bind("callServer", proxy); // NOI18N
+
+            return proxy;
+        } catch (final RemoteException ex) {
+            final String fatal = "cannot create callserver implementation"; // NOI18N
+            LOG.fatal(fatal, ex);
+            throw new ServerExitError(fatal, ex);
+        } catch (final AlreadyBoundException e) {
+            final String fatal = "cannot bind callserver";                  // NOI18N
+            LOG.fatal(fatal, e);
+            throw new ServerExitError(fatal, e);
+        } catch (final MalformedURLException e) {
+            final String fatal = "cannot bind callserver";                  // NOI18N
+            LOG.fatal(fatal, e);
+            throw new ServerExitError(fatal, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   configFile  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  ServerExitError  DOCUMENT ME!
+     */
+    public static synchronized StartProxy getServerInstance(final String configFile) throws ServerExitError {
+        if (instance == null) {
+            instance = new StartProxy(configFile);
+        }
+        return instance;
     }
 
     /**
@@ -195,61 +313,42 @@ public class StartProxy {
     }
 
     /**
-     * public void initFrame() throws java.net.UnknownHostException { textArea = new JTextArea("siriusRegistryIP:
-     * "+siriusRegistryIP+"\nobserves SiriusRegistry for new LocalServers..."); JButton shutdownButton = new
-     * JButton("shutdown"); shutdownButton.addActionListener(new ShutdownListener()); frame = new JFrame("CallServer:
-     * "+InetAddress.getLocalHost().getHostAddress()+":"+properties.getServerPort()); frame.getContentPane().add(new
-     * JScrollPane(textArea), BorderLayout.CENTER); frame.getContentPane().add(shutdownButton, BorderLayout.SOUTH);
-     * frame.setSize(300,300); frame.setVisible(true); }
+     * DOCUMENT ME!
      *
-     * @param   args  DOCUMENT ME!
-     *
-     * @throws  Throwable        DOCUMENT ME!
-     * @throws  ServerExitError  DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
-    public static void main(String[] args) throws Throwable {
-        if (args == null) {
-            throw new ServerExitError("args == null keine Kommandozeilenparameter \u00FCbergeben (Configfile / port)");
-        } else if (args.length < 1) {
-            throw new ServerExitError("zu wenig Argumente");
-        }
-
-        try {
-            new StartProxy(args[0]);
-        } catch (ServerExitError e) {
-            e.printStackTrace();
-            throw e;
-        } catch (AlreadyBoundException e) {
-            Naming.unbind("callServer");
-            throw new ServerExitError(e);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println(e);
-
-            throw new ServerExitError(e);
-        }
+    public CallServerService getCallServer() {
+        return callServer;
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @throws  Throwable        DOCUMENT ME!
+     * @throws  ServerExit       Throwable DOCUMENT ME!
      * @throws  ServerExitError  DOCUMENT ME!
      */
-    public void shutdown() throws Throwable {
+    public void shutdown() throws ServerExit, ServerExitError {
         try {
             callServer.unregisterAsObserver(siriusRegistryIP);
-            callServer.getNameServer().unregisterServer(
-                ServerType.CALLSERVER,
-                serverInfo.getName(),
-                serverInfo.getIP(),
-                serverInfo.getRMIPort());
+            callServer.getNameServer()
+                    .unregisterServer(
+                        ServerType.CALLSERVER,
+                        serverInfo.getName(),
+                        serverInfo.getIP(),
+                        serverInfo.getRMIPort());
 
-            Naming.unbind("callServer");
+            Naming.unbind("callServer"); // NOI18N
 
-            throw new ServerExit("Server ist regul\u00E4r beendet worden");
-        } catch (Exception e) {
-            throw new ServerExitError(e);
+            final String message = "Server shutdown success"; // NOI18N
+            if (LOG.isInfoEnabled()) {
+                LOG.info(message);
+            }
+            // TODO: a throwable is thrown to indicate success?! This is bad code style. Refactor
+            throw new ServerExit(message);
+        } catch (final Exception e) {
+            final String message = "Server shutdown failure, integrity no longer guaranteed"; // NOI18N
+            LOG.fatal(message, e);
+            throw new ServerExitError(message, e);
         }
     }
 }
