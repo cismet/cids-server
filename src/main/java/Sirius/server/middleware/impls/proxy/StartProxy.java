@@ -15,6 +15,8 @@ import Sirius.server.ServerType;
 import Sirius.server.property.ServerProperties;
 
 import de.cismet.cids.server.CallServerService;
+import de.cismet.cids.server.ServerSecurityManager;
+import de.cismet.cids.server.ws.rest.RESTfulSerialInterface;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -25,7 +27,6 @@ import java.net.UnknownHostException;
 
 import java.rmi.AlreadyBoundException;
 import java.rmi.Naming;
-import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -33,7 +34,6 @@ import java.rmi.registry.Registry;
 import java.util.MissingResourceException;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 /**
  * DOCUMENT ME!
@@ -71,7 +71,11 @@ public final class StartProxy {
         // init log4j
         final String fileName = properties.getLog4jPropertyFile();
         if ((fileName != null) && !fileName.isEmpty()) {
-            PropertyConfigurator.configure(fileName);
+            try {
+//                PropertyConfigurator.configure(fileName);
+            } catch (final Exception e) {
+                LOG.warn("could not initialise Log4J", e);
+            }
         }
 
         // init server registry ip
@@ -85,13 +89,19 @@ public final class StartProxy {
             LOG.info("<CS> INFO: configFile:: " + configFile);                   // NOI18N
         }
 
+        // create a securitymanager if it is not registered yet
+        try {
+            if (System.getSecurityManager() == null) {
+                System.setSecurityManager(new ServerSecurityManager());
+            }
+        } catch (final Exception e) {
+            final String message = "could not create security manager"; // NOI18N
+            LOG.fatal(message, e);
+            throw new ServerExitError(message, e);
+        }
+        
         // init server
         serverInfo = initServer(properties);
-
-        // create a securitymanager if it is not registered yet
-        if (System.getSecurityManager() == null) {
-            System.setSecurityManager(new RMISecurityManager());
-        }
 
         // init RMI registry
         final Registry rmiRegistry = initRegistry(Integer.valueOf(serverInfo.getRMIPort()));
@@ -287,6 +297,14 @@ public final class StartProxy {
         }
     }
 
+    public static synchronized StartProxy getInstance() throws IllegalStateException {
+        if(instance == null) {
+            throw new IllegalStateException("startproxy not up yet"); // NOI18N
+        }
+
+        return instance;
+    }
+
     /**
      * DOCUMENT ME!
      *
@@ -296,10 +314,11 @@ public final class StartProxy {
      *
      * @throws  ServerExitError  DOCUMENT ME!
      */
-    public static synchronized StartProxy getServerInstance(final String configFile) throws ServerExitError {
+    public static synchronized StartProxy getInstance(final String configFile) throws ServerExitError {
         if (instance == null) {
             instance = new StartProxy(configFile);
         }
+
         return instance;
     }
 
@@ -324,6 +343,15 @@ public final class StartProxy {
     /**
      * DOCUMENT ME!
      *
+     * @return  DOCUMENT ME!
+     */
+    public Server getServer() {
+        return serverInfo;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @throws  ServerExit       Throwable DOCUMENT ME!
      * @throws  ServerExitError  DOCUMENT ME!
      */
@@ -336,6 +364,8 @@ public final class StartProxy {
                         serverInfo.getName(),
                         serverInfo.getIP(),
                         serverInfo.getRMIPort());
+
+            RESTfulSerialInterface.down();
 
             Naming.unbind("callServer"); // NOI18N
 

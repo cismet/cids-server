@@ -82,7 +82,7 @@ public class RMRegistryServerImpl implements RMRegistryServer {
      *
      * @throws  Exception  java.lang.Exception This method forwards any uncatched exception
      */
-    public void startRMRegistryServer(int port) throws Exception {
+    public void startRMRegistryServer(int port) throws RemoteException {
         System.out.println("<RMREG> Initializing Remote Messenger Registry");
         log.info("<RMREG> Initializing Remote Messenger Registry");
         RMRegistryServer ser = (RMRegistryServer)UnicastRemoteObject.exportObject(this, port);

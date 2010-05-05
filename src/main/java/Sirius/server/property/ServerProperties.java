@@ -326,7 +326,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @return  DOCUMENT ME!
      */
-    public final String getStartMode() {
+    public String getStartMode() {
         return this.getString("startMode");
     }
 
