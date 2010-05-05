@@ -46,7 +46,6 @@ import java.net.InetAddress;
 
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
-import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
@@ -58,6 +57,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 import de.cismet.cids.objectextension.ObjectExtensionFactory;
 import de.cismet.cids.server.DefaultServerExceptionHandler;
+import de.cismet.cids.server.ServerSecurityManager;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterface;
 
 import de.cismet.tools.BlacklistClassloading;
@@ -1137,11 +1137,12 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
             if (properties.getStartMode().equalsIgnoreCase("simple")) {
                 new Sirius.server.registry.Registry(rmiPort);
-                StartProxy.getServerInstance(args[0]);
+                StartProxy.getInstance(args[0]);
+                RESTfulSerialInterface.up(8011);
             }
 
             if (System.getSecurityManager() == null) {
-                System.setSecurityManager(new RMISecurityManager());
+                System.setSecurityManager(new ServerSecurityManager());
             }
 
             new DomainServerImpl(new ServerProperties(args[0]));
