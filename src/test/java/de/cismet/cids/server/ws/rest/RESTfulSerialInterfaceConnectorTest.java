@@ -134,15 +134,15 @@ public class RESTfulSerialInterfaceConnectorTest {
     @Test
     public void testChangePassword() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
-        User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "sb");
+        User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
         assertNotNull(user);
-        boolean changed = connector.changePassword(user, "sb", "sbs");
+        boolean changed = connector.changePassword(user, "cismet", "sbs");
         assertTrue(changed);
         user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "sbs");
         assertNotNull(user);
-        changed = connector.changePassword(user, "sbs", "sb");
+        changed = connector.changePassword(user, "sbs", "cismet");
         assertTrue(changed);
-        user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "sb");
+        user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
         assertNotNull(user);
     }
 
@@ -201,7 +201,7 @@ public class RESTfulSerialInterfaceConnectorTest {
     @Test
     public void testGetUser() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
-        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "sb");
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
         assertNotNull(user);
         System.out.println("user: " + user);
     }
@@ -237,12 +237,55 @@ public class RESTfulSerialInterfaceConnectorTest {
     }
 
     @Test
+    @Ignore
     public void testGetSearchOptions() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
-        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "sb");
-        final HashMap result = connector.getSearchOptions(user, "WUNDA_BLAU");
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final HashMap result1 = connector.getSearchOptions(user, "WUNDA_BLAU");
+        assertNotNull(result1);
+        System.out.println("getsearchoptions: " + result1);
+
+        final HashMap result2 = connector.getSearchOptions(user);
+        assertNotNull(result2);
+        System.out.println("getsearchoptions: " + result2);
+    }
+
+    @Test
+    @Ignore
+    public void testAddQueryParameter() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        int queryId = 4;
+        String paramKey = "testparam";
+        String description = "A test parameter";
+        final boolean result = connector.addQueryParameter(user, queryId, paramKey, description);
         assertNotNull(result);
-        System.out.println("getsearchoptions: " + result);
+        System.out.println("addQueryParameter: " + result);
+
+        queryId = 1;
+        int typeId = 1;
+        char isQueryResult = 'f';
+        int queryPosition = 1;
+        paramKey = "testparam2";
+        description = "a second test parameter";
+        final boolean result2 = connector.addQueryParameter(user, queryId,
+                typeId, paramKey, description, isQueryResult, queryPosition);
+        assertNotNull(result2);
+        System.out.println("addQueryParameter: " + result2);
+    }
+
+    @Test
+    @Ignore
+    public void testAddQuery() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final String name = "testquery";
+        final String description = "a simple statement";
+        final String statement = "Select * from cs_query";
+        final int result = connector.addQuery(user, name, description, statement);
+        assertNotNull(result);
+        System.out.println("addQueryParameter: " + result);
+
     }
 
     //~ Inner Classes ----------------------------------------------------------
