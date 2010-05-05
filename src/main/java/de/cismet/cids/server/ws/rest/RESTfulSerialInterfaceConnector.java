@@ -932,8 +932,25 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
     @Override
-    public int addQuery(User user, String name, String description, String statement) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public int addQuery(User user, String name,
+            String description, String statement) throws RemoteException {
+
+        try {
+            final HashMap<String, String> queryParams = new HashMap<String, String>(4,1);
+
+            queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+            queryParams.put(PARAM_QUERY_NAME, Converter.serialiseToString(name));
+            queryParams.put(PARAM_DESCRIPTION, Converter.serialiseToString(description));
+            queryParams.put(PARAM_STATEMENT, Converter.serialiseToString(statement));
+
+            return getResponseGET("GET/addQuery", queryParams, int.class); // NOI18N
+
+        } catch (Exception e) {
+            final String message = "could not add query";        // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+
     }
 
     /**
@@ -961,7 +978,25 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             String description,
             char isQueryResult,
             int queryPosition) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        
+        try {
+            final HashMap<String, String> queryParams = new HashMap<String, String>(7,1);
+            queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+            queryParams.put(PARAM_QUERY_ID, Converter.serialiseToString(queryId));
+            queryParams.put(PARAM_TYPE_ID, Converter.serialiseToString(typeId));
+            queryParams.put(PARAM_PARAM_KEY, Converter.serialiseToString(paramkey));
+            queryParams.put(PARAM_DESCRIPTION, Converter.serialiseToString(description));
+            queryParams.put(PARAM_QUERY_RESULT, Converter.serialiseToString(isQueryResult));
+            queryParams.put(PARAM_QUERY_POSITION, Converter.serialiseToString(queryPosition));
+
+            return getResponseGET("GET/addQueryParameter", queryParams, boolean.class); // NOI18N
+            
+        } catch (Exception e) {
+            final String message = "could not add query parameter";                    // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+
     }
 
     /**
@@ -980,7 +1015,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public boolean addQueryParameter(User user, int queryId, String paramkey, String description)
         throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+            final HashMap<String, String> queryParams = new HashMap<String, String>(4,1);
+            queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+            queryParams.put(PARAM_QUERY_ID, Converter.serialiseToString(queryId));
+            queryParams.put(PARAM_PARAM_KEY, Converter.serialiseToString(paramkey));
+            queryParams.put(PARAM_DESCRIPTION, Converter.serialiseToString(description));
+
+            return getResponseGET("GET/addQueryParameter", queryParams, boolean.class); // NOI18N
+
+        } catch (Exception e) {
+            final String message = "could not add query parameter";                    // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
     }
 
     /**
@@ -994,8 +1042,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
     @Override
-    public HashMap getSearchOptions(User user) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public HashMap getSearchOptions(final User user) throws RemoteException {
+        try {
+
+            final HashMap<String, String> queryParams = new HashMap<String, String>(1, 1);
+            queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+
+            return getResponseGET("GET/getSearchOptions", queryParams, HashMap.class); // NOI18N
+
+        } catch (Exception e) {
+            final String message = "could not get search options";                    // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+
     }
 
     /**
@@ -1017,7 +1077,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             queryParams.put(PARAM_USER, Converter.serialiseToString(user));
             queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
 
-            return getResponseGET("GET/getSearchOptions", queryParams, HashMap.class);
+            return getResponseGET("GET/getSearchOptions", queryParams, HashMap.class); // NOI18N
         }catch(final Exception e)
         {
             final String message = "could not get search options";                    // NOI18N

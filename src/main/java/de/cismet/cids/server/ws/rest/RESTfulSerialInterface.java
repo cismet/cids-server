@@ -1,10 +1,10 @@
 /***************************************************
-*
-* cismet GmbH, Saarbruecken, Germany
-*
-*              ... and it just works.
-*
-****************************************************/
+ *
+ * cismet GmbH, Saarbruecken, Germany
+ *
+ *              ... and it just works.
+ *
+ ****************************************************/
 package de.cismet.cids.server.ws.rest;
 
 import Sirius.server.ServerExitError;
@@ -59,40 +59,39 @@ import org.apache.log4j.Logger;
 public final class RESTfulSerialInterface {
 
     //~ Static fields/initializers ---------------------------------------------
-
     private static final transient Logger LOG = Logger.getLogger(RESTfulSerialInterface.class);
-
     public static final String PARAM_USERGROUP_LS_NAME = "ugLsName"; // NOI18N
     public static final String PARAM_USERGROUP_NAME = "ugName";      // NOI18N
     public static final String PARAM_USER_LS_NAME = "uLsName";       // NOI18N
     public static final String PARAM_USERNAME = "uname";             // NOI18N
     public static final String PARAM_PASSWORD = "password";          // NOI18N
-
     public static final String PARAM_LS_HOME = "lsHome"; // NOI18N
-
     public static final String PARAM_USER = "user";                 // NOI18N
     public static final String PARAM_OLD_PASSWORD = "old_password"; // NOI18N
     public static final String PARAM_NEW_PASSWORD = "new_password"; // NOI18N
-
     public static final String PARAM_CLASS_IDS = "classIds"; // NOI18N
-
     public static final String PARAM_LS_NAME = "lsName"; // NOI18N
-
     public static final String PARAM_SEARCH_OPTIONS = "searchOptions"; // NOI18N
+    public static final String PARAM_DOMAIN = "domain";
+    public static final String PARAM_QUERY_ID = "query_id";
+    public static final String PARAM_PARAM_KEY = "param_key";
+    public static final String PARAM_DESCRIPTION = "description";
+    public static final String PARAM_TYPE_ID = "typeId";
+    public static final String PARAM_QUERY_RESULT = "queryResult";
+    public static final String PARAM_QUERY_POSITION = "queryPosition";
+    public static final String PARAM_QUERY_NAME = "queryName";
+    public static final String PARAM_STATEMENT  = "statement";
 
     private static RESTfulSerialInterface instance;
-
-    public static final String PARAM_DOMAIN = "domain";
+    
 
     //~ Instance fields --------------------------------------------------------
-
     private final transient CallServerService callserver;
     private final transient int port;
 //    private final transient Server server;
     private final transient SelectorThread selector;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new RESTfulSerialInterface object.
      *
@@ -127,7 +126,6 @@ public final class RESTfulSerialInterface {
     }
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * DOCUMENT ME!
      *
@@ -834,8 +832,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  RemoteException                DOCUMENT ME!
-     * @throws  UnsupportedOperationException  DOCUMENT ME!
+     * @throws  WebApplicationException                DOCUMENT ME!
      */
     public int addQuery(
             User user,
@@ -860,11 +857,32 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  RemoteException                DOCUMENT ME!
-     * @throws  UnsupportedOperationException  DOCUMENT ME!
+     * @throws  WebApplicationException                DOCUMENT ME!
      */
-    public int addQuery(User user, String name, String description, String statement) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/addQuery")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response addQuery(
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_QUERY_NAME) final String nameBytes,
+            @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes,
+            @QueryParam(PARAM_STATEMENT) final String statementBytes) {
+
+        try {
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final String name = Converter.deserialiseFromString(nameBytes, String.class);
+            final String description = Converter.deserialiseFromString(descriptionBytes, String.class);
+            final String statement = Converter.deserialiseFromString(statementBytes, String.class);
+
+            return createResponse(callserver.addQuery(user, name, description, statement));
+
+        } catch (Exception e) {
+            final String message = "could not add query parameter"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
+
     }
 
     /**
@@ -880,18 +898,48 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  RemoteException                DOCUMENT ME!
-     * @throws  UnsupportedOperationException  DOCUMENT ME!
+     * @throws  WebApplicationException                DOCUMENT ME!
      */
-    public boolean addQueryParameter(
-            User user,
-            int queryId,
-            int typeId,
-            String paramkey,
-            String description,
-            char isQueryResult,
-            int queryPosition) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/addQueryParameter")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response addQueryParameter(
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_QUERY_ID) final String queryIdBytes,
+            @QueryParam(PARAM_TYPE_ID) final String typeIdBytes,
+            @QueryParam(PARAM_PARAM_KEY) final String paramkeyBytes,
+            @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes,
+            @QueryParam(PARAM_QUERY_RESULT) final String isQueryResultBytes,
+            @QueryParam(PARAM_QUERY_POSITION) final String queryPositionBytes) {
+
+        try {
+
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final int queryId = Converter.deserialiseFromString(queryIdBytes, int.class);
+            final int typeId = Converter.deserialiseFromString(typeIdBytes, int.class);
+            final String paramkey = Converter.deserialiseFromString(paramkeyBytes, String.class);
+            final String description = Converter.deserialiseFromString(descriptionBytes, String.class);
+
+            if(isQueryResultBytes == null && queryPositionBytes == null) {
+
+                return createResponse(callserver.addQueryParameter(user, queryId, paramkey, description));
+
+            } else {
+                final char isQueryResult = Converter.deserialiseFromString(isQueryResultBytes, char.class);
+                final int queryPosition = Converter.deserialiseFromString(queryPositionBytes, int.class);
+
+                return createResponse(callserver.addQueryParameter(user, queryId,
+                        typeId, paramkey, description, isQueryResult, queryPosition));
+            }
+
+            
+
+        } catch (Exception e) {
+            final String message = "could not add query parameter"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -904,27 +952,60 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  RemoteException                DOCUMENT ME!
-     * @throws  UnsupportedOperationException  DOCUMENT ME!
+     * @throws  WebApplicationException                DOCUMENT ME!
      */
-    public boolean addQueryParameter(User user, int queryId, String paramkey, String description)
-        throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+//    @GET
+//    @Path("/GET/addQueryParameter")
+//    @Consumes("application/octet-stream")
+//    @Produces("application/octet-stream")
+//    public Response addQueryParameter(
+//            @QueryParam(PARAM_USER) final String userBytes,
+//            @QueryParam(PARAM_QUERY_ID) final String queryIdBytes,
+//            @QueryParam(PARAM_PARAM_KEY) final String paramkeyBytes,
+//            @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes) {
+//
+//        try {
+//
+//            final User user = Converter.deserialiseFromString(userBytes, User.class);
+//            final int queryID = Converter.deserialiseFromString(queryIdBytes, int.class);
+//            final String paramkey = Converter.deserialiseFromString(paramkeyBytes, String.class);
+//            final String description = Converter.deserialiseFromString(descriptionBytes, String.class);
+//
+//            return createResponse(callserver.addQueryParameter(user, queryID, paramkey, description));
+//
+//        } catch (Exception e) {
+//            final String message = "could not add query parameter"; // NOI18N
+//            LOG.error(message, e);
+//            throw new WebApplicationException(e);
+//        }
+//    }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException                DOCUMENT ME!
-     * @throws  UnsupportedOperationException  DOCUMENT ME!
-     */
-    public HashMap getSearchOptions(User user) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+//    /**
+//     * DOCUMENT ME!
+//     *
+//     * @param   user  DOCUMENT ME!
+//     *
+//     * @return  DOCUMENT ME!
+//     *
+//     * @throws  WebApplicationException                DOCUMENT ME!
+//     */
+//    @GET
+//    @Path("/GET/getSearchOptions")
+//    @Consumes("application/octet-stream")
+//    @Produces("application/octet-stream")
+//    public Response getSearchOptions(@QueryParam(PARAM_USER) final String userBytes) {
+//        try {
+//
+//            final User user = Converter.deserialiseFromString(userBytes, User.class);
+//
+//            return createResponse(callserver.getSearchOptions(user));
+//
+//        } catch (final Exception e) {
+//            final String message = "could not get search options"; // NOI18N
+//            LOG.error(message, e);
+//            throw new WebApplicationException(e);
+//        }
+//    }
 
     /**
      * DOCUMENT ME!
@@ -934,8 +1015,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  RemoteException                DOCUMENT ME!
-     * @throws  UnsupportedOperationException  DOCUMENT ME!
+     * @throws  WebApplicationException                DOCUMENT ME!
      */
     @GET
     @Path("/GET/getSearchOptions")
@@ -943,15 +1023,17 @@ public final class RESTfulSerialInterface {
     @Produces("application/octet-stream")
     public Response getSearchOptions(
             @QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes){
-        try
-        {
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
+        try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
-            final String domain = Converter.deserialiseFromString(domainBytes, String.class);
 
-            return createResponse(callserver.getSearchOptions(user, domain));
-        }catch(final Exception e)
-        {
+            if(domainBytes == null)
+                return createResponse(callserver.getSearchOptions(user));
+            else {
+                final String domain = Converter.deserialiseFromString(domainBytes, String.class);
+                return createResponse(callserver.getSearchOptions(user, domain));
+            }
+        } catch (final Exception e) {
             final String message = "could not get search options"; // NOI18N
             LOG.error(message, e);
             throw new WebApplicationException(e);
@@ -1034,7 +1116,6 @@ public final class RESTfulSerialInterface {
 //            throw new WebApplicationException(ex);
 //        }
 //    }
-
     /**
      * DOCUMENT ME!
      *
