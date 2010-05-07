@@ -1,10 +1,10 @@
 /***************************************************
-*
-* cismet GmbH, Saarbruecken, Germany
-*
-*              ... and it just works.
-*
-****************************************************/
+ *
+ * cismet GmbH, Saarbruecken, Germany
+ *
+ *              ... and it just works.
+ *
+ ****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -59,19 +59,15 @@ import org.openide.util.Lookup;
 public class BeanFactory {
 
     //~ Static fields/initializers ---------------------------------------------
-
     private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(BeanFactory.class);
     public static final String CIDS_DYNAMICS_SUPERCLASS = /*CidsBean.class.toString();*/
-        "de.cismet.cids.dynamics.CidsBean";
+            "de.cismet.cids.dynamics.CidsBean";
     private static BeanFactory instance = null;
-
     //~ Instance fields --------------------------------------------------------
-
     private HashMap<String, Class> javaclassCache = new HashMap<String, Class>();
     private MetaClassCacheService classCacheService;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new BeanFactory object.
      */
@@ -80,7 +76,6 @@ public class BeanFactory {
     }
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * DOCUMENT ME!
      *
@@ -123,12 +118,11 @@ public class BeanFactory {
             } else if (oa.referencesObject()) {
                 Object value = oa.getValue();
                 if (value == null) {
-                    MetaClass foreignClass = (MetaClass)classCacheService.getAllClasses(domain)
-                                .get(domain + oa.getMai().getForeignKeyClassId());
+                    MetaClass foreignClass = (MetaClass) classCacheService.getAllClasses(domain).get(domain + oa.getMai().getForeignKeyClassId());
                     MetaObject emptyInstance = foreignClass.getEmptyInstance();
                     emptyInstance.setStatus(Sirius.server.localserver.object.Object.TEMPLATE);
                 } else {
-                    MetaObject subObject = (MetaObject)value;
+                    MetaObject subObject = (MetaObject) value;
                     changeNullSubObjectsToTemplates(subObject.getBean());
                 }
             }
@@ -150,7 +144,7 @@ public class BeanFactory {
             // TODO getmetaClass kann null liefern wenn keine Rechte vorhanden sind
             javaClass = metaObject.getMetaClass().getJavaClass();
 
-            final CidsBean bean = (CidsBean)javaClass.newInstance();
+            final CidsBean bean = (CidsBean) javaClass.newInstance();
 
             HashMap values = new HashMap();
             ObjectAttribute[] attribs = metaObject.getAttribs();
@@ -159,7 +153,7 @@ public class BeanFactory {
                 Object value = a.getValue();
                 a.setParentObject(metaObject);
                 if ((value != null) && (value instanceof MetaObject)) {
-                    MetaObject tmpMO = ((MetaObject)value);
+                    MetaObject tmpMO = ((MetaObject) value);
                     if (tmpMO.isDummy()) {
                         // 1-n Beziehung (Array)
                         Vector arrayElements = new Vector();
@@ -167,14 +161,14 @@ public class BeanFactory {
                         ObjectAttribute[] arrayOAs = tmpMO.getAttribs();
                         for (ObjectAttribute arrayElementOA : arrayOAs) {
                             arrayElementOA.setParentObject(tmpMO);
-                            MetaObject arrayElementMO = (MetaObject)arrayElementOA.getValue();
+                            MetaObject arrayElementMO = (MetaObject) arrayElementOA.getValue();
                             // In diesem MetaObject gibt es nun genau ein Attribut das als Value ein MetaObject hat
                             ObjectAttribute[] arrayElementAttribs = arrayElementMO.getAttribs();
                             for (ObjectAttribute targetArrayElement : arrayElementAttribs) {
                                 targetArrayElement.setParentObject(arrayElementMO);
 
                                 if (targetArrayElement.getValue() instanceof MetaObject) {
-                                    MetaObject targetMO = (MetaObject)targetArrayElement.getValue();
+                                    MetaObject targetMO = (MetaObject) targetArrayElement.getValue();
                                     CidsBean cdBean = targetMO.getBean();
                                     cdBean.setBacklinkInformation(field, bean);
                                     observableArrayElements.add(cdBean);
@@ -185,6 +179,35 @@ public class BeanFactory {
                         value = observableArrayElements;
 
                         observableArrayElements.addObservableListListener(
+                                new ObservableListListener() {
+
+                                    public void listElementsAdded(ObservableList list, int index, int length) {
+                                        bean.listElementsAdded(field, list, index, length);
+                                    }
+
+                                    public void listElementsRemoved(ObservableList list, int index, List oldElements) {
+                                        bean.listElementsRemoved(field, list, index, oldElements);
+                                    }
+
+                                    public void listElementReplaced(ObservableList list, int index, Object oldElement) {
+                                        bean.listElementReplaced(field, list, index, oldElement);
+                                    }
+
+                                    public void listElementPropertyChanged(ObservableList list, int index) {
+                                        bean.listElementPropertyChanged(field, list, index);
+                                    }
+                                });
+                    } else {
+                        // 1-1 Beziehung
+                        value = tmpMO.getBean();
+                        ((CidsBean) value).setBacklinkInformation(field, bean);
+                    }
+                } else if ((value == null) && a.isArray()) {
+                    // lege leeren Vector an, sonst wirds sp?ter zu kompliziert
+                    Vector arrayElements = new Vector();
+                    ObservableList observableArrayElements = ObservableCollections.observableList(arrayElements);
+                    value = observableArrayElements;
+                    observableArrayElements.addObservableListListener(
                             new ObservableListListener() {
 
                                 public void listElementsAdded(ObservableList list, int index, int length) {
@@ -203,35 +226,6 @@ public class BeanFactory {
                                     bean.listElementPropertyChanged(field, list, index);
                                 }
                             });
-                    } else {
-                        // 1-1 Beziehung
-                        value = tmpMO.getBean();
-                        ((CidsBean)value).setBacklinkInformation(field, bean);
-                    }
-                } else if ((value == null) && a.isArray()) {
-                    // lege leeren Vector an, sonst wirds sp?ter zu kompliziert
-                    Vector arrayElements = new Vector();
-                    ObservableList observableArrayElements = ObservableCollections.observableList(arrayElements);
-                    value = observableArrayElements;
-                    observableArrayElements.addObservableListListener(
-                        new ObservableListListener() {
-
-                            public void listElementsAdded(ObservableList list, int index, int length) {
-                                bean.listElementsAdded(field, list, index, length);
-                            }
-
-                            public void listElementsRemoved(ObservableList list, int index, List oldElements) {
-                                bean.listElementsRemoved(field, list, index, oldElements);
-                            }
-
-                            public void listElementReplaced(ObservableList list, int index, Object oldElement) {
-                                bean.listElementReplaced(field, list, index, oldElement);
-                            }
-
-                            public void listElementPropertyChanged(ObservableList list, int index) {
-                                bean.listElementPropertyChanged(field, list, index);
-                            }
-                        });
                 }
 
                 values.put(field, value);
@@ -244,8 +238,8 @@ public class BeanFactory {
         } catch (Exception e) {
             log.fatal("Error in createBean", e);
             throw new Exception(
-                "Error in getBean() (instanceof " + javaClass + ") of MetaObject:" + metaObject.getDebugString(),
-                e);
+                    "Error in getBean() (instanceof " + javaClass + ") of MetaObject:" + metaObject.getDebugString(),
+                    e);
         }
     }
 
@@ -322,14 +316,14 @@ public class BeanFactory {
 
         Vector<MemberAttributeInfo> mais = new Vector<MemberAttributeInfo>(
                 metaClass.getMemberAttributeInfos().values());
-
+        StringBuilder propertyNames = new StringBuilder();
         for (MemberAttributeInfo mai : mais) {
             String fieldname = mai.getFieldName().toLowerCase();
             String attributeJavaClassName = mai.getJavaclassname();
 
             if (mai.isArray()) {
                 attributeJavaClassName = "org.jdesktop.observablecollections.ObservableList"; // zu erstellen mit:
-                                                                                              // ObservableCollections.observableList(list)
+                // ObservableCollections.observableList(list)
             } else if (mai.isForeignKey()) {
                 if (attributeJavaClassName.equals("org.postgis.PGgeometry")) {
                     attributeJavaClassName = "com.vividsolutions.jts.geom.Geometry";
@@ -337,13 +331,25 @@ public class BeanFactory {
                     attributeJavaClassName = CIDS_DYNAMICS_SUPERCLASS;
                 }
             }
+
             try {
                 addPropertyToCtClass(pool, ctClass, Class.forName(attributeJavaClassName), fieldname);
+                if (propertyNames.length() > 0) {
+                    propertyNames.append(", ");
+                }
+                propertyNames.append("\"" + fieldname + "\"");
             } catch (Exception e) {
                 log.warn("Could not add " + fieldname, e);
             }
         }
-
+        //FIXME: immutable collection instead of possible mutable (-> corrputable) array?
+        CtField propertyNamesStaticField = CtField.make("private String[] PROPERTY_NAMES = new String[]{" + propertyNames + "};", ctClass);
+        CtMethod propertyNamesGetter = CtNewMethod.getter("getPropertyNames", propertyNamesStaticField);
+//        CtMethod propertyNamesGetter = CtNewMethod.make(
+//                "public String[] getPropertyNames() { return PROPERTY_NAMES.clone(); }",
+//                ctClass);
+        ctClass.addField(propertyNamesStaticField);
+        ctClass.addMethod(propertyNamesGetter);
         ProtectionDomain pd = this.getClass().getProtectionDomain();
         Class ret = ctClass.toClass(getClass().getClassLoader(), pd);
         log.info("Klasse " + ret + " wurde erfolgreich erzeugt", new CurrentStackTrace());
@@ -361,7 +367,7 @@ public class BeanFactory {
      * @throws  Exception  DOCUMENT ME!
      */
     private static void addPropertyToCtClass(ClassPool pool, CtClass ctClass, Class propertyType, String propertyName)
-        throws Exception {
+            throws Exception {
         CtField f = new CtField(pool.get(propertyType.getCanonicalName()), propertyName, ctClass);
         ctClass.addField(f);
 
@@ -388,7 +394,7 @@ public class BeanFactory {
         CtMethod setter = CtNewMethod.setter(setterName, f);
 
         setter.insertAfter(
-            "propertyChangeSupport.firePropertyChange(\"" + f.getName() + "\", null, " + f.getName() + ");");
+                "propertyChangeSupport.firePropertyChange(\"" + f.getName() + "\", null, " + f.getName() + ");");
 
         ctClass.addMethod(getter);
         ctClass.addMethod(setter);
@@ -418,13 +424,13 @@ public class BeanFactory {
         java.rmi.registry.Registry rmiRegistry = LocateRegistry.getRegistry(1099);
 
         // lookup des callservers
-        Remote r = (Remote)Naming.lookup("rmi://localhost/callServer");
+        Remote r = (Remote) Naming.lookup("rmi://localhost/callServer");
 
         // ich weiss, dass die server von callserver implementiert werden
-        SearchService ss = (SearchService)r;
-        CatalogueService cat = (CatalogueService)r;
-        MetaService meta = (MetaService)r;
-        UserService us = (UserService)r;
+        SearchService ss = (SearchService) r;
+        CatalogueService cat = (CatalogueService) r;
+        MetaService meta = (MetaService) r;
+        UserService us = (UserService) r;
 
         User u = us.getUser(domain, "Demo", domain, "demo", "demo");
 
@@ -507,7 +513,7 @@ public class BeanFactory {
         CidsBean newSRAuto = CidsBean.constructNew(meta, u, domain, "aaauto");
         newSRAuto.setProperty("marke", "VW Golf");
         newSRAuto.setProperty("kennz", "MZG-SR-1");
-        ((List)stefan.getProperty("autos")).add(newSRAuto);
+        ((List) stefan.getProperty("autos")).add(newSRAuto);
         if (log.isDebugEnabled()) {
             log.debug("Autos:" + stefan.getProperty("autos"));
         }
