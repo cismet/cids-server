@@ -1,10 +1,10 @@
 /***************************************************
-*
-* cismet GmbH, Saarbruecken, Germany
-*
-*              ... and it just works.
-*
-****************************************************/
+ *
+ * cismet GmbH, Saarbruecken, Germany
+ *
+ *              ... and it just works.
+ *
+ ****************************************************/
 /*
  * Factory.java
  *
@@ -42,16 +42,13 @@ import java.io.Serializable;
 public class ObjectFactory {
 
     //~ Instance fields --------------------------------------------------------
-
     protected ClassCache classCache; // reference to this ls data base connections
     protected DBConnectionPool conPool;
     protected DatabaseMetaData dbMeta = null;
     protected HashSet primaryKeys;
-
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass()); // reference to this ls classes
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new instance of Factory.
      *
@@ -71,7 +68,6 @@ public class ObjectFactory {
     }
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * DOCUMENT ME!
      *
@@ -90,6 +86,7 @@ public class ObjectFactory {
         }
         return o;
     }
+
     /**
      * ---!!!
      *
@@ -167,6 +164,7 @@ public class ObjectFactory {
         }
         return findAllStmnt.toString();
     }
+
     /**
      * ---!!!
      *
@@ -215,6 +213,7 @@ public class ObjectFactory {
         final Sirius.server.localserver._class.Class c = classCache.getClass(classId);
         return getLightweightMetaObjectsByQuery(c, user, query, representationFields, null);
     }
+
     /**
      * ---!!!
      *
@@ -235,7 +234,11 @@ public class ObjectFactory {
             String[] representationFields,
             AbstractAttributeRepresentationFormater formater) throws Exception {
         final String primaryKeyField = c.getPrimaryKey();
-        final ResultSet rs = conPool.getConnection().getConnection().createStatement().executeQuery(query);
+        if (logger.isDebugEnabled()) {
+            logger.debug("LightweightMO by Query: " + query);
+        }
+        final Statement stmnt = conPool.getConnection().getConnection().createStatement();
+        final ResultSet rs = stmnt.executeQuery(query);
         final Set<LightweightMetaObject> lwMoSet = new LinkedHashSet<LightweightMetaObject>();
         while (rs.next()) {
             final Map<String, java.lang.Object> attributeMap = new HashMap<String, java.lang.Object>();
@@ -251,7 +254,12 @@ public class ObjectFactory {
             }
             lwMoSet.add(new LightweightMetaObject(c.getID(), oID, user, attributeMap, formater));
         }
-        return lwMoSet.toArray(new LightweightMetaObject[0]);
+        try {
+            stmnt.close();
+        } catch (Exception ex) {
+            logger.warn(ex);
+        }
+        return lwMoSet.toArray(new LightweightMetaObject[lwMoSet.size()]);
     }
 
     /**
@@ -268,6 +276,7 @@ public class ObjectFactory {
             return o.toString();
         }
     }
+
     /**
      * ////////////////////////////////////////////////////////////////////////////////
      *
@@ -282,18 +291,18 @@ public class ObjectFactory {
         if (logger != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug(
-                    "Sirius.server.localserver.object.Object getObject(objectId=" + objectId + ",classId=" + classId
-                    + ")",
-                    new CurrentStackTrace());
+                        "Sirius.server.localserver.object.Object getObject(objectId=" + objectId + ",classId=" + classId
+                        + ")",
+                        new CurrentStackTrace());
             }
         }
         Sirius.server.localserver._class.Class c = classCache.getClass(classId);
 
         if (c == null) {
             return null;
-                // logger.debug("Klasse f\u00FCr getObject"+c);
-                // logger.debug("Objectid f\u00FCr getObject"+objectId);
-                // object id as singular parameter for the getInstanceStmnt of a class
+            // logger.debug("Klasse f\u00FCr getObject"+c);
+            // logger.debug("Objectid f\u00FCr getObject"+objectId);
+            // object id as singular parameter for the getInstanceStmnt of a class
         }
         java.lang.Object[] param = new java.lang.Object[1];
         param[0] = new Integer(objectId);
@@ -360,7 +369,7 @@ public class ObjectFactory {
         // for all attributes of this object
         while (iter.hasNext()) {
             // retrieve attribute description
-            MemberAttributeInfo mai = (MemberAttributeInfo)iter.next();
+            MemberAttributeInfo mai = (MemberAttributeInfo) iter.next();
 
             // retrive name of the column of this attribute
             fieldName = mai.getFieldName();
@@ -398,8 +407,8 @@ public class ObjectFactory {
                         if (attrValue != null) {
                             if (logger.isDebugEnabled()) {
                                 logger.debug(
-                                    "Klasse des Attributs " + mai.getName() + " (innerhalb der Konvertierungsabfrage)"
-                                    + attrValue.getClass());
+                                        "Klasse des Attributs " + mai.getName() + " (innerhalb der Konvertierungsabfrage)"
+                                        + attrValue.getClass());
                             }
                         } else {
                             if (logger.isDebugEnabled()) {
@@ -412,17 +421,17 @@ public class ObjectFactory {
                         {
                             if (logger.isDebugEnabled()) {
                                 logger.debug(
-                                    "Konvertiere in JTS: " + mai.getName() + " (" + attrValue.getClass() + ")  = "
-                                    + attrValue);
+                                        "Konvertiere in JTS: " + mai.getName() + " (" + attrValue.getClass() + ")  = "
+                                        + attrValue);
                             }
                             attrValue = PostGisGeometryFactory.createJtsGeometry(
-                                    ((org.postgis.PGgeometry)attrValue).getGeometry());
+                                    ((org.postgis.PGgeometry) attrValue).getGeometry());
                         }
                         if (attrValue != null) {
                             if (logger.isDebugEnabled()) {
                                 logger.debug(
-                                    "Klasse des Attributs " + mai.getName() + " (innerhalb der Konvertierungsabfrage)"
-                                    + attrValue.getClass());
+                                        "Klasse des Attributs " + mai.getName() + " (innerhalb der Konvertierungsabfrage)"
+                                        + attrValue.getClass());
                             }
                         } else {
                             if (logger.isDebugEnabled()) {
@@ -431,12 +440,12 @@ public class ObjectFactory {
                         }
                     } catch (Exception ex) {
                         logger.error(
-                            "Fehler beim konvertieren in ein serialisierbares Geoobject setzt attr auf NULL wert war:"
-                            + attrValue,
-                            ex);
+                                "Fehler beim konvertieren in ein serialisierbares Geoobject setzt attr auf NULL wert war:"
+                                + attrValue,
+                                ex);
                         attrValue = null;
                     }
-                } else                 // isForeignKey therfore retrieve DefaultObject (recursion)
+                } else // isForeignKey therfore retrieve DefaultObject (recursion)
                 {
                     if (mai.isArray()) // isForeignKey && isArray
                     {
@@ -459,7 +468,7 @@ public class ObjectFactory {
                             attrValue = null;
                             if (logger.isDebugEnabled()) {
                                 logger.debug(
-                                    "getObject f\u00FCr " + fieldName + "ergab null, setzte attrValue auf null");
+                                        "getObject f\u00FCr " + fieldName + "ergab null, setzte attrValue auf null");
                             }
                         } else {
                             int o_id = rs.getInt(fieldName);
@@ -484,12 +493,12 @@ public class ObjectFactory {
             oAttr.setOptional(mai.isOptional());
 
             oAttr.setParentObject(result); // Achtung die Adresse des Objektes ist nicht die Adresse des
-                                           // tats�chlichen MetaObjects. Dieses wird neu erzeugt. da aber die
-                                           // gleichen objectattributes benutzt werden funktioniert ein zugriff �ber
-                                           // parent auf diese oa's trotzdem
+            // tats�chlichen MetaObjects. Dieses wird neu erzeugt. da aber die
+            // gleichen objectattributes benutzt werden funktioniert ein zugriff �ber
+            // parent auf diese oa's trotzdem
 
             if (attrValue instanceof Sirius.server.localserver.object.Object) {
-                ((Sirius.server.localserver.object.Object)attrValue).setReferencingObjectAttribute(oAttr);
+                ((Sirius.server.localserver.object.Object) attrValue).setReferencingObjectAttribute(oAttr);
             }
 
             // bei gelegenheit raus da es im Konstruktor von MetaObject gesetzt wird
@@ -551,7 +560,7 @@ public class ObjectFactory {
         result.setDummy(true);
 
         String getObjectStmnt = "Select * from " + c.getTableName() + " where " + mai.getArrayKeyFieldName() + " = "
-            + referenceKey;
+                + referenceKey;
 
         Connection con = conPool.getConnection().getConnection();
 
@@ -585,8 +594,8 @@ public class ObjectFactory {
                 result.addAttribute(oa);
             } else {
                 logger.error(
-                    new ObjectAttribute(mai.getId() + "." + i++, mai, o_id, element, c.getAttributePolicy())
-                    + " ommited as element was null");
+                        new ObjectAttribute(mai.getId() + "." + i++, mai, o_id, element, c.getAttributePolicy())
+                        + " ommited as element was null");
             }
         }
 
@@ -614,7 +623,7 @@ public class ObjectFactory {
         Iterator iter = Collections.synchronizedCollection(c.getMemberAttributeInfos().values()).iterator();
 
         while (iter.hasNext()) {
-            MemberAttributeInfo mai = (MemberAttributeInfo)iter.next();
+            MemberAttributeInfo mai = (MemberAttributeInfo) iter.next();
 
             ObjectAttribute oAttr;
 
@@ -668,7 +677,7 @@ public class ObjectFactory {
 
                 if (primaryKeys.contains(pk)) {
                     oAttr.setIsPrimaryKey(true); // bei gelegenheit raus da es im Konstruktor von MetaObject gesetzt
-                                                 // wird
+                    // wird
                 }
                 oAttr.setClassKey(mai.getForeignKeyClassId() + "@" + classCache.getProperties().getServerName());
             } catch (Exception e) {
@@ -688,7 +697,7 @@ public class ObjectFactory {
      */
     private void initPrimaryKeys() {
         try {
-            String[] tableType = { "TABLE" };
+            String[] tableType = {"TABLE"};
             ResultSet rs = dbMeta.getTables(null, null, null, tableType);
 
             Vector tableNames = new Vector(20, 20);
@@ -708,7 +717,7 @@ public class ObjectFactory {
             }
 
             for (int i = 0; i < tableNames.size(); i++) {
-                String[] tabl = (String[])tableNames.get(i);
+                String[] tabl = (String[]) tableNames.get(i);
                 ResultSet pks = dbMeta.getPrimaryKeys(tabl[0], tabl[1], tabl[2]);
 
                 // columnname@tablename
@@ -732,12 +741,12 @@ public class ObjectFactory {
      * @throws  java.sql.SQLException  DOCUMENT ME!
      */
     protected void setAttributePermissions(Sirius.server.localserver.object.Object o, UserGroup ug)
-        throws java.sql.SQLException {
+            throws java.sql.SQLException {
         try {
             // check kann es Probleme bei nicht lokalen ugs geben?
             String attribPerm =
-                "select p.id as pid,p.key as key, u.ug_id as ug_id, u.attr_id as attr_id from cs_ug_attr_perm as u, cs_permission as p  where attr_id in (select id  from cs_attr where class_id ="
-                + o.getClassID() + ") and u.permission = p.id and ug_id = " + ug.getId();
+                    "select p.id as pid,p.key as key, u.ug_id as ug_id, u.attr_id as attr_id from cs_ug_attr_perm as u, cs_permission as p  where attr_id in (select id  from cs_attr where class_id ="
+                    + o.getClassID() + ") and u.permission = p.id and ug_id = " + ug.getId();
 
             Connection con = conPool.getConnection().getConnection();
 
@@ -754,8 +763,8 @@ public class ObjectFactory {
                     attrkey = attrkey.trim();
                 } else {
                     logger.error(
-                        "attrKey in cs_ug_attr_perm referenziert kein g\u00FCltiges attribut und wird daher \u00FCbersprungen ::"
-                        + attrkey);
+                            "attrKey in cs_ug_attr_perm referenziert kein g\u00FCltiges attribut und wird daher \u00FCbersprungen ::"
+                            + attrkey);
                     continue;
                 }
 
@@ -767,8 +776,8 @@ public class ObjectFactory {
                     permKey = permKey.trim();
                 } else {
                     logger.error(
-                        "permKey in cs_ug_attr_perm refernziert kein g\u00FCltiges attribut. Attribut wird daher \u00FCbersprungen :"
-                        + permKey);
+                            "permKey in cs_ug_attr_perm refernziert kein g\u00FCltiges attribut. Attribut wird daher \u00FCbersprungen :"
+                            + permKey);
                     continue;
                 }
 
@@ -782,7 +791,7 @@ public class ObjectFactory {
 //                }
 
                 // konstruktion des Keys abhaengig von attr.getKey :-(
-                Attribute a = (Attribute)attrs.get(attrkey + "@" + o.getClassID());
+                Attribute a = (Attribute) attrs.get(attrkey + "@" + o.getClassID());
 
                 if (a == null) {
                     logger.error("kein Attribut zu attrKey gefunden und wird daher \u00FCbersprungen ::" + attrkey);
@@ -792,11 +801,11 @@ public class ObjectFactory {
 
                     if (p == null) {
                         logger.error(
-                            "Attribut enth\u00E4lt keinen Permissionholder. PermissionHolder wird daher initialisiert fuer attribut::"
-                            + a);
+                                "Attribut enth\u00E4lt keinen Permissionholder. PermissionHolder wird daher initialisiert fuer attribut::"
+                                + a);
 
                         a.setPermissions(
-                            new PermissionHolder(classCache.getClass(o.getClassID()).getAttributePolicy()));
+                                new PermissionHolder(classCache.getClass(o.getClassID()).getAttributePolicy()));
                     }
 
                     p.addPermission(ug, new Permission(permId, permKey));

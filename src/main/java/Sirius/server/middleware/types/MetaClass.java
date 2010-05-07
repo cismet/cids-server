@@ -1,10 +1,10 @@
 /***************************************************
-*
-* cismet GmbH, Saarbruecken, Germany
-*
-*              ... and it just works.
-*
-****************************************************/
+ *
+ * cismet GmbH, Saarbruecken, Germany
+ *
+ *              ... and it just works.
+ *
+ ****************************************************/
 package Sirius.server.middleware.types;
 
 import Sirius.server.localserver.attribute.Attribute;
@@ -29,20 +29,16 @@ import java.util.LinkedHashMap;
  * @version  $Revision$, $Date$
  */
 public class MetaClass extends Sirius.server.localserver._class.Class implements java.io.Serializable,
-    Groupable,
-    Renderable,
-    Editable {
+        Groupable,
+        Renderable,
+        Editable {
 
     //~ Static fields/initializers ---------------------------------------------
-
     private static String toStringConverterPrefix = "de.cismet.cids.custom.tostringconverter.";
     private static String toStringConverterPostfix = "ToStringConverter";
-
     //~ Instance fields --------------------------------------------------------
-
     /** domain. */
     protected String domain;
-
     private transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
     /** erzeugt eine String repr\u00E4entation eines Objketes der Klasse, kann in toString benutzt werden. */
     private transient ToStringConverter toStringConverter;
@@ -51,7 +47,6 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
     // -------------------------------------------------------------------
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * constuructor adding the domain.
      *
@@ -62,16 +57,16 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
         /*SystemProperties*/
 
         super(
-            c.getID(),
-            c.getName(),
-            c.getDescription(),
-            c.getIcon(),
-            c.getObjectIcon(),
-            c.getTableName(),
-            c.getPrimaryKey(),
-            c.getToString(),
-            c.getPermissions(),
-            c.getAttributePolicy());
+                c.getID(),
+                c.getName(),
+                c.getDescription(),
+                c.getIcon(),
+                c.getObjectIcon(),
+                c.getTableName(),
+                c.getPrimaryKey(),
+                c.getToString(),
+                c.getPermissions(),
+                c.getAttributePolicy());
         super.attribs = new AttributeVector(c.getAttributes());
         super.memberAttributeInfos = new LinkedHashMap(c.getMemberAttributeInfos());
         // Hell
@@ -84,7 +79,6 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
     }
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * grouping criterion.
      *
@@ -180,6 +174,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
 
         return toStringConverter;
     }
+
     /**
      * public void setToStringConverter(ToStringConverter toStringConverter) { this.toStringConverter =
      * toStringConverter; }.
@@ -198,9 +193,9 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
 
             try {
                 String tableNamePreparedForClassName = getTableName().substring(0, 1).toUpperCase()
-                    + getTableName().substring(1).toLowerCase();
+                        + getTableName().substring(1).toLowerCase();
                 lazyClassName = toStringConverterPrefix + (domain + ".").toLowerCase() + tableNamePreparedForClassName
-                    + toStringConverterPostfix;
+                        + toStringConverterPostfix;
                 converterClass = BlacklistClassloading.forName(lazyClassName);
             } catch (Exception e) {
                 if (logger.isDebugEnabled()) {
@@ -211,15 +206,14 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
             if ((converterClass == null) && (toString != null)) {
                 converterClass = BlacklistClassloading.forName(toString.trim());
             }
-            if (
-                (converterClass != null)
-                        && de.cismet.cids.tools.tostring.ToStringConverter.class.isAssignableFrom(converterClass)) {
-                this.toStringConverter = (ToStringConverter)converterClass.newInstance();
+            if ((converterClass != null)
+                    && de.cismet.cids.tools.tostring.ToStringConverter.class.isAssignableFrom(converterClass)) {
+                this.toStringConverter = (ToStringConverter) converterClass.newInstance();
             } else if (logger != null) {
                 if (logger.isDebugEnabled()) {
                     logger.debug(
-                        " customized stringconverter could not be loaded as ClassQualifer ist not a valid ToSTringconverter "
-                        + toString);
+                            " customized stringconverter could not be loaded as ClassQualifer ist not a valid ToSTringconverter "
+                            + toString);
                 }
             }
 
@@ -232,9 +226,9 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
         } catch (Exception e) {
             if (logger != null) {
                 logger.error(
-                    toString + " f\u00FCr Klasse " + name
-                    + " konnte nicht geladen werden set string converter to Default ",
-                    e);
+                        toString + " f\u00FCr Klasse " + name
+                        + " konnte nicht geladen werden set string converter to Default ",
+                        e);
             }
             this.toStringConverter = new ToStringConverter();
         }
@@ -294,7 +288,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
             Iterator iter = getMemberAttributeInfos().values().iterator();
 
             while (iter.hasNext()) {
-                MemberAttributeInfo mai = (MemberAttributeInfo)iter.next();
+                MemberAttributeInfo mai = (MemberAttributeInfo) iter.next();
 
                 ObjectAttribute oAttr;
                 oAttr = new ObjectAttribute(mai, -1, null, getAttributePolicy());
@@ -329,7 +323,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
         if (hasExtensionAttributes == null) {
             Iterator iter = getMemberAttributeInfos().values().iterator();
             while (iter.hasNext()) {
-                MemberAttributeInfo mai = (MemberAttributeInfo)iter.next();
+                MemberAttributeInfo mai = (MemberAttributeInfo) iter.next();
                 if (mai.isExtensionAttribute()) {
                     hasExtensionAttributes = true;
                     break;
@@ -340,5 +334,23 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
             }
         }
         return hasExtensionAttributes;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        } else if (obj instanceof MetaClass) {
+            final MetaClass other = (MetaClass) obj;
+            final boolean sameDomain = getDomain() == other.getDomain() || (getDomain() != null && getDomain().equals(other.getDomain()));
+            return sameDomain && getID() == other.getID();
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return (getDomain() + getID()).hashCode();
     }
 }
