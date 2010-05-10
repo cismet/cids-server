@@ -10,11 +10,13 @@ package de.cismet.cids.server.ws.rest;
 import Sirius.server.ServerExit;
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.impls.proxy.StartProxy;
+import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.registry.Registry;
 import Sirius.server.search.SearchOption;
 import Sirius.server.search.SearchResult;
+import Sirius.server.search.store.QueryData;
 import Sirius.util.image.Image;
 
 import java.io.FileNotFoundException;
@@ -237,7 +239,6 @@ public class RESTfulSerialInterfaceConnectorTest {
     }
 
     @Test
-    @Ignore
     public void testGetSearchOptions() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
@@ -251,41 +252,132 @@ public class RESTfulSerialInterfaceConnectorTest {
     }
 
     @Test
-    @Ignore
     public void testAddQueryParameter() throws Exception {
-        System.out.println("\nTEST: " + getCurrentMethodName());
+        
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
-        int queryId = 4;
+        
+        System.out.println("\nTEST 1: " + getCurrentMethodName());
+        Integer queryId = 1;
+        Integer typeId = 1;
+        Character isQueryResult = 'f';
+        Integer queryPosition = 1;
         String paramKey = "testparam";
         String description = "A test parameter";
-        final boolean result = connector.addQueryParameter(user, queryId, paramKey, description);
+        final boolean result = connector.addQueryParameter(user, queryId,
+                typeId, paramKey, description, isQueryResult, queryPosition);
         assertNotNull(result);
         System.out.println("addQueryParameter: " + result);
 
+        System.out.println("\nTEST 2: " + getCurrentMethodName());
         queryId = 1;
-        int typeId = 1;
-        char isQueryResult = 'f';
-        int queryPosition = 1;
+        typeId = null;
         paramKey = "testparam2";
         description = "a second test parameter";
+        isQueryResult = null;
+        queryPosition = null;
+//        final boolean result2 = connector.addQueryParameter(user, queryId,
+//                typeId, paramKey, description, isQueryResult, queryPosition);
         final boolean result2 = connector.addQueryParameter(user, queryId,
-                typeId, paramKey, description, isQueryResult, queryPosition);
+                paramKey, description);
         assertNotNull(result2);
         System.out.println("addQueryParameter: " + result2);
     }
 
     @Test
-    @Ignore
     public void testAddQuery() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
-        final String name = "testquery";
-        final String description = "a simple statement";
-        final String statement = "Select * from cs_query";
+        String name = "testquery";
+        String description = "a simple statement";
+        String statement = "Select * from cs_query";
+        int resultType;
+        char isUpdate;
+        char isBatch;
+        char isRoot;
+        char isUnion;
         final int result = connector.addQuery(user, name, description, statement);
         assertNotNull(result);
-        System.out.println("addQueryParameter: " + result);
+        System.out.println("addQuery: " + result);
 
+        System.out.println("\nTEST 2: " + getCurrentMethodName());
+        name = "testquery2";
+        description = "a simple statement";
+        statement = "Select * from cs_query";
+        resultType = 2;
+        isUpdate = 't';
+        isUnion = 't';
+        isBatch = 't';
+        isRoot ='t';
+        final int result2 = connector.addQuery(user, name, description, statement,
+                resultType, isUpdate, isBatch, isRoot, isUnion);
+        assertNotNull(result2);
+        System.out.println("addQuery: " + result2);
+    }
+
+    @Test
+    public void testDelete() throws Exception {
+
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final int id = 24;
+        final String domain = "WUNDA_BLAU";
+        final boolean result = connector.delete(id, domain);
+        assertTrue(result);
+        System.out.println("delete: " + result);
+    }
+
+    @Test
+    public void testGetQuery() throws Exception {
+
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final int id = 17;
+        final String domain = "WUNDA_BLAU";
+        final QueryData result = connector.getQuery(id, domain);
+        assertNotNull(result);
+        System.out.println("getQuery: " + result);
+    }
+
+    /**
+     * TODO: storeQuery creates files which will currently not be removed by the
+     * test framework. This problem has to be resolved before this test may be run.
+     * @throws Exception
+     */
+    @Test
+    @Ignore
+    public void testStoreQuery() throws Exception {
+
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final QueryData data  = new QueryData("WUNDA_BLAU", "testQueryStore", STARTMODE, new byte[0]);
+        final boolean result = connector.storeQuery(user, data);
+        assertNotNull(result);
+        System.out.println("getQuery: " + result);
+
+    }
+
+    /**
+     * Check what this method actually does ... b4 testing
+     * @throws Exception
+     */
+    @Test
+    @Ignore
+    public void testGetLightweightMetaObjectsByQuery() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        // just random values ... have to be checked wether they are senseful
+        int classId = 1;
+        String query = "Select * from cs_usr";
+        String[] representationFields = new String[0];
+        String representationPattern = "";
+        final LightweightMetaObject[] result = connector.getLightweightMetaObjectsByQuery(
+                classId, user, query, representationFields, representationPattern);
+        assertNotNull(result);
+        System.out.println("getQuery: " + result);
+
+        System.out.println("\nTEST 2: " + getCurrentMethodName());
+        final LightweightMetaObject[] result2 = connector.getLightweightMetaObjectsByQuery(
+                classId, user, query, representationFields, representationPattern);
+        assertNotNull(result2);
+        System.out.println("getQuery: " + result2);
     }
 
     //~ Inner Classes ----------------------------------------------------------
