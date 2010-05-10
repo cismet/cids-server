@@ -21,7 +21,6 @@ import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
 import Sirius.server.search.Query;
 import Sirius.server.search.SearchOption;
-import Sirius.server.search.store.Info;
 import Sirius.server.search.store.QueryData;
 
 import com.sun.grizzly.http.SelectorThread;
@@ -73,14 +72,24 @@ public final class RESTfulSerialInterface {
     public static final String PARAM_LS_NAME = "lsName"; // NOI18N
     public static final String PARAM_SEARCH_OPTIONS = "searchOptions"; // NOI18N
     public static final String PARAM_DOMAIN = "domain";
-    public static final String PARAM_QUERY_ID = "query_id";
-    public static final String PARAM_PARAM_KEY = "param_key";
+    public static final String PARAM_QUERY_ID = "queryID";
+    public static final String PARAM_PARAM_KEY = "paramKey";
     public static final String PARAM_DESCRIPTION = "description";
     public static final String PARAM_TYPE_ID = "typeId";
+    public static final String PARAM_QUERY = "query";
     public static final String PARAM_QUERY_RESULT = "queryResult";
     public static final String PARAM_QUERY_POSITION = "queryPosition";
     public static final String PARAM_QUERY_NAME = "queryName";
     public static final String PARAM_STATEMENT  = "statement";
+    public static final String PARAM_RESULT_TYPE = "resultType";
+    public static final String PARAM_IS_UPDATE = "isUpdate";
+    public static final String PARAM_IS_BATCH = "isBatch";
+    public static final String PARAM_IS_ROOT = "isRoot";
+    public static final String PARAM_IS_UNION = "isUnion";
+    public static final String PARAM_USERGROUP = "userGroup";
+    public static final String PARAM_QUERY_DATA = "queryData";
+    public static final String PARAM_REP_FIELDS = "representationFields";
+    public static final String PARAM_REP_PATTERN = "representationPatter";
 
     private static RESTfulSerialInterface instance;
     
@@ -714,13 +723,40 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(
-            int classId,
-            User user,
-            String query,
-            String[] representationFields,
-            String representationPattern) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/getLightweightMetaObjectsByQuery")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getLightweightMetaObjectsByQuery(
+            @QueryParam(PARAM_CLASS_IDS) String classIdBytes,
+            @QueryParam(PARAM_USER) String userBytes,
+            @QueryParam(PARAM_QUERY_NAME) String queryBytes,
+            @QueryParam(PARAM_REP_FIELDS) String representationFieldsBytes,
+            @QueryParam(PARAM_REP_PATTERN) String representationPatternBytes)  {
+
+        try {
+
+            final int classId = Converter.deserialiseFromString(classIdBytes, int.class);
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final String query = Converter.deserialiseFromString(queryBytes, String.class);
+            final String[] representationFields =
+                    Converter.deserialiseFromString(representationFieldsBytes,String[].class);
+
+            if(representationPatternBytes == null) {
+                return createResponse(callserver.getLightweightMetaObjectsByQuery(classId,
+                    user, query, representationFields));
+            } else {
+                final String representationPattern =
+                        Converter.deserialiseFromString(representationPatternBytes, String.class);
+                return createResponse(callserver.getLightweightMetaObjectsByQuery(
+                        classId, user, query, representationFields, representationPattern));
+            }
+
+        } catch (Exception e) {
+            final String message = "could not store query"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -736,13 +772,33 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(
-            int classId,
-            User user,
-            String query,
-            String[] representationFields) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+//    @GET
+//    @Path("/GET/getLightweightMetaObjectsByQuery")
+//    @Consumes("application/octet-stream")
+//    @Produces("application/octet-stream")
+//    public Response getLightweightMetaObjectsByQuery(
+//            @QueryParam(PARAM_CLASS_IDS) String classIdBytes,
+//            @QueryParam(PARAM_USER) String userBytes,
+//            @QueryParam(PARAM_QUERY_NAME) String queryBytes,
+//            @QueryParam(PARAM_REP_FIELDS) String representationFieldsBytes) {
+//
+//        try {
+//
+//            final int classId = Converter.deserialiseFromString(classIdBytes, int.class);
+//            final User user = Converter.deserialiseFromString(userBytes, User.class);
+//            final String query = Converter.deserialiseFromString(queryBytes, String.class);
+//            final String[] representationFields =
+//                    Converter.deserialiseFromString(representationFieldsBytes,String[].class);
+//
+//            return createResponse(callserver.getLightweightMetaObjectsByQuery(classId,
+//                    user, query, representationFields));
+//
+//        } catch (Exception e) {
+//            final String message = "could not store query"; // NOI18N
+//            LOG.error(message, e);
+//            throw new WebApplicationException(e);
+//        }
+//    }
 
     /**
      * DOCUMENT ME!
@@ -753,10 +809,28 @@ public final class RESTfulSerialInterface {
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException                DOCUMENT ME!
-     * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public boolean storeQuery(User user, QueryData data) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/storeQuery")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response storeQuery(
+            @QueryParam(PARAM_USER) String userBytes,
+            @QueryParam(PARAM_QUERY_DATA) String dataBytes)  {
+
+        try {
+
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final QueryData data = Converter.deserialiseFromString(dataBytes, QueryData.class);
+
+            return createResponse(callserver.storeQuery(user, data));
+
+        } catch (Exception e) {
+            final String message = "could not store query"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
+
     }
 
     /**
@@ -766,11 +840,21 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  RemoteException                DOCUMENT ME!
-     * @throws  UnsupportedOperationException  DOCUMENT ME!
+     * @throws  WebApplicationException                DOCUMENT ME!
      */
-    public Info[] getQueryInfos(User user) throws RemoteException {
+    public Response getQueryInfos(User userBytes) {
         throw new UnsupportedOperationException("Not supported yet.");
+//        try {
+//
+//            final User user = Converter.deserialiseFromString(userBytes, User.class);
+//
+//            return createResponse(callserver.getQueryInfos(user));
+//
+//        } catch (Exception e) {
+//            final String message = "could not get query infos"; // NOI18N
+//            LOG.error(message, e);
+//            throw new WebApplicationException(e);
+//        }
     }
 
     /**
@@ -780,11 +864,22 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  RemoteException                DOCUMENT ME!
-     * @throws  UnsupportedOperationException  DOCUMENT ME!
+     * @throws  WebApplicationException                DOCUMENT ME!
      */
-    public Info[] getQueryInfos(UserGroup userGroup) throws RemoteException {
+    public Response getQueryInfos(UserGroup userGroupBytes) {
         throw new UnsupportedOperationException("Not supported yet.");
+//        try {
+//
+//            final UserGroup userGroup = Converter.deserialiseFromString(userGroupBytes, UserGroup.class);
+//
+//            return createResponse(callserver.getQueryInfos(userGroup));
+//
+//        } catch (Exception e) {
+//            final String message = "could not get query infos"; // NOI18N
+//            LOG.error(message, e);
+//            throw new WebApplicationException(e);
+//        }
+
     }
 
     /**
@@ -795,11 +890,28 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  RemoteException                DOCUMENT ME!
-     * @throws  UnsupportedOperationException  DOCUMENT ME!
+     * @throws  WebApplicationException                DOCUMENT ME!
      */
-    public QueryData getQuery(int id, String domain) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/getQuery")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getQuery(
+            @QueryParam(PARAM_QUERY_ID) String idBytes,
+            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+
+        try {
+
+            final int id = Converter.deserialiseFromString(idBytes, int.class);
+            final String domain = Converter.deserialiseFromString(domainBytes, String.class);
+
+            return createResponse(callserver.getQuery(id, domain));
+
+        } catch (Exception e) {
+            final String message = "could not get query"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -810,11 +922,28 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  RemoteException                DOCUMENT ME!
-     * @throws  UnsupportedOperationException  DOCUMENT ME!
+     * @throws  WebApplicationException                DOCUMENT ME!
      */
-    public boolean delete(int id, String domain) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/delete")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response delete(
+            @QueryParam(PARAM_QUERY_ID) String idBytes,
+            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+
+        try {
+
+            final int id = Converter.deserialiseFromString(idBytes, int.class);
+            final String domain = Converter.deserialiseFromString(domainBytes, String.class);
+
+            return createResponse(callserver.delete(id, domain));
+
+        } catch (Exception e) {
+            final String message = "could not delete query"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -834,17 +963,50 @@ public final class RESTfulSerialInterface {
      *
      * @throws  WebApplicationException                DOCUMENT ME!
      */
-    public int addQuery(
-            User user,
-            String name,
-            String description,
-            String statement,
-            int resultType,
-            char isUpdate,
-            char isBatch,
-            char isRoot,
-            char isUnion) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/addQuery")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response addQuery(
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_QUERY_NAME) final String nameBytes,
+            @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes,
+            @QueryParam(PARAM_STATEMENT) final String statementBytes,
+            @QueryParam(PARAM_RESULT_TYPE) final String resultTypeBytes,
+            @QueryParam(PARAM_IS_UPDATE) final String isUpdateBytes,
+            @QueryParam(PARAM_IS_BATCH) final String isBatchBytes,
+            @QueryParam(PARAM_IS_ROOT) final String isRootBytes,
+            @QueryParam(PARAM_IS_UNION) final String isUnionBytes) {
+
+        try {
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final String name = Converter.deserialiseFromString(nameBytes, String.class);
+            final String description = Converter.deserialiseFromString(descriptionBytes, String.class);
+            final String statement = Converter.deserialiseFromString(statementBytes, String.class);
+
+            if(resultTypeBytes == null && isUpdateBytes == null &&
+                    isBatchBytes == null && isRootBytes == null && isUnionBytes == null)
+
+                return createResponse(callserver.addQuery(user, name, description, statement));
+
+            else {
+
+                final int resultType = Converter.deserialiseFromString(resultTypeBytes, int.class);
+                final char isUpdate = Converter.deserialiseFromString(isUpdateBytes, char.class);
+                final char isBatch = Converter.deserialiseFromString(isBatchBytes, char.class);
+                final char isRoot = Converter.deserialiseFromString(isRootBytes, char.class);
+                final char isUnion = Converter.deserialiseFromString(isUnionBytes, char.class);
+
+                return createResponse(callserver.addQuery(user, name, description,
+                        statement, resultType, isUpdate, isBatch, isRoot, isUnion));
+            }
+
+        } catch (Exception e) {
+            final String message = "could not add query"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
+
     }
 
     /**
@@ -859,31 +1021,31 @@ public final class RESTfulSerialInterface {
      *
      * @throws  WebApplicationException                DOCUMENT ME!
      */
-    @GET
-    @Path("/GET/addQuery")
-    @Consumes("application/octet-stream")
-    @Produces("application/octet-stream")
-    public Response addQuery(
-            @QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_QUERY_NAME) final String nameBytes,
-            @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes,
-            @QueryParam(PARAM_STATEMENT) final String statementBytes) {
-
-        try {
-            final User user = Converter.deserialiseFromString(userBytes, User.class);
-            final String name = Converter.deserialiseFromString(nameBytes, String.class);
-            final String description = Converter.deserialiseFromString(descriptionBytes, String.class);
-            final String statement = Converter.deserialiseFromString(statementBytes, String.class);
-
-            return createResponse(callserver.addQuery(user, name, description, statement));
-
-        } catch (Exception e) {
-            final String message = "could not add query parameter"; // NOI18N
-            LOG.error(message, e);
-            throw new WebApplicationException(e);
-        }
-
-    }
+//    @GET
+//    @Path("/GET/addQuery")
+//    @Consumes("application/octet-stream")
+//    @Produces("application/octet-stream")
+//    public Response addQuery(
+//            @QueryParam(PARAM_USER) final String userBytes,
+//            @QueryParam(PARAM_QUERY_NAME) final String nameBytes,
+//            @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes,
+//            @QueryParam(PARAM_STATEMENT) final String statementBytes) {
+//
+//        try {
+//            final User user = Converter.deserialiseFromString(userBytes, User.class);
+//            final String name = Converter.deserialiseFromString(nameBytes, String.class);
+//            final String description = Converter.deserialiseFromString(descriptionBytes, String.class);
+//            final String statement = Converter.deserialiseFromString(statementBytes, String.class);
+//
+//            return createResponse(callserver.addQuery(user, name, description, statement));
+//
+//        } catch (Exception e) {
+//            final String message = "could not add query parameter"; // NOI18N
+//            LOG.error(message, e);
+//            throw new WebApplicationException(e);
+//        }
+//
+//    }
 
     /**
      * DOCUMENT ME!
@@ -917,15 +1079,16 @@ public final class RESTfulSerialInterface {
 
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final int queryId = Converter.deserialiseFromString(queryIdBytes, int.class);
-            final int typeId = Converter.deserialiseFromString(typeIdBytes, int.class);
             final String paramkey = Converter.deserialiseFromString(paramkeyBytes, String.class);
             final String description = Converter.deserialiseFromString(descriptionBytes, String.class);
 
-            if(isQueryResultBytes == null && queryPositionBytes == null) {
+            if(typeIdBytes == null && isQueryResultBytes == null && queryPositionBytes == null) {
 
                 return createResponse(callserver.addQueryParameter(user, queryId, paramkey, description));
 
             } else {
+                
+                final int typeId = Converter.deserialiseFromString(typeIdBytes, int.class);
                 final char isQueryResult = Converter.deserialiseFromString(isQueryResultBytes, char.class);
                 final int queryPosition = Converter.deserialiseFromString(queryPositionBytes, int.class);
 
