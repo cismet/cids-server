@@ -504,7 +504,27 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     @Override
     public MetaObject getMetaObject(User usr, int objectID, int classID, String domain) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+
+            final HashMap<String, String> queryParams = new HashMap<String, String>(3,1);
+
+            if(usr != null)
+                queryParams.put(PARAM_USER, Converter.serialiseToString(usr));
+            if(objectID != -1)
+                queryParams.put(PARAM_OBJECT_ID, Converter.serialiseToString(objectID));
+            if(classID != -1)
+                queryParams.put(PARAM_CLASS_IDS, Converter.serialiseToString(classID));
+            if(domain != null)
+                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+
+            return getResponseGET("GET/getMetaObject", // NOI18N
+                    queryParams, MetaObject.class);
+
+        } catch (Exception e) {
+            final String message = "could not get MetaObject";        // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
     }
 
     /**
@@ -572,7 +592,25 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     @Override
     public int deleteMetaObject(User user, MetaObject metaObject, String domain) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+
+            final HashMap<String, String> queryParams = new HashMap<String, String>(3,1);
+
+            if(user != null)
+                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+            if(metaObject != null)
+                queryParams.put(PARAM_METAOBJECT, Converter.serialiseToString(metaObject));
+            if(domain != null)
+                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+
+            return getResponseGET("GET/deleteMetaObject", // NOI18N
+                    queryParams, int.class);
+
+        } catch (Exception e) {
+            final String message = "could not delete MetaObject";        // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
     }
 
     /**
@@ -589,7 +627,25 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     @Override
     public int update(User user, String query, String domain) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+
+            final HashMap<String, String> queryParams = new HashMap<String, String>(3,1);
+
+            if(user != null)
+                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+            if(query != null)
+                queryParams.put(PARAM_QUERY, Converter.serialiseToString(query));
+            if(domain != null)
+                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+
+            return getResponseGET("GET/update", // NOI18N
+                    queryParams, int.class);
+
+        } catch (Exception e) {
+            final String message = "could not update query";        // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
     }
 
     /**
@@ -605,7 +661,23 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     @Override
     public MetaObject getInstance(User user, MetaClass c) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+
+            final HashMap<String, String> queryParams = new HashMap<String, String>(3,1);
+
+            if(user != null)
+                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+            if(c != null)
+                queryParams.put(PARAM_METACLASS, Converter.serialiseToString(c));
+
+            return getResponseGET("GET/getInstance", // NOI18N
+                    queryParams, MetaObject.class);
+
+        } catch (Exception e) {
+            final String message = "could not get instance of MetaClass";        // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
     }
 
     /**
@@ -622,7 +694,25 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     @Override
     public MetaClass getClass(User user, int classID, String domain) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+
+            final HashMap<String, String> queryParams = new HashMap<String, String>(3,1);
+
+            if(user != null)
+                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+            if(domain != null)
+                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+
+            queryParams.put(PARAM_CLASS_IDS, Converter.serialiseToString(classID));
+
+            return getResponseGET("GET/getClass", // NOI18N
+                    queryParams, MetaClass.class);
+
+        } catch (Exception e) {
+            final String message = "could not get Class";        // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
     }
 
     /**
@@ -639,7 +729,25 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     @Override
     public MetaClass getClassByTableName(User user, String tableName, String domain) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+
+            final HashMap<String, String> queryParams = new HashMap<String, String>(3,1);
+
+            if(user != null)
+                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+            if(tableName != null)
+                queryParams.put(PARAM_TABLE_NAME, Converter.serialiseToString(tableName));
+            if(domain != null)
+                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+
+            return getResponseGET("GET/getClassByTableName", // NOI18N
+                    queryParams, MetaClass.class);
+
+        } catch (Exception e) {
+            final String message = "could not get Class by tablename";        // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
     }
 
     /**
@@ -655,7 +763,23 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     @Override
     public MetaClass[] getClasses(User user, String domain) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+
+            final HashMap<String, String> queryParams = new HashMap<String, String>(2,1);
+
+            if(user != null)
+                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+            if(domain != null)
+                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+
+            return getResponseGET("GET/getClasses", // NOI18N
+                    queryParams, MetaClass[].class);
+
+        } catch (Exception e) {
+            final String message = "could not get Classes";        // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
     }
 
     /**
@@ -670,7 +794,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     @Override
     public Node[] getClassTreeNodes(User user) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getClassTreeNodes(user, null);
     }
 
     /**
@@ -686,7 +810,23 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     @Override
     public Node[] getClassTreeNodes(User user, String domain) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+
+            final HashMap<String, String> queryParams = new HashMap<String, String>(2,1);
+
+            if(user != null)
+                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+            if(domain != null)
+                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+
+            return getResponseGET("GET/getClassTreeNodes", // NOI18N
+                    queryParams, Node[].class);
+
+        } catch (Exception e) {
+            final String message = "could not get ClassTreeNodes";        // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
     }
 
     /**
@@ -701,7 +841,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     @Override
     public MethodMap getMethods(User user) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getMethods(user, null);
     }
 
     /**
@@ -717,7 +857,24 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     @Override
     public MethodMap getMethods(User user, String localServerName) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+
+        try {
+
+            final HashMap<String, String> queryParams = new HashMap<String, String>(2,1);
+
+            if(user != null)
+                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+            if(localServerName != null)
+                queryParams.put(PARAM_LOCAL_SERVER_NAME, Converter.serialiseToString(localServerName));
+
+            return getResponseGET("GET/getMethods", // NOI18N
+                    queryParams, MethodMap.class);
+
+        } catch (Exception e) {
+            final String message = "could not get methods";        // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
     }
 
     /**
@@ -739,7 +896,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             User user,
             String[] representationFields,
             String representationPattern) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+
+        try {
+
+            final HashMap<String, String> queryParams = new HashMap<String, String>(4,1);
+
+            queryParams.put(PARAM_CLASS_IDS, Converter.serialiseToString(classId));
+            if(user != null)
+                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+            if(representationFields != null)
+                queryParams.put(PARAM_REP_FIELDS, Converter.serialiseToString(representationFields));
+            if(representationPattern != null)
+                queryParams.put(PARAM_REP_PATTERN, Converter.serialiseToString(representationPattern));
+            
+            return getResponseGET("GET/getAllLightweightMetaObjectsForClass", // NOI18N
+                    queryParams, LightweightMetaObject[].class);
+
+        } catch (Exception e) {
+            final String message = "could not get LightweightMetaObjects by query";        // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+
     }
 
     /**
@@ -759,7 +937,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             int classId,
             User user,
             String[] representationFields) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        
+        return getAllLightweightMetaObjectsForClass(classId, user, representationFields, null);
     }
 
     /**
@@ -786,16 +965,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
         try {
 
-            final HashMap<String, String> queryParams = new HashMap<String, String>(2,1);
+            final HashMap<String, String> queryParams = new HashMap<String, String>(5,1);
 
             queryParams.put(PARAM_CLASS_IDS, Converter.serialiseToString(classId) );
-            queryParams.put(PARAM_USER, Converter.serialiseToString(user));
-            queryParams.put(PARAM_QUERY, Converter.serialiseToString(query));
-            queryParams.put(PARAM_REP_FIELDS, Converter.serialiseToString(representationFields));
-            queryParams.put(PARAM_REP_PATTERN, Converter.serialiseToString(representationPattern));
+            if(user != null)
+                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+            if(query != null)
+                queryParams.put(PARAM_QUERY, Converter.serialiseToString(query));
+            if(representationFields != null)
+                queryParams.put(PARAM_REP_FIELDS, Converter.serialiseToString(representationFields));
+            if(representationPattern != null)
+                queryParams.put(PARAM_REP_PATTERN, Converter.serialiseToString(representationPattern));
 
-            return getResponseGET("GET//GET/getLightweightMetaObjectsByQuery",
-                    queryParams, LightweightMetaObject[].class); // NOI18N
+            return getResponseGET("GET/getLightweightMetaObjectsByQuery", // NOI18N
+                    queryParams, LightweightMetaObject[].class);
 
         } catch (Exception e) {
             final String message = "could not get LightweightMetaObjects by query";        // NOI18N
