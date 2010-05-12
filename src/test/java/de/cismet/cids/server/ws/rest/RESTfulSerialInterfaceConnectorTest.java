@@ -8,12 +8,16 @@
 package de.cismet.cids.server.ws.rest;
 
 import Sirius.server.ServerExit;
+import Sirius.server.localserver.method.MethodMap;
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.impls.proxy.StartProxy;
 import Sirius.server.middleware.types.LightweightMetaObject;
+import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.registry.Registry;
+import Sirius.server.middleware.types.Node;
 import Sirius.server.search.SearchOption;
 import Sirius.server.search.SearchResult;
 import Sirius.server.search.store.QueryData;
@@ -371,13 +375,174 @@ public class RESTfulSerialInterfaceConnectorTest {
         final LightweightMetaObject[] result = connector.getLightweightMetaObjectsByQuery(
                 classId, user, query, representationFields, representationPattern);
         assertNotNull(result);
-        System.out.println("getQuery: " + result);
+        System.out.println("testGetLightweightMetaObjectsByQuery: " + result);
 
         System.out.println("\nTEST 2: " + getCurrentMethodName());
         final LightweightMetaObject[] result2 = connector.getLightweightMetaObjectsByQuery(
                 classId, user, query, representationFields, representationPattern);
         assertNotNull(result2);
-        System.out.println("getQuery: " + result2);
+        System.out.println("testGetLightweightMetaObjectsByQuery: " + result2);
+    }
+
+    /**
+     * Check what this method actually does ... b4 testing
+     * @throws Exception
+     */
+    @Test
+    @Ignore
+    public void testGetAllLightweightMetaObjectsForClass() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        // just random values ... have to be checked wether they are senseful
+        int classId = 1;
+        String query = "Select * from cs_usr";
+        String[] representationFields = new String[0];
+        String representationPattern = "";
+        final LightweightMetaObject[] result = connector.getAllLightweightMetaObjectsForClass(
+                classId, user, representationFields, representationPattern);
+        assertNotNull(result);
+        System.out.println("getAllLightweightMetaObjectsForClass: " + result);
+
+        System.out.println("\nTEST 2: " + getCurrentMethodName());
+        final LightweightMetaObject[] result2 = connector.getAllLightweightMetaObjectsForClass(
+                classId, user, representationFields);
+        assertNotNull(result2);
+        System.out.println("getAllLightweightMetaObjectsForClass: " + result2);
+    }
+
+    @Test
+    public void testGetMethods() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final String localServerName = "WUNDA_BLAU";
+
+        final MethodMap result = connector.getMethods(user, localServerName);
+        assertNotNull(result);
+        System.out.println("getMethods: " + result);
+
+        final MethodMap result2 = connector.getMethods(user);
+        assertNotNull(result2);
+        System.out.println("getMethods: " + result2);
+    }
+
+    @Test
+    public void testGetClassTreeNodes() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final String domain = "WUNDA_BLAU";
+
+        final Node[] result = connector.getClassTreeNodes(user, domain);
+        assertNotNull(result);
+        System.out.println("getClassTreeNodes: " + result);
+
+        final Node[] result2 = connector.getClassTreeNodes(user);
+        assertNotNull(result2);
+        System.out.println("getClassTreeNodes: " + result2);
+
+    }
+
+    @Test
+    public void testGetClass() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final int classId = 10;
+        final String domain = "WUNDA_BLAU";
+
+        final MetaClass result = connector.getClass(user, classId, domain);
+        assertNotNull(result);
+        System.out.println("getClassTreeNodes: " + result);
+    }
+
+    @Test
+    public void testGetClassByTableName() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final String domain = "WUNDA_BLAU";
+        final String tableName = "b_teil";
+
+        final MetaClass result = connector.getClassByTableName(user, tableName, domain);
+        assertNotNull(result);
+        System.out.println("getClassTreeNodes: " + result);
+    }
+
+    @Test
+    public void testGetClasses() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final String domain = "WUNDA_BLAU";
+
+        final MetaClass[] result = connector.getClasses(user, domain);
+        assertNotNull(result);
+        System.out.println("getClassTreeNodes: " + result);
+    }
+
+    @Test
+    public void testGetMetaObject() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final String domain = "WUNDA_BLAU";
+        final int objectID = 3;
+        final int classID = 4;
+
+        final MetaObject result = connector.getMetaObject(user, objectID, classID, domain);
+        assertNotNull(result);
+        System.out.println("getMetaObject: " + result);
+    }
+
+    /**
+     * Currently runs into an out of memory exception
+     * not yet shure why
+     * @throws Exception
+     */
+    @Test
+    @Ignore
+    public void testDeleteMetaObject() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final String domain = "WUNDA_BLAU";
+        final int objectID = 3;
+        final int classID = 4;
+        final MetaObject mo = connector.getMetaObject(user, objectID, classID, domain);
+
+        final int result = connector.deleteMetaObject(user, mo, domain);
+        assertNotNull(result);
+        System.out.println("deleteMetaObject: " + result);
+    }
+
+    /**
+     * Not yet clear how to specify the query this method requires
+     * @throws Exception
+     */
+    @Test
+    @Ignore
+    public void testUpdate() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final String domain = "WUNDA_BLAU";
+        final  String query = "SELECT * FROM cs_class";
+
+        final int result = connector.update(user, query, domain);
+        assertNotNull(result);
+        System.out.println("update: " + result);
+    }
+
+    /**
+     * Currently runs into an out of memory exception
+     * not yet shure why
+     * @throws Exception
+     */
+    @Test
+    @Ignore
+    public void testGetInstance() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final String domain = "WUNDA_BLAU";
+        final int classID = 4;
+        final MetaClass mc = connector.getClass(user, classID, domain);
+
+        final MetaObject result = connector.getInstance(user, mc);
+        assertNotNull(result);
+        System.out.println("getInstance: " + result);
     }
 
     //~ Inner Classes ----------------------------------------------------------
