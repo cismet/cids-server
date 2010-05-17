@@ -8,18 +8,22 @@
 package de.cismet.cids.server.ws.rest;
 
 import Sirius.server.ServerExit;
+import Sirius.server.dataretrieval.DataObject;
 import Sirius.server.localserver.method.MethodMap;
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.impls.proxy.StartProxy;
 import Sirius.server.middleware.types.LightweightMetaObject;
+import Sirius.server.middleware.types.Link;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.registry.Registry;
 import Sirius.server.middleware.types.Node;
+import Sirius.server.newuser.UserGroup;
 import Sirius.server.search.SearchOption;
 import Sirius.server.search.SearchResult;
+import Sirius.server.search.store.Info;
 import Sirius.server.search.store.QueryData;
 import Sirius.util.image.Image;
 
@@ -526,11 +530,18 @@ public class RESTfulSerialInterfaceConnectorTest {
         System.out.println("update: " + result);
     }
 
-    /**
-     * Currently runs into an out of memory exception
-     * not yet shure why
-     * @throws Exception
-     */
+    
+    @Test
+    public void testGetMetaObjectNode() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final String domain = "WUNDA_BLAU";
+        final int nodeID = 2;
+        final Node result = connector.getMetaObjectNode(user, nodeID, domain);
+        assertNotNull(result);
+        System.out.println("update: " + result);
+    }
+    
     @Test
     @Ignore
     public void testGetInstance() throws Exception {
@@ -543,6 +554,109 @@ public class RESTfulSerialInterfaceConnectorTest {
         final MetaObject result = connector.getInstance(user, mc);
         assertNotNull(result);
         System.out.println("getInstance: " + result);
+    }
+
+    @Test
+    public void testAddNode() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final String domain = "WUNDA_BLAU";
+        final int nodeID = 2;
+        final Node node = connector.getMetaObjectNode(user, nodeID, domain);
+        node.setName("new TestNode");
+        final Link parent = new Link(nodeID, domain);
+        final Node result = connector.addNode(node, parent, user);
+        assertNotNull(result);
+        System.out.println("addNode: " + result);
+    }
+
+    @Test
+    public void testAddLink() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final String domain = "WUNDA_BLAU";
+        final int nodeFromID = 2;
+        final int nodeToID = 4;
+
+        final Node nodeFrom = connector.getMetaObjectNode(user, nodeFromID, domain);
+        final Node nodeTo = connector.getMetaObjectNode(user, nodeToID, domain);
+        final boolean result = connector.addLink(nodeFrom, nodeTo, user);
+        assertNotNull(result);
+        assertTrue(result);
+        System.out.println("addLink: " + result);
+    }
+
+    @Test
+    public void testDeleteLink() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final String domain = "WUNDA_BLAU";
+        final int nodeFromID = 2;
+        final int nodeToID = 4;
+
+        final Node nodeFrom = connector.getMetaObjectNode(user, nodeFromID, domain);
+        final Node nodeTo = connector.getMetaObjectNode(user, nodeToID, domain);
+        final boolean result = connector.deleteLink(nodeFrom, nodeTo, user);
+        assertNotNull(result);
+        assertTrue(result);
+        System.out.println("deleteLink: " + result);
+    }
+
+    @Test
+    public void testDeleteNode() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final String domain = "WUNDA_BLAU";
+        final int nodeID = 4;
+        final Node node = connector.getMetaObjectNode(user, nodeID, domain);
+        final boolean result = connector.deleteNode(node, user);
+        assertNotNull(result);
+        assertTrue(result);
+        System.out.println("deleteNode: " + result);
+    }
+
+    @Test
+    public void testGetDataObject() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final String domain = "WUNDA_BLAU";
+        final int classID = 4;
+        final MetaClass mc = connector.getClass(user, classID, domain);
+        final MetaObject metaObject = connector.getInstance(user, mc);
+
+        final DataObject result = connector.getDataObject(user, metaObject);
+        assertNotNull(result);
+        System.out.println("getDataObject: " + result);
+    }
+
+    @Test
+    public void testGetQueryInfo() throws Exception {
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final String domain = "WUNDA_BLAU";
+        final UserGroup ug = new UserGroup(2, "Gäste", domain);
+
+        final Info[] result1 = connector.getQueryInfos(user);
+        assertNotNull(result1);
+        System.out.println("getQueryInfos: " + result1);
+
+        final Info[] result2 = connector.getQueryInfos(ug);
+        assertNotNull(result2);
+        System.out.println("getQueryInfos: " + result2);
+    }
+
+    @Test
+    public void testGetChildren() throws Exception {
+
+    }
+
+    @Test
+    public void testGetRoots() throws Exception {
+
+    }
+
+    @Test
+    public void testGetRootsByDomain() throws Exception {
+        
     }
 
     //~ Inner Classes ----------------------------------------------------------
