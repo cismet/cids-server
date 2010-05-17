@@ -16,7 +16,7 @@ import Sirius.server.property.ServerProperties;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.ServerSecurityManager;
-import de.cismet.cids.server.ws.rest.RESTfulSerialInterface;
+import de.cismet.cids.server.ws.rest.RESTfulService;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -365,7 +365,7 @@ public final class StartProxy {
                         serverInfo.getIP(),
                         serverInfo.getRMIPort());
 
-            RESTfulSerialInterface.down();
+            RESTfulService.down();
 
             Naming.unbind("callServer"); // NOI18N
 

@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
@@ -66,6 +67,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     //~ Instance fields --------------------------------------------------------
 
     private final transient String rootResource;
+    private final transient Map<String, Client> clientCache;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -81,6 +83,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         } else {
             this.rootResource = rootResource + "/"; // NOI18N
         }
+
+        clientCache = new Hashtable<String, Client>();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -130,7 +134,11 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
 
         // create new client and webresource from the given resource
-        final Client c = Client.create();
+        if(!clientCache.containsKey(path)){
+            clientCache.put(path, Client.create());
+        }
+        final Client c = clientCache.get(path);
+        
         final UriBuilder uriBuilder = UriBuilder.fromPath(resource);
 
         // add all query params that are present
@@ -143,7 +151,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         final WebResource wr = c.resource(uriBuilder.build());
 
         // this is the binary interface so we accept the octet stream type only
-        return wr.accept(MediaType.APPLICATION_OCTET_STREAM_TYPE);
+        return wr.type(MediaType.APPLICATION_OCTET_STREAM_TYPE).accept(MediaType.APPLICATION_OCTET_STREAM_TYPE);
     }
 
     /**
@@ -506,7 +514,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     public MetaObject getMetaObject(User usr, int objectID, int classID, String domain) throws RemoteException {
         try {
 
-            final HashMap<String, String> queryParams = new HashMap<String, String>(3,1);
+            final HashMap<String, String> queryParams = new HashMap<String, String>(4, 1);
 
             if(usr != null)
                 queryParams.put(PARAM_USER, Converter.serialiseToString(usr));
@@ -519,7 +527,6 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
             return getResponseGET("GET/getMetaObject", // NOI18N
                     queryParams, MetaObject.class);
-
         } catch (Exception e) {
             final String message = "could not get MetaObject";        // NOI18N
             LOG.error(message, e);

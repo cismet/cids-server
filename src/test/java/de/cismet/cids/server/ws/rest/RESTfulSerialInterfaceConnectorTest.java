@@ -88,7 +88,7 @@ public class RESTfulSerialInterfaceConnectorTest {
         
         registry = new Sirius.server.registry.Registry(1099);
         proxy = StartProxy.getInstance(SERVER_CONFIG);
-        RESTfulSerialInterface.up(8011);
+        RESTfulService.up(8011);
         final PropertiesWrapper pw = new PropertiesWrapper(SERVER_CONFIG);
         pw.setStartMode(STARTMODE);
         server = new DomainServerImpl(pw);
@@ -103,7 +103,7 @@ public class RESTfulSerialInterfaceConnectorTest {
     @AfterClass
     public static void tearDownClass() throws Throwable {
         try {
-            RESTfulSerialInterface.down();
+            RESTfulService.down();
             server.shutdown();
             proxy.shutdown();
             registry.shutdown();

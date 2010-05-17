@@ -7,12 +7,9 @@
  ****************************************************/
 package de.cismet.cids.server.ws.rest;
 
-import Sirius.server.ServerExitError;
 import Sirius.server.dataretrieval.DataObject;
 import Sirius.server.dataretrieval.DataRetrievalException;
-import Sirius.server.localserver.method.MethodMap;
 import Sirius.server.middleware.impls.proxy.StartProxy;
-import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.Link;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
@@ -23,8 +20,6 @@ import Sirius.server.search.Query;
 import Sirius.server.search.SearchOption;
 import Sirius.server.search.store.QueryData;
 
-import com.sun.grizzly.http.SelectorThread;
-import com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.ws.Converter;
@@ -33,8 +28,6 @@ import java.io.IOException;
 
 import java.rmi.RemoteException;
 
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -95,97 +88,12 @@ public final class RESTfulSerialInterface {
     public static final String PARAM_METAOBJECT = "metaObject";
     public static final String PARAM_METACLASS = "metaClass";
     public static final String PARAM_OBJECT_ID = "objectID";
-    private static RESTfulSerialInterface instance;
-    //~ Instance fields --------------------------------------------------------
+
     private final transient CallServerService callserver;
-    private final transient int port;
-//    private final transient Server server;
-    private final transient SelectorThread selector;
 
-    //~ Constructors -----------------------------------------------------------
-    /**
-     * Creates a new RESTfulSerialInterface object.
-     *
-     * @param   port  callserver DOCUMENT ME!
-     *
-     * @throws  ServerExitError  DOCUMENT ME!
-     */
-    public RESTfulSerialInterface(final int port) throws ServerExitError {
-        final StartProxy proxy = StartProxy.getInstance();
-        this.callserver = proxy.getCallServer();
-        this.port = port;
-
-        final String baseURI = "http://" + proxy.getServer().getIP() + ":" + port + "/";            // NOI18N
-        final Map<String, String> initParams = new HashMap<String, String>();
-        initParams.put("com.sun.jersey.config.property.packages", "de.cismet.cids.server.ws.rest"); // NOI18N
-
-//        final ServletHolder servlet = new ServletHolder(ServletContainer.class);
-//        servlet.setInitParameters(initParams);
-//
-//        server = new Server(port);
-//        final Context context = new Context(server, "/", Context.SESSIONS);
-//        context.addServlet(servlet, "/*");
-
-        try {
-            selector = GrizzlyWebContainerFactory.create(baseURI, initParams);
-//            server.start();
-        } catch (final Exception ex) {
-            final String message = "could not create jetty web container on port: " + port; // NOI18N
-            LOG.error(message, ex);
-            throw new ServerExitError(message, ex);
-        }
-    }
-
-    //~ Methods ----------------------------------------------------------------
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   port  DOCUMENT ME!
-     *
-     * @throws  ServerExitError  DOCUMENT ME!
-     */
-    public static synchronized void up(final int port) throws ServerExitError {
-        if (!isUp()) {
-            instance = new RESTfulSerialInterface(port);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     */
-    public static synchronized void down() {
-        if (isUp()) {
-            try {
-//                instance.server.stop();
-                instance.selector.stopEndpoint();
-            } catch (final Exception ex) {
-//                LOG.warn("could not stop jetty", ex);
-                LOG.warn("could not stop grizzly", ex);
-            }
-            instance = null;
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public static synchronized boolean isUp() {
-        return instance != null;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public static synchronized int getPort() {
-        if (isUp()) {
-            return instance.port;
-        } else {
-            return -1;
-        }
+    public RESTfulSerialInterface()
+    {
+        callserver = StartProxy.getInstance().getCallServer();
     }
 
     /**
