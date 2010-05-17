@@ -31,6 +31,7 @@ import java.rmi.RemoteException;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -88,7 +89,13 @@ public final class RESTfulSerialInterface {
     public static final String PARAM_METAOBJECT = "metaObject";
     public static final String PARAM_METACLASS = "metaClass";
     public static final String PARAM_OBJECT_ID = "objectID";
-
+    public static final String PARAM_NODE_FROM = "fromNode";
+    public static final String PARAM_NODE_TO = "toNode";
+    public static final String PARAM_NODE = "node";
+    public static final String PARAM_LINK_PARENT = "linkParent";
+    public static final String PARAM_NODE_ID = "nodeID";
+    private static RESTfulSerialInterface instance;
+    //~ Instance fields --------------------------------------------------------
     private final transient CallServerService callserver;
 
     public RESTfulSerialInterface()
@@ -118,8 +125,25 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public void getRoots(User user, String domainName) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/getRootsByDomain")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getRootsByDomain(
+            @QueryParam(PARAM_USER) String userBytes,
+            @QueryParam(PARAM_DOMAIN) String domainNameBytes) throws RemoteException {
+        try {
+
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final String domain = Converter.deserialiseFromString(domainNameBytes, String.class);
+
+            return createResponse(callserver.getRoots(user, domain));
+
+        } catch (Exception e) {
+            final String message = "could not get roots"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -132,8 +156,22 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public Node[] getRoots(User user) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/getRoots")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getRoots(@QueryParam(PARAM_USER) String userBytes) {
+        try {
+
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+
+            return createResponse(callserver.getRoots(user));
+
+        } catch (Exception e) {
+            final String message = "could not get roots"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -147,8 +185,24 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public Node[] getChildren(Node node, User usr) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/getChildren")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getChildren(@QueryParam(PARAM_NODE) String nodeBytes,
+            @QueryParam(PARAM_USER) String usrBytes) {
+        try {
+
+            final Node node = Converter.deserialiseFromString(nodeBytes, Node.class);
+            final User user = Converter.deserialiseFromString(usrBytes, User.class);
+
+            return createResponse(callserver.getChildren(node, user));
+
+        } catch (Exception e) {
+            final String message = "could not get children"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -163,8 +217,28 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public Node addNode(Node node, Link parent, User user) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/addNode")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response addNode(
+            @QueryParam(PARAM_NODE) String nodeBytes,
+            @QueryParam(PARAM_LINK_PARENT) String parentBytes,
+            @QueryParam(PARAM_USER) String userBytes) {
+
+        try {
+
+            final Node node = Converter.deserialiseFromString(nodeBytes, Node.class);
+            final Link parent = Converter.deserialiseFromString(parentBytes, Link.class);
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+
+            return createResponse(callserver.addNode(node, parent, user));
+
+        } catch (Exception e) {
+            final String message = "could not add node"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -178,8 +252,26 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public boolean deleteNode(Node node, User user) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/deleteNode")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response deleteNode(
+            @QueryParam(PARAM_NODE) String nodeBytes,
+            @QueryParam(PARAM_USER) String userBytes) {
+
+        try {
+
+            final Node node = Converter.deserialiseFromString(nodeBytes, Node.class);
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+
+            return createResponse(callserver.deleteNode(node, user));
+
+        } catch (Exception e) {
+            final String message = "could not delete node"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -194,8 +286,28 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public boolean addLink(Node from, Node to, User user) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/addLink")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response addLink(
+            @QueryParam(PARAM_NODE_FROM) String fromBytes,
+            @QueryParam(PARAM_NODE_TO) String toBytes,
+            @QueryParam(PARAM_USER) String userBytes) {
+
+        try {
+
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final Node from = Converter.deserialiseFromString(fromBytes, Node.class);
+            final Node to = Converter.deserialiseFromString(toBytes, Node.class);
+
+            return createResponse(callserver.addLink(from, to, user));
+
+        } catch (Exception e) {
+            final String message = "could not add link"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -210,8 +322,29 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public boolean deleteLink(Node from, Node to, User user) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/deleteLink")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response deleteLink(
+            @QueryParam(PARAM_NODE_FROM) String fromBytes,
+            @QueryParam(PARAM_NODE_TO) String toBytes,
+            @QueryParam(PARAM_USER) String userBytes) {
+
+        try {
+
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final Node from = Converter.deserialiseFromString(fromBytes, Node.class);
+            final Node to = Converter.deserialiseFromString(toBytes, Node.class);
+
+            return createResponse(callserver.deleteLink(from, to, user));
+
+        } catch (Exception e) {
+            final String message = "could not delete link"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
+
     }
 
     /**
@@ -226,8 +359,26 @@ public final class RESTfulSerialInterface {
      * @throws  DataRetrievalException         DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public DataObject getDataObject(User user, MetaObject metaObject) throws RemoteException, DataRetrievalException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/getDataObjectByMetaObject")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getDataObjectByMetaObject(
+            @QueryParam(PARAM_USER) String userBytes,
+            @QueryParam(PARAM_METAOBJECT) String metaObjectBytes)  {
+
+        try {
+
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final MetaObject metaObject = Converter.deserialiseFromString(metaObjectBytes, MetaObject.class);
+
+            return createResponse(callserver.getDataObject(user, metaObject));
+
+        } catch (Exception e) {
+            final String message = "could not get dataobject"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -242,8 +393,26 @@ public final class RESTfulSerialInterface {
      * @throws  DataRetrievalException         DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public DataObject[] getDataObject(User user, Query query) throws RemoteException, DataRetrievalException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/getDataObjectByQuery")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getDataObjectByQuery(
+            @QueryParam(PARAM_USER) String userBytes,
+            @QueryParam(PARAM_QUERY) String queryBytes) {
+
+        try {
+
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final Query query = Converter.deserialiseFromString(queryBytes, Query.class);
+
+            return createResponse(callserver.getDataObject(user, query));
+
+        } catch (Exception e) {
+            final String message = "could not get dataobject"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -298,8 +467,28 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public Node getMetaObjectNode(User usr, int nodeID, String domain) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/getMetaObjectNode")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getMetaObjectNode(
+            @QueryParam(PARAM_USER) String usrBytes,
+            @QueryParam(PARAM_NODE_ID) String nodeIDBytes,
+            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+
+        try {
+
+            final User user = Converter.deserialiseFromString(usrBytes, User.class);
+            final int nodeID = Converter.deserialiseFromString(nodeIDBytes, int.class);
+            final String domain = Converter.deserialiseFromString(domainBytes, String.class);
+
+            return createResponse(callserver.getMetaObjectNode(user, nodeID, domain));
+
+        } catch (Exception e) {
+            final String message = "could not get metaObjectNode"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -313,8 +502,26 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public Node[] getMetaObjectNode(User usr, String query) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/getMetaObjectNodeByString")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getMetaObjectNodeByString(
+            @QueryParam(PARAM_USER) String usrBytes,
+            @QueryParam(PARAM_QUERY) String queryBytes) { // String
+
+        try {
+
+            final User user = Converter.deserialiseFromString(usrBytes, User.class);
+            final String query = Converter.deserialiseFromString(queryBytes, String.class);
+
+            return createResponse(callserver.getMetaObjectNode(user, query));
+
+        } catch (Exception e) {
+            final String message = "could not get metaObjectNode"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -328,8 +535,26 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public Node[] getMetaObjectNode(User usr, Query query) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/getMetaObjectNodeByQuery")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getMetaObjectNodeByQuery(
+            @QueryParam(PARAM_USER) String usrBytes,
+            @QueryParam(PARAM_QUERY) String queryBytes) {  // Query
+
+        try {
+
+            final User user = Converter.deserialiseFromString(usrBytes, User.class);
+            final Query query = Converter.deserialiseFromString(queryBytes, Query.class);
+
+            return createResponse(callserver.getMetaObjectNode(user, query));
+
+        } catch (Exception e) {
+            final String message = "could not get metaObjectNode"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -343,8 +568,26 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public MetaObject[] getMetaObject(User usr, String query) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/getMetaObjectByString")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getMetaObjectByString(
+            @QueryParam(PARAM_USER) String usrBytes,
+            @QueryParam(PARAM_QUERY) String queryBytes) {
+        
+        try {
+
+            final User user = Converter.deserialiseFromString(usrBytes, User.class);
+            final String query = Converter.deserialiseFromString(queryBytes, String.class);
+
+            return createResponse(callserver.getMetaObject(user, query));
+
+        } catch (Exception e) {
+            final String message = "could not get metaObject"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -358,8 +601,26 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public MetaObject[] getMetaObject(User usr, Query query) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/getMetaObjectByQuery")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getMetaObjectByQuery(
+            @QueryParam(PARAM_USER) String usrBytes,
+            @QueryParam(PARAM_QUERY) String queryBytes) {
+
+        try {
+
+            final User user = Converter.deserialiseFromString(usrBytes, User.class);
+            final Query query = Converter.deserialiseFromString(queryBytes, Query.class);
+
+            return createResponse(callserver.getMetaObject(user, query));
+
+        } catch (Exception e) {
+            final String message = "could not get metaObject"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -412,8 +673,28 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public MetaObject insertMetaObject(User user, MetaObject metaObject, String domain) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/insertMetaObject")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response insertMetaObject(
+            @QueryParam(PARAM_USER) String userBytes,
+            @QueryParam(PARAM_METAOBJECT) String metaObjectBytes,
+            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+
+        try {
+
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final MetaObject metaObject = Converter.deserialiseFromString(metaObjectBytes, MetaObject.class);
+            final String domain = Converter.deserialiseFromString(domainBytes, String.class);
+
+            return createResponse(callserver.insertMetaObject(user, metaObject, domain));
+
+        } catch (Exception e) {
+            final String message = "could not insert metaObject"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -428,8 +709,27 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public int insertMetaObject(User user, Query query, String domain) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/insertMetaObjectByQuery")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response insertMetaObjectByQuery(
+            @QueryParam(PARAM_USER) String userBytes,
+            @QueryParam(PARAM_QUERY) String queryBytes,
+            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+        try {
+
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final Query query = Converter.deserialiseFromString(queryBytes, Query.class);
+            final String domain = Converter.deserialiseFromString(domainBytes, String.class);
+
+            return createResponse(callserver.insertMetaObject(user, query, domain));
+
+        } catch (Exception e) {
+            final String message = "could not insert metaObject"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -444,8 +744,29 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public int updateMetaObject(User user, MetaObject metaObject, String domain) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @GET
+    @Path("/GET/updateMetaObject")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response updateMetaObject(
+            @QueryParam(PARAM_USER) String userBytes,
+            @QueryParam(PARAM_METAOBJECT) String metaObjectBytes,
+            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+
+        try {
+
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final MetaObject metaObject = Converter.deserialiseFromString(metaObjectBytes, MetaObject.class);
+            final String domain = Converter.deserialiseFromString(domainBytes, String.class);
+
+            return createResponse(callserver.updateMetaObject(user, metaObject, domain));
+
+        } catch (Exception e) {
+            final String message = "could not update metaObject"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
+        
     }
 
     /**
@@ -950,19 +1271,24 @@ public final class RESTfulSerialInterface {
      *
      * @throws  WebApplicationException                DOCUMENT ME!
      */
-    public Response getQueryInfos(User userBytes) {
-        throw new UnsupportedOperationException("Not supported yet.");
-//        try {
-//
-//            final User user = Converter.deserialiseFromString(userBytes, User.class);
-//
-//            return createResponse(callserver.getQueryInfos(user));
-//
-//        } catch (Exception e) {
-//            final String message = "could not get query infos"; // NOI18N
-//            LOG.error(message, e);
-//            throw new WebApplicationException(e);
-//        }
+    @GET
+    @Path("/GET/getQueryInfosByUser")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getQueryInfosByUser(
+            @QueryParam(PARAM_USER) String userBytes) {
+        
+        try {
+
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+
+            return createResponse(callserver.getQueryInfos(user));
+
+        } catch (Exception e) {
+            final String message = "could not get query infos"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
     }
 
     /**
@@ -974,19 +1300,23 @@ public final class RESTfulSerialInterface {
      *
      * @throws  WebApplicationException                DOCUMENT ME!
      */
-    public Response getQueryInfos(UserGroup userGroupBytes) {
-        throw new UnsupportedOperationException("Not supported yet.");
-//        try {
-//
-//            final UserGroup userGroup = Converter.deserialiseFromString(userGroupBytes, UserGroup.class);
-//
-//            return createResponse(callserver.getQueryInfos(userGroup));
-//
-//        } catch (Exception e) {
-//            final String message = "could not get query infos"; // NOI18N
-//            LOG.error(message, e);
-//            throw new WebApplicationException(e);
-//        }
+    @GET
+    @Path("/GET/getQueryInfosByUserGroup")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getQueryInfosByUserGroup(
+            @QueryParam(PARAM_USERGROUP) String userGroupBytes) {
+        try {
+
+            final UserGroup userGroup = Converter.deserialiseFromString(userGroupBytes, UserGroup.class);
+
+            return createResponse(callserver.getQueryInfos(userGroup));
+
+        } catch (Exception e) {
+            final String message = "could not get query infos"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
 
     }
 
@@ -1498,7 +1828,7 @@ public final class RESTfulSerialInterface {
      * @throws  WebApplicationException  UnsupportedOperationException DOCUMENT ME!
      */
     @GET
-    @Path("/GET/getUserGroupNames")
+    @Path("/GET/getUserGroupNamesByUserName")
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getUserGroupNamesGET(
