@@ -1698,10 +1698,10 @@ public final class RESTfulSerialInterface {
      * @throws  WebApplicationException  RemoteException DOCUMENT ME!
      */
     @GET
-    @Path("/GET/getDefaultIcons")
+    @Path("/GET/getDefaultIconsByLSName")
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
-    public Response getDefaultIconsGET(@QueryParam(PARAM_LS_NAME) final String lsNameBytes) {
+    public Response getDefaultIconsByLSName(@QueryParam(PARAM_LS_NAME) final String lsNameBytes) {
         try {
             final String lsName = Converter.deserialiseFromString(lsNameBytes, String.class);
 
@@ -1713,25 +1713,25 @@ public final class RESTfulSerialInterface {
         }
     }
 
-//    /**
-//     * DOCUMENT ME!
-//     *
-//     * @return  DOCUMENT ME!
-//     *
-//     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
-//     */
-//    @GET
-//    @Path("/GET/getDefaultIcons")
-//    @Produces("application/octet-stream")
-//    public String getDefaultIconsGET() {
-//        try {
-//            return Converter.serialiseToString(callserver.getDefaultIcons());
-//        } catch (IOException ex) {
-//            final String message = "could not get default icons"; // NOI18N
-//            LOG.error(message, ex);
-//            throw new WebApplicationException(ex);
-//        }
-//    }
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     */
+    @GET
+    @Path("/GET/getDefaultIcons")
+    @Produces("application/octet-stream")
+    public Response getDefaultIconsGET() {
+        try {
+            return createResponse(callserver.getDefaultIcons());
+        } catch (IOException ex) {
+            final String message = "could not get default icons"; // NOI18N
+            LOG.error(message, ex);
+            throw new WebApplicationException(ex);
+        }
+    }
     /**
      * DOCUMENT ME!
      *
