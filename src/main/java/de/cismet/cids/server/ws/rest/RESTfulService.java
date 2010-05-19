@@ -10,12 +10,13 @@ package de.cismet.cids.server.ws.rest;
 import Sirius.server.ServerExitError;
 import Sirius.server.middleware.impls.proxy.StartProxy;
 import com.sun.grizzly.http.SelectorThread;
+import com.sun.grizzly.http.servlet.ServletAdapter;
+import com.sun.grizzly.standalone.StaticStreamAlgorithm;
 
 
-import com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory;
+import com.sun.jersey.spi.container.servlet.ServletContainer;
+import java.net.URI;
 
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -40,6 +41,8 @@ public final class RESTfulService {
 //    private final transient Server server;
     private final transient SelectorThread selector;
 
+    private static final int HEADER_SIZE = 16 * 1024;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -53,9 +56,7 @@ public final class RESTfulService {
         final StartProxy proxy = StartProxy.getInstance();
         this.port = port;
 
-        final String baseURI = "http://" + proxy.getServer().getIP() + ":" + port + "/";            // NOI18N
-        final Map<String, String> initParams = new HashMap<String, String>();
-        initParams.put("com.sun.jersey.config.property.packages", "de.cismet.cids.server.ws.rest"); // NOI18N
+        final URI baseURI = URI.create("http://" + proxy.getServer().getIP() + ":" + port + "/");            // NOI18N
 
 //        final ServletHolder servlet = new ServletHolder(ServletContainer.class);
 //        servlet.setInitParameters(initParams);
@@ -65,7 +66,18 @@ public final class RESTfulService {
 //        context.addServlet(servlet, "/*");
 
         try {
-            selector = GrizzlyWebContainerFactory.create(baseURI, initParams);
+            final ServletAdapter adapter = new ServletAdapter();
+            adapter.addInitParameter("com.sun.jersey.config.property.packages", "de.cismet.cids.server.ws.rest"); // NOI18N
+            adapter.setServletInstance(ServletContainer.class.newInstance());
+            adapter.setResourcesContextPath(baseURI.getRawPath());
+
+            selector = new SelectorThread();
+            selector.setMaxHttpHeaderSize(HEADER_SIZE);
+            selector.setAlgorithmClassName(StaticStreamAlgorithm.class.getName());
+            selector.setPort(port);
+            selector.setAdapter(adapter);
+
+            selector.listen();
 //            server.start();
         } catch (final Exception ex) {
             final String message = "could not create jetty web container on port: " + port; // NOI18N
