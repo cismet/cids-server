@@ -7,7 +7,6 @@
  ****************************************************/
 package de.cismet.cids.server.ws.rest;
 
-import Sirius.server.dataretrieval.DataObject;
 import Sirius.server.dataretrieval.DataRetrievalException;
 import Sirius.server.middleware.impls.proxy.StartProxy;
 import Sirius.server.middleware.types.Link;
@@ -31,7 +30,6 @@ import java.rmi.RemoteException;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -98,8 +96,7 @@ public final class RESTfulSerialInterface {
     //~ Instance fields --------------------------------------------------------
     private final transient CallServerService callserver;
 
-    public RESTfulSerialInterface()
-    {
+    public RESTfulSerialInterface() {
         callserver = StartProxy.getInstance().getCallServer();
     }
 
@@ -130,8 +127,8 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getRootsByDomain(
-            @QueryParam(PARAM_USER) String userBytes,
-            @QueryParam(PARAM_DOMAIN) String domainNameBytes) throws RemoteException {
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_DOMAIN) final String domainNameBytes) throws RemoteException {
         try {
 
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -160,7 +157,7 @@ public final class RESTfulSerialInterface {
     @Path("/GET/getRoots")
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
-    public Response getRoots(@QueryParam(PARAM_USER) String userBytes) {
+    public Response getRoots(@QueryParam(PARAM_USER) final String userBytes) {
         try {
 
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -189,8 +186,8 @@ public final class RESTfulSerialInterface {
     @Path("/GET/getChildren")
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
-    public Response getChildren(@QueryParam(PARAM_NODE) String nodeBytes,
-            @QueryParam(PARAM_USER) String usrBytes) {
+    public Response getChildren(@QueryParam(PARAM_NODE) final String nodeBytes,
+            @QueryParam(PARAM_USER) final String usrBytes) {
         try {
 
             final Node node = Converter.deserialiseFromString(nodeBytes, Node.class);
@@ -222,9 +219,9 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response addNode(
-            @QueryParam(PARAM_NODE) String nodeBytes,
-            @QueryParam(PARAM_LINK_PARENT) String parentBytes,
-            @QueryParam(PARAM_USER) String userBytes) {
+            @QueryParam(PARAM_NODE) final String nodeBytes,
+            @QueryParam(PARAM_LINK_PARENT) final String parentBytes,
+            @QueryParam(PARAM_USER) final String userBytes) {
 
         try {
 
@@ -257,8 +254,8 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response deleteNode(
-            @QueryParam(PARAM_NODE) String nodeBytes,
-            @QueryParam(PARAM_USER) String userBytes) {
+            @QueryParam(PARAM_NODE) final String nodeBytes,
+            @QueryParam(PARAM_USER) final String userBytes) {
 
         try {
 
@@ -291,9 +288,9 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response addLink(
-            @QueryParam(PARAM_NODE_FROM) String fromBytes,
-            @QueryParam(PARAM_NODE_TO) String toBytes,
-            @QueryParam(PARAM_USER) String userBytes) {
+            @QueryParam(PARAM_NODE_FROM) final String fromBytes,
+            @QueryParam(PARAM_NODE_TO) final String toBytes,
+            @QueryParam(PARAM_USER) final String userBytes) {
 
         try {
 
@@ -327,9 +324,9 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response deleteLink(
-            @QueryParam(PARAM_NODE_FROM) String fromBytes,
-            @QueryParam(PARAM_NODE_TO) String toBytes,
-            @QueryParam(PARAM_USER) String userBytes) {
+            @QueryParam(PARAM_NODE_FROM) final String fromBytes,
+            @QueryParam(PARAM_NODE_TO) final String toBytes,
+            @QueryParam(PARAM_USER) final String userBytes) {
 
         try {
 
@@ -364,8 +361,8 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getDataObjectByMetaObject(
-            @QueryParam(PARAM_USER) String userBytes,
-            @QueryParam(PARAM_METAOBJECT) String metaObjectBytes)  {
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_METAOBJECT) final String metaObjectBytes) {
 
         try {
 
@@ -398,8 +395,8 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getDataObjectByQuery(
-            @QueryParam(PARAM_USER) String userBytes,
-            @QueryParam(PARAM_QUERY) String queryBytes) {
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_QUERY) final String queryBytes) {
 
         try {
 
@@ -472,9 +469,9 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getMetaObjectNode(
-            @QueryParam(PARAM_USER) String usrBytes,
-            @QueryParam(PARAM_NODE_ID) String nodeIDBytes,
-            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+            @QueryParam(PARAM_USER) final String usrBytes,
+            @QueryParam(PARAM_NODE_ID) final String nodeIDBytes,
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
 
         try {
 
@@ -507,8 +504,8 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getMetaObjectNodeByString(
-            @QueryParam(PARAM_USER) String usrBytes,
-            @QueryParam(PARAM_QUERY) String queryBytes) { // String
+            @QueryParam(PARAM_USER) final String usrBytes,
+            @QueryParam(PARAM_QUERY) final String queryBytes) { // String
 
         try {
 
@@ -540,8 +537,8 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getMetaObjectNodeByQuery(
-            @QueryParam(PARAM_USER) String usrBytes,
-            @QueryParam(PARAM_QUERY) String queryBytes) {  // Query
+            @QueryParam(PARAM_USER) final String usrBytes,
+            @QueryParam(PARAM_QUERY) final String queryBytes) {  // Query
 
         try {
 
@@ -573,9 +570,9 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getMetaObjectByString(
-            @QueryParam(PARAM_USER) String usrBytes,
-            @QueryParam(PARAM_QUERY) String queryBytes) {
-        
+            @QueryParam(PARAM_USER) final String usrBytes,
+            @QueryParam(PARAM_QUERY) final String queryBytes) {
+
         try {
 
             final User user = Converter.deserialiseFromString(usrBytes, User.class);
@@ -606,8 +603,8 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getMetaObjectByQuery(
-            @QueryParam(PARAM_USER) String usrBytes,
-            @QueryParam(PARAM_QUERY) String queryBytes) {
+            @QueryParam(PARAM_USER) final String usrBytes,
+            @QueryParam(PARAM_QUERY) final String queryBytes) {
 
         try {
 
@@ -641,10 +638,10 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getMetaObject(
-            @QueryParam(PARAM_USER) String userBytes,
-            @QueryParam(PARAM_OBJECT_ID) String objectIDBytes,
-            @QueryParam(PARAM_CLASS_IDS) String classIDBytes,
-            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_OBJECT_ID) final String objectIDBytes,
+            @QueryParam(PARAM_CLASS_IDS) final String classIDBytes,
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
 
         try {
 
@@ -678,9 +675,9 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response insertMetaObject(
-            @QueryParam(PARAM_USER) String userBytes,
-            @QueryParam(PARAM_METAOBJECT) String metaObjectBytes,
-            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_METAOBJECT) final String metaObjectBytes,
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
 
         try {
 
@@ -714,9 +711,9 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response insertMetaObjectByQuery(
-            @QueryParam(PARAM_USER) String userBytes,
-            @QueryParam(PARAM_QUERY) String queryBytes,
-            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_QUERY) final String queryBytes,
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
         try {
 
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -749,9 +746,9 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response updateMetaObject(
-            @QueryParam(PARAM_USER) String userBytes,
-            @QueryParam(PARAM_METAOBJECT) String metaObjectBytes,
-            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_METAOBJECT) final String metaObjectBytes,
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
 
         try {
 
@@ -766,7 +763,7 @@ public final class RESTfulSerialInterface {
             LOG.error(message, e);
             throw new WebApplicationException(e);
         }
-        
+
     }
 
     /**
@@ -786,9 +783,9 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response deleteMetaObject(
-            @QueryParam(PARAM_USER) String userBytes,
-            @QueryParam(PARAM_METAOBJECT) String metaObjectBytes,
-            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_METAOBJECT) final String metaObjectBytes,
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
 
         try {
 
@@ -821,9 +818,9 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response update(
-            @QueryParam(PARAM_USER) String userBytes,
-            @QueryParam(PARAM_QUERY) String queryBytes,
-            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_QUERY) final String queryBytes,
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
 
         try {
 
@@ -855,8 +852,8 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getInstance(
-            @QueryParam(PARAM_USER) String userBytes,
-            @QueryParam(PARAM_METACLASS) String cBytes) {
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_METACLASS) final String cBytes) {
 
         try {
 
@@ -888,9 +885,9 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getClassByTableName(
-            @QueryParam(PARAM_USER) String userBytes,
-            @QueryParam(PARAM_TABLE_NAME) String tableNameBytes,
-            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_TABLE_NAME) final String tableNameBytes,
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
 
         try {
 
@@ -923,9 +920,9 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getClass(
-            @QueryParam(PARAM_USER) String userBytes,
-            @QueryParam(PARAM_CLASS_IDS) String classIdBytes,
-            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_CLASS_IDS) final String classIdBytes,
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
 
         try {
 
@@ -957,8 +954,8 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getClasses(
-            @QueryParam(PARAM_USER) String userBytes,
-            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
 
         try {
 
@@ -983,9 +980,26 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-//    public Node[] getClassTreeNodes(User user) throws RemoteException {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
+    @GET
+    @Path("/GET/getClassTreeNodesByUser")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getClassTreeNodesByUser(
+            @QueryParam(PARAM_USER) final String userBytes) {
+
+        try {
+
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+
+            return createResponse(callserver.getClassTreeNodes(user));
+
+
+        } catch (Exception e) {
+            final String message = "could not get ClassTreeNodes"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
+    }
     /**
      * DOCUMENT ME!
      *
@@ -1002,19 +1016,16 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getClassTreeNodes(
-            @QueryParam(PARAM_USER) String userBytes,
-            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
 
         try {
 
             final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final String domain = Converter.deserialiseFromString(domainBytes, String.class);
 
-            if (domainBytes == null) {
-                return createResponse(callserver.getClassTreeNodes(user));
-            } else {
-                final String domain = Converter.deserialiseFromString(domainBytes, String.class);
-                return createResponse(callserver.getClassTreeNodes(user, domain));
-            }
+            return createResponse(callserver.getClassTreeNodes(user, domain));
+
 
         } catch (Exception e) {
             final String message = "could not get ClassTreeNodes"; // NOI18N
@@ -1033,9 +1044,26 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-//    public MethodMap getMethods(User user) throws RemoteException {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
+    @GET
+    @Path("/GET/getMethodsByUser")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getMethodsByUser(@QueryParam(PARAM_USER) final String userBytes) {
+
+        try {
+
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+
+            return createResponse(callserver.getMethods(user));
+
+
+        } catch (Exception e) {
+            final String message = "could not get methods"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
+    }
+
     /**
      * DOCUMENT ME!
      *
@@ -1052,19 +1080,16 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getMethods(
-            @QueryParam(PARAM_USER) String userBytes,
-            @QueryParam(PARAM_LOCAL_SERVER_NAME) String localServerNameBytes) {
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_LOCAL_SERVER_NAME) final String localServerNameBytes) {
 
         try {
 
             final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final String localServerName = Converter.deserialiseFromString(localServerNameBytes, String.class);
 
-            if (localServerNameBytes == null) {
-                return createResponse(callserver.getMethods(user));
-            } else {
-                final String localServerName = Converter.deserialiseFromString(localServerNameBytes, String.class);
-                return createResponse(callserver.getMethods(user, localServerName));
-            }
+            return createResponse(callserver.getMethods(user, localServerName));
+
 
         } catch (Exception e) {
             final String message = "could not get methods"; // NOI18N
@@ -1086,14 +1111,14 @@ public final class RESTfulSerialInterface {
      * @throws  WebApplicationException                DOCUMENT ME!
      */
     @GET
-    @Path("/GET/getAllLightweightMetaObjectsForClass")
+    @Path("/GET/getAllLightweightMetaObjectsForClassWithPattern")
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
-    public Response getAllLightweightMetaObjectsForClass(
-            @QueryParam(PARAM_CLASS_IDS) String classIdBytes,
-            @QueryParam(PARAM_USER) String userBytes,
-            @QueryParam(PARAM_REP_FIELDS) String representationFieldsBytes,
-            @QueryParam(PARAM_REP_PATTERN) String representationPatternBytes) {
+    public Response getAllLightweightMetaObjectsForClassWithPattern(
+            @QueryParam(PARAM_CLASS_IDS) final String classIdBytes,
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_REP_FIELDS) final String representationFieldsBytes,
+            @QueryParam(PARAM_REP_PATTERN) final String representationPatternBytes) {
 
 
         try {
@@ -1102,17 +1127,12 @@ public final class RESTfulSerialInterface {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String[] representationFields =
                     Converter.deserialiseFromString(representationFieldsBytes, String[].class);
+            final String representationPattern =
+                    Converter.deserialiseFromString(representationPatternBytes, String.class);
 
-            if (representationPatternBytes == null) {
-                return createResponse(callserver.getAllLightweightMetaObjectsForClass(
-                        classId, user, representationFields));
-            } else {
-                final String representationPattern =
-                        Converter.deserialiseFromString(representationPatternBytes, String.class);
+            return createResponse(callserver.getAllLightweightMetaObjectsForClass(
+                    classId, user, representationFields, representationPattern));
 
-                return createResponse(callserver.getAllLightweightMetaObjectsForClass(
-                        classId, user, representationFields, representationPattern));
-            }
         } catch (Exception e) {
             final String message = "could not get LightweightMetaObjects for class"; // NOI18N
             LOG.error(message, e);
@@ -1133,12 +1153,32 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-//    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(
-//            int classId,
-//            User user,
-//            String[] representationFields) throws RemoteException {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
+    @GET
+    @Path("/GET/getAllLightweightMetaObjectsForClass")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getAllLightweightMetaObjectsForClass(
+            @QueryParam(PARAM_CLASS_IDS) final String classIdBytes,
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_REP_FIELDS) final String representationFieldsBytes) {
+
+        try {
+
+            final int classId = Converter.deserialiseFromString(classIdBytes, int.class);
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final String[] representationFields =
+                    Converter.deserialiseFromString(representationFieldsBytes, String[].class);
+
+            return createResponse(callserver.getAllLightweightMetaObjectsForClass(
+                    classId, user, representationFields));
+
+        } catch (Exception e) {
+            final String message = "could not get LightweightMetaObjects for class"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
+    }
+
     /**
      * DOCUMENT ME!
      *
@@ -1153,15 +1193,15 @@ public final class RESTfulSerialInterface {
      * @throws  WebApplicationException                DOCUMENT ME!
      */
     @GET
-    @Path("/GET/getLightweightMetaObjectsByQuery")
+    @Path("/GET/getLightweightMetaObjectsByQueryAndPattern")
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
-    public Response getLightweightMetaObjectsByQuery(
-            @QueryParam(PARAM_CLASS_IDS) String classIdBytes,
-            @QueryParam(PARAM_USER) String userBytes,
-            @QueryParam(PARAM_QUERY_NAME) String queryBytes,
-            @QueryParam(PARAM_REP_FIELDS) String representationFieldsBytes,
-            @QueryParam(PARAM_REP_PATTERN) String representationPatternBytes) {
+    public Response getLightweightMetaObjectsByQueryAndPattern(
+            @QueryParam(PARAM_CLASS_IDS) final String classIdBytes,
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_QUERY_NAME) final String queryBytes,
+            @QueryParam(PARAM_REP_FIELDS) final String representationFieldsBytes,
+            @QueryParam(PARAM_REP_PATTERN) final String representationPatternBytes) {
 
         try {
 
@@ -1170,17 +1210,12 @@ public final class RESTfulSerialInterface {
             final String query = Converter.deserialiseFromString(queryBytes, String.class);
             final String[] representationFields =
                     Converter.deserialiseFromString(representationFieldsBytes, String[].class);
+            final String representationPattern =
+                    Converter.deserialiseFromString(representationPatternBytes, String.class);
 
-            if (representationPatternBytes == null) {
-                return createResponse(callserver.getLightweightMetaObjectsByQuery(classId,
-                        user, query, representationFields));
-            } else {
-                final String representationPattern =
-                        Converter.deserialiseFromString(representationPatternBytes, String.class);
+            return createResponse(callserver.getLightweightMetaObjectsByQuery(
+                    classId, user, query, representationFields, representationPattern));
 
-                return createResponse(callserver.getLightweightMetaObjectsByQuery(
-                        classId, user, query, representationFields, representationPattern));
-            }
 
         } catch (Exception e) {
             final String message = "could not get LightweightMetaObjects by query"; // NOI18N
@@ -1202,33 +1237,34 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException                DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-//    @GET
-//    @Path("/GET/getLightweightMetaObjectsByQuery")
-//    @Consumes("application/octet-stream")
-//    @Produces("application/octet-stream")
-//    public Response getLightweightMetaObjectsByQuery(
-//            @QueryParam(PARAM_CLASS_IDS) String classIdBytes,
-//            @QueryParam(PARAM_USER) String userBytes,
-//            @QueryParam(PARAM_QUERY_NAME) String queryBytes,
-//            @QueryParam(PARAM_REP_FIELDS) String representationFieldsBytes) {
-//
-//        try {
-//
-//            final int classId = Converter.deserialiseFromString(classIdBytes, int.class);
-//            final User user = Converter.deserialiseFromString(userBytes, User.class);
-//            final String query = Converter.deserialiseFromString(queryBytes, String.class);
-//            final String[] representationFields =
-//                    Converter.deserialiseFromString(representationFieldsBytes,String[].class);
-//
-//            return createResponse(callserver.getLightweightMetaObjectsByQuery(classId,
-//                    user, query, representationFields));
-//
-//        } catch (Exception e) {
-//            final String message = "could not store query"; // NOI18N
-//            LOG.error(message, e);
-//            throw new WebApplicationException(e);
-//        }
-//    }
+    @GET
+    @Path("/GET/getLightweightMetaObjectsByQuery")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getLightweightMetaObjectsByQuery(
+            @QueryParam(PARAM_CLASS_IDS) final String classIdBytes,
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_QUERY_NAME) final String queryBytes,
+            @QueryParam(PARAM_REP_FIELDS) final String representationFieldsBytes) {
+
+        try {
+
+            final int classId = Converter.deserialiseFromString(classIdBytes, int.class);
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final String query = Converter.deserialiseFromString(queryBytes, String.class);
+            final String[] representationFields =
+                    Converter.deserialiseFromString(representationFieldsBytes, String[].class);
+
+            return createResponse(callserver.getLightweightMetaObjectsByQuery(classId,
+                    user, query, representationFields));
+
+        } catch (Exception e) {
+            final String message = "could not store query"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
+    }
+
     /**
      * DOCUMENT ME!
      *
@@ -1244,8 +1280,8 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response storeQuery(
-            @QueryParam(PARAM_USER) String userBytes,
-            @QueryParam(PARAM_QUERY_DATA) String dataBytes) {
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_QUERY_DATA) final String dataBytes) {
 
         try {
 
@@ -1276,8 +1312,8 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getQueryInfosByUser(
-            @QueryParam(PARAM_USER) String userBytes) {
-        
+            @QueryParam(PARAM_USER) final String userBytes) {
+
         try {
 
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -1305,7 +1341,7 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getQueryInfosByUserGroup(
-            @QueryParam(PARAM_USERGROUP) String userGroupBytes) {
+            @QueryParam(PARAM_USERGROUP) final String userGroupBytes) {
         try {
 
             final UserGroup userGroup = Converter.deserialiseFromString(userGroupBytes, UserGroup.class);
@@ -1335,8 +1371,8 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response getQuery(
-            @QueryParam(PARAM_QUERY_ID) String idBytes,
-            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+            @QueryParam(PARAM_QUERY_ID) final String idBytes,
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
 
         try {
 
@@ -1367,8 +1403,8 @@ public final class RESTfulSerialInterface {
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
     public Response delete(
-            @QueryParam(PARAM_QUERY_ID) String idBytes,
-            @QueryParam(PARAM_DOMAIN) String domainBytes) {
+            @QueryParam(PARAM_QUERY_ID) final String idBytes,
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
 
         try {
 
@@ -1402,10 +1438,10 @@ public final class RESTfulSerialInterface {
      * @throws  WebApplicationException                DOCUMENT ME!
      */
     @GET
-    @Path("/GET/addQuery")
+    @Path("/GET/addQueryFull")
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
-    public Response addQuery(
+    public Response addQueryFull(
             @QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_QUERY_NAME) final String nameBytes,
             @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes,
@@ -1421,21 +1457,15 @@ public final class RESTfulSerialInterface {
             final String name = Converter.deserialiseFromString(nameBytes, String.class);
             final String description = Converter.deserialiseFromString(descriptionBytes, String.class);
             final String statement = Converter.deserialiseFromString(statementBytes, String.class);
+            final int resultType = Converter.deserialiseFromString(resultTypeBytes, int.class);
+            final char isUpdate = Converter.deserialiseFromString(isUpdateBytes, char.class);
+            final char isBatch = Converter.deserialiseFromString(isBatchBytes, char.class);
+            final char isRoot = Converter.deserialiseFromString(isRootBytes, char.class);
+            final char isUnion = Converter.deserialiseFromString(isUnionBytes, char.class);
 
-            if (resultTypeBytes == null && isUpdateBytes == null
-                    && isBatchBytes == null && isRootBytes == null && isUnionBytes == null) {
-                return createResponse(callserver.addQuery(user, name, description, statement));
-            } else {
+            return createResponse(callserver.addQuery(user, name, description,
+                    statement, resultType, isUpdate, isBatch, isRoot, isUnion));
 
-                final int resultType = Converter.deserialiseFromString(resultTypeBytes, int.class);
-                final char isUpdate = Converter.deserialiseFromString(isUpdateBytes, char.class);
-                final char isBatch = Converter.deserialiseFromString(isBatchBytes, char.class);
-                final char isRoot = Converter.deserialiseFromString(isRootBytes, char.class);
-                final char isUnion = Converter.deserialiseFromString(isUnionBytes, char.class);
-
-                return createResponse(callserver.addQuery(user, name, description,
-                        statement, resultType, isUpdate, isBatch, isRoot, isUnion));
-            }
 
         } catch (Exception e) {
             final String message = "could not add query"; // NOI18N
@@ -1457,31 +1487,32 @@ public final class RESTfulSerialInterface {
      *
      * @throws  WebApplicationException                DOCUMENT ME!
      */
-//    @GET
-//    @Path("/GET/addQuery")
-//    @Consumes("application/octet-stream")
-//    @Produces("application/octet-stream")
-//    public Response addQuery(
-//            @QueryParam(PARAM_USER) final String userBytes,
-//            @QueryParam(PARAM_QUERY_NAME) final String nameBytes,
-//            @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes,
-//            @QueryParam(PARAM_STATEMENT) final String statementBytes) {
-//
-//        try {
-//            final User user = Converter.deserialiseFromString(userBytes, User.class);
-//            final String name = Converter.deserialiseFromString(nameBytes, String.class);
-//            final String description = Converter.deserialiseFromString(descriptionBytes, String.class);
-//            final String statement = Converter.deserialiseFromString(statementBytes, String.class);
-//
-//            return createResponse(callserver.addQuery(user, name, description, statement));
-//
-//        } catch (Exception e) {
-//            final String message = "could not add query parameter"; // NOI18N
-//            LOG.error(message, e);
-//            throw new WebApplicationException(e);
-//        }
-//
-//    }
+    @GET
+    @Path("/GET/addQuery")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response addQuery(
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_QUERY_NAME) final String nameBytes,
+            @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes,
+            @QueryParam(PARAM_STATEMENT) final String statementBytes) {
+
+        try {
+
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final String name = Converter.deserialiseFromString(nameBytes, String.class);
+            final String description = Converter.deserialiseFromString(descriptionBytes, String.class);
+            final String statement = Converter.deserialiseFromString(statementBytes, String.class);
+
+            return createResponse(callserver.addQuery(user, name, description, statement));
+
+        } catch (Exception e) {
+            final String message = "could not add query parameter"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
+    }
+
     /**
      * DOCUMENT ME!
      *
@@ -1498,10 +1529,10 @@ public final class RESTfulSerialInterface {
      * @throws  WebApplicationException                DOCUMENT ME!
      */
     @GET
-    @Path("/GET/addQueryParameter")
+    @Path("/GET/addQueryParameterFull")
     @Consumes("application/octet-stream")
     @Produces("application/octet-stream")
-    public Response addQueryParameter(
+    public Response addQueryParameterFull(
             @QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_QUERY_ID) final String queryIdBytes,
             @QueryParam(PARAM_TYPE_ID) final String typeIdBytes,
@@ -1516,22 +1547,12 @@ public final class RESTfulSerialInterface {
             final int queryId = Converter.deserialiseFromString(queryIdBytes, int.class);
             final String paramkey = Converter.deserialiseFromString(paramkeyBytes, String.class);
             final String description = Converter.deserialiseFromString(descriptionBytes, String.class);
+            final int typeId = Converter.deserialiseFromString(typeIdBytes, int.class);
+            final char isQueryResult = Converter.deserialiseFromString(isQueryResultBytes, char.class);
+            final int queryPosition = Converter.deserialiseFromString(queryPositionBytes, int.class);
 
-            if (typeIdBytes == null && isQueryResultBytes == null && queryPositionBytes == null) {
-
-                return createResponse(callserver.addQueryParameter(user, queryId, paramkey, description));
-
-            } else {
-
-                final int typeId = Converter.deserialiseFromString(typeIdBytes, int.class);
-                final char isQueryResult = Converter.deserialiseFromString(isQueryResultBytes, char.class);
-                final int queryPosition = Converter.deserialiseFromString(queryPositionBytes, int.class);
-
-                return createResponse(callserver.addQueryParameter(user, queryId,
-                        typeId, paramkey, description, isQueryResult, queryPosition));
-            }
-
-
+            return createResponse(callserver.addQueryParameter(user, queryId,
+                    typeId, paramkey, description, isQueryResult, queryPosition));
 
         } catch (Exception e) {
             final String message = "could not add query parameter"; // NOI18N
@@ -1552,57 +1573,59 @@ public final class RESTfulSerialInterface {
      *
      * @throws  WebApplicationException                DOCUMENT ME!
      */
-//    @GET
-//    @Path("/GET/addQueryParameter")
-//    @Consumes("application/octet-stream")
-//    @Produces("application/octet-stream")
-//    public Response addQueryParameter(
-//            @QueryParam(PARAM_USER) final String userBytes,
-//            @QueryParam(PARAM_QUERY_ID) final String queryIdBytes,
-//            @QueryParam(PARAM_PARAM_KEY) final String paramkeyBytes,
-//            @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes) {
-//
-//        try {
-//
-//            final User user = Converter.deserialiseFromString(userBytes, User.class);
-//            final int queryID = Converter.deserialiseFromString(queryIdBytes, int.class);
-//            final String paramkey = Converter.deserialiseFromString(paramkeyBytes, String.class);
-//            final String description = Converter.deserialiseFromString(descriptionBytes, String.class);
-//
-//            return createResponse(callserver.addQueryParameter(user, queryID, paramkey, description));
-//
-//        } catch (Exception e) {
-//            final String message = "could not add query parameter"; // NOI18N
-//            LOG.error(message, e);
-//            throw new WebApplicationException(e);
-//        }
-//    }
-//    /**
-//     * DOCUMENT ME!
-//     *
-//     * @param   user  DOCUMENT ME!
-//     *
-//     * @return  DOCUMENT ME!
-//     *
-//     * @throws  WebApplicationException                DOCUMENT ME!
-//     */
-//    @GET
-//    @Path("/GET/getSearchOptions")
-//    @Consumes("application/octet-stream")
-//    @Produces("application/octet-stream")
-//    public Response getSearchOptions(@QueryParam(PARAM_USER) final String userBytes) {
-//        try {
-//
-//            final User user = Converter.deserialiseFromString(userBytes, User.class);
-//
-//            return createResponse(callserver.getSearchOptions(user));
-//
-//        } catch (final Exception e) {
-//            final String message = "could not get search options"; // NOI18N
-//            LOG.error(message, e);
-//            throw new WebApplicationException(e);
-//        }
-//    }
+    @GET
+    @Path("/GET/addQueryParameter")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response addQueryParameter(
+            @QueryParam(PARAM_USER) final String userBytes,
+            @QueryParam(PARAM_QUERY_ID) final String queryIdBytes,
+            @QueryParam(PARAM_PARAM_KEY) final String paramkeyBytes,
+            @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes) {
+
+        try {
+
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final int queryID = Converter.deserialiseFromString(queryIdBytes, int.class);
+            final String paramkey = Converter.deserialiseFromString(paramkeyBytes, String.class);
+            final String description = Converter.deserialiseFromString(descriptionBytes, String.class);
+
+            return createResponse(callserver.addQueryParameter(user, queryID, paramkey, description));
+
+        } catch (Exception e) {
+            final String message = "could not add query parameter"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  WebApplicationException                DOCUMENT ME!
+     */
+    @GET
+    @Path("/GET/getSearchOptionsByUser")
+    @Consumes("application/octet-stream")
+    @Produces("application/octet-stream")
+    public Response getSearchOptionsByUser(@QueryParam(PARAM_USER) final String userBytes) {
+        try {
+
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+
+            return createResponse(callserver.getSearchOptions(user));
+
+        } catch (final Exception e) {
+            final String message = "could not get search options"; // NOI18N
+            LOG.error(message, e);
+            throw new WebApplicationException(e);
+        }
+    }
+
     /**
      * DOCUMENT ME!
      *
@@ -1620,15 +1643,12 @@ public final class RESTfulSerialInterface {
     public Response getSearchOptions(
             @QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_DOMAIN) final String domainBytes) {
+
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final String domain = Converter.deserialiseFromString(domainBytes, String.class);
+            return createResponse(callserver.getSearchOptions(user, domain));
 
-            if (domainBytes == null) {
-                return createResponse(callserver.getSearchOptions(user));
-            } else {
-                final String domain = Converter.deserialiseFromString(domainBytes, String.class);
-                return createResponse(callserver.getSearchOptions(user, domain));
-            }
         } catch (final Exception e) {
             final String message = "could not get search options"; // NOI18N
             LOG.error(message, e);
