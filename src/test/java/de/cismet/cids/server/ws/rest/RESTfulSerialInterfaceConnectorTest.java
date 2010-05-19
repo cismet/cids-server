@@ -121,7 +121,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      */
     @Before
     public void setUp() throws Exception {
-//        admin = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "sb");
+        admin = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
     }
 
     /**
@@ -217,15 +217,15 @@ public class RESTfulSerialInterfaceConnectorTest {
     }
 
 
-//    @Test
-//    public void testGetDefaultIcons() throws Exception {
-//        System.out.println("\nTEST: " + getCurrentMethodName());
-//        final Image[] icons = connector.getDefaultIcons();
-//        assertNotNull(icons);
-//        for(final Image icon : icons){
-//            System.out.println("icon: " + icon);
-//        }
-//    }
+    @Test
+    public void testGetDefaultIcons() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final Image[] icons = connector.getDefaultIcons();
+        assertNotNull(icons);
+        for(final Image icon : icons){
+            System.out.println("icon: " + icon);
+        }
+    }
 
     @Test
     public void testGetDefaultIcons_String() throws Exception {
@@ -295,31 +295,37 @@ public class RESTfulSerialInterfaceConnectorTest {
     public void testAddQuery() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
-        String name = "testquery";
-        String description = "a simple statement";
-        String statement = "Select * from cs_query";
-        int resultType;
-        char isUpdate;
-        char isBatch;
-        char isRoot;
-        char isUnion;
+        final String name = "testquery";
+        final String description = "a simple statement";
+        final String statement = "Select * from cs_query";
+        final int resultType;
+        final char isUpdate;
+        final char isBatch;
+        final char isRoot;
+        final char isUnion;
         final int result = connector.addQuery(user, name, description, statement);
         assertNotNull(result);
         System.out.println("addQuery: " + result);
 
-        System.out.println("\nTEST 2: " + getCurrentMethodName());
-        name = "testquery2";
-        description = "a simple statement";
-        statement = "Select * from cs_query";
-        resultType = 2;
-        isUpdate = 't';
-        isUnion = 't';
-        isBatch = 't';
-        isRoot ='t';
-        final int result2 = connector.addQuery(user, name, description, statement,
+    }
+
+    @Test
+    public void testAddQueryAllParam() throws Exception {
+        System.out.println("\nTEST : " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final String name = "testquery2";
+        final String description = "a simple statement";
+        final String statement = "Select * from cs_query";
+        final int resultType = 2;
+        final char isUpdate = 't';
+        final char isUnion = 't';
+        final char isBatch = 't';
+        final char isRoot ='t';
+        
+        final int result = connector.addQuery(user, name, description, statement,
                 resultType, isUpdate, isBatch, isRoot, isUnion);
-        assertNotNull(result2);
-        System.out.println("addQuery: " + result2);
+        assertNotNull(result);
+        System.out.println("addQuery: " + result);
     }
 
     @Test
@@ -375,17 +381,30 @@ public class RESTfulSerialInterfaceConnectorTest {
         int classId = 1;
         String query = "Select * from cs_usr";
         String[] representationFields = new String[0];
-        String representationPattern = "";
+        
+        final LightweightMetaObject[] result = connector.getLightweightMetaObjectsByQuery(
+                classId, user, query, representationFields);
+        assertNotNull(result);
+        System.out.println("testGetLightweightMetaObjectsByQuery: " + result);
+
+    }
+
+    @Test
+    @Ignore
+    public void testGetLightweightMetaObjectsByQueryWithRepPattern() throws Exception {
+
+        System.out.println("\nTEST : " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        // just random values ... have to be checked wether they are senseful
+        final int classId = 1;
+        final String query = "Select * from cs_usr";
+        final String[] representationFields = new String[0];
+        final String representationPattern = "";
+
         final LightweightMetaObject[] result = connector.getLightweightMetaObjectsByQuery(
                 classId, user, query, representationFields, representationPattern);
         assertNotNull(result);
         System.out.println("testGetLightweightMetaObjectsByQuery: " + result);
-
-        System.out.println("\nTEST 2: " + getCurrentMethodName());
-        final LightweightMetaObject[] result2 = connector.getLightweightMetaObjectsByQuery(
-                classId, user, query, representationFields, representationPattern);
-        assertNotNull(result2);
-        System.out.println("testGetLightweightMetaObjectsByQuery: " + result2);
     }
 
     /**
@@ -398,24 +417,43 @@ public class RESTfulSerialInterfaceConnectorTest {
         System.out.println("\nTEST: " + getCurrentMethodName());
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
         // just random values ... have to be checked wether they are senseful
-        int classId = 1;
-        String query = "Select * from cs_usr";
-        String[] representationFields = new String[0];
-        String representationPattern = "";
+        final int classId = 1;
+        final String query = "Select * from cs_usr";
+        final String[] representationFields = new String[0];
+        final String representationPattern = "";
         final LightweightMetaObject[] result = connector.getAllLightweightMetaObjectsForClass(
                 classId, user, representationFields, representationPattern);
         assertNotNull(result);
         System.out.println("getAllLightweightMetaObjectsForClass: " + result);
-
-        System.out.println("\nTEST 2: " + getCurrentMethodName());
-        final LightweightMetaObject[] result2 = connector.getAllLightweightMetaObjectsForClass(
-                classId, user, representationFields);
-        assertNotNull(result2);
-        System.out.println("getAllLightweightMetaObjectsForClass: " + result2);
     }
 
     @Test
-    public void testGetMethods() throws Exception {
+    @Ignore
+    public void testGetAllLightweightMetaObjectsForClass_int_User_StringArr() throws Exception {
+        System.out.println("\nTEST : " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        // just random values ... have to be checked wether they are senseful
+        final int classId = 1;
+        final String[] representationFields = new String[0];
+        
+        final LightweightMetaObject[] result = connector.getAllLightweightMetaObjectsForClass(
+                classId, user, representationFields);
+        assertNotNull(result);
+        System.out.println("getAllLightweightMetaObjectsForClass: " + result);
+    }
+
+    @Test
+    public void testGetMethods_User() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+
+        final MethodMap result = connector.getMethods(user);
+        assertNotNull(result);
+        System.out.println("getMethods: " + result);
+    }
+
+    @Test
+    public void testGetMethods_User_String() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
         final String localServerName = "WUNDA_BLAU";
@@ -430,7 +468,18 @@ public class RESTfulSerialInterfaceConnectorTest {
     }
 
     @Test
-    public void testGetClassTreeNodes() throws Exception {
+    public void testGetClassTreeNodes_User() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+
+        final Node[] result = connector.getClassTreeNodes(user);
+        assertNotNull(result);
+        System.out.println("getClassTreeNodes: " + result);
+
+    }
+
+    @Test
+    public void testGetClassTreeNodes_User_String() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
         final String domain = "WUNDA_BLAU";
@@ -438,10 +487,6 @@ public class RESTfulSerialInterfaceConnectorTest {
         final Node[] result = connector.getClassTreeNodes(user, domain);
         assertNotNull(result);
         System.out.println("getClassTreeNodes: " + result);
-
-        final Node[] result2 = connector.getClassTreeNodes(user);
-        assertNotNull(result2);
-        System.out.println("getClassTreeNodes: " + result2);
 
     }
 
@@ -493,13 +538,22 @@ public class RESTfulSerialInterfaceConnectorTest {
         System.out.println("getMetaObject: " + result);
     }
 
+    @Test
+    public void testGetMetaObject_User_Query() throws Exception {
+
+    }
+
+    @Test
+    public void testGetMetaObject_User_String() throws Exception {
+
+    }
+
     /**
      * Currently runs into an out of memory exception
      * not yet shure why
      * @throws Exception
      */
     @Test
-    @Ignore
     public void testDeleteMetaObject() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
@@ -532,7 +586,7 @@ public class RESTfulSerialInterfaceConnectorTest {
 
     
     @Test
-    public void testGetMetaObjectNode() throws Exception {
+    public void testGetMetaObjectNode_User_int_String() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
         final String domain = "WUNDA_BLAU";
@@ -541,9 +595,18 @@ public class RESTfulSerialInterfaceConnectorTest {
         assertNotNull(result);
         System.out.println("update: " + result);
     }
-    
+
     @Test
-    @Ignore
+    public void testGetMetaObjectNode_User_String() throws Exception {
+
+    }
+
+    @Test
+    public void testGetMetaObjectNode_User_Query() throws Exception {
+
+    }
+
+    @Test
     public void testGetInstance() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
@@ -630,33 +693,66 @@ public class RESTfulSerialInterfaceConnectorTest {
     }
 
     @Test
-    public void testGetQueryInfo() throws Exception {
+    public void testGetQueryInfo_User() throws Exception {
+        
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        
+        final Info[] result = connector.getQueryInfos(user);
+        assertNotNull(result);
+        System.out.println("getQueryInfo_User: " + result);
+    }
+
+    @Test
+    public void testGetQueryInfo_UserGroup() throws Exception {
+
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final String domain = "WUNDA_BLAU";
+        final UserGroup ug = new UserGroup(1, "Administratoren", domain);
+
+        final Info[] result = connector.getQueryInfos(ug);
+        assertNotNull(result);
+        System.out.println("getQueryInfo_UserGroup: " + result);
+    }
+
+    @Test
+    public void testGetChildren_Node_User() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
         final String domain = "WUNDA_BLAU";
-        final UserGroup ug = new UserGroup(2, "Gäste", domain);
+        final int nodeID = 2;
+        final Node node = connector.getMetaObjectNode(user, nodeID, domain);
 
-        final Info[] result1 = connector.getQueryInfos(user);
-        assertNotNull(result1);
-        System.out.println("getQueryInfos: " + result1);
-
-        final Info[] result2 = connector.getQueryInfos(ug);
-        assertNotNull(result2);
-        System.out.println("getQueryInfos: " + result2);
+        final Node[] result = connector.getChildren(node, user);
+        assertNotNull(result);
+        for (Node n : result) {
+            System.out.println("getChildren " + n);
+        }
     }
 
     @Test
-    public void testGetChildren() throws Exception {
+    public void testGetRoots_User() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
 
+        final Node[] result = connector.getRoots(user);
+        assertNotNull(result);
+        for (Node n : result) {
+            System.out.println("getRoots " + n);
+        }
     }
 
     @Test
-    public void testGetRoots() throws Exception {
-
-    }
-
-    @Test
-    public void testGetRootsByDomain() throws Exception {
+    public void testGetRoots_User_String() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final String domain = "WUNDA_BLAU";
         
+        final Node[] result = connector.getRoots(user, domain);
+        assertNotNull(result);
+        for (Node n : result) {
+            System.out.println("getRoots " + n);
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
