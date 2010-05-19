@@ -1831,9 +1831,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public Image[] getDefaultIcons() throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(0, 0);
+            final HashMap<String, String> queryParams = new HashMap<String, String>(0, 1);
 
             return getResponseGET("GET/getDefaultIcons", queryParams, Image[].class);
+            
         } catch (final Exception e) {
             final String message = "could not get default icons"; // NOI18N
             LOG.error(message, e);
