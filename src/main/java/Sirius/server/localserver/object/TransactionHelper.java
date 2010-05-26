@@ -7,8 +7,13 @@
 ****************************************************/
 package Sirius.server.localserver.object;
 
+import Sirius.server.ServerExitError;
+import Sirius.server.Shutdown;
+import Sirius.server.Shutdownable;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.sql.DBConnection;
+
+import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -19,7 +24,11 @@ import java.sql.SQLException;
  * @author   schlob
  * @version  $Revision$, $Date$
  */
-public class TransactionHelper {
+public class TransactionHelper extends Shutdown {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final transient Logger LOG = Logger.getLogger(TransactionHelper.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -37,6 +46,18 @@ public class TransactionHelper {
     TransactionHelper(final DBConnection dbcon, final ServerProperties properties) {
         this.con = dbcon.getConnection();
         workBegun = false;
+
+        addShutdown(new Shutdownable() {
+
+                @Override
+                public void shutdown() throws ServerExitError {
+                    try {
+                        con.close();
+                    } catch (final SQLException ex) {
+                        LOG.warn("could not close connection", ex);
+                    }
+                }
+            });
     }
 
     /**

@@ -44,7 +44,7 @@ public class CSVTool {
      *
      * @param  delimiter  DOCUMENT ME!
      */
-    public CSVTool(String delimiter) {
+    public CSVTool(final String delimiter) {
         delimiter_ = delimiter;
     }
 
@@ -55,7 +55,7 @@ public class CSVTool {
      *
      * @param  withColNames  DOCUMENT ME!
      */
-    public void insertColumnNames(boolean withColNames) {
+    public void insertColumnNames(final boolean withColNames) {
         withColNames_ = withColNames;
     }
 
@@ -68,7 +68,7 @@ public class CSVTool {
      * @throws  IOException   DOCUMENT ME!
      * @throws  SQLException  DOCUMENT ME!
      */
-    public void toCSV(ResultSet rs, PrintWriter pWriter) throws IOException, SQLException {
+    public void toCSV(final ResultSet rs, final PrintWriter pWriter) throws IOException, SQLException {
         writeResult(rs, pWriter, delimiter_);
     }
 
@@ -82,11 +82,11 @@ public class CSVTool {
      * @throws  IOException   DOCUMENT ME!
      * @throws  SQLException  DOCUMENT ME!
      */
-    private void writeResult(ResultSet resultSet, PrintWriter pWriter, String delimiter) throws IOException,
-        SQLException {
-        ResultSetMetaData rsmd = resultSet.getMetaData();
+    private void writeResult(final ResultSet resultSet, final PrintWriter pWriter, final String delimiter)
+            throws IOException, SQLException {
+        final ResultSetMetaData rsmd = resultSet.getMetaData();
 
-        int columnCount = rsmd.getColumnCount();
+        final int columnCount = rsmd.getColumnCount();
 
         for (int column = 1; column < columnCount; column++) {
             pWriter.print(rsmd.getColumnName(column) + delimiter);
@@ -112,8 +112,10 @@ public class CSVTool {
      * @throws  IOException   DOCUMENT ME!
      * @throws  SQLException  DOCUMENT ME!
      */
-    private void writeRow(ResultSet resultSet, PrintWriter pWriter, String delimiter, int columnCount)
-        throws IOException, SQLException {
+    private void writeRow(final ResultSet resultSet,
+            final PrintWriter pWriter,
+            final String delimiter,
+            final int columnCount) throws IOException, SQLException {
         String wert;
 
         for (int i = 1; i < columnCount; i++) {

@@ -35,11 +35,11 @@ public abstract class ExceptionHandler {
      *
      * @return  DOCUMENT ME!
      */
-    public static Throwable handle(Throwable t) {
+    public static Throwable handle(final Throwable t) {
         String message = "";
 
         if (t instanceof SQLException) {
-            SQLException e = (SQLException)t;
+            final SQLException e = (SQLException)t;
 
             do {
                 message += (e.toString());

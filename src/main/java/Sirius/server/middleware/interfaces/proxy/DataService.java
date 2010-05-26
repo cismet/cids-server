@@ -7,12 +7,12 @@
 ****************************************************/
 package Sirius.server.middleware.interfaces.proxy;
 
-import java.rmi.*;
-
 import Sirius.server.dataretrieval.*;
 import Sirius.server.middleware.types.*;
-import Sirius.server.search.*;
 import Sirius.server.newuser.*;
+import Sirius.server.search.*;
+
+import java.rmi.*;
 /**
  * Interface for data retrieval.
  *

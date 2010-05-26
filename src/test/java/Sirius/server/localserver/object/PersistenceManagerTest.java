@@ -15,6 +15,15 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.permission.Policy;
 import Sirius.server.property.ServerProperties;
 
+import org.apache.log4j.Logger;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import java.io.InputStream;
 
 import java.lang.reflect.Method;
@@ -26,15 +35,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import java.util.Properties;
-
-import org.apache.log4j.Logger;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 
@@ -60,14 +60,6 @@ public class PersistenceManagerTest {
     private static final int DEFAULT_OBJECT_ID = 99999999;
 
     private static DBServer server;
-
-    //~ Constructors -----------------------------------------------------------
-
-    /**
-     * Creates a new PersistenceManagerTest object.
-     */
-    public PersistenceManagerTest() {
-    }
 
     //~ Methods ----------------------------------------------------------------
 
@@ -95,7 +87,8 @@ public class PersistenceManagerTest {
      * @throws  Exception  DOCUMENT ME!
      */
     @AfterClass
-    public static void tearDownClass() throws Exception {
+    public static void tearDownClass() throws Throwable {
+        server.shutdown();
     }
 
     /**
@@ -339,7 +332,8 @@ public class PersistenceManagerTest {
         final MetaObject mo = createMO_2ObjAttr2ndChanged(
                 DEFAULT_CLASS_ID,
                 DEFAULT_OBJECT_ID,
-                DEFAULT_OBJECT_ID - 13);
+                DEFAULT_OBJECT_ID
+                        - 13);
         method.invoke(pm, mo);
         assertTrue("index not present", indexPresent(mo, 0, 1));
     }
@@ -698,8 +692,7 @@ public class PersistenceManagerTest {
                 for (final ObjectAttribute oa : mo.getAttribs()) {
                     final MemberAttributeInfo mai = oa.getMai();
                     if (mai.isIndexed()) {
-                        if (
-                            oa.getValue().equals(rsStr.getString("string_val"))
+                        if (oa.getValue().equals(rsStr.getString("string_val"))
                                     && (mai.getId() == rsStr.getInt("attr_id"))) {
                             found = true;
                         }

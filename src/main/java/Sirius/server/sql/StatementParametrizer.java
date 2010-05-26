@@ -55,18 +55,17 @@ public class StatementParametrizer {
     /**
      * Hauptfunktionalit\u00E4t der Klasse Parametrizer siehe Klassenbeschreibung.<BR>
      *
-     * @param     statement   java.lang.String statement
-     * @param     parameters  java.lang.Object[] parameters
+     * @param   statement   java.lang.String statement
+     * @param   parameters  java.lang.Object[] parameters
      *
-     * @return    DOCUMENT ME!
+     * @return  DOCUMENT ME!
      *
-     * @throws    java.lang.Exception  DOCUMENT ME!
-     * @throws    Exception            DOCUMENT ME!
-     *
-     * @exeption  java.lang.Exception
+     * @throws  java.lang.Exception  DOCUMENT ME!
+     * @throws  Exception            DOCUMENT ME!
      */
 
-    public static final String parametrize(String statement, java.lang.Object[] parameters) throws java.lang.Exception {
+    public static final String parametrize(String statement, final java.lang.Object[] parameters)
+            throws java.lang.Exception {
         // ersetze wildcards f\u00FCr like
         statement = statement.trim();
 
@@ -103,12 +102,14 @@ public class StatementParametrizer {
                                 // Integer
 
                                 if (parameters[parameterIndex] instanceof java.lang.Integer[]) {
-                                    parametrizedStmnt += convertNumberArrayForSql(
-                                            (java.lang.Integer[])parameters[parameterIndex]);
+                                    parametrizedStmnt += convertNumberArrayForSql((java.lang.Integer[])
+                                            parameters[parameterIndex]);
                                 } else {
                                     throw new Exception(
-                                        "parameter passt nicht zum Typ im Statement" + " parameterIndex :"
-                                        + parameterIndex + "  erwarteter Typ : Integer[]");
+                                        "parameter passt nicht zum Typ im Statement"
+                                        + " parameterIndex :"
+                                        + parameterIndex
+                                        + "  erwarteter Typ : Integer[]");
                                 }
 
                                 break;
@@ -117,13 +118,15 @@ public class StatementParametrizer {
                             case ('S'): {
                                 // String upper case not case sensitive//jetzt lower case
                                 if (parameters[parameterIndex] instanceof java.lang.String[]) {
-                                    parametrizedStmnt += convertStringArrayForSql(
-                                            (java.lang.String[])parameters[parameterIndex],
+                                    parametrizedStmnt += convertStringArrayForSql((java.lang.String[])
+                                            parameters[parameterIndex],
                                             false);
                                 } else {
                                     throw new Exception(
-                                        "parameter passt nicht zum Typ im Statement" + " parameterIndex :"
-                                        + parameterIndex + "  erwarteter Typ : String[]");
+                                        "parameter passt nicht zum Typ im Statement"
+                                        + " parameterIndex :"
+                                        + parameterIndex
+                                        + "  erwarteter Typ : String[]");
                                 }
 
                                 break;
@@ -132,14 +135,16 @@ public class StatementParametrizer {
                             case ('s'): {
                                 // String lower case case sensitive
                                 if (parameters[parameterIndex] instanceof java.lang.String[]) {
-                                    parametrizedStmnt += convertStringArrayForSql(
-                                            (java.lang.String[])parameters[parameterIndex],
+                                    parametrizedStmnt += convertStringArrayForSql((java.lang.String[])
+                                            parameters[parameterIndex],
                                             true,
                                             true);
                                 } else {
                                     throw new Exception(
-                                        "parameter passt nicht zum Typ im Statement" + " parameterIndex :"
-                                        + parameterIndex + "  erwarteter Typ : String[]");
+                                        "parameter passt nicht zum Typ im Statement"
+                                        + " parameterIndex :"
+                                        + parameterIndex
+                                        + "  erwarteter Typ : String[]");
                                 }
 
                                 break;
@@ -151,14 +156,16 @@ public class StatementParametrizer {
                             case ('T'): {
                                 // String upper case not case sensitive
                                 if (parameters[parameterIndex] instanceof java.lang.String[]) {
-                                    parametrizedStmnt += convertStringArrayForSql(
-                                            (java.lang.String[])parameters[parameterIndex],
+                                    parametrizedStmnt += convertStringArrayForSql((java.lang.String[])
+                                            parameters[parameterIndex],
                                             false,
                                             false);
                                 } else {
                                     throw new Exception(
-                                        "parameter passt nicht zum Typ im Statement" + " parameterIndex :"
-                                        + parameterIndex + "  erwarteter Typ : String[]");
+                                        "parameter passt nicht zum Typ im Statement"
+                                        + " parameterIndex :"
+                                        + parameterIndex
+                                        + "  erwarteter Typ : String[]");
                                 }
 
                                 break;
@@ -172,13 +179,15 @@ public class StatementParametrizer {
                                 // String
                                 if (parameters[parameterIndex] instanceof java.lang.String[]) {
                                     statement.trim();
-                                    int ende = statement.indexOf(" ", bis + 2);
+                                    final int ende = statement.indexOf(" ", bis + 2);
                                     join = " " + statement.substring(bis + 1, ende).trim().toUpperCase() + " ";
                                     parametrizedStmnt += convertConditionsArrayForSql(parameters, parameterIndex, join);
                                 } else {
                                     throw new Exception(
-                                        "parameter passt nicht zum Typ im Statement" + " parameterIndex :"
-                                        + parameterIndex + "  erwarteter Typ : String[]");
+                                        "parameter passt nicht zum Typ im Statement"
+                                        + " parameterIndex :"
+                                        + parameterIndex
+                                        + "  erwarteter Typ : String[]");
                                 }
 
                                 break;
@@ -189,14 +198,16 @@ public class StatementParametrizer {
                             case ('C'): {
                                 // Character
                                 if (parameters[parameterIndex] instanceof java.lang.Character[]) {
-                                    parametrizedStmnt += convertStringArrayForSql(
-                                            (java.lang.Character[])parameters[parameterIndex],
+                                    parametrizedStmnt += convertStringArrayForSql((java.lang.Character[])
+                                            parameters[parameterIndex],
                                             true,
                                             true);
                                 } else {
                                     throw new Exception(
-                                        "parameter passt nicht zum Typ im Statement" + " parameterIndex :"
-                                        + parameterIndex + "  erwarteter Typ : Char[]");
+                                        "parameter passt nicht zum Typ im Statement"
+                                        + " parameterIndex :"
+                                        + parameterIndex
+                                        + "  erwarteter Typ : Char[]");
                                 }
 
                                 break;
@@ -206,12 +217,14 @@ public class StatementParametrizer {
                                 // floatingpoint
 
                                 if (parameters[parameterIndex] instanceof java.lang.Double[]) {
-                                    parametrizedStmnt += convertNumberArrayForSql(
-                                            (java.lang.Double[])parameters[parameterIndex]);
+                                    parametrizedStmnt += convertNumberArrayForSql((java.lang.Double[])
+                                            parameters[parameterIndex]);
                                 } else {
                                     throw new Exception(
-                                        "parameter passt nicht zum Typ im Statement" + " parameterIndex :"
-                                        + parameterIndex + "  erwarteter Typ : DOUBLE[]");
+                                        "parameter passt nicht zum Typ im Statement"
+                                        + " parameterIndex :"
+                                        + parameterIndex
+                                        + "  erwarteter Typ : DOUBLE[]");
                                 }
 
                                 break;
@@ -219,7 +232,8 @@ public class StatementParametrizer {
 
                             default: {
                                 throw new java.lang.Exception(
-                                    "nicht unterst\u00FCtzter ArrayTyp oder kein Array :" + parameter.charAt(1));
+                                    "nicht unterst\u00FCtzter ArrayTyp oder kein Array :"
+                                    + parameter.charAt(1));
                             }
                         } // end inner switch
 
@@ -233,8 +247,12 @@ public class StatementParametrizer {
                             parametrizedStmnt += parameters[parameterIndex];
                         } else {
                             throw new Exception(
-                                "parameter passt nicht zum Typ im Statement" + " parameterIndex :" + parameterIndex
-                                + "  erwarteter Typ : Integer " + " parameter :" + parameter);
+                                "parameter passt nicht zum Typ im Statement"
+                                + " parameterIndex :"
+                                + parameterIndex
+                                + "  erwarteter Typ : Integer "
+                                + " parameter :"
+                                + parameter);
                         }
 
                         break;
@@ -248,8 +266,12 @@ public class StatementParametrizer {
                                 + "'";
                         } else {
                             throw new Exception(
-                                "parameter passt nicht zum Typ im Statement" + " parameterIndex :" + parameterIndex
-                                + "  erwarteter Typ : String " + " parameter :" + parameter);
+                                "parameter passt nicht zum Typ im Statement"
+                                + " parameterIndex :"
+                                + parameterIndex
+                                + "  erwarteter Typ : String "
+                                + " parameter :"
+                                + parameter);
                         }
 
                         break;
@@ -263,8 +285,12 @@ public class StatementParametrizer {
                                 + ((java.lang.String)parameters[parameterIndex]).replace('*', '%').toLowerCase() + "'";
                         } else {
                             throw new Exception(
-                                "parameter passt nicht zum Typ im Statement" + " parameterIndex :" + parameterIndex
-                                + "  erwarteter Typ : String " + " parameter :" + parameter);
+                                "parameter passt nicht zum Typ im Statement"
+                                + " parameterIndex :"
+                                + parameterIndex
+                                + "  erwarteter Typ : String "
+                                + " parameter :"
+                                + parameter);
                         }
 
                         break;
@@ -279,7 +305,7 @@ public class StatementParametrizer {
 
                         parametrizedStmnt.trim();
                         join.trim();
-                        int index = parametrizedStmnt.lastIndexOf(join);
+                        final int index = parametrizedStmnt.lastIndexOf(join);
                         if (index != -1) {
                             parametrizedStmnt = parametrizedStmnt.substring(0, index);
                         }
@@ -295,8 +321,12 @@ public class StatementParametrizer {
                             parametrizedStmnt += ((java.lang.String)parameters[parameterIndex]).toUpperCase();
                         } else {
                             throw new Exception(
-                                "parameter passt nicht zum Typ im Statement" + " parameterIndex :" + parameterIndex
-                                + "  erwarteter Typ : String " + " parameter :" + parameter);
+                                "parameter passt nicht zum Typ im Statement"
+                                + " parameterIndex :"
+                                + parameterIndex
+                                + "  erwarteter Typ : String "
+                                + " parameter :"
+                                + parameter);
                         }
 
                         break;
@@ -309,8 +339,12 @@ public class StatementParametrizer {
                             parametrizedStmnt += parameters[parameterIndex];
                         } else {
                             throw new Exception(
-                                "parameter passt nicht zum Typ im Statement" + " parameterIndex :" + parameterIndex
-                                + "  erwarteter Typ : Byte " + " parameter :" + parameter);
+                                "parameter passt nicht zum Typ im Statement"
+                                + " parameterIndex :"
+                                + parameterIndex
+                                + "  erwarteter Typ : Byte "
+                                + " parameter :"
+                                + parameter);
                         }
 
                         break;
@@ -323,8 +357,12 @@ public class StatementParametrizer {
                             parametrizedStmnt += parameters[parameterIndex];
                         } else {
                             throw new Exception(
-                                "parameter passt nicht zum Typ im Statement" + " parameterIndex :" + parameterIndex
-                                + "  erwarteter Typ : Boolean " + " parameter :" + parameter);
+                                "parameter passt nicht zum Typ im Statement"
+                                + " parameterIndex :"
+                                + parameterIndex
+                                + "  erwarteter Typ : Boolean "
+                                + " parameter :"
+                                + parameter);
                         }
 
                         break;
@@ -337,8 +375,12 @@ public class StatementParametrizer {
                             parametrizedStmnt += parameters[parameterIndex];
                         } else {
                             throw new Exception(
-                                "parameter passt nicht zum Typ im Statement" + " parameterIndex :" + parameterIndex
-                                + "  erwarteter Typ : Character " + " parameter :" + parameter);
+                                "parameter passt nicht zum Typ im Statement"
+                                + " parameterIndex :"
+                                + parameterIndex
+                                + "  erwarteter Typ : Character "
+                                + " parameter :"
+                                + parameter);
                         }
 
                         break;
@@ -351,8 +393,12 @@ public class StatementParametrizer {
                             parametrizedStmnt += parameters[parameterIndex];
                         } else {
                             throw new Exception(
-                                "parameter passt nicht zum Typ im Statement" + " parameterIndex :" + parameterIndex
-                                + "  erwarteter  Typ : Double " + " parameter :" + parameter);
+                                "parameter passt nicht zum Typ im Statement"
+                                + " parameterIndex :"
+                                + parameterIndex
+                                + "  erwarteter  Typ : Double "
+                                + " parameter :"
+                                + parameter);
                         }
 
                         break;
@@ -362,7 +408,7 @@ public class StatementParametrizer {
                         // Date
 
                         if ((parameters[parameterIndex] instanceof java.util.Date) && (parameter.length() < 2)) {
-                            java.sql.Date tmp = ((java.sql.Date)parameters[parameterIndex]);
+                            final java.sql.Date tmp = ((java.sql.Date)parameters[parameterIndex]);
                             // parametrizedStmnt+= "{ d '" + ((java.sql.Date) parameters[parameterIndex]) + "'}";
                             // parametrizedStmnt+= ("'" +(tmp.getMonth()+1)+"/"+ tmp.getDate() + "/" +(
                             // tmp.getYear()+1900) +"'");
@@ -375,8 +421,12 @@ public class StatementParametrizer {
                          * parametrizedStmnt+= "{ d '" + forStmnt  + "'}";}*/
                         else {
                             throw new Exception(
-                                "parameter passt nicht zum Typ im Statement" + " parameterIndex :" + parameterIndex
-                                + " erwarteter Typ : Date " + " parameter :" + parameter);
+                                "parameter passt nicht zum Typ im Statement"
+                                + " parameterIndex :"
+                                + parameterIndex
+                                + " erwarteter Typ : Date "
+                                + " parameter :"
+                                + parameter);
                         }
 
                         break;
@@ -439,14 +489,12 @@ public static final PreparedStatement parametrize(PreparedStatement statement, j
      * Wandelt Arrays von Integern oder Doubles in die entsprechende Sql Darstellung um<BR>
      * Bsp. int arr[] = {1,2,3}; in String s = (1,2,3);
      *
-     * @param     arr  java.lang.Object[] array
+     * @param   arr  java.lang.Object[] array
      *
-     * @return    java.lang.String
-     *
-     * @exeption  DOCUMENT ME!
+     * @return  java.lang.String
      */
 
-    public static String convertNumberArrayForSql(java.lang.Object[] arr) {
+    public static String convertNumberArrayForSql(final java.lang.Object[] arr) {
         String sql = new String("(");
         int i = 0;
 
@@ -475,7 +523,7 @@ public static final PreparedStatement parametrize(PreparedStatement statement, j
      *
      * @return  DOCUMENT ME!
      */
-    public static String convertIntArrayForSql(int[] arr) {
+    public static String convertIntArrayForSql(final int[] arr) {
         String sql = new String("(");
         int i = 0;
 
@@ -502,16 +550,16 @@ public static final PreparedStatement parametrize(PreparedStatement statement, j
      * Wandelt Arrays von Strings oder Characters in die entsprechende Sql Darstellung um<BR>
      * Bsp. int String[] = {"eimer","ist","kaputt" }; in String s = ("'eimer','ist','kaputt'");
      *
-     * @param     arr            java.lang.Object[] array
-     * @param     caseSensitive  DOCUMENT ME!
-     * @param     withComma      DOCUMENT ME!
+     * @param   arr            java.lang.Object[] array
+     * @param   caseSensitive  DOCUMENT ME!
+     * @param   withComma      DOCUMENT ME!
      *
-     * @return    java.lang.String
-     *
-     * @exeption  DOCUMENT ME!
+     * @return  java.lang.String
      */
 
-    private static String convertStringArrayForSql(java.lang.Object[] arr, boolean caseSensitive, boolean withComma) {
+    private static String convertStringArrayForSql(final java.lang.Object[] arr,
+            final boolean caseSensitive,
+            final boolean withComma) {
         // rpiontek
         String comma = new String();
         if (withComma) {
@@ -556,7 +604,7 @@ public static final PreparedStatement parametrize(PreparedStatement statement, j
      *
      * @return  DOCUMENT ME!
      */
-    private static String convertStringArrayForSql(java.lang.Object[] arr, boolean caseSensitive) {
+    private static String convertStringArrayForSql(final java.lang.Object[] arr, final boolean caseSensitive) {
         String sql = "(";
         int i = 0;
 
@@ -594,30 +642,33 @@ public static final PreparedStatement parametrize(PreparedStatement statement, j
      * String s = "column1='value1' AND column2='value2' AND column3='value3'" Die Verknuepfung muss angegeben werden
      * ODER oder UND
      *
-     * @param     parameters      java.lang.Object[] array
-     * @param     parameterIndex  java.lang.String join
-     * @param     join            DOCUMENT ME!
+     * @param   parameters      java.lang.Object[] array
+     * @param   parameterIndex  java.lang.String join
+     * @param   join            DOCUMENT ME!
      *
-     * @return    java.lang.String
+     * @return  java.lang.String
      *
-     * @throws    Exception  DOCUMENT ME!
+     * @throws  Exception  DOCUMENT ME!
      *
-     * @author    rpiontek 07.03.2001
-     * @exeption  DOCUMENT ME!
+     * @author  rpiontek 07.03.2001
      */
 
-    private static String convertConditionsArrayForSql(java.lang.Object[] parameters, int parameterIndex, String join)
-        throws Exception {
+    private static String convertConditionsArrayForSql(final java.lang.Object[] parameters,
+            final int parameterIndex,
+            final String join) throws Exception {
         StringBuffer resultString = new StringBuffer(" ");
         int i = 0;
 
-        String[] fields = (java.lang.String[])parameters[parameterIndex];
-        String[] values = (java.lang.String[])parameters[parameterIndex + 1];
+        final String[] fields = (java.lang.String[])parameters[parameterIndex];
+        final String[] values = (java.lang.String[])parameters[parameterIndex + 1];
 
         if (fields.length != values.length) {
             throw new Exception(
-                "Es kann keine Where-Liste gebildet werden, da die Anzahl Felder (" + fields.length
-                + ") mit der Anzahl der zu Werte (" + values.length + ") nicht uebereinstimmt");
+                "Es kann keine Where-Liste gebildet werden, da die Anzahl Felder ("
+                + fields.length
+                + ") mit der Anzahl der zu Werte ("
+                + values.length
+                + ") nicht uebereinstimmt");
         }
         try {
             for (i = 0; i < fields.length; i++) {

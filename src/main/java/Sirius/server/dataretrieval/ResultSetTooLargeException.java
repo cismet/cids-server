@@ -36,7 +36,7 @@ public class ResultSetTooLargeException extends DataRetrievalException {
      *
      * @param  meldung  DOCUMENT ME!
      */
-    public ResultSetTooLargeException(String meldung) {
+    public ResultSetTooLargeException(final String meldung) {
         super(meldung);
     }
 
@@ -70,7 +70,7 @@ public class ResultSetTooLargeException extends DataRetrievalException {
      * @param  meldung  DOCUMENT ME!
      * @param  logger   DOCUMENT ME!
      */
-    public ResultSetTooLargeException(String meldung, Logger logger) {
+    public ResultSetTooLargeException(final String meldung, final Logger logger) {
         super(meldung, logger);
     }
 
@@ -82,7 +82,7 @@ public class ResultSetTooLargeException extends DataRetrievalException {
      * @param  e       DOCUMENT ME!
      * @param  logger  DOCUMENT ME!
      */
-    public ResultSetTooLargeException(Throwable e, Logger logger) {
+    public ResultSetTooLargeException(final Throwable e, final Logger logger) {
         super(e, logger);
     }
 

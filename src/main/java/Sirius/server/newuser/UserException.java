@@ -15,6 +15,11 @@ package Sirius.server.newuser;
 public class UserException extends Exception implements java.io.Serializable // java.rmi.ServerException
 {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 2163490283456783757L;
+
     //~ Instance fields --------------------------------------------------------
 
     private boolean wrongUserName = false;
@@ -29,7 +34,7 @@ public class UserException extends Exception implements java.io.Serializable // 
      *
      * @param  detailMessage  DOCUMENT ME!
      */
-    public UserException(String detailMessage) {
+    public UserException(final String detailMessage) {
         super(detailMessage);
     }
 
@@ -42,12 +47,11 @@ public class UserException extends Exception implements java.io.Serializable // 
      * @param  wrongUserGroup    DOCUMENT ME!
      * @param  wrongLocalServer  DOCUMENT ME!
      */
-    public UserException(
-            String detailMessage,
-            boolean wrongUserName,
-            boolean wrongPassword,
-            boolean wrongUserGroup,
-            boolean wrongLocalServer) {
+    public UserException(final String detailMessage,
+            final boolean wrongUserName,
+            final boolean wrongPassword,
+            final boolean wrongUserGroup,
+            final boolean wrongLocalServer) {
         super(detailMessage);
         this.wrongUserName = wrongUserName;
         this.wrongPassword = wrongPassword;

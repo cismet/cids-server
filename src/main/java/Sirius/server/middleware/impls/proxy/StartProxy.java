@@ -14,9 +14,8 @@ import Sirius.server.ServerStatus;
 import Sirius.server.ServerType;
 import Sirius.server.property.ServerProperties;
 
-import de.cismet.cids.server.CallServerService;
-import de.cismet.cids.server.ServerSecurityManager;
-import de.cismet.cids.server.ws.rest.RESTfulService;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -27,13 +26,16 @@ import java.net.UnknownHostException;
 
 import java.rmi.AlreadyBoundException;
 import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import java.util.MissingResourceException;
 
-import org.apache.log4j.Logger;
+import de.cismet.cids.server.CallServerService;
+import de.cismet.cids.server.ServerSecurityManager;
+import de.cismet.cids.server.ws.rest.RESTfulService;
 
 /**
  * DOCUMENT ME!
@@ -65,6 +67,10 @@ public final class StartProxy {
      * @throws  ServerExitError  DOCUMENT ME!
      */
     private StartProxy(final String configFile) throws ServerExitError {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("creating new StartProxy: " + configFile); // NOI18N
+        }
+
         // initialise server properties
         final ServerProperties properties = initServerProperties(configFile);
 
@@ -72,9 +78,9 @@ public final class StartProxy {
         final String fileName = properties.getLog4jPropertyFile();
         if ((fileName != null) && !fileName.isEmpty()) {
             try {
-//                PropertyConfigurator.configure(fileName);
+                PropertyConfigurator.configure(fileName);
             } catch (final Exception e) {
-                LOG.warn("could not initialise Log4J", e);
+                LOG.warn("could not initialise Log4J", e); // NOI18N
             }
         }
 
@@ -99,7 +105,7 @@ public final class StartProxy {
             LOG.fatal(message, e);
             throw new ServerExitError(message, e);
         }
-        
+
         // init server
         serverInfo = initServer(properties);
 
@@ -297,8 +303,15 @@ public final class StartProxy {
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  IllegalStateException  DOCUMENT ME!
+     */
     public static synchronized StartProxy getInstance() throws IllegalStateException {
-        if(instance == null) {
+        if (instance == null) {
             throw new IllegalStateException("startproxy not up yet"); // NOI18N
         }
 
@@ -315,6 +328,9 @@ public final class StartProxy {
      * @throws  ServerExitError  DOCUMENT ME!
      */
     public static synchronized StartProxy getInstance(final String configFile) throws ServerExitError {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("getInstance for configfile: " + configFile + " :: instance already present? " + instance); // NOI18N
+        }
         if (instance == null) {
             instance = new StartProxy(configFile);
         }
@@ -355,7 +371,13 @@ public final class StartProxy {
      * @throws  ServerExit       Throwable DOCUMENT ME!
      * @throws  ServerExitError  DOCUMENT ME!
      */
-    public void shutdown() throws ServerExit, ServerExitError {
+    public synchronized void shutdown() throws ServerExit, ServerExitError {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("shutdown proxy: " + this); // NOI18N
+        }
+
+        instance = null;
+
         try {
             callServer.unregisterAsObserver(siriusRegistryIP);
             callServer.getNameServer()
@@ -367,7 +389,14 @@ public final class StartProxy {
 
             RESTfulService.down();
 
-            Naming.unbind("callServer"); // NOI18N
+            try {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("unbind callserver");                                          // NOI18N
+                }
+                Naming.unbind("callServer");                                                 // NOI18N
+            } catch (final NotBoundException e) {
+                LOG.warn("callserver not available (anymore), probably already unbound", e); // NOI18N
+            }
 
             final String message = "Server shutdown success"; // NOI18N
             if (LOG.isInfoEnabled()) {

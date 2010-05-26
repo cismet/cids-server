@@ -12,21 +12,21 @@
  */
 package Sirius.server.middleware.impls.proxy;
 
-import java.rmi.*;
-import java.rmi.server.*;
-
-
 //import Sirius.server.middleware.interfaces.proxy.*;
+
 import Sirius.server.dataretrieval.*;
-import Sirius.server.middleware.types.*;
 import Sirius.server.localserver.attribute.*;
-import Sirius.server.search.*;
 import Sirius.server.middleware.interfaces.domainserver.*;
+import Sirius.server.middleware.types.*;
 import Sirius.server.newuser.*;
+import Sirius.server.search.*;
 
 import com.enterprisedt.net.ftp.*;
 
 import org.apache.log4j.*;
+
+import java.rmi.*;
+import java.rmi.server.*;
 
 /**
  * DOCUMENT ME!
@@ -44,10 +44,10 @@ public class DataServiceImpl {
     static {
         MetaObjectProtoMgr.register(new FTPProto());
         MetaObjectProtoMgr.register(new JDBCProto());
-        JDBC_XMLProto jdbcxml = new JDBC_XMLProto();
+        final JDBC_XMLProto jdbcxml = new JDBC_XMLProto();
         jdbcxml.setDeleteOnExit(true);
         MetaObjectProtoMgr.register(jdbcxml);
-        JDBC_CSVProto jdbccsv = new JDBC_CSVProto();
+        final JDBC_CSVProto jdbccsv = new JDBC_CSVProto();
         jdbccsv.setDeleteOnExit(true);
         MetaObjectProtoMgr.register(jdbccsv);
     }
@@ -65,7 +65,7 @@ public class DataServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public DataServiceImpl(java.util.Hashtable activeLocalServers) throws RemoteException {
+    public DataServiceImpl(final java.util.Hashtable activeLocalServers) throws RemoteException {
         this.activeLocalServers = activeLocalServers;
     }
 
@@ -82,8 +82,9 @@ public class DataServiceImpl {
      * @throws  RemoteException         DOCUMENT ME!
      * @throws  DataRetrievalException  DOCUMENT ME!
      */
-    public DataObject getDataObject(User user, MetaObject metaObject) throws RemoteException, DataRetrievalException {
-        MetaObjectProto mop = MetaObjectProtoMgr.getProtocol(metaObject);
+    public DataObject getDataObject(final User user, final MetaObject metaObject) throws RemoteException,
+        DataRetrievalException {
+        final MetaObjectProto mop = MetaObjectProtoMgr.getProtocol(metaObject);
 
         return mop.getDataObject(metaObject);
     }
@@ -100,13 +101,14 @@ public class DataServiceImpl {
      * @throws  RemoteException         DOCUMENT ME!
      * @throws  DataRetrievalException  DOCUMENT ME!
      */
-    public DataObject[] getDataObject(User user, Query query) throws RemoteException, DataRetrievalException {
-        MetaObject metaObject;
-        DataObject[] dataObject;
+    public DataObject[] getDataObject(final User user, final Query query) throws RemoteException,
+        DataRetrievalException {
+        final MetaObject metaObject;
+        final DataObject[] dataObject;
 
-        MetaService metaService = (MetaService)activeLocalServers.get(user.getDomain());
+        final MetaService metaService = (MetaService)activeLocalServers.get(user.getDomain());
 
-        MetaObject[] mos = metaService.getMetaObject(user, query);
+        final MetaObject[] mos = metaService.getMetaObject(user, query);
         dataObject = new DataObject[mos.length];
 
         for (int i = 0; i < mos.length; i++) {

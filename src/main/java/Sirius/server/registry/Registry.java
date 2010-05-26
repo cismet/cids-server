@@ -12,11 +12,6 @@ import Sirius.server.ServerExit;
 import Sirius.server.ServerExitError;
 import Sirius.server.ServerStatus;
 import Sirius.server.ServerType;
-import Sirius.server.registry.rmplugin.RMRegistryServerImpl;
-
-import java.util.Vector;
-
-import Sirius.server.property.ServerProperties;
 import Sirius.server.naming.NameServer;
 import Sirius.server.newuser.Membership;
 import Sirius.server.newuser.User;
@@ -26,28 +21,34 @@ import Sirius.server.newuser.UserManager;
 import Sirius.server.newuser.UserServer;
 import Sirius.server.observ.RemoteObservable;
 import Sirius.server.observ.RemoteObserver;
+import Sirius.server.property.ServerProperties;
+import Sirius.server.registry.rmplugin.RMRegistryServerImpl;
 
-import de.cismet.cids.server.ServerSecurityManager;
+import org.apache.log4j.Logger;
 
 import java.io.Serializable;
 
+import java.net.MalformedURLException;
+
 import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 
 import java.util.HashMap;
+import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import de.cismet.cids.server.ServerSecurityManager;
 
 /**
  * Name- und UserServer des gesammten Siriussystems. Jede Art von Server (LocalServer,CallServer,ProtocolServer)
  * registriert sich hier mit Namen und IPAdresse (Port optional) um f\u00FCr andere Server erreichbar zu sein. Ausserdem
  * \u00FCbernimmt die Registry eine UserServer-Funktionalit\u00E4t
  *
+ * @author   Bernd Kiefer,Sascha Schlobinski, Martin Scholl
  * @version  1.0
- * @autor    Bernd Kiefer,Sascha Schlobinski, Martin Scholl
  */
 // TODO: remove sout
 // TODO: are those status messages of any relevance since they're sometimes incomplete etc..
@@ -67,7 +68,6 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
     private final transient Observable obs;
     private final transient ServerManager sm;
     private final transient UserManager um;
-    private final transient int port;
     private final transient ServerStatus status;
     private final transient RMRegistryServerImpl rmRegistryServer;
 
@@ -82,8 +82,6 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
      * @throws  ServerExitError  DOCUMENT ME!
      */
     public Registry(final int port) throws RemoteException, ServerExitError {
-        this.port = port;
-
         obs = new Observable(this);
         sm = new ServerManager(); // xxx obs
         um = new UserManager();
@@ -147,7 +145,11 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
             Naming.bind("rmi://localhost:" + port + "/userServer", this); // NOI18N
             Naming.bind("rmi://localhost:" + port + "/nameServer", this); // NOI18N
 
-            System.out.println("<REG> ----------Sirius.Registry.Registry STARTED!!!----------\n");
+            final String started = "<REG> ----------Sirius.Registry.Registry STARTED!!!----------\n";
+            if (LOG.isInfoEnabled()) {
+                LOG.info(started);
+            }
+            System.out.println(started);
         } catch (final Exception e) {
             final String message = "could not start RMI server, port: " + port; // NOI18N
             LOG.fatal(message, e);
@@ -226,11 +228,17 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
      */
     @Override
     public boolean registerServer(final int type, final String name, final String ip, final String port)
-        throws RemoteException {
+            throws RemoteException {
         if (LOG.isDebugEnabled()) {
             LOG.debug(
                 "registerServer called :: type = " // NOI18N
-                + type + " :: name = " + name + " :: ip = " + ip + " :: port = " + port); // NOI18N
+                + type
+                + " :: name = "
+                + name
+                + " :: ip = "
+                + ip
+                + " :: port = "
+                + port);                           // NOI18N
         }
 
         try {
@@ -273,7 +281,11 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
                 obs.notifyObservers();
                 status.addMessage(
                     "Server abgemeldet",
-                    name + " insgesamt ::" + sm.getServerCount(type) + " Typ " + type);
+                    name
+                    + " insgesamt ::"
+                    + sm.getServerCount(type)
+                    + " Typ "
+                    + type);
                 return true;
             } else {
                 return false;
@@ -300,11 +312,17 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
      */
     @Override
     public boolean unregisterServer(final int type, final String name, final String ip, final String port)
-        throws RemoteException {
+            throws RemoteException {
         if (LOG.isDebugEnabled()) {
             LOG.debug(
                 "unregisterServer called :: type = " // NOI18N
-                + type + " :: name = " + name + " :: ip = " + ip + " :: port = " + port); // NOI18N
+                + type
+                + " :: name = "
+                + name
+                + " :: ip = "
+                + ip
+                + " :: port = "
+                + port);                             // NOI18N
         }
         try {
             if (sm.unregisterServer(type, name, ip, port)) {
@@ -312,7 +330,11 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
                 obs.notifyObservers();
                 status.addMessage(
                     "Server abgemeldet",
-                    name + " insgesamt ::" + sm.getServerCount(type) + " Typ " + type);
+                    name
+                    + " insgesamt ::"
+                    + sm.getServerCount(type)
+                    + " Typ "
+                    + type);
                 return true;
             } else {
                 return false;
@@ -468,11 +490,16 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
             final String password) throws RemoteException, UserException {
         if (LOG.isDebugEnabled()) {
             LOG.debug(
-                "getUser called :: userGroupLocalServerName = " + userGroupLocalServerName // NOI18N
-                + " :: userGroupName = " + userGroupName                                   // NOI18N
-                + " :: userLocalServerName = " + userLocalServerName                       // NOI18N
-                + " :: username = " + userName                                             // NOI18N
-                + " :: password = " + password);                                           // NOI18N
+                "getUser called :: userGroupLocalServerName = "
+                + userGroupLocalServerName // NOI18N
+                + " :: userGroupName = "
+                + userGroupName            // NOI18N
+                + " :: userLocalServerName = "
+                + userLocalServerName      // NOI18N
+                + " :: username = "
+                + userName                 // NOI18N
+                + " :: password = "
+                + password);               // NOI18N
         }
 
         try {
@@ -480,21 +507,26 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
         } catch (final UserException e) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
-                    "userexception at getuser :: userGroupLocalServerName = " + userGroupLocalServerName // NOI18N
-                    + " :: userGroupName = " + userGroupName                                             // NOI18N
-                    + " :: userLocalServerName = " + userLocalServerName                                 // NOI18N
-                    + " :: username = " + userName                                                       // NOI18N
-                    + " :: password = " + password,
-                    e);                                                                                  // NOI18N
+                    "userexception at getuser :: userGroupLocalServerName = "
+                    + userGroupLocalServerName // NOI18N
+                    + " :: userGroupName = "
+                    + userGroupName            // NOI18N
+                    + " :: userLocalServerName = "
+                    + userLocalServerName      // NOI18N
+                    + " :: username = "
+                    + userName                 // NOI18N
+                    + " :: password = "
+                    + password,
+                    e);                        // NOI18N
             }
             throw e;
         } catch (final Exception e) {
             final String message = "could not get user :: userGroupLocalServerName = "
-                + userGroupLocalServerName                                                               // NOI18N
-                + " :: userGroupName = " + userGroupName                                                 // NOI18N
-                + " :: userLocalServerName = " + userLocalServerName                                     // NOI18N
-                + " :: username = " + userName                                                           // NOI18N
-                + " :: password = " + password;                                                          // NOI18N
+                + userGroupLocalServerName     // NOI18N
+                + " :: userGroupName = " + userGroupName // NOI18N
+                + " :: userLocalServerName = " + userLocalServerName // NOI18N
+                + " :: username = " + userName // NOI18N
+                + " :: password = " + password; // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -562,7 +594,8 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
             status.addMessage(
                 "Benutzer hinzugefügt",
                 "Gruppen :: "
-                + users.toString() + "\nBenutzer  System insgesamt ::");
+                + users.toString()
+                + "\nBenutzer  System insgesamt ::");
         } catch (final Exception e) {
             final String message = "could not register users :: users = " + users; // NOI18N
             LOG.error(message, e);
@@ -934,9 +967,26 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
      */
     public void shutdown() throws ServerExit, ServerExitError {
         try {
-            // unbinding nameserver and userserver
-            Naming.unbind("rmi://localhost:" + port + "/userServer"); // NOI18N
-            Naming.unbind("rmi://localhost:" + port + "/nameServer"); // NOI18N
+            // unbinding userserver
+            try {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("unbinding userserver");                                       // NOI18N
+                }
+                Naming.unbind("userServer");                                                 // NOI18N
+            } catch (final NotBoundException e) {
+                LOG.warn("userserver not available (anymore), probably already unbound", e); // NOI18N
+            }
+
+            // unbinding nameserver
+            try {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("unbinding nameserver");                                       // NOI18N
+                }
+                Naming.unbind("nameServer");                                                 // NOI18N
+            } catch (final NotBoundException e) {
+                LOG.warn("nameserver not available (anymore), probably already unbound", e); // NOI18N
+            }
+
             rmRegistryServer.stopRMRegistryServer();
 
             // TODO: refactor server exit

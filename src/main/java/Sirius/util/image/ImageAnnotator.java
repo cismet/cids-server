@@ -12,20 +12,19 @@
  */
 package Sirius.util.image;
 
-import javax.imageio.*;
-
-import java.io.*;
-
-import javax.imageio.stream.*;
-
-import java.net.URL;
-
+import java.awt.*;
 
 //import java.net.MalformedURLException;
 import java.awt.image.BufferedImage;
-import java.awt.*;
+
+import java.io.*;
+
+import java.net.URL;
 
 import java.util.*;
+
+import javax.imageio.*;
+import javax.imageio.stream.*;
 
 //import com.sun.media.jai.codec.*;
 
@@ -75,7 +74,7 @@ public class ImageAnnotator {
      *
      * @throws  java.io.IOException  DOCUMENT ME!
      */
-    public ImageAnnotator(String filename, String watermarkFilename) throws java.io.IOException {
+    public ImageAnnotator(final String filename, final String watermarkFilename) throws java.io.IOException {
         this.filename = filename;
 
         image = loadImage(filename);
@@ -95,7 +94,8 @@ public class ImageAnnotator {
      *
      * @throws  java.io.IOException  DOCUMENT ME!
      */
-    public ImageAnnotator(String filename, String watermarkFilename, String text) throws java.io.IOException {
+    public ImageAnnotator(final String filename, final String watermarkFilename, final String text)
+            throws java.io.IOException {
         this(filename, watermarkFilename);
 
         this.text = text;
@@ -110,7 +110,7 @@ public class ImageAnnotator {
      *
      * @throws  java.io.IOException  DOCUMENT ME!
      */
-    public ImageAnnotator(URL file, URL watermark, String text) throws java.io.IOException {
+    public ImageAnnotator(final URL file, final URL watermark, final String text) throws java.io.IOException {
         this.filename = filename;
 
         image = loadImage(file);
@@ -138,7 +138,7 @@ public class ImageAnnotator {
      *
      * @throws  java.io.IOException  DOCUMENT ME!
      */
-    protected BufferedImage loadImage(String filename) throws java.io.IOException {
+    protected BufferedImage loadImage(final String filename) throws java.io.IOException {
         String type = extractImageType(filename);
 
         if (type.length() == 0) {
@@ -146,19 +146,19 @@ public class ImageAnnotator {
         }
 
         // load
-        File f = new File(filename);
+        final File f = new File(filename);
         if (logger.isDebugEnabled()) {
             logger.debug("Info : file :" + filename + " file " + f);
         }
 
-        Iterator readers = ImageIO.getImageReadersByFormatName(type);
-        ImageReader reader = (ImageReader)readers.next();
+        final Iterator readers = ImageIO.getImageReadersByFormatName(type);
+        final ImageReader reader = (ImageReader)readers.next();
 
-        ImageInputStream iis = ImageIO.createImageInputStream(f);
+        final ImageInputStream iis = ImageIO.createImageInputStream(f);
 
         reader.setInput(iis, false);
 
-        int imageIndex = 0;
+        final int imageIndex = 0;
 
         // width = reader.getWidth(imageIndex);
         // height = reader.getHeight(imageIndex);
@@ -175,7 +175,7 @@ public class ImageAnnotator {
      *
      * @throws  java.io.IOException  DOCUMENT ME!
      */
-    protected BufferedImage loadImage(URL imgUrl) throws java.io.IOException {
+    protected BufferedImage loadImage(final URL imgUrl) throws java.io.IOException {
         String type = extractImageType(imgUrl.getFile());
 
         if (type.length() == 0) {
@@ -183,18 +183,18 @@ public class ImageAnnotator {
         }
 
         // retrieve appropriate imagereader
-        Iterator readers = ImageIO.getImageReadersByFormatName(type);
+        final Iterator readers = ImageIO.getImageReadersByFormatName(type);
 
-        ImageReader reader = (ImageReader)readers.next();
+        final ImageReader reader = (ImageReader)readers.next();
         if (logger.isDebugEnabled()) {
             logger.debug(imgUrl);
         }
 
-        ImageInputStream iis = ImageIO.createImageInputStream(imgUrl.openStream());
+        final ImageInputStream iis = ImageIO.createImageInputStream(imgUrl.openStream());
 
         reader.setInput(iis, false);
 
-        int imageIndex = 0;
+        final int imageIndex = 0;
 
         // width = reader.getWidth(imageIndex);
         // height = reader.getHeight(imageIndex);
@@ -216,7 +216,7 @@ public class ImageAnnotator {
      *
      * @param  text  New value of property text.
      */
-    public void setText(java.lang.String text) {
+    public void setText(final java.lang.String text) {
         this.text = text;
     }
 
@@ -225,7 +225,7 @@ public class ImageAnnotator {
      *
      * @param  text  DOCUMENT ME!
      */
-    public void addText(java.lang.String text) {
+    public void addText(final java.lang.String text) {
         this.text += text;
     }
 
@@ -243,7 +243,7 @@ public class ImageAnnotator {
      *
      * @param  ratio  New value of property ratio.
      */
-    public void setRatio(float ratio) {
+    public void setRatio(final float ratio) {
         this.ratio = ratio;
     }
 
@@ -261,7 +261,7 @@ public class ImageAnnotator {
      *
      * @param  textColor  New value of property textColor.
      */
-    public void setTextColor(java.awt.Color textColor) {
+    public void setTextColor(final java.awt.Color textColor) {
         this.textColor = textColor;
     }
 
@@ -279,7 +279,7 @@ public class ImageAnnotator {
      *
      * @param  backGroundColor  New value of property backGroundColor.
      */
-    public void setBackGroundColor(java.awt.Color backGroundColor) {
+    public void setBackGroundColor(final java.awt.Color backGroundColor) {
         this.backGroundColor = backGroundColor;
     }
 
@@ -297,7 +297,7 @@ public class ImageAnnotator {
      *
      * @param  image  New value of property image.
      */
-    public void setImage(java.awt.image.BufferedImage image) {
+    public void setImage(final java.awt.image.BufferedImage image) {
         this.image = image;
     }
 
@@ -315,7 +315,7 @@ public class ImageAnnotator {
      *
      * @param  watermark  New value of property watermark.
      */
-    public void setWatermark(java.awt.image.BufferedImage watermark) {
+    public void setWatermark(final java.awt.image.BufferedImage watermark) {
         this.watermark = watermark;
     }
 
@@ -328,9 +328,9 @@ public class ImageAnnotator {
         newHeight = (int)(height * ratio);
         newWidth = width; // evtl ver\u00E4ndern aber heapspace
 
-        BufferedImage bi = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
+        final BufferedImage bi = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
 
-        Graphics g = bi.getGraphics();
+        final Graphics g = bi.getGraphics();
 
         // Wuppercolor (Hintergrund)
         g.setColor(backGroundColor);
@@ -342,8 +342,10 @@ public class ImageAnnotator {
             // wasserzeichen
             g.drawImage(
                 watermark,
-                newWidth - (watermark.getWidth() + 5),
-                newHeight - (watermark.getHeight() + 5),
+                newWidth
+                        - (watermark.getWidth() + 5),
+                newHeight
+                        - (watermark.getHeight() + 5),
                 null);
         }
 
@@ -359,7 +361,7 @@ public class ImageAnnotator {
         }
 
         g.setColor(Color.white);
-        Font f = new Font(g.getFont().getName(), Font.ITALIC, g.getFont().getSize());
+        final Font f = new Font(g.getFont().getName(), Font.ITALIC, g.getFont().getSize());
         g.setFont(f);
 
         if (printFilename) {
@@ -374,13 +376,13 @@ public class ImageAnnotator {
      *
      * @param  g  DOCUMENT ME!
      */
-    protected void drawText(Graphics g) {
+    protected void drawText(final Graphics g) {
         // Alle absoluten Zahlen sind heuristiken
 
         g.setColor(textColor);
 
-        int fontSize = (newHeight - height) / LINES; // mx 3 zeilen
-        Font f = new Font("COURIER", Font.BOLD, fontSize);
+        final int fontSize = (newHeight - height) / LINES; // mx 3 zeilen
+        final Font f = new Font("COURIER", Font.BOLD, fontSize);
 
         g.setFont(f);
 
@@ -388,21 +390,21 @@ public class ImageAnnotator {
         int from = 0;
         int to = 0;
 
-        FontMetrics fm = g.getFontMetrics();
+        final FontMetrics fm = g.getFontMetrics();
 
-        int stringWidth = fm.stringWidth(text);
+        final int stringWidth = fm.stringWidth(text);
 
         // breite pro character (bei courier) ansonsten im Mittel !!!!!!!!!!! vorsicht
-        double ppc = (stringWidth / text.length());
+        final double ppc = (stringWidth / text.length());
         if (logger.isDebugEnabled()) {
             logger.debug("breite pro character" + ppc + " text " + text.length());
         }
 
         // Anzahl der zeichen einer Zeile
-        int block = (int)(width / ppc) - 2; // 2 zeichen rand
+        final int block = (int)(width / ppc) - 2; // 2 zeichen rand
 
         // anzahl der Bl\u00F6cke
-        int count = (text.length() / block) + 1;
+        final int count = (text.length() / block) + 1;
 
         // Blockweise Schreiben
         for (int i = 0; i < count; i++) {
@@ -417,7 +419,7 @@ public class ImageAnnotator {
 
             String drawString = text.substring(from, to);
 
-            int space = drawString.lastIndexOf(" ");
+            final int space = drawString.lastIndexOf(" ");
 
             if ((space != (drawString.length() - 1)) && (drawString.length() == block)) {
                 to = space + 1;
@@ -440,18 +442,18 @@ public class ImageAnnotator {
      *
      * @throws  IOException  DOCUMENT ME!
      */
-    public void saveImage(BufferedImage im, String filename) throws IOException {
+    public void saveImage(final BufferedImage im, final String filename) throws IOException {
         String type = extractImageType(filename);
 
         if (type.length() == 0) {
             type = "TIF";
         }
 
-        Iterator writers = ImageIO.getImageWritersByFormatName(type);
-        ImageWriter writer = (ImageWriter)writers.next();
+        final Iterator writers = ImageIO.getImageWritersByFormatName(type);
+        final ImageWriter writer = (ImageWriter)writers.next();
 
-        File f = new File(filename);
-        ImageOutputStream ios = ImageIO.createImageOutputStream(f);
+        final File f = new File(filename);
+        final ImageOutputStream ios = ImageIO.createImageOutputStream(f);
         writer.setOutput(ios);
 
         writer.write(im);
@@ -467,9 +469,9 @@ public class ImageAnnotator {
      *
      * @return  DOCUMENT ME!
      */
-    private String extractImageType(String filename) {
+    private String extractImageType(final String filename) {
         String type = "";
-        int endingIndex = filename.lastIndexOf(".");
+        final int endingIndex = filename.lastIndexOf(".");
         ;
 
         if (endingIndex > 0) {
@@ -493,7 +495,7 @@ public class ImageAnnotator {
      *
      * @param  printFilename  New value of property printFilename.
      */
-    public void setPrintFilename(boolean printFilename) {
+    public void setPrintFilename(final boolean printFilename) {
         this.printFilename = printFilename;
     }
 
@@ -514,16 +516,16 @@ public class ImageAnnotator {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public static void main(String[] args) throws Exception {
-        String txt =
+    public static void main(final String[] args) throws Exception {
+        final String txt =
             "Freie Verwendung f\u00FCr den internen Dienstgebrauch, Publikation oder Weitergabe nur mit Einzelgenehmigung von R102 oder gem\u00E4\u00DF Rahmenvereinbarung mit R102";
 
-        URL imgUrl = new URL("http", "localhost:8084/wm/images/", "wupp1");
-        URL wUrl = new URL("http", "localhost:8084/wm/images/", "wupperwurm.gif");
+        final URL imgUrl = new URL("http", "localhost:8084/wm/images/", "wupp1");
+        final URL wUrl = new URL("http", "localhost:8084/wm/images/", "wupperwurm.gif");
 
         // ImageAnnotator t = new ImageAnnotator("c:\\1.tif","c:\\wupperwurm.gif",txt);
 
-        ImageAnnotator t = new ImageAnnotator(imgUrl, wUrl, txt);
+        final ImageAnnotator t = new ImageAnnotator(imgUrl, wUrl, txt);
 
         // String txt = "Freie Verwendung f\u00FCr den internen Dienstgebrauch. Publikation oder Weitergabe
         // gem\u00E4\u00DF Rahmenvereinbarung mit R102 oder Einzelgenehmigung.";

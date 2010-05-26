@@ -15,14 +15,13 @@ package Sirius.server.middleware.impls.proxy;
 import Sirius.server.localserver.tree.NodeReferenceList;
 import Sirius.server.middleware.types.Link;
 import Sirius.server.middleware.types.MetaNode;
-
-import java.rmi.*;
+import Sirius.server.middleware.types.Node;
+import Sirius.server.newuser.*;
+import Sirius.server.newuser.permission.Policy;
 
 import Sirius.util.*;
 
-import Sirius.server.newuser.*;
-import Sirius.server.middleware.types.Node;
-import Sirius.server.newuser.permission.Policy;
+import java.rmi.*;
 
 /**
  * DOCUMENT ME!
@@ -47,7 +46,7 @@ public class CatalogueServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public CatalogueServiceImpl(java.util.Hashtable activeLocalServers) throws RemoteException {
+    public CatalogueServiceImpl(final java.util.Hashtable activeLocalServers) throws RemoteException {
         this.activeLocalServers = activeLocalServers;
     }
 
@@ -63,13 +62,13 @@ public class CatalogueServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Node[] getChildren(Node node, User user) throws RemoteException {
+    public Node[] getChildren(final Node node, final User user) throws RemoteException {
         try {
-            NodeReferenceList c =
+            final NodeReferenceList c =
                 ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)activeLocalServers.get(
                         node.getDomain())).getChildren(node, user);
 
-            Link[] links = c.getRemoteLinks();
+            final Link[] links = c.getRemoteLinks();
 
             if (links.length == 0) {
                 return c.getLocalNodes();
@@ -80,23 +79,23 @@ public class CatalogueServiceImpl {
             }
 
             // group Links by lsName
-            Group[] groupedLinks = this.group(links);
+            final Group[] groupedLinks = this.group(links);
 
             // contains all nodes from links
-            java.util.Vector nodesFromLinks = new java.util.Vector(links.length);
+            final java.util.Vector nodesFromLinks = new java.util.Vector(links.length);
 
             // temporary used in the loop to keep nodes of one ls
             Node[] n = null;
 
             // get the corresponding Nodes from every different localServer
             for (int i = 0; i < groupedLinks.length; i++) {
-                String lsName = groupedLinks[i].getGroup();
+                final String lsName = groupedLinks[i].getGroup();
 
                 if (logger != null) {
                     logger.info(lsName + " kriegt anfrage nach knoten");
                 }
 
-                Sirius.server.middleware.interfaces.domainserver.CatalogueService ls =
+                final Sirius.server.middleware.interfaces.domainserver.CatalogueService ls =
                     (Sirius.server.middleware.interfaces.domainserver.CatalogueService)activeLocalServers.get(lsName);
 
                 // nodes from links
@@ -111,11 +110,13 @@ public class CatalogueServiceImpl {
                         }
                     }
 
-                    MetaNode error = new MetaNode(
+                    final MetaNode error = new MetaNode(
                             0,
                             lsName,
-                            lsName + " not available!",
-                            lsName + " not available!",
+                            lsName
+                            + " not available!",
+                            lsName
+                            + " not available!",
                             true,
                             Policy.createParanoidPolicy(),
                             -1,
@@ -135,10 +136,10 @@ public class CatalogueServiceImpl {
             }
 
             // directly availabe nodes
-            Node[] lsNodes = c.getLocalNodes();
+            final Node[] lsNodes = c.getLocalNodes();
 
             // contains all nodes
-            Node[] result = new Node[nodesFromLinks.size() + lsNodes.length];
+            final Node[] result = new Node[nodesFromLinks.size() + lsNodes.length];
 
             // put the nodes from the fathers ls into result
             for (int i = 0; i < lsNodes.length; i++) {
@@ -172,7 +173,7 @@ public class CatalogueServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Node[] getRoots(User user, String localServerName) throws RemoteException {
+    public Node[] getRoots(final User user, final String localServerName) throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("getRoots called " + localServerName);
         }
@@ -189,13 +190,13 @@ public class CatalogueServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Node[] getRoots(User user) throws RemoteException {
+    public Node[] getRoots(final User user) throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("<CS> getRoots user" + user);
         }
 
-        java.util.Vector tops = new java.util.Vector(10, 10);
-        java.util.Iterator iter = activeLocalServers.values().iterator();
+        final java.util.Vector tops = new java.util.Vector(10, 10);
+        final java.util.Iterator iter = activeLocalServers.values().iterator();
         Node[] topNodes = new Node[0];
 
         int size = 0;
@@ -205,11 +206,11 @@ public class CatalogueServiceImpl {
             }
 
             while (iter.hasNext()) {
-                NodeReferenceList children = (NodeReferenceList)
+                final NodeReferenceList children = (NodeReferenceList)
                     ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)iter.next()).getRoots(user);
 
                 if ((children != null) && (children.getLocalNodes() != null)) {
-                    Node[] tmp = children.getLocalNodes();
+                    final Node[] tmp = children.getLocalNodes();
                     if (logger.isDebugEnabled()) {
                         logger.debug("<CS> found valid localserver delivers topnodes ::" + tmp.length);
                     }
@@ -221,7 +222,7 @@ public class CatalogueServiceImpl {
             topNodes = new Node[size];
 
             for (int i = 0; i < tops.size(); i++) {
-                Node[] tmp = (Node[])tops.get(i);
+                final Node[] tmp = (Node[])tops.get(i);
 
                 for (int j = 0; j < tmp.length; j++) {
                     --size;
@@ -247,21 +248,21 @@ public class CatalogueServiceImpl {
      *
      * @return  DOCUMENT ME!
      */
-    private Group[] group(Groupable[] toBeGrouped) {
+    private Group[] group(final Groupable[] toBeGrouped) {
         if (logger.isDebugEnabled()) {
             logger.debug("private function group called ");
         }
-        java.util.Hashtable grouped = new java.util.Hashtable(100);
+        final java.util.Hashtable grouped = new java.util.Hashtable(100);
 
         try {
             for (int i = 0; i < toBeGrouped.length; i++) {
-                String group = toBeGrouped[i].getGroup().trim();
+                final String group = toBeGrouped[i].getGroup().trim();
 
                 if (grouped.containsKey(group)) {
-                    java.util.Vector v = (java.util.Vector)grouped.get(group);
+                    final java.util.Vector v = (java.util.Vector)grouped.get(group);
                     v.addElement(toBeGrouped[i]);
                 } else {
-                    java.util.Vector v = new java.util.Vector(20, 20);
+                    final java.util.Vector v = new java.util.Vector(20, 20);
                     v.addElement(toBeGrouped[i]);
                     grouped.put(group, v);
                 }
@@ -273,9 +274,9 @@ public class CatalogueServiceImpl {
         }
 
         // iterator to obtain the vectors
-        java.util.Iterator iter = grouped.values().iterator();
+        final java.util.Iterator iter = grouped.values().iterator();
 
-        Group[] groups = new Group[grouped.size()];
+        final Group[] groups = new Group[grouped.size()];
 
         // counter for groups
         int j = 0;
@@ -283,7 +284,7 @@ public class CatalogueServiceImpl {
         // get the corresponding "Groupables" from every different localServer
         while (iter.hasNext() && (j < groups.length)) // same conditions just to be shure ;-)
         {
-            java.util.Vector v = (java.util.Vector)iter.next();
+            final java.util.Vector v = (java.util.Vector)iter.next();
 
             groups[j] = new Group(((Groupable)v.get(0)).getGroup(), (Groupable[])v.toArray(new Groupable[v.size()]));
             j++;
@@ -303,7 +304,7 @@ public class CatalogueServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Node addNode(Node node, Link parent, User user) throws RemoteException {
+    public Node addNode(final Node node, final Link parent, final User user) throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("addNode called node:" + node + "parentLink ::" + parent + " user::" + user);
         }
@@ -322,7 +323,7 @@ public class CatalogueServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public boolean deleteNode(Node node, User user) throws RemoteException {
+    public boolean deleteNode(final Node node, final User user) throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("delete Node called node:" + node + " user::" + user);
         }
@@ -342,7 +343,7 @@ public class CatalogueServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public boolean addLink(Node from, Node to, User user) throws RemoteException {
+    public boolean addLink(final Node from, final Node to, final User user) throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("addLink called nodeFrom:" + from + "nodeTo ::" + to + " user::" + user);
         }
@@ -362,7 +363,7 @@ public class CatalogueServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public boolean deleteLink(Node from, Node to, User user) throws RemoteException {
+    public boolean deleteLink(final Node from, final Node to, final User user) throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("deleteLink called nodeFrom:" + from + "nodeTo ::" + to + " user::" + user);
         }

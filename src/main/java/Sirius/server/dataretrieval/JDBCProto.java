@@ -12,19 +12,19 @@
  */
 package Sirius.server.dataretrieval;
 
+import Sirius.metajdbc.driver.*;
+
+import Sirius.server.middleware.types.*;
+
+import Sirius.util.*;
+
+import org.apache.log4j.*;
+
 import java.io.*;
 
 import java.sql.*;
 
 import java.util.*;
-
-import Sirius.util.*;
-
-import Sirius.server.middleware.types.*;
-
-import Sirius.metajdbc.driver.*;
-
-import org.apache.log4j.*;
 
 /**
  * Liest MetaDataObject, erstellt eine Verbindung zum Datenbank-Server und liefert das zwischengespeicherte
@@ -76,7 +76,7 @@ public class JDBCProto implements MetaObjectProto {
             maxCacheSize = Integer.parseInt(size);
             logger.info("maxCacheSize was set to " + maxCacheSize + ".");
         } catch (Exception e) {
-            String warn = "Maximum size of cached result set is set to "
+            final String warn = "Maximum size of cached result set is set to "
                 + maxCacheSize + ". Original message: "
                 + System.getProperty("line.separator") + e.getMessage();
 
@@ -86,25 +86,26 @@ public class JDBCProto implements MetaObjectProto {
         return maxCacheSize;
     }
 
-    public DataObject getDataObject(MetaObject metaDataObject) throws DataRetrievalException {
-        ProtoDelegator protoDelegator = new ProtoDelegator(logger);
-        DataObject ret = null;
-        Properties info = new Properties();
+    @Override
+    public DataObject getDataObject(final MetaObject metaDataObject) throws DataRetrievalException {
+        final ProtoDelegator protoDelegator = new ProtoDelegator(logger);
+        final DataObject ret = null;
+        final Properties info = new Properties();
 
-        MetaObject param_mo = protoDelegator.getParameterMO(metaDataObject);
+        final MetaObject param_mo = protoDelegator.getParameterMO(metaDataObject);
 
         // URL url_tmp = protoDelegator.getURL(param_mo);
 
-        String url = protoDelegator.getURL(param_mo);
+        final String url = protoDelegator.getURL(param_mo);
 
         // String url = url_tmp.toString();
 
         logger.warn("url: " + url);
 
         // String url = (String)protoDelegator.getSingleValue(metaDataObject, "URL");
-        String driver = (String)protoDelegator.getSingleValue(param_mo, "driver");
-        String login = (String)protoDelegator.getSingleValue(param_mo, "login");
-        String password = (String)protoDelegator.getSingleValue(param_mo, "password");
+        final String driver = (String)protoDelegator.getSingleValue(param_mo, "driver");
+        final String login = (String)protoDelegator.getSingleValue(param_mo, "login");
+        final String password = (String)protoDelegator.getSingleValue(param_mo, "password");
         String query = (String)protoDelegator.getSingleValue(param_mo, "statement");
 
         // url = Parametrizer.parametrize(url, metaDataObject);
@@ -112,16 +113,16 @@ public class JDBCProto implements MetaObjectProto {
         query = Parametrizer.parametrize(query, metaDataObject);
 
         try {
-            Connection con;
+            final Connection con;
             Class.forName(driver.trim());
 
             // DriverManager.setLogWriter(new PrintWriter(System.err));
             // con = DriverManager.getConnection(url, info);
             con = DriverManager.getConnection(url, login, password);
 
-            PreparedStatement stmt = con.prepareStatement(query);
+            final PreparedStatement stmt = con.prepareStatement(query);
 
-            ResultSet rs = stmt.executeQuery();
+            final ResultSet rs = stmt.executeQuery();
 
             String name = metaDataObject.getName();
             if ((name == null) || (name.length() == 0)) {
@@ -130,12 +131,12 @@ public class JDBCProto implements MetaObjectProto {
 
             return createDataObject(rs, query, name);
         } catch (SQLException e) {
-            String message = "Error occurs during attempt to call up a objekt "
+            final String message = "Error occurs during attempt to call up a objekt "
                 + " of the database: Original message: " + e.getMessage();
 
-            String debugMessage = message + " Gesendeter Statement: " + query;
+            final String debugMessage = message + " Gesendeter Statement: " + query;
 
-            DataRetrievalException newEx = new DataRetrievalException(message, e);
+            final DataRetrievalException newEx = new DataRetrievalException(message, e);
             if (logger.isDebugEnabled()) {
                 // logger.error(message);
                 logger.debug(debugMessage, e);
@@ -143,7 +144,7 @@ public class JDBCProto implements MetaObjectProto {
 
             throw newEx;
         } catch (ClassNotFoundException e) {
-            String message = "Error occurs during attempt to call up a objekt "
+            final String message = "Error occurs during attempt to call up a objekt "
                 + " of the database: The indicated driver \""
                 + driver + "\" was not found.";
 
@@ -165,24 +166,24 @@ public class JDBCProto implements MetaObjectProto {
      * @throws  DataRetrievalException      DOCUMENT ME!
      * @throws  ResultSetTooLargeException  DOCUMENT ME!
      */
-    protected DataObject createDataObject(ResultSet rs, String query, String name) throws DataRetrievalException,
-        ResultSetTooLargeException {
+    protected DataObject createDataObject(final ResultSet rs, final String query, final String name)
+            throws DataRetrievalException, ResultSetTooLargeException {
         try {
-            CachedRS cRS = new CachedRS();
+            final CachedRS cRS = new CachedRS();
             // cRS.populate(rs);
             cRS.populate(getMaxCacheSize(), rs);
 
-            String do_name = name + ".rs";
+            final String do_name = name + ".rs";
 
             return new DataObject(cRS.serialize(cRS), "Deserialisieren zu ResultSet.", do_name);
 
 //            return new DataObject(new byte[0], "tescht");
         } catch (IOException e) {
-            String message = "Error occurs during attempt to serialise a objekt."
+            final String message = "Error occurs during attempt to serialise a objekt."
                 + " Original message: " + e.getMessage();
             throw new DataRetrievalException(message, e, logger);
         } catch (SQLException e) {
-            String message = "Database error occurs, during attempt to call up"
+            final String message = "Database error occurs, during attempt to call up"
                 + " a objekt drom database. Original message: " + e.getMessage();
 
             throw new DataRetrievalException(message, e, logger);
@@ -205,6 +206,7 @@ public class JDBCProto implements MetaObjectProto {
      *
      * @return  jdbc;
      */
+    @Override
     public String getDataSourceClass() {
         return "jdbc";
     }
@@ -227,13 +229,13 @@ public class JDBCProto implements MetaObjectProto {
         return null;
     }*/
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         if (args.length != 1) {
             usage();
             System.exit(-1);
         }
         try {
-            String intValue = new Integer(args[0]).toString();
+            final String intValue = new Integer(args[0]).toString();
             PreferencesTool.setPreference(true, qualifiedKey(), intValue);
             System.out.println("Daten in Backingstore geschrieben: "
                 + "(" + qualifiedKey() + ", " + args[0] + ")");
@@ -247,7 +249,7 @@ public class JDBCProto implements MetaObjectProto {
      * DOCUMENT ME!
      */
     private static void usage() {
-        String usage = JDBCProto.class.getName() + " <maxCacheSize>";
+        final String usage = JDBCProto.class.getName() + " <maxCacheSize>";
         System.out.println("Usage:");
         System.out.println("java " + usage);
     }

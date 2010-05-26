@@ -11,13 +11,13 @@
  * Created on 12. November 2003, 18:31
  */
 package Sirius.server.middleware.interfaces.domainserver;
+import Sirius.server.middleware.types.*;
+import Sirius.server.newuser.*;
+import Sirius.server.search.*;
+
 import java.rmi.*;
 
 import java.util.*;
-
-import Sirius.server.search.*;
-import Sirius.server.middleware.types.*;
-import Sirius.server.newuser.*;
 /**
  * DOCUMENT ME!
  *

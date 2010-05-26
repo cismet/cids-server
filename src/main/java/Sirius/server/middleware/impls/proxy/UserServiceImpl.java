@@ -11,15 +11,15 @@
  * Created on 25. September 2003, 12:53
  */
 package Sirius.server.middleware.impls.proxy;
+//import Sirius.middleware.interfaces.domainserver.*;
 
-import java.util.*;
+import Sirius.server.middleware.interfaces.proxy.*;
+import Sirius.server.newuser.*;
 
 import java.rmi.*;
 import java.rmi.server.*;
 
-import Sirius.server.newuser.*;
-//import Sirius.middleware.interfaces.domainserver.*;
-import Sirius.server.middleware.interfaces.proxy.*;
+import java.util.*;
 /**
  * DOCUMENT ME!
  *
@@ -44,7 +44,8 @@ public class UserServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public UserServiceImpl(java.util.Hashtable activeLocalServers, UserServer userServer) throws RemoteException {
+    public UserServiceImpl(final java.util.Hashtable activeLocalServers, final UserServer userServer)
+            throws RemoteException {
         this.activeLocalServers = activeLocalServers;
         this.userServer = userServer;
     }
@@ -66,12 +67,11 @@ public class UserServiceImpl {
      * @throws  RemoteException  DOCUMENT ME!
      * @throws  UserException    DOCUMENT ME!
      */
-    public User getUser(
-            String userGroupLsName,
-            String userGroupName,
-            String userLsName,
-            String userName,
-            String password) throws RemoteException, UserException {
+    public User getUser(final String userGroupLsName,
+            final String userGroupName,
+            final String userLsName,
+            final String userName,
+            final String password) throws RemoteException, UserException {
         if (logger.isDebugEnabled()) {
             logger.debug("getUser gerufen f\u00FCr user::" + userName);
 
@@ -81,19 +81,20 @@ public class UserServiceImpl {
             logger.debug("userGroupName:" + userGroupName);
             logger.debug("password:" + password);
         }
-        User u = userServer.getUser(userLsName, userName, userGroupLsName, userGroupName, password);
+        final User u = userServer.getUser(userLsName, userGroupName, userGroupLsName, userName, password);
 
         boolean validated = false;
 
         if (u != null) {
-            Sirius.server.middleware.interfaces.domainserver.UserService us =
+            final Sirius.server.middleware.interfaces.domainserver.UserService us =
                 (Sirius.server.middleware.interfaces.domainserver.UserService)activeLocalServers.get(userLsName);
 
             if (us != null) {
                 validated = us.validateUser(u, password);
             } else {
                 throw new UserException(
-                    "Login fehlgeschlagen, Heimatserver des Users nicht erreichbar :: " + password,
+                    "Login fehlgeschlagen, Heimatserver des Users nicht erreichbar :: "
+                    + password,
                     false,
                     false,
                     false,
@@ -120,16 +121,16 @@ public class UserServiceImpl {
             logger.debug("getUserGroupName gerufen");
         }
 
-        Vector names = new Vector(20, 20);
+        final Vector names = new Vector(20, 20);
 
-        Collection c = userServer.getUserGroups();
+        final Collection c = userServer.getUserGroups();
 
-        Iterator i = c.iterator();
+        final Iterator i = c.iterator();
 
         while (i.hasNext()) {
-            UserGroup tmpUserGroup;
+            final UserGroup tmpUserGroup;
 
-            String[] s = new String[2];
+            final String[] s = new String[2];
             tmpUserGroup = (UserGroup)i.next();
 
             s[0] = tmpUserGroup.getName();
@@ -151,7 +152,7 @@ public class UserServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Vector getUserGroupNames(String userName, String lsHome) throws RemoteException {
+    public Vector getUserGroupNames(final String userName, final String lsHome) throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("getUserGroupNames gerufen for :username:" + userName);
         }
@@ -170,8 +171,8 @@ public class UserServiceImpl {
      * @throws  RemoteException  DOCUMENT ME!
      * @throws  UserException    DOCUMENT ME!
      */
-    public boolean changePassword(User user, String oldPassword, String newPassword) throws RemoteException,
-        UserException {
+    public boolean changePassword(final User user, final String oldPassword, final String newPassword)
+            throws RemoteException, UserException {
         if (logger.isDebugEnabled()) {
             logger.debug("changePassword gerufen for :user:" + user);
         }

@@ -28,11 +28,17 @@ import java.util.HashMap;
  */
 public class AllAttributesToStringConverter extends ToStringConverter implements Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -6299801781259227376L;
+
     //~ Methods ----------------------------------------------------------------
 
-    public String convert(Sirius.server.localserver.object.Object o, HashMap classes) {
+    @Override
+    public String convert(final Sirius.server.localserver.object.Object o, final HashMap classes) {
         String stringRepresentation = "";
-        ObjectAttribute[] attrs = o.getAttribs();
+        final ObjectAttribute[] attrs = o.getAttribs();
         for (int i = 0; i < attrs.length; i++) {
             if (!attrs[i].referencesObject()) {
                 stringRepresentation += (attrs[i].toString() + " ");
@@ -43,10 +49,11 @@ public class AllAttributesToStringConverter extends ToStringConverter implements
         return stringRepresentation;
     }
 
-    public String convert(de.cismet.cids.tools.tostring.StringConvertable o) {
+    @Override
+    public String convert(final de.cismet.cids.tools.tostring.StringConvertable o) {
         String stringRepresentation = "";
         if (o instanceof Sirius.server.localserver.object.Object) {
-            ObjectAttribute[] attrs = ((Sirius.server.localserver.object.Object)o).getAttribs();
+            final ObjectAttribute[] attrs = ((Sirius.server.localserver.object.Object)o).getAttribs();
             for (int i = 0; i < attrs.length; i++) {
                 stringRepresentation += (attrs[i].toString() + " ");
             }

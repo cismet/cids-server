@@ -37,7 +37,7 @@ public class TransactionServiceImpl {
      *
      * @param  executingService  DOCUMENT ME!
      */
-    public TransactionServiceImpl(Object executingService) {
+    public TransactionServiceImpl(final Object executingService) {
         this.executer = new TransactionExecuter(executingService);
     }
 
@@ -52,7 +52,7 @@ public class TransactionServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public int executeTransactionList(ArrayList transactions) throws RemoteException {
+    public int executeTransactionList(final ArrayList transactions) throws RemoteException {
         return executer.execute(transactions);
     }
 }

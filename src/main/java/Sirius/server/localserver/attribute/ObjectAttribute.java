@@ -7,8 +7,8 @@
 ****************************************************/
 package Sirius.server.localserver.attribute;
 
-import Sirius.server.newuser.permission.*;
 import Sirius.server.middleware.types.*;
+import Sirius.server.newuser.permission.*;
 
 import Sirius.util.*;
 
@@ -33,6 +33,9 @@ public class ObjectAttribute extends Attribute implements Mapable,
     StringConvertable {
 
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 2266358985361133488L;
 
     private static String toStringConverterPrefix = "de.cismet.cids.custom.tostringconverter.";
     private static String toStringConverterPostfix = "ToStringConverter";
@@ -65,7 +68,10 @@ public class ObjectAttribute extends Attribute implements Mapable,
      * @param  value     DOCUMENT ME!
      * @param  policy    DOCUMENT ME!
      */
-    public ObjectAttribute(MemberAttributeInfo mai, int objectID, java.lang.Object value, Policy policy) {
+    public ObjectAttribute(final MemberAttributeInfo mai,
+            final int objectID,
+            final java.lang.Object value,
+            final Policy policy) {
         // id????
         this(mai.getId() + "", mai, objectID, value, policy);
     }
@@ -78,7 +84,11 @@ public class ObjectAttribute extends Attribute implements Mapable,
      * @param  value     DOCUMENT ME!
      * @param  policy    DOCUMENT ME!
      */
-    public ObjectAttribute(String id, MemberAttributeInfo mai, int objectID, java.lang.Object value, Policy policy) {
+    public ObjectAttribute(final String id,
+            final MemberAttributeInfo mai,
+            final int objectID,
+            final java.lang.Object value,
+            final Policy policy) {
         // Info wird zum Teil doppelt gehalten im mai Objekt und in der Superklasse
         // verursacht durch :  mai nachtraeglich eingefuegt
         super(id, mai.getName(), null, new PermissionHolder(policy), mai.isVisible());
@@ -133,7 +143,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
      * @return  das Ergebnis der Verarbeitung bei aufruf dieser Funktion. Es wird der Returnwert der visitMA(...) Fkt
      *          aus dem Inteface TypeVisitor geliefert.
      */
-    public Object accept(TypeVisitor mov, Object o) {
+    public Object accept(final TypeVisitor mov, final Object o) {
         return mov.visitMA(this, o);
     }
 
@@ -151,7 +161,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
      *
      * @param  classID  New value of property classID.
      */
-    public void setClassID(int classID) {
+    public void setClassID(final int classID) {
         this.classID = classID;
     }
 
@@ -160,7 +170,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
      *
      * @param  objectID  New value of property objectID.
      */
-    public void setObjectID(int objectID) {
+    public void setObjectID(final int objectID) {
         this.objectID = objectID;
     }
 
@@ -174,11 +184,13 @@ public class ObjectAttribute extends Attribute implements Mapable,
     }
 
     // mapable
+    @Override
     public java.lang.Object getKey() {
         return id + "@" + classID;
     }
 
-    public Object constructKey(Mapable m) {
+    @Override
+    public Object constructKey(final Mapable m) {
         return super.constructKey(m);
     }
 
@@ -192,19 +204,23 @@ public class ObjectAttribute extends Attribute implements Mapable,
     }
 
     // ggf zu \u00E4ndern
+    @Override
     public String getRenderer() {
         return toStringString;
     }
 
-    public Object fromString(String objectRepresentation, java.lang.Object mo) throws Exception {
+    @Override
+    public Object fromString(final String objectRepresentation, final java.lang.Object mo) throws Exception {
         return objectCreator.create(objectRepresentation, mo);
     }
 
+    @Override
     public boolean isStringCreateable() {
         return (objectCreator != null);
     }
     // Hell
 
+    @Override
     public String getComplexEditor() {
         if (this.complexEditor == null) {
             complexEditor = "Sirius.navigator.ui.attributes.editor.metaobject.DefaultComplexMetaAttributeEditor";
@@ -219,6 +235,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
         }
     }
 
+    @Override
     public String getSimpleEditor() {
         return editor;
     }
@@ -228,7 +245,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
      *
      * @param  complexEditor  New value of property complexEditor.
      */
-    public void setComplexEditor(java.lang.String complexEditor) {
+    public void setComplexEditor(final java.lang.String complexEditor) {
         this.complexEditor = complexEditor;
     }
 
@@ -251,7 +268,8 @@ public class ObjectAttribute extends Attribute implements Mapable,
                 if (toStringConverter == null) {
                     if (logger.isDebugEnabled()) {
                         logger.debug(
-                            "Could not load ToStringConverter for Attribute " + mai.name
+                            "Could not load ToStringConverter for Attribute "
+                            + mai.name
                             + " by configuration. Using default");
                     }
                     toStringConverter = new ToStringConverter();
@@ -288,7 +306,10 @@ public class ObjectAttribute extends Attribute implements Mapable,
             final String fieldNamePreparedForClassName = fieldnameToLower.substring(0, 1).toUpperCase()
                 + fieldnameToLower.substring(1);
             final StringBuffer lazyClassName = new StringBuffer(toStringConverterPrefix).append(domainToLower)
-                        .append(".").append(tabletoLower).append(".").append(fieldNamePreparedForClassName)
+                        .append(".")
+                        .append(tabletoLower)
+                        .append(".")
+                        .append(fieldNamePreparedForClassName)
                         .append(toStringConverterPostfix);
             return lazyClassName.toString();
         } else {
@@ -347,16 +368,16 @@ public class ObjectAttribute extends Attribute implements Mapable,
      *
      * @param  mai  DOCUMENT ME!
      */
-    protected void initFromString(MemberAttributeInfo mai) {
-        String fromString = mai.getFromString();
+    protected void initFromString(final MemberAttributeInfo mai) {
+        final String fromString = mai.getFromString();
         if (fromString != null) {
             try {
                 if (logger.isDebugEnabled()) {
                     logger.debug("<LS> info :: try to load fromString if not null : " + fromString);
                 }
 
-                java.lang.Class c0 = java.lang.Class.forName("Sirius.util.FromStringCreator");
-                java.lang.Class c = java.lang.Class.forName(fromString.trim());
+                final java.lang.Class c0 = java.lang.Class.forName("Sirius.util.FromStringCreator");
+                final java.lang.Class c = java.lang.Class.forName(fromString.trim());
 
                 if (c0.isAssignableFrom(c)) {
                     this.objectCreator = (FromStringCreator)c.newInstance();
@@ -365,20 +386,24 @@ public class ObjectAttribute extends Attribute implements Mapable,
                     }
                 } else {
                     logger.warn(
-                        "<LS> info ::  fromSTringObjectCreator " + fromString + "nicht geladen: reference is :"
+                        "<LS> info ::  fromSTringObjectCreator "
+                        + fromString
+                        + "nicht geladen: reference is :"
                         + this.objectCreator);
                 }
             } catch (Exception e) {
                 logger.error(
-                    "<LS> ERROR :: " + fromString + " f\u00FCr Klasse " + name
+                    "<LS> ERROR :: "
+                    + fromString
+                    + " f\u00FCr Klasse "
+                    + name
                     + " konnte nicht geladen werden set string converter to Default ",
                     e);
             }
         } else // fromString==null nicht gesetz aber value evtl vorhanden
         {
             // default from string
-            if (
-                (value instanceof java.sql.Date)
+            if ((value instanceof java.sql.Date)
                         || (value instanceof java.util.Date)
                         || ((typeId > 78) && (typeId < 87))) {
                 this.objectCreator = new DateFromString();
@@ -409,7 +434,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
      *
      * @param  mai  DOCUMENT ME!
      */
-    public void setMai(MemberAttributeInfo mai) {
+    public void setMai(final MemberAttributeInfo mai) {
         this.mai = mai;
     }
 
@@ -427,7 +452,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
      *
      * @param  parentObject  DOCUMENT ME!
      */
-    public void setParentObject(Sirius.server.localserver.object.Object parentObject) {
+    public void setParentObject(final Sirius.server.localserver.object.Object parentObject) {
         this.parentObject = parentObject;
     }
 //

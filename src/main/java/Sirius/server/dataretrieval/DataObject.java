@@ -21,6 +21,11 @@ package Sirius.server.dataretrieval;
  */
 public class DataObject implements java.io.Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -8019479808162999093L;
+
     //~ Instance fields --------------------------------------------------------
 
     private byte[] data;
@@ -36,7 +41,7 @@ public class DataObject implements java.io.Serializable {
      * @param  parseInfo  DOCUMENT ME!
      * @param  name       DOCUMENT ME!
      */
-    public DataObject(byte[] data, String parseInfo, String name) {
+    public DataObject(final byte[] data, final String parseInfo, final String name) {
         this.data = data;
         this.parseInfo = parseInfo;
         this.name = name;

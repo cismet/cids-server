@@ -11,15 +11,13 @@
  * Created on 22. November 2003, 11:06
  */
 package Sirius.server.localserver.query;
-import Sirius.server.sql.*;
-
-import java.util.*;
-
 import Sirius.server.search.*;
+import Sirius.server.search.searchparameter.*;
+import Sirius.server.sql.*;
 
 import java.sql.*;
 
-import Sirius.server.search.searchparameter.*;
+import java.util.*;
 
 /**
  * DOCUMENT ME!
@@ -53,7 +51,7 @@ public class QueryCache {
      * @param  dbcon   DOCUMENT ME!
      * @param  domain  DOCUMENT ME!
      */
-    public QueryCache(DBConnection dbcon, String domain) {
+    public QueryCache(final DBConnection dbcon, final String domain) {
         this(dbcon.getConnection(), dbcon.getStatementCache(), domain);
     }
 
@@ -64,19 +62,19 @@ public class QueryCache {
      * @param  cache   DOCUMENT ME!
      * @param  domain  DOCUMENT ME!
      */
-    public QueryCache(Connection con, StatementCache cache, String domain) {
+    public QueryCache(final Connection con, final StatementCache cache, final String domain) {
         this.con = con;
         queries = new HashMap(cache.size());
 
         // to large but doesn't matter
         searchOptions = new HashMap(cache.size());
 
-        Collection qs = cache.values();
+        final Collection qs = cache.values();
 
-        Iterator iter = qs.iterator();
+        final Iterator iter = qs.iterator();
 
         while (iter.hasNext()) {
-            Query q = new Query((SystemStatement)iter.next(), domain);
+            final Query q = new Query((SystemStatement)iter.next(), domain);
 
             queries.put(q.getKey(), q);
 
@@ -125,12 +123,12 @@ public class QueryCache {
      *
      * @param  domain  DOCUMENT ME!
      */
-    private void setClassPermissions(String domain) {
+    private void setClassPermissions(final String domain) {
         // verkn\u00FCpfung der Queries
         try {
-            Statement getQueryClassAssoc = con.createStatement();
+            final Statement getQueryClassAssoc = con.createStatement();
 
-            ResultSet rs = getQueryClassAssoc.executeQuery("SELECT * from cs_query_class_assoc");
+            final ResultSet rs = getQueryClassAssoc.executeQuery("SELECT * from cs_query_class_assoc");
 
             int q_id = 0;
             int c_id = 0;
@@ -138,7 +136,7 @@ public class QueryCache {
                 q_id = rs.getInt("query_id");
                 c_id = rs.getInt("class_id");
 
-                Object option = searchOptions.get(q_id + "@" + domain);
+                final Object option = searchOptions.get(q_id + "@" + domain);
 
                 if (option != null) {
                     ((SearchOption)option).addClass(c_id + "@" + domain);
@@ -155,12 +153,12 @@ public class QueryCache {
      *
      * @param  domain  DOCUMENT ME!
      */
-    private void setUserGroupPermissions(String domain) {
+    private void setUserGroupPermissions(final String domain) {
         // verkn\u00FCpfung der Queries
         try {
-            Statement getQueryClassAssoc = con.createStatement();
+            final Statement getQueryClassAssoc = con.createStatement();
 
-            ResultSet rs = getQueryClassAssoc.executeQuery(
+            final ResultSet rs = getQueryClassAssoc.executeQuery(
                     "SELECT d.name,query_id,ug_id from cs_query_ug_assoc as uga ,cs_domain as d , cs_ug as ug where uga.ug_id=ug.id and d.id=ug.domain");
 
             // Vorsicht die Id ist nicht Systemweit eindeutig statt ug_id muss ug_name verwendet werden
@@ -181,7 +179,7 @@ public class QueryCache {
                 q_id = rs.getInt("query_id");
                 ug_id = rs.getInt("ug_id");
 
-                Object option = searchOptions.get(q_id + "@" + domain);
+                final Object option = searchOptions.get(q_id + "@" + domain);
 
                 if (option != null) {
                     ((SearchOption)option).addUserGroup(ug_id + "@" + ug_domain);
@@ -198,12 +196,12 @@ public class QueryCache {
      *
      * @param  domain  DOCUMENT ME!
      */
-    private void linkIt(String domain) {
+    private void linkIt(final String domain) {
         // verkn\u00FCpfung der Queries
         try {
-            Statement getLinks = con.createStatement();
+            final Statement getLinks = con.createStatement();
 
-            ResultSet rs = getLinks.executeQuery(
+            final ResultSet rs = getLinks.executeQuery(
                     "SELECT id_from,id_to,d.name as domain_to,qfrom.name as fromName,qto.name as toName from cs_query_link as l,cs_query as qfrom,cs_query as qto,cs_domain as d where l.id_from = qfrom.id and l.id_to=qto.id and d.id=l.domain_to");
 
             int from = 0;
@@ -221,7 +219,7 @@ public class QueryCache {
                 nameFrom = rs.getString("fromName");
                 nameTo = rs.getString("toName");
 
-                String qKey = from + "@" + domain;
+                final String qKey = from + "@" + domain;
 
                 // xxx ls_name
                 q = (Query)queries.get(nameFrom + "@" + domain);
@@ -239,7 +237,7 @@ public class QueryCache {
                 {
                     // vorsicht die Parameter fehlen
                     // daher setzte parameter der superQuery
-                    Query father = (Query)queries.get(nameFrom + "@" + this.domain);
+                    final Query father = (Query)queries.get(nameFrom + "@" + this.domain);
 
                     subQ = new Query(new QueryIdentifier(domainTo, to));
                     subQ.setParameters(father.getParameters());
@@ -261,11 +259,11 @@ public class QueryCache {
      *
      * @param  domain  DOCUMENT ME!
      */
-    private void setSearchParameters(String domain) {
+    private void setSearchParameters(final String domain) {
         try {
-            Statement getSearchParameter = con.createStatement();
+            final Statement getSearchParameter = con.createStatement();
 
-            ResultSet rs = getSearchParameter.executeQuery(
+            final ResultSet rs = getSearchParameter.executeQuery(
                     "SELECT qp.id as p_id,q.id as q_id,qp.param_key as p_key,qp.is_query_result as is_result,qp.query_position as pos,q.name as query_name, qp.descr as query_description from cs_query_parameter as qp,cs_query as q where q.id=qp.query_id");
 
             int id = 0;
@@ -287,7 +285,7 @@ public class QueryCache {
                 queryKey = rs.getString("query_name").trim();
                 queryDescription = rs.getString("query_description");
 
-                Query q = (Query)queries.get(queryKey + "@" + domain);
+                final Query q = (Query)queries.get(queryKey + "@" + domain);
 
                 if (q != null) {
                     q.addParameter(new DefaultSearchParameter(key, null, isQueryResult, pos, queryDescription));
@@ -306,7 +304,7 @@ public class QueryCache {
      *
      * @return  DOCUMENT ME!
      */
-    public Query getQuery(QueryIdentifier qid) {
+    public Query getQuery(final QueryIdentifier qid) {
         return (Query)queries.get(qid);
     }
 
@@ -317,7 +315,7 @@ public class QueryCache {
      *
      * @return  DOCUMENT ME!
      */
-    public SearchOption getSearchOption(QueryIdentifier qid) {
+    public SearchOption getSearchOption(final QueryIdentifier qid) {
         return (SearchOption)searchOptions.get(qid);
     }
 
@@ -346,28 +344,28 @@ public class QueryCache {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public int addQuery(
-            String name,
-            String description,
-            String statement,
-            int resultType,
-            char isUpdate,
-            char isBatch,
-            char isRoot,
-            char isUnion) throws Exception {
-        Statement s = con.createStatement();
+    public int addQuery(final String name,
+            final String description,
+            final String statement,
+            final int resultType,
+            final char isUpdate,
+            final char isBatch,
+            final char isRoot,
+            final char isUnion) throws Exception {
+        final Statement s = con.createStatement();
         int maxId = 0;
-        ResultSet max = maxQueryId.executeQuery();
+        final ResultSet max = maxQueryId.executeQuery();
 
         if (max.next()) {
             maxId = max.getInt(1) + 1;
         }
 
-        String stmnt = "insert into cs_query values(" + maxId + ",'" + name + "','" + description + "','" + statement
+        final String stmnt = "insert into cs_query values(" + maxId + ",'" + name + "','" + description + "','"
+            + statement
             + "'," + resultType + ",'" + isUpdate + "','" + isBatch + "','" + isRoot + "','" + isUnion
             + "', false,true )";
 
-        Statement insert = con.createStatement();
+        final Statement insert = con.createStatement();
         if (logger.isDebugEnabled()) {
             logger.debug("add query info :" + stmnt);
         }
@@ -390,7 +388,7 @@ public class QueryCache {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public int addQuery(String name, String description, String statement) throws Exception {
+    public int addQuery(final String name, final String description, final String statement) throws Exception {
         return addQuery(name, description, statement, 0, 'F', 'F', 'T', 'F');
     }
 
@@ -408,27 +406,26 @@ public class QueryCache {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public boolean addQueryParameter(
-            int queryId,
-            int typeId,
-            String paramKey,
-            String description,
-            char isQueryResult,
-            int queryPosition) throws Exception {
-        Statement s = con.createStatement();
+    public boolean addQueryParameter(final int queryId,
+            final int typeId,
+            final String paramKey,
+            final String description,
+            final char isQueryResult,
+            final int queryPosition) throws Exception {
+        final Statement s = con.createStatement();
         int maxId = 0;
-        ResultSet max = maxParameterId.executeQuery();
+        final ResultSet max = maxParameterId.executeQuery();
 
         if (max.next()) {
             maxId = max.getInt(1) + 1;
         }
 
-        String stmnt = "insert into cs_query_parameter values(" + maxId + "," + queryId + ",'" + paramKey + "','"
+        final String stmnt = "insert into cs_query_parameter values(" + maxId + "," + queryId + ",'" + paramKey + "','"
             + description + "','" + isQueryResult + "'," + typeId + "," + queryPosition + ")";
         if (logger.isDebugEnabled()) {
             logger.debug("add queryparam  info :" + stmnt);
         }
-        Statement insert = con.createStatement();
+        final Statement insert = con.createStatement();
 
         return insert.executeUpdate(stmnt) > 0;
     }
@@ -443,7 +440,8 @@ public class QueryCache {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public boolean addQueryParameter(int queryId, String paramkey, String description) throws Exception {
+    public boolean addQueryParameter(final int queryId, final String paramkey, final String description)
+            throws Exception {
         return addQueryParameter(queryId, 0, paramkey, description, 'F', 0);
     }
 }

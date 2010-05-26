@@ -38,7 +38,7 @@ public class DataRetrievalException extends Exception {
      *
      * @param  meldung  DOCUMENT ME!
      */
-    public DataRetrievalException(String meldung) {
+    public DataRetrievalException(final String meldung) {
         super(meldung);
     }
 
@@ -48,7 +48,7 @@ public class DataRetrievalException extends Exception {
      *
      * @param  e  DOCUMENT ME!
      */
-    public DataRetrievalException(Throwable e) {
+    public DataRetrievalException(final Throwable e) {
         super(e);
         super.setStackTrace(e.getStackTrace());
     }
@@ -60,7 +60,7 @@ public class DataRetrievalException extends Exception {
      * @param  meldung  DOCUMENT ME!
      * @param  e        DOCUMENT ME!
      */
-    public DataRetrievalException(String meldung, Throwable e) {
+    public DataRetrievalException(final String meldung, final Throwable e) {
         super(meldung, e);
         super.setStackTrace(e.getStackTrace());
     }
@@ -73,7 +73,7 @@ public class DataRetrievalException extends Exception {
      * @param  meldung  DOCUMENT ME!
      * @param  logger   DOCUMENT ME!
      */
-    public DataRetrievalException(String meldung, Logger logger) {
+    public DataRetrievalException(final String meldung, final Logger logger) {
         super(meldung);
 
         logger.error(meldung);
@@ -86,7 +86,7 @@ public class DataRetrievalException extends Exception {
      * @param  e       DOCUMENT ME!
      * @param  logger  DOCUMENT ME!
      */
-    public DataRetrievalException(Throwable e, Logger logger) {
+    public DataRetrievalException(final Throwable e, final Logger logger) {
         super(e);
         super.setStackTrace(e.getStackTrace());
         if (logger.isDebugEnabled()) {
@@ -104,7 +104,7 @@ public class DataRetrievalException extends Exception {
      * @param  e       DOCUMENT ME!
      * @param  logger  DOCUMENT ME!
      */
-    public DataRetrievalException(SQLException e, Logger logger) {
+    public DataRetrievalException(final SQLException e, final Logger logger) {
         super(e);
         super.setStackTrace(e.getStackTrace());
 
@@ -122,7 +122,7 @@ public class DataRetrievalException extends Exception {
      * @param  e        DOCUMENT ME!
      * @param  logger   DOCUMENT ME!
      */
-    public DataRetrievalException(String meldung, Throwable e, Logger logger) {
+    public DataRetrievalException(final String meldung, final Throwable e, final Logger logger) {
         super(meldung, e);
         super.setStackTrace(e.getStackTrace());
         if (logger.isDebugEnabled()) {
@@ -142,7 +142,7 @@ public class DataRetrievalException extends Exception {
      * @param  e        DOCUMENT ME!
      * @param  logger   DOCUMENT ME!
      */
-    public DataRetrievalException(String meldung, SQLException e, Logger logger) {
+    public DataRetrievalException(final String meldung, final SQLException e, final Logger logger) {
         super(meldung, e);
         super.setStackTrace(e.getStackTrace());
 
@@ -159,7 +159,7 @@ public class DataRetrievalException extends Exception {
      * @param  e       DOCUMENT ME!
      * @param  logger  DOCUMENT ME!
      */
-    private void debug(SQLException e, Logger logger) {
+    private void debug(final SQLException e, final Logger logger) {
         if (logger.isDebugEnabled()) {
             SQLException tmp;
             logger.debug(e, e);

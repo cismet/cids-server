@@ -29,7 +29,6 @@ public final class ServerSecurityManager extends RMISecurityManager {
 
     @Override
     public void checkPermission(final Permission perm, final Object context) {
-        // do nothing
-        // TODO: create appropriate security manager!
+        // do nothing TODO: create appropriate security manager!
     }
 }

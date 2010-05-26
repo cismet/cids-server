@@ -37,7 +37,7 @@ public class UserAlreadyRegisteredException extends Exception {
      *
      * @param  message  DOCUMENT ME!
      */
-    public UserAlreadyRegisteredException(String message) {
+    public UserAlreadyRegisteredException(final String message) {
         super(message);
     }
 }

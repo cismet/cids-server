@@ -34,7 +34,7 @@ public final class StringPatternFormater extends AbstractAttributeRepresentation
      * @param  pattern     DOCUMENT ME!
      * @param  fieldNames  DOCUMENT ME!
      */
-    public StringPatternFormater(String pattern, String... fieldNames) {
+    public StringPatternFormater(final String pattern, final String... fieldNames) {
         this.fieldNames = fieldNames;
         this.pattern = pattern;
     }

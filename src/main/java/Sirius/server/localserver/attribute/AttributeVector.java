@@ -17,6 +17,11 @@ import java.util.Vector;
  */
 public class AttributeVector extends java.util.Vector implements java.io.Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 595320627200541410L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -30,7 +35,7 @@ public class AttributeVector extends java.util.Vector implements java.io.Seriali
      *
      * @param  initialCapacity  DOCUMENT ME!
      */
-    public AttributeVector(int initialCapacity) {
+    public AttributeVector(final int initialCapacity) {
         super(initialCapacity);
     }
     /**
@@ -38,7 +43,7 @@ public class AttributeVector extends java.util.Vector implements java.io.Seriali
      *
      * @param  c  DOCUMENT ME!
      */
-    public AttributeVector(Collection c) {
+    public AttributeVector(final Collection c) {
         super(c);
     }
     /**
@@ -47,7 +52,7 @@ public class AttributeVector extends java.util.Vector implements java.io.Seriali
      * @param  initialCapacity    DOCUMENT ME!
      * @param  capacityIncrement  DOCUMENT ME!
      */
-    public AttributeVector(int initialCapacity, int capacityIncrement) {
+    public AttributeVector(final int initialCapacity, final int capacityIncrement) {
         super(initialCapacity, capacityIncrement);
     }
 
@@ -64,9 +69,9 @@ public class AttributeVector extends java.util.Vector implements java.io.Seriali
      * @throws  java.lang.NullPointerException       DOCUMENT ME!
      * @throws  java.lang.IndexOutOfBoundsException  DOCUMENT ME!
      */
-    public Attribute at(int index) throws Exception {
+    public Attribute at(final int index) throws Exception {
         if (size() > index) {
-            java.lang.Object attrib = super.get(index);
+            final java.lang.Object attrib = super.get(index);
             if (attrib instanceof Attribute) {
                 return (Attribute)attrib;
             }
@@ -83,6 +88,7 @@ public class AttributeVector extends java.util.Vector implements java.io.Seriali
         return (Attribute[])toArray(new Attribute[size()]);
     } // end of convertToArray
 
+    @Override
     public java.lang.Object clone() {
         return new AttributeVector((Vector)super.clone());
     }

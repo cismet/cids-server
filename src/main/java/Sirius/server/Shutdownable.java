@@ -5,28 +5,22 @@
 *              ... and it just works.
 *
 ****************************************************/
-package Sirius.server.middleware.interfaces.domainserver;
-
-import Sirius.util.image.*;
-
-import java.rmi.*;
+package Sirius.server;
 
 /**
  * DOCUMENT ME!
  *
+ * @author   martin.scholl@cismet.de
  * @version  $Revision$, $Date$
  */
-
-public interface SystemService extends Remote {
+public interface Shutdownable {
 
     //~ Methods ----------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
+     * @throws  ServerExitError  DOCUMENT ME!
      */
-    Image[] getDefaultIcons() throws RemoteException;
+    void shutdown() throws ServerExitError;
 }

@@ -7,9 +7,9 @@
 ****************************************************/
 package Sirius.server.middleware.interfaces.proxy;
 
-import java.rmi.*;
-
 import Sirius.server.newuser.*;
+
+import java.rmi.*;
 
 import java.util.*;
 
@@ -54,7 +54,7 @@ public interface UserService extends Remote {
      * @throws  UserException    Sirius.server.newuser.UserException server error (eg bad login)
      */
     User getUser(String userGroupLsName, String userGroupName, String userLsName, String userName, String password)
-        throws RemoteException, UserException;
+            throws RemoteException, UserException;
 
     /**
      * list all available (of domain servers online) usergroups eg admins@altlasten.

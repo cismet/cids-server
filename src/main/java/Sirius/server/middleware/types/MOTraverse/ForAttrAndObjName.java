@@ -38,7 +38,7 @@ public class ForAttrAndObjName extends AttrForName {
      *
      * @param  objectName  name des MetaObjektes in dem nach dem MetaAttribut gesucht werden soll.
      */
-    public ForAttrAndObjName(String objectName) {
+    public ForAttrAndObjName(final String objectName) {
         this.objectName = objectName;
     }
 
@@ -53,14 +53,15 @@ public class ForAttrAndObjName extends AttrForName {
      * @return  MetaAttribut-Array mit bisher gefundenen ObjectAttributen mit dem \u00FCbergebenem Namen die sich
      *          innerhalb des MetaObjektes befinden der im Konstruktor angegeben wurde.
      */
-    public Object visitMO(MetaObject mo, Object o) {
+    @Override
+    public Object visitMO(final MetaObject mo, final Object o) {
 /*        String[] ob = (String[])o;
         String objectName = (String)ob[0];*/
         if (logger.isDebugEnabled()) {
             logger.debug("visitMO: " + mo.getName() + " / " + o + "/ objectName: " + objectName);
         }
 
-        String moName = mo.getName();
+        final String moName = mo.getName();
 
         if ((moName != null) && moName.equalsIgnoreCase(objectName)) {
             // sucht nach Attribut in diesem MetaObjekt und drunterliegenden Attributen
@@ -81,13 +82,13 @@ public class ForAttrAndObjName extends AttrForName {
      * @return  MetaAttribut-Array mit bisher gefundenen ObjectAttributen mit dem \u00FCbergebenem Namen die sich
      *          innerhalb des MetaObjektes befinden der im Konstruktor angegeben wurde.
      */
-    private Object searchMetaAttribute(MetaObject mo, Object o) {
+    private Object searchMetaAttribute(final MetaObject mo, final Object o) {
         if (logger.isDebugEnabled()) {
             logger.debug("searchMetaAttribute: " + mo.getName() + " / " + o);
         }
 
         ObjectAttribute[] ret = new ObjectAttribute[0];
-        ObjectAttribute[] mas = mo.getAttribs();
+        final ObjectAttribute[] mas = mo.getAttribs();
         ObjectAttribute[] tmp;
 
         for (int i = 0; i < mas.length; i++) {
@@ -108,13 +109,13 @@ public class ForAttrAndObjName extends AttrForName {
      *
      * @return  DOCUMENT ME!
      */
-    private Object searchMetaObject(MetaObject mo, Object o) {
+    private Object searchMetaObject(final MetaObject mo, final Object o) {
         if (logger.isDebugEnabled()) {
             logger.debug("searchMetaObject: " + mo.getName() + " / " + o);
         }
 
         ObjectAttribute[] ret = new ObjectAttribute[0];
-        ObjectAttribute[] mas = mo.getAttribs();
+        final ObjectAttribute[] mas = mo.getAttribs();
         ObjectAttribute[] tmp;
         Object value;
 

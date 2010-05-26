@@ -11,11 +11,11 @@
  * Created on 9. Februar 2004, 13:58
  */
 package Sirius.server.sql;
+import Sirius.server.search.*;
+
 import java.sql.*;
 
 import java.util.*;
-
-import Sirius.server.search.*;
 
 /**
  * DOCUMENT ME!
@@ -36,12 +36,13 @@ public class StringResultHandler extends DefaultResultHandler {
 
     //~ Methods ----------------------------------------------------------------
 
-    public Object handle(ResultSet rs, Query q) throws SQLException, Exception {
-        Vector handledResult = new Vector(100, 100);
+    @Override
+    public Object handle(final ResultSet rs, final Query q) throws SQLException, Exception {
+        final Vector handledResult = new Vector(100, 100);
 
         // konstruktorparameter
 
-        int length = rs.getMetaData().getColumnCount();
+        final int length = rs.getMetaData().getColumnCount();
         // rs.beforeFirst();
 
         if (length == 1) {
@@ -50,7 +51,7 @@ public class StringResultHandler extends DefaultResultHandler {
             }
         } else {
             while (rs.next()) {
-                String[] values = new String[length];
+                final String[] values = new String[length];
 
                 for (int i = 0; i < values.length; i++) {
                     values[i] = rs.getString(i + 1);

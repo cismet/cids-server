@@ -12,13 +12,13 @@
  */
 package Sirius.server.dataretrieval;
 
-import java.io.*;
-
-import java.sql.*;
-
 import Sirius.server.middleware.types.*;
 
 import org.apache.log4j.*;
+
+import java.io.*;
+
+import java.sql.*;
 
 /**
  * Stellt Verbindung zur Datenbank, setzt darauf das parametrisierte Statement ab, holt das ResultSet konvertiert es zu
@@ -59,7 +59,7 @@ public class JDBC_CSVProto extends JDBC_XMLProto {
      *
      * @param  delimiter  DOCUMENT ME!
      */
-    public JDBC_CSVProto(String delimiter) {
+    public JDBC_CSVProto(final String delimiter) {
         csvTool = new CSVTool(delimiter);
     }
 
@@ -71,7 +71,8 @@ public class JDBC_CSVProto extends JDBC_XMLProto {
      * @param  deleteOnExit  wenn true wird die datei nach dem serialisieren gel\u00F6scht, soll dies verhindert werden
      *                       dann sollte false gesetzt werden.
      */
-    public void setDeleteOnExit(boolean deleteOnExit) {
+    @Override
+    public void setDeleteOnExit(final boolean deleteOnExit) {
         this.deleteOnExit = deleteOnExit;
     }
 
@@ -88,25 +89,27 @@ public class JDBC_CSVProto extends JDBC_XMLProto {
      *
      * @throws  DataRetrievalException  DOCUMENT ME!
      */
-    protected DataObject createDataObject(ResultSet rs, String query, String name) throws DataRetrievalException {
+    @Override
+    protected DataObject createDataObject(final ResultSet rs, final String query, final String name)
+            throws DataRetrievalException {
         try {
-            File csvFile = createFile(new JdbcCSVFileFilter(), "csv");
-            PrintWriter pWriter = new PrintWriter(new FileWriter(csvFile));
+            final File csvFile = createFile(new JdbcCSVFileFilter(), "csv");
+            final PrintWriter pWriter = new PrintWriter(new FileWriter(csvFile));
             if (deleteOnExit) {
                 csvFile.deleteOnExit();
             }
 
             csvTool.toCSV(rs, pWriter);
 
-            String info = "CSV-File with struktur of the delivered ResultSet. "
+            final String info = "CSV-File with struktur of the delivered ResultSet. "
                 + "Contents of the file as byte sequence.";
 
-            String do_name = name + ".csv";
+            final String do_name = name + ".csv";
 
             return new DataObject(toBytes(csvFile), info, do_name);
         } catch (Exception e) {
             // Noch nicht iO
-            String message = "Error occurs during creating an CSV-File, "
+            final String message = "Error occurs during creating an CSV-File, "
                 + "from determined ResultSet. Original message: " + e.getMessage();
             throw new DataRetrievalException(message, e, logger);
         }
@@ -117,6 +120,7 @@ public class JDBC_CSVProto extends JDBC_XMLProto {
      *
      * @return  jdbc_CSV;
      */
+    @Override
     public String getDataSourceClass() {
         return "jdbc_csv";
     }
@@ -149,7 +153,8 @@ public class JDBC_CSVProto extends JDBC_XMLProto {
          * @return  <code>true</code> if and only if the name should be included in the file list; <code>false</code>
          *          otherwise.
          */
-        public boolean accept(File dir, String name) {
+        @Override
+        public boolean accept(final File dir, final String name) {
             if (name.startsWith("jdbc")
                         && name.endsWith(".csv")) {
                 return true;

@@ -14,12 +14,12 @@
  * and open the template in the editor.
  */
 package Sirius.server.dataretrieval;
-import java.util.*;
+import Sirius.server.localserver.attribute.ObjectAttribute;
+import Sirius.server.middleware.types.*;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
-import Sirius.server.middleware.types.*;
-import Sirius.server.localserver.attribute.ObjectAttribute;
+import java.util.*;
 
 /**
  * DOCUMENT ME!
@@ -60,7 +60,7 @@ public class MetaObjectXMLSerializer {
      *
      * @return  DOCUMENT ME!
      */
-    public StringBuffer metaObjectToXML(MetaObject metaObject, HashMap metaClasses) {
+    public StringBuffer metaObjectToXML(final MetaObject metaObject, final HashMap metaClasses) {
         return this.metaObjectsToXML(new MetaObject[] { metaObject, }, metaClasses);
     }
 
@@ -72,9 +72,9 @@ public class MetaObjectXMLSerializer {
      *
      * @return  DOCUMENT ME!
      */
-    public StringBuffer metaObjectsToXML(MetaObject[] metaObjects, HashMap metaClasses) {
-        StringBuffer buffer = new StringBuffer("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>").append('\n');
-        int tab = 1;
+    public StringBuffer metaObjectsToXML(final MetaObject[] metaObjects, final HashMap metaClasses) {
+        final StringBuffer buffer = new StringBuffer("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>").append('\n');
+        final int tab = 1;
 
         buffer.append("<metaObjects>").append('\n');
 
@@ -98,11 +98,10 @@ public class MetaObjectXMLSerializer {
      * @param  metaClasses  DOCUMENT ME!
      * @param  tab          DOCUMENT ME!
      */
-    private void metaObjectToXML(
-            StringBuffer buffer,
-            MetaObject metaObject,
+    private void metaObjectToXML(final StringBuffer buffer,
+            final MetaObject metaObject,
             String name,
-            HashMap metaClasses,
+            final HashMap metaClasses,
             int tab) {
         // System.out.println("metaObject: " + metaObject);
         // System.out.println("metaObject.getName(): " + metaObject.getName());
@@ -122,10 +121,10 @@ public class MetaObjectXMLSerializer {
         buffer.append(" classId=\"").append(metaObject.getClassID()).append('\"');
 
         if ((metaClasses != null) && (metaClasses.size() > 0)) {
-            String classKey = metaObject.getClassID() + '@' + metaObject.getDomain();
+            final String classKey = metaObject.getClassID() + '@' + metaObject.getDomain();
             if (metaClasses.containsKey(classKey)) {
                 // String className = metaClasses.get(classKey).toString();
-                String className = ((MetaClass)metaClasses.get(classKey)).getName();
+                final String className = ((MetaClass)metaClasses.get(classKey)).getName();
 
                 if ((className != null) && (className.length() > 0)) {
                     buffer.append(" className=\"").append(escape(className)).append('\"');
@@ -133,7 +132,7 @@ public class MetaObjectXMLSerializer {
             }
         }
 
-        String domain = metaObject.getDomain();
+        final String domain = metaObject.getDomain();
         if ((domain != null) && (domain.length() > 0)) {
             buffer.append(" domain=\"").append(escape(domain)).append('\"');
         }
@@ -151,10 +150,10 @@ public class MetaObjectXMLSerializer {
             buffer.append(writeTab(tab)).append("<attributes>").append('\n');
             tab++;
 
-            Iterator iterator = metaObject.getAttributes().values().iterator();
+            final Iterator iterator = metaObject.getAttributes().values().iterator();
             while (iterator.hasNext()) {
-                ObjectAttribute objectAttribute = (ObjectAttribute)iterator.next();
-                Object object = objectAttribute.getValue();
+                final ObjectAttribute objectAttribute = (ObjectAttribute)iterator.next();
+                final Object object = objectAttribute.getValue();
 
                 if (object instanceof MetaObject) {
                     this.metaObjectToXML(buffer, (MetaObject)object, objectAttribute.getName(), metaClasses, tab);
@@ -199,8 +198,8 @@ public class MetaObjectXMLSerializer {
      *
      * @return  DOCUMENT ME!
      */
-    private StringBuffer writeTab(int num) {
-        StringBuffer tab = new StringBuffer(num);
+    private StringBuffer writeTab(final int num) {
+        final StringBuffer tab = new StringBuffer(num);
 
         for (int i = 0; i < num; i++) {
             tab.append('\t');
@@ -216,7 +215,7 @@ public class MetaObjectXMLSerializer {
      *
      * @return  DOCUMENT ME!
      */
-    private String escape(String xml) {
+    private String escape(final String xml) {
         return StringEscapeUtils.escapeXml(xml);
     }
 }

@@ -7,14 +7,14 @@
 ****************************************************/
 package de.cismet.cids.server.ws;
 
+import org.apache.commons.codec.binary.Base64;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
-
-import org.apache.commons.codec.binary.Base64;
 
 /**
  * Helper class for various convertion related tasks like (de)serialisation.
@@ -86,8 +86,8 @@ public final class Converter {
      *
      * @throws  IOException  if any error occurs during serialisation
      *
-     * @see #toBase64(byte[])
-     * @see #serialise(java.lang.Object)
+     * @see     #toBase64(byte[])
+     * @see     #serialise(java.lang.Object)
      */
     public static byte[] serialiseToBase64(final Object o) throws IOException {
         return toBase64(serialise(o));
@@ -105,8 +105,8 @@ public final class Converter {
      * @throws  IOException             if an error occurs during deserialisation
      * @throws  ClassNotFoundException  if any of the classes of the object cannot be found
      *
-     * @see #deserialise(byte[], java.lang.Class)
-     * @see #fromBase64(byte[]) 
+     * @see     #deserialise(byte[], java.lang.Class)
+     * @see     #fromBase64(byte[])
      */
     public static <T> T deserialiseFromBase64(final byte[] bytes, final Class<T> type) throws IOException,
         ClassNotFoundException {

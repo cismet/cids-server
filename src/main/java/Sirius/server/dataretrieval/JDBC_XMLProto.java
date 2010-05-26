@@ -12,13 +12,13 @@
  */
 package Sirius.server.dataretrieval;
 
-import java.io.*;
-
-import java.sql.*;
-
 import Sirius.server.middleware.types.*;
 
 import org.apache.log4j.*;
+
+import java.io.*;
+
+import java.sql.*;
 
 /**
  * Stellt Verbindung zur Datenbank, setzt darauf das parametrisierte Statement ab, holt das ResultSet konvertiert es zu
@@ -62,7 +62,7 @@ public class JDBC_XMLProto extends JDBCProto {
      * @param  deleteOnExit  wenn true wird die datei nach dem serialisieren gel\u00F6scht, soll dies verhindert werden
      *                       dann sollte false gesetzt werden.
      */
-    public void setDeleteOnExit(boolean deleteOnExit) {
+    public void setDeleteOnExit(final boolean deleteOnExit) {
         this.deleteOnExit = deleteOnExit;
     }
 
@@ -78,25 +78,25 @@ public class JDBC_XMLProto extends JDBCProto {
      *
      * @throws  DataRetrievalException  DOCUMENT ME!
      */
-    protected DataObject createDataObject(ResultSet rs, String query) throws DataRetrievalException {
+    protected DataObject createDataObject(final ResultSet rs, final String query) throws DataRetrievalException {
         try {
-            File xmlFile = createFile(new JdbcXmlFileFilter(), "xml");
-            PrintWriter pWriter = new PrintWriter(new FileWriter(xmlFile));
+            final File xmlFile = createFile(new JdbcXmlFileFilter(), "xml");
+            final PrintWriter pWriter = new PrintWriter(new FileWriter(xmlFile));
             if (deleteOnExit) {
                 xmlFile.deleteOnExit();
             }
 
             writeResult(rs, pWriter);
 
-            String info = "XML-File with struktur of the delivered ResultSet. "
+            final String info = "XML-File with struktur of the delivered ResultSet. "
                 + "Contents of the file as byte sequence..";
 
-            String do_name = System.currentTimeMillis() + ".xml";
+            final String do_name = System.currentTimeMillis() + ".xml";
 
             return new DataObject(toBytes(xmlFile), info, do_name);
         } catch (Exception e) {
             // Noch nicht iO
-            String message = "Error occurs during creating an XML document, "
+            final String message = "Error occurs during creating an XML document, "
                 + "from determined ResultSet. Original message:" + e.getMessage();
             throw new DataRetrievalException(message, e, logger);
         }
@@ -115,15 +115,15 @@ public class JDBC_XMLProto extends JDBCProto {
      *
      * @throws  IOException  DOCUMENT ME!
      */
-    protected synchronized File createFile(FilenameFilter filter, String erweiterung) throws IOException {
-        File file;
-        String tmpPath = System.getProperty("java.io.tmpdir")
+    protected synchronized File createFile(final FilenameFilter filter, final String erweiterung) throws IOException {
+        final File file;
+        final String tmpPath = System.getProperty("java.io.tmpdir")
             + System.getProperty("file.separator");
 
-        int count = 0;
+        final int count = 0;
 
-        File dir = new File(tmpPath);
-        String[] files = dir.list(filter);
+        final File dir = new File(tmpPath);
+        final String[] files = dir.list(filter);
         String zahl;
         int maxZahl = 0;
         int tmp;
@@ -140,7 +140,7 @@ public class JDBC_XMLProto extends JDBCProto {
             }
         }
 
-        String fileName = "jdbc" + ++maxZahl + "." + erweiterung;
+        final String fileName = "jdbc" + ++maxZahl + "." + erweiterung;
         file = new File(tmpPath + fileName);
         if (logger.isDebugEnabled()) {
             logger.debug("Anlegen der Datei f\u00FCr " + erweiterung + "-ResultSet: " + tmpPath + fileName);
@@ -176,7 +176,7 @@ public class JDBC_XMLProto extends JDBCProto {
      * @throws  IOException   DOCUMENT ME!
      * @throws  SQLException  DOCUMENT ME!
      */
-    private void writeResult(ResultSet resultSet, PrintWriter pWriter) throws IOException, SQLException {
+    private void writeResult(final ResultSet resultSet, final PrintWriter pWriter) throws IOException, SQLException {
         pWriter.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         pWriter.println();
         pWriter.println("<RESULT>");
@@ -198,15 +198,15 @@ public class JDBC_XMLProto extends JDBCProto {
      * @throws  IOException   DOCUMENT ME!
      * @throws  SQLException  DOCUMENT ME!
      */
-    private void writeRow(ResultSet resultSet, PrintWriter pWriter) throws IOException, SQLException {
-        ResultSetMetaData rsmd = resultSet.getMetaData();
-        int columnCount = rsmd.getColumnCount();
+    private void writeRow(final ResultSet resultSet, final PrintWriter pWriter) throws IOException, SQLException {
+        final ResultSetMetaData rsmd = resultSet.getMetaData();
+        final int columnCount = rsmd.getColumnCount();
 
         pWriter.println("\t<ROW>");
 
         for (int i = 1; i <= columnCount; i++) {
             pWriter.print("\t\t<FIELD name='" + rsmd.getColumnName(i).trim() + "'>");
-            String wert = resultSet.getString(i);
+            final String wert = resultSet.getString(i);
             if (resultSet.wasNull()) {
                 pWriter.print(SQL_NULL);
             } else {
@@ -225,6 +225,7 @@ public class JDBC_XMLProto extends JDBCProto {
      *
      * @return  jdbc_xml;
      */
+    @Override
     public String getDataSourceClass() {
         return "jdbc_xml";
     }
@@ -238,15 +239,15 @@ public class JDBC_XMLProto extends JDBCProto {
      *
      * @throws  IOException  DOCUMENT ME!
      */
-    protected static byte[] toBytes(File toByteArray) throws IOException {
-        int cacheSize = 4096;
+    protected static byte[] toBytes(final File toByteArray) throws IOException {
+        final int cacheSize = 4096;
         int count;
-        byte[] cache = new byte[cacheSize];
+        final byte[] cache = new byte[cacheSize];
 
-        BufferedInputStream bis = new BufferedInputStream(
+        final BufferedInputStream bis = new BufferedInputStream(
                 new FileInputStream(toByteArray));
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(cacheSize);
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream(cacheSize);
         int i = 0;
         while ((count = bis.read(cache, 0, cacheSize)) >= 0) {
             baos.write(cache, 0, count);
@@ -289,7 +290,8 @@ public class JDBC_XMLProto extends JDBCProto {
          * @return  <code>true</code> if and only if the name should be included in the file list; <code>false</code>
          *          otherwise.
          */
-        public boolean accept(File dir, String name) {
+        @Override
+        public boolean accept(final File dir, final String name) {
             if (name.startsWith("jdbc")
                         && name.endsWith(".xml")) {
                 return true;

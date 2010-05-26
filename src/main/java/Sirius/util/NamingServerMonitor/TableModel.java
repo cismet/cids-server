@@ -16,9 +16,9 @@
 //
 package Sirius.util.NamingServerMonitor;
 
-import javax.swing.table.*;
-
 import java.util.*;
+
+import javax.swing.table.*;
 
 /**
  * DOCUMENT ME!
@@ -41,13 +41,14 @@ public class TableModel extends DefaultTableModel {
      * @param  bounds  DOCUMENT ME!
      * @param  cnames  DOCUMENT ME!
      */
-    public TableModel(java.lang.Object[][] bounds, java.lang.Object[] cnames) {
+    public TableModel(final java.lang.Object[][] bounds, final java.lang.Object[] cnames) {
         super(bounds, cnames);
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    public boolean isCellEditable(int row, int column) {
+    @Override
+    public boolean isCellEditable(final int row, final int column) {
         return false;
     }
 
@@ -58,10 +59,10 @@ public class TableModel extends DefaultTableModel {
      *
      * @return  DOCUMENT ME!
      */
-    public static java.lang.Object[][] convertToMatrix(String[] bounds) {
-        java.lang.Object[][] matrix = new java.lang.Object[bounds.length][];
+    public static java.lang.Object[][] convertToMatrix(final String[] bounds) {
+        final java.lang.Object[][] matrix = new java.lang.Object[bounds.length][];
         for (int i = 0; i < bounds.length; i++) {
-            java.lang.Object[] columnVals = new java.lang.Object[1];
+            final java.lang.Object[] columnVals = new java.lang.Object[1];
             columnVals[0] = bounds[i];
 
             matrix[i] = columnVals;
@@ -76,7 +77,7 @@ public class TableModel extends DefaultTableModel {
      *
      * @return  DOCUMENT ME!
      */
-    public static java.util.Vector convertToVector(java.lang.Object[] obs) {
+    public static java.util.Vector convertToVector(final java.lang.Object[] obs) {
         return DefaultTableModel.convertToVector(obs);
     }
 }

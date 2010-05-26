@@ -16,6 +16,11 @@ import java.io.*;
  */
 public class Image implements java.io.Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -6133455025375731456L;
+
     //~ Instance fields --------------------------------------------------------
 
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
@@ -41,7 +46,7 @@ public class Image implements java.io.Serializable {
      *
      * @param  filepath  DOCUMENT ME!
      */
-    public Image(String filepath) {
+    public Image(final String filepath) {
         this(new File(filepath));
     }
 
@@ -50,16 +55,16 @@ public class Image implements java.io.Serializable {
      *
      * @param  inFile  DOCUMENT ME!
      */
-    public Image(File inFile) {
+    public Image(final File inFile) {
         try {
-            InputStream stream;
+            final InputStream stream;
             name = inFile.getName();
             description = new String("nn");
             imageData = new byte[(int)inFile.length()];
             stream = new FileInputStream(inFile);
 
             // read the file into imageData
-            int bytesRead = stream.read(imageData, 0, (int)inFile.length());
+            final int bytesRead = stream.read(imageData, 0, (int)inFile.length());
 
             if (bytesRead == -1) { // error occured during readingprocess
                 throw new Exception("read fehlgeschlagen");

@@ -41,7 +41,7 @@ public class UnableToSendMessageException extends Exception {
      *
      * @param  message  DOCUMENT ME!
      */
-    public UnableToSendMessageException(String message) {
+    public UnableToSendMessageException(final String message) {
         super(message);
     }
 
@@ -51,7 +51,7 @@ public class UnableToSendMessageException extends Exception {
      * @param  message      DOCUMENT ME!
      * @param  totalSended  DOCUMENT ME!
      */
-    public UnableToSendMessageException(String message, int totalSended) {
+    public UnableToSendMessageException(final String message, final int totalSended) {
         super(message);
         this.totalSended = totalSended;
     }
@@ -72,7 +72,7 @@ public class UnableToSendMessageException extends Exception {
      *
      * @param  totalSended  DOCUMENT ME!
      */
-    public void setTotalSended(int totalSended) {
+    public void setTotalSended(final int totalSended) {
         this.totalSended = totalSended;
     }
 }

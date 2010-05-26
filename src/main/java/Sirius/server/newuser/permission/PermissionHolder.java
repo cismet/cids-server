@@ -11,13 +11,13 @@ import Sirius.server.newuser.UserGroup;
 
 import Sirius.util.Mapable;
 
-import de.cismet.tools.collections.MultiMap;
-
-import de.cismet.tools.CurrentStackTrace;
+import org.apache.log4j.Logger;
 
 import java.io.Serializable;
 
-import org.apache.log4j.Logger;
+import de.cismet.tools.CurrentStackTrace;
+
+import de.cismet.tools.collections.MultiMap;
 
 /**
  * Bei der Intstanzierung eines PermissionHolders erlaubt dieser zunaechst jeglichen Zugriff (hasPermission ist immer
@@ -29,6 +29,9 @@ import org.apache.log4j.Logger;
 public final class PermissionHolder implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -6756474437714547583L;
 
     private static final transient Logger LOG = Logger.getLogger(
             PermissionHolder.class);

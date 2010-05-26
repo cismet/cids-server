@@ -49,13 +49,14 @@ public class AttrForName extends ExtractAllAttr {
      *          MetaAttribut-Array der Gr\u00F6sse 0 wenn dieses MetaAttribut kein MetaObject als Wert besitzt und der
      *          Name des ObjectAttributes nicht dem gesuchtem entspricht.
      */
-    public Object visitMA(ObjectAttribute moa, Object o) {
-        Object value = moa.getValue();
+    @Override
+    public Object visitMA(final ObjectAttribute moa, final Object o) {
+        final Object value = moa.getValue();
 
         if (value instanceof MetaObject) {
             return ((MetaObject)value).accept(this, o);
         } else if (moa.getName().equalsIgnoreCase(o.toString())) {
-            ObjectAttribute[] matt = { moa };
+            final ObjectAttribute[] matt = { moa };
             return matt;
         } else {
             return new ObjectAttribute[0];

@@ -18,6 +18,9 @@ public class MethodMap extends java.util.HashMap implements java.io.Serializable
 
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 1088110127510028259L;
+
     private static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(MethodMap.class);
 //constructor
 
@@ -35,7 +38,7 @@ public class MethodMap extends java.util.HashMap implements java.io.Serializable
      * @param  capacity  DOCUMENT ME!
      * @param  factor    DOCUMENT ME!
      */
-    public MethodMap(int capacity, float factor) {
+    public MethodMap(final int capacity, final float factor) {
         super(capacity, factor);
     }
 
@@ -50,11 +53,11 @@ public class MethodMap extends java.util.HashMap implements java.io.Serializable
      * @throws  Exception            DOCUMENT ME!
      * @throws  java.lang.Exception  DOCUMENT ME!
      */
-    public void add(String key, Method method) throws Exception {
+    public void add(final String key, final Method method) throws Exception {
         if (!this.containsMethod(key)) {
             super.put(method.getKey(), method);
         } else {
-            Method m = this.getMethod(key);
+            final Method m = this.getMethod(key);
             m.getPermissions().addPermissions(method.getPermissions()); // add only permissions
             m.getClassKeys().addAll(method.getClassKeys());
 
@@ -82,9 +85,9 @@ public class MethodMap extends java.util.HashMap implements java.io.Serializable
      * @throws  Exception                       DOCUMENT ME!
      * @throws  java.lang.NullPointerException  DOCUMENT ME!
      */
-    public Method getMethod(String key) throws Exception {
+    public Method getMethod(final String key) throws Exception {
         if (containsMethod(key)) {
-            java.lang.Object candidate = super.get(key);
+            final java.lang.Object candidate = super.get(key);
             if (candidate instanceof Method) {
                 return (Method)candidate;
             }
@@ -103,20 +106,21 @@ public class MethodMap extends java.util.HashMap implements java.io.Serializable
      *
      * @return  DOCUMENT ME!
      */
-    public boolean containsMethod(java.lang.Object key) {
+    public boolean containsMethod(final java.lang.Object key) {
         return super.containsKey(key);
     }
 
 // \u00FCberschreiben da berechtigungen f\u00FCr gleiche methoden auf verschiedenen ls vergeben werden
 
-    public void putAll(Map t) {
+    @Override
+    public void putAll(final Map t) {
         if ((t == null) || t.isEmpty()) {
             return;
         }
 
-        Iterator i = t.values().iterator();
+        final Iterator i = t.values().iterator();
         while (i.hasNext()) {
-            Method e = (Method)i.next();
+            final Method e = (Method)i.next();
             try {
                 this.add((String)e.getKey(), e);
             } catch (Exception ex) {

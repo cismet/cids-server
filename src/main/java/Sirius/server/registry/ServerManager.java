@@ -51,7 +51,7 @@ public class ServerManager {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public boolean registerServer(int serverTyp, String name, String ip) throws Exception {
+    public boolean registerServer(final int serverTyp, final String name, final String ip) throws Exception {
         return registerServer(serverTyp, name, "");
     }
 
@@ -67,10 +67,11 @@ public class ServerManager {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public boolean registerServer(int serverTyp, String name, String ip, String port) throws Exception {
-        boolean ipsDone = ips.addServerIP(serverTyp, name, ip, port);
+    public boolean registerServer(final int serverTyp, final String name, final String ip, final String port)
+            throws Exception {
+        final boolean ipsDone = ips.addServerIP(serverTyp, name, ip, port);
 
-        boolean serversDone = servers.addServer(serverTyp, name, ip, port);
+        final boolean serversDone = servers.addServer(serverTyp, name, ip, port);
 
         return serversDone && ipsDone;
     }
@@ -86,7 +87,7 @@ public class ServerManager {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public boolean unregisterServer(int serverTyp, String name, String ip) throws Exception {
+    public boolean unregisterServer(final int serverTyp, final String name, final String ip) throws Exception {
         return unregisterServer(serverTyp, name, "");
     }
 
@@ -102,9 +103,10 @@ public class ServerManager {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public boolean unregisterServer(int serverTyp, String name, String ip, String port) throws Exception {
-        boolean ipsDone = ips.removeServerIP(serverTyp, name, ip, port);
-        boolean serversDone = servers.removeServer(serverTyp, name /*,ip,port*/);
+    public boolean unregisterServer(final int serverTyp, final String name, final String ip, final String port)
+            throws Exception {
+        final boolean ipsDone = ips.removeServerIP(serverTyp, name, ip, port);
+        final boolean serversDone = servers.removeServer(serverTyp, name /*,ip,port*/);
 
         return ipsDone && serversDone;
     }
@@ -120,7 +122,7 @@ public class ServerManager {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public HashMap<String, String> getServerIPs(int serverTyp) throws Exception {
+    public HashMap<String, String> getServerIPs(final int serverTyp) throws Exception {
         return ips.getServerIPs(serverTyp);
     }
 
@@ -134,7 +136,7 @@ public class ServerManager {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    String getServerIP(int serverTyp, String name) throws Exception {
+    String getServerIP(final int serverTyp, final String name) throws Exception {
         return ips.getServerIP(serverTyp, name);
     }
 
@@ -145,8 +147,8 @@ public class ServerManager {
      *
      * @return  DOCUMENT ME!
      */
-    public Server[] getServers(int serverTyp) {
-        Vector s = servers.getServerList(serverTyp);
+    public Server[] getServers(final int serverTyp) {
+        final Vector s = servers.getServerList(serverTyp);
 
         return (Server[])s.toArray(new Server[s.size()]);
     }
@@ -159,7 +161,7 @@ public class ServerManager {
      *
      * @return  DOCUMENT ME!
      */
-    public Server getServer(int serverTyp, String serverName) {
+    public Server getServer(final int serverTyp, final String serverName) {
         return servers.getServer(serverTyp, serverName);
     }
 
@@ -170,7 +172,7 @@ public class ServerManager {
      *
      * @return  DOCUMENT ME!
      */
-    public int getServerCount(int serverTyp) {
+    public int getServerCount(final int serverTyp) {
         return servers.getServerList(serverTyp).size();
     }
 }

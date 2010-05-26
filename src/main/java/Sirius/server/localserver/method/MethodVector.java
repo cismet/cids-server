@@ -30,7 +30,7 @@ public class MethodVector extends java.util.Vector {
      *
      * @param  initialCapacity  DOCUMENT ME!
      */
-    public MethodVector(int initialCapacity) {
+    public MethodVector(final int initialCapacity) {
         super(initialCapacity);
     }
     /**
@@ -38,7 +38,7 @@ public class MethodVector extends java.util.Vector {
      *
      * @param  c  DOCUMENT ME!
      */
-    public MethodVector(Collection c) {
+    public MethodVector(final Collection c) {
         super(c);
     }
     /**
@@ -47,7 +47,7 @@ public class MethodVector extends java.util.Vector {
      * @param  initialCapacity    DOCUMENT ME!
      * @param  capacityIncrement  DOCUMENT ME!
      */
-    public MethodVector(int initialCapacity, int capacityIncrement) {
+    public MethodVector(final int initialCapacity, final int capacityIncrement) {
         super(initialCapacity, capacityIncrement);
     }
 
@@ -64,9 +64,9 @@ public class MethodVector extends java.util.Vector {
      * @throws  java.lang.NullPointerException       DOCUMENT ME!
      * @throws  java.lang.IndexOutOfBoundsException  DOCUMENT ME!
      */
-    public Method at(int index) throws Exception {
+    public Method at(final int index) throws Exception {
         if (size() > index) {
-            java.lang.Object method = super.get(index);
+            final java.lang.Object method = super.get(index);
             if (method instanceof Method) {
                 return (Method)method;
             }

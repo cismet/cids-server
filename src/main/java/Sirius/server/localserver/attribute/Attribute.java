@@ -7,11 +7,10 @@
 ****************************************************/
 package Sirius.server.localserver.attribute;
 
+import Sirius.server.middleware.types.*;
 import Sirius.server.newuser.permission.*;
 
 import Sirius.util.*;
-
-import Sirius.server.middleware.types.*;
 
 import de.cismet.cids.tools.tostring.StringConvertable;
 import de.cismet.cids.tools.tostring.ToStringConverter;
@@ -74,7 +73,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @param  a  DOCUMENT ME!
      */
-    public Attribute(Attribute a) {
+    public Attribute(final Attribute a) {
         this.id = a.id;
         this.name = new String(a.name).trim();
         this.description = description;
@@ -91,7 +90,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      * @param  description  DOCUMENT ME!
      * @param  policy       DOCUMENT ME!
      */
-    public Attribute(String id, String name, String description, Policy policy) {
+    public Attribute(final String id, final String name, final String description, final Policy policy) {
         this.id = id;
 
         this.name = name;
@@ -109,7 +108,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      * @param  description  DOCUMENT ME!
      * @param  permissions  DOCUMENT ME!
      */
-    public Attribute(String id, String name, String description, PermissionHolder permissions) {
+    public Attribute(final String id, final String name, final String description, final PermissionHolder permissions) {
         this(id, name, description, (Policy)null);
         this.permissions = permissions;
     }
@@ -123,7 +122,11 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      * @param  visible      DOCUMENT ME!
      * @param  policy       DOCUMENT ME!
      */
-    public Attribute(String id, String name, String description, boolean visible, Policy policy) {
+    public Attribute(final String id,
+            final String name,
+            final String description,
+            final boolean visible,
+            final Policy policy) {
         this(id, name, description, policy);
         this.visible = visible;
     }
@@ -137,7 +140,11 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      * @param  permissions  DOCUMENT ME!
      * @param  visible      DOCUMENT ME!
      */
-    public Attribute(String id, String name, String description, PermissionHolder permissions, boolean visible) {
+    public Attribute(final String id,
+            final String name,
+            final String description,
+            final PermissionHolder permissions,
+            final boolean visible) {
         this(id, name, description, permissions);
         this.visible = visible;
     }
@@ -154,6 +161,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
     }
 
     // Mapable schl\u00FCssel \u00E4ndern xxx
+    @Override
     public Object getKey() {
         return id + "";
     }
@@ -217,7 +225,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @param  b  DOCUMENT ME!
      */
-    public final void setReferencesObject(boolean b) {
+    public final void setReferencesObject(final boolean b) {
         referencesObject = b;
     }
 
@@ -226,7 +234,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @param  permissions  DOCUMENT ME!
      */
-    public final void setPermissions(PermissionHolder permissions) {
+    public final void setPermissions(final PermissionHolder permissions) {
         this.permissions = permissions;
     }
 
@@ -241,11 +249,12 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @param  value  New value of property value.
      */
-    public void setValue(java.lang.Object value) {
+    public void setValue(final java.lang.Object value) {
         this.value = value;
     }
 
-    public Object constructKey(Mapable m) {
+    @Override
+    public Object constructKey(final Mapable m) {
         if (m instanceof Attribute) {
             return m.getKey();
         } else {
@@ -253,6 +262,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
         }
     }
 
+    @Override
     public String toString() {
         if (value != null) {
             if (toStringConverter != null) {
@@ -272,7 +282,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @param  visible  New value of property visible.
      */
-    public void setVisible(boolean visible) {
+    public void setVisible(final boolean visible) {
         this.visible = visible;
     }
 
@@ -290,7 +300,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @param  substitute  New value of property substitute.
      */
-    public void setSubstitute(boolean substitute) {
+    public void setSubstitute(final boolean substitute) {
         this.substitute = substitute;
     }
 
@@ -318,7 +328,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @param  classKey  New value of property classKey.
      */
-    public void setClassKey(java.lang.String classKey) {
+    public void setClassKey(final java.lang.String classKey) {
         this.classKey = classKey;
     }
 
@@ -327,7 +337,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @param  typeId  DOCUMENT ME!
      */
-    public void setTypeId(int typeId) {
+    public void setTypeId(final int typeId) {
         this.typeId = typeId;
     }
 
@@ -354,7 +364,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @param  changed  New value of property changed.
      */
-    public void setChanged(boolean changed) {
+    public void setChanged(final boolean changed) {
         this.changed = changed;
     }
 
@@ -386,7 +396,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @param  isPrimaryKey  New value of property isPrimaryKey.
      */
-    public void setIsPrimaryKey(boolean isPrimaryKey) {
+    public void setIsPrimaryKey(final boolean isPrimaryKey) {
         this.isPrimaryKey = isPrimaryKey;
     }
 
@@ -404,7 +414,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @param  javaType  New value of property javaType.
      */
-    public void setJavaType(java.lang.String javaType) {
+    public void setJavaType(final java.lang.String javaType) {
         this.javaType = javaType;
     }
 
@@ -422,7 +432,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @param  isArray  New value of property isArray.
      */
-    public void setIsArray(boolean isArray) {
+    public void setIsArray(final boolean isArray) {
         this.isArray = isArray;
     }
 
@@ -431,7 +441,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @param  id  DOCUMENT ME!
      */
-    public void setId(String id) {
+    public void setId(final String id) {
         this.id = id;
     }
 
@@ -456,7 +466,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @param  toString  New value of property toString.
      */
-    public void setToString(de.cismet.cids.tools.tostring.ToStringConverter toString) {
+    public void setToString(final de.cismet.cids.tools.tostring.ToStringConverter toString) {
         this.toStringConverter = toStringConverter;
     }
     /**
@@ -464,7 +474,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @param  optional  DOCUMENT ME!
      */
-    public void setOptional(boolean optional) {
+    public void setOptional(final boolean optional) {
         this.optional = optional;
     }
 

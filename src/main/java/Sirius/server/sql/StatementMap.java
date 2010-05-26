@@ -27,7 +27,7 @@ public class StatementMap extends Hashtable {
      *
      * @param  capacity  DOCUMENT ME!
      */
-    public StatementMap(int capacity) {
+    public StatementMap(final int capacity) {
         super(capacity);
     }
 
@@ -42,8 +42,8 @@ public class StatementMap extends Hashtable {
      * @throws  Exception            DOCUMENT ME!
      * @throws  java.lang.Exception  DOCUMENT ME!
      */
-    public void add(int key, SystemStatement value) throws Exception {
-        Integer Key = new Integer(key);
+    public void add(final int key, final SystemStatement value) throws Exception {
+        final Integer Key = new Integer(key);
         super.put(Key, value);
 
         if (!super.containsKey(Key)) {
@@ -61,10 +61,10 @@ public class StatementMap extends Hashtable {
      * @throws  Exception                       DOCUMENT ME!
      * @throws  java.lang.NullPointerException  DOCUMENT ME!
      */
-    public SystemStatement getStatement(int key) throws Exception {
-        Integer Key = new Integer(key); // map accepts objects only
+    public SystemStatement getStatement(final int key) throws Exception {
+        final Integer Key = new Integer(key); // map accepts objects only
         if (super.containsKey(Key)) {
-            java.lang.Object candidate = super.get(Key);
+            final java.lang.Object candidate = super.get(Key);
 
             if (candidate instanceof SystemStatement) {
                 return (SystemStatement)candidate;
@@ -84,10 +84,11 @@ public class StatementMap extends Hashtable {
      *
      * @return  DOCUMENT ME!
      */
-    public boolean containsIntKey(int key) {
+    public boolean containsIntKey(final int key) {
         return super.containsKey(new Integer(key));
     }
 
+    @Override
     public void rehash() {
         super.rehash();
     }

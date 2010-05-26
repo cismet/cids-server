@@ -18,6 +18,11 @@ import Sirius.util.*;
  */
 public class Link implements java.io.Serializable, Groupable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 1635588337104297051L;
+
     //~ Instance fields --------------------------------------------------------
 
     // protected int id;
@@ -33,13 +38,14 @@ public class Link implements java.io.Serializable, Groupable {
      * @param  nodeId  DOCUMENT ME!
      * @param  domain  DOCUMENT ME!
      */
-    public Link(int nodeId, String domain) {
+    public Link(final int nodeId, final String domain) {
         this.nodeId = nodeId;
         this.domain = domain;
     }
 
     //~ Methods ----------------------------------------------------------------
 
+    @Override
     public String getGroup() {
         return domain;
     }
@@ -62,6 +68,7 @@ public class Link implements java.io.Serializable, Groupable {
         return nodeId;
     }
 
+    @Override
     public int getId() {
         return getNodeId();
     }
@@ -80,7 +87,7 @@ public class Link implements java.io.Serializable, Groupable {
      *
      * @param  remote  DOCUMENT ME!
      */
-    public void setRemote(boolean remote) {
+    public void setRemote(final boolean remote) {
         this.remote = remote;
     }
 }

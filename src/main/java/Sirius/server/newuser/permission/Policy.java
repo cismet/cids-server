@@ -11,11 +11,12 @@
  */
 package Sirius.server.newuser.permission;
 
-import de.cismet.tools.CurrentStackTrace;
-
 import java.io.Serializable;
 
 import java.util.HashMap;
+import java.util.Map;
+
+import de.cismet.tools.CurrentStackTrace;
 
 /**
  * DOCUMENT ME!
@@ -27,12 +28,15 @@ public class Policy implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -2566287872445265371L;
+
     private static final int PARANOID = 0;
     private static final int WIKI = 1;
 
     //~ Instance fields --------------------------------------------------------
 
-    HashMap<Permission, Boolean> policyMap = new HashMap<Permission, Boolean>();
+    Map<Permission, Boolean> policyMap = new HashMap<Permission, Boolean>();
     private int helpermode = 0;
     private int dbID = -1;
     private String name;
@@ -47,7 +51,7 @@ public class Policy implements Serializable {
      * @param  dbID        DOCUMENT ME!
      * @param  policyName  DOCUMENT ME!
      */
-    public Policy(HashMap<Permission, Boolean> policyMap, int dbID, String policyName) {
+    public Policy(final Map<Permission, Boolean> policyMap, final int dbID, final String policyName) {
         this.policyMap = policyMap;
         this.dbID = dbID;
         name = policyName;
@@ -66,7 +70,7 @@ public class Policy implements Serializable {
      *
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    private Policy(int helperMode) {
+    private Policy(final int helperMode) {
         this.helpermode = helperMode;
         if ((helperMode != 0) && (helpermode != 1)) {
             throw new UnsupportedOperationException("Nur PARANOID oder WIKI moeglich");
@@ -82,12 +86,17 @@ public class Policy implements Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public boolean getDecisionIfNoEntryIsFound(Permission permission) {
-        Boolean r = policyMap.get(permission);
+    public boolean getDecisionIfNoEntryIsFound(final Permission permission) {
+        final Boolean r = policyMap.get(permission);
         if (r != null) {
             if (getLog().isDebugEnabled()) {
                 getLog().debug(
-                    "getDecisionIfNoEntryIsFound(" + permission.getKey() + ") returns:" + r + " --> Policy=" + name,
+                    "getDecisionIfNoEntryIsFound("
+                    + permission.getKey()
+                    + ") returns:"
+                    + r
+                    + " --> Policy="
+                    + name,
                     new CurrentStackTrace());
             }
             return r;
@@ -95,7 +104,8 @@ public class Policy implements Serializable {
             if (helpermode == WIKI) {
                 if (getLog().isDebugEnabled()) {
                     getLog().debug(
-                        "getDecisionIfNoEntryIsFound(" + permission.getKey()
+                        "getDecisionIfNoEntryIsFound("
+                        + permission.getKey()
                         + ") returns true because of Manunal WIKI Policy",
                         new CurrentStackTrace());
                 }
@@ -103,7 +113,8 @@ public class Policy implements Serializable {
             } else {
                 if (getLog().isDebugEnabled()) {
                     getLog().debug(
-                        "getDecisionIfNoEntryIsFound(" + permission.getKey()
+                        "getDecisionIfNoEntryIsFound("
+                        + permission.getKey()
                         + ") returns false because of PARANOID Policy or Bug",
                         new CurrentStackTrace());
                 }
@@ -160,6 +171,7 @@ public class Policy implements Serializable {
         return logger;
     }
 
+    @Override
     public String toString() {
         String r = "Policy: ";
         if (dbID == -1) {

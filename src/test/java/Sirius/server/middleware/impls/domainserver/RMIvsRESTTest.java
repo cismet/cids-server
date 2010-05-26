@@ -16,9 +16,12 @@ import Sirius.server.newuser.User;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.registry.Registry;
 
-import de.cismet.cids.server.ws.rest.RESTfulSerialInterface;
-import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
-import de.cismet.cids.server.ws.rest.RESTfulService;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -28,14 +31,8 @@ import java.rmi.RemoteException;
 
 import java.util.Properties;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import org.openide.util.Exceptions;
+import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
+import de.cismet.cids.server.ws.rest.RESTfulService;
 
 /**
  * DOCUMENT ME!
@@ -72,13 +69,13 @@ public class RMIvsRESTTest {
      */
     @BeforeClass
     public static void setUpClass() throws Throwable {
-//        final Properties p = new Properties();
-//        p.put("log4j.appender.Remote", "org.apache.log4j.net.SocketAppender");
-//        p.put("log4j.appender.Remote.remoteHost", "localhost");
-//        p.put("log4j.appender.Remote.port", "4445");
-//        p.put("log4j.appender.Remote.locationInfo", "true");
-//        p.put("log4j.rootLogger", "ALL,Remote");
-//        org.apache.log4j.PropertyConfigurator.configure(p);
+        final Properties p = new Properties();
+        p.put("log4j.appender.Remote", "org.apache.log4j.net.SocketAppender");
+        p.put("log4j.appender.Remote.remoteHost", "localhost");
+        p.put("log4j.appender.Remote.port", "4445");
+        p.put("log4j.appender.Remote.locationInfo", "true");
+        p.put("log4j.rootLogger", "ALL,Remote");
+        org.apache.log4j.PropertyConfigurator.configure(p);
 
         registry = new Sirius.server.registry.Registry(1099);
         proxy = StartProxy.getInstance(SERVER_CONFIG);
@@ -96,10 +93,18 @@ public class RMIvsRESTTest {
      */
     @AfterClass
     public static void tearDownClass() throws Throwable {
+        RESTfulService.down();
         try {
-            RESTfulService.down();
             server.shutdown();
+        } catch (final ServerExit e) {
+            // success
+        }
+        try {
             proxy.shutdown();
+        } catch (final ServerExit e) {
+            // success
+        }
+        try {
             registry.shutdown();
         } catch (final ServerExit serverExit) {
             // success...
@@ -147,7 +152,7 @@ public class RMIvsRESTTest {
                 "WUNDA_BLAU",
                 "Administratoren",
                 "WUNDA_BLAU",
-                "admin",
+                "cismet",
                 "sb");
         final String domain = "WUNDA_BLAU";
         final int objectID = 3;
@@ -229,7 +234,6 @@ public class RMIvsRESTTest {
         t4.join();
         t5.join();
 
-
         System.out.println("RMI mt fastest: " + fastest);
         System.out.println("RMI mt slowest: " + slowest);
         System.out.println("RMI mt average: " + (average / 1000));
@@ -238,13 +242,14 @@ public class RMIvsRESTTest {
     /**
      * DOCUMENT ME!
      *
-     * @throws  Exception  DOCUMENT ME!
+     * @throws  Exception         DOCUMENT ME!
+     * @throws  RuntimeException  DOCUMENT ME!
      */
     @Ignore
     @Test
     public void testGetMetaObjectREST() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
-        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "sb");
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
         final String domain = "WUNDA_BLAU";
         final int objectID = 3;
         final int classID = 106;
@@ -324,7 +329,6 @@ public class RMIvsRESTTest {
         t3.join();
         t4.join();
         t5.join();
-
 
         System.out.println("REST mt fastest: " + fastest);
         System.out.println("REST mt slowest: " + slowest);

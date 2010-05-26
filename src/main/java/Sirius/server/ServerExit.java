@@ -20,6 +20,11 @@ package Sirius.server;
  */
 public class ServerExit extends java.lang.Throwable implements java.io.Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -192976002992054464L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -34,7 +39,7 @@ public class ServerExit extends java.lang.Throwable implements java.io.Serializa
      *
      * @param  message  DOCUMENT ME!
      */
-    public ServerExit(String message) {
+    public ServerExit(final String message) {
         super(message);
     }
 
@@ -43,7 +48,7 @@ public class ServerExit extends java.lang.Throwable implements java.io.Serializa
      *
      * @param  cause  DOCUMENT ME!
      */
-    public ServerExit(Throwable cause) {
+    public ServerExit(final Throwable cause) {
         super(cause);
     }
 
@@ -53,7 +58,7 @@ public class ServerExit extends java.lang.Throwable implements java.io.Serializa
      * @param  message  DOCUMENT ME!
      * @param  cause    DOCUMENT ME!
      */
-    public ServerExit(String message, Throwable cause) {
+    public ServerExit(final String message, final Throwable cause) {
         super(message, cause);
     }
 }

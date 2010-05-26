@@ -7,11 +7,11 @@
 ****************************************************/
 package Sirius.server.middleware.interfaces.domainserver;
 
-import java.rmi.*;
-import java.rmi.server.*;
-
 import Sirius.server.newuser.*;
 import Sirius.server.search.store.*;
+
+import java.rmi.*;
+import java.rmi.server.*;
 
 /**
  * DOCUMENT ME!

@@ -29,10 +29,10 @@
 *******************************************************************************/
 package Sirius.server.registry.events;
 
-import java.awt.event.*;
-
 import Sirius.server.registry.*;
 import Sirius.server.registry.monitor.*;
+
+import java.awt.event.*;
 
 /**
  * DOCUMENT ME!
@@ -52,13 +52,14 @@ public class MonitorUpdateListener implements ActionListener {
      *
      * @param  registryMonitor  DOCUMENT ME!
      */
-    public MonitorUpdateListener(RegistryMonitor registryMonitor) {
+    public MonitorUpdateListener(final RegistryMonitor registryMonitor) {
         this.registryMonitor = registryMonitor;
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    public void actionPerformed(ActionEvent event) {
+    @Override
+    public void actionPerformed(final ActionEvent event) {
         registryMonitor.updateTables();
     }
 }

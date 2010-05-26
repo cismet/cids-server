@@ -17,6 +17,11 @@ import Sirius.server.newuser.*;
  */
 public class NodeReferenceList implements java.io.Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -2401222731203081527L;
+
     //~ Instance fields --------------------------------------------------------
 
     protected java.util.ArrayList<Node> locals;
@@ -38,7 +43,7 @@ public class NodeReferenceList implements java.io.Serializable {
      *
      * @param  nodes  DOCUMENT ME!
      */
-    public NodeReferenceList(java.util.ArrayList<Node> nodes) {
+    public NodeReferenceList(final java.util.ArrayList<Node> nodes) {
         setLocals(nodes);
         setRemotes(new java.util.ArrayList<Link>(0));
     }
@@ -48,7 +53,7 @@ public class NodeReferenceList implements java.io.Serializable {
      *
      * @param  nodes  DOCUMENT ME!
      */
-    public NodeReferenceList(Node[] nodes) {
+    public NodeReferenceList(final Node[] nodes) {
         this(new java.util.ArrayList<Node>(java.util.Arrays.asList(nodes)));
     }
 
@@ -59,8 +64,8 @@ public class NodeReferenceList implements java.io.Serializable {
      * @param  children  DOCUMENT ME!
      * @param  ug        DOCUMENT ME!
      */
-    public NodeReferenceList(AbstractTree tree, java.util.ArrayList<Link> children, UserGroup ug) {
-        int size = children.size();
+    public NodeReferenceList(final AbstractTree tree, final java.util.ArrayList<Link> children, final UserGroup ug) {
+        final int size = children.size();
         Link child = null;
 
         setLocals(new java.util.ArrayList<Node>(size));
@@ -73,7 +78,7 @@ public class NodeReferenceList implements java.io.Serializable {
                 if (child.isRemote()) {
                     remotes.add(child);
                 } else {
-                    Node n = tree.getNode(child.getNodeId(), ug);
+                    final Node n = tree.getNode(child.getNodeId(), ug);
 
                     // if null filtered (no permission)
                     if (n != null) {
@@ -82,7 +87,11 @@ public class NodeReferenceList implements java.io.Serializable {
                 }
             } catch (Throwable e) {
                 logger.error(
-                    "<LS> ERROR :: fehler im NodeReferenceList Konstruktor" + " index " + i + "size" + size,
+                    "<LS> ERROR :: fehler im NodeReferenceList Konstruktor"
+                    + " index "
+                    + i
+                    + "size"
+                    + size,
                     e);
             }
         }
@@ -95,12 +104,12 @@ public class NodeReferenceList implements java.io.Serializable {
      * @param  nodeIDs  DOCUMENT ME!
      * @param  ug       DOCUMENT ME!
      */
-    public NodeReferenceList(AbstractTree tree, java.util.Vector nodeIDs, UserGroup ug) {
+    public NodeReferenceList(final AbstractTree tree, final java.util.Vector nodeIDs, final UserGroup ug) {
         try {
             setLocals(new java.util.ArrayList<Node>(nodeIDs.size()));
 
             for (int i = 0; i < nodeIDs.size(); i++) {
-                Node n = tree.getNode(((Integer)nodeIDs.get(i)).intValue(), ug);
+                final Node n = tree.getNode(((Integer)nodeIDs.get(i)).intValue(), ug);
 
                 // if null filtered (no permission)
                 if (n != null) {
@@ -139,7 +148,7 @@ public class NodeReferenceList implements java.io.Serializable {
      *
      * @param  locals  DOCUMENT ME!
      */
-    public void setLocals(java.util.ArrayList<Node> locals) {
+    public void setLocals(final java.util.ArrayList<Node> locals) {
         this.locals = locals;
     }
 
@@ -157,7 +166,7 @@ public class NodeReferenceList implements java.io.Serializable {
      *
      * @param  remotes  DOCUMENT ME!
      */
-    public void setRemotes(java.util.ArrayList<Link> remotes) {
+    public void setRemotes(final java.util.ArrayList<Link> remotes) {
         this.remotes = remotes;
     }
 }

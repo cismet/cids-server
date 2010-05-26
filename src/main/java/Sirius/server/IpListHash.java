@@ -30,7 +30,7 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
      *
      * @param  capacity  DOCUMENT ME!
      */
-    public IpListHash(int capacity) {
+    public IpListHash(final int capacity) {
         super(capacity);
         init();
     }
@@ -41,7 +41,7 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
      * @param  capacity  DOCUMENT ME!
      * @param  factor    DOCUMENT ME!
      */
-    public IpListHash(int capacity, float factor) {
+    public IpListHash(final int capacity, final float factor) {
         super(capacity, factor);
         init();
     }
@@ -55,7 +55,7 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
         // debug make sure class is loaded xxx
         new ServerType("", 1);
 
-        int[] types = ServerType.getAllServerTypes();
+        final int[] types = ServerType.getAllServerTypes();
 
         for (int i = 0; i < types.length; i++) {
             put(new Integer(types[i]), new HashMap(10));
@@ -76,7 +76,8 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public boolean addServerIP(int serverTyp, String name, String ip, String port) throws Exception {
+    public boolean addServerIP(final int serverTyp, final String name, final String ip, final String port)
+            throws Exception {
         // vorsicht xxx ip port werden ueberschrieben
         if (!contains(serverTyp, name, ip, port)) {
             getServerIPs(serverTyp).put(name, ip + ":" + port);
@@ -98,8 +99,9 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public boolean contains(int serverTyp, String name, String ip, String port) throws Exception {
-        HashMap<String, String> sms = getServerIPs(serverTyp);
+    public boolean contains(final int serverTyp, final String name, final String ip, final String port)
+            throws Exception {
+        final HashMap<String, String> sms = getServerIPs(serverTyp);
 
         if (sms.containsKey(name)) {
             if (sms.get(name).equals(ip + ":" + port)) {
@@ -119,7 +121,7 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public boolean contains(Server server) throws Exception {
+    public boolean contains(final Server server) throws Exception {
         return contains(server.getType(), server.getName(), server.getIP(), server.getPort());
     }
 
@@ -134,7 +136,7 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public HashMap<String, String> getServerIPs(int serverTyp) throws Exception {
+    public HashMap<String, String> getServerIPs(final int serverTyp) throws Exception {
         return get(serverTyp);
     }
 
@@ -152,7 +154,7 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public String getServerIP(int serverTyp, String name) throws Exception {
+    public String getServerIP(final int serverTyp, final String name) throws Exception {
         return ((HashMap<String, String>)get(serverTyp)).get(name);
     }
 
@@ -168,8 +170,9 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public boolean removeServerIP(int serverTyp, String name, String ip, String port) throws Exception {
-        HashMap<String, String> serverIPs = getServerIPs(serverTyp);
+    public boolean removeServerIP(final int serverTyp, final String name, final String ip, final String port)
+            throws Exception {
+        final HashMap<String, String> serverIPs = getServerIPs(serverTyp);
 
         if (contains(serverTyp, name, ip, port)) {
             serverIPs.remove(name);
@@ -188,7 +191,7 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public boolean removeIPForServerType(int serverTyp) throws Exception {
+    public boolean removeIPForServerType(final int serverTyp) throws Exception {
         if (remove(getServerIPs(serverTyp)) != null) {
             return true;
         } else {

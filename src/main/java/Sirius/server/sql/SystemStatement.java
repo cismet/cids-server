@@ -11,11 +11,11 @@
  * Created on 21. November 2003, 18:19
  */
 package Sirius.server.sql;
-import java.util.*;
-
 import Sirius.server.search.searchparameter.*;
 
 import Sirius.util.collections.MultiMap;
+
+import java.util.*;
 /**
  * DOCUMENT ME!
  *
@@ -60,7 +60,12 @@ public class SystemStatement {
      * @param  result     DOCUMENT ME!
      * @param  statement  DOCUMENT ME!
      */
-    public SystemStatement(boolean root, int id, String name, boolean isUpdate, int result, String statement) {
+    public SystemStatement(final boolean root,
+            final int id,
+            final String name,
+            final boolean isUpdate,
+            final int result,
+            final String statement) {
         this.root = root;
         this.id = id;
         this.name = name;
@@ -84,15 +89,14 @@ public class SystemStatement {
      * @param  statement    DOCUMENT ME!
      * @param  description  DOCUMENT ME!
      */
-    public SystemStatement(
-            boolean root,
-            int id,
-            String name,
-            boolean isUpdate,
-            boolean isBatch,
-            int result,
-            String statement,
-            String description) {
+    public SystemStatement(final boolean root,
+            final int id,
+            final String name,
+            final boolean isUpdate,
+            final boolean isBatch,
+            final int result,
+            final String statement,
+            final String description) {
         this(root, id, name, isUpdate, result, statement);
         this.description = description;
         this.isBatch = isBatch;
@@ -154,7 +158,7 @@ public class SystemStatement {
      *
      * @param  p  DOCUMENT ME!
      */
-    public void addParameter(SearchParameter p) {
+    public void addParameter(final SearchParameter p) {
         parameters.put(p.getKey(), p);
     }
 
@@ -172,7 +176,7 @@ public class SystemStatement {
      *
      * @param  root  New value of property root.
      */
-    public void setRoot(boolean root) {
+    public void setRoot(final boolean root) {
         this.root = root;
     }
 
@@ -190,7 +194,7 @@ public class SystemStatement {
      *
      * @param  isUpdate  New value of property isUpdate.
      */
-    public void setIsUpdate(boolean isUpdate) {
+    public void setIsUpdate(final boolean isUpdate) {
         this.isUpdate = isUpdate;
     }
 
@@ -217,7 +221,7 @@ public class SystemStatement {
      *
      * @param  isBatch  New value of property isBatch.
      */
-    public void setIsBatch(boolean isBatch) {
+    public void setIsBatch(final boolean isBatch) {
         this.isBatch = isBatch;
     }
 
@@ -235,7 +239,7 @@ public class SystemStatement {
      *
      * @param  isUnion  New value of property isUnion.
      */
-    public void setUnion(boolean isUnion) {
+    public void setUnion(final boolean isUnion) {
         this.isUnion = isUnion;
     }
 
@@ -254,7 +258,7 @@ public class SystemStatement {
      *
      * @param  conjunction  DOCUMENT ME!
      */
-    public void setConjunction(boolean conjunction) {
+    public void setConjunction(final boolean conjunction) {
         // logger.debug("vor dem setzen setConj gerufen neu ="+conjunction  );
         this.conjunction = conjunction;
         // logger.debug(" nach dem setzensetConj gerufen neu ="+conjunction );
@@ -274,7 +278,7 @@ public class SystemStatement {
      *
      * @param  search  DOCUMENT ME!
      */
-    public void setSearch(boolean search) {
+    public void setSearch(final boolean search) {
         this.search = search;
     }
 } // end of class SystemStatement

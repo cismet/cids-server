@@ -33,7 +33,7 @@ import Sirius.server.search.store.QueryData;
 
 import Sirius.util.image.Image;
 
-import de.cismet.cids.server.CallServerService;
+import org.apache.log4j.Logger;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -48,7 +48,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import de.cismet.cids.server.CallServerService;
 
 /**
  * Benoetigte Keys fuer configFile: registryIps<br>
@@ -316,7 +316,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      */
     @Override
     public MetaClass getClassByTableName(final User user, final String tableName, final String localServerName)
-        throws RemoteException {
+            throws RemoteException {
         return metaService.getClassByTableName(user, tableName, localServerName);
     }
 
@@ -377,7 +377,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      */
     @Override
     public MetaObject getMetaObject(final User usr, final int objectID, final int classID, final String domain)
-        throws RemoteException {
+            throws RemoteException {
         return metaService.getMetaObject(usr, objectID, classID, domain);
     }
 
@@ -454,7 +454,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      */
     @Override
     public int deleteMetaObject(final User user, final MetaObject metaObject, final String domain)
-        throws RemoteException {
+            throws RemoteException {
         return metaService.deleteMetaObject(user, metaObject, domain);
     }
 
@@ -487,7 +487,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      */
     @Override
     public MetaObject insertMetaObject(final User user, final MetaObject metaObject, final String domain)
-        throws RemoteException {
+            throws RemoteException {
         return metaService.insertMetaObject(user, metaObject, domain);
     }
 
@@ -504,7 +504,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      */
     @Override
     public int updateMetaObject(final User user, final MetaObject metaObject, final String domain)
-        throws RemoteException {
+            throws RemoteException {
         return metaService.updateMetaObject(user, metaObject, domain);
     }
 
@@ -602,9 +602,9 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             final String password) throws RemoteException, UserException {
         return userService.getUser(
                 userLsName,
-                userName,
-                userGroupLsName,
                 userGroupName,
+                userGroupLsName,
+                userName,
                 password);
     }
 
@@ -649,7 +649,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      */
     @Override
     public boolean changePassword(final User user, final String oldPassword, final String newPassword)
-        throws RemoteException, UserException {
+            throws RemoteException, UserException {
         return userService.changePassword(user, oldPassword, newPassword);
     }
 
@@ -728,7 +728,9 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
         }
         try {
             final RemoteObservable server = (RemoteObservable)Naming.lookup(
-                    "rmi://" + siriusRegistryIP + "/nameServer");             // NOI18N
+                    "rmi://"
+                    + siriusRegistryIP
+                    + "/nameServer");                                         // NOI18N
             server.addObserver(this);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Info <CS> added as observer: " + this);            // NOI18N
@@ -754,7 +756,9 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     void unregisterAsObserver(final String siriusRegistryIP) {
         try {
             final RemoteObservable server = (RemoteObservable)Naming.lookup(
-                    "rmi://" + siriusRegistryIP + "/nameServer");      // NOI18N
+                    "rmi://"
+                    + siriusRegistryIP
+                    + "/nameServer");                                  // NOI18N
             server.deleteObserver(this);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Info <CS> removed as observer: " + this);   // NOI18N
@@ -879,7 +883,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      */
     @Override
     public SearchResult search(final User user, final String[] classIds, final SearchOption[] searchOptions)
-        throws RemoteException {
+            throws RemoteException {
         return searchService.search(user, classIds, searchOptions);
     }
 
@@ -937,7 +941,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      */
     @Override
     public int addQuery(final User user, final String name, final String description, final String statement)
-        throws RemoteException {
+            throws RemoteException {
         return searchService.addQuery(user, name, description, statement);
     }
 

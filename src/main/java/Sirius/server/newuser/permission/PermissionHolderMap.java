@@ -22,7 +22,7 @@ public class PermissionHolderMap extends java.util.Hashtable {
      *
      * @param  size  DOCUMENT ME!
      */
-    public PermissionHolderMap(int size) {
+    public PermissionHolderMap(final int size) {
         super(size);
     }
     /**
@@ -31,7 +31,7 @@ public class PermissionHolderMap extends java.util.Hashtable {
      * @param  size        DOCUMENT ME!
      * @param  loadFactor  DOCUMENT ME!
      */
-    public PermissionHolderMap(int size, float loadFactor) {
+    public PermissionHolderMap(final int size, final float loadFactor) {
         super(size, loadFactor);
     }
 
@@ -44,7 +44,7 @@ public class PermissionHolderMap extends java.util.Hashtable {
      *
      * @return  DOCUMENT ME!
      */
-    public PermissionHolder getPermissionHolder(String key) {
+    public PermissionHolder getPermissionHolder(final String key) {
         return (PermissionHolder)get(key);
     }
 
@@ -54,7 +54,7 @@ public class PermissionHolderMap extends java.util.Hashtable {
      * @param  key  DOCUMENT ME!
      * @param  ph   DOCUMENT ME!
      */
-    public void add(String key, PermissionHolder ph) {
+    public void add(final String key, final PermissionHolder ph) {
         put(key, ph);
     }
 
@@ -63,10 +63,11 @@ public class PermissionHolderMap extends java.util.Hashtable {
      *
      * @param  m  DOCUMENT ME!
      */
-    public void add(Mapable m) {
+    public void add(final Mapable m) {
         put(m.getKey(), m);
     }
 
+    @Override
     public void rehash() {
         super.rehash();
     }

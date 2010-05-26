@@ -50,15 +50,15 @@ public class QueryPlaner {
      * @param  classIds       DOCUMENT ME!
      * @param  searchOptions  DOCUMENT ME!
      */
-    public QueryPlaner(String[] classIds, SearchOption[] searchOptions) {
-        HashSet<String> domainList = extractAllDomains(convertSearchOptions(searchOptions));
+    public QueryPlaner(final String[] classIds, final SearchOption[] searchOptions) {
+        final HashSet<String> domainList = extractAllDomains(convertSearchOptions(searchOptions));
 
         setSubqueryParameters(convertSearchOptions(searchOptions));
         if (logger.isDebugEnabled()) {
             logger.debug("List der Query domains aufgestellt" + domainList);
         }
 
-        String[] domains = (String[])domainList.toArray(new String[domainList.size()]);
+        final String[] domains = (String[])domainList.toArray(new String[domainList.size()]);
 
         // query
         for (int i = 0; i < domains.length; i++) {
@@ -66,16 +66,16 @@ public class QueryPlaner {
                 logger.debug("construct queryplan for domain " + domains[i] + "of # of domains :" + domains.length);
             }
 
-            String[] cIds = filterClassIdsForDomain(domains[i], classIds);
+            final String[] cIds = filterClassIdsForDomain(domains[i], classIds);
             if (logger.isDebugEnabled()) {
                 logger.debug("classids f\u00FCr domain" + domains[i] + " ids:" + cIds);
             }
 
-            ArrayList<Query> qs = extractQueriesForDomain(domains[i], convertSearchOptions(searchOptions));
+            final ArrayList<Query> qs = extractQueriesForDomain(domains[i], convertSearchOptions(searchOptions));
 
-            Iterator<Query> iter = qs.iterator();
+            final Iterator<Query> iter = qs.iterator();
 
-            ArrayList<QueryConfiguration> qcList = new ArrayList<QueryConfiguration>(qs.size());
+            final ArrayList<QueryConfiguration> qcList = new ArrayList<QueryConfiguration>(qs.size());
 
             while (iter.hasNext()) {
                 qcList.add(new QueryConfiguration(iter.next(), cIds));
@@ -94,7 +94,7 @@ public class QueryPlaner {
      *
      * @return  DOCUMENT ME!
      */
-    private static String extractDomainFromClassId(String classId) {
+    private static String extractDomainFromClassId(final String classId) {
         if (!checkClassId(classId)) {
             logger.error("improper classid has to be of the form: digit@domain");
             return null;
@@ -110,7 +110,7 @@ public class QueryPlaner {
      *
      * @return  DOCUMENT ME!
      */
-    private static String extractDomainFromQueryId(String qId) {
+    private static String extractDomainFromQueryId(final String qId) {
         if (!checkQueryId(qId)) {
             logger.error("improper classid has to be of the form: query@domain");
             return null;
@@ -126,7 +126,7 @@ public class QueryPlaner {
      *
      * @return  DOCUMENT ME!
      */
-    private static int extractClassId(String classId) {
+    private static int extractClassId(final String classId) {
         if (!checkClassId(classId)) {
             logger.error("improper classid has to be of the form: digit@domain");
             return -1;
@@ -141,7 +141,7 @@ public class QueryPlaner {
      *
      * @return  DOCUMENT ME!
      */
-    private static int extractQueryId(String qId) {
+    private static int extractQueryId(final String qId) {
         if (!checkQueryId(qId)) {
             logger.error("improper queryid has to be of the form: quid@domain");
             return -1;
@@ -157,14 +157,14 @@ public class QueryPlaner {
      *
      * @return  DOCUMENT ME!
      */
-    private static boolean checkClassId(String classId) {
+    private static boolean checkClassId(final String classId) {
         // classid@domain
 
-        String regex = "[0-9]+[@][^@]+"; // digit of arbitray length + @ +arbitrary not @
+        final String regex = "[0-9]+[@][^@]+"; // digit of arbitray length + @ +arbitrary not @
 
-        Pattern p = Pattern.compile(regex);
+        final Pattern p = Pattern.compile(regex);
 
-        Matcher m = p.matcher(classId);
+        final Matcher m = p.matcher(classId);
 
         return m.matches();
     }
@@ -176,14 +176,14 @@ public class QueryPlaner {
      *
      * @return  DOCUMENT ME!
      */
-    private static boolean checkQueryId(String qId) {
+    private static boolean checkQueryId(final String qId) {
         // classid@domain
 
-        String regex = "[^@]+[@][^@]+"; // non at of arbitray length + @ +arbitrary not @
+        final String regex = "[^@]+[@][^@]+"; // non at of arbitray length + @ +arbitrary not @
 
-        Pattern p = Pattern.compile(regex);
+        final Pattern p = Pattern.compile(regex);
 
-        Matcher m = p.matcher(qId);
+        final Matcher m = p.matcher(qId);
 
         return m.matches();
     }
@@ -196,11 +196,11 @@ public class QueryPlaner {
      *
      * @return  DOCUMENT ME!
      */
-    String[] filterClassIdsForDomain(String domain, String[] classIds) {
-        ArrayList v = new ArrayList(classIds.length);
+    String[] filterClassIdsForDomain(final String domain, final String[] classIds) {
+        final ArrayList v = new ArrayList(classIds.length);
 
         for (int i = 0; i < classIds.length; i++) {
-            String cdomain = extractDomainFromClassId(classIds[i]);
+            final String cdomain = extractDomainFromClassId(classIds[i]);
             if (logger.isDebugEnabled()) {
                 logger.debug("domain aus class id " + classIds[i] + " extrahiert" + cdomain);
             }
@@ -227,13 +227,13 @@ public class QueryPlaner {
      *
      * @return  DOCUMENT ME!
      */
-    HashSet<String> extractAllDomains(Query[] qs) {
-        HashSet<String> domains = new HashSet<String>(qs.length);
+    HashSet<String> extractAllDomains(final Query[] qs) {
+        final HashSet<String> domains = new HashSet<String>(qs.length);
 
         for (int i = 0; i < qs.length; i++) {
             domains.add(qs[i].getQueryIdentifier().getDomain());
 
-            Query[] subs = qs[i].getSubQueries();
+            final Query[] subs = qs[i].getSubQueries();
 
             if (subs != null) {
                 domains.addAll(extractAllDomains(subs));
@@ -251,12 +251,12 @@ public class QueryPlaner {
      *
      * @return  DOCUMENT ME!
      */
-    ArrayList<Query> extractQueriesForDomain(String domain, Query[] queries) {
-        ArrayList<Query> queryList = new ArrayList<Query>(queries.length + 5);
+    ArrayList<Query> extractQueriesForDomain(final String domain, final Query[] queries) {
+        final ArrayList<Query> queryList = new ArrayList<Query>(queries.length + 5);
 
         for (int i = 0; i < queries.length; i++) {
             if (queries[i].getQueryIdentifier().getDomain().equals(domain)) {
-                Query q = queries[i];
+                final Query q = queries[i];
 
                 queryList.add(q);
             }
@@ -276,7 +276,7 @@ public class QueryPlaner {
      *
      * @return  DOCUMENT ME!
      */
-    private Query searchOption2Query(SearchOption so) {
+    private Query searchOption2Query(final SearchOption so) {
         return so.getQuery();
     }
 
@@ -287,8 +287,8 @@ public class QueryPlaner {
      *
      * @return  DOCUMENT ME!
      */
-    private Query[] convertSearchOptions(SearchOption[] sos) {
-        ArrayList<Query> qs = new ArrayList<Query>(sos.length + 5);
+    private Query[] convertSearchOptions(final SearchOption[] sos) {
+        final ArrayList<Query> qs = new ArrayList<Query>(sos.length + 5);
 
         for (int i = 0; i < sos.length; i++) {
             qs.add(sos[i].getQuery());
@@ -311,9 +311,9 @@ public class QueryPlaner {
      *
      * @param  qs  DOCUMENT ME!
      */
-    public void setSubqueryParameters(Query[] qs) {
+    public void setSubqueryParameters(final Query[] qs) {
         for (int i = 0; i < qs.length; i++) {
-            Query[] subs = qs[i].getSubQueries();
+            final Query[] subs = qs[i].getSubQueries();
 
             if (subs != null) {
                 for (int j = 0; j < subs.length; j++) {
@@ -330,8 +330,8 @@ public class QueryPlaner {
      *
      * @param  args  DOCUMENT ME!
      */
-    public static void main(String[] args) {
-        String t = "444444444444444444@oppp";
+    public static void main(final String[] args) {
+        final String t = "444444444444444444@oppp";
 
         System.out.println(extractDomainFromClassId(t));
     }

@@ -7,9 +7,9 @@
 ****************************************************/
 package Sirius.server.registry;
 
-import java.util.Vector;
-
 import Sirius.server.observ.*;
+
+import java.util.Vector;
 
 /**
  * DOCUMENT ME!
@@ -36,7 +36,7 @@ public class Observable {
      *
      * @param  rmobs  DOCUMENT ME!
      */
-    public Observable(RemoteObservable rmobs) {
+    public Observable(final RemoteObservable rmobs) {
         this.rmobs = rmobs;
 
         observers = new Vector(10, 10);
@@ -88,7 +88,7 @@ public class Observable {
      *
      * @param  ob  ein Objekt, welches das Sirius.Observ.RemoteObserver Interface implementiert *
      */
-    public synchronized void addObserver(RemoteObserver ob) {
+    public synchronized void addObserver(final RemoteObserver ob) {
         if (!observers.contains(ob)) {
             observers.addElement(ob);
             if (logger.isDebugEnabled()) {
@@ -103,7 +103,7 @@ public class Observable {
      *
      * @param  ob  DOCUMENT ME!
      */
-    public synchronized void deleteObserver(RemoteObserver ob) {
+    public synchronized void deleteObserver(final RemoteObserver ob) {
         if (observers.contains(ob)) {
             observers.removeElement(ob);
             if (logger.isDebugEnabled()) {
@@ -133,7 +133,7 @@ public class Observable {
      *
      * @param  r  DOCUMENT ME!
      */
-    public void notifyObservers(java.rmi.Remote r) {
+    public void notifyObservers(final java.rmi.Remote r) {
         performNotify(r);
     }
     /**
@@ -141,7 +141,7 @@ public class Observable {
      *
      * @param  s  DOCUMENT ME!
      */
-    public void notifyObservers(java.io.Serializable s) {
+    public void notifyObservers(final java.io.Serializable s) {
         performNotify(s);
     }
 
@@ -154,13 +154,13 @@ public class Observable {
      *
      * @param  arg  DOCUMENT ME!
      */
-    public void performNotify(java.lang.Object arg) {
+    public void performNotify(final java.lang.Object arg) {
         if (!hasChanged()) {
             return;
         } else {
             for (int i = 0; i < observers.size(); i++) {
                 try {
-                    RemoteObserver r = (RemoteObserver)observers.elementAt(i);
+                    final RemoteObserver r = (RemoteObserver)observers.elementAt(i);
                     r.update(rmobs, arg);
                 } catch (Exception e) {
                     logger.error("Exception in performNotify:: ", e);

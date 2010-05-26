@@ -16,7 +16,7 @@ import Sirius.server.middleware.interfaces.proxy.SystemService;
 import Sirius.server.middleware.interfaces.proxy.UserService;
 
 /**
- * Cumulated callserver interface
+ * Cumulated callserver interface.
  *
  * @author   martin.scholl@cismet.de
  * @version  $Revision$, $Date$

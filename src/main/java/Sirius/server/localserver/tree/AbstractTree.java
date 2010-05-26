@@ -52,7 +52,7 @@ public interface AbstractTree {
      * @throws  Throwable  DOCUMENT ME!
      */
     boolean deleteLink(Sirius.server.middleware.types.Node from, Sirius.server.middleware.types.Node to, User user)
-        throws Throwable;
+            throws Throwable;
 
     /**
      * DOCUMENT ME!
@@ -78,7 +78,7 @@ public interface AbstractTree {
      * @throws  Throwable  DOCUMENT ME!
      */
     boolean addLink(Sirius.server.middleware.types.Node from, Sirius.server.middleware.types.Node to, User user)
-        throws Throwable;
+            throws Throwable;
 
     /**
      * DOCUMENT ME!

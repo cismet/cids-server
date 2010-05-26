@@ -12,8 +12,8 @@
  */
 package Sirius.server.middleware.types.MOTraverse;
 
-import Sirius.server.middleware.types.*;
 import Sirius.server.localserver.attribute.*;
+import Sirius.server.middleware.types.*;
 
 /**
  * Sucht nach Attributen mit einem bestimmten ID in einem bestimmten MetaObject von einem bestimmten Typ. Diese Klasse
@@ -38,7 +38,7 @@ public class ForAttrIDAndClassName extends ForAttrAndObjName {
      * @param  objectName  Name des MetaObject's in dem nach dem ObjectAttribute gesucht werden soll.
      * @param  attrID      id des ObjectAttributes das gesucht werden soll.
      */
-    public ForAttrIDAndClassName(String objectName, String attrID) {
+    public ForAttrIDAndClassName(final String objectName, final String attrID) {
         super(objectName);
         this.attrID = attrID;
     }
@@ -62,13 +62,14 @@ public class ForAttrIDAndClassName extends ForAttrAndObjName {
      *          MetaAttribut-Array der Gr\u00F6sse 0 wenn dieses MetaAttribut kein MetaObject als Wert besitzt und die
      *          ID des ObjectAttributes nicht dem gesuchtem entspricht.
      */
-    public Object visitMA(ObjectAttribute moa, Object o) {
-        Object value = moa.getValue();
+    @Override
+    public Object visitMA(final ObjectAttribute moa, final Object o) {
+        final Object value = moa.getValue();
 
         if (value instanceof MetaObject) {
             return ((MetaObject)value).accept(this, o);
         } else if (moa.getID().equals(attrID)) {
-            ObjectAttribute[] matt = { moa };
+            final ObjectAttribute[] matt = { moa };
             return matt;
         } else {
             return new ObjectAttribute[0];

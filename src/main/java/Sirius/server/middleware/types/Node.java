@@ -7,9 +7,9 @@
 ****************************************************/
 package Sirius.server.middleware.types;
 
-import Sirius.util.*;
-
 import Sirius.server.newuser.permission.*;
+
+import Sirius.util.*;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 //import org.apache.commons.lang.builder.ToStringBuilder;
@@ -67,16 +67,15 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      * @param  icon                        DOCUMENT ME!
      * @param  derivePermissionsFromClass  DOCUMENT ME!
      */
-    public Node(
-            int id,
-            String name,
-            String domain,
-            String description,
-            boolean leaf,
-            Policy policy,
-            int iconFactory,
-            String icon,
-            boolean derivePermissionsFromClass) {
+    public Node(final int id,
+            final String name,
+            final String domain,
+            final String description,
+            final boolean leaf,
+            final Policy policy,
+            final int iconFactory,
+            final String icon,
+            final boolean derivePermissionsFromClass) {
         this.id = id;
         this.domain = domain;
         this.name = name;
@@ -96,6 +95,7 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      *
      * @return  grouping information
      */
+    @Override
     public String getGroup() {
         return domain;
     }
@@ -105,6 +105,7 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      *
      * @return  id
      */
+    @Override
     public final int getId() {
         return id;
     }
@@ -159,7 +160,7 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      *
      * @param  isValid  DOCUMENT ME!
      */
-    public final void validate(boolean isValid) {
+    public final void validate(final boolean isValid) {
         this.isValid = isValid;
     }
 
@@ -168,7 +169,7 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      *
      * @param  leaf  has no child nodes
      */
-    public void setLeaf(boolean leaf) {
+    public void setLeaf(final boolean leaf) {
         this.leaf = leaf;
     }
 
@@ -177,6 +178,7 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      *
      * @return  string representation
      */
+    @Override
     public String toString() {
 //        System.out.println("toString : "+name);
 //        if(log != null) {
@@ -199,7 +201,7 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      *
      * @param  permissions  New value of property permissions.
      */
-    public void setPermissions(PermissionHolder permissions) {
+    public void setPermissions(final PermissionHolder permissions) {
         this.permissions = permissions;
     }
 
@@ -208,7 +210,7 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      *
      * @param  name  New value of property name.
      */
-    public void setName(String name) {
+    public void setName(final String name) {
 //        log.fatal("setName(" + name + ")", new Exception());
 //        if (log != null) {
 //            log.fatal("setName() to " + name);
@@ -225,13 +227,14 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      *
      * @return  ordinal relation
      */
-    public int compareTo(Object o) {
+    public int compareTo(final Object o) {
         // return ((Node)o).id-this.id;
         return this.name.compareTo(((Node)o).name);
     }
 
+    @Override
     public int hashCode() {
-        HashCodeBuilder hb = new HashCodeBuilder();
+        final HashCodeBuilder hb = new HashCodeBuilder();
 
         hb.append(id);
         hb.append(domain);
@@ -246,11 +249,12 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      *
      * @return  whether this equals o
      */
-    public boolean equals(Object other) {
+    @Override
+    public boolean equals(final Object other) {
         if (!(other instanceof Node)) {
             return false;
         }
-        Node o = (Node)other;
+        final Node o = (Node)other;
 
         return (id == o.id) && domain.equals(o.domain);
     }
@@ -269,7 +273,7 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      *
      * @param  dynamic  DOCUMENT ME!
      */
-    public void setDynamic(boolean dynamic) {
+    public void setDynamic(final boolean dynamic) {
         this.dynamic = dynamic;
     }
 
@@ -287,7 +291,7 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      *
      * @param  dynamicChildrenStatement  DOCUMENT ME!
      */
-    public void setDynamicChildrenStatement(String dynamicChildrenStatement) {
+    public void setDynamicChildrenStatement(final String dynamicChildrenStatement) {
         this.dynamicChildrenStatement = dynamicChildrenStatement;
     }
 
@@ -305,7 +309,7 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      *
      * @param  sqlSort  DOCUMENT ME!
      */
-    public void setSqlSort(boolean sqlSort) {
+    public void setSqlSort(final boolean sqlSort) {
         this.sqlSort = sqlSort;
     }
 
@@ -323,7 +327,7 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      *
      * @param  classId  DOCUMENT ME!
      */
-    public void setClassId(int classId) {
+    public void setClassId(final int classId) {
         this.classId = classId;
     }
 
@@ -341,7 +345,7 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      *
      * @param  derivePermissionsFromClass  DOCUMENT ME!
      */
-    public void setDerivePermissionsFromClass(boolean derivePermissionsFromClass) {
+    public void setDerivePermissionsFromClass(final boolean derivePermissionsFromClass) {
         this.derivePermissionsFromClass = derivePermissionsFromClass;
     }
 
@@ -359,7 +363,7 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      *
      * @param  iconFactory  DOCUMENT ME!
      */
-    public void setIconFactory(int iconFactory) {
+    public void setIconFactory(final int iconFactory) {
         this.iconFactory = iconFactory;
     }
 
@@ -377,7 +381,7 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      *
      * @param  iconString  DOCUMENT ME!
      */
-    public void setIconString(String iconString) {
+    public void setIconString(final String iconString) {
         this.iconString = iconString;
     }
 }

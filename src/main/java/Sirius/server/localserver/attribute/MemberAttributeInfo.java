@@ -22,6 +22,11 @@ import Sirius.util.Mapable;
  */
 public class MemberAttributeInfo implements Mapable, java.io.Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 1172278959184473585L;
+
     //~ Instance fields --------------------------------------------------------
 
     // attribut id aus cs_attr
@@ -130,7 +135,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  fieldName  New value of property fieldName.
      */
-    public void setFieldName(java.lang.String fieldName) {
+    public void setFieldName(final java.lang.String fieldName) {
         this.fieldName = fieldName;
     }
 
@@ -148,7 +153,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  foreignKey  New value of property foreignKey.
      */
-    public void setForeignKey(boolean foreignKey) {
+    public void setForeignKey(final boolean foreignKey) {
         this.foreignKey = foreignKey;
     }
 
@@ -166,7 +171,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  foreignKeyClassId  New value of property foreignKeyClassId.
      */
-    public void setForeignKeyClassId(int foreignKeyClassId) {
+    public void setForeignKeyClassId(final int foreignKeyClassId) {
         this.foreignKeyClassId = foreignKeyClassId;
     }
 
@@ -184,7 +189,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  indexed  New value of property indexed.
      */
-    public void setIndexed(boolean indexed) {
+    public void setIndexed(final boolean indexed) {
         this.indexed = indexed;
     }
 
@@ -202,7 +207,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  substitute  New value of property substitute.
      */
-    public void setSubstitute(boolean substitute) {
+    public void setSubstitute(final boolean substitute) {
         this.substitute = substitute;
     }
 
@@ -220,7 +225,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  typeId  New value of property typeId.
      */
-    public void setTypeId(int typeId) {
+    public void setTypeId(final int typeId) {
         this.typeId = typeId;
     }
 
@@ -238,7 +243,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  visible  New value of property visible.
      */
-    public void setVisible(boolean visible) {
+    public void setVisible(final boolean visible) {
         this.visible = visible;
     }
 
@@ -248,7 +253,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
     }
 
     @Override
-    public Object constructKey(Mapable m) {
+    public Object constructKey(final Mapable m) {
         if (m instanceof MemberAttributeInfo) {
             return m.getKey();
         } else {
@@ -270,7 +275,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  name  New value of property name.
      */
-    public void setName(java.lang.String name) {
+    public void setName(final java.lang.String name) {
         this.name = name;
     }
 
@@ -288,7 +293,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  id  New value of property id.
      */
-    public void setId(int id) {
+    public void setId(final int id) {
         this.id = id;
     }
 
@@ -306,7 +311,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  classId  New value of property classId.
      */
-    public void setClassId(int classId) {
+    public void setClassId(final int classId) {
         this.classId = classId;
     }
 
@@ -324,7 +329,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  isArray  New value of property isArray.
      */
-    public void setIsArray(boolean isArray) {
+    public void setIsArray(final boolean isArray) {
         this.isArray = isArray;
     }
 
@@ -342,7 +347,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  arrayKeyFieldName  New value of property arrayKeyFieldName.
      */
-    public void setArrayKeyFieldName(java.lang.String arrayKeyFieldName) {
+    public void setArrayKeyFieldName(final java.lang.String arrayKeyFieldName) {
         this.arrayKeyFieldName = arrayKeyFieldName;
     }
 
@@ -360,7 +365,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  editor  New value of property editor.
      */
-    public void setEditor(java.lang.String editor) {
+    public void setEditor(final java.lang.String editor) {
         this.editor = editor;
     }
 
@@ -378,7 +383,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  toString  renderer New value of property renderer.
      */
-    public void setToString(java.lang.String toString) {
+    public void setToString(final java.lang.String toString) {
         this.toString = toString;
     }
 
@@ -396,7 +401,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  optional  DOCUMENT ME!
      */
-    public void setOptional(boolean optional) {
+    public void setOptional(final boolean optional) {
         this.optional = optional;
     }
 
@@ -414,7 +419,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  defaultValue  DOCUMENT ME!
      */
-    public void setDefaultValue(String defaultValue) {
+    public void setDefaultValue(final String defaultValue) {
         this.defaultValue = defaultValue;
     }
 
@@ -432,7 +437,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  fromString  DOCUMENT ME!
      */
-    public void setFromString(String fromString) {
+    public void setFromString(final String fromString) {
         this.fromString = fromString;
     }
 
@@ -450,7 +455,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  position  DOCUMENT ME!
      */
-    public void setPosition(int position) {
+    public void setPosition(final int position) {
         this.position = position;
     }
 
@@ -468,7 +473,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  complexEditor  DOCUMENT ME!
      */
-    public void setComplexEditor(String complexEditor) {
+    public void setComplexEditor(final String complexEditor) {
         this.complexEditor = complexEditor;
     }
 
@@ -486,7 +491,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  renderer  DOCUMENT ME!
      */
-    public void setRenderer(String renderer) {
+    public void setRenderer(final String renderer) {
         this.renderer = renderer;
     }
 
@@ -504,7 +509,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  javaclassname  DOCUMENT ME!
      */
-    public void setJavaclassname(String javaclassname) {
+    public void setJavaclassname(final String javaclassname) {
         this.javaclassname = javaclassname;
     }
 
@@ -522,7 +527,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  extensionAttribute  DOCUMENT ME!
      */
-    public void setExtensionAttribute(boolean extensionAttribute) {
+    public void setExtensionAttribute(final boolean extensionAttribute) {
         this.extensionAttribute = extensionAttribute;
     }
 }
