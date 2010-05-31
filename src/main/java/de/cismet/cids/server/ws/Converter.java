@@ -62,13 +62,17 @@ public final class Converter {
      * @param   bytes  the serialised <code>byte[]</code>
      * @param   type   the <code>Class</code> of the resulting <code>Object</code>
      *
-     * @return  the deserialised object
+     * @return  the deserialised object or <code>null</code> if the given <code>byte[]</code> is <code>null</code>
      *
      * @throws  IOException             if an error occurs during deserialisation
      * @throws  ClassNotFoundException  if any of the classes of the object cannot be found
      */
     public static <T> T deserialise(final byte[] bytes, final Class<T> type) throws IOException,
         ClassNotFoundException {
+        if (bytes == null) {
+            return null;
+        }
+
         final ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
         final ObjectInputStream ois = new ObjectInputStream(bais);
         final Object o = ois.readObject();
@@ -100,7 +104,8 @@ public final class Converter {
      * @param   bytes  the serialised base64 encoded <code>byte[]</code>
      * @param   type   the <code>Class</code> of the resulting <code>Object</code>
      *
-     * @return  the deserialised <code>Object</code>
+     * @return  the deserialised <code>Object</code> or <code>null</code> if the given <code>byte[]</code> is <code>
+     *          null</code>
      *
      * @throws  IOException             if an error occurs during deserialisation
      * @throws  ClassNotFoundException  if any of the classes of the object cannot be found
@@ -131,12 +136,16 @@ public final class Converter {
      *
      * @param   bytes  bytes to decode
      *
-     * @return  the system encoded bytes
+     * @return  the system encoded bytes or <code>null</code> if the given <code>byte[]</code> is <code>null</code>
      *
      * @see     Base64#decodeBase64(byte[])
      */
     public static byte[] fromBase64(final byte[] bytes) {
-        return Base64.decodeBase64(bytes);
+        if (bytes == null) {
+            return null;
+        } else {
+            return Base64.decodeBase64(bytes);
+        }
     }
 
     /**
@@ -166,7 +175,8 @@ public final class Converter {
      *
      * @param   bytes  the <code>String</code> to be converted
      *
-     * @return  an system encoded <code>byte[]</code>
+     * @return  an system encoded <code>byte[]</code> or <code>null</code> if the given <code>String</code> is <code>
+     *          null</code>
      *
      * @throws  IllegalStateException  if the system does not support ASCII encoding
      *
@@ -174,7 +184,11 @@ public final class Converter {
      */
     public static byte[] fromString(final String bytes) {
         try {
-            return fromBase64(bytes.getBytes("ASCII"));                      // NOI18N
+            if (bytes == null) {
+                return null;
+            } else {
+                return fromBase64(bytes.getBytes("ASCII"));                  // NOI18N
+            }
         } catch (final UnsupportedEncodingException ex) {
             final String message = "system does not support ASCII encoding"; // NOI18N
             throw new IllegalStateException(message, ex);
@@ -204,7 +218,8 @@ public final class Converter {
      * @param   s     the ASCII encoded <code>String</code> representation of an <code>Object</code>
      * @param   type  the type class fo the <code>Object</code> to be created
      *
-     * @return  the <code>Object</code> create from the ASCII encoded <code>String</code>
+     * @return  the <code>Object</code> create from the ASCII encoded <code>String</code> or <code>null</code> if the
+     *          given <code>String</code> is <code>null</code>
      *
      * @throws  IOException             if any error occurs during deserialisation
      * @throws  ClassNotFoundException  if the desired <code>Class</code> cannot be found

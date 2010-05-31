@@ -43,6 +43,11 @@ import de.cismet.tools.StringTools;
  */
 public class VirtualTree extends Shutdown implements AbstractTree {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -7944886106034198595L;
+
     //~ Instance fields --------------------------------------------------------
 
     DBServer dbServer;

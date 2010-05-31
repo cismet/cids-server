@@ -64,6 +64,9 @@ public final class ObjectFactory extends Shutdown {
 
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 2529617940407287179L;
+
     private static final transient Logger LOG = Logger.getLogger(ObjectFactory.class);
 
     //~ Instance fields --------------------------------------------------------

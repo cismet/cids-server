@@ -27,8 +27,11 @@ import Sirius.server.search.store.QueryData;
 import Sirius.util.image.Image;
 
 import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -2042,13 +2045,36 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_PASSWORD, Converter.serialiseToString(password));
             }
 
-            return getResponseGET("getUser", queryParams, User.class); // NOI18N
+            try {
+                return getResponseGET("getUser", queryParams, User.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+                if (HttpStatus.SC_UNAUTHORIZED == response.getStatus()) {
+                    final UserException userEx = ServerExceptionMapper.fromResponse(response, UserException.class);
+                    if (userEx == null) {
+                        throw ex;
+                    } else {
+                        throw userEx;
+                    }
+                } else {
+                    final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                    if (remEx == null) {
+                        throw ex;
+                    } else {
+                        throw remEx;
+                    }
+                }
+            }
         } catch (final IOException ex) {
-            final String message = "could not convert params";         // NOI18N
+            final String message = "could not convert params"; // NOI18N
             LOG.error(message, ex);
             throw new RemoteException(message, ex);
         } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";           // NOI18N
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }

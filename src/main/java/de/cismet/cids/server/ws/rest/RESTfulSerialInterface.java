@@ -7,12 +7,14 @@
 ****************************************************/
 package de.cismet.cids.server.ws.rest;
 
+import Sirius.server.dataretrieval.DataRetrievalException;
 import Sirius.server.middleware.impls.proxy.StartProxy;
 import Sirius.server.middleware.types.Link;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.Node;
 import Sirius.server.newuser.User;
+import Sirius.server.newuser.UserException;
 import Sirius.server.newuser.UserGroup;
 import Sirius.server.search.Query;
 import Sirius.server.search.SearchOption;
@@ -130,8 +132,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  RemoteException          DOCUMENT ME!
-     * @throws  WebApplicationException  UnsupportedOperationException DOCUMENT ME!
+     * @throws  RemoteException  DOCUMENT ME!
      */
     @GET
     @Path("/getRootsByDomain")
@@ -144,10 +145,14 @@ public final class RESTfulSerialInterface {
             final String domain = Converter.deserialiseFromString(domainNameBytes, String.class);
 
             return createResponse(callserver.getRoots(user, domain));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not get roots"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get roots"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -158,21 +163,25 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getRoots")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getRoots(@QueryParam(PARAM_USER) final String userBytes) {
+    public Response getRoots(@QueryParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
 
             return createResponse(callserver.getRoots(user));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not get roots"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get roots"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -184,23 +193,27 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  DOCUMENT ME!
      */
     @GET
     @Path("/getChildren")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getChildren(@QueryParam(PARAM_NODE) final String nodeBytes,
-            @QueryParam(PARAM_USER) final String usrBytes) {
+            @QueryParam(PARAM_USER) final String usrBytes) throws RemoteException {
         try {
             final Node node = Converter.deserialiseFromString(nodeBytes, Node.class);
             final User user = Converter.deserialiseFromString(usrBytes, User.class);
 
             return createResponse(callserver.getChildren(node, user));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not get children"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get children"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -213,7 +226,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @POST
     @Path("/addNode")
@@ -221,17 +234,21 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response addNode(@QueryParam(PARAM_NODE) final String nodeBytes,
             @QueryParam(PARAM_LINK_PARENT) final String parentBytes,
-            @QueryParam(PARAM_USER) final String userBytes) {
+            @QueryParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final Node node = Converter.deserialiseFromString(nodeBytes, Node.class);
             final Link parent = Converter.deserialiseFromString(parentBytes, Link.class);
             final User user = Converter.deserialiseFromString(userBytes, User.class);
 
             return createResponse(callserver.addNode(node, parent, user));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not add node"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not add node"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -243,23 +260,27 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @DELETE
     @Path("/deleteNode")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response deleteNode(@QueryParam(PARAM_NODE) final String nodeBytes,
-            @QueryParam(PARAM_USER) final String userBytes) {
+            @QueryParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final Node node = Converter.deserialiseFromString(nodeBytes, Node.class);
             final User user = Converter.deserialiseFromString(userBytes, User.class);
 
             return createResponse(callserver.deleteNode(node, user));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not delete node"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not delete node"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -272,7 +293,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @POST
     @Path("/addLink")
@@ -280,17 +301,21 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response addLink(@QueryParam(PARAM_NODE_FROM) final String fromBytes,
             @QueryParam(PARAM_NODE_TO) final String toBytes,
-            @QueryParam(PARAM_USER) final String userBytes) {
+            @QueryParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final Node from = Converter.deserialiseFromString(fromBytes, Node.class);
             final Node to = Converter.deserialiseFromString(toBytes, Node.class);
 
             return createResponse(callserver.addLink(from, to, user));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not add link"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not add link"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -303,7 +328,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @DELETE
     @Path("/deleteLink")
@@ -311,17 +336,21 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response deleteLink(@QueryParam(PARAM_NODE_FROM) final String fromBytes,
             @QueryParam(PARAM_NODE_TO) final String toBytes,
-            @QueryParam(PARAM_USER) final String userBytes) {
+            @QueryParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final Node from = Converter.deserialiseFromString(fromBytes, Node.class);
             final Node to = Converter.deserialiseFromString(toBytes, Node.class);
 
             return createResponse(callserver.deleteLink(from, to, user));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not delete link"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not delete link"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -333,23 +362,28 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException         WebApplicationException RemoteException DOCUMENT ME!
+     * @throws  DataRetrievalException  DOCUMENT ME!
      */
     @GET
     @Path("/getDataObjectByMetaObject")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getDataObjectByMetaObject(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_METAOBJECT) final String metaObjectBytes) {
+            @QueryParam(PARAM_METAOBJECT) final String metaObjectBytes) throws RemoteException, DataRetrievalException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final MetaObject metaObject = Converter.deserialiseFromString(metaObjectBytes, MetaObject.class);
 
             return createResponse(callserver.getDataObject(user, metaObject));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not get dataobject"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get dataobject"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -361,23 +395,28 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException         WebApplicationException RemoteException DOCUMENT ME!
+     * @throws  DataRetrievalException  DOCUMENT ME!
      */
     @GET
     @Path("/getDataObjectByQuery")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getDataObjectByQuery(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_QUERY) final String queryBytes) {
+            @QueryParam(PARAM_QUERY) final String queryBytes) throws RemoteException, DataRetrievalException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final Query query = Converter.deserialiseFromString(queryBytes, Query.class);
 
             return createResponse(callserver.getDataObject(user, query));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not get dataobject"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get dataobject"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -386,18 +425,18 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getDomains")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getDomains() {
+    public Response getDomains() throws RemoteException {
         try {
             return createResponse(callserver.getDomains());
-        } catch (final Exception ex) {
+        } catch (final IOException e) {
             final String message = "could not get domains"; // NOI18N
-            LOG.error(message, ex);
-            throw new WebApplicationException(ex);
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -410,7 +449,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getMetaObjectNodeByID")
@@ -418,17 +457,21 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getMetaObjectNode(@QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_NODE_ID) final String nodeIDBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final int nodeID = Converter.deserialiseFromString(nodeIDBytes, int.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
 
             return createResponse(callserver.getMetaObjectNode(user, nodeID, domain));
-        } catch (final Exception e) {
-            final String message = "could not get metaObjectNode"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not get metaobject node"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get metaobject node"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -440,24 +483,27 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getMetaObjectNodeByString")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getMetaObjectNodeByString(@QueryParam(PARAM_USER) final String usrBytes,
-            @QueryParam(PARAM_QUERY) final String queryBytes) { // String
-
+            @QueryParam(PARAM_QUERY) final String queryBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(usrBytes, User.class);
             final String query = Converter.deserialiseFromString(queryBytes, String.class);
 
             return createResponse(callserver.getMetaObjectNode(user, query));
-        } catch (final Exception e) {
-            final String message = "could not get metaObjectNode"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not get metaobject node"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get metaobject node"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -469,24 +515,27 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getMetaObjectNodeByQuery")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getMetaObjectNodeByQuery(@QueryParam(PARAM_USER) final String usrBytes,
-            @QueryParam(PARAM_QUERY) final String queryBytes) { // Query
-
+            @QueryParam(PARAM_QUERY) final String queryBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(usrBytes, User.class);
             final Query query = Converter.deserialiseFromString(queryBytes, Query.class);
 
             return createResponse(callserver.getMetaObjectNode(user, query));
-        } catch (final Exception e) {
-            final String message = "could not get metaObjectNode"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not get metaobject node"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get metaobject node"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -498,23 +547,27 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getMetaObjectByString")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getMetaObjectByString(@QueryParam(PARAM_USER) final String usrBytes,
-            @QueryParam(PARAM_QUERY) final String queryBytes) {
+            @QueryParam(PARAM_QUERY) final String queryBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(usrBytes, User.class);
             final String query = Converter.deserialiseFromString(queryBytes, String.class);
 
             return createResponse(callserver.getMetaObject(user, query));
-        } catch (final Exception e) {
-            final String message = "could not get metaObject"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not get metaobject"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get metaobject"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -526,23 +579,27 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getMetaObjectByQuery")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getMetaObjectByQuery(@QueryParam(PARAM_USER) final String usrBytes,
-            @QueryParam(PARAM_QUERY) final String queryBytes) {
+            @QueryParam(PARAM_QUERY) final String queryBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(usrBytes, User.class);
             final Query query = Converter.deserialiseFromString(queryBytes, Query.class);
 
             return createResponse(callserver.getMetaObject(user, query));
-        } catch (final Exception e) {
-            final String message = "could not get metaObject"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not get metaobject"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get metaobject"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -556,7 +613,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getMetaObjectByID")
@@ -565,17 +622,22 @@ public final class RESTfulSerialInterface {
     public Response getMetaObject(@QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_OBJECT_ID) final String objectIDBytes,
             @QueryParam(PARAM_CLASS_ID) final String classIDBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final int objectID = Converter.deserialiseFromString(objectIDBytes, int.class);
             final int classID = Converter.deserialiseFromString(classIDBytes, int.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
+
             return createResponse(callserver.getMetaObject(user, objectID, classID, domain));
-        } catch (final Exception e) {
-            final String message = "could not get metaObject"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not get metaobject"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get metaobject"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -588,7 +650,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @POST
     @Path("/insertMetaObject")
@@ -596,17 +658,21 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response insertMetaObject(@QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_METAOBJECT) final String metaObjectBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final MetaObject metaObject = Converter.deserialiseFromString(metaObjectBytes, MetaObject.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
 
             return createResponse(callserver.insertMetaObject(user, metaObject, domain));
-        } catch (final Exception e) {
-            final String message = "could not insert metaObject"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not insert metaobject"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not insert metaobject"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -619,7 +685,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @POST
     @Path("/insertMetaObjectByQuery")
@@ -627,17 +693,21 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response insertMetaObjectByQuery(@QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_QUERY) final String queryBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final Query query = Converter.deserialiseFromString(queryBytes, Query.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
 
             return createResponse(callserver.insertMetaObject(user, query, domain));
-        } catch (final Exception e) {
-            final String message = "could not insert metaObject"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not insert metaobject"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not insert metaobject"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -650,7 +720,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @PUT
     @Path("/updateMetaObject")
@@ -658,17 +728,21 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response updateMetaObject(@QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_METAOBJECT) final String metaObjectBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final MetaObject metaObject = Converter.deserialiseFromString(metaObjectBytes, MetaObject.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
 
             return createResponse(callserver.updateMetaObject(user, metaObject, domain));
-        } catch (final Exception e) {
-            final String message = "could not update metaObject"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not update metaobject"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not update metaobject"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -681,7 +755,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @DELETE
     @Path("/deleteMetaObject")
@@ -689,17 +763,21 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response deleteMetaObject(@QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_METAOBJECT) final String metaObjectBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final MetaObject metaObject = Converter.deserialiseFromString(metaObjectBytes, MetaObject.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
 
             return createResponse(callserver.deleteMetaObject(user, metaObject, domain));
-        } catch (final Exception e) {
-            final String message = "could not delete metaObject"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not delete metaobject"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not delete metaobject"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -712,7 +790,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @PUT
     @Path("/update")
@@ -720,17 +798,21 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response update(@QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_QUERY) final String queryBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String query = Converter.deserialiseFromString(queryBytes, String.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
 
             return createResponse(callserver.update(user, query, domain));
-        } catch (final Exception e) {
-            final String message = "could not update query"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not update"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not update"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -742,23 +824,27 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getInstance")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getInstance(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_METACLASS) final String metaClassBytes) {
+            @QueryParam(PARAM_METACLASS) final String metaClassBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final MetaClass metaClass = Converter.deserialiseFromString(metaClassBytes, MetaClass.class);
 
             return createResponse(callserver.getInstance(user, metaClass));
-        } catch (final Exception e) {
-            final String message = "could not get metaClass instance"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not get instance"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get instance"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -771,7 +857,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getClassByTableName")
@@ -779,17 +865,21 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getClassByTableName(@QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_TABLE_NAME) final String tableNameBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String tableName = Converter.deserialiseFromString(tableNameBytes, String.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
 
             return createResponse(callserver.getClassByTableName(user, tableName, domain));
-        } catch (final Exception e) {
-            final String message = "could not get class by table name"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not get metaclass"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get metaclass"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -802,7 +892,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getClassByID")
@@ -810,17 +900,21 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getClass(@QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_CLASS_ID) final String classIdBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
 
             return createResponse(callserver.getClass(user, classId, domain));
-        } catch (final Exception e) {
-            final String message = "could not get class"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not get metaclass"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get metaclass"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -832,22 +926,26 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getClasses")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getClasses(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
             return createResponse(callserver.getClasses(user, domain));
-        } catch (final Exception e) {
-            final String message = "could not get classes"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not get metaclasses"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get metaclasses"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -858,21 +956,25 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getClassTreeNodesByUser")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getClassTreeNodes(@QueryParam(PARAM_USER) final String userBytes) {
+    public Response getClassTreeNodes(@QueryParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
 
             return createResponse(callserver.getClassTreeNodes(user));
-        } catch (final Exception e) {
-            final String message = "could not get ClassTreeNodes"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not get classtree nodes"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get classtree nodes"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -884,23 +986,27 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getClassTreeNodesByDomain")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getClassTreeNodes(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
 
             return createResponse(callserver.getClassTreeNodes(user, domain));
-        } catch (final Exception e) {
-            final String message = "could not get ClassTreeNodes"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not get classtree nodes"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get classtree nodes"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1602,7 +1708,8 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException DOCUMENT ME!
+     * @throws  UserException    DOCUMENT ME!
      */
     @GET
     @Path("/getUser")
@@ -1612,7 +1719,7 @@ public final class RESTfulSerialInterface {
             @QueryParam(PARAM_USERGROUP_NAME) final String ugNameBytes,
             @QueryParam(PARAM_USER_LS_NAME) final String uLsNameBytes,
             @QueryParam(PARAM_USERNAME) final String unameBytes,
-            @QueryParam(PARAM_PASSWORD) final String passwordBytes) {
+            @QueryParam(PARAM_PASSWORD) final String passwordBytes) throws RemoteException, UserException {
         try {
             final String ugLsName = Converter.deserialiseFromString(ugLsNameBytes, String.class);
             final String ugName = Converter.deserialiseFromString(ugNameBytes, String.class);
@@ -1621,10 +1728,14 @@ public final class RESTfulSerialInterface {
             final String password = Converter.deserialiseFromString(passwordBytes, String.class);
 
             return createResponse(callserver.getUser(ugLsName, ugName, uLsName, uname, password));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not get user"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get user"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
