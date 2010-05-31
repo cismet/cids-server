@@ -142,7 +142,13 @@ public class BeanFactory {
         Class javaClass = null;
         try {
             // TODO getmetaClass kann null liefern wenn keine Rechte vorhanden sind
-            javaClass = metaObject.getMetaClass().getJavaClass();
+            MetaClass mc = metaObject.getMetaClass();
+            if (mc != null) {
+                javaClass = mc.getJavaClass();
+            } else {
+                log.warn("getMetaClass() delivered null -> please check policy/permissions!");
+                return null;
+            }
 
             final CidsBean bean = (CidsBean) javaClass.newInstance();
 
@@ -168,10 +174,15 @@ public class BeanFactory {
                                 targetArrayElement.setParentObject(arrayElementMO);
 
                                 if (targetArrayElement.getValue() instanceof MetaObject) {
-                                    MetaObject targetMO = (MetaObject) targetArrayElement.getValue();
+                                    Object targetObj = targetArrayElement.getValue();
+                                    MetaObject targetMO = (MetaObject) targetObj;
                                     CidsBean cdBean = targetMO.getBean();
-                                    cdBean.setBacklinkInformation(field, bean);
-                                    observableArrayElements.add(cdBean);
+                                    if (cdBean != null) {
+                                        cdBean.setBacklinkInformation(field, bean);
+                                        observableArrayElements.add(cdBean);
+                                    } else {
+                                        log.warn("getBean() delivered null -> could be a possible problem with rights/policy?");
+                                    }
                                     break;
                                 }
                             }
