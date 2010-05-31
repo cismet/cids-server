@@ -1023,15 +1023,19 @@ public final class RESTfulSerialInterface {
     @Path("/getMethodsByUser")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMethodsByUser(@QueryParam(PARAM_USER) final String userBytes) {
+    public Response getMethodsByUser(@QueryParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
 
             return createResponse(callserver.getMethods(user));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not get methods"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get methods"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1050,16 +1054,20 @@ public final class RESTfulSerialInterface {
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getMethods(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_LOCAL_SERVER_NAME) final String localServerNameBytes) {
+            @QueryParam(PARAM_LOCAL_SERVER_NAME) final String localServerNameBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String localServerName = Converter.deserialiseFromString(localServerNameBytes, String.class);
 
             return createResponse(callserver.getMethods(user, localServerName));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not get methods"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get methods"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1083,7 +1091,7 @@ public final class RESTfulSerialInterface {
             @QueryParam(PARAM_CLASS_ID) final String classIdBytes,
             @QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_REP_FIELDS) final String representationFieldsBytes,
-            @QueryParam(PARAM_REP_PATTERN) final String representationPatternBytes) {
+            @QueryParam(PARAM_REP_PATTERN) final String representationPatternBytes) throws RemoteException {
         try {
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class);
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -1099,10 +1107,14 @@ public final class RESTfulSerialInterface {
                         user,
                         representationFields,
                         representationPattern));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
+            final String message = "could not get LightwightMetaObjects for class"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
             final String message = "could not get LightweightMetaObjects for class"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1123,7 +1135,7 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getAllLightweightMetaObjectsForClass(@QueryParam(PARAM_CLASS_ID) final String classIdBytes,
             @QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_REP_FIELDS) final String representationFieldsBytes) {
+            @QueryParam(PARAM_REP_FIELDS) final String representationFieldsBytes) throws RemoteException {
         try {
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class);
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -1135,10 +1147,14 @@ public final class RESTfulSerialInterface {
                         classId,
                         user,
                         representationFields));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not get LightweightMetaObjects for class"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get LightweightMetaObjects for class"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1163,7 +1179,7 @@ public final class RESTfulSerialInterface {
             @QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_QUERY) final String queryBytes,
             @QueryParam(PARAM_REP_FIELDS) final String representationFieldsBytes,
-            @QueryParam(PARAM_REP_PATTERN) final String representationPatternBytes) {
+            @QueryParam(PARAM_REP_PATTERN) final String representationPatternBytes) throws RemoteException {
         try {
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class);
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -1181,10 +1197,14 @@ public final class RESTfulSerialInterface {
                         query,
                         representationFields,
                         representationPattern));
-        } catch (final Exception e) {
-            final String message = "could not get LightweightMetaObjects by query"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not get LightweightMetaObjects"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get LightWeightMetaObjects"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1207,7 +1227,7 @@ public final class RESTfulSerialInterface {
     public Response getLightweightMetaObjectsByQuery(@QueryParam(PARAM_CLASS_ID) final String classIdBytes,
             @QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_QUERY) final String queryBytes,
-            @QueryParam(PARAM_REP_FIELDS) final String representationFieldsBytes) {
+            @QueryParam(PARAM_REP_FIELDS) final String representationFieldsBytes) throws RemoteException {
         try {
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class);
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -1221,10 +1241,14 @@ public final class RESTfulSerialInterface {
                         user,
                         query,
                         representationFields));
-        } catch (final Exception e) {
-            final String message = "could not store query"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not get LightweightMetaObjects"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get LightweightMetaObjects"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1243,16 +1267,20 @@ public final class RESTfulSerialInterface {
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response storeQuery(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_QUERY_DATA) final String queryDataBytes) {
+            @QueryParam(PARAM_QUERY_DATA) final String queryDataBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final QueryData data = Converter.deserialiseFromString(queryDataBytes, QueryData.class);
 
             return createResponse(callserver.storeQuery(user, data));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not store query"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not store query"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1269,15 +1297,19 @@ public final class RESTfulSerialInterface {
     @Path("/getQueryInfosByUser")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getQueryInfosByUser(@QueryParam(PARAM_USER) final String userBytes) {
+    public Response getQueryInfosByUser(@QueryParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
 
             return createResponse(callserver.getQueryInfos(user));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not get query infos"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get query infos"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1294,15 +1326,19 @@ public final class RESTfulSerialInterface {
     @Path("/getQueryInfosByUserGroup")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getQueryInfosByUserGroup(@QueryParam(PARAM_USERGROUP) final String userGroupBytes) {
+    public Response getQueryInfosByUserGroup(@QueryParam(PARAM_USERGROUP) final String userGroupBytes) throws RemoteException {
         try {
             final UserGroup userGroup = Converter.deserialiseFromString(userGroupBytes, UserGroup.class);
 
             return createResponse(callserver.getQueryInfos(userGroup));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not get query infos"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get query infos"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1321,16 +1357,20 @@ public final class RESTfulSerialInterface {
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getQuery(@QueryParam(PARAM_QUERY_ID) final String idBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final int id = Converter.deserialiseFromString(idBytes, int.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
 
             return createResponse(callserver.getQuery(id, domain));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not get query"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get query"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1349,16 +1389,20 @@ public final class RESTfulSerialInterface {
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response delete(@QueryParam(PARAM_QUERY_ID) final String idBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final int id = Converter.deserialiseFromString(idBytes, int.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
 
             return createResponse(callserver.delete(id, domain));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not delete query"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not delete query"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1391,7 +1435,7 @@ public final class RESTfulSerialInterface {
             @QueryParam(PARAM_IS_UPDATE) final String isUpdateBytes,
             @QueryParam(PARAM_IS_BATCH) final String isBatchBytes,
             @QueryParam(PARAM_IS_ROOT) final String isRootBytes,
-            @QueryParam(PARAM_IS_UNION) final String isUnionBytes) {
+            @QueryParam(PARAM_IS_UNION) final String isUnionBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String name = Converter.deserialiseFromString(nameBytes, String.class);
@@ -1413,10 +1457,14 @@ public final class RESTfulSerialInterface {
                         isBatch,
                         isRoot,
                         isUnion));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not add query"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not add query"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1439,7 +1487,7 @@ public final class RESTfulSerialInterface {
     public Response addQuery(@QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_QUERY_NAME) final String nameBytes,
             @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes,
-            @QueryParam(PARAM_STATEMENT) final String statementBytes) {
+            @QueryParam(PARAM_STATEMENT) final String statementBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String name = Converter.deserialiseFromString(nameBytes, String.class);
@@ -1447,10 +1495,14 @@ public final class RESTfulSerialInterface {
             final String statement = Converter.deserialiseFromString(statementBytes, String.class);
 
             return createResponse(callserver.addQuery(user, name, description, statement));
-        } catch (final Exception e) {
-            final String message = "could not add query parameter"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not add query"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not add query"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1479,7 +1531,7 @@ public final class RESTfulSerialInterface {
             @QueryParam(PARAM_PARAM_KEY) final String paramkeyBytes,
             @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes,
             @QueryParam(PARAM_QUERY_RESULT) final String isQueryResultBytes,
-            @QueryParam(PARAM_QUERY_POSITION) final String queryPositionBytes) {
+            @QueryParam(PARAM_QUERY_POSITION) final String queryPositionBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final int queryId = Converter.deserialiseFromString(queryIdBytes, int.class);
@@ -1497,10 +1549,14 @@ public final class RESTfulSerialInterface {
                         description,
                         isQueryResult,
                         queryPosition));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not add query parameter"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not add query parameter"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1523,7 +1579,7 @@ public final class RESTfulSerialInterface {
     public Response addQueryParameter(@QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_QUERY_ID) final String queryIdBytes,
             @QueryParam(PARAM_PARAM_KEY) final String paramkeyBytes,
-            @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes) {
+            @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final int queryID = Converter.deserialiseFromString(queryIdBytes, int.class);
@@ -1531,10 +1587,14 @@ public final class RESTfulSerialInterface {
             final String description = Converter.deserialiseFromString(descriptionBytes, String.class);
 
             return createResponse(callserver.addQueryParameter(user, queryID, paramkey, description));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not add query parameter"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get user"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1551,15 +1611,19 @@ public final class RESTfulSerialInterface {
     @Path("/getSearchOptionsByUser")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getSearchOptions(@QueryParam(PARAM_USER) final String userBytes) {
+    public Response getSearchOptions(@QueryParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
 
             return createResponse(callserver.getSearchOptions(user));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not get search options"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get search options"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1578,15 +1642,19 @@ public final class RESTfulSerialInterface {
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getSearchOptions(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) {
+            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
             return createResponse(callserver.getSearchOptions(user, domain));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not get search options"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get search options"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1607,17 +1675,21 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response search(@QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_CLASS_ID) final String classIdsBytes,
-            @QueryParam(PARAM_SEARCH_OPTIONS) final String searchOptionsBytes) {
+            @QueryParam(PARAM_SEARCH_OPTIONS) final String searchOptionsBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String[] classIds = Converter.deserialiseFromString(classIdsBytes, String[].class);
             final SearchOption[] options = Converter.deserialiseFromString(searchOptionsBytes, SearchOption[].class);
 
             return createResponse(callserver.search(user, classIds, options));
-        } catch (final Exception e) {
-            final String message = "could not perform search"; // NOI18N
+        } catch (final IOException e) {
+            final String message = "could not search"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not search"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1634,15 +1706,19 @@ public final class RESTfulSerialInterface {
     @Path("/getDefaultIconsByLSName")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getDefaultIconsByLSName(@QueryParam(PARAM_LS_NAME) final String lsNameBytes) {
+    public Response getDefaultIconsByLSName(@QueryParam(PARAM_LS_NAME) final String lsNameBytes) throws RemoteException {
         try {
             final String lsName = Converter.deserialiseFromString(lsNameBytes, String.class);
 
             return createResponse(callserver.getDefaultIcons(lsName));
-        } catch (final Exception ex) {
-            final String message = "could not get default icons"; // NOI18N
-            LOG.error(message, ex);
-            throw new WebApplicationException(ex);
+        } catch (final IOException e) {
+            final String message = "could not get icons"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get icons"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1656,13 +1732,13 @@ public final class RESTfulSerialInterface {
     @GET
     @Path("/getDefaultIcons")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getDefaultIcons() {
+    public Response getDefaultIcons() throws RemoteException {
         try {
             return createResponse(callserver.getDefaultIcons());
-        } catch (IOException ex) {
+        } catch (final IOException e) {
             final String message = "could not get default icons"; // NOI18N
-            LOG.error(message, ex);
-            throw new WebApplicationException(ex);
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1683,17 +1759,21 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response changePasswordGET(@QueryParam(PARAM_USER) final String userBytes,
             @QueryParam(PARAM_OLD_PASSWORD) final String oldPasswordBytes,
-            @QueryParam(PARAM_NEW_PASSWORD) final String newPasswordBytes) {
+            @QueryParam(PARAM_NEW_PASSWORD) final String newPasswordBytes) throws RemoteException, UserException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String oldPassword = Converter.deserialiseFromString(oldPasswordBytes, String.class);
             final String newPassword = Converter.deserialiseFromString(newPasswordBytes, String.class);
 
             return createResponse(callserver.changePassword(user, oldPassword, newPassword));
-        } catch (final Exception ex) {
+        } catch (final IOException e) {
             final String message = "could not change password"; // NOI18N
-            LOG.error(message, ex);
-            throw new WebApplicationException(ex);
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not change password"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1749,13 +1829,13 @@ public final class RESTfulSerialInterface {
     @GET
     @Path("/getUserGroupNames")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getUserGroupNames() {
+    public Response getUserGroupNames() throws RemoteException {
         try {
             return createResponse(callserver.getUserGroupNames());
-        } catch (final Exception ex) {
+        } catch (final IOException e) {
             final String message = "could not get usergroup names"; // NOI18N
-            LOG.error(message, ex);
-            throw new WebApplicationException(ex);
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -1781,10 +1861,14 @@ public final class RESTfulSerialInterface {
             final String lsHome = Converter.deserialiseFromString(lsHomeBytes, String.class);
 
             return createResponse(callserver.getUserGroupNames(uname, lsHome));
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             final String message = "could not get usergroup names"; // NOI18N
             LOG.error(message, e);
-            throw new WebApplicationException(e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get usergroup names"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 }
