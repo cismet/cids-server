@@ -425,9 +425,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domainName));
             }
 
-            return getResponseGET("getRootsByDomain", queryParams, Node[].class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get roots";                         // NOI18N
+            try {
+                return getResponseGET("getRootsByDomain", queryParams, Node[].class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -451,9 +470,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_USER, Converter.serialiseToString(user));
             }
 
-            return getResponseGET("getRoots", queryParams, Node[].class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get roots";                 // NOI18N
+            try {
+                return getResponseGET("getRoots", queryParams, Node[].class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -481,9 +519,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_USER, Converter.serialiseToString(usr));
             }
 
-            return getResponseGET("getChildren", queryParams, Node[].class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get children";                 // NOI18N
+            try {
+                return getResponseGET("getChildren", queryParams, Node[].class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -515,9 +572,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_LINK_PARENT, Converter.serialiseToString(parent));
             }
 
-            return getResponsePOST("addNode", queryParams, Node.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not add Node";                // NOI18N
+            try {
+                return getResponsePOST("addNode", queryParams, Node.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -545,9 +621,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_USER, Converter.serialiseToString(user));
             }
 
-            return getResponseDELETE("deleteNode", queryParams, boolean.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not delete Node";                     // NOI18N
+            try {
+                return getResponseDELETE("deleteNode", queryParams, boolean.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -579,9 +674,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_USER, Converter.serialiseToString(user));
             }
 
-            return getResponsePOST("addLink", queryParams, boolean.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not add link";                   // NOI18N
+            try {
+                return getResponsePOST("addLink", queryParams, boolean.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -613,9 +727,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_USER, Converter.serialiseToString(user));
             }
 
-            return getResponseDELETE("deleteLink", queryParams, boolean.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not delete link";                     // NOI18N
+            try {
+                return getResponseDELETE("deleteLink", queryParams, boolean.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -643,9 +776,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_METAOBJECT, Converter.serialiseToString(metaObject));
             }
 
-            return getResponseGET("getDataObjectByMetaObject", queryParams, DataObject.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get dataobject";                                 // NOI18N
+            try {
+                return getResponseGET("getDataObjectByMetaObject", queryParams, DataObject.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -675,9 +827,37 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_QUERY, Converter.serialiseToString(query));
             }
 
-            return getResponseGET("getDataObjectByQuery", queryParams, DataObject[].class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get dataobject";                              // NOI18N
+            try {
+                return getResponseGET("getDataObjectByQuery", queryParams, DataObject[].class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                if(HttpStatus.SC_NOT_FOUND == response.getStatus()) {
+                    final DataRetrievalException dataEx = ServerExceptionMapper.fromResponse(response, DataRetrievalException.class);
+                    if (dataEx == null) {
+                        throw ex;
+                    } else {
+                        throw dataEx;
+                    }
+                } else {
+                    final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                    if (remEx == null) {
+                        throw ex;
+                    } else {
+                        throw remEx;
+                    }
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -694,10 +874,27 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     public String[] getDomains() throws RemoteException {
         try {
             return getResponseGET("getDomains", String[].class); // NOI18N
-        } catch (final Exception ex) {
-            final String message = "could not getDomains";       // NOI18N
+        } catch (final UniformInterfaceException ex) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("exception during request, remapping", ex);
+            }
+
+            final ClientResponse response = ex.getResponse();
+
+            final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+            if (remEx == null) {
+                throw ex;
+            } else {
+                throw remEx;
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
             LOG.error(message, ex);
             throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -727,9 +924,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
-            return getResponseGET("getMetaObjectNodeByID", queryParams, Node.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get MetaObjectNode";                   // NOI18N
+            try {
+                return getResponseGET("getMetaObjectNodeByID", queryParams, Node.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -757,9 +973,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_QUERY, Converter.serialiseToString(query));
             }
 
-            return getResponseGET("getMetaObjectNodeByString", queryParams, Node[].class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get MetaObjectNode";                         // NOI18N
+            try {
+                return getResponseGET("getMetaObjectNodeByString", queryParams, Node[].class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -787,9 +1022,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_QUERY, Converter.serialiseToString(query));
             }
 
-            return getResponseGET("getMetaObjectNodeByQuery", queryParams, Node[].class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get MetaObjectNode";                        // NOI18N
+            try {
+                return getResponseGET("getMetaObjectNodeByQuery", queryParams, Node[].class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -817,9 +1071,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_QUERY, Converter.serialiseToString(query));
             }
 
-            return getResponseGET("getMetaObjectByString", queryParams, MetaObject[].class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get MetaObject";                               // NOI18N
+            try {
+                return getResponseGET("getMetaObjectByString", queryParams, MetaObject[].class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -847,9 +1120,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_QUERY, Converter.serialiseToString(query));
             }
 
-            return getResponseGET("getMetaObjectByQuery", queryParams, MetaObject[].class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get MetaObject";                              // NOI18N
+            try {
+                return getResponseGET("getMetaObjectByQuery", queryParams, MetaObject[].class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -886,9 +1178,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
-            return getResponseGET("getMetaObjectByID", queryParams, MetaObject.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get MetaObject";                         // NOI18N
+            try {
+                return getResponseGET("getMetaObjectByID", queryParams, MetaObject.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -921,9 +1232,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
-            return getResponsePOST("insertMetaObject", queryParams, MetaObject.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not update MetaObject";                      // NOI18N
+            try {
+                return getResponsePOST("insertMetaObject", queryParams, MetaObject.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -955,9 +1285,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
-            return getResponsePOST("insertMetaObjectByQuery", queryParams, int.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not update MetaObject";                      // NOI18N
+            try {
+                return getResponsePOST("insertMetaObjectByQuery", queryParams, int.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -990,9 +1339,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
-            return getResponsePUT("updateMetaObject", queryParams, int.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not update MetaObject";              // NOI18N
+            try {
+                return getResponsePUT("updateMetaObject", queryParams, int.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1025,9 +1393,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
-            return getResponseDELETE("deleteMetaObject", queryParams, int.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not delete MetaObject";                 // NOI18N
+            try {
+                return getResponseDELETE("deleteMetaObject", queryParams, int.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1059,9 +1446,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
-            return getResponsePUT("update", queryParams, int.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not update query";         // NOI18N
+            try {
+                return getResponsePUT("update", queryParams, int.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1089,9 +1495,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_METACLASS, Converter.serialiseToString(c));
             }
 
-            return getResponseGET("getInstance", queryParams, MetaObject.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get instance of MetaClass";        // NOI18N
+            try {
+                return getResponseGET("getInstance", queryParams, MetaObject.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1124,9 +1549,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
-            return getResponseGET("getClassByTableName", queryParams, MetaClass.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get Class by tablename";                  // NOI18N
+            try {
+                return getResponseGET("getClassByTableName", queryParams, MetaClass.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1158,9 +1602,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_CLASS_ID, Converter.serialiseToString(classID));
             }
 
-            return getResponseGET("getClassByID", queryParams, MetaClass.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get Class";                        // NOI18N
+            try {
+                return getResponseGET("getClassByID", queryParams, MetaClass.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1188,9 +1651,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
-            return getResponseGET("getClasses", queryParams, MetaClass[].class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get Classes";                      // NOI18N
+            try {
+                return getResponseGET("getClasses", queryParams, MetaClass[].class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1214,9 +1696,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_USER, Converter.serialiseToString(user));
             }
 
-            return getResponseGET("getClassTreeNodesByUser", queryParams, Node[].class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get ClassTreeNodes";                       // NOI18N
+            try {
+                return getResponseGET("getClassTreeNodesByUser", queryParams, Node[].class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1244,9 +1745,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
-            return getResponseGET("getClassTreeNodesByDomain", queryParams, Node[].class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get ClassTreeNodes";                         // NOI18N
+            try {
+                return getResponseGET("getClassTreeNodesByDomain", queryParams, Node[].class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1270,9 +1790,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_USER, Converter.serialiseToString(user));
             }
 
-            return getResponseGET("getMethodsByUser", queryParams, MethodMap.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get methods";                          // NOI18N
+            try {
+                return getResponseGET("getMethodsByUser", queryParams, MethodMap.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1300,9 +1839,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_LOCAL_SERVER_NAME, Converter.serialiseToString(localServerName));
             }
 
-            return getResponseGET("getMethodsByDomain", queryParams, MethodMap.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get methods";                            // NOI18N
+            try {
+                return getResponseGET("getMethodsByDomain", queryParams, MethodMap.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1341,12 +1899,31 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_REP_PATTERN, Converter.serialiseToString(representationPattern));
             }
 
-            return getResponseGET(
-                    "getAllLightweightMetaObjectsForClassByPattern", // NOI18N
-                    queryParams,
-                    LightweightMetaObject[].class);
-        } catch (final Exception e) {
-            final String message = "could not get LightweightMetaObjects for class"; // NOI18N
+            try {
+                return getResponseGET(
+                        "getAllLightweightMetaObjectsForClassByPattern", // NOI18N
+                        queryParams,
+                        LightweightMetaObject[].class);
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1380,12 +1957,31 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_REP_FIELDS, Converter.serialiseToString(representationFields));
             }
 
-            return getResponseGET(
-                    "getAllLightweightMetaObjectsForClass", // NOI18N
-                    queryParams,
-                    LightweightMetaObject[].class);
-        } catch (final Exception e) {
-            final String message = "could not get LightweightMetaObjects for class"; // NOI18N
+            try {
+                return getResponseGET(
+                        "getAllLightweightMetaObjectsForClass", // NOI18N
+                        queryParams,
+                        LightweightMetaObject[].class);
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1427,12 +2023,31 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_REP_PATTERN, Converter.serialiseToString(representationPattern));
             }
 
-            return getResponseGET(
-                    "getLightweightMetaObjectsByQueryAndPattern", // NOI18N
-                    queryParams,
-                    LightweightMetaObject[].class);
-        } catch (final Exception e) {
-            final String message = "could not get LightweightMetaObjects by query"; // NOI18N
+            try {
+                return getResponseGET(
+                        "getLightweightMetaObjectsByQueryAndPattern", // NOI18N
+                        queryParams,
+                        LightweightMetaObject[].class);
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1469,12 +2084,31 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_REP_FIELDS, Converter.serialiseToString(representationFields));
             }
 
-            return getResponseGET(
-                    "getLightweightMetaObjectsByQuery", // NOI18N
-                    queryParams,
-                    LightweightMetaObject[].class);
-        } catch (final Exception e) {
-            final String message = "could not get LightweightMetaObjects by query"; // NOI18N
+            try {
+                return getResponseGET(
+                        "getLightweightMetaObjectsByQuery", // NOI18N
+                        queryParams,
+                        LightweightMetaObject[].class);
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1502,9 +2136,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_QUERY_DATA, Converter.serialiseToString(data));
             }
 
-            return getResponsePUT("storeQuery", queryParams, boolean.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get query";                    // NOI18N
+            try {
+                return getResponsePUT("storeQuery", queryParams, boolean.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1528,9 +2181,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_USER, Converter.serialiseToString(user));
             }
 
-            return getResponseGET("getQueryInfosByUser", queryParams, Info[].class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get query infos";                      // NOI18N
+            try {
+                return getResponseGET("getQueryInfosByUser", queryParams, Info[].class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1554,9 +2226,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_USERGROUP, Converter.serialiseToString(userGroup));
             }
 
-            return getResponseGET("getQueryInfosByUserGroup", queryParams, Info[].class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get query infos";                           // NOI18N
+            try {
+                return getResponseGET("getQueryInfosByUserGroup", queryParams, Info[].class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1584,9 +2275,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
-            return getResponseGET("getQuery", queryParams, QueryData.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get query";                    // NOI18N
+            try {
+                return getResponseGET("getQuery", queryParams, QueryData.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1614,9 +2324,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
-            return getResponseDELETE("delete", queryParams, boolean.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not delete query";                // NOI18N
+            try {
+                return getResponseDELETE("delete", queryParams, boolean.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1688,9 +2417,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_IS_UNION, Converter.serialiseToString(isUnion));
             }
 
-            return getResponsePOST("addQueryFull", queryParams, int.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not add query";                   // NOI18N
+            try {
+                return getResponsePOST("addQueryFull", queryParams, int.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1727,9 +2475,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_STATEMENT, Converter.serialiseToString(statement));
             }
 
-            return getResponsePOST("addQuery", queryParams, int.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not add query";               // NOI18N
+            try {
+                return getResponsePOST("addQuery", queryParams, int.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1784,9 +2551,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_QUERY_POSITION, Converter.serialiseToString(queryPosition));
             }
 
-            return getResponsePOST("addQueryParameterFull", queryParams, boolean.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not add query parameter";                      // NOI18N
+            try {
+                return getResponsePOST("addQueryParameterFull", queryParams, boolean.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1824,9 +2610,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_DESCRIPTION, Converter.serialiseToString(description));
             }
 
-            return getResponsePOST("addQueryParameter", queryParams, boolean.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not add query parameter";                  // NOI18N
+            try {
+                return getResponsePOST("addQueryParameter", queryParams, boolean.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1850,9 +2655,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_USER, Converter.serialiseToString(user));
             }
 
-            return getResponseGET("getSearchOptionsByUser", queryParams, HashMap.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get search options";                       // NOI18N
+            try {
+                return getResponseGET("getSearchOptionsByUser", queryParams, HashMap.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1880,9 +2704,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
-            return getResponseGET("getSearchOptionsByDomain", queryParams, HashMap.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not get search options";                         // NOI18N
+            try {
+                return getResponseGET("getSearchOptionsByDomain", queryParams, HashMap.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1915,9 +2758,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_SEARCH_OPTIONS, Converter.serialiseToString(searchOptions));
             }
 
-            return getResponseGET("search", queryParams, SearchResult.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not perform search";                // NOI18N
+            try {
+                return getResponseGET("search", queryParams, SearchResult.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1941,9 +2803,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_LS_NAME, Converter.serialiseToString(lsName));
             }
 
-            return getResponseGET("getDefaultIconsByLSName", queryParams, Image[].class);
-        } catch (final Exception e) {
-            final String message = "could not get default icons"; // NOI18N
+            try {
+                return getResponseGET("getDefaultIconsByLSName", queryParams, Image[].class);
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1961,9 +2842,28 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         try {
             final HashMap<String, String> queryParams = new HashMap<String, String>(0, 1);
 
-            return getResponseGET("getDefaultIcons", queryParams, Image[].class);
-        } catch (final Exception e) {
-            final String message = "could not get default icons"; // NOI18N
+            try {
+                return getResponseGET("getDefaultIcons", queryParams, Image[].class);
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1997,9 +2897,36 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_NEW_PASSWORD, Converter.serialiseToString(newPassword));
             }
 
-            return getResponsePUT("changePassword", queryParams, Boolean.class); // NOI18N
-        } catch (final Exception e) {
-            final String message = "could not change password";                  // NOI18N
+            try {
+                return getResponsePUT("changePassword", queryParams, Boolean.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+                if (HttpStatus.SC_UNAUTHORIZED == response.getStatus()) {
+                    final UserException userEx = ServerExceptionMapper.fromResponse(response, UserException.class);
+                    if (userEx == null) {
+                        throw ex;
+                    } else {
+                        throw userEx;
+                    }
+                } else {
+                    final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                    if (remEx == null) {
+                        throw ex;
+                    } else {
+                        throw remEx;
+                    }
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -2091,10 +3018,27 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     public Vector getUserGroupNames() throws RemoteException {
         try {
             return getResponseGET("getUserGroupNames", Vector.class); // NOI18N
-        } catch (final Exception ex) {
-            final String message = "could not getUserGroupNames";     // NOI18N
+        } catch (final UniformInterfaceException ex) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("exception during request, remapping", ex);
+            }
+
+            final ClientResponse response = ex.getResponse();
+
+            final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+            if (remEx == null) {
+                throw ex;
+            } else {
+                throw remEx;
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
             LOG.error(message, ex);
             throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 

@@ -1017,7 +1017,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getMethodsByUser")
@@ -1047,7 +1047,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getMethodsByDomain")
@@ -1081,7 +1081,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
     @GET
     @Path("/getAllLightweightMetaObjectsForClassByPattern")
@@ -1108,7 +1108,7 @@ public final class RESTfulSerialInterface {
                         representationFields,
                         representationPattern));
         } catch (final IOException e) {
-            final String message = "could not get LightwightMetaObjects for class"; // NOI18N
+            final String message = "could not get LightwightMetaObjects for class";  // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         } catch (final ClassNotFoundException e) {
@@ -1127,7 +1127,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getAllLightweightMetaObjectsForClass")
@@ -1169,7 +1169,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
     @GET
     @Path("/getLightweightMetaObjectsByQueryAndPattern")
@@ -1218,7 +1218,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getLightweightMetaObjectsByQuery")
@@ -1260,7 +1260,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
     @PUT
     @Path("/storeQuery")
@@ -1291,7 +1291,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
     @GET
     @Path("/getQueryInfosByUser")
@@ -1320,13 +1320,14 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
     @GET
     @Path("/getQueryInfosByUserGroup")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getQueryInfosByUserGroup(@QueryParam(PARAM_USERGROUP) final String userGroupBytes) throws RemoteException {
+    public Response getQueryInfosByUserGroup(@QueryParam(PARAM_USERGROUP) final String userGroupBytes)
+            throws RemoteException {
         try {
             final UserGroup userGroup = Converter.deserialiseFromString(userGroupBytes, UserGroup.class);
 
@@ -1350,7 +1351,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
     @GET
     @Path("/getQuery")
@@ -1382,7 +1383,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
     @DELETE
     @Path("/delete")
@@ -1421,7 +1422,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
     @POST
     @Path("/addQueryFull")
@@ -1478,7 +1479,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
     @POST
     @Path("/addQuery")
@@ -1519,7 +1520,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
     @POST
     @Path("/addQueryParameterFull")
@@ -1570,7 +1571,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
     @POST
     @Path("/addQueryParameter")
@@ -1592,7 +1593,7 @@ public final class RESTfulSerialInterface {
             LOG.error(message, e);
             throw new RemoteException(message, e);
         } catch (final ClassNotFoundException e) {
-            final String message = "could not get user"; // NOI18N
+            final String message = "could not get user";            // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1605,7 +1606,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
     @GET
     @Path("/getSearchOptionsByUser")
@@ -1635,7 +1636,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
     @GET
     @Path("/getSearchOptionsByDomain")
@@ -1667,7 +1668,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/search")
@@ -1700,13 +1701,14 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getDefaultIconsByLSName")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getDefaultIconsByLSName(@QueryParam(PARAM_LS_NAME) final String lsNameBytes) throws RemoteException {
+    public Response getDefaultIconsByLSName(@QueryParam(PARAM_LS_NAME) final String lsNameBytes)
+            throws RemoteException {
         try {
             final String lsName = Converter.deserialiseFromString(lsNameBytes, String.class);
 
@@ -1727,7 +1729,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getDefaultIcons")
@@ -1751,7 +1753,8 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
+     * @throws  UserException    DOCUMENT ME!
      */
     @PUT
     @Path("/changePassword")
@@ -1824,7 +1827,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  WebApplicationException  RemoteException DOCUMENT ME!
+     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
     @GET
     @Path("/getUserGroupNames")
@@ -1847,8 +1850,7 @@ public final class RESTfulSerialInterface {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  RemoteException          DOCUMENT ME!
-     * @throws  WebApplicationException  UnsupportedOperationException DOCUMENT ME!
+     * @throws  RemoteException  DOCUMENT ME!
      */
     @GET
     @Path("/getUserGroupNamesByUser")
