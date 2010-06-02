@@ -1,10 +1,10 @@
 /***************************************************
-*
-* cismet GmbH, Saarbruecken, Germany
-*
-*              ... and it just works.
-*
-****************************************************/
+ *
+ * cismet GmbH, Saarbruecken, Germany
+ *
+ *              ... and it just works.
+ *
+ ****************************************************/
 package de.cismet.cids.server.ws.rest;
 
 import Sirius.server.dataretrieval.DataObject;
@@ -62,16 +62,12 @@ import static de.cismet.cids.server.ws.rest.RESTfulSerialInterface.*;
 public final class RESTfulSerialInterfaceConnector implements CallServerService {
 
     //~ Static fields/initializers ---------------------------------------------
-
     private static final transient Logger LOG = Logger.getLogger(RESTfulSerialInterfaceConnector.class);
-
     //~ Instance fields --------------------------------------------------------
-
     private final transient String rootResource;
     private final transient Map<String, Client> clientCache;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new RESTfulSerialInterfaceConnector object.
      *
@@ -89,7 +85,6 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     }
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * DOCUMENT ME!
      *
@@ -207,7 +202,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @throws  IllegalStateException   DOCUMENT ME!
      */
     private <T> T getResponseGET(final WebResource.Builder builder, final Class<T> type) throws IOException,
-        ClassNotFoundException {
+            ClassNotFoundException {
         if ((builder == null) || (type == null)) {
             throw new IllegalStateException("neither builder nor type may be null"); // NOI18N
         }
@@ -269,7 +264,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @throws  IllegalStateException   DOCUMENT ME!
      */
     private <T> T getResponsePOST(final WebResource.Builder builder, final Class<T> type) throws IOException,
-        ClassNotFoundException {
+            ClassNotFoundException {
         if ((builder == null) || (type == null)) {
             throw new IllegalStateException("neither builder nor type may be null"); // NOI18N
         }
@@ -331,7 +326,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @throws  IllegalStateException   DOCUMENT ME!
      */
     private <T> T getResponsePUT(final WebResource.Builder builder, final Class<T> type) throws IOException,
-        ClassNotFoundException {
+            ClassNotFoundException {
         if ((builder == null) || (type == null)) {
             throw new IllegalStateException("neither builder nor type may be null"); // NOI18N
         }
@@ -393,7 +388,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @throws  IllegalStateException   DOCUMENT ME!
      */
     private <T> T getResponseDELETE(final WebResource.Builder builder, final Class<T> type) throws IOException,
-        ClassNotFoundException {
+            ClassNotFoundException {
         if ((builder == null) || (type == null)) {
             throw new IllegalStateException("neither builder nor type may be null"); // NOI18N
         }
@@ -765,7 +760,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public DataObject getDataObject(final User user, final MetaObject metaObject) throws RemoteException {
+    public DataObject getDataObject(final User user, final MetaObject metaObject) 
+            throws RemoteException, DataRetrievalException {
         try {
             final HashMap<String, String> queryParams = new HashMap<String, String>(2, 1);
 
@@ -785,11 +781,22 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
+                if (HttpStatus.SC_NOT_FOUND == response.getStatus()) {
+                    final DataRetrievalException dataEx = ServerExceptionMapper.fromResponse(
+                            response,
+                            DataRetrievalException.class);
+                    if (dataEx == null) {
+                        throw ex;
+                    } else {
+                        throw dataEx;
+                    }
                 } else {
-                    throw remEx;
+                    final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                    if (remEx == null) {
+                        throw ex;
+                    } else {
+                        throw remEx;
+                    }
                 }
             }
         } catch (final IOException ex) {
@@ -816,7 +823,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     @Override
     public DataObject[] getDataObject(final User user, final Query query) throws RemoteException,
-        DataRetrievalException {
+            DataRetrievalException {
         try {
             final HashMap<String, String> queryParams = new HashMap<String, String>(3, 1);
 
@@ -836,8 +843,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                if(HttpStatus.SC_NOT_FOUND == response.getStatus()) {
-                    final DataRetrievalException dataEx = ServerExceptionMapper.fromResponse(response, DataRetrievalException.class);
+                if (HttpStatus.SC_NOT_FOUND == response.getStatus()) {
+                    final DataRetrievalException dataEx = ServerExceptionMapper.fromResponse(
+                            response,
+                            DataRetrievalException.class);
                     if (dataEx == null) {
                         throw ex;
                     } else {
@@ -2397,23 +2406,23 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_RESULT_TYPE, Converter.serialiseToString(resultType));
             }
             if (('f' == isBatch) || ('t' == isBatch)
-                        || ('1' == isBatch)
-                        || ('0' == isBatch)) {
+                    || ('1' == isBatch)
+                    || ('0' == isBatch)) {
                 queryParams.put(PARAM_IS_BATCH, Converter.serialiseToString(isBatch));
             }
             if (('f' == isUpdate) || ('t' == isUpdate)
-                        || ('1' == isUpdate)
-                        || ('0' == isUpdate)) {
+                    || ('1' == isUpdate)
+                    || ('0' == isUpdate)) {
                 queryParams.put(PARAM_IS_UPDATE, Converter.serialiseToString(isUpdate));
             }
             if (('f' == isRoot) || ('t' == isRoot)
-                        || ('1' == isRoot)
-                        || ('0' == isRoot)) {
+                    || ('1' == isRoot)
+                    || ('0' == isRoot)) {
                 queryParams.put(PARAM_IS_ROOT, Converter.serialiseToString(isRoot));
             }
             if (('f' == isUnion) || ('t' == isUnion)
-                        || ('1' == isUnion)
-                        || ('0' == isUnion)) {
+                    || ('1' == isUnion)
+                    || ('0' == isUnion)) {
                 queryParams.put(PARAM_IS_UNION, Converter.serialiseToString(isUnion));
             }
 
@@ -2543,8 +2552,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 queryParams.put(PARAM_TYPE_ID, Converter.serialiseToString(typeId));
             }
             if (('f' == isQueryResult) || ('t' == isQueryResult)
-                        || ('1' == isQueryResult)
-                        || ('0' == isQueryResult)) {
+                    || ('1' == isQueryResult)
+                    || ('0' == isQueryResult)) {
                 queryParams.put(PARAM_QUERY_RESULT, Converter.serialiseToString(isQueryResult));
             }
             if (queryPosition != -1) {
