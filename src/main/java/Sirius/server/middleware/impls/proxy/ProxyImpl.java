@@ -26,8 +26,6 @@ import Sirius.server.property.*;
 
 import java.util.*;
 
-import Sirius.server.dataretrieval.*;
-
 import Sirius.util.image.*;
 
 import Sirius.server.search.store.*;
@@ -44,7 +42,6 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
     RemoteObserver,
     SystemService,
     UserService,
-    DataService,
     QueryStore,
     SearchService,
     TransactionService {
@@ -64,7 +61,6 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
     private RemoteObserverImpl remoteObserver;
     private SystemServiceImpl systemService;
     private UserServiceImpl userService;
-    private DataServiceImpl dataService;
     private QueryStoreImpl queryStore;
     private SearchServiceImpl searchService;
     private TransactionServiceImpl transactionService;
@@ -139,8 +135,6 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
         systemService = new SystemServiceImpl(activeLocalServers, nameServer);
 
         userService = new UserServiceImpl(activeLocalServers, userServer);
-
-        dataService = new DataServiceImpl(activeLocalServers);
 
         queryStore = new QueryStoreImpl(activeLocalServers, nameServer);
 
@@ -393,53 +387,6 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
         return userService.changePassword(user, oldPassword, newPassword);
     }
 
-    /**
-     * /UserService Fkt-en.
-     *
-     * @param   user        DOCUMENT ME!
-     * @param   metaObject  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException         DOCUMENT ME!
-     * @throws  DataRetrievalException  DOCUMENT ME!
-     */
-    /**
-     * DataService Fkt-en.
-     *
-     * @param   user        DOCUMENT ME!
-     * @param   metaObject  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException         DOCUMENT ME!
-     * @throws  DataRetrievalException  DOCUMENT ME!
-     */
-    public DataObject getDataObject(User user, MetaObject metaObject) throws RemoteException, DataRetrievalException {
-        return dataService.getDataObject(user, metaObject);
-    }
-
-    public DataObject[] getDataObject(User user, Query query) throws RemoteException, DataRetrievalException {
-        return dataService.getDataObject(user, query);
-    }
-
-    /**
-     * /DataService Fkt-en.
-     *
-     * @param   obs  DOCUMENT ME!
-     * @param   arg  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    // ----------------------------------------------------------------------------------
-    /**
-     * RemoteObserver Fkt-en.
-     *
-     * @param   obs  DOCUMENT ME!
-     * @param   arg  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
     /**
      * Diese Funktion wird immer dann aufgerufen, wenn sich ein neuer LocalServer beim CentralServer registriert. Der
      * CentralServer informiert die CallServer (Observer), dass ein neuer LocalServer hinzugekommen ist. Der/Die
