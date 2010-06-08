@@ -6,7 +6,7 @@
     <parent>
         <groupId>de.cismet.cids</groupId>
         <artifactId>cids-parent</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0</version>
     </parent>
 
     <groupId>de.cismet.cids</groupId>
@@ -16,6 +16,12 @@
 
     <name>cids Server</name>
     <description>!!! description pending !!!</description>
+
+    <scm>
+        <connection>scm:svn:svn+ssh://repositories/svn/repositories/central/de/cismet/cids/cids-server/trunk</connection>
+        <developerConnection>scm:svn:svn+ssh://repositories/svn/repositories/central/de/cismet/cids/cids-server/trunk</developerConnection>
+        <url>http://repositories:8082/central/browse/de/cismet/cids/cids-server/trunk</url>
+    </scm>
 
     <dependencies>
         <dependency>
@@ -49,11 +55,11 @@
             <artifactId>javassist</artifactId>
             <version>3.9.0.GA</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>de.cismet.cids</groupId>
             <artifactId>cids-jdbc</artifactId>
             <version>1.0-SNAPSHOT</version>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>edtftp</groupId>
             <artifactId>edtftp</artifactId>
@@ -62,7 +68,7 @@
         <dependency>
             <groupId>de.cismet.custom</groupId>
             <artifactId>beansbinding</artifactId>
-            <version>1.2.1-SNAPSHOT</version>
+            <version>1.2.1</version>
         </dependency>
     </dependencies>
 
