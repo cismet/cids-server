@@ -10,16 +10,16 @@
 
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server</artifactId>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>cids Server</name>
     <description>!!! description pending !!!</description>
 
     <scm>
-        <connection>scm:svn:svn+ssh://repositories/svn/repositories/central/de/cismet/cids/cids-server/tags/cids-server-1.0</connection>
-        <developerConnection>scm:svn:svn+ssh://repositories/svn/repositories/central/de/cismet/cids/cids-server/tags/cids-server-1.0</developerConnection>
-        <url>http://repositories:8082/central/browse/de/cismet/cids/cids-server/tags/cids-server-1.0</url>
+        <connection>scm:svn:svn+ssh://repositories/svn/repositories/central/de/cismet/cids/cids-server/trunk</connection>
+        <developerConnection>scm:svn:svn+ssh://repositories/svn/repositories/central/de/cismet/cids/cids-server/trunk</developerConnection>
+        <url>http://repositories:8082/central/browse/de/cismet/cids/cids-server/trunk</url>
     </scm>
 
     <dependencies>
