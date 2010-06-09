@@ -59,7 +59,7 @@ public class RESTfulSerialInterfaceConnectorTest {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String ROOT_RESOURCE = "http://localhost:9986/callserver/binary/";                               // NOI18N
+    private static final String ROOT_RESOURCE = "http://localhost:9987/callserver/binary/";                               // NOI18N
     private static final String SERVER_CONFIG =
         "src/test/resources/Sirius/server/localserver/object/runtime.properties";                                         // NOI18N
     private static final String STARTMODE = "simple";                                                                     // NOI18N
