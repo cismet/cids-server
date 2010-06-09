@@ -14,6 +14,11 @@ import Sirius.util.*;
  */
 public class UserGroup implements java.io.Serializable, Mapable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -3239404220837275098L;
+
     //~ Instance fields --------------------------------------------------------
 
     protected int id;
@@ -31,7 +36,7 @@ public class UserGroup implements java.io.Serializable, Mapable {
      * @param  name    DOCUMENT ME!
      * @param  domain  DOCUMENT ME!
      */
-    public UserGroup(int id, String name, String domain) {
+    public UserGroup(final int id, final String name, final String domain) {
         this.id = id;
         this.domain = domain.trim();
         this.name = name.trim();
@@ -47,13 +52,14 @@ public class UserGroup implements java.io.Serializable, Mapable {
      * @param  domain       DOCUMENT ME!
      * @param  description  DOCUMENT ME!
      */
-    public UserGroup(int id, String name, String domain, String description) {
+    public UserGroup(final int id, final String name, final String domain, final String description) {
         this(id, name, domain);
         this.description = description;
     }
 
     //~ Methods ----------------------------------------------------------------
 
+    @Override
     public String toString() {
         return getKey().toString();
     }
@@ -67,13 +73,15 @@ public class UserGroup implements java.io.Serializable, Mapable {
         return name;
     }
 
-    public boolean equals(java.lang.Object ug) {
-        UserGroup userGroup = (UserGroup)ug;
+    @Override
+    public boolean equals(final java.lang.Object ug) {
+        final UserGroup userGroup = (UserGroup)ug;
 
         return getKey().equals(userGroup.getKey());
     }
 
     // Mapable
+    @Override
     public Object getKey() {
         return name + "@" + domain;
     }
@@ -101,11 +109,12 @@ public class UserGroup implements java.io.Serializable, Mapable {
      *
      * @param  isAdmin  New value of property isAdmin.
      */
-    public void setIsAdmin(boolean isAdmin) {
+    public void setIsAdmin(final boolean isAdmin) {
         this.isAdmin = isAdmin;
     }
 
-    public Object constructKey(Mapable m) {
+    @Override
+    public Object constructKey(final Mapable m) {
         if (m instanceof UserGroup) {
             return m.getKey();
         } else {
@@ -131,11 +140,11 @@ public class UserGroup implements java.io.Serializable, Mapable {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public static Object[] parseKey(String classKey) throws Exception {
-        Object[] result = new Object[2];
+    public static Object[] parseKey(final String classKey) throws Exception {
+        final Object[] result = new Object[2];
 
         if (classKey.contains("@")) {
-            String[] split = classKey.split("@");
+            final String[] split = classKey.split("@");
             result[0] = split[0];
             result[1] = split[1];
         } else // nehme ich an dass die domain fehlt

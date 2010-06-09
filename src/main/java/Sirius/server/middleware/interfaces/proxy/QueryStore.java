@@ -7,11 +7,11 @@
 ****************************************************/
 package Sirius.server.middleware.interfaces.proxy;
 
-import java.rmi.*;
-import java.rmi.server.*;
-
 import Sirius.server.newuser.*;
 import Sirius.server.search.store.*;
+
+import java.rmi.*;
+import java.rmi.server.*;
 
 /**
  * in the MIS the user is cappable of storing predefind queries on the domain server this interface profides methods to

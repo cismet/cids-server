@@ -7,14 +7,14 @@
 ****************************************************/
 package Sirius.server.search;
 
-import java.util.*;
+import Sirius.server.middleware.types.*;
+import Sirius.server.newuser.*;
+import Sirius.server.search.searchparameter.*;
+import Sirius.server.sql.*;
 
 import java.sql.*;
 
-import Sirius.server.sql.*;
-import Sirius.server.newuser.*;
-import Sirius.server.middleware.types.*;
-import Sirius.server.search.searchparameter.*;
+import java.util.*;
 
 /**
  * Short concise description. Additional verbose description.
@@ -31,6 +31,11 @@ import Sirius.server.search.searchparameter.*;
  * @see        package.class
  */
 public class SearchOption implements java.io.Serializable {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -394178321247717376L;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -54,7 +59,7 @@ public class SearchOption implements java.io.Serializable {
      *
      * @see     package.class
      */
-    public SearchOption(Query query) {
+    public SearchOption(final Query query) {
         this(query, new HashSet(), new HashSet());
     }
 
@@ -65,7 +70,7 @@ public class SearchOption implements java.io.Serializable {
      * @param  classes     DOCUMENT ME!
      * @param  userGroups  DOCUMENT ME!
      */
-    public SearchOption(Query query, HashSet classes, HashSet userGroups) {
+    public SearchOption(final Query query, final HashSet classes, final HashSet userGroups) {
         this.query = query;
         this.classes = classes;
         this.userGroups = userGroups;
@@ -81,7 +86,7 @@ public class SearchOption implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public final boolean isSelectable(String classKey, String userGroupKey) {
+    public final boolean isSelectable(final String classKey, final String userGroupKey) {
         if ((classes.size() > 0) && (userGroups.size() > 0)) {
             return classes.contains(classKey) && userGroups.contains(userGroupKey);
         } else {
@@ -97,7 +102,7 @@ public class SearchOption implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public final boolean isSelectable(Collection c, Collection ugs) {
+    public final boolean isSelectable(final Collection c, final Collection ugs) {
         if ((classes.size() > 0) && (userGroups.size() > 0)) {
             return classes.containsAll(c) && userGroups.containsAll(ugs);
         } else {
@@ -112,7 +117,7 @@ public class SearchOption implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public final boolean isSelectable(UserGroup ug) {
+    public final boolean isSelectable(final UserGroup ug) {
         if (userGroups.size() > 0) {
             return userGroups.contains(ug.getKey());
         } else {
@@ -127,7 +132,7 @@ public class SearchOption implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public final boolean isSelectable(MetaClass c) {
+    public final boolean isSelectable(final MetaClass c) {
         if (classes.size() > 0) {
             return classes.contains(c.getKey());
         } else {
@@ -157,7 +162,7 @@ public class SearchOption implements java.io.Serializable {
      *
      * @param  userGroupKey  DOCUMENT ME!
      */
-    public final void addUserGroup(String userGroupKey) {
+    public final void addUserGroup(final String userGroupKey) {
         userGroups.add(userGroupKey);
     }
 
@@ -166,7 +171,7 @@ public class SearchOption implements java.io.Serializable {
      *
      * @param  classKey  DOCUMENT ME!
      */
-    public final void addClass(String classKey) {
+    public final void addClass(final String classKey) {
         classes.add(classKey);
     }
 
@@ -179,7 +184,7 @@ public class SearchOption implements java.io.Serializable {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public void setSearchParameter(SearchParameter parameter) throws Exception {
+    public void setSearchParameter(final SearchParameter parameter) throws Exception {
         this.query.setParameter(parameter);
     }
 
@@ -191,7 +196,7 @@ public class SearchOption implements java.io.Serializable {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public void setDefaultSearchParameter(Object key, Object value) throws Exception {
+    public void setDefaultSearchParameter(final Object key, final Object value) throws Exception {
         this.query.setParameter(new DefaultSearchParameter(key, value, false));
     }
 

@@ -20,6 +20,11 @@ import Sirius.util.*;
  */
 public class QueryIdentifier implements java.io.Serializable, Mapable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 3142905678383207275L;
+
     //~ Instance fields --------------------------------------------------------
 
     /** Localserver where this query is hosted and will be executed. */
@@ -40,7 +45,7 @@ public class QueryIdentifier implements java.io.Serializable, Mapable {
      * @param  domain   DOCUMENT ME!
      * @param  queryId  DOCUMENT ME!
      */
-    public QueryIdentifier(String domain, int queryId) {
+    public QueryIdentifier(final String domain, final int queryId) {
         this.domain = domain;
         this.queryId = queryId;
         name = "";
@@ -53,7 +58,7 @@ public class QueryIdentifier implements java.io.Serializable, Mapable {
      * @param  domain  DOCUMENT ME!
      * @param  name    DOCUMENT ME!
      */
-    public QueryIdentifier(String domain, String name) {
+    public QueryIdentifier(final String domain, final String name) {
         this.domain = domain;
         this.queryId = -1; // unkown
         this.name = name;
@@ -68,7 +73,7 @@ public class QueryIdentifier implements java.io.Serializable, Mapable {
      * @param  name        DOCUMENT ME!
      * @param  desription  DOCUMENT ME!
      */
-    public QueryIdentifier(String domain, int queryId, String name, String desription) {
+    public QueryIdentifier(final String domain, final int queryId, final String name, final String desription) {
         this(domain, queryId);
         this.name = name;
         this.description = description;
@@ -90,7 +95,7 @@ public class QueryIdentifier implements java.io.Serializable, Mapable {
      *
      * @param  domain  New value of property domain.
      */
-    public void setDomain(java.lang.String domain) {
+    public void setDomain(final java.lang.String domain) {
         this.domain = domain;
     }
 
@@ -108,7 +113,7 @@ public class QueryIdentifier implements java.io.Serializable, Mapable {
      *
      * @param  queryId  New value of property queryId.
      */
-    public void setQueryId(int queryId) {
+    public void setQueryId(final int queryId) {
         this.queryId = queryId;
     }
 
@@ -121,10 +126,12 @@ public class QueryIdentifier implements java.io.Serializable, Mapable {
         return getKey();
     }
 
+    @Override
     public String toString() {
         return getKey().toString();
     }
 
+    @Override
     public Object getKey() {
         if (name.equals("")) {
             return queryId + "@" + domain;
@@ -133,7 +140,8 @@ public class QueryIdentifier implements java.io.Serializable, Mapable {
         }
     }
 
-    public Object constructKey(Mapable m) {
+    @Override
+    public Object constructKey(final Mapable m) {
         if (m instanceof QueryIdentifier) {
             return m.getKey();
         } else {
@@ -155,7 +163,7 @@ public class QueryIdentifier implements java.io.Serializable, Mapable {
      *
      * @param  name  New value of property name.
      */
-    public void setName(java.lang.String name) {
+    public void setName(final java.lang.String name) {
         this.name = name;
     }
 
@@ -173,7 +181,7 @@ public class QueryIdentifier implements java.io.Serializable, Mapable {
      *
      * @param  description  New value of property description.
      */
-    public void setDescription(java.lang.String description) {
+    public void setDescription(final java.lang.String description) {
         this.description = description;
     }
 }

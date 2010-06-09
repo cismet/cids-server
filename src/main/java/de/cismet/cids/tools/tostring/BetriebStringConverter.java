@@ -20,6 +20,11 @@ import Sirius.server.localserver.attribute.*;
  */
 public class BetriebStringConverter extends ToStringConverter implements java.io.Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 5766292237110599317L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -38,10 +43,10 @@ public class BetriebStringConverter extends ToStringConverter implements java.io
      *
      * @return  DOCUMENT ME!
      */
-    public String convert(Sirius.server.localserver.object.Object o) {
+    public String convert(final Sirius.server.localserver.object.Object o) {
         String stringRepresentation = "";
 
-        ObjectAttribute[] attrs = o.getAttribs();
+        final ObjectAttribute[] attrs = o.getAttribs();
 
         for (int i = 0; i < attrs.length; i++) {
             if (attrs[i].getName().equalsIgnoreCase("name")) {

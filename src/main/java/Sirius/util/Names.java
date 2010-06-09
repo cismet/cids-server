@@ -18,7 +18,7 @@ package Sirius.util;
  * @author   awindholz
  * @version  $Revision$, $Date$
  */
-public class Names{
+public class Names {
 
     //~ Constructors -----------------------------------------------------------
 

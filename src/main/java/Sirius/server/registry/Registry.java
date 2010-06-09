@@ -7,80 +7,80 @@
 ****************************************************/
 package Sirius.server.registry;
 
+import Sirius.server.Server;
+import Sirius.server.ServerExit;
+import Sirius.server.ServerExitError;
+import Sirius.server.ServerStatus;
+import Sirius.server.naming.NameServer;
+import Sirius.server.newuser.Membership;
+import Sirius.server.newuser.User;
+import Sirius.server.newuser.UserException;
+import Sirius.server.newuser.UserGroup;
+import Sirius.server.newuser.UserManager;
+import Sirius.server.newuser.UserServer;
+import Sirius.server.observ.RemoteObservable;
+import Sirius.server.observ.RemoteObserver;
 import Sirius.server.registry.rmplugin.RMRegistryServerImpl;
 
-import java.security.Permission;
+import org.apache.log4j.Logger;
 
-import java.rmi.*;
-import java.rmi.server.*;
-import java.rmi.registry.*;
+import java.io.Serializable;
 
-import java.util.Vector;
-
-import Sirius.server.naming.*;
-
-import java.io.*;
-
-import Sirius.server.newuser.*;
-import Sirius.server.observ.*;
-import Sirius.server.property.ServerProperties;
-import Sirius.server.*;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.server.UnicastRemoteObject;
 
 import java.util.HashMap;
+import java.util.Vector;
+
+import de.cismet.cids.server.ServerSecurityManager;
 
 /**
  * Name- und UserServer des gesammten Siriussystems. Jede Art von Server (LocalServer,CallServer,ProtocolServer)
  * registriert sich hier mit Namen und IPAdresse (Port optional) um f\u00FCr andere Server erreichbar zu sein. Ausserdem
  * \u00FCbernimmt die Registry eine UserServer-Funktionalit\u00E4t
  *
+ * @author   Bernd Kiefer,Sascha Schlobinski, Martin Scholl
  * @version  1.0
- * @autor    Bernd Kiefer,Sascha Schlobinski
  */
-
-public class Registry extends UnicastRemoteObject implements NameServer,
-    Sirius.server.newuser.UserServer,
-    RemoteObservable {
+// TODO: remove sout
+// TODO: are those status messages of any relevance since they're sometimes incomplete etc..
+public final class Registry extends UnicastRemoteObject implements NameServer, UserServer, RemoteObservable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(Registry.class);
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 5160154078176476013L;
 
-    protected static Registry THIS;
+    private static final transient Logger LOG = Logger.getLogger(Registry.class);
+
+    private static Registry instance;
 
     //~ Instance fields --------------------------------------------------------
 
-    protected ServerProperties props;
-
-    protected Observable obs;
-
-    protected ServerManager sm;
-
-    protected Sirius.server.newuser.UserManager um;
-
-    protected int port;
-
-    protected java.rmi.registry.Registry rmiRegistry;
-
-    protected ServerStatus status;
-
-    protected RMRegistryServerImpl rmRegistryServer;
+    private final transient Observable obs;
+    private final transient ServerManager sm;
+    private final transient UserManager um;
+    private final transient ServerStatus status;
+    private final transient RMRegistryServerImpl rmRegistryServer;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * ========================Konstruktoren============================================================= pd.
+     * Creates a new Registry object.
      *
      * @param   port  DOCUMENT ME!
      *
-     * @throws  Throwable  DOCUMENT ME!
+     * @throws  RemoteException  Throwable DOCUMENT ME!
+     * @throws  ServerExitError  DOCUMENT ME!
      */
-    public Registry(int port) throws Throwable {
-        super();
-        this.port = port;
-
+    public Registry(final int port) throws RemoteException, ServerExitError {
         obs = new Observable(this);
         sm = new ServerManager(); // xxx obs
-        um = new Sirius.server.newuser.UserManager();
+        um = new UserManager();
 
         // do the rmi-stuff
         startRMIServer(port);
@@ -88,83 +88,98 @@ public class Registry extends UnicastRemoteObject implements NameServer,
         rmRegistryServer.startRMRegistryServer(port);
 
         status = new ServerStatus();
-
-        THIS = this;
     }
 
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * -----------------------------------------------------------------------------------------------------
+     * DOCUMENT ME!
      *
      * @param   port  DOCUMENT ME!
      *
-     * @throws  Throwable        DOCUMENT ME!
      * @throws  ServerExitError  DOCUMENT ME!
      */
-    private void startRMIServer(int port) throws Throwable {
+    private void startRMIServer(final int port) throws ServerExitError {
         try {
-            // if(System.getSecurityManager()==null)
-            System.setSecurityManager(
-                new RMISecurityManager() {
+            System.setSecurityManager(new ServerSecurityManager());
 
-                    public void checkPermission(Permission perm, Object context) {
-                    }
-
-                    @Override
-                    public void checkPermission(Permission perm) {
-                    }
-                });
-
+            java.rmi.registry.Registry reg;
             try {
-                rmiRegistry = LocateRegistry.createRegistry(port);
-            } catch (Exception e) {
-                rmiRegistry = LocateRegistry.getRegistry(port);
+                reg = LocateRegistry.createRegistry(port);
+            } catch (final Exception e) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("create registry failed, trying to get existing one, port: " + port, e); // NOI18N
+                }
+                reg = LocateRegistry.getRegistry(port);
             }
 
-            // wenn keine Registry vorhanden, wird an dieser Stelle Exception ausgeloest
-            String[] list = rmiRegistry.list();
+            if (reg == null) {
+                final String message = "RMI registry not present"; // NOI18N
+                LOG.error(message);
+                throw new IllegalStateException(message);
+            }
+
+            final String[] list = reg.list();
 
             if (list.length > 0) {
                 System.out.println("<Reg> STATUS registerd with RMIRegistry:");
             }
 
-            String l = "";
-            for (int i = 0; i < list.length; i++) {
-                l += ("\t" + list[i]);
+            final String bindInfo = "<REG> INFO: Bind SiriusRegistry on RMIRegistry as nameServer and userServer";
+            if (LOG.isInfoEnabled()) {
+                final StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < list.length; i++) {
+                    sb.append('\t').append(list[i]);
+                }
+
+                LOG.info("registry listing: " + sb.toString());
+                LOG.info(bindInfo);
             }
+            System.out.println(bindInfo);
 
-            logger.info(l);
+            // binding this registry as userServer and nameServer
+            Naming.bind("rmi://localhost:" + port + "/userServer", this); // NOI18N
+            Naming.bind("rmi://localhost:" + port + "/nameServer", this); // NOI18N
 
-            System.out.println("<REG> Bind SiriusRegistry on RMIRegistry as nameServer and userServer");
-            logger.info("<REG> Bind SiriusRegistry on RMIRegistry as nameServer and userServer");
-
-            // pd:
-            Naming.bind("rmi://localhost:" + port + "/userServer", this);
-            Naming.bind("rmi://localhost:" + port + "/nameServer", this);
-
-            System.out.println("<REG> ----------Sirius.Registry.Registry STARTED!!!----------\n");
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            throw new ServerExitError(e);
+            final String started = "<REG> ----------Sirius.Registry.Registry STARTED!!!----------\n";
+            if (LOG.isInfoEnabled()) {
+                LOG.info(started);
+            }
+            System.out.println(started);
+        } catch (final Exception e) {
+            final String message = "could not start RMI server, port: " + port; // NOI18N
+            LOG.fatal(message, e);
+            throw new ServerExitError(message, e);
         }
     }
 
     /**
      * DOCUMENT ME!
      *
+     * @param   port  DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
+     *
+     * @throws  ServerExitError  DOCUMENT ME!
      */
-    public static Registry getServerInstance() {
-        return THIS;
+    public static synchronized Registry getServerInstance(final int port) throws ServerExitError {
+        if (instance == null) {
+            try {
+                instance = new Registry(port);
+            } catch (final RemoteException e) {
+                final String message = "cannot create registry at port: " + port; // NOI18N
+                LOG.fatal(message, e);
+                throw new ServerExitError(message, e);
+            }
+        }
+
+        return instance;
     }
 
     /**
-     * ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     * --------------------------Methods of the Interface Nameserver-----------------------------------------------
-     * ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     * DOCUMENT ME!
      *
-     * @param   typ   DOCUMENT ME!
+     * @param   type  DOCUMENT ME!
      * @param   name  DOCUMENT ME!
      * @param   ip    DOCUMENT ME!
      *
@@ -172,31 +187,33 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public boolean registerServer(int typ, String name, String ip) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("registerServer gerufen f\u00FCr ::" + name + " ip:" + ip);
+    @Override
+    public boolean registerServer(final int type, final String name, final String ip) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("registerServer called :: type = " + type + " :: name = " + name + " :: ip = " + ip); // NOI18N
         }
+
         try {
-            if (sm.registerServer(typ, name, ip)) {
+            if (sm.registerServer(type, name, ip)) {
                 obs.setChanged();
                 obs.notifyObservers();
-                status.addMessage("Neuer Server", name + " insgesamt ::" + sm.getServerCount(typ) + " Typ " + typ);
+                status.addMessage("Neuer Server", name + " insgesamt ::" + sm.getServerCount(type) + " Typ " + type);
                 return true;
+            } else {
+                return false;
             }
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+        } catch (final Exception e) {
+            final String message = "could not register server :: type = " // NOI18N
+                        + type + " :: name = " + name + " :: ip = " + ip; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
-
-        return false;
     }
-
-    // ---------------------------------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      *
-     * @param   typ   DOCUMENT ME!
+     * @param   type  DOCUMENT ME!
      * @param   name  DOCUMENT ME!
      * @param   ip    DOCUMENT ME!
      * @param   port  DOCUMENT ME!
@@ -205,31 +222,42 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public boolean registerServer(int typ, String name, String ip, String port) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("registerServer gerufen f\u00FCr ::" + name + " ip:" + ip);
+    @Override
+    public boolean registerServer(final int type, final String name, final String ip, final String port)
+            throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(
+                "registerServer called :: type = " // NOI18N
+                        + type
+                        + " :: name = "
+                        + name
+                        + " :: ip = "
+                        + ip
+                        + " :: port = "
+                        + port);                   // NOI18N
         }
+
         try {
-            if (sm.registerServer(typ, name, ip, port)) {
+            if (sm.registerServer(type, name, ip, port)) {
                 obs.setChanged();
                 obs.notifyObservers();
-                status.addMessage("Neuer Server", name + " insgesamt ::" + sm.getServerCount(typ) + " Typ " + typ);
+                status.addMessage("Neuer Server", name + " insgesamt ::" + sm.getServerCount(type) + " Typ " + type);
                 return true;
+            } else {
+                return false;
             }
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+        } catch (final Exception e) {
+            final String message = "could not register server :: type = "                        // NOI18N
+                        + type + " :: name = " + name + " :: ip = " + ip + " :: port = " + port; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
-
-        return false;
     }
-
-    // ---------------------------------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      *
-     * @param   typ   DOCUMENT ME!
+     * @param   type  DOCUMENT ME!
      * @param   name  DOCUMENT ME!
      * @param   ip    DOCUMENT ME!
      *
@@ -237,29 +265,39 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public boolean unregisterServer(int typ, String name, String ip) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("unregisterServer gerufen f\u00FCr ::" + name + " ip:" + ip);
-        }
-        try {
-            if (sm.unregisterServer(typ, name, ip)) {
-                obs.setChanged();
-                obs.notifyObservers();
-                status.addMessage("Server abgemeldet", name + " insgesamt ::" + sm.getServerCount(typ) + " Typ " + typ);
-                return true;
-            }
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+    @Override
+    public boolean unregisterServer(final int type, final String name, final String ip) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("unregisterServer called :: type = " + type + " :: name = " + name + " :: ip = " + ip); // NOI18N
         }
 
-        return false;
+        try {
+            if (sm.unregisterServer(type, name, ip)) {
+                obs.setChanged();
+                obs.notifyObservers();
+                status.addMessage(
+                    "Server abgemeldet",
+                    name
+                            + " insgesamt ::"
+                            + sm.getServerCount(type)
+                            + " Typ "
+                            + type);
+                return true;
+            } else {
+                return false;
+            }
+        } catch (final Exception e) {
+            final String message = "could not unregister server :: type = " // NOI18N
+                        + type + " :: name = " + name + " :: ip = " + ip;   // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
     }
 
     /**
-     * ---------------------------------------------------------------------------------------
+     * DOCUMENT ME!
      *
-     * @param   typ   DOCUMENT ME!
+     * @param   type  DOCUMENT ME!
      * @param   name  DOCUMENT ME!
      * @param   ip    DOCUMENT ME!
      * @param   port  DOCUMENT ME!
@@ -268,139 +306,165 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public boolean unregisterServer(int typ, String name, String ip, String port) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("unregisterServer gerufen f\u00FCr ::" + name + " ip:" + ip);
+    @Override
+    public boolean unregisterServer(final int type, final String name, final String ip, final String port)
+            throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(
+                "unregisterServer called :: type = " // NOI18N
+                        + type
+                        + " :: name = "
+                        + name
+                        + " :: ip = "
+                        + ip
+                        + " :: port = "
+                        + port);                     // NOI18N
         }
         try {
-            if (sm.unregisterServer(typ, name, ip, port)) {
+            if (sm.unregisterServer(type, name, ip, port)) {
                 obs.setChanged();
                 obs.notifyObservers();
-                status.addMessage("Server abgemeldet", name + " insgesamt ::" + sm.getServerCount(typ) + " Typ " + typ);
+                status.addMessage(
+                    "Server abgemeldet",
+                    name
+                            + " insgesamt ::"
+                            + sm.getServerCount(type)
+                            + " Typ "
+                            + type);
                 return true;
+            } else {
+                return false;
             }
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+        } catch (final Exception e) {
+            final String message = "could not unregister server :: type = " // NOI18N
+                        + type + " :: name = " + name + " :: ip = " + ip + " :: port = " + port; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
-
-        return false;
     }
 
     /**
-     * ---------------------------------------------------------------------------------------
+     * DOCUMENT ME!
      *
-     * @param   typ  DOCUMENT ME!
+     * @param   type  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public HashMap<String, String> getServerIPs(int typ) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("getServerIps gerufen f\u00FCr servertyp::" + typ);
+    @Override
+    public HashMap<String, String> getServerIPs(final int type) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("getServerIps called :: servertype = " + type); // NOI18N
         }
+
         try {
-            return sm.getServerIPs(typ);
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+            return sm.getServerIPs(type);
+        } catch (final Exception e) {
+            final String message = "could not get server ips for type: " + type; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
-
-    // ---------------------------------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      *
-     * @param   typ   DOCUMENT ME!
+     * @param   type  DOCUMENT ME!
      * @param   name  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public String getServerIP(int typ, String name) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("getServerIp gerufen f\u00FCr servertyp::" + typ + " servername:" + name);
+    @Override
+    public String getServerIP(final int type, final String name) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("getServerIp called :: servertype = " + type + " :: servername = " + name); // NOI18N
         }
+
         try {
-            return sm.getServerIP(typ, name);
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+            return sm.getServerIP(type, name);
+        } catch (final Exception e) {
+            final String message = "could not get server ip :: servertype = " + type + " :: servername = " + name; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
-
-    // ---------------------------------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      *
-     * @param   typ  DOCUMENT ME!
+     * @param   type  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Server[] getServers(int typ) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("getServers gerufen f\u00FCr servertyp::" + typ);
+    @Override
+    public Server[] getServers(final int type) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("getServers called :: servertype = " + type); // NOI18N
         }
+
         try {
-            return sm.getServers(typ);
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+            return sm.getServers(type);
+        } catch (final Exception e) {
+            final String message = "could not get servers :: servertype = " + type; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
     /**
-     * ---------------------------------------------------------------------------------------
+     * DOCUMENT ME!
      *
-     * @param   typ   DOCUMENT ME!
+     * @param   type  DOCUMENT ME!
      * @param   name  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Server getServer(int typ, String name) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("getServer gerufen f\u00FCr servertyp::" + typ + " servername:" + name);
+    @Override
+    public Server getServer(final int type, final String name) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("getServer called :: servertype = " + type + " :: servername = " + name); // NOI18N
         }
+
         try {
-            return sm.getServer(typ, name);
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+            return sm.getServer(type, name);
+        } catch (final Exception e) {
+            final String message = "could not get servers :: servertype = " + type + " :: servername = " + name; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
     /**
-     * ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     * --------------------------remote Methods of the Interface
-     * Userserver-----------------------------------------------
-     * ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Override
     public Vector getUsers() throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("getUsers gerufen");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("getUsers called"); // NOI18N
         }
+
         try {
             return um.getUsers();
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+        } catch (final Exception e) {
+            final String message = "could not get users"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
     /**
-     * ---------------------------------------------------------------------------------------
+     * DOCUMENT ME!
      *
      * @param   userGroupLocalServerName  DOCUMENT ME!
      * @param   userGroupName             DOCUMENT ME!
@@ -413,115 +477,77 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      * @throws  RemoteException  DOCUMENT ME!
      * @throws  UserException    DOCUMENT ME!
      */
+    @Override
     public User getUser(
-            String userGroupLocalServerName,
-            String userGroupName,
-            String userLocalServerName,
-            String userName,
-            String password) throws RemoteException, UserException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("getUser gerufen f\u00FCr user" + userName);
+            final String userGroupLocalServerName,
+            final String userGroupName,
+            final String userLocalServerName,
+            final String userName,
+            final String password) throws RemoteException, UserException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(
+                "getUser called :: userGroupLocalServerName = "
+                        + userGroupLocalServerName // NOI18N
+                        + " :: userGroupName = "
+                        + userGroupName            // NOI18N
+                        + " :: userLocalServerName = "
+                        + userLocalServerName      // NOI18N
+                        + " :: username = "
+                        + userName                 // NOI18N
+                        + " :: password = "
+                        + password);               // NOI18N
         }
-        User user = null;
-        Remote remoteServer = null;
+
         try {
-            user = um.getUser(userGroupLocalServerName, userGroupName, userLocalServerName, userName, password);
-
-            // ServerObjekt des LocalServer
-            Server localServer = getServer(ServerType.LOCALSERVER, userLocalServerName);
-
-            String lookupString = localServer.getRMIAddress();
-
-            // Referenz auf LocalServer
-            remoteServer = (Remote)Naming.lookup(lookupString);
-        } catch (UserException e) {
-            logger.error(e);
+            return um.getUser(userGroupLocalServerName, userGroupName, userLocalServerName, userName, password);
+        } catch (final UserException e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "userexception at getuser :: userGroupLocalServerName = "
+                            + userGroupLocalServerName // NOI18N
+                            + " :: userGroupName = "
+                            + userGroupName            // NOI18N
+                            + " :: userLocalServerName = "
+                            + userLocalServerName      // NOI18N
+                            + " :: username = "
+                            + userName                 // NOI18N
+                            + " :: password = "
+                            + password,
+                    e);                                // NOI18N
+            }
             throw e;
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+        } catch (final Exception e) {
+            final String message = "could not get user :: userGroupLocalServerName = "
+                        + userGroupLocalServerName     // NOI18N
+                        + " :: userGroupName = " + userGroupName // NOI18N
+                        + " :: userLocalServerName = " + userLocalServerName // NOI18N
+                        + " :: username = " + userName // NOI18N
+                        + " :: password = " + password; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
-
-        // xxx
-        // if (!((UserService)remoteServer).validateUser(user,password))
-        // {
-        // logger.error("<REG> result von remoteServer.validateUser(user,password) :: false");
-        // throw new UserException("<REG> wrong password for "+user,false,true,false,false);
-        // }
-        //
-
-        return user;
     }
 
     /**
-     * ---------------------------------------------------------------------------------------
+     * DOCUMENT ME!
      *
      * @param   user  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public void registerUser(User user) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("registerUser gerufen f\u00FCr user::" + user);
+    @Override
+    public void registerUser(final User user) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("registerUser called :: user = " + user); // NOI18N
         }
         try {
             um.registerUser(user);
-            // status.addMessage("Benutzer hinzugef\u00FCgt","Gruppen :: "+ user.toString() +"\nBenutzer  System
-            // insgesamt ::"+um.getUserCount()+ " in "+ um.getUserGroupCount()+ " Benutzergruppen");
-            status.addMessage("Benutzer hinzugef\u00FCgt", "Gruppen :: " + user.toString() + "\nBenutzer ");
-        } catch (Exception e) {
-            logger.error(e);
+            status.addMessage("Benutzer hinzugefügt", "Gruppen :: " + user.toString() + "\nBenutzer ");
+        } catch (final Exception e) {
+            LOG.error(e);
             throw new RemoteException(e.getMessage(), e);
         }
     }
-
-    /**
-     * ---------------------------------------------------------------------------------------
-     *
-     * @param   users  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    public void registerUsers(Vector users) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("registerUsers gerufen");
-        }
-        try {
-            um.registerUsers(users);
-            // status.addMessage("Benutzer hinzugef\u00FCgt","Gruppen :: "+ users.toString() +"\nBenutzer  System
-            // insgesamt ::"+um.getUserCount()+ " in "+ um.getUserGroupCount()+ " Benutzergruppen");
-            status.addMessage(
-                "Benutzer hinzugef\u00FCgt",
-                "Gruppen :: " + users.toString() + "\nBenutzer  System insgesamt ::");
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * ---------------------------------------------------------------------------------------
-     *
-     * @param   users  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    public void unregisterUsers(Vector users) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("unregisterUsers gerufen");
-        }
-        try {
-            um.unregisterUsers(users);
-            // status.addMessage("Benutzer entfernt","Benutzer :: "+ users.toString() +"\nBenutzer  System insgesamt
-            // ::"+um.getUserCount()+ " in "+ um.getUserGroupCount()+ " Benutzergruppen");
-            status.addMessage("Benutzer hinzugef\u00FCgt", "Gruppen :: " + users.toString() + "\nBenutzer");
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
-        }
-    }
-
-    // ---------------------------------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
@@ -530,87 +556,71 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public void unregisterUser(User user) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("unregisterUser gerufen f\u00FCr user::" + user);
+    @Override
+    public void unregisterUser(final User user) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("unregisterUser called :: user = " + user); // NOI18N
         }
+
         try {
             um.unregisterUser(user);
-            // status.addMessage("Benutzer entfernt","Benutzer :: "+ user.toString() +"\nBenutzer implements System
-            // insgesamt ::"+um.getUserCount()+ " in "+ um.getUserGroupCount()+ " Benutzergruppen");
             status.addMessage("Benutzer entfernt", "Benutzer :: " + user.toString() + "\nBenutzer ");
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+        } catch (final Exception e) {
+            final String message = "could not unregister user :: user = " + user; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
     /**
-     * ---------------------------------------------------------------------------------------
+     * DOCUMENT ME!
      *
-     * @param   userGroup  DOCUMENT ME!
+     * @param   users  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public void registerUserGroup(UserGroup userGroup) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("registerUserGroup gerufen f\u00FCr userGroup::" + userGroup);
+    @Override
+    public void registerUsers(final Vector users) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("registerUsers called :: users = " + users); // NOI18N
         }
+
         try {
-            um.registerUserGroup(userGroup);
-            // status.addMessage("Benutzergruppe hinzugef\u00FCgt","Gruppen :: "+ userGroup.toString() +"\nBenutzer
-            // implements System insgesamt ::"+um.getUserCount()+ " in "+ um.getUserGroupCount()+ " Benutzergruppen");
-            status.addMessage("Benutzer entfernt", "Benutzer :: " + userGroup.toString() + "\nBenutzer");
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+            um.registerUsers(users);
+            status.addMessage(
+                "Benutzer hinzugefügt",
+                "Gruppen :: "
+                        + users.toString()
+                        + "\nBenutzer  System insgesamt ::");
+        } catch (final Exception e) {
+            final String message = "could not register users :: users = " + users; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
     /**
-     * ---------------------------------------------------------------------------------------
+     * DOCUMENT ME!
      *
-     * @param   userGroups  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    public void registerUserGroups(Vector userGroups) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("registerUserGroups gerufen");
-        }
-        try {
-            um.registerUserGroups(userGroups);
-
-            status.addMessage("Benutzergruppe hinzugef\u00FCgt", "Gruppen :: " + userGroups.toString());
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * ---------------------------------------------------------------------------------------
-     *
-     * @param   userGroups  DOCUMENT ME!
+     * @param   users  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public void unregisterUserGroups(Vector userGroups) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("unregisterUserGroups gerufen");
+    @Override
+    public void unregisterUsers(final Vector users) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("unregisterUsers called :: users = " + users); // NOI18N
         }
+
         try {
-            um.unregisterUserGroups(userGroups);
-            // status.addMessage("Benutzergruppen entfernt","Benutzergruppen :: "+ userGroups.toString() +"\nBenutzer
-            // System insgesamt ::"+um.getUserCount()+ " in "+ um.getUserGroupCount()+ " Benutzergruppen");
-            status.addMessage("Benutzergruppen entfernt", "Benutzergruppen :: " + userGroups.toString());
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+            um.unregisterUsers(users);
+            status.addMessage("Benutzer entfernt", "Gruppen :: " + users.toString() + "\nBenutzer");
+        } catch (final Exception e) {
+            final String message = "could not unregister users :: users = " + users; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
-
-    // ---------------------------------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
@@ -619,21 +629,93 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public void unregisterUserGroup(UserGroup userGroup) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("unregisterUserGroup gerufen f\u00FCr userGroup" + userGroup);
+    @Override
+    public void registerUserGroup(final UserGroup userGroup) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("registerUserGroup called :: userGroup = " + userGroup); // NOI18N
         }
+
+        try {
+            um.registerUserGroup(userGroup);
+            status.addMessage("Benutzer entfernt", "Benutzer :: " + userGroup.toString() + "\nBenutzer");
+        } catch (final Exception e) {
+            final String message = "could not register usergroup :: usergroup = " + userGroup; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   userGroup  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public void unregisterUserGroup(final UserGroup userGroup) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("unregisterUserGroup called :: userGroup = " + userGroup); // NOI18N
+        }
+
         try {
             um.unregisterUserGroup(userGroup);
             status.addMessage("Benutzergruppe entfernt", "Benutzergruppen :: " + userGroup.toString());
         } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+            final String message = "could not unregister usergroup :: usergroup = " + userGroup; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
     /**
-     * ---------------------------------------------------------------------------------------
+     * DOCUMENT ME!
+     *
+     * @param   userGroups  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public void registerUserGroups(final Vector userGroups) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("registerUserGroups called :: usergroups = " + userGroups); // NOI18N
+        }
+
+        try {
+            um.registerUserGroups(userGroups);
+            status.addMessage("Benutzergruppe hinzugefügt", "Gruppen :: " + userGroups.toString());
+        } catch (final Exception e) {
+            final String message = "could not register usergroups :: usergroups = " + userGroups; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   userGroups  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public void unregisterUserGroups(final Vector userGroups) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("unregisterUserGroups called :: usergroups = " + userGroups); // NOI18N
+        }
+
+        try {
+            um.unregisterUserGroups(userGroups);
+            status.addMessage("Benutzergruppen entfernt", "Benutzergruppen :: " + userGroups.toString());
+        } catch (final Exception e) {
+            final String message = "could not unregister usergroups :: usergroups = " + userGroups; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
      *
      * @param   membership  DOCUMENT ME!
      *
@@ -641,15 +723,18 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public boolean registerUserMembership(Membership membership) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("registerUserMembership gerufen f\u00FCr membership" + membership);
+    @Override
+    public boolean registerUserMembership(final Membership membership) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("registerUserMembership called :: membership = " + membership); // NOI18N
         }
+
         try {
             return um.registerUserMembership(membership);
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+        } catch (final Exception e) {
+            final String message = "could not register user membership ::  membership = " + membership; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -660,43 +745,45 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public void registerUserMemberships(Vector memberships) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("registerUserMemberships gerufen");
+    @Override
+    public void registerUserMemberships(final Vector memberships) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("registerUserMemberships called :: memberships = " + memberships); // NOI18N
         }
+
         try {
             um.registerUserMemberships(memberships);
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+        } catch (final Exception e) {
+            final String message = "could not register user memberships ::  memberships = " + memberships; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
-    // ---------------------------------------------------------------------------------------
-
     /**
-     * liefert alle Benutergruppen.
+     * Gets all registered usergroups.
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Override
     public Vector getUserGroups() throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("getUserGroups gerufen");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("getUserGroups called"); // NOI18N
         }
+
         try {
             return um.getUserGroups();
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+        } catch (final Exception e) {
+            final String message = "could not get usergroups"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
-    // ---------------------------------------------------------------------------------------
-
     /**
-     * liefert einen Vector mit String-Arrays[2] String[0] - userName String[1] - userLocalServerName.
+     * Returns a Vector with String-Arrays[2] String[0] - userName String[1] - userLocalServerName.
      *
      * @param   user  DOCUMENT ME!
      *
@@ -704,19 +791,20 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Vector getUserGroupNames(User user) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("getUserGroupNames gerufen f\u00FCr user::" + user);
+    @Override
+    public Vector getUserGroupNames(final User user) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("getUserGroupNames called :: user = " + user); // NOI18N
         }
+
         try {
             return um.getUserGroupNames(user);
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+        } catch (final Exception e) {
+            final String message = "could not get usergroup names :: user = " + user; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
-
-    // ---------------------------------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
@@ -728,38 +816,20 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Vector getUserGroupNames(String userName, String lsName) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("getUserGroupNames gerufen f\u00FCr userName::" + userName);
+    @Override
+    public Vector getUserGroupNames(final String userName, final String lsName) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("getUserGroupNames called :: userName = " + userName + " :: lsname = " + lsName); // NOI18N
         }
+
         try {
             return um.getUserGroupNames(userName, lsName);
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+        } catch (final Exception e) {
+            final String message = "could not get usergroup names :: userName = " + userName + " :: lsname = " + lsName; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
-
-    /**
-     * ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     * --------------------------remote Methods of the Interface
-     * RemoteObservable-----------------------------------------------
-     * ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     *
-     * @param   ob  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    public void addObserver(RemoteObserver ob) throws RemoteException {
-        try {
-            obs.addObserver(ob);
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
-        }
-    }
-
-    // ---------------------------------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
@@ -768,16 +838,34 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public void deleteObserver(RemoteObserver ob) throws RemoteException {
+    @Override
+    public void addObserver(final RemoteObserver ob) throws RemoteException {
         try {
-            obs.deleteObserver(ob);
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+            obs.addObserver(ob);
+        } catch (final Exception e) {
+            final String message = "could not add remote observer :: observer = " + ob; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
-    // ---------------------------------------------------------------------------------------
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   ob  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public void deleteObserver(final RemoteObserver ob) throws RemoteException {
+        try {
+            obs.deleteObserver(ob);
+        } catch (final Exception e) {
+            final String message = "could not delete remote observer :: observer = " + ob; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
 
     /**
      * DOCUMENT ME!
@@ -786,66 +874,68 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Override
     public int countObservers() throws RemoteException {
         try {
             return obs.countObservers();
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+        } catch (final Exception e) {
+            final String message = "could not count observers"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
     /**
-     * ---------------------------------------------------------------------------------------
+     * DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Override
     public void notifyObservers() throws RemoteException {
         try {
             obs.notifyObservers();
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+        } catch (final Exception e) {
+            final String message = "could not notify observers"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
-
-    // ---------------------------------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      *
-     * @param   arg  DOCUMENT ME!
+     * @param   remote  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public void notifyObservers(Remote arg) throws RemoteException {
+    @Override
+    public void notifyObservers(final Remote remote) throws RemoteException {
         try {
-            obs.notifyObservers(arg);
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+            obs.notifyObservers(remote);
+        } catch (final Exception e) {
+            final String message = "could not notify observers :: remote = " + remote; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
-
-    // ---------------------------------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      *
-     * @param   arg  DOCUMENT ME!
+     * @param   serializable  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public void notifyObservers(Serializable arg) throws RemoteException {
+    @Override
+    public void notifyObservers(final Serializable serializable) throws RemoteException {
         try {
-            obs.notifyObservers(arg);
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+            obs.notifyObservers(serializable);
+        } catch (final Exception e) {
+            final String message = "could not notify observers :: serializable = " + serializable; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
-
-    // ---------------------------------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
@@ -854,31 +944,53 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Override
     public boolean hasChanged() throws RemoteException {
         try {
             return obs.hasChanged();
-        } catch (Exception e) {
-            logger.error(e);
-            throw new RemoteException(e.getMessage(), e);
+        } catch (final Exception e) {
+            final String message = "could not indicate hasChanged"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
+
     /**
-     * -----------------------------------------------------------------------------------------------------
+     * DOCUMENT ME!
      *
-     * @throws  Throwable        DOCUMENT ME!
+     * @throws  ServerExit       Throwable DOCUMENT ME!
      * @throws  ServerExitError  DOCUMENT ME!
      */
-    public void shutdown() throws Throwable {
+    public void shutdown() throws ServerExit, ServerExitError {
         try {
-            Naming.unbind("rmi://localhost:" + port + "/userServer");
-            Naming.unbind("rmi://localhost:" + port + "/nameServer");
-            rmRegistryServer.stopRMRegistryServer();
-            rmiRegistry = null;
-            System.gc();
+            // unbinding userserver
+            try {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("unbinding userserver");                                       // NOI18N
+                }
+                Naming.unbind("userServer");                                                 // NOI18N
+            } catch (final NotBoundException e) {
+                LOG.warn("userserver not available (anymore), probably already unbound", e); // NOI18N
+            }
 
-            throw new ServerExit("Server ist regul\u00E4r beendet worden");
-        } catch (Exception e) {
-            throw new ServerExitError(e);
+            // unbinding nameserver
+            try {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("unbinding nameserver");                                       // NOI18N
+                }
+                Naming.unbind("nameServer");                                                 // NOI18N
+            } catch (final NotBoundException e) {
+                LOG.warn("nameserver not available (anymore), probably already unbound", e); // NOI18N
+            }
+
+            rmRegistryServer.stopRMRegistryServer();
+
+            // TODO: refactor server exit
+            throw new ServerExit("Server ist regulär beendet worden");
+        } catch (final Exception e) {
+            final String message = "could not shutdown registry"; // NOI18N
+            LOG.fatal(message, e);
+            throw new ServerExitError(message, e);
         }
     }
 
@@ -896,29 +1008,29 @@ public class Registry extends UnicastRemoteObject implements NameServer,
      *
      * @param   args  DOCUMENT ME!
      *
-     * @throws  Throwable        DOCUMENT ME!
      * @throws  ServerExitError  DOCUMENT ME!
      */
-    public static void main(String[] args) throws Throwable {
-        int port = 1099;
+    public static void main(final String[] args) throws ServerExitError {
+        final int port;
 
         try {
             if (args == null) {
-                throw new ServerExitError(
-                    "args == null keine Kommandozeilenparameter \u00FCbergeben (Configfile / port)");
+                throw new ServerExitError("no command prompt parameters");         // NOI18N
             } else if (args.length > 0) {
-                port = Integer.valueOf(args[0]).intValue();
+                port = Integer.valueOf(args[0]);
+            } else {
+                port = 1099;
             }
-        } catch (NumberFormatException nfexp) {
-            System.err.println(nfexp.getMessage());
+        } catch (final NumberFormatException nfexp) {
+            throw new ServerExitError("invalid port argument: " + args[0], nfexp); // NOI18N
         }
 
         try {
-            // Sirius.Registry.Registry siriusRegistry = new Registry();
             new Registry(port);
-        } catch (Exception e) {
-            logger.error(e);
-            throw new ServerExitError(e);
+        } catch (final Exception e) {
+            final String message = "could not create registry at port: " + port; // NOI18N
+            LOG.error(message, e);
+            throw new ServerExitError(message, e);
         }
     }
-} // end class registry
+}

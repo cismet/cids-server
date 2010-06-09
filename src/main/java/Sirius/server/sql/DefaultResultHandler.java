@@ -11,11 +11,11 @@
  * Created on 26. September 2003, 15:04
  */
 package Sirius.server.sql;
+import Sirius.server.search.*;
+
 import java.sql.*;
 
 import java.util.*;
-
-import Sirius.server.search.*;
 
 /**
  * DOCUMENT ME!
@@ -43,18 +43,19 @@ public class DefaultResultHandler implements ResultHandler {
      * @throws  Exception     DOCUMENT ME!
      */
 
-    public Object handle(ResultSet rs, Query q) throws SQLException, Exception {
+    @Override
+    public Object handle(final ResultSet rs, final Query q) throws SQLException, Exception {
         // java.lang.Class resultType =q.getResultType();
 
-        Vector handledResult = new Vector(100, 100);
+        final Vector handledResult = new Vector(100, 100);
 
         // konstruktorparameter
 
-        int length = rs.getMetaData().getColumnCount();
+        final int length = rs.getMetaData().getColumnCount();
 
         // rs.beforeFirst();
         while (rs.next()) {
-            Object[] values = new Object[length];
+            final Object[] values = new Object[length];
 
             for (int i = 0; i < values.length; i++) {
                 values[i] = rs.getObject(i + 1);
@@ -99,14 +100,14 @@ public class DefaultResultHandler implements ResultHandler {
      *
      * @return  DOCUMENT ME!
      */
-    private String toString(Vector v) {
-        StringBuffer buf = new StringBuffer();
+    private String toString(final Vector v) {
+        final StringBuffer buf = new StringBuffer();
         buf.append("(");
 
-        Iterator i = v.iterator();
+        final Iterator i = v.iterator();
         boolean hasNext = i.hasNext();
         while (hasNext) {
-            Object o = i.next();
+            final Object o = i.next();
             buf.append(String.valueOf(o));
             hasNext = i.hasNext();
             if (hasNext) {

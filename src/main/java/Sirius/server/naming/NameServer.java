@@ -7,9 +7,9 @@
 ****************************************************/
 package Sirius.server.naming;
 
-import java.rmi.*;
-
 import Sirius.server.*;
+
+import java.rmi.*;
 
 import java.util.HashMap;
 

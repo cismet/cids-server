@@ -7,9 +7,9 @@
 ****************************************************/
 package Sirius.server.middleware.interfaces.domainserver;
 
-import java.rmi.*;
-
 import Sirius.server.newuser.*;
+
+import java.rmi.*;
 
 import java.util.*;
 

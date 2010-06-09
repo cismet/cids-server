@@ -34,6 +34,11 @@ import java.util.TimeZone;
  */
 public class RMInfo implements Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -1353516191493375384L;
+
     //~ Instance fields --------------------------------------------------------
 
     private String userName;
@@ -59,14 +64,13 @@ public class RMInfo implements Serializable {
      * @param  ip           DOCUMENT ME!
      * @param  rmiAddress   DOCUMENT ME!
      */
-    public RMInfo(
-            String userName,
-            String userGroup,
-            String userDomain,
-            int port,
-            long onlineSince,
-            InetAddress ip,
-            URI rmiAddress) {
+    public RMInfo(final String userName,
+            final String userGroup,
+            final String userDomain,
+            final int port,
+            final long onlineSince,
+            final InetAddress ip,
+            final URI rmiAddress) {
         this.userName = userName;
         this.userGroup = userGroup;
         this.userDomain = userDomain;
@@ -124,7 +128,8 @@ public class RMInfo implements Serializable {
         return key;
     }
 
-    public boolean equals(Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
         if (obj instanceof RMInfo) {
             if (rmiAddress.equals(((RMInfo)obj).getRmiAddress())) {
                 return true;
@@ -178,11 +183,11 @@ public class RMInfo implements Serializable {
      * @return  DOCUMENT ME!
      */
     public String getOnlineTimeAsText() {
-        long currentTime = System.currentTimeMillis();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+        final long currentTime = System.currentTimeMillis();
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-        long elapsed = currentTime - onlineSince;
+        final long elapsed = currentTime - onlineSince;
         return dateFormat.format(new Date(elapsed));
     }
 

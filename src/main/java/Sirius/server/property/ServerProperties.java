@@ -7,15 +7,15 @@
 ****************************************************/
 package Sirius.server.property;
 
+import Sirius.util.image.*;
+
 import java.io.*;
+
+import java.lang.reflect.*;
 
 import java.util.*;
 
-import Sirius.util.image.*;
-
 import de.cismet.tools.PasswordEncrypter;
-
-import java.lang.reflect.*;
 
 /**
  * Verwaltet Informationen zur allgemeinen Serverkonfiguration. (Local-, Call-, Translationserver). Das jeweilige
@@ -178,7 +178,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @throws  FileNotFoundException  DOCUMENT ME!
      * @throws  IOException            DOCUMENT ME!
      */
-    public ServerProperties(String configFile) throws FileNotFoundException, IOException {
+    public ServerProperties(final String configFile) throws FileNotFoundException, IOException {
         super(new FileInputStream(configFile));
     }
 
@@ -189,7 +189,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @throws  IOException  DOCUMENT ME!
      */
-    public ServerProperties(File file) throws IOException {
+    public ServerProperties(final File file) throws IOException {
         super(new FileInputStream(file));
     }
 
@@ -210,7 +210,16 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final int getServerPort() {
-        return new Integer(this.getString("serverPort")).intValue();
+        return Integer.valueOf(getString("serverPort"));
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final int getRestPort() {
+        return Integer.valueOf(getString("restPort"));
     }
 
     /**
@@ -326,7 +335,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @return  DOCUMENT ME!
      */
-    public final String getStartMode() {
+    public String getStartMode() {
         return this.getString("startMode");
     }
 
@@ -422,7 +431,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public Image[] getDefaultIcons() {
-        File file = new File(getDefaultIconDir());
+        final File file = new File(getDefaultIconDir());
 
         // File file = new File("p:\\Metaservice\\Sirius\\System\\imgDefault");
         if (logger.isDebugEnabled()) {
@@ -479,9 +488,9 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @return  Stringarray mit den einzelnen Tokens*
      */
-    public String[] getStrings(String key) {
-        StringTokenizer tokenizer = new StringTokenizer(this.getString(key), ";");
-        String[] stringArray = new String[tokenizer.countTokens()];
+    public String[] getStrings(final String key) {
+        final StringTokenizer tokenizer = new StringTokenizer(this.getString(key), ";");
+        final String[] stringArray = new String[tokenizer.countTokens()];
         int i = 0;
 
         while (tokenizer.hasMoreTokens()) {
@@ -498,9 +507,9 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @return  DOCUMENT ME!
      */
-    public String[] getStrings(String key, String delimiter) {
-        StringTokenizer tokenizer = new StringTokenizer(this.getString(key), delimiter);
-        String[] stringArray = new String[tokenizer.countTokens()];
+    public String[] getStrings(final String key, final String delimiter) {
+        final StringTokenizer tokenizer = new StringTokenizer(this.getString(key), delimiter);
+        final String[] stringArray = new String[tokenizer.countTokens()];
         int i = 0;
 
         while (tokenizer.hasMoreTokens()) {
@@ -520,9 +529,9 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @return  DOCUMENT ME!
      */
-    public Object[] getObjectList(String key, Createable c) {
-        java.lang.String[] args = getStrings(key);
-        java.lang.Object[] objects = (Object[])Array.newInstance(c.getClass(), args.length);
+    public Object[] getObjectList(final String key, final Createable c) {
+        final java.lang.String[] args = getStrings(key);
+        final java.lang.Object[] objects = (Object[])Array.newInstance(c.getClass(), args.length);
 
         for (int i = 0; i < args.length; i++) {
             objects[i] = c.createObject(args[i], ",");
@@ -538,10 +547,10 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @return  DOCUMENT ME!
      */
-    public int[] getInts(String key) {
-        StringTokenizer tokenizer = new StringTokenizer(this.getString(key), ";");
+    public int[] getInts(final String key) {
+        final StringTokenizer tokenizer = new StringTokenizer(this.getString(key), ";");
 
-        int[] intArray = new int[tokenizer.countTokens()];
+        final int[] intArray = new int[tokenizer.countTokens()];
 
         int i = 0;
 
@@ -559,7 +568,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @return  DOCUMENT ME!
      */
-    public int getInt(String key) {
+    public int getInt(final String key) {
         return new Integer(getString(key)).intValue();
     }
 } // end class

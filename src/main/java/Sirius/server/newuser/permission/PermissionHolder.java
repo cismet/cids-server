@@ -11,13 +11,13 @@ import Sirius.server.newuser.UserGroup;
 
 import Sirius.util.Mapable;
 
-import de.cismet.tools.collections.MultiMap;
-
-import de.cismet.tools.CurrentStackTrace;
+import org.apache.log4j.Logger;
 
 import java.io.Serializable;
 
-import org.apache.log4j.Logger;
+import de.cismet.tools.CurrentStackTrace;
+
+import de.cismet.tools.collections.MultiMap;
 
 /**
  * Bei der Intstanzierung eines PermissionHolders erlaubt dieser zunaechst jeglichen Zugriff (hasPermission ist immer
@@ -29,6 +29,9 @@ import org.apache.log4j.Logger;
 public final class PermissionHolder implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -6756474437714547583L;
 
     private static final transient Logger LOG = Logger.getLogger(
             PermissionHolder.class);
@@ -125,8 +128,8 @@ public final class PermissionHolder implements Serializable {
             return hasPermission(ug.getKey().toString(), READPERMISSION);
         } catch (final Exception e) {
             LOG.error("error in hasReadPermission (ug = " // NOI18N
-                + ug
-                + "). Will return false.", e);      // NOI18N
+                        + ug
+                        + "). Will return false.", e); // NOI18N
             return false;
         }
     }
@@ -143,8 +146,8 @@ public final class PermissionHolder implements Serializable {
             return hasPermission(ug.getKey().toString(), WRITEPERMISSION);
         } catch (final Exception e) {
             LOG.error("Error in hasWritePermission (ug = " // NOI18N
-                + ug
-                + "). Will return false.", e);       // NOI18N
+                        + ug
+                        + "). Will return false.", e); // NOI18N
             return false;
         }
     }
@@ -160,9 +163,9 @@ public final class PermissionHolder implements Serializable {
     public boolean hasPermission(final Object key, final Permission perm) {
         if (getPolicy() == null) {
             LOG.warn(
-                "No Policy was set. Set PARANOID Policy. "   // NOI18N
-                + "Attention. This could lead to something " // NOI18N
-                + "that you not want.",
+                "No Policy was set. Set PARANOID Policy. "           // NOI18N
+                        + "Attention. This could lead to something " // NOI18N
+                        + "that you not want.",
                 new CurrentStackTrace());
             setPolicy(Policy.createParanoidPolicy());
         }

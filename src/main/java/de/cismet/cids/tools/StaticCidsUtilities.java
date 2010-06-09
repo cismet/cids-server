@@ -19,11 +19,11 @@ import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
 
-import de.cismet.tools.CurrentStackTrace;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Vector;
+
+import de.cismet.tools.CurrentStackTrace;
 
 /**
  * DOCUMENT ME!
@@ -47,19 +47,19 @@ public class StaticCidsUtilities {
      *
      * @return  DOCUMENT ME!
      */
-    public static Object getValueOfAttributeByString(String attributeName, Attribute attr) {
+    public static Object getValueOfAttributeByString(final String attributeName, final Attribute attr) {
         if (log.isDebugEnabled()) {
             log.debug("getValueOfAttributeByString(String attributeName,Attribute attr)");
         }
-        String[] attrNames = attributeName.split("\\.");
+        final String[] attrNames = attributeName.split("\\.");
         if (attrNames.length == 1) {
             return attr.getValue();
         } else {
             MetaObject deeper = null;
             for (int i = 0; i < attrNames.length; ++i) {
-                String attrN = attrNames[i];
+                final String attrN = attrNames[i];
                 if (attrN.endsWith("[]")) {
-                    String nameWithoutBrackets = attrN.replaceAll("\\[\\]", "");
+                    final String nameWithoutBrackets = attrN.replaceAll("\\[\\]", "");
                     Attribute ma = null;
                     if (i == 0) {
                         ma = attr;
@@ -67,9 +67,9 @@ public class StaticCidsUtilities {
                         ma = (Attribute)deeper.getAttributeByName(nameWithoutBrackets, 1).toArray()[0];
                     }
                     if (ma.isArray()) {
-                        Sirius.server.localserver.object.Object moZwischen = (Sirius.server.localserver.object.Object)
-                            ma.getValue();
-                        ObjectAttribute[] oa = moZwischen.getAttribs();
+                        final Sirius.server.localserver.object.Object moZwischen =
+                            (Sirius.server.localserver.object.Object)ma.getValue();
+                        final ObjectAttribute[] oa = moZwischen.getAttribs();
                         // String wieder zusammenkleben
                         String reGlued = "";
                         for (int j = i + 1; j < attrNames.length; ++j) {
@@ -79,14 +79,14 @@ public class StaticCidsUtilities {
                             }
                         }
                         // Check ob ein Vector oder ne HashMap zur\u00FCckgeliefert werden m\u00FCssen
-                        String[] again = reGlued.split("\\.");
+                        final String[] again = reGlued.split("\\.");
                         if ((again.length >= 2) && again[1].matches(".+\\[.+\\]")) {
                             // Es muss ne HashMap geliefert werden weil der Arraykram noch weitergeht
 
                             // Key Attribut der HashMap rausfinden
                             String keyAttrName = again[1].replaceAll(".*\\[", "");
                             keyAttrName = keyAttrName.replaceAll("\\]", "");
-                            HashMap arrayEintraege = new HashMap();
+                            final HashMap arrayEintraege = new HashMap();
 
                             // keyAttr muss zwischen den Klammer entfernt werden, aber nur beim 2ten Eintrag
                             String reReClued = again[0] + "." + again[1].replaceAll("\\[.*\\]", "") + "[].";
@@ -97,15 +97,16 @@ public class StaticCidsUtilities {
                                 }
                             }
 
-                            for (ObjectAttribute arrayEintrag : oa) {
-                                if (
-                                    (arrayEintrag.getValue() instanceof MetaObject)
+                            for (final ObjectAttribute arrayEintrag : oa) {
+                                if ((arrayEintrag.getValue() instanceof MetaObject)
                                             && (((MetaObject)(arrayEintrag.getValue())).getStatus()
                                                 != MetaObject.TO_DELETE)) {
-                                    Object key = getValueOfAttributeByString(
-                                            again[0] + "." + keyAttrName,
+                                    final Object key = getValueOfAttributeByString(
+                                            again[0]
+                                            + "."
+                                            + keyAttrName,
                                             (MetaObject)arrayEintrag.getValue());
-                                    Object val = getValueOfAttributeByString(
+                                    final Object val = getValueOfAttributeByString(
                                             reReClued,
                                             (MetaObject)arrayEintrag.getValue());
                                     if (val != null) {
@@ -121,13 +122,12 @@ public class StaticCidsUtilities {
                             }
                             return arrayEintraege;
                         } else {
-                            Vector arrayEintraege = new Vector();
-                            for (ObjectAttribute arrayEintrag : oa) {
-                                if (
-                                    (arrayEintrag.getValue() instanceof MetaObject)
+                            final Vector arrayEintraege = new Vector();
+                            for (final ObjectAttribute arrayEintrag : oa) {
+                                if ((arrayEintrag.getValue() instanceof MetaObject)
                                             && (((MetaObject)(arrayEintrag.getValue())).getStatus()
                                                 != MetaObject.TO_DELETE)) {
-                                    Object val = getValueOfAttributeByString(
+                                    final Object val = getValueOfAttributeByString(
                                             reGlued,
                                             (MetaObject)arrayEintrag.getValue());
                                     // if (val != null) {
@@ -139,7 +139,7 @@ public class StaticCidsUtilities {
                         }
                     }
                 } else {
-                    Collection c = deeper.getAttributeByName(attrN, 1);
+                    final Collection c = deeper.getAttributeByName(attrN, 1);
                     if (c.size() > 0) {
                         Attribute ma = null;
                         if (i == 0) {
@@ -169,22 +169,22 @@ public class StaticCidsUtilities {
      *
      * @return  DOCUMENT ME!
      */
-    public static Object getValueOfAttributeByString(String attributeName, MetaObject mo) {
-        String[] attrNames = attributeName.split("\\.");
+    public static Object getValueOfAttributeByString(final String attributeName, final MetaObject mo) {
+        final String[] attrNames = attributeName.split("\\.");
         try {
             if (attrNames.length == 1) {
-                Attribute ma = (Attribute)mo.getAttributeByName(attributeName, 1).toArray()[0];
+                final Attribute ma = (Attribute)mo.getAttributeByName(attributeName, 1).toArray()[0];
                 return ma.getValue();
             } else {
                 MetaObject deeper = mo;
                 for (int i = 0; i < attrNames.length; ++i) {
-                    String attrN = attrNames[i];
+                    final String attrN = attrNames[i];
                     if (attrN.endsWith("[]")) {
-                        String nameWithoutBrackets = attrN.replaceAll("\\[\\]", "");
-                        Attribute ma = (Attribute)deeper.getAttributeByName(nameWithoutBrackets, 1).toArray()[0];
+                        final String nameWithoutBrackets = attrN.replaceAll("\\[\\]", "");
+                        final Attribute ma = (Attribute)deeper.getAttributeByName(nameWithoutBrackets, 1).toArray()[0];
                         if (ma.isArray()) {
-                            MetaObject moZwischen = (MetaObject)ma.getValue();
-                            ObjectAttribute[] oa = moZwischen.getAttribs();
+                            final MetaObject moZwischen = (MetaObject)ma.getValue();
+                            final ObjectAttribute[] oa = moZwischen.getAttribs();
                             // String wieder zusammenkleben
                             String reGlued = "";
                             for (int j = i + 1; j < attrNames.length; ++j) {
@@ -194,14 +194,14 @@ public class StaticCidsUtilities {
                                 }
                             }
                             // Check ob ein Vector oder ne HashMap zur\u00FCckgeliefert werden m\u00FCssen
-                            String[] again = reGlued.split("\\.");
+                            final String[] again = reGlued.split("\\.");
                             if ((again.length >= 2) && again[1].matches(".+\\[.+\\]")) {
                                 // Es muss ne HashMap geliefert werden weil der Arraykram noch weitergeht
 
                                 // Key Attribut der HashMap rausfinden
                                 String keyAttrName = again[1].replaceAll(".*\\[", "");
                                 keyAttrName = keyAttrName.replaceAll("\\]", "");
-                                HashMap arrayEintraege = new HashMap();
+                                final HashMap arrayEintraege = new HashMap();
 
                                 // keyAttr muss zwischen den Klammer entfernt werden, aber nur beim 2ten Eintrag
                                 String reReClued = again[0] + "." + again[1].replaceAll("\\[.*\\]", "") + "[].";
@@ -212,15 +212,16 @@ public class StaticCidsUtilities {
                                     }
                                 }
 
-                                for (ObjectAttribute arrayEintrag : oa) {
-                                    if (
-                                        (arrayEintrag.getValue() instanceof MetaObject)
+                                for (final ObjectAttribute arrayEintrag : oa) {
+                                    if ((arrayEintrag.getValue() instanceof MetaObject)
                                                 && (((MetaObject)(arrayEintrag.getValue())).getStatus()
                                                     != MetaObject.TO_DELETE)) {
-                                        Object key = getValueOfAttributeByString(
-                                                again[0] + "." + keyAttrName,
+                                        final Object key = getValueOfAttributeByString(
+                                                again[0]
+                                                + "."
+                                                + keyAttrName,
                                                 (MetaObject)arrayEintrag.getValue());
-                                        Object val = getValueOfAttributeByString(
+                                        final Object val = getValueOfAttributeByString(
                                                 reReClued,
                                                 (MetaObject)arrayEintrag.getValue());
                                         if (val != null) {
@@ -236,13 +237,12 @@ public class StaticCidsUtilities {
                                 }
                                 return arrayEintraege;
                             } else {
-                                Vector arrayEintraege = new Vector();
-                                for (ObjectAttribute arrayEintrag : oa) {
-                                    if (
-                                        (arrayEintrag.getValue() instanceof MetaObject)
+                                final Vector arrayEintraege = new Vector();
+                                for (final ObjectAttribute arrayEintrag : oa) {
+                                    if ((arrayEintrag.getValue() instanceof MetaObject)
                                                 && (((MetaObject)(arrayEintrag.getValue())).getStatus()
                                                     != MetaObject.TO_DELETE)) {
-                                        Object val = getValueOfAttributeByString(
+                                        final Object val = getValueOfAttributeByString(
                                                 reGlued,
                                                 (MetaObject)arrayEintrag.getValue());
 //                                        if (val != null) {
@@ -254,9 +254,9 @@ public class StaticCidsUtilities {
                             }
                         }
                     } else {
-                        Collection c = deeper.getAttributeByName(attrN, 1);
+                        final Collection c = deeper.getAttributeByName(attrN, 1);
                         if (c.size() > 0) {
-                            Attribute ma = (Attribute)c.toArray()[0];
+                            final Attribute ma = (Attribute)c.toArray()[0];
                             if (ma.getValue() instanceof MetaObject) {
                                 deeper = (MetaObject)ma.getValue();
                             } else {
@@ -264,7 +264,9 @@ public class StaticCidsUtilities {
                             }
                         } else {
                             log.error(
-                                "Falscher Attributname: " + attrN + " (Renderer wird nicht komplett funktionieren)",
+                                "Falscher Attributname: "
+                                + attrN
+                                + " (Renderer wird nicht komplett funktionieren)",
                                 new CurrentStackTrace());
                         }
                     }
@@ -272,7 +274,9 @@ public class StaticCidsUtilities {
             }
         } catch (Exception e) {
             log.error(
-                "Fehler in getValueOfAttributeByString(" + attributeName + ",MetaObject)\nMetaobject="
+                "Fehler in getValueOfAttributeByString("
+                + attributeName
+                + ",MetaObject)\nMetaobject="
                 + mo.getDebugString(),
                 e);
         }
@@ -286,8 +290,8 @@ public class StaticCidsUtilities {
      *
      * @return  DOCUMENT ME!
      */
-    public static String debugPrintMetaObject(MetaObject mo) {
-        String ret = "";
+    public static String debugPrintMetaObject(final MetaObject mo) {
+        final String ret = "";
         return ret;
     }
 }

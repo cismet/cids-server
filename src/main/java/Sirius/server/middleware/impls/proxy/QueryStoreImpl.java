@@ -12,13 +12,13 @@
  */
 package Sirius.server.middleware.impls.proxy;
 
+import Sirius.server.*;
+import Sirius.server.middleware.interfaces.proxy.*;
+import Sirius.server.naming.NameServer;
+import Sirius.server.newuser.*;
+
 import java.rmi.*;
 import java.rmi.server.*;
-
-import Sirius.server.newuser.*;
-import Sirius.server.*;
-import Sirius.server.naming.NameServer;
-import Sirius.server.middleware.interfaces.proxy.*;
 
 /**
  * DOCUMENT ME!
@@ -46,8 +46,8 @@ public class QueryStoreImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public QueryStoreImpl(java.util.Hashtable activeLocalServers,
-            NameServer nameServer) throws RemoteException {
+    public QueryStoreImpl(final java.util.Hashtable activeLocalServers, final NameServer nameServer)
+            throws RemoteException {
         this.activeLocalServers = activeLocalServers;
         this.nameServer = nameServer;
     }
@@ -64,7 +64,7 @@ public class QueryStoreImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public boolean delete(int id, String domain) throws RemoteException {
+    public boolean delete(final int id, final String domain) throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("delete in QueryStore id:: " + id + " domain::" + domain);
         }
@@ -81,7 +81,7 @@ public class QueryStoreImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Sirius.server.search.store.QueryData getQuery(int id, String domain) throws RemoteException {
+    public Sirius.server.search.store.QueryData getQuery(final int id, final String domain) throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("getQuery in QueryStore id:: " + id + " domain::" + domain);
         }
@@ -98,7 +98,7 @@ public class QueryStoreImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Sirius.server.search.store.Info[] getQueryInfos(UserGroup userGroup) throws RemoteException {
+    public Sirius.server.search.store.Info[] getQueryInfos(final UserGroup userGroup) throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("getQueryInfos QueryStore userGroup:: " + userGroup);
         }
@@ -116,7 +116,7 @@ public class QueryStoreImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Sirius.server.search.store.Info[] getQueryInfos(User user) throws RemoteException {
+    public Sirius.server.search.store.Info[] getQueryInfos(final User user) throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("getQueryInfos QueryStore user:: " + user);
         }
@@ -134,7 +134,7 @@ public class QueryStoreImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public boolean storeQuery(User user, Sirius.server.search.store.QueryData data) throws RemoteException {
+    public boolean storeQuery(final User user, final Sirius.server.search.store.QueryData data) throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("storeQuery QueryStore :: " + data);
         }

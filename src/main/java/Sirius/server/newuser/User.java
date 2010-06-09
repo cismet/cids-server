@@ -15,6 +15,11 @@ import Sirius.util.*;
  */
 public class User implements java.io.Serializable, Mapable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -4238528747971223246L;
+
     //~ Instance fields --------------------------------------------------------
 
     // /** die BenutzerID **/
@@ -50,7 +55,7 @@ public class User implements java.io.Serializable, Mapable {
      * @param  name    Benutzername
      * @param  domain  BenutzerID *
      */
-    public User(int id, String name, String domain) {
+    public User(final int id, final String name, final String domain) {
         this.domain = domain;
         this.id = id;
         this.name = name;
@@ -64,7 +69,7 @@ public class User implements java.io.Serializable, Mapable {
      * @param  domain   DOCUMENT ME!
      * @param  isAdmin  DOCUMENT ME!
      */
-    public User(int id, String name, String domain, boolean isAdmin) {
+    public User(final int id, final String name, final String domain, final boolean isAdmin) {
         this(id, name, domain);
         this.isAdmin = isAdmin;
     }
@@ -77,13 +82,14 @@ public class User implements java.io.Serializable, Mapable {
      * @param  domain     localServerName Heimat-LocalServer des Benutzers
      * @param  userGroup  die Benutzergruppe, der der Benutzer zugeordnet werden soll*
      */
-    public User(int id, String name, String domain, UserGroup userGroup) {
+    public User(final int id, final String name, final String domain, final UserGroup userGroup) {
         this(id, name, domain);
         this.userGroup = userGroup;
     }
 
     //~ Methods ----------------------------------------------------------------
 
+    @Override
     public String toString() {
         return getKey().toString();
     }
@@ -114,7 +120,7 @@ public class User implements java.io.Serializable, Mapable {
      *
      * @param  userGroup  DOCUMENT ME!
      */
-    public void setUserGroup(UserGroup userGroup) {
+    public void setUserGroup(final UserGroup userGroup) {
         this.userGroup = userGroup;
         valid = true;
     }
@@ -152,11 +158,13 @@ public class User implements java.io.Serializable, Mapable {
         return isAdmin;
     }
 
-    public boolean equals(java.lang.Object obj) {
-        User user = (User)obj;
+    @Override
+    public boolean equals(final java.lang.Object obj) {
+        final User user = (User)obj;
         return (this.name.equals(user.name) && this.domain.equals(user.domain));
     }
 
+    @Override
     public Object getKey() {
         if (userGroup != null) {
             return name + "@" + userGroup.getKey();
@@ -174,7 +182,8 @@ public class User implements java.io.Serializable, Mapable {
         return name + "@" + domain;
     }
 
-    public Object constructKey(Mapable m) {
+    @Override
+    public Object constructKey(final Mapable m) {
         if (m instanceof User) {
             return m.getKey();
         } else {

@@ -7,28 +7,44 @@
 ****************************************************/
 package Sirius.server.localserver;
 
-import Sirius.server.sql.*;
-import Sirius.server.localserver.object.*;
-import Sirius.server.localserver._class.*;
-//import Sirius.server.localserver.tree.node.*;
-import Sirius.server.localserver.tree.*;
+import Sirius.server.Shutdown;
+import Sirius.server.Shutdownable;
+import Sirius.server.localserver._class.ClassCache;
+import Sirius.server.localserver.method.MethodCache;
+import Sirius.server.localserver.method.MethodMap;
+import Sirius.server.localserver.object.ObjectFactory;
+import Sirius.server.localserver.object.PersistenceManager;
+import Sirius.server.localserver.tree.AbstractTree;
 import Sirius.server.localserver.tree.NodeReferenceList;
-import Sirius.server.localserver.method.*;
-import Sirius.server.localserver.user.*;
-import Sirius.server.newuser.*;
-
-import java.util.*;
-
-import Sirius.server.property.*;
-import Sirius.server.middleware.types.*;
+import Sirius.server.localserver.tree.VirtualTree;
+import Sirius.server.localserver.user.UserStore;
+import Sirius.server.middleware.types.DefaultMetaObject;
+import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.middleware.types.MetaObject;
+import Sirius.server.middleware.types.Node;
+import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.permission.PolicyHolder;
+import Sirius.server.property.ServerProperties;
+import Sirius.server.sql.DBConnection;
+import Sirius.server.sql.DBConnectionPool;
+
+import org.apache.log4j.Logger;
+
+import java.util.Vector;
 
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-public class DBServer implements java.io.Serializable {
+public class DBServer extends Shutdown implements java.io.Serializable {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final transient Logger LOG = Logger.getLogger(DBServer.class);
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -1903621257460438111L;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -39,7 +55,6 @@ public class DBServer implements java.io.Serializable {
     /** Holds several connection to ths ls' db and other used dbs. */
     transient DBConnectionPool connectionPool;
 
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
     /** Holds and delivers a localsservers objects. */
     private ObjectFactory objects;
     /** Holds and delivers a localsservers classes. */
@@ -62,40 +77,40 @@ public class DBServer implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public DBServer(ServerProperties properties) throws Throwable {
+    public DBServer(final ServerProperties properties) throws Throwable {
         this.properties = properties;
-        if (logger.isDebugEnabled()) {
-            logger.debug("Info :: DBServer instantiate connectionPool");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Info :: DBServer instantiate connectionPool");
         }
 
         connectionPool = new DBConnectionPool(properties);
-        if (logger.isDebugEnabled()) {
-            logger.debug("DBServer connectionPool instantiated :: Instantiate PolicyHolder ");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("DBServer connectionPool instantiated :: Instantiate PolicyHolder ");
         }
 
         policyHolder = new PolicyHolder(connectionPool);
-        if (logger.isDebugEnabled()) {
-            logger.debug("DBServer PolicyHolder instantiated :: Instantiate ClassCache ");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("DBServer PolicyHolder instantiated :: Instantiate ClassCache ");
         }
         // needs tob instaniated before the OcjectFactory
         classes = new ClassCache(connectionPool, properties, policyHolder);
-        if (logger.isDebugEnabled()) {
-            logger.debug("DBServer ClassCache instantiated :: Instantiate ObjectFactory ");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("DBServer ClassCache instantiated :: Instantiate ObjectFactory ");
         }
 
         objects = new ObjectFactory(connectionPool, classes);
-        if (logger.isDebugEnabled()) {
-            logger.debug("DBServerObjectFactory instantiated :: Instantiate Tree ");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("DBServerObjectFactory instantiated :: Instantiate Tree ");
         }
 
         tree = new VirtualTree(connectionPool, properties, this, policyHolder, classes);
-        if (logger.isDebugEnabled()) {
-            logger.debug("DBServer Tree instantiated :: Instantiate methodCache ");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("DBServer Tree instantiated :: Instantiate methodCache ");
         }
 
         methods = new MethodCache(connectionPool, properties);
-        if (logger.isDebugEnabled()) {
-            logger.debug("DBServer MethodCache instantiated :: Instantiate UserService ");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("DBServer MethodCache instantiated :: Instantiate UserService ");
         }
 
         userstore = new UserStore(connectionPool, properties);
@@ -114,7 +129,7 @@ public class DBServer implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public MetaClass getClass(int classID) throws Throwable {
+    public MetaClass getClass(final int classID) throws Throwable {
         return new MetaClass(classes.getClass(classID), properties.getServerName());
     }
     /**
@@ -125,13 +140,12 @@ public class DBServer implements java.io.Serializable {
      * @throws  Throwable  DOCUMENT ME!
      */
     public MetaClass[] getClasses() throws Throwable {
-        Vector tmpClasses = classes.getAllClasses();
+        final Vector tmpClasses = classes.getAllClasses();
 
-        MetaClass[] middleWareClasses = new MetaClass[tmpClasses.size()];
+        final MetaClass[] middleWareClasses = new MetaClass[tmpClasses.size()];
 
         for (int i = 0; i < tmpClasses.size(); i++) {
-            middleWareClasses[i] = new MetaClass(
-                    (Sirius.server.localserver._class.Class)tmpClasses.get(i),
+            middleWareClasses[i] = new MetaClass((Sirius.server.localserver._class.Class)tmpClasses.get(i),
                     properties.getServerName());
         }
 
@@ -147,8 +161,8 @@ public class DBServer implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public MetaClass getClass(UserGroup ug, int classID) throws Throwable {
-        Sirius.server.localserver._class.Class c = classes.getClass(ug, classID);
+    public MetaClass getClass(final UserGroup ug, final int classID) throws Throwable {
+        final Sirius.server.localserver._class.Class c = classes.getClass(ug, classID);
         if (c != null) {
             return new MetaClass(c, properties.getServerName());
         } else {
@@ -166,8 +180,8 @@ public class DBServer implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public MetaClass getClassByTableName(UserGroup ug, String tableName) throws Throwable {
-        Sirius.server.localserver._class.Class c = classes.getClassNyTableName(ug, tableName);
+    public MetaClass getClassByTableName(final UserGroup ug, final String tableName) throws Throwable {
+        final Sirius.server.localserver._class.Class c = classes.getClassNyTableName(ug, tableName);
         if (c != null) {
             return new MetaClass(c, properties.getServerName());
         } else {
@@ -183,16 +197,15 @@ public class DBServer implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public MetaClass[] getClasses(UserGroup ug) throws Throwable {
-        Vector tmpClasses = classes.getAllClasses(ug);
+    public MetaClass[] getClasses(final UserGroup ug) throws Throwable {
+        final Vector tmpClasses = classes.getAllClasses(ug);
         MetaClass[] middleWareClasses = null;
 
         if (tmpClasses != null) {
             middleWareClasses = new MetaClass[tmpClasses.size()];
 
             for (int i = 0; i < tmpClasses.size(); i++) {
-                middleWareClasses[i] = new MetaClass(
-                        (Sirius.server.localserver._class.Class)tmpClasses.get(i),
+                middleWareClasses[i] = new MetaClass((Sirius.server.localserver._class.Class)tmpClasses.get(i),
                         properties.getServerName());
             }
         }
@@ -218,7 +231,7 @@ public class DBServer implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public NodeReferenceList getChildren(Node node, UserGroup ug) throws Throwable {
+    public NodeReferenceList getChildren(final Node node, final UserGroup ug) throws Throwable {
         return tree.getChildren(node, ug);
     }
     /**
@@ -233,7 +246,7 @@ public class DBServer implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public NodeReferenceList getTops(UserGroup ug) throws Throwable {
+    public NodeReferenceList getTops(final UserGroup ug) throws Throwable {
         return new NodeReferenceList(tree.getTopNodes(ug));
     }
     /**
@@ -245,7 +258,7 @@ public class DBServer implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public NodeReferenceList getClassTreeNodes(UserGroup ug) throws Throwable {
+    public NodeReferenceList getClassTreeNodes(final UserGroup ug) throws Throwable {
         return new NodeReferenceList(tree.getClassTreeNodes(ug));
     }
     /**
@@ -258,20 +271,20 @@ public class DBServer implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public MetaObject getObject(String objectID, UserGroup ug) throws Throwable {
-        int oId;
-        int cId;
+    public MetaObject getObject(final String objectID, final UserGroup ug) throws Throwable {
+        final int oId;
+        final int cId;
 
-        String[] ids = objectID.split("@");
+        final String[] ids = objectID.split("@");
         oId = new Integer(ids[0]).intValue();
         cId = new Integer(ids[1]).intValue();
 
         // An dieser Stelle wird die Referenz neu gesetzt. Deshalb funzt getParent() der ObjectAttributes nicht richtig
         // zusaetzlich erzeugt auch die filter Methode eine neue Adresse
-        Sirius.server.localserver.object.Object o = objects.getObject(oId, cId, ug);
+        final Sirius.server.localserver.object.Object o = objects.getObject(oId, cId, ug);
 
         if (o != null) {
-            MetaObject mo = new DefaultMetaObject(o.filter(ug), properties.getServerName());
+            final MetaObject mo = new DefaultMetaObject(o.filter(ug), properties.getServerName());
             // mo.setMetaClass(new MetaClass(classes.getClass(cId), properties.getServerName()));
 
             mo.setAllClasses(classes.getClassHashMap());
@@ -292,8 +305,8 @@ public class DBServer implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public MetaObject[] getObjects(String[] objectIDs, UserGroup ug) throws Throwable {
-        MetaObject[] obs = new MetaObject[objectIDs.length];
+    public MetaObject[] getObjects(final String[] objectIDs, final UserGroup ug) throws Throwable {
+        final MetaObject[] obs = new MetaObject[objectIDs.length];
 
         for (int i = 0; i < objectIDs.length; i++) {
             obs[i] = getObject(objectIDs[i], ug);
@@ -317,8 +330,8 @@ public class DBServer implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public Sirius.server.middleware.types.Node[] getNodes(int[] ids, UserGroup ug) throws Throwable {
-        Sirius.server.middleware.types.Node[] n = new Sirius.server.middleware.types.Node[ids.length];
+    public Sirius.server.middleware.types.Node[] getNodes(final int[] ids, final UserGroup ug) throws Throwable {
+        final Sirius.server.middleware.types.Node[] n = new Sirius.server.middleware.types.Node[ids.length];
 
         for (int i = 0; i < ids.length; i++) {
             n[i] = tree.getNode(ids[i], ug);
@@ -384,7 +397,7 @@ public class DBServer implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public final MethodMap getMethods(UserGroup ug) throws Throwable {
+    public final MethodMap getMethods(final UserGroup ug) throws Throwable {
         return methods.getMethods(ug);
     }
 

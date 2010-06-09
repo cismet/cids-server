@@ -18,6 +18,11 @@ public class ClassAttribute extends Attribute implements java.io.Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -5292371264242940827L;
+
+    //~ Instance fields --------------------------------------------------------
+
 /////////////////members//////////////////////////////////////////
 
     protected int classID;
@@ -39,7 +44,11 @@ public class ClassAttribute extends Attribute implements java.io.Serializable {
      * @param  typeID   DOCUMENT ME!
      * @param  policy   DOCUMENT ME!
      */
-    public ClassAttribute(String id, int classID, String name, int typeID, Policy policy) {
+    public ClassAttribute(final String id,
+            final int classID,
+            final String name,
+            final int typeID,
+            final Policy policy) {
         super(id, name, "", policy);
         this.classID = classID;
         super.visible = true;
@@ -104,7 +113,7 @@ public class ClassAttribute extends Attribute implements java.io.Serializable {
      *
      * @param  typeID  New value of property typeID.
      */
-    public final void setTypeID(int typeID) {
+    public final void setTypeID(final int typeID) {
         this.typeID = typeID;
     }
 }

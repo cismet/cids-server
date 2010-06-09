@@ -33,7 +33,8 @@ public class TestAttrToString extends GeometryStringConverter {
 
     //~ Methods ----------------------------------------------------------------
 
-    public String convert(de.cismet.cids.tools.tostring.StringConvertable o) {
+    @Override
+    public String convert(final de.cismet.cids.tools.tostring.StringConvertable o) {
         return "TestMops";
     }
 }

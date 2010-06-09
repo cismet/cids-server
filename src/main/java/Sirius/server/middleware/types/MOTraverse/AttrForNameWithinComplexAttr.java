@@ -42,7 +42,7 @@ public class AttrForNameWithinComplexAttr implements TypeVisitor {
      * @param  complexAttributeName  objectName name des Komplexen Attributes in dem nach dem MetaAttribut gesucht
      *                               werden soll.
      */
-    public AttrForNameWithinComplexAttr(String complexAttributeName) {
+    public AttrForNameWithinComplexAttr(final String complexAttributeName) {
         this.complexAttributeName = complexAttributeName.toLowerCase();
     }
 
@@ -57,8 +57,9 @@ public class AttrForNameWithinComplexAttr implements TypeVisitor {
      *
      * @return  attribut oder null
      */
-    public Object visitMO(MetaObject metaObject, Object attributeName) {
-        ObjectAttribute[] attr = metaObject.getAttribs();
+    @Override
+    public Object visitMO(final MetaObject metaObject, final Object attributeName) {
+        final ObjectAttribute[] attr = metaObject.getAttribs();
         String name;
         Object value;
 
@@ -67,10 +68,10 @@ public class AttrForNameWithinComplexAttr implements TypeVisitor {
             value = attr[i].getValue();
             if (value instanceof MetaObject) {
                 if ((name != null) && name.toLowerCase().equals(complexAttributeName)) {
-                    Object object = search((MetaObject)value, (String)attributeName);
+                    final Object object = search((MetaObject)value, (String)attributeName);
                     return object;
                 } else {
-                    Object object = ((MetaObject)value).accept(this, attributeName);
+                    final Object object = ((MetaObject)value).accept(this, attributeName);
                     if (object != null) {
                         return object;
                     }
@@ -90,7 +91,8 @@ public class AttrForNameWithinComplexAttr implements TypeVisitor {
      *
      * @return  attribut oder null
      */
-    public Object visitMA(ObjectAttribute metaObjectAttribute, Object attributeName) {
+    @Override
+    public Object visitMA(final ObjectAttribute metaObjectAttribute, final Object attributeName) {
         if (metaObjectAttribute.getValue() instanceof MetaObject) {
             return ((MetaObject)metaObjectAttribute.getValue()).accept(this, attributeName);
         }
@@ -106,10 +108,10 @@ public class AttrForNameWithinComplexAttr implements TypeVisitor {
      *
      * @return  attribut oder null
      */
-    private Object search(MetaObject metaObject, String attributeName) {
-        ObjectAttribute[] metaAttributes = metaObject.getAttribs();
+    private Object search(final MetaObject metaObject, final String attributeName) {
+        final ObjectAttribute[] metaAttributes = metaObject.getAttribs();
         String name;
-        String metaObjectAttribute = attributeName.toLowerCase();
+        final String metaObjectAttribute = attributeName.toLowerCase();
 
         for (int i = 0; i < metaAttributes.length; i++) {
             name = metaAttributes[i].getName();

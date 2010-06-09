@@ -9,15 +9,14 @@ package Sirius.server.localserver.query.querystore;
 
 import Sirius.server.newuser.*;
 import Sirius.server.property.*;
+import Sirius.server.search.store.*;
+import Sirius.server.sql.*;
 
-import java.sql.*;
+import java.io.*;
 
 import java.rmi.*;
 
-import Sirius.server.sql.*;
-import Sirius.server.search.store.*;
-
-import java.io.*;
+import java.sql.*;
 
 import java.util.*;
 /**
@@ -85,7 +84,7 @@ public class Store {
      * @param  con         Connection zur Datenbank, bekommt der QueryServer vom LocalServer uebergeben
      * @param  properties  ServerKonfiguration, bekommt der QueryServer vom LocalServer uebergeben*
      */
-    public Store(Connection con, ServerProperties properties) {
+    public Store(final Connection con, final ServerProperties properties) {
         try {
             storeUserQuery = con.prepareStatement(
                     "INSERT INTO cs_query_store (id, user_id,name, file_name) VALUES (?,?,?,?)");
@@ -138,7 +137,7 @@ public class Store {
      *
      * @return  true, wenn gespeichert *
      */
-    public boolean storeQuery(User user, QueryData data) {
+    public boolean storeQuery(final User user, final QueryData data) {
         int effected = 0;
 
         try {
@@ -154,7 +153,7 @@ public class Store {
 
                 // filename constructed during runtime
 
-                String fileName = createFilename(data, user, maxId);
+                final String fileName = createFilename(data, user, maxId);
 
                 writeFile(data.getData(), fileName);
 
@@ -169,7 +168,7 @@ public class Store {
                 effected = 1;
             }
 
-            HashSet ugs = data.getUserGroups();
+            final HashSet ugs = data.getUserGroups();
             if (logger.isDebugEnabled()) {
                 logger.debug("user group in storeQuery" + ugs);
             }
@@ -179,11 +178,11 @@ public class Store {
                     logger.debug("ugs is not empty try to insert userGroupProfile");
                 }
 
-                Iterator iter = ugs.iterator();
+                final Iterator iter = ugs.iterator();
                 while (iter.hasNext()) {
-                    String ugKey = (String)iter.next();
+                    final String ugKey = (String)iter.next();
 
-                    Object[] ugk = UserGroup.parseKey(ugKey);
+                    final Object[] ugk = UserGroup.parseKey(ugKey);
 
                     if (properties.getServerName().equalsIgnoreCase((String)ugk[1])) {
                         ;
@@ -193,7 +192,7 @@ public class Store {
                     getUserGroupId.setString(1, (String)ugk[0]);
                     getUserGroupId.setString(2, (String)ugk[1]);
 
-                    ResultSet ugidSet = getUserGroupId.executeQuery();
+                    final ResultSet ugidSet = getUserGroupId.executeQuery();
 
                     int ugid = -1;
                     if (ugidSet.next()) {
@@ -214,7 +213,8 @@ public class Store {
                     storeUserGroupQuery.setInt(3, maxId);
                     if (logger.isDebugEnabled()) {
                         logger.debug(
-                            "beim insert in UserProfile wurden datens\u00E4tze hinzugef\u00FCgt #=" + effected);
+                            "beim insert in UserProfile wurden datens\u00E4tze hinzugef\u00FCgt #="
+                            + effected);
                     }
                     effected += storeUserGroupQuery.executeUpdate();
                     if (logger.isDebugEnabled()) {
@@ -238,21 +238,21 @@ public class Store {
      *
      * @return  DOCUMENT ME!
      */
-    public QueryInfo[] getQueryInfos(User user) {
-        HashMap result = new HashMap(10, 10);
+    public QueryInfo[] getQueryInfos(final User user) {
+        final HashMap result = new HashMap(10, 10);
         try {
             getUserQueryInfo.setInt(1, user.getId());
             if (logger.isDebugEnabled()) {
                 logger.debug("try to retrieve UserQueryInfo in getQueryInfos(usr)");
             }
-            ResultSet rs = getUserQueryInfo.executeQuery();
-            String domain = properties.getServerName();
+            final ResultSet rs = getUserQueryInfo.executeQuery();
+            final String domain = properties.getServerName();
             while (rs.next()) {
                 if (logger.isDebugEnabled()) {
                     logger.debug(
                         "try to retrieve UserQueryInfo in getQueryInfos(usr) result retrieved try to getInt(id)");
                 }
-                int id = rs.getInt("id");
+                final int id = rs.getInt("id");
                 result.put(
                     new Integer(id),
                     new QueryInfo(id, (rs.getString("name")).trim(), domain, rs.getString("file_name")));
@@ -262,7 +262,7 @@ public class Store {
             if (logger.isDebugEnabled()) {
                 logger.debug("try to retrieve UserGroupinfos for" + user);
             }
-            ResultSet rs2 = getUserGroupInfo.executeQuery();
+            final ResultSet rs2 = getUserGroupInfo.executeQuery();
 
             int qs_id = 0;
             int ug_id = 0;
@@ -287,22 +287,22 @@ public class Store {
      *
      * @return  DOCUMENT ME!
      */
-    public QueryInfo[] getQueryInfos(UserGroup ug) {
-        HashMap result = new HashMap(10, 10);
+    public QueryInfo[] getQueryInfos(final UserGroup ug) {
+        final HashMap result = new HashMap(10, 10);
         try {
             getUserGroupQueryInfo.setInt(1, ug.getId());
             if (logger.isDebugEnabled()) {
                 logger.debug("try to retrieve UserGroupQueryInfo in getQueryInfos(ug)");
             }
-            ResultSet rs = getUserGroupQueryInfo.executeQuery();
-            String domain = properties.getServerName();
+            final ResultSet rs = getUserGroupQueryInfo.executeQuery();
+            final String domain = properties.getServerName();
             while (rs.next()) {
                 if (logger.isDebugEnabled()) {
                     logger.debug(
                         "try to retrieve UserGroupQueryInfo in getQueryInfos(ug) result retrieved try to getInt(id)");
                 }
 
-                int id = rs.getInt("id");
+                final int id = rs.getInt("id");
                 result.put(
                     new Integer(id),
                     new QueryInfo(id, (rs.getString("name")).trim(), domain, rs.getString("file_name")));
@@ -328,7 +328,7 @@ public class Store {
      *
      * @return  DOCUMENT ME!
      */
-    public QueryData getQuery(int queryId) {
+    public QueryData getQuery(final int queryId) {
         ResultSet rs = null;
         QueryData q = null;
 
@@ -337,7 +337,7 @@ public class Store {
             rs = getUserQuery.executeQuery();
 
             String fileName = null;
-            String name = null;
+            final String name = null;
             // String domain=null;
             byte[] data = new byte[0];
 
@@ -348,7 +348,7 @@ public class Store {
 
             data = readFile(fileName);
             if (logger.isDebugEnabled()) {
-                logger.debug("info :: data " + data + data[0] + data[1] + data[2]);
+                logger.debug("info :: data " + data);
             }
 
             q = new QueryData(queryId, properties.getServerName(), name, fileName, data); // file auslesen
@@ -368,20 +368,18 @@ public class Store {
      */
 
     // erg\u00E4nzen durch QueryInfo
-    public boolean delete(int id) {
+    public boolean delete(final int id) {
         int effected = 0;
-        String fileName = null;
 
         try {
             // delete file first
             getUserQuery.setInt(1, id);
-            ResultSet rs = getUserQuery.executeQuery();
+            final ResultSet rs = getUserQuery.executeQuery();
 
             if (rs.next()) {
-                fileName = rs.getString("file_name").trim();
+                final String fileName = rs.getString("file_name").trim();
+                deleteFile(fileName);
             }
-
-            deleteFile(fileName);
 
             deleteUserQuery.setInt(1, id);
             deleteUserQueryGroupAssoc.setInt(1, id);
@@ -405,7 +403,7 @@ public class Store {
      *
      * @return  DOCUMENT ME!
      */
-    public boolean updateQuery(User user, QueryData data) {
+    public boolean updateQuery(final User user, final QueryData data) {
         return storeQuery(user, data);
     }
 
@@ -419,7 +417,7 @@ public class Store {
      * @throws  Exception  DOCUMENT ME!
      */
     private int getMaxId() throws Exception {
-        ResultSet rs = maxId.executeQuery();
+        final ResultSet rs = maxId.executeQuery();
 
         if (rs.next()) {
             // max+1
@@ -438,11 +436,11 @@ public class Store {
      * @param  data      DOCUMENT ME!
      * @param  fileName  DOCUMENT ME!
      */
-    private void writeFile(byte[] data, String fileName) {
+    private void writeFile(final byte[] data, final String fileName) {
         try {
-            File outputFile = new File(qsd, fileName);
+            final File outputFile = new File(qsd, fileName);
 
-            FileOutputStream out = new FileOutputStream(outputFile);
+            final FileOutputStream out = new FileOutputStream(outputFile);
 
             out.write(data, 0, data.length);
 
@@ -459,12 +457,12 @@ public class Store {
      *
      * @return  DOCUMENT ME!
      */
-    private byte[] readFile(String fileName) {
+    private byte[] readFile(final String fileName) {
         byte[] data = null;
 
         try {
-            File inFile;
-            FileInputStream stream;
+            final File inFile;
+            final FileInputStream stream;
 
             inFile = new File(qsd, fileName);
 
@@ -472,7 +470,7 @@ public class Store {
             stream = new FileInputStream(inFile);
 
             // read the file into data
-            int bytesRead = stream.read(data, 0, (int)inFile.length());
+            final int bytesRead = stream.read(data, 0, (int)inFile.length());
 
             if (bytesRead == -1) { // error occured during readingprocess
                 throw new Exception("read fehlgeschlagen");
@@ -494,8 +492,8 @@ public class Store {
      *
      * @param  fileName  DOCUMENT ME!
      */
-    private void deleteFile(String fileName) {
-        File f = new File(qsd, fileName);
+    private void deleteFile(final String fileName) {
+        final File f = new File(qsd, fileName);
         f.delete();
     }
 
@@ -508,7 +506,7 @@ public class Store {
      *
      * @return  DOCUMENT ME!
      */
-    public String createFilename(QueryData data, User user, int id) {
+    public String createFilename(final QueryData data, final User user, final int id) {
         return id + user.getName() + data.getName() + System.currentTimeMillis() + ".str";
     }
 } // end class

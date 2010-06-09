@@ -7,9 +7,9 @@
 ****************************************************/
 package Sirius.util.image;
 
-import java.util.*;
-
 import java.io.*;
+
+import java.util.*;
 
 import javax.swing.*;
 
@@ -20,6 +20,11 @@ import javax.swing.*;
  */
 public class ImageHashMap extends HashMap implements java.io.Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -2422765008443979812L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -27,7 +32,7 @@ public class ImageHashMap extends HashMap implements java.io.Serializable {
      *
      * @param  images  DOCUMENT ME!
      */
-    public ImageHashMap(Image[] images) {
+    public ImageHashMap(final Image[] images) {
         super(images.length, 1.0f);
         for (int i = 0; i < images.length; i++) {
             this.put(images[i]);
@@ -39,7 +44,7 @@ public class ImageHashMap extends HashMap implements java.io.Serializable {
      * @param  initialCapacity  DOCUMENT ME!
      * @param  loadFactor       DOCUMENT ME!
      */
-    public ImageHashMap(int initialCapacity, float loadFactor) {
+    public ImageHashMap(final int initialCapacity, final float loadFactor) {
         super(initialCapacity, loadFactor);
     }
 
@@ -49,7 +54,7 @@ public class ImageHashMap extends HashMap implements java.io.Serializable {
      * @param  names  DOCUMENT ME!
      * @param  files  DOCUMENT ME!
      */
-    public ImageHashMap(String[] names, String[] files) {
+    public ImageHashMap(final String[] names, final String[] files) {
         super(names.length, 1.0f);
 
         if (names.length == files.length) {
@@ -69,8 +74,8 @@ public class ImageHashMap extends HashMap implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public ImageIcon put(String name, String file) {
-        ImageIcon icon = new ImageIcon(new Image(file).getImageData(), name);
+    public ImageIcon put(final String name, final String file) {
+        final ImageIcon icon = new ImageIcon(new Image(file).getImageData(), name);
         super.put(name, icon);
         return this.get(name);
     }
@@ -82,8 +87,8 @@ public class ImageHashMap extends HashMap implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public ImageIcon put(Image image) {
-        ImageIcon icon = new ImageIcon(image.getImageData(), image.getName());
+    public ImageIcon put(final Image image) {
+        final ImageIcon icon = new ImageIcon(image.getImageData(), image.getName());
         super.put(image.getName(), icon);
         return this.get(image.getName());
     }
@@ -95,8 +100,8 @@ public class ImageHashMap extends HashMap implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public ImageIcon put(File file) {
-        ImageIcon icon = new ImageIcon(new Image(file).getImageData(), file.getName().trim());
+    public ImageIcon put(final File file) {
+        final ImageIcon icon = new ImageIcon(new Image(file).getImageData(), file.getName().trim());
         super.put(file.getName().trim(), icon);
         return this.get(file.getName().trim());
     }
@@ -107,7 +112,7 @@ public class ImageHashMap extends HashMap implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public ImageIcon get(String name) {
+    public ImageIcon get(final String name) {
         return (ImageIcon)super.get(name);
     }
 }

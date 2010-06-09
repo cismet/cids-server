@@ -37,7 +37,7 @@ public class ServerListHash extends Hashtable {
      *
      * @param  capacity  DOCUMENT ME!
      */
-    public ServerListHash(int capacity) {
+    public ServerListHash(final int capacity) {
         super(capacity);
         init();
     }
@@ -48,7 +48,7 @@ public class ServerListHash extends Hashtable {
      * @param  capacity    DOCUMENT ME!
      * @param  loadfactor  DOCUMENT ME!
      */
-    public ServerListHash(int capacity, float loadfactor) {
+    public ServerListHash(final int capacity, final float loadfactor) {
         super(capacity, loadfactor);
         init();
     }
@@ -62,7 +62,7 @@ public class ServerListHash extends Hashtable {
         // Debug xxx not necessary if Xoption for Garbagecollector ist set
         new ServerType("", 1);
 
-        int[] types = ServerType.getAllServerTypes();
+        final int[] types = ServerType.getAllServerTypes();
 
         for (int i = 0; i < types.length; i++) {
             put(new Integer(types[i]), new Vector(5, 5));
@@ -79,7 +79,7 @@ public class ServerListHash extends Hashtable {
      *
      * @return  DOCUMENT ME!
      */
-    public boolean addServer(int serverTyp, String name, String ip, String port) {
+    public boolean addServer(final int serverTyp, final String name, final String ip, final String port) {
         Server s = findServer(serverTyp, name /*,ip,port*/);
         if (logger.isDebugEnabled()) {
             logger.debug("server there? " + name + " not null?" + s);
@@ -96,8 +96,16 @@ public class ServerListHash extends Hashtable {
         }
 
         logger.error(
-            "tried to add server " + name + " " + ip + " " + port
-            + " but it's already there - or servertype is not defined type::" + serverTyp + " " + s);
+            "tried to add server "
+            + name
+            + " "
+            + ip
+            + " "
+            + port
+            + " but it's already there - or servertype is not defined type::"
+            + serverTyp
+            + " "
+            + s);
         return false;
     }
 
@@ -108,7 +116,7 @@ public class ServerListHash extends Hashtable {
      *
      * @return  DOCUMENT ME!
      */
-    public Vector getServerList(int serverTyp) {
+    public Vector getServerList(final int serverTyp) {
         return (Vector)get(new Integer(serverTyp));
     }
 
@@ -120,8 +128,8 @@ public class ServerListHash extends Hashtable {
      *
      * @return  DOCUMENT ME!
      */
-    public Server getServer(int serverTyp, String name /*, String ip, String port*/) {
-        return findServer(serverTyp, name              /*,ip,port*/);
+    public Server getServer(final int serverTyp, final String name /*, String ip, String port*/) {
+        return findServer(serverTyp, name                          /*,ip,port*/);
     }
 
     /**
@@ -132,8 +140,8 @@ public class ServerListHash extends Hashtable {
      *
      * @return  DOCUMENT ME!
      */
-    public boolean removeServer(int serverTyp, String name /*, String ip, String port*/) {
-        Server s = findServer(serverTyp, name              /*,ip,port*/);
+    public boolean removeServer(final int serverTyp, final String name /*, String ip, String port*/) {
+        final Server s = findServer(serverTyp, name                    /*,ip,port*/);
         if (s != null) {
             if (containsKey(new Integer(serverTyp))) {
                 getServerList(serverTyp).remove(s);
@@ -153,16 +161,16 @@ public class ServerListHash extends Hashtable {
      *
      * @return  DOCUMENT ME!
      */
-    protected Server findServer(int serverTyp, String name /*, String ip, String port*/) {
-        Integer key = new Integer(serverTyp);
+    protected Server findServer(final int serverTyp, final String name /*, String ip, String port*/) {
+        final Integer key = new Integer(serverTyp);
 
         if (!containsKey(key)) {
             return null;
         } else {
-            Vector s = getServerList(serverTyp);
+            final Vector s = getServerList(serverTyp);
 
             for (int i = 0; i < s.size(); i++) {
-                Server server = ((Server)s.get(i));
+                final Server server = ((Server)s.get(i));
 
                 if (server.getName().equalsIgnoreCase(name)) {
                     return server;

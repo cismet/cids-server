@@ -7,16 +7,15 @@
 ****************************************************/
 package Sirius.server.localserver.object;
 
-import Sirius.util.*;
-
 import Sirius.server.localserver.attribute.*;
+import Sirius.server.newuser.*;
+import Sirius.server.newuser.permission.PermissionHolder;
 
-import de.cismet.cids.tools.fromstring.*;
+import Sirius.util.*;
 
 import java.util.*;
 
-import Sirius.server.newuser.*;
-import Sirius.server.newuser.permission.PermissionHolder;
+import de.cismet.cids.tools.fromstring.*;
 
 /**
  * DefaultObject ist die ist die Eiheitliche Darstellung eines Tabelleneintrages in Sirius.
@@ -55,7 +54,7 @@ public class DefaultObject implements Object {
      *
      * @param  o  original
      */
-    public DefaultObject(Sirius.server.localserver.object.Object o) { // copy constructor
+    public DefaultObject(final Sirius.server.localserver.object.Object o) { // copy constructor
         this((o != null) ? o.getID() : -1, (o != null) ? o.getClassID() : -1);
         // System.out.println("Kopierkonstruktor object "+objectID + " Klasse " +classID);
         if (o != null) {
@@ -64,10 +63,10 @@ public class DefaultObject implements Object {
             } else {
                 attribHash = new LinkedHashMap(10, 0.75f, false); // logger.debug("Kopierkonstruktor  attribute
                 // "+attribHash);
-//            if(o.toStringConverter!=null)
-//                this.toStringConverter=o.toStringConverter;
-//            else
-//                this.toStringConverter= new ToStringConverter();
+// if(o.toStringConverter!=null)
+// this.toStringConverter=o.toStringConverter;
+// else
+// this.toStringConverter= new ToStringConverter();
 //
                 // logger.debug("Kopierkonstruktor  converter "+toStringConverter);
             }
@@ -85,7 +84,7 @@ public class DefaultObject implements Object {
      * @param  objectID  id des Objekts
      * @param  classID   id der Klasse des Objekts
      */
-    public DefaultObject(int objectID, int classID) {
+    public DefaultObject(final int objectID, final int classID) {
         this.classID = classID;
         this.objectID = objectID;
 
@@ -134,6 +133,7 @@ public class DefaultObject implements Object {
      *
      * @see     #classID
      */
+    @Override
     public final int getClassID() {
         return classID;
     }
@@ -146,11 +146,13 @@ public class DefaultObject implements Object {
      *
      * @see     #objectID
      */
+    @Override
     public final int getID() {
         return objectID;
     }
 
-    public void setID(int objectID) {
+    @Override
+    public void setID(final int objectID) {
         this.objectID = objectID;
     }
 
@@ -159,6 +161,7 @@ public class DefaultObject implements Object {
      *
      * @return  eindeutiger Schl\u00FCssel innerhalb einer domain (i.d.R. objectID@classID)
      */
+    @Override
     public java.lang.Object getKey() {
         return objectID + "@" + classID;
     }
@@ -176,7 +179,8 @@ public class DefaultObject implements Object {
      * @see     #doubles
      * @see     #longs
      */
-    public void addAttribute(ObjectAttribute anyAttribute) throws Exception {
+    @Override
+    public void addAttribute(final ObjectAttribute anyAttribute) throws Exception {
         /*
          * if (anyAttribute instanceof ObjectAttribute ) { attribs.add((Attribute)anyAttribute); }// end if
          * AttributeOfClass else throw new java.lang.Exception(" no subtype of Attribute");
@@ -187,7 +191,8 @@ public class DefaultObject implements Object {
             anyAttribute.setOptional(false);
             if (logger != null) {
                 logger.info(
-                    "optional set to false for attribute : " + anyAttribute
+                    "optional set to false for attribute : "
+                    + anyAttribute
                     + " because it belongs to a arrayLink (dummy)");
             }
         }
@@ -195,7 +200,8 @@ public class DefaultObject implements Object {
         attribHash.put(anyAttribute.getKey(), anyAttribute);
     } // end of addAttribute
 
-    public void removeAttribute(ObjectAttribute anyAttribute) {
+    @Override
+    public void removeAttribute(final ObjectAttribute anyAttribute) {
         attribHash.remove(anyAttribute.getKey());
     }
 
@@ -207,6 +213,7 @@ public class DefaultObject implements Object {
      *
      * @see     #longs
      */
+    @Override
     public ObjectAttribute[] getAttribs() {
         return (ObjectAttribute[])attribHash.values().toArray(new ObjectAttribute[attribHash.size()]);
     }
@@ -219,6 +226,7 @@ public class DefaultObject implements Object {
      *
      * @return  Hashtabel containing this objects attributes
      */
+    @Override
     public HashMap getAttributes() {
         return attribHash;
     }
@@ -231,9 +239,10 @@ public class DefaultObject implements Object {
      *
      * @return  das Attribut zu dem der Schl\u00FCssel passt
      */
-    public java.lang.Object getAttribute(java.lang.Object key) {
+    @Override
+    public java.lang.Object getAttribute(final java.lang.Object key) {
         // return  attribHash.get(key);
-        ObjectAttribute[] as = getAttribs();
+        final ObjectAttribute[] as = getAttribs();
         for (int i = 0; i < as.length; i++) {
             if (as[i].getName().equalsIgnoreCase(key.toString())) {
                 return as[i];
@@ -250,9 +259,10 @@ public class DefaultObject implements Object {
      *
      * @return  Collection mit allen attributen gleichen schl\u00FCssels == name
      */
-    public Collection<Attribute> getAttributeByName(String name, int maxResult) {
-        Iterator<Attribute> iter = getAttributes().values().iterator();
-        ArrayList<Attribute> attribsByName = new ArrayList();
+    @Override
+    public Collection<Attribute> getAttributeByName(final String name, int maxResult) {
+        final Iterator<Attribute> iter = getAttributes().values().iterator();
+        final ArrayList<Attribute> attribsByName = new ArrayList();
         while ((maxResult > 0) && iter.hasNext()) {
             Attribute a = null;
             a = iter.next();
@@ -273,8 +283,9 @@ public class DefaultObject implements Object {
      *
      * @return  DOCUMENT ME!
      */
-    public ObjectAttribute getAttributeByFieldName(String fieldname) {
-        Iterator<Attribute> iter = getAttributes().values().iterator();
+    @Override
+    public ObjectAttribute getAttributeByFieldName(final String fieldname) {
+        final Iterator<Attribute> iter = getAttributes().values().iterator();
         while (iter.hasNext()) {
             ObjectAttribute a = null; // TODO intanceof check ???
             a = (ObjectAttribute)iter.next();
@@ -293,10 +304,11 @@ public class DefaultObject implements Object {
      *
      * @return  Collection mit allen attributen gleichen schl\u00FCssels == name
      */
-    public Collection getAttributesByName(Collection names) {
-        Iterator iter = getAttributes().values().iterator();
+    @Override
+    public Collection getAttributesByName(final Collection names) {
+        final Iterator iter = getAttributes().values().iterator();
 
-        ArrayList attribsByName = new ArrayList();
+        final ArrayList attribsByName = new ArrayList();
         while (iter.hasNext()) {
             Attribute a = null;
             a = (Attribute)iter.next();
@@ -310,10 +322,11 @@ public class DefaultObject implements Object {
         return attribsByName;
     }
 
-    public Collection getAttributesByType(java.lang.Class c, int recursionDepth) {
-        Iterator iter = getAttributes().values().iterator();
+    @Override
+    public Collection getAttributesByType(final java.lang.Class c, int recursionDepth) {
+        final Iterator iter = getAttributes().values().iterator();
 
-        ArrayList attribsByType = new ArrayList();
+        final ArrayList attribsByType = new ArrayList();
 
         if (recursionDepth < 0) {
             return attribsByType;
@@ -323,7 +336,7 @@ public class DefaultObject implements Object {
             Attribute a = null;
             a = (Attribute)iter.next();
             // if(logger!=null)logger.debug(a.toString()+" attribute gefunden");
-            java.lang.Object val = a.getValue();
+            final java.lang.Object val = a.getValue();
             // if(val!=null && val.getClass().equals(c))
             if ((val != null) && c.isAssignableFrom(val.getClass())) {
                 attribsByType.add(a);
@@ -336,11 +349,13 @@ public class DefaultObject implements Object {
     }
     // --------------------------------------------------------------------------
 
-    public Collection getAttributesByType(java.lang.Class c) {
+    @Override
+    public Collection getAttributesByType(final java.lang.Class c) {
         return getAttributesByType(c, 0);
     }
 
-    public Collection getTraversedAttributesByType(java.lang.Class c) {
+    @Override
+    public Collection getTraversedAttributesByType(final java.lang.Class c) {
         return getAttributesByType(c, Integer.MAX_VALUE);
     }
 
@@ -353,17 +368,19 @@ public class DefaultObject implements Object {
      *
      * @throws  Exception  java.lang.Exception Fehler
      */
-    public Sirius.server.localserver.object.Object filter(UserGroup ug) throws Exception {
-        Sirius.server.localserver.object.DefaultObject tmp = new Sirius.server.localserver.object.DefaultObject(this);
+    @Override
+    public Sirius.server.localserver.object.Object filter(final UserGroup ug) throws Exception {
+        final Sirius.server.localserver.object.DefaultObject tmp = new Sirius.server.localserver.object.DefaultObject(
+                this);
 
-        LinkedHashMap view = new LinkedHashMap();
+        final LinkedHashMap view = new LinkedHashMap();
 
-        Collection col = this.attribHash.values();
+        final Collection col = this.attribHash.values();
 
-        Iterator iter = col.iterator();
+        final Iterator iter = col.iterator();
 
         while (iter.hasNext()) {
-            Attribute a = (Attribute)iter.next();
+            final Attribute a = (Attribute)iter.next();
             if (a.getPermissions().hasPermission(ug.getKey(), PermissionHolder.READPERMISSION)) {
                 view.put(a.getKey(), a);
             }
@@ -383,7 +400,8 @@ public class DefaultObject implements Object {
      *
      * @deprecated  UNUSED
      */
-    public java.lang.Object constructKey(Mapable m) {
+    @Override
+    public java.lang.Object constructKey(final Mapable m) {
         if (m instanceof Sirius.server.localserver.object.Object) {
             return m.getKey();
         } else {
@@ -408,7 +426,8 @@ public class DefaultObject implements Object {
      *
      * @param  objectAttributes  attributes to be added to the DefaultObject
      */
-    public void addAllAttributes(ObjectAttribute[] objectAttributes) {
+    @Override
+    public void addAllAttributes(final ObjectAttribute[] objectAttributes) {
         for (int i = 0; i < objectAttributes.length; i++) {
             try {
                 addAttribute(objectAttributes[i]);
@@ -423,6 +442,7 @@ public class DefaultObject implements Object {
      *
      * @return  Value of property persistent.
      */
+    @Override
     public boolean isPersistent() {
         return persistent;
     }
@@ -432,7 +452,8 @@ public class DefaultObject implements Object {
      *
      * @param  persistent  New value of property persistent.
      */
-    public void setPersistent(boolean persistent) {
+    @Override
+    public void setPersistent(final boolean persistent) {
         this.persistent = persistent;
     }
 
@@ -448,7 +469,8 @@ public class DefaultObject implements Object {
      *
      * @throws  Exception  java.lang.Exception error during consturction of an DefaultObject
      */
-    public java.lang.Object fromString(String objectRepresentation, java.lang.Object mo) throws Exception {
+    @Override
+    public java.lang.Object fromString(final String objectRepresentation, final java.lang.Object mo) throws Exception {
         // if(objectCreator != null)
         // return objectCreator.create(objectRepresentation);
         // else
@@ -460,6 +482,7 @@ public class DefaultObject implements Object {
      *
      * @return  can be created from a string reprenstation of this object
      */
+    @Override
     public boolean isStringCreateable() {
         return (getObjectCreator() != null);
     }
@@ -467,8 +490,9 @@ public class DefaultObject implements Object {
     /**
      * initializes all attributes with NULL.
      */
+    @Override
     public void setValuesNull() {
-        Attribute[] as = getAttribs();
+        final Attribute[] as = getAttribs();
 
         for (int i = 0; i < as.length; i++) {
             as[i].setValuesNull();
@@ -477,8 +501,9 @@ public class DefaultObject implements Object {
     }
     // -----------------------------
 
+    @Override
     public void setPrimaryKeysNull() {
-        Iterator iter = getAttributes().values().iterator();
+        final Iterator iter = getAttributes().values().iterator();
 
         while (iter.hasNext()) {
             Attribute a = null;
@@ -488,7 +513,7 @@ public class DefaultObject implements Object {
                 a.setValue(null);
             } else if (a.referencesObject()) // rekursion
             {
-                Sirius.server.localserver.object.Object o = (Sirius.server.localserver.object.Object)a.getValue();
+                final Sirius.server.localserver.object.Object o = (Sirius.server.localserver.object.Object)a.getValue();
                 if (o != null) {
                     o.setPrimaryKeysNull();
                 }
@@ -501,10 +526,11 @@ public class DefaultObject implements Object {
      *
      * @return  this objects class tables primary key
      */
+    @Override
     public Attribute getPrimaryKey() {
-        Iterator iter = getAttributes().values().iterator();
+        final Iterator iter = getAttributes().values().iterator();
 
-        ArrayList attribsByName = new ArrayList();
+        final ArrayList attribsByName = new ArrayList();
 
         while (iter.hasNext()) {
             Attribute a = null;
@@ -550,6 +576,7 @@ public class DefaultObject implements Object {
      *
      * @return  determines whether it is an artificial object
      */
+    @Override
     public boolean isDummy() {
         return dummy;
     }
@@ -559,15 +586,18 @@ public class DefaultObject implements Object {
      *
      * @param  dummy  whether it is a dummy
      */
-    public void setDummy(boolean dummy) {
+    @Override
+    public void setDummy(final boolean dummy) {
         this.dummy = dummy;
     }
 
+    @Override
     public ObjectAttribute getReferencingObjectAttribute() {
         return referencingObjectAttribute;
     }
 
-    public void setReferencingObjectAttribute(ObjectAttribute referencingObjectAttribute) {
+    @Override
+    public void setReferencingObjectAttribute(final ObjectAttribute referencingObjectAttribute) {
         this.referencingObjectAttribute = referencingObjectAttribute;
     }
 
@@ -576,6 +606,7 @@ public class DefaultObject implements Object {
      *
      * @return  staturs
      */
+    @Override
     public int getStatus() {
         return status;
     }
@@ -585,7 +616,8 @@ public class DefaultObject implements Object {
      *
      * @param  status  status
      */
-    public void setStatus(int status) {
+    @Override
+    public void setStatus(final int status) {
         try {
 //                logger = org.apache.log4j.Logger.getLogger(MetaObject.this.getClass());
 //            logger.debug("setStatus() : Status alt :" + getStatusDebugString(this.status) + "  .. Status neu:" + getStatusDebugString(status) + "\n" + getDebugString());
@@ -601,6 +633,7 @@ public class DefaultObject implements Object {
         }
     }
 
+    @Override
     public String getStatusDebugString() {
         return getStatusDebugString(getStatus());
     }
@@ -612,7 +645,7 @@ public class DefaultObject implements Object {
      *
      * @return  DOCUMENT ME!
      */
-    protected static String getStatusDebugString(int status) {
+    protected static String getStatusDebugString(final int status) {
         String statusString = "unknown";
 
         switch (status) {
@@ -657,6 +690,7 @@ public class DefaultObject implements Object {
      *
      * @return  the objectCreator
      */
+    @Override
     public FromStringCreator getObjectCreator() {
         return objectCreator;
     }

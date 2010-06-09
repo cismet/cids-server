@@ -12,14 +12,14 @@
  */
 package Sirius.server.search;
 
-import java.util.*;
-
 import Sirius.server.search.searchparameter.*;
 import Sirius.server.sql.*;
 
 import Sirius.util.*;
 import Sirius.util.collections.MultiMap;
 import Sirius.util.collections.SyncLinkedList;
+
+import java.util.*;
 /**
  * DOCUMENT ME!
  *
@@ -27,6 +27,11 @@ import Sirius.util.collections.SyncLinkedList;
  * @version  $Revision$, $Date$
  */
 public class Query implements Mapable, java.io.Serializable {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 3315572338758162152L;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -73,7 +78,7 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @param  qid  DOCUMENT ME!
      */
-    public Query(QueryIdentifier qid) {
+    public Query(final QueryIdentifier qid) {
         this.qid = qid;
         this.parameters = null;
         this.isRoot = true;
@@ -88,7 +93,7 @@ public class Query implements Mapable, java.io.Serializable {
      * @param  stmnt   DOCUMENT ME!
      * @param  domain  DOCUMENT ME!
      */
-    public Query(SystemStatement stmnt, String domain) {
+    public Query(final SystemStatement stmnt, final String domain) {
         this.qid = new QueryIdentifier(domain, stmnt.getID(), stmnt.getName(), stmnt.getDescription());
         this.parameters = stmnt.getParameters();
         this.isRoot = stmnt.isRoot();
@@ -127,12 +132,12 @@ public class Query implements Mapable, java.io.Serializable {
      * @return  DOCUMENT ME!
      */
     public List getParameterList() {
-        ArrayList l = new ArrayList();
+        final ArrayList l = new ArrayList();
 
         // collection contains syncedlinkedlists
-        Collection c = parameters.values();
+        final Collection c = parameters.values();
 
-        Iterator iter = c.iterator();
+        final Iterator iter = c.iterator();
 
         while (iter.hasNext()) {
             l.addAll((SyncLinkedList)iter.next());
@@ -146,7 +151,7 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @param  parameters  New value of property parameters.
      */
-    public void setParameters(Map parameters) {
+    public void setParameters(final Map parameters) {
         this.parameters.putAll(parameters);
     }
 
@@ -164,7 +169,7 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @param  subQueries  New value of property subQueries.
      */
-    public void setSubQueries(Vector subQueries) {
+    public void setSubQueries(final Vector subQueries) {
         this.subQueries = subQueries;
     }
 
@@ -173,7 +178,7 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @param  q  DOCUMENT ME!
      */
-    public void addSubQuery(Query q) {
+    public void addSubQuery(final Query q) {
         subQueries.add(q);
     }
 
@@ -184,7 +189,7 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public Query getSubQuery(QueryIdentifier qid) {
+    public Query getSubQuery(final QueryIdentifier qid) {
         if (subQueries != null) {
             for (int i = 0; i < subQueries.size(); i++) {
                 if (((Query)subQueries.get(i)).getQueryIdentifier().equals(qid)) {
@@ -204,12 +209,12 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public Object getParameter(Object key) {
+    public Object getParameter(final Object key) {
         if ((parameters != null) && parameters.containsKey(key)) {
             return parameters.get(key);
         } else {
             for (int i = 0; i < subQueries.size(); i++) {
-                Object value = ((Query)subQueries.get(i)).getParameter(key);
+                final Object value = ((Query)subQueries.get(i)).getParameter(key);
 
                 if (value != null) {
                     return value;
@@ -227,13 +232,13 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public void setParameter(SearchParameter parameter) throws Exception {
+    public void setParameter(final SearchParameter parameter) throws Exception {
         // xxx
-        SyncLinkedList params = (SyncLinkedList)getParameter(parameter.getKey());
+        final SyncLinkedList params = (SyncLinkedList)getParameter(parameter.getKey());
 
-        Iterator iter = params.iterator();
+        final Iterator iter = params.iterator();
         while (iter.hasNext()) {
-            SearchParameter p = (SearchParameter)iter.next();
+            final SearchParameter p = (SearchParameter)iter.next();
 
             if (p != null) {
                 p.setValue(parameter.getValue());
@@ -251,13 +256,13 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public void setParameter(Object key, Object value) throws Exception {
+    public void setParameter(final Object key, final Object value) throws Exception {
         // xxx
-        SyncLinkedList params = (SyncLinkedList)getParameter(key);
+        final SyncLinkedList params = (SyncLinkedList)getParameter(key);
 
-        Iterator iter = params.iterator();
+        final Iterator iter = params.iterator();
         while (iter.hasNext()) {
-            SearchParameter p = (SearchParameter)iter.next();
+            final SearchParameter p = (SearchParameter)iter.next();
 
             if (p != null) {
                 p.setValue(value);
@@ -274,7 +279,7 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public void addParameter(SearchParameter parameter) throws Exception {
+    public void addParameter(final SearchParameter parameter) throws Exception {
         parameters.put(parameter.getKey(), parameter);
     }
 
@@ -284,7 +289,7 @@ public class Query implements Mapable, java.io.Serializable {
      * @return  DOCUMENT ME!
      */
     public Iterator getParameterKeys() {
-        Set keys = new HashSet(parameters.size());
+        final Set keys = new HashSet(parameters.size());
 
         // recursivly filling the set
         getParameterKeys(keys);
@@ -299,8 +304,8 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @param  keys  DOCUMENT ME!
      */
-    private void getParameterKeys(Set keys) {
-        Set k = parameters.keySet();
+    private void getParameterKeys(final Set keys) {
+        final Set k = parameters.keySet();
 
         if (k != null) {
             keys.addAll(k);
@@ -321,7 +326,7 @@ public class Query implements Mapable, java.io.Serializable {
      * @return  DOCUMENT ME!
      */
     public boolean isExecutable() {
-        Iterator iter = getParameterKeys();
+        final Iterator iter = getParameterKeys();
 
         while (iter.hasNext()) {
             SearchParameter ref = null;
@@ -352,7 +357,7 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @param  isExecuted  New value of property isExecuted.
      */
-    public void setIsExecuted(boolean isExecuted) {
+    public void setIsExecuted(final boolean isExecuted) {
         this.isExecuted = isExecuted;
     }
 
@@ -379,7 +384,7 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @param  isUnionQuery  New value of property isUnionQuery.
      */
-    public void setIsUnionQuery(boolean isUnionQuery) {
+    public void setIsUnionQuery(final boolean isUnionQuery) {
         this.isUnionQuery = isUnionQuery;
     }
 
@@ -397,7 +402,7 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @param  isRoot  New value of property isRoot.
      */
-    public void setIsRoot(boolean isRoot) {
+    public void setIsRoot(final boolean isRoot) {
         this.isRoot = isRoot;
     }
 
@@ -415,7 +420,7 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @param  isUpdate  New value of property isUpdate.
      */
-    public void setIsUpdate(boolean isUpdate) {
+    public void setIsUpdate(final boolean isUpdate) {
         this.isUpdate = isUpdate;
     }
 
@@ -433,7 +438,7 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @param  parameters  New value of property parameters.
      */
-    public void setParameters(MultiMap parameters) {
+    public void setParameters(final MultiMap parameters) {
         this.parameters = parameters;
     }
 
@@ -451,11 +456,12 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @param  resultType  New value of property resultType.
      */
-    public void setResultType(int resultType) {
+    public void setResultType(final int resultType) {
         this.resultType = resultType;
     }
 
-    public Object constructKey(Mapable m) {
+    @Override
+    public Object constructKey(final Mapable m) {
         if (m instanceof Query) {
             return m.getKey();
         } else {
@@ -463,10 +469,12 @@ public class Query implements Mapable, java.io.Serializable {
         }
     }
 
+    @Override
     public Object getKey() {
         return qid.getKey();
     }
 
+    @Override
     public String toString() {
         return getKey().toString() + "\n parameter :: \n" + parameters;
     }
@@ -501,7 +509,7 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @param  isBatch  New value of property isBatch.
      */
-    public void setIsBatch(boolean isBatch) {
+    public void setIsBatch(final boolean isBatch) {
         this.isBatch = isBatch;
     }
 
@@ -519,7 +527,7 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @param  conjunction  DOCUMENT ME!
      */
-    public void setConjunction(boolean conjunction) {
+    public void setConjunction(final boolean conjunction) {
         this.conjunction = conjunction;
     }
 
@@ -537,7 +545,7 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @param  search  DOCUMENT ME!
      */
-    public void setSearch(boolean search) {
+    public void setSearch(final boolean search) {
         this.search = search;
     }
 }

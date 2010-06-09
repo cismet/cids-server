@@ -7,21 +7,21 @@
 ****************************************************/
 package Sirius.server.registry.monitor;
 
-import Sirius.util.*;
-
+import Sirius.server.*;
 import Sirius.server.naming.*;
 import Sirius.server.newuser.*;
-import Sirius.server.*;
 import Sirius.server.registry.*;
 import Sirius.server.registry.events.*;
+
+import Sirius.util.*;
+
+import java.awt.*;
+import java.awt.event.*;
 
 import java.rmi.*;
 import java.rmi.server.*;
 
 import java.util.*;
-
-import java.awt.*;
-import java.awt.event.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -104,7 +104,7 @@ public class RegistryMonitor extends JPanel implements Runnable {
      *
      * @param  registryIP  args[0] die IP-Adresse des CentralServers *
      */
-    public RegistryMonitor(String registryIP) {
+    public RegistryMonitor(final String registryIP) {
         this.registryIP = registryIP;
 
         // MessageLabel setzen
@@ -150,7 +150,7 @@ public class RegistryMonitor extends JPanel implements Runnable {
      *
      * @param  intervall  DOCUMENT ME!
      */
-    public void setUpdateIntervall(int intervall) {
+    public void setUpdateIntervall(final int intervall) {
         this.updateIntervall = intervall;
     }
 
@@ -185,11 +185,11 @@ public class RegistryMonitor extends JPanel implements Runnable {
     public void updateTables() {
         update();
         try {
-            MonitorTableModel tmLocalServers = (MonitorTableModel)localServerTable.getModel();
-            MonitorTableModel tmCallServers = (MonitorTableModel)callServerTable.getModel();
-            MonitorTableModel tmProtocolServers = (MonitorTableModel)protocolServerTable.getModel();
+            final MonitorTableModel tmLocalServers = (MonitorTableModel)localServerTable.getModel();
+            final MonitorTableModel tmCallServers = (MonitorTableModel)callServerTable.getModel();
+            final MonitorTableModel tmProtocolServers = (MonitorTableModel)protocolServerTable.getModel();
             // MonitorTableModel tmTranslServers       = (MonitorTableModel)translServerTable.getModel();
-            MonitorTableModel tmUserServers = (MonitorTableModel)userTable.getModel();
+            final MonitorTableModel tmUserServers = (MonitorTableModel)userTable.getModel();
 
             tmLocalServers.setDataVector(MonitorTableModel.convertToMatrix(localServer), columnnamesForServer);
             tmCallServers.setDataVector(MonitorTableModel.convertToMatrix(callServer), columnnamesForServer);
@@ -238,7 +238,7 @@ public class RegistryMonitor extends JPanel implements Runnable {
         }
 
         // JTabbedPane erzeugen und Tabellen hinzufuegen
-        JTabbedPane allServerPane = new JTabbedPane();
+        final JTabbedPane allServerPane = new JTabbedPane();
         allServerPane.add("LocalServers", new JScrollPane(localServerTable));
         allServerPane.add("CallServers", new JScrollPane(callServerTable));
         // allServerPane.add("TranslationServers", new JScrollPane(translServerTable));
@@ -246,16 +246,16 @@ public class RegistryMonitor extends JPanel implements Runnable {
         allServerPane.add("Users", new JScrollPane(userTable));
 
         // UpdateButton fuer manuelles Update
-        JButton updateButton = new JButton("update");
+        final JButton updateButton = new JButton("update");
         updateButton.addActionListener(new MonitorUpdateListener(this));
 
         // Panel fuer updateIntervall Einstellungen
-        JPanel timePanel = new JPanel();
-        ButtonGroup buttonGroup = new ButtonGroup();
-        JRadioButton oneMin = (new JRadioButton("all 1 Minute"));
-        JRadioButton fiveMin = new JRadioButton("all 5 Minutes");
-        JRadioButton tenMin = new JRadioButton("all 10 Minutes");
-        MonitorIntervallListener il = new MonitorIntervallListener(this);
+        final JPanel timePanel = new JPanel();
+        final ButtonGroup buttonGroup = new ButtonGroup();
+        final JRadioButton oneMin = (new JRadioButton("all 1 Minute"));
+        final JRadioButton fiveMin = new JRadioButton("all 5 Minutes");
+        final JRadioButton tenMin = new JRadioButton("all 10 Minutes");
+        final MonitorIntervallListener il = new MonitorIntervallListener(this);
         oneMin.addActionListener(il);
         fiveMin.addActionListener(il);
         tenMin.addActionListener(il);
@@ -271,11 +271,11 @@ public class RegistryMonitor extends JPanel implements Runnable {
         timePanel.setBorder(BorderFactory.createTitledBorder("Intervall for automatical update"));
 
         // MessageLabel und MessagePanel
-        JPanel messagePanel = new JPanel();
+        final JPanel messagePanel = new JPanel();
         messagePanel.setBorder(BorderFactory.createTitledBorder("Messages"));
         messagePanel.add(messageLabel);
 
-        JPanel buttonAndMessagePanel = new JPanel();
+        final JPanel buttonAndMessagePanel = new JPanel();
         buttonAndMessagePanel.setLayout(new BorderLayout());
         buttonAndMessagePanel.add(updateButton, BorderLayout.NORTH);
         buttonAndMessagePanel.add(messagePanel, BorderLayout.CENTER);
@@ -293,10 +293,11 @@ public class RegistryMonitor extends JPanel implements Runnable {
      * Schleife zum automatischen aktualisieren der Tabellen, Intervall kann ueber Variable updateIntervall gesetzt
      * werden. *
      */
+    @Override
     public void run() {
         while (true) {
             try {
-                Thread t = Thread.currentThread();
+                final Thread t = Thread.currentThread();
                 messageLabel.setForeground(new Color(102, 102, 153));
                 message("last update: " + (new Date(System.currentTimeMillis())));
                 t.sleep(updateIntervall * 1000);
@@ -310,7 +311,7 @@ public class RegistryMonitor extends JPanel implements Runnable {
      *
      * @param  message  DOCUMENT ME!
      */
-    public void message(String message) {
+    public void message(final String message) {
         messageLabel.setText(message);
     }
 
@@ -321,10 +322,10 @@ public class RegistryMonitor extends JPanel implements Runnable {
      *
      * @param  args  DOCUMENT ME!
      */
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         // RegistryMonitor monitor = new RegistryMonitor(args[0]);
-        RegistryMonitor monitor = new RegistryMonitor("192.168.0.1");
-        JFrame frame = new JFrame("RegistryMonitor");
+        final RegistryMonitor monitor = new RegistryMonitor("192.168.0.1");
+        final JFrame frame = new JFrame("RegistryMonitor");
 
         frame.getContentPane().add(monitor);
         frame.setSize(400, 400);

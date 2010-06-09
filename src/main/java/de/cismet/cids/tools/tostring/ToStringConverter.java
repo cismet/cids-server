@@ -13,10 +13,9 @@
 package de.cismet.cids.tools.tostring;
 
 import Sirius.server.localserver.attribute.*;
+import Sirius.server.middleware.types.*;
 
 import java.util.*;
-
-import Sirius.server.middleware.types.*;
 
 /**
  * DOCUMENT ME!
@@ -24,6 +23,11 @@ import Sirius.server.middleware.types.*;
  * @version  $Revision$, $Date$
  */
 public class ToStringConverter implements java.io.Serializable {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 8894419084787216662L;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -39,12 +43,12 @@ public class ToStringConverter implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public String convert(Sirius.server.localserver.object.Object o, HashMap classes) {
+    public String convert(final Sirius.server.localserver.object.Object o, final HashMap classes) {
         String stringRepresentation = "";
 
         // ObjectAttribute[] attrs = o.getAttribs();
-        Collection names = o.getAttributeByName("name", 1);
-        Iterator iter = names.iterator();
+        final Collection names = o.getAttributeByName("name", 1);
+        final Iterator iter = names.iterator();
 
         if (iter.hasNext()) {
             stringRepresentation += ((ObjectAttribute)iter.next()).getValue();
@@ -72,7 +76,7 @@ public class ToStringConverter implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public String convert(de.cismet.cids.tools.tostring.StringConvertable o) {
+    public String convert(final de.cismet.cids.tools.tostring.StringConvertable o) {
         setLogger();
 
         if (logger != null) {
@@ -84,8 +88,8 @@ public class ToStringConverter implements java.io.Serializable {
         String stringRepresentation = "";
 
         if (o instanceof Sirius.server.localserver.object.Object) {
-            Collection names = ((Sirius.server.localserver.object.Object)o).getAttributeByName("name", 1);
-            Iterator iter = names.iterator();
+            final Collection names = ((Sirius.server.localserver.object.Object)o).getAttributeByName("name", 1);
+            final Iterator iter = names.iterator();
 
             if (iter.hasNext()) {
                 stringRepresentation += ((ObjectAttribute)iter.next()).getValue();

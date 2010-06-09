@@ -12,11 +12,11 @@
  */
 package Sirius.server.sql;
 
+import Sirius.server.search.*;
+
 import java.sql.*;
 
 import java.util.*;
-
-import Sirius.server.search.*;
 /**
  * DOCUMENT ME!
  *

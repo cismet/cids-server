@@ -12,19 +12,19 @@
  */
 package Sirius.server.dataretrieval;
 
+import Sirius.server.localserver.attribute.*;
+import Sirius.server.middleware.types.*;
+import Sirius.server.middleware.types.MOTraverse.*;
+
+import Sirius.util.Parametrizer;
+
 import com.enterprisedt.net.ftp.*;
+
+import org.apache.log4j.*;
 
 import java.io.*;
 
 import java.net.*;
-
-import Sirius.util.Parametrizer;
-
-import Sirius.server.middleware.types.*;
-import Sirius.server.localserver.attribute.*;
-import Sirius.server.middleware.types.MOTraverse.*;
-
-import org.apache.log4j.*;
 
 /**
  * Liest MetaDataObject, erstellt eine Verbindung zum FTP-Server und liefert eine Datei als Byte-Array in einem
@@ -60,34 +60,35 @@ public class FTPProto implements MetaObjectProto {
      *
      * @throws  DataRetrievalException  DOCUMENT ME!
      */
-    public DataObject getDataObject(MetaObject metaDataObject) throws DataRetrievalException {
-        byte[] data;
+    @Override
+    public DataObject getDataObject(final MetaObject metaDataObject) throws DataRetrievalException {
+        final byte[] data;
 
-        ProtoDelegator protoDelegator = new ProtoDelegator(logger);
+        final ProtoDelegator protoDelegator = new ProtoDelegator(logger);
 
-        MetaObject param_mo = protoDelegator.getParameterMO(metaDataObject);
+        final MetaObject param_mo = protoDelegator.getParameterMO(metaDataObject);
 
         String s_url = (String)protoDelegator.getURL(param_mo);
 
         s_url = Parametrizer.parametrize(s_url, metaDataObject);
 
-        String login = (String)protoDelegator.getSingleValue(param_mo, "login");
-        String password = (String)protoDelegator.getSingleValue(param_mo, "password");
+        final String login = (String)protoDelegator.getSingleValue(param_mo, "login");
+        final String password = (String)protoDelegator.getSingleValue(param_mo, "password");
 
-        String fileName = metaDataObject.getName();
+        final String fileName = metaDataObject.getName();
 
         if (fileName == null) {
-            String message = "Name of dataobjekt was not found."
+            final String message = "Name of dataobjekt was not found."
                 + "The name must agree with the file name.";
 
             throw new DataRetrievalException(message, logger);
         }
 
         try {
-            URL url = new URL(s_url.trim() + fileName.trim());
+            final URL url = new URL(s_url.trim() + fileName.trim());
 
-            String remoteHost = url.getHost();
-            String path = url.getPath();
+            final String remoteHost = url.getHost();
+            final String path = url.getPath();
             int controllPort = url.getPort();
             if (controllPort == -1) {
                 controllPort = url.getDefaultPort();
@@ -127,15 +128,14 @@ public class FTPProto implements MetaObjectProto {
      * @throws  IOException   DOCUMENT ME!
      * @throws  FTPException  DOCUMENT ME!
      */
-    private byte[] getDataObject(
-            String remoteHost,
-            int controlPort,
-            String kennung,
-            String passwd,
-            String remotePath) throws IOException, FTPException {
-        byte[] bytes;
+    private byte[] getDataObject(final String remoteHost,
+            final int controlPort,
+            final String kennung,
+            final String passwd,
+            final String remotePath) throws IOException, FTPException {
+        final byte[] bytes;
 
-        FTPClient ftpClient = new FTPClient(remoteHost, controlPort);
+        final FTPClient ftpClient = new FTPClient(remoteHost, controlPort);
 
         ftpClient.setLogStream(null);
 
@@ -149,6 +149,7 @@ public class FTPProto implements MetaObjectProto {
         return bytes;
     }
 
+    @Override
     public String getDataSourceClass() {
         return "ftp";
     }

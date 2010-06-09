@@ -29,7 +29,7 @@ public class ClassMap extends java.util.Hashtable {
      *
      * @param  capacity  DOCUMENT ME!
      */
-    public ClassMap(int capacity) {
+    public ClassMap(final int capacity) {
         super(capacity);
     }
     /**
@@ -38,7 +38,7 @@ public class ClassMap extends java.util.Hashtable {
      * @param  capacity  DOCUMENT ME!
      * @param  factor    DOCUMENT ME!
      */
-    public ClassMap(int capacity, float factor) {
+    public ClassMap(final int capacity, final float factor) {
         super(capacity, factor);
     }
 
@@ -53,8 +53,8 @@ public class ClassMap extends java.util.Hashtable {
      * @throws  Exception            DOCUMENT ME!
      * @throws  java.lang.Exception  DOCUMENT ME!
      */
-    public void add(int key, Class value) throws Exception {
-        Integer Key = new Integer(key);
+    public void add(final int key, final Class value) throws Exception {
+        final Integer Key = new Integer(key);
         super.put(Key, value);
         if (!super.containsKey(Key)) {
             throw new java.lang.Exception("Couldn't add class ID:" + key);
@@ -70,10 +70,10 @@ public class ClassMap extends java.util.Hashtable {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public Class getClass(int key) throws Exception {
-        Integer Key = new Integer(key); // map accepts objects only
+    public Class getClass(final int key) throws Exception {
+        final Integer Key = new Integer(key); // map accepts objects only
         if (super.containsKey(Key)) {
-            java.lang.Object candidate = super.get(Key);
+            final java.lang.Object candidate = super.get(Key);
 
             // if (candidate instanceof Class)
             return (Class)candidate;
@@ -94,10 +94,11 @@ public class ClassMap extends java.util.Hashtable {
      *
      * @return  DOCUMENT ME!
      */
-    public boolean containsIntKey(int key) {
+    public boolean containsIntKey(final int key) {
         return super.containsKey(new Integer(key));
     }
 
+    @Override
     public void rehash() {
         super.rehash();
     }

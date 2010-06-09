@@ -71,7 +71,8 @@ public class UserStoreTest {
      * @throws  Exception  DOCUMENT ME!
      */
     @AfterClass
-    public static void tearDownClass() throws Exception {
+    public static void tearDownClass() throws Throwable {
+        pool.shutdown();
     }
 
     /**
@@ -151,7 +152,7 @@ public class UserStoreTest {
         }
         final UserStore us = new UserStore(pool, props);
         assertTrue("invalid user + password",
-            us.validateUserPassword(new User(-1, "admin", null), "sb"));
+            us.validateUserPassword(new User(-1, "admin", null), "cismet"));
     }
 
     /**

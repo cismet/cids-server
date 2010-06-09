@@ -1,10 +1,10 @@
 /***************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- *
- *              ... and it just works.
- *
- ****************************************************/
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -19,8 +19,11 @@ import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 
-import de.cismet.cids.utils.CidsBeanPersistService;
-import de.cismet.cids.utils.MetaClassCacheService;
+import org.apache.commons.beanutils.PropertyUtils;
+
+import org.jdesktop.observablecollections.ObservableList;
+
+import org.openide.util.Lookup;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyChangeEvent;
@@ -32,11 +35,8 @@ import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.apache.commons.beanutils.PropertyUtils;
-
-import org.jdesktop.observablecollections.ObservableList;
-
-import org.openide.util.Lookup;
+import de.cismet.cids.utils.CidsBeanPersistService;
+import de.cismet.cids.utils.MetaClassCacheService;
 
 /**
  * DOCUMENT ME!
@@ -47,6 +47,7 @@ import org.openide.util.Lookup;
 public class CidsBean implements PropertyChangeListener {
 
     //~ Instance fields --------------------------------------------------------
+
     protected PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     protected MetaObject metaObject = null;
     protected String backlinkFieldname;
@@ -54,6 +55,7 @@ public class CidsBean implements PropertyChangeListener {
     private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
 
     //~ Methods ----------------------------------------------------------------
+
     /**
      * DOCUMENT ME!
      *
@@ -66,9 +68,12 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public static CidsBean constructNew(MetaService meta, User u, String domain, String tableName) throws Exception {
-        MetaClass mc = meta.getClassByTableName(u, tableName, domain);
-        MetaObject mo = mc.getEmptyInstance();
+    public static CidsBean constructNew(final MetaService meta,
+            final User u,
+            final String domain,
+            final String tableName) throws Exception {
+        final MetaClass mc = meta.getClassByTableName(u, tableName, domain);
+        final MetaObject mo = mc.getEmptyInstance();
         return mo.getBean();
     }
 
@@ -88,7 +93,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @return  DOCUMENT ME!
      */
-    public boolean getHasWritePermission(User user) {
+    public boolean getHasWritePermission(final User user) {
         return metaObject.getMetaClass().getPermissions().hasWritePermission(user.getUserGroup());
     }
 
@@ -97,7 +102,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @param  metaObject  DOCUMENT ME!
      */
-    public void setMetaObject(MetaObject metaObject) {
+    public void setMetaObject(final MetaObject metaObject) {
         this.metaObject = metaObject;
     }
 
@@ -110,28 +115,45 @@ public class CidsBean implements PropertyChangeListener {
         return metaObject.getDebugString();
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     @Override
     public String toString() {
-        String ret = metaObject.toString();
+        final String ret = metaObject.toString();
         // log.fatal("ToString von CIDSBEAN: "+ret);
         return ret;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   obj  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (obj == null) {
             return false;
         }
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final CidsBean other = (CidsBean) obj;
+        final CidsBean other = (CidsBean)obj;
         return metaObject.equals(other.metaObject);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     @Override
     public int hashCode() {
-        String s = metaObject.getID() + "." + metaObject.getMetaClass().getID() + "." + metaObject.getDomain();
+        final String s = metaObject.getID() + "." + metaObject.getMetaClass().getID() + "." + metaObject.getDomain();
         return s.hashCode();
     }
 
@@ -155,7 +177,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public CidsBean persist(MetaService metaService, User user, String domain) throws Exception {
+    public CidsBean persist(final MetaService metaService, final User user, final String domain) throws Exception {
         if (metaObject.getStatus() == MetaObject.MODIFIED) {
             metaService.updateMetaObject(user, metaObject, domain);
             return metaService.getMetaObject(user, metaObject.getID(), metaObject.getClassID(), domain).getBean();
@@ -163,7 +185,7 @@ public class CidsBean implements PropertyChangeListener {
             metaService.deleteMetaObject(user, metaObject, domain);
             return null;
         } else if (metaObject.getStatus() == MetaObject.NEW) {
-            MetaObject mo = metaService.insertMetaObject(user, metaObject, domain);
+            final MetaObject mo = metaService.insertMetaObject(user, metaObject, domain);
             if (mo != null) {
                 return mo.getBean();
             }
@@ -179,7 +201,7 @@ public class CidsBean implements PropertyChangeListener {
      * @throws  Exception  DOCUMENT ME!
      */
     public CidsBean persist() throws Exception {
-        CidsBeanPersistService persistService = Lookup.getDefault().lookup(CidsBeanPersistService.class);
+        final CidsBeanPersistService persistService = Lookup.getDefault().lookup(CidsBeanPersistService.class);
         if (persistService != null) {
             return persistService.persistCidsBean(this);
         }
@@ -195,7 +217,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public CidsBean addNewArrayElement(String property) {
+    public CidsBean addNewArrayElement(final String property) {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 
@@ -209,7 +231,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
-    public CidsBean addArrayElement(String property, CidsBean arrayElement) {
+    public CidsBean addArrayElement(final String property, final CidsBean arrayElement) {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 
@@ -219,7 +241,7 @@ public class CidsBean implements PropertyChangeListener {
      * @param  fieldname     DOCUMENT ME!
      * @param  parentObject  DOCUMENT ME!
      */
-    public void setBacklinkInformation(String fieldname, CidsBean parentObject) {
+    public void setBacklinkInformation(final String fieldname, final CidsBean parentObject) {
         backlinkFieldname = fieldname;
         backlinkObject = parentObject;
     }
@@ -229,7 +251,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @param  listener  DOCUMENT ME!
      */
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addPropertyChangeListener(final PropertyChangeListener listener) {
         propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
@@ -238,7 +260,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @param  listener  DOCUMENT ME!
      */
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
+    public void removePropertyChangeListener(final PropertyChangeListener listener) {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
@@ -247,12 +269,13 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @param  evt  A PropertyChangeEvent object describing the event source and the property that has changed.
      */
-    public void propertyChange(PropertyChangeEvent evt) {
-        String field = evt.getPropertyName();
+    @Override
+    public void propertyChange(final PropertyChangeEvent evt) {
+        final String field = evt.getPropertyName();
 
-        ObjectAttribute oa = metaObject.getAttributeByFieldName(field);
-        Object oldValue = oa.getValue();
-        Object value = evt.getNewValue();
+        final ObjectAttribute oa = metaObject.getAttributeByFieldName(field);
+        final Object oldValue = oa.getValue();
+        final Object value = evt.getNewValue();
         if (oa.referencesObject() && (value instanceof CidsBean) && (value != null)) {
 //            if (value == null) {
 //                MetaObject oldMO = (MetaObject) oa.getValue();
@@ -265,7 +288,7 @@ public class CidsBean implements PropertyChangeListener {
 //                    }
 //                }
 //            } else if (value instanceof CidsBean) {
-            CidsBean cbv = (CidsBean) value;
+            final CidsBean cbv = (CidsBean)value;
             oa.setValue(cbv.getMetaObject());
             cbv.setBacklinkInformation(field, this);
             if (cbv.getMetaObject().getStatus() == MetaObject.TO_DELETE) {
@@ -285,7 +308,7 @@ public class CidsBean implements PropertyChangeListener {
             oa.setChanged(true);
             metaObject.setStatus(MetaObject.MODIFIED);
 
-            ObjectAttribute referencingOA = metaObject.getReferencingObjectAttribute();
+            final ObjectAttribute referencingOA = metaObject.getReferencingObjectAttribute();
             walkUpAndSetChangedAndModified(referencingOA);
         } else {
             log.info("set with the same value. no status change required (" + field + ":" + value + ")");
@@ -300,7 +323,7 @@ public class CidsBean implements PropertyChangeListener {
     private void walkUpAndSetChangedAndModified(ObjectAttribute referencingOA) {
         while (referencingOA != null) {
             referencingOA.setChanged(true);
-            Sirius.server.localserver.object.Object parent = referencingOA.getParentObject();
+            final Sirius.server.localserver.object.Object parent = referencingOA.getParentObject();
             parent.setStatus(MetaObject.MODIFIED); // funzt jetzt weil beim Erzeugen der Bean nochmals gesetzt (funzt
             // nicht weil �ber den MetaObject Konstruktor eine neue Adresse
             // genutzt wird. Der andere Kram funktioniert aber, da die
@@ -319,14 +342,15 @@ public class CidsBean implements PropertyChangeListener {
         metaObject.setStatus(MetaObject.TO_DELETE);
         metaObject.setChanged(true);
         if (backlinkObject != null) {
-            ObjectAttribute backlinkOA = backlinkObject.getMetaObject().getAttributeByFieldName(backlinkFieldname);
+            final ObjectAttribute backlinkOA = backlinkObject.getMetaObject()
+                        .getAttributeByFieldName(backlinkFieldname);
             walkUpAndSetChangedAndModified(backlinkOA);
 
-            Object o = PropertyUtils.getProperty(backlinkObject, backlinkFieldname);
+            final Object o = PropertyUtils.getProperty(backlinkObject, backlinkFieldname);
             if (o instanceof CidsBean) {
                 PropertyUtils.setProperty(backlinkObject, backlinkFieldname, null);
             } else if (o instanceof ObservableList) {
-                ((ObservableList) o).remove(this);
+                ((ObservableList)o).remove(this);
             }
         }
     }
@@ -340,13 +364,13 @@ public class CidsBean implements PropertyChangeListener {
      * @throws  RuntimeException  DOCUMENT ME!
      */
     public void fillEmptyFieldWithEmptySubInstance(final String name) throws Exception {
-        ObjectAttribute oa = getMetaObject().getAttributeByFieldName(name);
-        MetaClassCacheService classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
+        final ObjectAttribute oa = getMetaObject().getAttributeByFieldName(name);
+        final MetaClassCacheService classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
         if (classCacheService != null) {
-            MetaClass mc = classCacheService.getMetaClass(
+            final MetaClass mc = classCacheService.getMetaClass(
                     getMetaObject().getDomain(),
                     oa.getMai().getForeignKeyClassId());
-            CidsBean newOne = mc.getEmptyInstance().getBean();
+            final CidsBean newOne = mc.getEmptyInstance().getBean();
             setProperty(name, newOne);
         } else {
             throw new RuntimeException("Could not lookup MetaClassCacheService");
@@ -403,24 +427,29 @@ public class CidsBean implements PropertyChangeListener {
      * @param  index       the index the elements were added to
      * @param  length      the number of elements that were added
      */
-    public void listElementsAdded(String arrayfield, ObservableList list, int index, int length) {
+    public void listElementsAdded(final String arrayfield,
+            final ObservableList list,
+            final int index,
+            final int length) {
         for (int i = index; i < (index + length); ++i) {
             try {
-                Object o = list.get(i);
+                final Object o = list.get(i);
                 if (arrayfield != null) {
                     if (o instanceof CidsBean) {
-                        CidsBean cb = (CidsBean) o;
+                        final CidsBean cb = (CidsBean)o;
                         cb.setBacklinkInformation(arrayfield, this);
-                        ObjectAttribute oa = this.getMetaObject().getAttributeByFieldName(arrayfield);
+                        final ObjectAttribute oa = this.getMetaObject().getAttributeByFieldName(arrayfield);
 
                         walkUpAndSetChangedAndModified(oa);
                         // ArrayElement anlegen
-                        MetaClass zwischenTabellenKlasse = (MetaClass) ((Hashtable) getMetaObject().getAllClasses()).get(
-                                getMetaObject().getDomain() + oa.getMai().getForeignKeyClassId());
-                        MetaObject arrayElement = zwischenTabellenKlasse.getEmptyInstance();
+                        final MetaClass zwischenTabellenKlasse = (MetaClass)((Hashtable)getMetaObject().getAllClasses())
+                                    .get(
+                                        getMetaObject().getDomain()
+                                        + oa.getMai().getForeignKeyClassId());
+                        final MetaObject arrayElement = zwischenTabellenKlasse.getEmptyInstance();
 
-                        ObjectAttribute[] arrayElementAttrs = arrayElement.getAttribs();
-                        for (ObjectAttribute arrayElementAttribute : arrayElementAttrs) {
+                        final ObjectAttribute[] arrayElementAttrs = arrayElement.getAttribs();
+                        for (final ObjectAttribute arrayElementAttribute : arrayElementAttrs) {
                             arrayElementAttribute.setParentObject(arrayElement);
                             if (arrayElementAttribute.isPrimaryKey()) {
                                 arrayElementAttribute.setValue(-1);
@@ -436,11 +465,11 @@ public class CidsBean implements PropertyChangeListener {
                         // Wen noch kein Dummy-Objekt existiert (Wert ist noch null)
                         // Anlegen eines Dummy-Objektes
                         if (oa.getValue() == null) {
-                            Sirius.server.localserver.object.Object dummyO =
-                                    new Sirius.server.localserver.object.DefaultObject(
+                            final Sirius.server.localserver.object.Object dummyO =
+                                new Sirius.server.localserver.object.DefaultObject(
                                     getMetaObject().getID(),
                                     oa.getMai().getForeignKeyClassId());
-                            MetaObject dummyMO = new DefaultMetaObject(dummyO, getMetaObject().getDomain());
+                            final MetaObject dummyMO = new DefaultMetaObject(dummyO, getMetaObject().getDomain());
                             dummyMO.setReferencingObjectAttribute(oa);
                             dummyMO.setDummy(true);
                             dummyMO.setStatus(MetaObject.NEW);
@@ -449,13 +478,15 @@ public class CidsBean implements PropertyChangeListener {
                         }
 
                         // hinzufuegen eines Attributes, das auf das angelegte Arrayelement zeigt
-                        MetaObject dummy = (MetaObject) oa.getValue();
+                        final MetaObject dummy = (MetaObject)oa.getValue();
                         dummy.setStatus(MetaObject.MODIFIED);
                         int counter = dummy.getAttribs().length;
                         // MAI des ArrayFeldes des Hauptobjektes
-                        MemberAttributeInfo mai = oa.getMai();
-                        ObjectAttribute dummyOA = new ObjectAttribute(
-                                mai.getId() + "." + ++counter,
+                        final MemberAttributeInfo mai = oa.getMai();
+                        final ObjectAttribute dummyOA = new ObjectAttribute(
+                                mai.getId()
+                                        + "."
+                                        + ++counter,
                                 mai,
                                 -1,
                                 arrayElement,
@@ -484,28 +515,31 @@ public class CidsBean implements PropertyChangeListener {
      * @param  index        the starting index the elements were removed from
      * @param  oldElements  a list containing the elements that were removed.
      */
-    public void listElementsRemoved(String arrayfield, ObservableList list, int index,
-            List oldElements) {
-        for (Object element : oldElements) {
-            CidsBean cidsBean = (CidsBean) element;
-            ObjectAttribute deepestReferencingAttribute = cidsBean.getMetaObject().getReferencingObjectAttribute();
+    public void listElementsRemoved(final String arrayfield,
+            final ObservableList list,
+            final int index,
+            final List oldElements) {
+        for (final Object element : oldElements) {
+            final CidsBean cidsBean = (CidsBean)element;
+            final ObjectAttribute deepestReferencingAttribute = cidsBean.getMetaObject()
+                        .getReferencingObjectAttribute();
             if ((cidsBean.getMetaObject().getStatus() == MetaObject.TO_DELETE)
-                    || (cidsBean.getMetaObject().getStatus() == MetaObject.MODIFIED)) {
+                        || (cidsBean.getMetaObject().getStatus() == MetaObject.MODIFIED)) {
                 deepestReferencingAttribute.setChanged(true);
             } else if (cidsBean.getMetaObject().getStatus() == MetaObject.NEW) {
                 // wurde gerade erst angelegt, braucht nur entfernt zu werden
                 deepestReferencingAttribute.setValue(null);
             }
-            Sirius.server.localserver.object.Object arrayEntry = deepestReferencingAttribute.getParentObject();
+            final Sirius.server.localserver.object.Object arrayEntry = deepestReferencingAttribute.getParentObject();
             if (arrayEntry.getStatus() == MetaObject.NEW) {
                 // wurde gerade erst angelegt, braucht nur entfernt zu werden
-                ObjectAttribute toDelete = arrayEntry.getReferencingObjectAttribute();
+                final ObjectAttribute toDelete = arrayEntry.getReferencingObjectAttribute();
                 toDelete.getParentObject().removeAttribute(toDelete);
                 // toDelete.getKey();
             } else if ((arrayEntry.getStatus() != MetaObject.TEMPLATE)
-                    || (arrayEntry.getStatus() != MetaObject.TEMPLATE)) {
+                        || (arrayEntry.getStatus() != MetaObject.TEMPLATE)) {
                 arrayEntry.setStatus(MetaObject.TO_DELETE);
-                ObjectAttribute referencingOA = arrayEntry.getReferencingObjectAttribute();
+                final ObjectAttribute referencingOA = arrayEntry.getReferencingObjectAttribute();
                 walkUpAndSetChangedAndModified(referencingOA);
             }
             // log.fatal(this.getMOString());
@@ -521,8 +555,10 @@ public class CidsBean implements PropertyChangeListener {
      * @param  index       the index of the element that was replaced
      * @param  oldElement  the element at the index before the change
      */
-    public void listElementReplaced(String arrayfield, ObservableList list, int index,
-            Object oldElement) {
+    public void listElementReplaced(final String arrayfield,
+            final ObservableList list,
+            final int index,
+            final Object oldElement) {
     }
 
     /**
@@ -534,11 +570,16 @@ public class CidsBean implements PropertyChangeListener {
      * @param  list        the {@code ObservableList} that has changed
      * @param  index       the index of the element that changed
      */
-    public void listElementPropertyChanged(String arrayfield, ObservableList list, int index) {
+    public void listElementPropertyChanged(final String arrayfield, final ObservableList list, final int index) {
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public String[] getPropertyNames() {
-        //to be overridden by the dynamic class
+        // to be overridden by the dynamic class
         return null;
     }
 
@@ -551,8 +592,8 @@ public class CidsBean implements PropertyChangeListener {
      */
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
-            PropertyDescriptor pd = new PropertyDescriptor("MOString", CidsBean.class);
-            return new PropertyDescriptor[]{pd};
+            final PropertyDescriptor pd = new PropertyDescriptor("MOString", CidsBean.class);
+            return new PropertyDescriptor[] { pd };
         } catch (IntrospectionException e) {
             throw new Error(e.toString());
         }

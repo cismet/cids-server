@@ -42,7 +42,7 @@ public class boolTest {
      *
      * @param  c  DOCUMENT ME!
      */
-    public void setC(boolean c) {
+    public void setC(final boolean c) {
         this.c = c;
     }
 
@@ -60,11 +60,11 @@ public class boolTest {
      *
      * @param  args  DOCUMENT ME!
      */
-    public static void main(String[] args) {
-        boolTest b = new boolTest();
+    public static void main(final String[] args) {
+        final boolTest b = new boolTest();
 
         System.out.println(b.getC());
-        boolean a = true;
+        final boolean a = true;
         b.setC(a);
         System.out.println(b.getC());
     }

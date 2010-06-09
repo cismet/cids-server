@@ -19,6 +19,7 @@
             <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
         </goals>
         <properties>
+            <exec.format.skip>true</exec.format.skip>
             <exec.classpathScope>runtime</exec.classpathScope>
             <exec.workingdir>${de.cismet.cids.server.workingDir}</exec.workingdir>
             <exec.args>-classpath %classpath Sirius.server.middleware.impls.domainserver.DomainServerImpl runtime.properties</exec.args>
@@ -32,6 +33,7 @@
             <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
         </goals>
         <properties>
+            <exec.format.skip>true</exec.format.skip>
             <exec.classpathScope>runtime</exec.classpathScope>
             <exec.workingdir>${de.cismet.cids.server.workingDir}</exec.workingdir>
             <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath Sirius.server.middleware.impls.domainserver.DomainServerImpl runtime.properties</exec.args>
@@ -46,6 +48,7 @@
             <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
         </goals>
         <properties>
+            <exec.format.skip>true</exec.format.skip>
             <exec.args>${profiler.args} -classpath %classpath Sirius.server.middleware.impls.domainserver.DomainServerImpl runtime.properties</exec.args>
             <exec.workingdir>${de.cismet.cids.server.workingDir}</exec.workingdir>
             <profiler.action>profile</profiler.action>

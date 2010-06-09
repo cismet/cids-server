@@ -37,7 +37,7 @@ public class UnableToDeregisterException extends Exception {
      *
      * @param  message  DOCUMENT ME!
      */
-    public UnableToDeregisterException(String message) {
+    public UnableToDeregisterException(final String message) {
         super(message);
     }
 }

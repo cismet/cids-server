@@ -16,12 +16,12 @@
  */
 package Sirius.util;
 
-import java.util.regex.*;
-import java.util.*;
-
 import Sirius.server.middleware.types.Node;
 
 import java.math.BigInteger;
+
+import java.util.*;
+import java.util.regex.*;
 
 /**
  * Der Comparator splitet strings und benutzt als Delimiter ganze Zahlen. Beim Splitten beh\u00E4lt er die delimiter bei
@@ -55,7 +55,8 @@ public class NodeComparator implements java.util.Comparator {
      *
      * @return  DOCUMENT ME!
      */
-    public int compare(Object o1, Object o2) {
+    @Override
+    public int compare(final Object o1, final Object o2) {
         String o1String = o1.toString();
         String o2String = o2.toString();
 
@@ -80,10 +81,10 @@ public class NodeComparator implements java.util.Comparator {
         } else if (o2String.indexOf(o1String) > -1) {
             return -1;
         } else {
-            Object[] o1s = split(o1String, 0);
+            final Object[] o1s = split(o1String, 0);
 
             // maximal gleiche l\u00E4nge beim vergleich
-            Object[] o2s = split(o2String, o1s.length);
+            final Object[] o2s = split(o2String, o1s.length);
 
             for (int i = 0; i < o2s.length; i++) {
                 if (o1s[i] instanceof java.math.BigInteger /*&& o2s[i] instanceof java.math.BigInteger*/) {
@@ -108,27 +109,27 @@ public class NodeComparator implements java.util.Comparator {
      *
      * @return  DOCUMENT ME!
      */
-    public static Object[] split(CharSequence input, int limit) {
+    public static Object[] split(final CharSequence input, final int limit) {
         int index = 0;
-        boolean matchLimited = limit > 0;
-        ArrayList matchList = new ArrayList();
+        final boolean matchLimited = limit > 0;
+        final ArrayList matchList = new ArrayList();
 
         // p is static
-        Matcher m = p.matcher(input);
+        final Matcher m = p.matcher(input);
 
         // Add segments before each match found
         while (m.find()) {
             if (!matchLimited || (matchList.size() < (limit - 1))) {
-                String match = input.subSequence(index, m.start()).toString();
+                final String match = input.subSequence(index, m.start()).toString();
                 matchList.add(match);
 
                 // add splitcharacter
-                String delimiter = input.subSequence(m.start(), m.end()).toString();
+                final String delimiter = input.subSequence(m.start(), m.end()).toString();
 
                 matchList.add(new BigInteger(delimiter));
                 index = m.end();
             } else if (matchList.size() == (limit - 1)) { // last one
-                String match = input.subSequence(index, input.length()).toString();
+                final String match = input.subSequence(index, input.length()).toString();
                 matchList.add(match);
                 index = m.end();
             }
@@ -151,7 +152,7 @@ public class NodeComparator implements java.util.Comparator {
                 resultSize--;
             }
         }
-        Object[] result = new Object[resultSize];
+        final Object[] result = new Object[resultSize];
         return (Object[])matchList.subList(0, resultSize).toArray(result);
     }
 
@@ -160,19 +161,19 @@ public class NodeComparator implements java.util.Comparator {
      *
      * @param  args  DOCUMENT ME!
      */
-    public static void main(String[] args) {
-        String s = "Flurst\u00FCck: 218 / 2";
-        String s2 = "Flurst\u00FCck: 218 / 11";
+    public static void main(final String[] args) {
+        final String s = "Flurst\u00FCck: 218 / 2";
+        final String s2 = "Flurst\u00FCck: 218 / 11";
 
         System.out.println("STringcompare:: " + s.compareTo(s2));
 
-        Object[] as = split(s, 0);
+        final Object[] as = split(s, 0);
 
         for (int i = 0; i < as.length; i++) {
             System.out.println(as[i]);
         }
 
-        Comparator c = new NodeComparator();
+        final Comparator c = new NodeComparator();
 
         System.out.println("nodecompare " + c.compare(s, s2));
     }

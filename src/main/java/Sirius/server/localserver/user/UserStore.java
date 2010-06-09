@@ -7,15 +7,20 @@
 ****************************************************/
 package Sirius.server.localserver.user;
 
+import Sirius.server.ServerExitError;
+import Sirius.server.Shutdown;
+import Sirius.server.Shutdownable;
 import Sirius.server.newuser.*;
-import Sirius.server.sql.*;
 import Sirius.server.property.*;
+import Sirius.server.sql.*;
+
+import org.apache.log4j.Logger;
+
+import org.openide.util.Exceptions;
 
 import java.sql.*;
 
 import java.util.*;
-
-import org.apache.log4j.Logger;
 
 /**
  * DOCUMENT ME!
@@ -25,12 +30,11 @@ import org.apache.log4j.Logger;
  * @author   martin.scholl@cismet.de
  * @version  $Revision$, $Date$
  */
-public final class UserStore {
+public final class UserStore extends Shutdown {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final transient Logger LOG = Logger.getLogger(
-            UserStore.class);
+    private static final transient Logger LOG = Logger.getLogger(UserStore.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -52,7 +56,7 @@ public final class UserStore {
      * @param  conPool     DOCUMENT ME!
      * @param  properties  DOCUMENT ME!
      */
-    public UserStore(DBConnectionPool conPool, ServerProperties properties) {
+    public UserStore(final DBConnectionPool conPool, final ServerProperties properties) {
         this.conPool = conPool;
         this.properties = properties;
         users = new Vector(100, 100);
@@ -61,10 +65,10 @@ public final class UserStore {
         memberships = new Vector(100, 100);
         // membershipHash = new Hashtable(101);
 
-        DBConnection con = conPool.getConnection();
+        final DBConnection con = conPool.getConnection();
 
         try {
-            ResultSet userTable = con.submitQuery("get_all_users", new Object[0]);
+            final ResultSet userTable = con.submitQuery("get_all_users", new Object[0]);
 
             // --------------------load users--------------------------------------------------
 
@@ -75,7 +79,7 @@ public final class UserStore {
                     // ); User tmp = new
                     // User(userTable.getString("login_name").trim(),properties.getServerName(),userTable.getInt("id"),DBConnection.stringToBool(userTable.getString("administrator"))
                     // );
-                    User tmp = new User(
+                    final User tmp = new User(
                             userTable.getInt("id"),
                             userTable.getString("login_name").trim(),
                             properties.getServerName(),
@@ -95,7 +99,7 @@ public final class UserStore {
 
             // --------------------load userGroups--------------------------------------------------
 
-            ResultSet userGroupTable = con.submitQuery("get_all_usergroups", new Object[0]);
+            final ResultSet userGroupTable = con.submitQuery("get_all_usergroups", new Object[0]);
 
             while (userGroupTable.next()) {
                 try {
@@ -103,7 +107,7 @@ public final class UserStore {
                     // UserGroup(userGroupTable.getString("name").trim(),properties.getServerName(),userGroupTable.getInt("id")
                     // );
 
-                    UserGroup tmp = new UserGroup(
+                    final UserGroup tmp = new UserGroup(
                             userGroupTable.getInt("id"),
                             userGroupTable.getString("name").trim(),
                             properties.getServerName(),
@@ -123,14 +127,14 @@ public final class UserStore {
 
             // --------------------load memberships--------------------------------------------------
 
-            ResultSet memberTable = con.submitQuery("get_all_memberships", new Object[0]);
+            final ResultSet memberTable = con.submitQuery("get_all_memberships", new Object[0]);
 
             while (memberTable.next()) {
                 try {
-                    String lsName = properties.getServerName();
+                    final String lsName = properties.getServerName();
 
-                    String login = memberTable.getString("login_name");
-                    String ug = memberTable.getString("ug");
+                    final String login = memberTable.getString("login_name");
+                    final String ug = memberTable.getString("ug");
 
                     String ugDomain = memberTable.getString("ugDomain");
 
@@ -138,9 +142,9 @@ public final class UserStore {
                         ugDomain = lsName;
                     }
 
-                    String usrDomain = lsName;
+                    final String usrDomain = lsName;
 
-                    Membership tmp = new Membership(login, usrDomain, ug, ugDomain);
+                    final Membership tmp = new Membership(login, usrDomain, ug, ugDomain);
                     memberships.addElement(tmp);
                     // durch getkey ersetzen  xxxx
                     // membershipHash.put(login+usrDomain,tmp);
@@ -158,14 +162,29 @@ public final class UserStore {
             // addSearchMasks(con);
 
             // prepare statement for validate user (called very often) :-)
-            String valUser =
+            final String valUser =
                 "select count(*) from cs_usr as u ,cs_ug as ug ,cs_ug_membership as m where u.id=m.usr_id and  ug.id = m.ug_id and trim(login_name) = ? and trim(ug.name) = ?";
             validateUser = con.getConnection().prepareStatement(valUser);
+
+            addShutdown(new Shutdownable() {
+
+                    @Override
+                    public void shutdown() throws ServerExitError {
+                        users.clear();
+                        userGroups.clear();
+                        memberships.clear();
+                        try {
+                            validateUser.close();
+                        } catch (final SQLException ex) {
+                            LOG.warn("could not close validate user statement", ex); // NOI18N
+                        }
+                    }
+                });
         } catch (java.lang.Exception e) {
             ExceptionHandler.handle(e);
             LOG.error("<LS> ERROR ::  in membership statement" + e.getMessage(), e);
         }
-    } // end Konstruktor
+    }                                                                                // end Konstruktor
 
     //~ Methods ----------------------------------------------------------------
 
@@ -207,10 +226,11 @@ public final class UserStore {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public boolean changePassword(User user, String oldPassword, String newPassword) throws Exception {
-        DBConnection con = conPool.getConnection();
+    public boolean changePassword(final User user, final String oldPassword, final String newPassword)
+            throws Exception {
+        final DBConnection con = conPool.getConnection();
 
-        java.lang.Object[] params = new java.lang.Object[3];
+        final java.lang.Object[] params = new java.lang.Object[3];
 
         params[0] = newPassword;
         params[1] = user.getName().toLowerCase();
@@ -230,7 +250,7 @@ public final class UserStore {
      *
      * @return  DOCUMENT ME!
      */
-    public boolean validateUser(User user) {
+    public boolean validateUser(final User user) {
 //        if(user == null)
 //        {   logger.error("user for validation was null");
 //            return false;

@@ -7,13 +7,13 @@
 ****************************************************/
 package Sirius.server.middleware.interfaces.domainserver;
 
-import java.rmi.*;
-
-import Sirius.server.middleware.types.*;
 import Sirius.server.localserver.method.*;
 import Sirius.server.localserver.tree.NodeReferenceList;
+import Sirius.server.middleware.types.*;
 import Sirius.server.newuser.*;
 import Sirius.server.search.*;
+
+import java.rmi.*;
 
 /**
  * Interface for retrieving or modifying meta information sets.
@@ -250,7 +250,7 @@ public interface MetaService extends Remote {
      * @throws  RemoteException  DOCUMENT ME!
      */
     LightweightMetaObject[] getAllLightweightMetaObjectsForClass(int classId, User user, String[] representationFields)
-        throws RemoteException;
+            throws RemoteException;
     /**
      * DOCUMENT ME!
      *

@@ -21,6 +21,11 @@ import Sirius.server.localserver.attribute.*;
  */
 public class BoundingBoxStringConverter extends ToStringConverter implements java.io.Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -458019032045305986L;
+
     //~ Instance fields --------------------------------------------------------
 
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
@@ -36,7 +41,8 @@ public class BoundingBoxStringConverter extends ToStringConverter implements jav
 
     //~ Methods ----------------------------------------------------------------
 
-    public String convert(de.cismet.cids.tools.tostring.StringConvertable o) {
+    @Override
+    public String convert(final de.cismet.cids.tools.tostring.StringConvertable o) {
         String stringRepresentation = "";
         ObjectAttribute[] attrs = null;
 
@@ -44,7 +50,7 @@ public class BoundingBoxStringConverter extends ToStringConverter implements jav
             attrs = ((Sirius.server.localserver.object.Object)o).getAttribs();
         } else // attribute
         {
-            java.lang.Object attrValue = ((Sirius.server.localserver.attribute.ObjectAttribute)o).getValue();
+            final java.lang.Object attrValue = ((Sirius.server.localserver.attribute.ObjectAttribute)o).getValue();
             attrs = ((Sirius.server.localserver.object.Object)attrValue).getAttribs();
         }
 

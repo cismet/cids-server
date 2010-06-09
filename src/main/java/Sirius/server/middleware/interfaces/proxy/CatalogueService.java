@@ -7,10 +7,10 @@
 ****************************************************/
 package Sirius.server.middleware.interfaces.proxy;
 
-import java.rmi.*;
-
 import Sirius.server.middleware.types.*;
 import Sirius.server.newuser.*;
+
+import java.rmi.*;
 
 /**
  * Interface for operations on the systems catalogue.

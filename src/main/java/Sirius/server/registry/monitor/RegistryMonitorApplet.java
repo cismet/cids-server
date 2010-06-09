@@ -7,20 +7,20 @@
 ****************************************************/
 package Sirius.server.registry.monitor;
 
-import Sirius.util.*;
-
+import Sirius.server.*;
 import Sirius.server.naming.*;
 import Sirius.server.newuser.*;
-import Sirius.server.*;
 import Sirius.server.registry.*;
+
+import Sirius.util.*;
+
+import java.awt.*;
+import java.awt.event.*;
 
 import java.rmi.*;
 import java.rmi.server.*;
 
 import java.util.*;
-
-import java.awt.*;
-import java.awt.event.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -43,6 +43,7 @@ public class RegistryMonitorApplet extends JApplet {
 
     //~ Methods ----------------------------------------------------------------
 
+    @Override
     public void init() {
         registryMonitor = new RegistryMonitor(getParameter("RegistryIP"));
         getContentPane().add(registryMonitor);

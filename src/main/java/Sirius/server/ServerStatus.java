@@ -58,7 +58,7 @@ public class ServerStatus {
      *
      * @return  DOCUMENT ME!
      */
-    public Object getMessage(String key) {
+    public Object getMessage(final String key) {
         lastGet = System.currentTimeMillis();
         return (msg.containsKey(key) ? msg.get(key) : null);
     }
@@ -89,7 +89,7 @@ public class ServerStatus {
      * @param  key      DOCUMENT ME!
      * @param  message  DOCUMENT ME!
      */
-    public void addMessage(String key, String message) {
+    public void addMessage(final String key, final String message) {
         msg.put(key, message);
         lastUpdate = System.currentTimeMillis();
     }

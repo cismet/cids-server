@@ -56,8 +56,9 @@ public class Visualizer implements TypeVisitor {
      * @return  liefert diesen Attribut in einem Array der gr\u00F6se 1 zur\u00FCck oder wenn der Attribut einen
      *          MetaObject als Wert enth\u00E4lt dann alle darin enthaltenen Attribute.
      */
-    public Object visitMA(ObjectAttribute moa, Object o) {
-        Object value = moa.getValue();
+    @Override
+    public Object visitMA(final ObjectAttribute moa, final Object o) {
+        final Object value = moa.getValue();
 
         visualized += getPrefix() + STEP_LENGTH + moa.getName();
 
@@ -78,7 +79,8 @@ public class Visualizer implements TypeVisitor {
      *
      * @return  liefert alle in diesem und allen darunterliegenden MetaObjecten enthaltenen Attribute.
      */
-    public Object visitMO(MetaObject moa, Object o) {
+    @Override
+    public Object visitMO(final MetaObject moa, final Object o) {
         step++;
 
         try {
@@ -87,7 +89,7 @@ public class Visualizer implements TypeVisitor {
             visualized += "-->/MetaObject/" + NEW_LINE;
         }
 
-        ObjectAttribute[] mas = moa.getAttribs();
+        final ObjectAttribute[] mas = moa.getAttribs();
 
         for (int i = 0; i < mas.length; i++) {
             mas[i].accept(this, o);

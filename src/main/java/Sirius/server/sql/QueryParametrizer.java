@@ -36,7 +36,8 @@ public class QueryParametrizer {
      * @exeption  java.lang.Exception
      */
 
-    public static final String parametrize(String statement, java.lang.Object[] parameters) throws java.lang.Exception {
+    public static final String parametrize(String statement, final java.lang.Object[] parameters)
+            throws java.lang.Exception {
         if (statement != null) {
             statement = statement.trim();
         } else {
