@@ -84,6 +84,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
     private static final String EXTENSION_FACTORY_PREFIX = "de.cismet.cids.custom.extensionfactories.";
 
+    private static transient DomainServerImpl instance;
+
     //~ Instance fields --------------------------------------------------------
 
     // dbaccess of the mis (catalogue, classes and objects
@@ -952,10 +954,20 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     /**
      * DOCUMENT ME!
      *
+     * @return  DOCUMENT ME!
+     */
+    public static DomainServerImpl getServerInstance() {
+        return instance;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   args  DOCUMENT ME!
      *
-     * @throws  Throwable        DOCUMENT ME!
-     * @throws  ServerExitError  DOCUMENT ME!
+     * @throws  Throwable              DOCUMENT ME!
+     * @throws  ServerExitError        DOCUMENT ME!
+     * @throws  IllegalStateException  DOCUMENT ME!
      */
     public static void main(final String[] args) throws Throwable {
         // first of all register the default exception handler for all threads
@@ -970,7 +982,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             throw new ServerExitError("zu wenig Argumente");
         }
 
-        DomainServerImpl impl = null;
+        if (instance != null) {
+            throw new IllegalStateException("an instance was already created");
+        }
+
         try {
             try {
                 properties = new ServerProperties(args[0]);
@@ -1001,14 +1016,14 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 System.setSecurityManager(new ServerSecurityManager());
             }
 
-            impl = new DomainServerImpl(new ServerProperties(args[0]));
+            instance = new DomainServerImpl(new ServerProperties(args[0]));
 
             System.out.println("Info :: <LS>  !!!LocalSERVER started!!!!");
         } catch (Exception e) {
             System.err.println("Fehler beim Start des Domainservers :: " + e.getMessage());
             e.printStackTrace();
-            if (impl != null) {
-                impl.shutdown();
+            if (instance != null) {
+                instance.shutdown();
             }
             throw new ServerExitError(e);
         }
