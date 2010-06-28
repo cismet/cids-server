@@ -21,6 +21,11 @@ import java.util.Formatter;
  */
 public final class StringPatternFormater extends AbstractAttributeRepresentationFormater {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 2195620744711852650L;
+
     //~ Instance fields --------------------------------------------------------
 
     private final String[] fieldNames;

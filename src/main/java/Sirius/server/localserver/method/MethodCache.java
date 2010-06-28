@@ -32,6 +32,9 @@ public final class MethodCache extends Shutdown {
 
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 2253839379071352034L;
+
     private static final transient Logger LOG = Logger.getLogger(MethodCache.class);
 
     //~ Instance fields --------------------------------------------------------

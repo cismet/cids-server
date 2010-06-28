@@ -242,10 +242,10 @@ public class PersistenceHelper {
             } else {
                 logger.info(
                     "primary key name :: "
-                    + priK
-                    + " :: for class :: "
-                    + metaClass
-                    + " :: is ambigious and only one attribute with this name is primary key");
+                            + priK
+                            + " :: for class :: "
+                            + metaClass
+                            + " :: is ambigious and only one attribute with this name is primary key");
             }
         }
     }

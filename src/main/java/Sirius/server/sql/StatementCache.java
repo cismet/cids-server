@@ -105,13 +105,13 @@ public class StatementCache {
                 if (logger.isDebugEnabled()) {
                     logger.debug(
                         "cached statement :"
-                        + tmp.getName()
-                        + " changes ?"
-                        + tmp.getStatement()
-                        + " conjuction ??"
-                        + tmp.isConjunction()
-                        + "conjunctionresult"
-                        + conjunction);
+                                + tmp.getName()
+                                + " changes ?"
+                                + tmp.getStatement()
+                                + " conjuction ??"
+                                + tmp.isConjunction()
+                                + "conjunctionresult"
+                                + conjunction);
                 }
             } // end while
             if (logger.isDebugEnabled()) {

@@ -103,8 +103,8 @@ public class StaticCidsUtilities {
                                                 != MetaObject.TO_DELETE)) {
                                     final Object key = getValueOfAttributeByString(
                                             again[0]
-                                            + "."
-                                            + keyAttrName,
+                                                    + "."
+                                                    + keyAttrName,
                                             (MetaObject)arrayEintrag.getValue());
                                     final Object val = getValueOfAttributeByString(
                                             reReClued,
@@ -218,8 +218,8 @@ public class StaticCidsUtilities {
                                                     != MetaObject.TO_DELETE)) {
                                         final Object key = getValueOfAttributeByString(
                                                 again[0]
-                                                + "."
-                                                + keyAttrName,
+                                                        + "."
+                                                        + keyAttrName,
                                                 (MetaObject)arrayEintrag.getValue());
                                         final Object val = getValueOfAttributeByString(
                                                 reReClued,
@@ -265,8 +265,8 @@ public class StaticCidsUtilities {
                         } else {
                             log.error(
                                 "Falscher Attributname: "
-                                + attrN
-                                + " (Renderer wird nicht komplett funktionieren)",
+                                        + attrN
+                                        + " (Renderer wird nicht komplett funktionieren)",
                                 new CurrentStackTrace());
                         }
                     }
@@ -275,9 +275,9 @@ public class StaticCidsUtilities {
         } catch (Exception e) {
             log.error(
                 "Fehler in getValueOfAttributeByString("
-                + attributeName
-                + ",MetaObject)\nMetaobject="
-                + mo.getDebugString(),
+                        + attributeName
+                        + ",MetaObject)\nMetaobject="
+                        + mo.getDebugString(),
                 e);
         }
         return null;

@@ -18,8 +18,6 @@ package Sirius.util.NamingServerMonitor;
 
 import java.io.*;
 
-import java.lang.*;
-
 import java.net.*;
 
 import java.rmi.*;

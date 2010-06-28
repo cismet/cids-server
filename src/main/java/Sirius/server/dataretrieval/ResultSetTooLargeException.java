@@ -24,6 +24,11 @@ import java.sql.SQLException;
  */
 public class ResultSetTooLargeException extends DataRetrievalException {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -7887240275287448087L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**

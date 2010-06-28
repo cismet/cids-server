@@ -265,6 +265,15 @@ public class CidsBean implements PropertyChangeListener {
     }
 
     /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public PropertyChangeListener[] getPropertyChangeListeners() {
+        return propertyChangeSupport.getPropertyChangeListeners();
+    }
+
+    /**
      * This method gets called when a bound property is changed.
      *
      * @param  evt  A PropertyChangeEvent object describing the event source and the property that has changed.

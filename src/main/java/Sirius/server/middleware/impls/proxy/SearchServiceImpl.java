@@ -208,11 +208,11 @@ public class SearchServiceImpl {
         if (logger.isDebugEnabled()) {
             logger.debug(
                 "addQueryParameter searchService gerufen User:: "
-                + user
-                + " queryId ::"
-                + queryId
-                + " paramKey::"
-                + paramkey);
+                        + user
+                        + " queryId ::"
+                        + queryId
+                        + " paramKey::"
+                        + paramkey);
         }
         final String domain = user.getDomain();
         final Sirius.server.middleware.interfaces.domainserver.SearchService s =
@@ -238,11 +238,11 @@ public class SearchServiceImpl {
         if (logger.isDebugEnabled()) {
             logger.debug(
                 "addQueryParameter searchService gerufen User:: "
-                + user
-                + " queryId ::"
-                + queryId
-                + " paramKey::"
-                + paramkey);
+                        + user
+                        + " queryId ::"
+                        + queryId
+                        + " paramKey::"
+                        + paramkey);
         }
         final String domain = user.getDomain();
         final Sirius.server.middleware.interfaces.domainserver.SearchService s =

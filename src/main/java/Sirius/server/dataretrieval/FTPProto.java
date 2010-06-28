@@ -79,7 +79,7 @@ public class FTPProto implements MetaObjectProto {
 
         if (fileName == null) {
             final String message = "Name of dataobjekt was not found."
-                + "The name must agree with the file name.";
+                        + "The name must agree with the file name.";
 
             throw new DataRetrievalException(message, logger);
         }

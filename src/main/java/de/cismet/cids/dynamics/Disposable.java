@@ -29,21 +29,12 @@ package de.cismet.cids.dynamics;
  * @author   srichter
  * @version  $Revision$, $Date$
  */
-public interface CidsBeanStore {
+public interface Disposable {
 
     //~ Methods ----------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
      */
-    CidsBean getCidsBean();
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  cidsBean  DOCUMENT ME!
-     */
-    void setCidsBean(CidsBean cidsBean);
+    void dispose();
 }

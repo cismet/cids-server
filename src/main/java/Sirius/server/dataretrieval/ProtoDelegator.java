@@ -91,17 +91,17 @@ public class ProtoDelegator {
 
         if (ma == null) {
             final String message = "The attribute " + name + " within object "
-                + metaObject.getName() + " could not be found.";
+                        + metaObject.getName() + " could not be found.";
 
             throw new DataRetrievalException(message, logger);
         }
 
         if ((ma.getValue() instanceof MetaObject)) {
             final String message = "The attribut " + name + " within object "
-                + metaObject.getName() + " does not contains a value, but a further object.";
+                        + metaObject.getName() + " does not contains a value, but a further object.";
 
             final String gebug = message + "ObjectAttribute-Value " + name
-                + " is an instanz of class MetaObject.";
+                        + " is an instanz of class MetaObject.";
             if (logger.isDebugEnabled()) {
                 logger.debug(gebug);
             }
@@ -149,11 +149,11 @@ public class ProtoDelegator {
                     || (access_parameter.getValue() == null)
                     || !(access_parameter.getValue() instanceof MetaObject)) {
             final String message = "Data communication did not come to conditions, "
-                + " because the attribute " + Names.Data_Object_Type.ACCESS_PARAMETER
-                + " does not contain connecting data. ";
+                        + " because the attribute " + Names.Data_Object_Type.ACCESS_PARAMETER
+                        + " does not contain connecting data. ";
 
             final String gebug = message + "Attribute " + Names.Data_Object_Type.ACCESS_PARAMETER
-                + " is not an instance of MetaObject.";
+                        + " is not an instance of MetaObject.";
             if (logger.isDebugEnabled()) {
                 logger.debug(gebug);
             }
@@ -182,15 +182,15 @@ public class ProtoDelegator {
         }
         if (mas == null) {
             String message = "Protocol name could not be determined "
-                + " because the Attribute " + Names.Data_Object_Type.ACCESS_PARAMETER + " or the Attribute "
-                + Names.Access_Parameter.getName() + "." + Names.Access_Parameter.DATA_SOURCE_CLASS
-                + " were not found.";
+                        + " because the Attribute " + Names.Data_Object_Type.ACCESS_PARAMETER + " or the Attribute "
+                        + Names.Access_Parameter.getName() + "." + Names.Access_Parameter.DATA_SOURCE_CLASS
+                        + " were not found.";
             if (logger.isDebugEnabled()) {
                 logger.debug(message);
             }
 
             message = "Data source class type could not be determined. Only objects of the class "
-                + Names.Data_Object_Type.getName() + " can be processed.";
+                        + Names.Data_Object_Type.getName() + " can be processed.";
 
             throw new DataRetrievalException(message, logger);
         }

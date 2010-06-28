@@ -94,7 +94,7 @@ public class UserServiceImpl {
             } else {
                 throw new UserException(
                     "Login fehlgeschlagen, Heimatserver des Users nicht erreichbar :: "
-                    + password,
+                            + password,
                     false,
                     false,
                     false,

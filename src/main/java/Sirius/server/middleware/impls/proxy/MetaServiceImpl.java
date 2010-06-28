@@ -272,9 +272,9 @@ public class MetaServiceImpl {
                     ids[0],
                     lsName,
                     lsName
-                    + " not available!",
+                            + " not available!",
                     lsName
-                    + " not available!",
+                            + " not available!",
                     true,
                     Policy.createWIKIPolicy(),
                     -1,
@@ -386,13 +386,13 @@ public class MetaServiceImpl {
             if (logger.isDebugEnabled()) {
                 logger.debug(
                     "<CS> getMetaObject for user"
-                    + usr
-                    + "objectID ::"
-                    + objectID
-                    + " classID"
-                    + classID
-                    + " domain::"
-                    + domain);
+                            + usr
+                            + "objectID ::"
+                            + objectID
+                            + " classID"
+                            + classID
+                            + " domain::"
+                            + domain);
             }
         }
         return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain))
@@ -417,11 +417,11 @@ public class MetaServiceImpl {
                 if (logger.isDebugEnabled()) {
                     logger.debug(
                         "<CS>insertMetaObject  for user"
-                        + user
-                        + "metaObject ::"
-                        + metaObject
-                        + " domain::"
-                        + domain);
+                                + user
+                                + "metaObject ::"
+                                + metaObject
+                                + " domain::"
+                                + domain);
                 }
             }
         }
@@ -467,11 +467,11 @@ public class MetaServiceImpl {
             if (logger.isDebugEnabled()) {
                 logger.debug(
                     "<CS>delete MetaObject  for user"
-                    + user
-                    + "metaObject ::"
-                    + metaObject
-                    + " domain::"
-                    + domain);
+                            + user
+                            + "metaObject ::"
+                            + metaObject
+                            + " domain::"
+                            + domain);
             }
         }
         return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain))
@@ -495,11 +495,11 @@ public class MetaServiceImpl {
             if (logger.isDebugEnabled()) {
                 logger.debug(
                     "<CS>updateMetaObject  for user"
-                    + user
-                    + "metaObject ::"
-                    + metaObject
-                    + " domain::"
-                    + domain);
+                            + user
+                            + "metaObject ::"
+                            + metaObject
+                            + " domain::"
+                            + domain);
             }
         }
         return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain))

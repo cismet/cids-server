@@ -572,7 +572,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
             if (log != null) {
                 log.warn(
                     "keine Klasse und daher kein StringConverter f\u00FCr dieses MetaObject gesetzt : "
-                    + this.getID());
+                            + this.getID());
             }
             log.error("Metaclass was null classId=" + classID);
             return "Metaclass was null";
@@ -628,42 +628,42 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
         // border=\"1\"  bgcolor=\"#E0E0E0\"
         ret =
             "<table border=\"1\" rules=\"all\" cellspacing=\"0\" cellpadding=\"2\"> <tr><th colspan=\"2\" align=\"left\">class = "
-            + classID
-            + "<br>object id ="
-            + objectID
-            + "<br>status = "
-            + getStatusDebugString()
-            + "<br>dummy = "
-            + isDummy()
-            + "</th></tr>";
+                    + classID
+                    + "<br>object id ="
+                    + objectID
+                    + "<br>status = "
+                    + getStatusDebugString()
+                    + "<br>dummy = "
+                    + isDummy()
+                    + "</th></tr>";
 
         final ObjectAttribute[] as = getAttribs();
         ret += "";
         for (int i = 0; i < as.length; i++) {
             if (as[i].referencesObject() && (as[i].getValue() != null)) {
                 ret += "<tr><td bgcolor="
-                    + getColorForChangedFlag(as[i].isChanged())
-                    + " valign=\"top\" align=\"right\">"
-                    + as[i].getName()
-                    + "</td><td bgcolor="
-                    + getColorForChangedFlag(as[i].isChanged())
-                    + " valign=\"top\" align=\"right\">["
-                    + as[i].getMai().getFieldName()
-                    + "]</td><td>"
-                    + ((MetaObject)as[i].getValue()).getDebugString()
-                    + "</td></tr>";
+                            + getColorForChangedFlag(as[i].isChanged())
+                            + " valign=\"top\" align=\"right\">"
+                            + as[i].getName()
+                            + "</td><td bgcolor="
+                            + getColorForChangedFlag(as[i].isChanged())
+                            + " valign=\"top\" align=\"right\">["
+                            + as[i].getMai().getFieldName()
+                            + "]</td><td>"
+                            + ((MetaObject)as[i].getValue()).getDebugString()
+                            + "</td></tr>";
             } else {
                 ret += "<tr><td bgcolor="
-                    + getColorForChangedFlag(as[i].isChanged())
-                    + " valign=\"top\" align=\"right\">"
-                    + as[i].getName()
-                    + "</td><td bgcolor="
-                    + getColorForChangedFlag(as[i].isChanged())
-                    + " valign=\"top\" align=\"right\">["
-                    + as[i].getMai().getFieldName()
-                    + "]</td><td>"
-                    + as[i].toString()
-                    + "</td></tr>";
+                            + getColorForChangedFlag(as[i].isChanged())
+                            + " valign=\"top\" align=\"right\">"
+                            + as[i].getName()
+                            + "</td><td bgcolor="
+                            + getColorForChangedFlag(as[i].isChanged())
+                            + " valign=\"top\" align=\"right\">["
+                            + as[i].getMai().getFieldName()
+                            + "]</td><td>"
+                            + as[i].toString()
+                            + "</td></tr>";
             }
         }
         ret += "";
@@ -675,26 +675,26 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
     public String getPropertyString() {
         String ret = "";
         ret = "Properties:("
-            + classID
-            + ","
-            + objectID
-            + "):\n";
+                    + classID
+                    + ","
+                    + objectID
+                    + "):\n";
 
         final ObjectAttribute[] as = getAttribs();
         for (int i = 0; i < as.length; i++) {
             if (as[i].referencesObject() && (as[i].getValue() != null)) {
                 ret += as[i].getMai().getFieldName()
-                    + "-->"
-                    + ((MetaObject)as[i].getValue()).getPropertyString();
+                            + "-->"
+                            + ((MetaObject)as[i].getValue()).getPropertyString();
                 if (((MetaObject)as[i].getValue()).getStatus() == DefaultMetaObject.TO_DELETE) {
                     ret += "**deleteted**";
                 }
                 ret += "\n";
             } else {
                 ret += as[i].getMai().getFieldName()
-                    + "="
-                    + as[i].toString()
-                    + "\n";
+                            + "="
+                            + as[i].toString()
+                            + "\n";
             }
         }
         return ret;
@@ -748,11 +748,11 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
     public int hashCode() {
         int hash = 5;
         hash = (11 * hash)
-            + this.getClassID();
+                    + this.getClassID();
         hash = (11 * hash)
-            + this.getID();
+                    + this.getID();
         hash = (11 * hash)
-            + this.getDomain().hashCode();
+                    + this.getDomain().hashCode();
         return hash;
     }
 }

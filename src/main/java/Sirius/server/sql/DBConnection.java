@@ -198,13 +198,13 @@ public class DBConnection {
             if (parameters.length
                         != ps.getParameterMetaData().getParameterCount()) {
                 final String message = "parameter count mismmatch for descriptor '" // NOI18N
-                    + descriptor
-                    + "', Statement: "                                              // NOI18N
-                    + stmt
-                    + ", Statement param count: "                                   // NOI18N
-                    + ps.getParameterMetaData().getParameterCount()
-                    + ", given param count: "                                       // NOI18N
-                    + parameters.length;
+                            + descriptor
+                            + "', Statement: "                                      // NOI18N
+                            + stmt
+                            + ", Statement param count: "                           // NOI18N
+                            + ps.getParameterMetaData().getParameterCount()
+                            + ", given param count: "                               // NOI18N
+                            + parameters.length;
                 LOG.error(message);
                 throw new IllegalArgumentException(message);
             }

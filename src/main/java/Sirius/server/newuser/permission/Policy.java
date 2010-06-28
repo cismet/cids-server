@@ -92,11 +92,11 @@ public class Policy implements Serializable {
             if (getLog().isDebugEnabled()) {
                 getLog().debug(
                     "getDecisionIfNoEntryIsFound("
-                    + permission.getKey()
-                    + ") returns:"
-                    + r
-                    + " --> Policy="
-                    + name,
+                            + permission.getKey()
+                            + ") returns:"
+                            + r
+                            + " --> Policy="
+                            + name,
                     new CurrentStackTrace());
             }
             return r;
@@ -105,8 +105,8 @@ public class Policy implements Serializable {
                 if (getLog().isDebugEnabled()) {
                     getLog().debug(
                         "getDecisionIfNoEntryIsFound("
-                        + permission.getKey()
-                        + ") returns true because of Manunal WIKI Policy",
+                                + permission.getKey()
+                                + ") returns true because of Manunal WIKI Policy",
                         new CurrentStackTrace());
                 }
                 return true;
@@ -114,8 +114,8 @@ public class Policy implements Serializable {
                 if (getLog().isDebugEnabled()) {
                     getLog().debug(
                         "getDecisionIfNoEntryIsFound("
-                        + permission.getKey()
-                        + ") returns false because of PARANOID Policy or Bug",
+                                + permission.getKey()
+                                + ") returns false because of PARANOID Policy or Bug",
                         new CurrentStackTrace());
                 }
                 return false; // Safety first
@@ -184,7 +184,7 @@ public class Policy implements Serializable {
             r += ") ";
         }
         r += "defaultvalues: " + name + "= read-->" + getDecisionIfNoEntryIsFound(PermissionHolder.READPERMISSION)
-            + " write-->" + getDecisionIfNoEntryIsFound(PermissionHolder.WRITEPERMISSION);
+                    + " write-->" + getDecisionIfNoEntryIsFound(PermissionHolder.WRITEPERMISSION);
         return r;
     }
 }

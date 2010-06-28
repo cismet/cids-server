@@ -17,6 +17,11 @@ import java.util.Vector;
  */
 public class MethodVector extends java.util.Vector {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -8781438205263492022L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**

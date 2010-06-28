@@ -132,8 +132,8 @@ public class Parametrizer {
                 parametrizedStr = parametrizeElements(parametrizedStr, mas);
             } else {
                 final String meldung = "Fehler bei Paramentrisierung. Identifier: " + adressierung[0]
-                    + " wird bei Parametrisierung nicht unterst\u00FCtzt. Benutzen Sie "
-                    + "\"name\" oder \"id\".";
+                            + " wird bei Parametrisierung nicht unterst\u00FCtzt. Benutzen Sie "
+                            + "\"name\" oder \"id\".";
                 throw new DataRetrievalException(meldung, logger);
             }
         }
@@ -175,9 +175,9 @@ public class Parametrizer {
 
                 if (ret.length != 1) {
                     meldung = "Fehler beim parameterizieren des Attributes "
-                        + attrName + ". Es wurden mehrere passende Attribue ermittelt,"
-                        + " Qulaifizieren Sie den Attribut mit dem Namen des zugeh\u00F6rigen"
-                        + " MetaObjektes.";
+                                + attrName + ". Es wurden mehrere passende Attribue ermittelt,"
+                                + " Qulaifizieren Sie den Attribut mit dem Namen des zugeh\u00F6rigen"
+                                + " MetaObjektes.";
                     throw new DataRetrievalException(meldung, logger);
                 }
 
@@ -186,7 +186,7 @@ public class Parametrizer {
 
             case 1: {
                 meldung = "Fehler beim parameterizieren des Attributes "
-                    + attrName + ". Attribut-ID muss qualifiziert werden.";
+                            + attrName + ". Attribut-ID muss qualifiziert werden.";
                 throw new DataRetrievalException(meldung, logger);
             }
 
@@ -198,8 +198,8 @@ public class Parametrizer {
 
                 if (ret.length != 1) {
                     meldung = "Fehler bei Paramentrisierung. Anzahl der "
-                        + "gefundenen ObjectAttribute(" + ret.length + ") f\u00FCr  Attribut-ID "
-                        + attrName + " erlaubt keine weitere Parametrisierung des Strings. ";
+                                + "gefundenen ObjectAttribute(" + ret.length + ") f\u00FCr  Attribut-ID "
+                                + attrName + " erlaubt keine weitere Parametrisierung des Strings. ";
                     throw new DataRetrievalException(meldung, logger);
                 }
 
@@ -208,8 +208,8 @@ public class Parametrizer {
 
             case 3: {
                 meldung = "Fehler bei Paramentrisierung. Drei Teilelemente im"
-                    + " Parameternamen entdeckt. Qualifizierung der Parameternamen"
-                    + " nach dom\u00E4ne wird z.Zt. micht unterst\u00FCtzt.";
+                            + " Parameternamen entdeckt. Qualifizierung der Parameternamen"
+                            + " nach dom\u00E4ne wird z.Zt. micht unterst\u00FCtzt.";
                 throw new DataRetrievalException(meldung, logger);
             }
 
@@ -235,7 +235,7 @@ public class Parametrizer {
             return Integer.parseInt(attrID);
         } catch (NumberFormatException e) {
             final String message = "Fehler beim Parametrisieren. Attribut ID "
-                + attrID + " ist keine Ganzzahl.";
+                        + attrID + " ist keine Ganzzahl.";
             throw new DataRetrievalException(message, e, logger);
         }
     }
@@ -291,8 +291,8 @@ public class Parametrizer {
 
             case 3: {
                 meldung = "Fehler bei Paramentrisierung. Drei Teilelemente im"
-                    + " Parameternamen entdeckt. Qualifizierung der Parameternamen"
-                    + " nach dom\u00E4ne wird z.Zt. micht unterst\u00FCtzt.";
+                            + " Parameternamen entdeckt. Qualifizierung der Parameternamen"
+                            + " nach dom\u00E4ne wird z.Zt. micht unterst\u00FCtzt.";
                 throw new DataRetrievalException(meldung, logger);
             }
 
@@ -304,7 +304,7 @@ public class Parametrizer {
 
         if (ret.length == 0) {
             final String message = "Fehler bei Paramentrisierung. Attribut "
-                + attrName + " konnte nicht gefunden werden.";
+                        + attrName + " konnte nicht gefunden werden.";
             throw new DataRetrievalException(message, logger);
         }
 
@@ -354,8 +354,8 @@ public class Parametrizer {
 
         if (!lastTerm.equalsIgnoreCase("=") && !lastTerm.equalsIgnoreCase("IN")) {
             final String meldung = "Fehler bei Paramentrisierung. Die Suche nach"
-                + " einem Attribut ergab mehrere Treffer, ein Term = oder IN wurde"
-                + " vor dem Platzhalter erwartet, ist jedoch nicht vorhanden.";
+                        + " einem Attribut ergab mehrere Treffer, ein Term = oder IN wurde"
+                        + " vor dem Platzhalter erwartet, ist jedoch nicht vorhanden.";
             throw new DataRetrievalException(meldung, logger);
         }
 
@@ -395,8 +395,8 @@ public class Parametrizer {
 
         if (strAr.length != 2) {
             final String meldung = "Fehler bei Paramentrisierung. Der gefundenen Parameter "
-                + paltzhalter + " konnte nicht verarbeitet werden. \u00DCberpr\u00FCfen Sie die Syntax der "
-                + " Parameterangabe.";
+                        + paltzhalter + " konnte nicht verarbeitet werden. \u00DCberpr\u00FCfen Sie die Syntax der "
+                        + " Parameterangabe.";
             throw new DataRetrievalException(meldung, logger);
         }
 
@@ -421,7 +421,7 @@ public class Parametrizer {
         // wird eine Exception ausgel\u00F6sst.
         if (attrName.trim().endsWith(".")) {
             final String meldung = "Fehler beim parameterizieren des Attributes "
-                + attrName + ". Attribut-name/-id syntaktisch nicht korrekt.";
+                        + attrName + ". Attribut-name/-id syntaktisch nicht korrekt.";
             throw new DataRetrievalException(meldung, logger);
         }
 
@@ -429,7 +429,7 @@ public class Parametrizer {
 
         if ((strAr.length == 2) && strAr[0].equals("")) {
             final String meldung = "Fehler beim parameterizieren des Attributes "
-                + attrName + ". Attribut-name/-id syntaktisch nicht korrekt.";
+                        + attrName + ". Attribut-name/-id syntaktisch nicht korrekt.";
             throw new DataRetrievalException(meldung, logger);
         }
 

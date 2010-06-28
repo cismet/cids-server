@@ -16,6 +16,11 @@ import java.util.*;
  */
 public class ClassMap extends java.util.Hashtable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 8694508933671049122L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**

@@ -598,8 +598,8 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
         if (metaService == null) {
             throw new IllegalStateException(
                 "Can not retrieve MetaObject, as Metaservice for LightweightMetaObject \""
-                + toString()
-                + "\" is null!");
+                        + toString()
+                        + "\" is null!");
         }
         return metaService.getMetaObject(getUser(), getObjectID(), getClassID(), getUser().getDomain());
     }

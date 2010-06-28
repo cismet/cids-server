@@ -23,6 +23,11 @@ package Sirius.server.registry.rmplugin.exception;
  */
 public class UnableToSendMessageException extends Exception {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -8381145764583871507L;
+
     //~ Instance fields --------------------------------------------------------
 
     private int totalSended = 0;

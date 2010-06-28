@@ -70,7 +70,7 @@ public class ObjectHierarchy {
             // konstruiere select string f\u00FCr Vaterobjekt mit Auswahlkriterium = Objektid des Attributes
 
             final String value = "Select " + father + " as class_id ," + pk + " as object_id" + " from "
-                + rs.getString("table_name") + " where " + rs.getString("field_name") + " = ";
+                        + rs.getString("table_name") + " where " + rs.getString("field_name") + " = ";
             if (logger.isDebugEnabled()) {
                 logger.debug(" get Father key :: " + key + " value :: " + value);
             }
@@ -97,9 +97,9 @@ public class ObjectHierarchy {
             final String child_pk = rs.getString("child_pk");
 
             final String value = "Select " + father + " as class_id ," + father_pk + " as object_id" + " from "
-                + father_table
-                + " where " + attribute + " in "
-                + " (select " + arrayKey + " from " + child_table + " where  " + child_pk + " = "; // ? )
+                        + father_table
+                        + " where " + attribute + " in "
+                        + " (select " + arrayKey + " from " + child_table + " where  " + child_pk + " = "; // ? )
             if (logger.isDebugEnabled()) {
                 logger.debug(" get Array Father key :: " + key + " value :: " + value);
             }

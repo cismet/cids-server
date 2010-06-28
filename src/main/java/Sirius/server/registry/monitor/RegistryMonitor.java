@@ -40,6 +40,11 @@ import javax.swing.table.*;
  */
 public class RegistryMonitor extends JPanel implements Runnable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -4188420564916694510L;
+
     //~ Instance fields --------------------------------------------------------
 
     /** Referenz auf den NameServer der Registry.* */

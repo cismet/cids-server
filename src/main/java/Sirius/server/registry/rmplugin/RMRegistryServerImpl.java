@@ -274,11 +274,11 @@ public class RMRegistryServerImpl implements RMRegistryServer {
         if (flagSendProblem) {
             throw new UnableToSendMessageException(
                 "Sending Message to target "
-                + target
-                + " fails, one or more messages are maybe not delivered\n Exception:\n"
-                + ex.toString()
-                + "\n Total sended: "
-                + total,
+                        + target
+                        + " fails, one or more messages are maybe not delivered\n Exception:\n"
+                        + ex.toString()
+                        + "\n Total sended: "
+                        + total,
                 total);
         }
         return total;
@@ -349,11 +349,11 @@ public class RMRegistryServerImpl implements RMRegistryServer {
         if (flagSendProblem) {
             throw new UnableToSendMessageException(
                 "Sending Message to target "
-                + target
-                + " fails, one or more messages are maybe not delivered\n Exception:\n"
-                + ex.toString()
-                + "\n Total sended: "
-                + total,
+                        + target
+                        + " fails, one or more messages are maybe not delivered\n Exception:\n"
+                        + ex.toString()
+                        + "\n Total sended: "
+                        + total,
                 total);
         }
         return total;
@@ -679,8 +679,8 @@ public class RMRegistryServerImpl implements RMRegistryServer {
                             if (LOG.isDebugEnabled()) {
                                 LOG.debug(
                                     "Exception during Registry Update: Entry --> "
-                                    + user.getRmiAddress().toString()
-                                    + " removing entry",
+                                            + user.getRmiAddress().toString()
+                                            + " removing entry",
                                     e);
                             }
                             activeClients.remove(user.getKey());
@@ -718,10 +718,10 @@ public class RMRegistryServerImpl implements RMRegistryServer {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug(
                                 current
-                                + " : "
-                                + user.getRmiAddress()
-                                + " --> online since "
-                                + user.getOnlineTimeAsText());
+                                        + " : "
+                                        + user.getRmiAddress()
+                                        + " --> online since "
+                                        + user.getOnlineTimeAsText());
                         }
                     }
                 }

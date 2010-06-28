@@ -253,9 +253,9 @@ public class SearchResult implements java.io.Serializable {
                     if (logger != null) {
                         logger.error(
                             "tried to add a node that was no node:-) type:"
-                            + nodes[i].getClass()
-                            + "\n Knoten enth\u00E4lt"
-                            + nodes[i]);
+                                    + nodes[i].getClass()
+                                    + "\n Knoten enth\u00E4lt"
+                                    + nodes[i]);
                     }
                     // element auslassen n\u00E4chstes probieren
                     continue;

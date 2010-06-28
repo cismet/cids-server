@@ -88,10 +88,10 @@ public class NodeReferenceList implements java.io.Serializable {
             } catch (Throwable e) {
                 logger.error(
                     "<LS> ERROR :: fehler im NodeReferenceList Konstruktor"
-                    + " index "
-                    + i
-                    + "size"
-                    + size,
+                            + " index "
+                            + i
+                            + "size"
+                            + size,
                     e);
             }
         }

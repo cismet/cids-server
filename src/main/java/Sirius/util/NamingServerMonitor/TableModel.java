@@ -27,6 +27,11 @@ import javax.swing.table.*;
  */
 public class TableModel extends DefaultTableModel {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 5139558732257510454L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**

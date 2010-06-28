@@ -21,6 +21,11 @@ import javax.swing.table.*;
  */
 public class MonitorTableModel extends DefaultTableModel {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 7052379570359737651L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**

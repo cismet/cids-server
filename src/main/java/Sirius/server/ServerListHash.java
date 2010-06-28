@@ -16,6 +16,11 @@ import java.util.*;
  */
 public class ServerListHash extends Hashtable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -3481440359460437818L;
+
     //~ Instance fields --------------------------------------------------------
 
     // 'Elemente sind Vectoren von servern
@@ -97,15 +102,15 @@ public class ServerListHash extends Hashtable {
 
         logger.error(
             "tried to add server "
-            + name
-            + " "
-            + ip
-            + " "
-            + port
-            + " but it's already there - or servertype is not defined type::"
-            + serverTyp
-            + " "
-            + s);
+                    + name
+                    + " "
+                    + ip
+                    + " "
+                    + port
+                    + " but it's already there - or servertype is not defined type::"
+                    + serverTyp
+                    + " "
+                    + s);
         return false;
     }
 

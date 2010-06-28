@@ -192,8 +192,8 @@ public class DefaultObject implements Object {
             if (logger != null) {
                 logger.info(
                     "optional set to false for attribute : "
-                    + anyAttribute
-                    + " because it belongs to a arrayLink (dummy)");
+                            + anyAttribute
+                            + " because it belongs to a arrayLink (dummy)");
             }
         }
 

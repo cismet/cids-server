@@ -361,9 +361,9 @@ public class QueryCache {
         }
 
         final String stmnt = "insert into cs_query values(" + maxId + ",'" + name + "','" + description + "','"
-            + statement
-            + "'," + resultType + ",'" + isUpdate + "','" + isBatch + "','" + isRoot + "','" + isUnion
-            + "', false,true )";
+                    + statement
+                    + "'," + resultType + ",'" + isUpdate + "','" + isBatch + "','" + isRoot + "','" + isUnion
+                    + "', false,true )";
 
         final Statement insert = con.createStatement();
         if (logger.isDebugEnabled()) {
@@ -421,7 +421,7 @@ public class QueryCache {
         }
 
         final String stmnt = "insert into cs_query_parameter values(" + maxId + "," + queryId + ",'" + paramKey + "','"
-            + description + "','" + isQueryResult + "'," + typeId + "," + queryPosition + ")";
+                    + description + "','" + isQueryResult + "'," + typeId + "," + queryPosition + ")";
         if (logger.isDebugEnabled()) {
             logger.debug("add queryparam  info :" + stmnt);
         }

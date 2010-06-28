@@ -67,8 +67,8 @@ public class QueryExecuter {
         if (s == null) {
             logger.error(
                 "query for ls "
-                + q.getQueryIdentifier().getDomain()
-                + " not possible as server is not online");
+                        + q.getQueryIdentifier().getDomain()
+                        + " not possible as server is not online");
             return new SearchResult(new MetaObjectNode[0]);
         }
 

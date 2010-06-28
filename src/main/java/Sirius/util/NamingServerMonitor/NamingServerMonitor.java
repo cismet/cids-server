@@ -40,6 +40,9 @@ public class NamingServerMonitor extends JPanel implements Runnable, ActionListe
 
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -4406088759203948775L;
+
     public static String host;
 
     //~ Instance fields --------------------------------------------------------

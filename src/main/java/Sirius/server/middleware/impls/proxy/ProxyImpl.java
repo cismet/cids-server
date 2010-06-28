@@ -59,6 +59,9 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
 
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 5926241625731489045L;
+
     private static final transient Logger LOG = Logger.getLogger(ProxyImpl.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -691,8 +694,8 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
         try {
             final RemoteObservable server = (RemoteObservable)Naming.lookup(
                     "rmi://"
-                    + siriusRegistryIP
-                    + "/nameServer");                                         // NOI18N
+                            + siriusRegistryIP
+                            + "/nameServer");                                 // NOI18N
             server.addObserver(this);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Info <CS> added as observer: " + this);            // NOI18N
@@ -719,8 +722,8 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
         try {
             final RemoteObservable server = (RemoteObservable)Naming.lookup(
                     "rmi://"
-                    + siriusRegistryIP
-                    + "/nameServer");                                  // NOI18N
+                            + siriusRegistryIP
+                            + "/nameServer");                          // NOI18N
             server.deleteObserver(this);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Info <CS> removed as observer: " + this);   // NOI18N

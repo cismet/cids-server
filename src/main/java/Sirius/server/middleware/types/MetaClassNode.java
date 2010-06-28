@@ -18,6 +18,11 @@ import Sirius.server.newuser.permission.Policy;
 
 public class MetaClassNode extends Node implements Comparable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 8848752082990065348L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**

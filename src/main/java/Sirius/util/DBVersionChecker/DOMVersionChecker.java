@@ -130,19 +130,19 @@ public class DOMVersionChecker implements VersionChecker {
             if (args.length < 2) {
                 System.err.println(
                     "Aufruf:"
-                    + nL
-                    + " a) PROG <configfile> generiere <neuer Vesionsname>"
-                    + nL
-                    + " b) PROG <configfile> version"
-                    + nL
-                    + " c) PROG <configfile> vergleiche <Versionsname>"
-                    + nL
-                    + nL
-                    + "    Achtung - im Fall a) wird die im configfile angegebene "
-                    + nL
-                    + "    XML Datei neu erzeugt und muss in die Versionsliste "
-                    + nL
-                    + "    aufgenommen werden");
+                            + nL
+                            + " a) PROG <configfile> generiere <neuer Vesionsname>"
+                            + nL
+                            + " b) PROG <configfile> version"
+                            + nL
+                            + " c) PROG <configfile> vergleiche <Versionsname>"
+                            + nL
+                            + nL
+                            + "    Achtung - im Fall a) wird die im configfile angegebene "
+                            + nL
+                            + "    XML Datei neu erzeugt und muss in die Versionsliste "
+                            + nL
+                            + "    aufgenommen werden");
                 System.exit(0);
             }
 
@@ -300,20 +300,20 @@ public class DOMVersionChecker implements VersionChecker {
                     } else {
                         differences.add(
                             "Tabelle <"
-                            + dbTable
-                            + "> Spalte <"
-                            + dbColumn
-                            + "> in der DB aber nicht im XML");
+                                    + dbTable
+                                    + "> Spalte <"
+                                    + dbColumn
+                                    + "> in der DB aber nicht im XML");
                         continue;
                     }
 
                     while (dbColumn.compareTo(xmlColumn) < 0) {
                         differences.add(
                             "Tabelle <"
-                            + dbTable
-                            + "> Spalte <"
-                            + dbColumn
-                            + "> in der DB aber nicht in XML");
+                                    + dbTable
+                                    + "> Spalte <"
+                                    + dbColumn
+                                    + "> in der DB aber nicht in XML");
                         if (dbColumnsIter.hasNext()) {
                             dbColumn = (String)dbColumnsIter.next();
                         } else {
@@ -324,10 +324,10 @@ public class DOMVersionChecker implements VersionChecker {
                     while (dbColumn.compareTo(xmlColumn) > 0) {
                         differences.add(
                             "Tabelle <"
-                            + dbTable
-                            + "> Spalte <"
-                            + dbColumn
-                            + "> in XML aber nicht in der DB");
+                                    + dbTable
+                                    + "> Spalte <"
+                                    + dbColumn
+                                    + "> in XML aber nicht in der DB");
                         if (xmlColumnsIter.hasNext()) {
                             xmlColumn = (String)xmlColumnsIter.next();
                         } else {
@@ -346,13 +346,13 @@ public class DOMVersionChecker implements VersionChecker {
                                         != 0) {
                                 differences.add(
                                     "Tabelle <"
-                                    + dbTable
-                                    + "> Spalte <"
-                                    + dbColumn
-                                    + "> nullable db: "
-                                    + dbColumnData.get("nullable")
-                                    + " / xml: "
-                                    + xmlColumnData.get("nullable"));
+                                            + dbTable
+                                            + "> Spalte <"
+                                            + dbColumn
+                                            + "> nullable db: "
+                                            + dbColumnData.get("nullable")
+                                            + " / xml: "
+                                            + xmlColumnData.get("nullable"));
                             }
                         }
 
@@ -361,13 +361,13 @@ public class DOMVersionChecker implements VersionChecker {
                                         != 0) {
                                 differences.add(
                                     "Tabelle <"
-                                    + dbTable
-                                    + "> Spalte <"
-                                    + dbColumn
-                                    + "> size db: "
-                                    + dbColumnData.get("size")
-                                    + " / xml: "
-                                    + xmlColumnData.get("size"));
+                                            + dbTable
+                                            + "> Spalte <"
+                                            + dbColumn
+                                            + "> size db: "
+                                            + dbColumnData.get("size")
+                                            + " / xml: "
+                                            + xmlColumnData.get("size"));
                             }
                         }
 
@@ -376,13 +376,13 @@ public class DOMVersionChecker implements VersionChecker {
                                         != 0) {
                                 differences.add(
                                     "Tabelle <"
-                                    + dbTable
-                                    + "> Spalte <"
-                                    + dbColumn
-                                    + "> type db: "
-                                    + dbColumnData.get("type")
-                                    + " / xml: "
-                                    + xmlColumnData.get("type"));
+                                            + dbTable
+                                            + "> Spalte <"
+                                            + dbColumn
+                                            + "> type db: "
+                                            + dbColumnData.get("type")
+                                            + " / xml: "
+                                            + xmlColumnData.get("type"));
                             }
                         }
                     }

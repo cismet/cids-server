@@ -114,9 +114,9 @@ public class CatalogueServiceImpl {
                             0,
                             lsName,
                             lsName
-                            + " not available!",
+                                    + " not available!",
                             lsName
-                            + " not available!",
+                                    + " not available!",
                             true,
                             Policy.createParanoidPolicy(),
                             -1,

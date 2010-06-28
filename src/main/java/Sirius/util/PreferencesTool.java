@@ -124,7 +124,7 @@ public class PreferencesTool {
             final String[] values) throws BackingStoreException {
         if (keys.length != values.length) {
             final String meldung = "Ungleiche anzahl der Schl\u00FCssel und Werte"
-                + " wurden \u00FCbergeben zum setzen der Preferences in die backing store.";
+                        + " wurden \u00FCbergeben zum setzen der Preferences in die backing store.";
 
             throw new BackingStoreException(meldung);
         }

@@ -47,23 +47,26 @@ public final class PersistenceManager extends Shutdown {
 
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 575613461603083526L;
+
     private static final transient Logger LOG = Logger.getLogger(PersistenceManager.class);
 
     public static final String DEL_ATTR_STRING = "DELETE FROM cs_attr_string "       // NOI18N
-        + "WHERE class_id = ? AND object_id = ?";                                    // NOI18N
+                + "WHERE class_id = ? AND object_id = ?";                            // NOI18N
     public static final String DEL_ATTR_MAPPING = "DELETE FROM cs_all_attr_mapping " // NOI18N
-        + "WHERE class_id = ? AND object_id = ?";                                    // NOI18N
+                + "WHERE class_id = ? AND object_id = ?";                            // NOI18N
     public static final String INS_ATTR_STRING = "INSERT INTO cs_attr_string "       // NOI18N
-        + "(class_id, object_id, attr_id, string_val) VALUES (?, ?, ?, ?)";          // NOI18N
+                + "(class_id, object_id, attr_id, string_val) VALUES (?, ?, ?, ?)";  // NOI18N
     public static final String INS_ATTR_MAPPING = "INSERT INTO cs_all_attr_mapping " // NOI18N
-        + "(class_id, object_id, attr_class_id, attr_object_id) VALUES "             // NOI18N
-        + "(?, ?, ?, ?)";                                                            // NOI18N
+                + "(class_id, object_id, attr_class_id, attr_object_id) VALUES "     // NOI18N
+                + "(?, ?, ?, ?)";                                                    // NOI18N
     public static final String UP_ATTR_STRING = "UPDATE cs_attr_string "             // NOI18N
-        + "SET string_val = ? "                                                      // NOI18N
-        + "WHERE class_id = ? AND object_id = ? AND attr_id = ?";                    // NOI18N
+                + "SET string_val = ? "                                              // NOI18N
+                + "WHERE class_id = ? AND object_id = ? AND attr_id = ?";            // NOI18N
     public static final String UP_ATTR_MAPPING = "UPDATE cs_all_attr_mapping "       // NOI18N
-        + "SET attr_object_id = ? "                                                  // NOI18N
-        + "WHERE class_id = ? AND object_id = ? AND attr_class_id = ?";              // NOI18N
+                + "SET attr_object_id = ? "                                          // NOI18N
+                + "WHERE class_id = ? AND object_id = ? AND attr_class_id = ?";      // NOI18N
     public static final String NULL = "NULL";                                        // NOI18N
     private static final String DEBUG_REPLACE = "\\?";                               // NOI18N
 
@@ -105,13 +108,13 @@ public final class PersistenceManager extends Shutdown {
         if (LOG.isDebugEnabled()) {
             LOG.debug(
                 "deleteMetaObject entered "
-                + mo              // NOI18N
-                + "status :"
-                + mo.getStatus()  // NOI18N
-                + " of class:"
-                + mo.getClassID() // NOI18N
-                + " isDummy(ArrayContainer) :"
-                + mo.isDummy());  // NOI18N
+                        + mo              // NOI18N
+                        + "status :"
+                        + mo.getStatus()  // NOI18N
+                        + " of class:"
+                        + mo.getClassID() // NOI18N
+                        + " isDummy(ArrayContainer) :"
+                        + mo.isDummy());  // NOI18N
         }
 
         if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
@@ -163,7 +166,7 @@ public final class PersistenceManager extends Shutdown {
                     LOG.debug("paramsql: " + paramStmt);                                       // NOI18N
                     LOG.debug(
                         "debugSQL: "                                                           // NOI18N
-                        + paramStmt.replace(DEBUG_REPLACE, String.valueOf(mo.getPrimaryKey().getValue())));
+                                + paramStmt.replace(DEBUG_REPLACE, String.valueOf(mo.getPrimaryKey().getValue())));
                 }
                 stmt = transactionHelper.getConnection().prepareStatement(paramStmt);
                 stmt.setObject(1, mo.getPrimaryKey().getValue());
@@ -190,11 +193,11 @@ public final class PersistenceManager extends Shutdown {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
                     "'"
-                    + user
-                    + "' is not allowed to delete MO "
-                    + mo.getID()
-                    + "."
-                    + mo.getClassKey(),                              // NOI18N
+                            + user
+                            + "' is not allowed to delete MO "
+                            + mo.getID()
+                            + "."
+                            + mo.getClassKey(),                      // NOI18N
                     new CurrentStackTrace());
             }
             // TODO: shouldn't that return -1 or similar to indicate that nothing has been done?
@@ -257,13 +260,13 @@ public final class PersistenceManager extends Shutdown {
         if (LOG.isDebugEnabled()) {
             LOG.debug(
                 "updateMetaObject entered "
-                + mo              // NOI18N
-                + "status :"
-                + mo.getStatus()  // NOI18N
-                + " of class:"
-                + mo.getClassID() // NOI18N
-                + " isDummy(ArrayContainer) :"
-                + mo.isDummy());  // NOI18N
+                        + mo              // NOI18N
+                        + "status :"
+                        + mo.getStatus()  // NOI18N
+                        + " of class:"
+                        + mo.getClassID() // NOI18N
+                        + " isDummy(ArrayContainer) :"
+                        + mo.isDummy());  // NOI18N
         }
         if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
                         user.getUserGroup())) {
@@ -336,11 +339,11 @@ public final class PersistenceManager extends Shutdown {
                             // TODO: consider to LOG fatal!
                             LOG.error(
                                 "error updating subobject '"
-                                + subObject          // NOI18N
-                                + "' of attribute "
-                                + mai.getFieldName() // NOI18N
-                                + ": invalid status: "
-                                + subObject.getStatus()); // NOI18N
+                                        + subObject          // NOI18N
+                                        + "' of attribute "
+                                        + mai.getFieldName() // NOI18N
+                                        + ": invalid status: "
+                                        + subObject.getStatus()); // NOI18N
                             // TODO: throw illegalstateexception ?
                         }
                     }
@@ -401,11 +404,11 @@ public final class PersistenceManager extends Shutdown {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
                     "'"
-                    + user
-                    + "' is not allowed to update MetaObject "
-                    + mo.getID()
-                    + "."
-                    + mo.getClassKey(), // NOI18N
+                            + user
+                            + "' is not allowed to update MetaObject "
+                            + mo.getID()
+                            + "."
+                            + mo.getClassKey(), // NOI18N
                     new CurrentStackTrace());
             }
             throw new SecurityException("not allowed to insert meta object");
@@ -482,9 +485,9 @@ public final class PersistenceManager extends Shutdown {
                         // TODO: consider LOG fatal
                         LOG.error(
                             "error f\u00FCr array element "
-                            + metaObject
-                            + " hat ung\u00FCltigen status ::"
-                            + status);
+                                    + metaObject
+                                    + " hat ung\u00FCltigen status ::"
+                                    + status);
                         // TODO: throw illegalstateexception?
                     }
                 }
@@ -566,13 +569,13 @@ public final class PersistenceManager extends Shutdown {
         if (LOG.isDebugEnabled()) {
             LOG.debug(
                 "insertMetaObject entered "
-                + mo              // NOI18N
-                + "status :"
-                + mo.getStatus()  // NOI18N
-                + " of class:"
-                + mo.getClassID() // NOI18N
-                + " isDummy(ArrayContainer) :"
-                + mo.isDummy());  // NOI18N
+                        + mo              // NOI18N
+                        + "status :"
+                        + mo.getStatus()  // NOI18N
+                        + " of class:"
+                        + mo.getClassID() // NOI18N
+                        + " isDummy(ArrayContainer) :"
+                        + mo.isDummy());  // NOI18N
         }
 
         if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
@@ -604,11 +607,11 @@ public final class PersistenceManager extends Shutdown {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(
                         "mAttr["
-                        + i
-                        + "].getName() of "
-                        + mo.getClassKey() // NOI18N
-                        + ": "
-                        + mAttr[i].getName()); // NOI18N
+                                + i
+                                + "].getName() of "
+                                + mo.getClassKey() // NOI18N
+                                + ": "
+                                + mAttr[i].getName()); // NOI18N
                 }
                 final MemberAttributeInfo mai = mAttr[i].getMai();
                 // if object does not have mai it cannot be inserted
@@ -727,11 +730,11 @@ public final class PersistenceManager extends Shutdown {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
                     "'"
-                    + user
-                    + "' is not allowed to insert MO "
-                    + mo.getID()
-                    + "."
-                    + mo.getClassKey(), // NOI18N
+                            + user
+                            + "' is not allowed to insert MO "
+                            + mo.getID()
+                            + "."
+                            + mo.getClassKey(), // NOI18N
                     new CurrentStackTrace());
             }
             throw new SecurityException("not allowed to insert meta object");
@@ -782,10 +785,10 @@ public final class PersistenceManager extends Shutdown {
         } catch (final SQLException e) {
             LOG.error(
                 "could not delete index for object '"
-                + mo.getID()                                                    // NOI18N
-                + "' of class '"
-                + mo.getClass()
-                + "'",
+                        + mo.getID()                                            // NOI18N
+                        + "' of class '"
+                        + mo.getClass()
+                        + "'",
                 e);                                                             // NOI18N
             // TODO: consider to wrap exception
             throw e;
@@ -895,10 +898,10 @@ public final class PersistenceManager extends Shutdown {
         } catch (final SQLException e) {
             LOG.error(
                 "could not insert index for object '"
-                + mo.getID()                                                            // NOI18N
-                + "' of class '"
-                + mo.getClass()
-                + "'",
+                        + mo.getID()                                                    // NOI18N
+                        + "' of class '"
+                        + mo.getClass()
+                        + "'",
                 e);                                                                     // NOI18N
             // TODO: consider to wrap exception
             throw e;
@@ -996,10 +999,10 @@ public final class PersistenceManager extends Shutdown {
         } catch (final SQLException e) {
             LOG.error(
                 "could not insert index for object '"
-                + mo.getID()                                                             // NOI18N
-                + "' of class '"
-                + mo.getClass()
-                + "'",
+                        + mo.getID()                                                     // NOI18N
+                        + "' of class '"
+                        + mo.getClass()
+                        + "'",
                 e);                                                                      // NOI18N
             throw e;
         } finally {

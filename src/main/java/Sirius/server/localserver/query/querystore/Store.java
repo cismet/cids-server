@@ -214,13 +214,13 @@ public class Store {
                     if (logger.isDebugEnabled()) {
                         logger.debug(
                             "beim insert in UserProfile wurden datens\u00E4tze hinzugef\u00FCgt #="
-                            + effected);
+                                    + effected);
                     }
                     effected += storeUserGroupQuery.executeUpdate();
                     if (logger.isDebugEnabled()) {
                         logger.debug(
                             "beim insert in UserGroupProfile + Userprofile wurden datens\u00E4tze hinzugef\u00FCgt #="
-                            + effected);
+                                    + effected);
                     }
                 }
             }

@@ -23,6 +23,11 @@ package Sirius.server.registry.rmplugin.exception;
  */
 public class UnableToDeregisterException extends Exception {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 5941471722282372495L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**

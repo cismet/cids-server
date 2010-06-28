@@ -276,9 +276,9 @@ public class BeanFactory {
             log.fatal("Error in createBean", e);
             throw new Exception(
                 "Error in getBean() (instanceof "
-                + javaClass
-                + ") of MetaObject:"
-                + metaObject.getDebugString(),
+                        + javaClass
+                        + ") of MetaObject:"
+                        + metaObject.getDebugString(),
                 e);
         }
     }
@@ -325,7 +325,7 @@ public class BeanFactory {
      */
     private Class createJavaClass(final MetaClass metaClass) throws Exception {
         final String classname = "de.cismet.cids.dynamics."
-            + createJavaClassnameOutOfTableName(metaClass.getTableName());
+                    + createJavaClassnameOutOfTableName(metaClass.getTableName());
         // String beaninfoClassname=classname+"BeanInfo";
 
         final ClassPool pool = ClassPool.getDefault();
@@ -385,7 +385,7 @@ public class BeanFactory {
         }
         // FIXME: immutable collection instead of possible mutable (-> corrputable) array?
         final CtField propertyNamesStaticField = CtField.make("private String[] PROPERTY_NAMES = new String[]{"
-                + propertyNames + "};",
+                        + propertyNames + "};",
                 ctClass);
         final CtMethod propertyNamesGetter = CtNewMethod.getter("getPropertyNames", propertyNamesStaticField);
 //        CtMethod propertyNamesGetter = CtNewMethod.make(
@@ -440,10 +440,10 @@ public class BeanFactory {
 
         setter.insertAfter(
             "propertyChangeSupport.firePropertyChange(\""
-            + f.getName()
-            + "\", null, "
-            + f.getName()
-            + ");");
+                    + f.getName()
+                    + "\", null, "
+                    + f.getName()
+                    + ");");
 
         ctClass.addMethod(getter);
         ctClass.addMethod(setter);

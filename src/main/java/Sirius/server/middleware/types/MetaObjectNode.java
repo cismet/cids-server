@@ -20,6 +20,9 @@ public class MetaObjectNode extends Node implements Comparable {
 
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -4873930081126373315L;
+
     private static final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(
             MetaObjectNode.class);
 

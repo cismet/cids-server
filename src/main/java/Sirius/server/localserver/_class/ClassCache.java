@@ -40,6 +40,11 @@ import java.util.Vector;
  */
 public class ClassCache extends Shutdown {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -7020351584449229634L;
+
     //~ Instance fields --------------------------------------------------------
 
     /** contains all cached objects. */
@@ -573,9 +578,9 @@ public class ClassCache extends Shutdown {
                 } else {
                     logger.warn(
                         "Eintrag in der Klassen/Methoden tabelle fehlerhaft Klasse"
-                        + classId
-                        + " Methode :"
-                        + methodId);
+                                + classId
+                                + " Methode :"
+                                + methodId);
                 }
             }
 

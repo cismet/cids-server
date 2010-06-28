@@ -164,7 +164,7 @@ public class Class implements java.io.Serializable, Mapable {
         this.getInstanceStmnt = "Select * from " + tableName + " where " + primaryKey + " = ?";
 
         this.getDefaultInstanceStmnt = "Select * from " + tableName + " where " + primaryKey + " = (select min( "
-            + primaryKey + ") from " + tableName + ")";
+                    + primaryKey + ") from " + tableName + ")";
     }
 
     //~ Methods ----------------------------------------------------------------

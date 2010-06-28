@@ -60,14 +60,14 @@ public class UserManager implements Sirius.server.newuser.UserServer {
         if (u == null) {
             throw new UserException(
                 "UserException :: no User :: " // NOI18N
-                + user
-                + ", "                         // NOI18N
-                + userDomain
-                + ", "                         // NOI18N
-                + userGroup
-                + ", "                         // NOI18N
-                + userGroupDomain
-                + " registered",               // NOI18N
+                        + user
+                        + ", "                 // NOI18N
+                        + userDomain
+                        + ", "                 // NOI18N
+                        + userGroup
+                        + ", "                 // NOI18N
+                        + userGroupDomain
+                        + " registered",       // NOI18N
                 true,
                 false,
                 false,
@@ -75,14 +75,14 @@ public class UserManager implements Sirius.server.newuser.UserServer {
         } else if (!memberships.containsKey(u.getRegistryKey())) {
             throw new UserException(
                 "UserException :: no User :: " // NOI18N
-                + user
-                + ", "                         // NOI18N
-                + userDomain
-                + ", "                         // NOI18N
-                + userGroup
-                + ", "                         // NOI18N
-                + userGroupDomain
-                + " registered",               // NOI18N
+                        + user
+                        + ", "                 // NOI18N
+                        + userDomain
+                        + ", "                 // NOI18N
+                        + userGroup
+                        + ", "                 // NOI18N
+                        + userGroupDomain
+                        + " registered",       // NOI18N
                 true,
                 false,
                 false,
@@ -102,9 +102,9 @@ public class UserManager implements Sirius.server.newuser.UserServer {
                 {
                     throw new UserException(
                         "UserException :: no UserGroup :: " // NOI18N
-                        + userGroup
-                        + ", "                              // NOI18N
-                        + userGroupDomain,
+                                + userGroup
+                                + ", "                      // NOI18N
+                                + userGroupDomain,
                         false,
                         false,
                         true,

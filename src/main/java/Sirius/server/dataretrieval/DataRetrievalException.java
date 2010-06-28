@@ -24,6 +24,11 @@ import java.sql.SQLException;
  */
 public class DataRetrievalException extends Exception {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -2010549117483473881L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**

@@ -23,6 +23,11 @@ package de.cismet.cids.tools.tostring;
  */
 public class TestAttrToString extends GeometryStringConverter {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -1024080852301058710L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**

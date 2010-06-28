@@ -205,9 +205,9 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
 
             try {
                 final String tableNamePreparedForClassName = getTableName().substring(0, 1).toUpperCase()
-                    + getTableName().substring(1).toLowerCase();
+                            + getTableName().substring(1).toLowerCase();
                 lazyClassName = toStringConverterPrefix + (domain + ".").toLowerCase() + tableNamePreparedForClassName
-                    + toStringConverterPostfix;
+                            + toStringConverterPostfix;
                 converterClass = BlacklistClassloading.forName(lazyClassName);
             } catch (Exception e) {
                 if (logger.isDebugEnabled()) {
@@ -225,7 +225,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
                 if (logger.isDebugEnabled()) {
                     logger.debug(
                         " customized stringconverter could not be loaded as ClassQualifer ist not a valid ToSTringconverter "
-                        + toString);
+                                + toString);
                 }
             }
 
@@ -239,9 +239,9 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
             if (logger != null) {
                 logger.error(
                     toString
-                    + " f\u00FCr Klasse "
-                    + name
-                    + " konnte nicht geladen werden set string converter to Default ",
+                            + " f\u00FCr Klasse "
+                            + name
+                            + " konnte nicht geladen werden set string converter to Default ",
                     e);
             }
             this.toStringConverter = new ToStringConverter();
