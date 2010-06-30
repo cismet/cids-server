@@ -9,6 +9,8 @@ package Sirius.server.property;
 
 import Sirius.util.image.*;
 
+import org.apache.log4j.Logger;
+
 import java.io.*;
 
 import java.lang.reflect.*;
@@ -153,9 +155,9 @@ import de.cismet.tools.PasswordEncrypter;
 
 public class ServerProperties extends java.util.PropertyResourceBundle {
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
+    private static final transient Logger LOG = Logger.getLogger(ServerProperties.class);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -214,12 +216,122 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
     }
 
     /**
+     * Delivers the server's rest port.<br/>
+     * <br/>
+     * <b>If the port is not retrievable from the property file the port number defaults to <code>9986</code></b>.
+     *
+     * @return  the server's rest port
+     */
+    public final int getRestPort() {
+        try {
+            return Integer.valueOf(getString("server.rest.port"));                    // NOI18N
+        } catch (final NumberFormatException e) {
+            final String message = "could not parse server.rest.port property value"; // NOI18N
+            LOG.warn(message, e);
+
+            return 9986;
+        } catch (final MissingResourceException e) {
+            final String message = "server.rest.port property not set"; // NOI18N
+            if (LOG.isInfoEnabled()) {
+                LOG.info(message, e);
+            }
+
+            return 9986;
+        }
+    }
+
+    /**
+     * Indicates whether rest shall be enabled.<br/>
+     * <br/>
+     * <b>If the flag is not retrievable from the property file it defaults to <code>false</code></b>.
+     *
+     * @return  whether the server shall enable rest
+     */
+    public final boolean isRestEnabled() {
+        try {
+            return Boolean.valueOf(getString("server.rest.enable"));      // NOI18N
+        } catch (final MissingResourceException e) {
+            final String message = "server.rest.enable property not set"; // NOI18N
+            if (LOG.isInfoEnabled()) {
+                LOG.info(message, e);
+            }
+
+            return false;
+        }
+    }
+
+    /**
      * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public final int getRestPort() {
-        return Integer.valueOf(getString("restPort"));
+    public final String getRestServerKeystore() {
+        return getString("server.rest.keystore.server"); // NOI18N
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getRestServerKeystorePW() {
+        return getString("server.rest.keystore.server.password"); // NOI18N
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getRestServerKeystoreKeyPW() {
+        return getString("server.rest.keystore.server.keypassword"); // NOI18N
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getRestClientKeystore() {
+        return getString("server.rest.keystore.client"); // NOI18N
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final boolean isRestClientAuth() {
+        return Boolean.valueOf(getString("server.rest.keystore.client.auth")); // NOI18N
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getRestClientKeystorePW() {
+        return getString("server.rest.keystore.client.password"); // NOI18N
+    }
+
+    /**
+     * Indicates whether rest shall be run in debug mode.<br/>
+     * <br/>
+     * <b>If the flag is not retrievable from the property file it defaults to <code>false</code></b>.
+     *
+     * @return  whether the server shall run rest in debug mode
+     */
+    public final boolean isRestDebug() {
+        try {
+            return Boolean.valueOf(getString("server.rest.debug"));      // NOI18N
+        } catch (final MissingResourceException e) {
+            final String message = "server.rest.debug property not set"; // NOI18N
+            if (LOG.isInfoEnabled()) {
+                LOG.info(message, e);
+            }
+
+            return false;
+        }
     }
 
     /**
@@ -434,9 +546,9 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
         final File file = new File(getDefaultIconDir());
 
         // File file = new File("p:\\Metaservice\\Sirius\\System\\imgDefault");
-        if (logger.isDebugEnabled()) {
-            logger.debug("<SRVProperties> call getDefaultIcons");
-            logger.debug("<SRVProperties> get DefaultIcons from Path: " + getDefaultIconDir() + file.exists());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("<SRVProperties> call getDefaultIcons");
+            LOG.debug("<SRVProperties> get DefaultIcons from Path: " + getDefaultIconDir() + file.exists());
         }
 
         File[] images = new File[0];
@@ -444,8 +556,8 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
 
         try {
             if (file.isDirectory()) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("<SRVProperties> valid Directory");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("<SRVProperties> valid Directory");
                 }
 
                 /**
@@ -456,16 +568,16 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
 
                 // System.out.println(file.listFiles());
                 images = file.listFiles();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("<SRVProperties> found " + images.length + " icons");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("<SRVProperties> found " + images.length + " icons");
                 }
                 sImages = new Image[images.length];
 
                 String s = "";
                 for (int i = 0; i < images.length; i++) {
                     s += (images[i].getName() + ";");
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(s);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(s);
                     }
                     sImages[i] = new Image(images[i].getAbsolutePath());
                 }
@@ -473,7 +585,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
                 throw new Exception("file is not an Directory");
             }
         } catch (Exception e) {
-            logger.error(e);
+            LOG.error(e);
         }
 
         return sImages;

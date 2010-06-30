@@ -59,7 +59,7 @@ public class RESTfulSerialInterfaceConnectorTest {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String ROOT_RESOURCE = "http://localhost:9987/callserver/binary/";                               // NOI18N
+    private static final String ROOT_RESOURCE = "https://localhost:9987/callserver/binary/";                               // NOI18N
     private static final String SERVER_CONFIG =
         "src/test/resources/Sirius/server/localserver/object/runtime.properties";                                         // NOI18N
     private static final String STARTMODE = "simple";                                                                     // NOI18N
@@ -100,9 +100,9 @@ public class RESTfulSerialInterfaceConnectorTest {
 
         registry = new Sirius.server.registry.Registry(1099);
         proxy = StartProxy.getInstance(SERVER_CONFIG);
-        RESTfulService.up(8011);
         final PropertiesWrapper pw = new PropertiesWrapper(SERVER_CONFIG);
         pw.setStartMode(STARTMODE);
+        RESTfulService.up(pw);
         server = new DomainServerImpl(pw);
         connector = new RESTfulSerialInterfaceConnector(ROOT_RESOURCE);
     }

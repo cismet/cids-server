@@ -37,7 +37,7 @@ public class DBConnectionTest {
             DBConnectionTest.class);
     private static final String TEST = "TEST ";           // NOI18N
     private static final DBClassifier DB_CLASSIFIER = new DBClassifier(
-            "jdbc:postgresql://kif:5432/wuli_server_dev", // NOI18N
+            "jdbc:postgresql://kif:5432/cids_reference_db", // NOI18N
             "postgres",                                   // NOI18N
             "x",                                          // NOI18N
             "org.postgresql.Driver");                     // NOI18N
@@ -144,7 +144,7 @@ public class DBConnectionTest {
             set1 = con.submitInternalQuery(
                     "verify_user_password",
                     "admin",
-                    "sb");
+                    "cismet");
             if (set1.next()) {
                 assertEquals("not exactly one user found", 1, set1.getInt(1));
             } else {

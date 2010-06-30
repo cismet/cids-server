@@ -116,17 +116,14 @@ public final class StartProxy {
         callServer = createAndBindProxy(properties);
         status = new ServerStatus();
 
-        // bring up the RESTful Service after initialisation
-        try {
+        // bring up the RESTful Service after initialisation if rest is enabled
+        if(properties.isRestEnabled())
+        {
             try {
-                final int restPort = properties.getRestPort();
-                RESTfulService.up(restPort);
-            } catch (final Exception e) {
-                LOG.warn("could not get port from runtime properties, default to 9986", e); // NOI18N
-                RESTfulService.up(9986);
+                RESTfulService.up(properties);
+            } catch (final ServerExitError e) {
+                LOG.error("could not bring up RESTful interface", e); // NOI18N
             }
-        } catch (final ServerExitError e) {
-            LOG.error("could not bring up RESTful interface", e);                           // NOI18N
         }
 
         if (LOG.isDebugEnabled()) {

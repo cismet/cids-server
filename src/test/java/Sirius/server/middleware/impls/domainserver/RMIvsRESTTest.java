@@ -79,9 +79,9 @@ public class RMIvsRESTTest {
 
         registry = new Sirius.server.registry.Registry(1099);
         proxy = StartProxy.getInstance(SERVER_CONFIG);
-        RESTfulService.up(8011);
         final PropertiesWrapper pw = new PropertiesWrapper(SERVER_CONFIG);
         pw.setStartMode(STARTMODE);
+        RESTfulService.up(pw);
         server = new DomainServerImpl(pw);
         connector = new RESTfulSerialInterfaceConnector(ROOT_RESOURCE);
     }

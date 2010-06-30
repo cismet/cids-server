@@ -32,15 +32,32 @@ import com.sun.jersey.api.client.WebResource;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import java.rmi.RemoteException;
+
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -76,6 +93,14 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param  rootResource  DOCUMENT ME!
      */
     public RESTfulSerialInterfaceConnector(final String rootResource) {
+        this(rootResource, null);
+    }
+
+    public RESTfulSerialInterfaceConnector(final String rootResource, final SSLConfig sslConfig){
+        if(sslConfig != null){
+            initSSL(sslConfig);
+        }
+
         // add training '/' to the root resource if not present
         if ('/' == rootResource.charAt(rootResource.length() - 1)) {
             this.rootResource = rootResource;
@@ -84,6 +109,51 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
 
         clientCache = new Hashtable<String, Client>();
+    }
+
+    private void initSSL(final SSLConfig sslConfig){
+//        try {
+//            // server certificate for trustmanager
+//            final KeyStore ks = KeyStore.getInstance("JKS");
+//            ks.load(null, null);
+//            final CertificateFactory cf = CertificateFactory.getInstance("X.509");
+//            final X509Certificate cert = (X509Certificate)cf.generateCertificate(new BufferedInputStream(
+//                        new FileInputStream(
+//                            "/Users/mscholl/svnwork/central/de/cismet/cids/cids-server/trunk/src/main/cert/cids-server-jetty.cert")));
+//            ks.setCertificateEntry("cids-server-jetty", cert);
+//            final TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+//            tmf.init(ks);
+//
+//            // client certificate and key for key manager
+//            final KeyStore keystore = KeyStore.getInstance("JKS");
+//            keystore.load(new BufferedInputStream(
+//                    new FileInputStream(
+//                        "/Users/mscholl/svnwork/central/de/cismet/cids/cids-server/trunk/src/main/cert/cids-server-client.keystore")),
+//                "b3vwi98zb".toCharArray());
+//            final KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+//            kmf.init(keystore, "345txfx97c".toCharArray());
+//
+//            // init context
+//            final SSLContext context = SSLContext.getInstance("TLS");
+//            context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+//
+//            HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
+//            HttpsURLConnection.setDefaultHostnameVerifier(new SSLHostnameVerifier());
+//        } catch (final NoSuchAlgorithmException e) {
+//            throw new IllegalStateException("system does not support SSL", e);
+//        } catch (final KeyStoreException e) {
+//            throw new IllegalStateException("system does not support java keystores", e);
+//        } catch (final FileNotFoundException e) {
+//            throw new IllegalStateException("cannot find keystore file", e);
+//        } catch (final IOException e) {
+//            throw new IllegalArgumentException("cannot read keystore", e);
+//        } catch (final CertificateException e) {
+//            throw new IllegalArgumentException("illegal certificate", e);
+//        } catch (final KeyManagementException e) {
+//            throw new IllegalStateException("ssl context init properly initialised", e);
+//        } catch (final UnrecoverableKeyException e) {
+//            throw new IllegalStateException("cannot get key from keystore", e);
+//        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -2961,6 +3031,146 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final String message = "could not create vector";                            // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
+        }
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    // --> SSLConfig
+    public static final class SSLConfig {
+
+        //~ Instance fields ----------------------------------------------------
+
+        private transient String keystore;
+        private transient String keystorePass;
+        private transient boolean useSSL;
+        private transient String serverKeystore;
+        private transient String serverKeystorePass;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new SSLConfig object.
+         */
+        public SSLConfig() {
+        }
+
+        /**
+         * Creates a new SSLConfig object.
+         *
+         * @param  keystore            DOCUMENT ME!
+         * @param  keystorePass        DOCUMENT ME!
+         * @param  useSSL              DOCUMENT ME!
+         * @param  serverKeystore      DOCUMENT ME!
+         * @param  serverKeystorePass  DOCUMENT ME!
+         */
+        public SSLConfig(final String keystore,
+                final String keystorePass,
+                final boolean useSSL,
+                final String serverKeystore,
+                final String serverKeystorePass) {
+            this.keystore = keystore;
+            this.keystorePass = keystorePass;
+            this.useSSL = useSSL;
+            this.serverKeystore = serverKeystore;
+            this.serverKeystorePass = serverKeystorePass;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        public String getKeystore() {
+            return keystore;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param  keystore  DOCUMENT ME!
+         */
+        public void setKeystore(final String keystore) {
+            this.keystore = keystore;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        public String getKeystorePass() {
+            return keystorePass;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param  keystorePass  DOCUMENT ME!
+         */
+        public void setKeystorePass(final String keystorePass) {
+            this.keystorePass = keystorePass;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        public String getServerKeystore() {
+            return serverKeystore;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param  serverKeystore  DOCUMENT ME!
+         */
+        public void setServerKeystore(final String serverKeystore) {
+            this.serverKeystore = serverKeystore;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        public String getServerKeystorePass() {
+            return serverKeystorePass;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param  serverKeystorePass  DOCUMENT ME!
+         */
+        public void setServerKeystorePass(final String serverKeystorePass) {
+            this.serverKeystorePass = serverKeystorePass;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        public boolean isUseSSL() {
+            return useSSL;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param  useSSL  DOCUMENT ME!
+         */
+        public void setUseSSL(final boolean useSSL) {
+            this.useSSL = useSSL;
         }
     }
 }
