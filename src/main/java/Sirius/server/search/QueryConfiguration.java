@@ -36,7 +36,7 @@ public class QueryConfiguration {
      * @param  query     DOCUMENT ME!
      * @param  classIds  DOCUMENT ME!
      */
-    public QueryConfiguration(Query query, String[] classIds) {
+    public QueryConfiguration(final Query query, final String[] classIds) {
         this.query = query;
         this.classIds = classIds;
     }
@@ -66,7 +66,7 @@ public class QueryConfiguration {
      *
      * @param  classIds  DOCUMENT ME!
      */
-    public void setClassIds(String[] classIds) {
+    public void setClassIds(final String[] classIds) {
         this.classIds = classIds;
     }
 }

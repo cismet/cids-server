@@ -7,29 +7,43 @@
 ****************************************************/
 package Sirius.server.localserver._class;
 
-import java.sql.*;
+import Sirius.server.ServerExitError;
+import Sirius.server.Shutdown;
+import Sirius.server.Shutdownable;
+import Sirius.server.localserver.attribute.ClassAttribute;
+import Sirius.server.localserver.attribute.MemberAttributeInfo;
+import Sirius.server.newuser.UserGroup;
+import Sirius.server.newuser.permission.Permission;
+import Sirius.server.newuser.permission.PermissionHolder;
+import Sirius.server.newuser.permission.Policy;
+import Sirius.server.newuser.permission.PolicyHolder;
+import Sirius.server.property.ServerProperties;
+import Sirius.server.sql.DBConnection;
+import Sirius.server.sql.DBConnectionPool;
+import Sirius.server.sql.ExceptionHandler;
 
-import Sirius.server.sql.*;
+import Sirius.util.image.Image;
+import Sirius.util.image.IntMapsImage;
 
-import Sirius.util.*;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.Statement;
 
-import Sirius.server.localserver.attribute.*;
-
-import Sirius.util.image.*;
-
-import java.util.*;
-
-import Sirius.server.newuser.*;
-import Sirius.server.newuser.permission.*;
-import Sirius.server.*;
-import Sirius.server.property.*;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-public class ClassCache {
+public class ClassCache extends Shutdown {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -7020351584449229634L;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -58,8 +72,9 @@ public class ClassCache {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public ClassCache(DBConnectionPool conPool, ServerProperties properties, PolicyHolder policyHolder)
-        throws Throwable {
+    public ClassCache(final DBConnectionPool conPool,
+            final ServerProperties properties,
+            final PolicyHolder policyHolder) throws Throwable {
         this.properties = properties;
 
         this.policyHolder = policyHolder;
@@ -72,9 +87,9 @@ public class ClassCache {
 
         classAttribs = new HashMap(200);
 
-        DBConnection con = conPool.getConnection();
+        final DBConnection con = conPool.getConnection();
         try {
-            ResultSet classTable = con.submitQuery("get_all_classes", new Object[0]);   // NOI18N // getAllClasses
+            final ResultSet classTable = con.submitQuery("get_all_classes", new Object[0]); // getAllClasses //NOI18N
 
             if (classTable == null) {
                 logger.error(
@@ -112,30 +127,30 @@ public class ClassCache {
                     }
                 }
 
-                String toStringQualifier = classTable.getString("tostringqualifier");   // NOI18N
-                String className = classTable.getString("name").trim();   // NOI18N
-                Object policyTester = classTable.getObject("policy");   // NOI18N
+                final String toStringQualifier = classTable.getString("tostringqualifier");//NOI18N
+                final String className = classTable.getString("name").trim();//NOI18N
+                final Object policyTester = classTable.getObject("policy");//NOI18N
                 Policy policy = null;
                 if (policyTester == null) {
                     policy = policyHolder.getServerPolicy(properties.getServerPolicy());
                 } else {
-                    int policyId = classTable.getInt("policy");   // NOI18N
+                    final int policyId = classTable.getInt("policy");//NOI18N
                     policy = policyHolder.getServerPolicy(policyId);
                 }
 
-                Object attrPolicyTester = classTable.getObject("attribute_policy");   // NOI18N
+                final Object attrPolicyTester = classTable.getObject("attribute_policy");//NOI18N
                 Policy attributePolicy = null;
                 if (attrPolicyTester == null) {
                     attributePolicy = policyHolder.getServerPolicy(properties.getAttributePolicy());
                 } else {
-                    int policyId = classTable.getInt("attribute_policy");   // NOI18N
+                    final int policyId = classTable.getInt("attribute_policy");//NOI18N
                     attributePolicy = policyHolder.getServerPolicy(policyId);
                 }
                 if (attributePolicy == null) {
                     attributePolicy = policyHolder.getServerPolicy(properties.getServerPolicy());
                 }
 
-                Class tmp = new Class(
+                final Class tmp = new Class(
                         classTable.getInt("id"),   // NOI18N
                         className,
                         classTable.getString("descr"),   // NOI18N
@@ -153,7 +168,7 @@ public class ClassCache {
                 tmp.setEditor(classTable.getString("editorqualifier"));   // NOI18N
                 tmp.setRenderer(classTable.getString("RendererQualifier"));   // NOI18N
                 try {
-                    boolean arrayElementLink = classTable.getBoolean("array_link");   // NOI18N
+                    final boolean arrayElementLink = classTable.getBoolean("array_link");//NOI18N
                     tmp.setArrayElementLink(arrayElementLink);
                     if (logger.isDebugEnabled()) {
                         logger.debug("isArrayElementLink set to :" + arrayElementLink);   // NOI18N
@@ -180,8 +195,17 @@ public class ClassCache {
 
         addMemberInfos(conPool);
 
-        // addClassSearchMasks(conPool);
-    } // end of constructor
+        addShutdown(new Shutdownable() {
+
+                @Override
+                public void shutdown() throws ServerExitError {
+                    classes.clear();
+                    classesByTableName.clear();
+                    classAttribs.clear();
+                    icons.clear();
+                }
+            });
+    }
 
     //~ Methods ----------------------------------------------------------------
 
@@ -203,7 +227,7 @@ public class ClassCache {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public final Class getClass(int id) throws Exception {
+    public final Class getClass(final int id) throws Exception {
         return classes.getClass(id);
     }
 
@@ -216,7 +240,7 @@ public class ClassCache {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public final Class getClassByTableName(String tableName) throws Exception {
+    public final Class getClassByTableName(final String tableName) throws Exception {
         return classesByTableName.get(tableName);
     }
     /**
@@ -237,8 +261,8 @@ public class ClassCache {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public final Class getClass(UserGroup ug, int id) throws Exception {
-        Class c = classes.getClass(id);
+    public final Class getClass(final UserGroup ug, final int id) throws Exception {
+        final Class c = classes.getClass(id);
 
         if ((c != null) && c.getPermissions().hasPermission(ug.getKey(), PermissionHolder.READPERMISSION)) {
             return c;
@@ -257,8 +281,8 @@ public class ClassCache {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public final Class getClassNyTableName(UserGroup ug, String tableName) throws Exception {
-        Class c = getClassByTableName(tableName);
+    public final Class getClassNyTableName(final UserGroup ug, final String tableName) throws Exception {
+        final Class c = getClassByTableName(tableName);
 
         if ((c != null) && c.getPermissions().hasPermission(ug.getKey(), PermissionHolder.READPERMISSION)) {
             return c;
@@ -284,12 +308,12 @@ public class ClassCache {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public final Vector getAllClasses(UserGroup ug) throws Exception {
-        Vector all = getAllClasses();
-        Vector cs = new Vector(all.size());
+    public final Vector getAllClasses(final UserGroup ug) throws Exception {
+        final Vector all = getAllClasses();
+        final Vector cs = new Vector(all.size());
 
         for (int i = 0; i < all.size(); i++) {
-            Class c = (Class)all.get(i);
+            final Class c = (Class)all.get(i);
             if (c.getPermissions().hasReadPermission(ug)) {
                 cs.addElement(c);
             }
@@ -305,10 +329,10 @@ public class ClassCache {
      *
      * @param  conPool  DOCUMENT ME!
      */
-    private void addAttributes(DBConnectionPool conPool) {
-        DBConnection con = conPool.getConnection();
+    private void addAttributes(final DBConnectionPool conPool) {
+        final DBConnection con = conPool.getConnection();
         try {
-            ResultSet attribTable = con.submitQuery("get_all_class_attributes", new Object[0]);   // NOI18N
+            final ResultSet attribTable = con.submitQuery("get_all_class_attributes", new Object[0]);//NOI18N
 
             int id = 0;
             int classID = 0;
@@ -346,29 +370,30 @@ public class ClassCache {
      *
      * @param  conPool  DOCUMENT ME!
      */
-    private void addMemberInfos(DBConnectionPool conPool) {
-        DBConnection con = conPool.getConnection();
+    private void addMemberInfos(final DBConnectionPool conPool) {
+        final DBConnection con = conPool.getConnection();
 
-        HashMap<Integer, HashMap<String, String>> classfieldtypes = new HashMap<Integer, HashMap<String, String>>();
+        final HashMap<Integer, HashMap<String, String>> classfieldtypes =
+            new HashMap<Integer, HashMap<String, String>>();
 
-        Vector<Sirius.server.localserver._class.Class> vc = getAllClasses();
+        final Vector<Sirius.server.localserver._class.Class> vc = getAllClasses();
 
         try {
-            for (Sirius.server.localserver._class.Class c : vc) {
+            for (final Sirius.server.localserver._class.Class c : vc) {
                 HashMap<String, String> fieldtypes = classfieldtypes.get(c.getID());
                 if (fieldtypes == null) {
                     fieldtypes = new HashMap<String, String>();
                     classfieldtypes.put(c.getID(), fieldtypes);
                 }
-                Statement s = con.getConnection().createStatement();
-                String sql = c.getGetDefaultInstanceStmnt();
+                final Statement s = con.getConnection().createStatement();
+                final String sql = c.getGetDefaultInstanceStmnt();
                 sql.replaceAll("\\?", "1=2");   // NOI18N
-                ResultSet resultset = s.executeQuery(sql);
-                ResultSetMetaData rsmd = resultset.getMetaData();
+                final ResultSet resultset = s.executeQuery(sql);
+                final ResultSetMetaData rsmd = resultset.getMetaData();
 
                 for (int i = 1; i <= rsmd.getColumnCount(); ++i) {
-                    String fieldname = rsmd.getColumnName(i);
-                    String javaclassname = rsmd.getColumnClassName(i);
+                    final String fieldname = rsmd.getColumnName(i);
+                    final String javaclassname = rsmd.getColumnClassName(i);
                     fieldtypes.put(fieldname.toLowerCase(), javaclassname);
                 }
                 resultset.close();
@@ -376,7 +401,7 @@ public class ClassCache {
             }
             // logger.fatal(classfieldtypes);
 
-            ResultSet rs = con.submitQuery("get_attribute_info", new Object[0]);   // NOI18N
+            final ResultSet rs = con.submitQuery("get_attribute_info", new Object[0]);//NOI18N
 
             MemberAttributeInfo mai = null;
 
@@ -400,7 +425,7 @@ public class ClassCache {
             int position = 0;
 
             while (rs.next()) {
-                String name;
+                final String name;
                 String fieldName;
                 String arrayKey;
                 String editor;
@@ -503,8 +528,7 @@ public class ClassCache {
                 mai.setComplexEditor(complexEditor);
 
                 mai.setJavaclassname(classfieldtypes.get(classId).get(fieldName.toLowerCase()));
-                if (
-                    (mai.getJavaclassname() != null)
+                if ((mai.getJavaclassname() != null)
                             && mai.getJavaclassname().equals(org.postgis.PGgeometry.class.getName())) {
                     mai.setJavaclassname(com.vividsolutions.jts.geom.Geometry.class.getName());
                 }
@@ -516,7 +540,7 @@ public class ClassCache {
 
                 // int cId =rs.getInt("class_id");
 
-                Sirius.server.localserver._class.Class c = classes.getClass(classId);
+                final Sirius.server.localserver._class.Class c = classes.getClass(classId);
                 // classes.getClass(cId);
 
                 if (c != null) {
@@ -538,23 +562,25 @@ public class ClassCache {
      *
      * @param  conPool  DOCUMENT ME!
      */
-    private void addMethodIDs(DBConnectionPool conPool) {
-        DBConnection con = conPool.getConnection();
+    private void addMethodIDs(final DBConnectionPool conPool) {
+        final DBConnection con = conPool.getConnection();
         try {
-            ResultSet methodTable = con.submitQuery("get_all_class_method_ids", new Object[0]);   // NOI18N
+            final ResultSet methodTable = con.submitQuery("get_all_class_method_ids", new Object[0]);//NOI18N
 
             while (methodTable.next()) {
-                int classId = methodTable.getInt("class_id");   // NOI18N
-                Sirius.server.localserver._class.Class c = classes.getClass(classId);
+                final int classId = methodTable.getInt("class_id");//NOI18N
+                final Sirius.server.localserver._class.Class c = classes.getClass(classId);
 
-                int methodId = methodTable.getInt("method_id");   // NOI18N
+                final int methodId = methodTable.getInt("method_id");//NOI18N
 
                 if (c != null) {
                     c.addMethodID(methodId);
                 } else {
                     logger.warn(
-                        "Wrong entry in classes/methods table: Class" + classId + " Method :"   // NOI18N
-                        + methodId);
+                        "Eintrag in der Klassen/Methoden tabelle fehlerhaft Klasse"//NOI18N
+                                + classId
+                                + " Methode :"//NOI18N
+                                + methodId);
                 }
             }
 
@@ -570,7 +596,7 @@ public class ClassCache {
      *
      * @param  conPool  DOCUMENT ME!
      */
-    protected final void loadIcons(DBConnectionPool conPool) {
+    protected final void loadIcons(final DBConnectionPool conPool) {
         String iconDirectory;
         String separator;
         Image tmpImage;
@@ -593,9 +619,9 @@ public class ClassCache {
             separator = "\\";   // NOI18N
         }
 
-        DBConnection con = conPool.getConnection();
+        final DBConnection con = conPool.getConnection();
         try {
-            ResultSet imgTable = con.submitQuery("get_all_images", new Object[0]);   // NOI18N
+            final ResultSet imgTable = con.submitQuery("get_all_images", new Object[0]);//NOI18N
 
             while (imgTable.next()) {
                 // icons.add(imgTable.getInt("id"),new
@@ -615,19 +641,19 @@ public class ClassCache {
      *
      * @param  conPool  DOCUMENT ME!
      */
-    private void addClassPermissions(DBConnectionPool conPool) {
-        DBConnection con = conPool.getConnection();
+    private void addClassPermissions(final DBConnectionPool conPool) {
+        final DBConnection con = conPool.getConnection();
         try {
-            ResultSet permTable = con.submitQuery("get_all_class_permissions", new Object[0]);   // NOI18N
+            final ResultSet permTable = con.submitQuery("get_all_class_permissions", new Object[0]);//NOI18N
 
-            String lsName = properties.getServerName();
+            final String lsName = properties.getServerName();
 
             while (permTable.next()) {
-                int ug_id = permTable.getInt("ug_id");   // NOI18N
-                String ug_name = permTable.getString("ug_name");   // NOI18N
-                String lsHome = permTable.getString("domainname").trim();   // NOI18N
-                int permId = permTable.getInt("permission");   // NOI18N
-                String permKey = permTable.getString("key");   // NOI18N
+                final int ug_id = permTable.getInt("ug_id");//NOI18N
+                final String ug_name = permTable.getString("ug_name");//NOI18N
+                String lsHome = permTable.getString("domainname").trim();//NOI18N
+                final int permId = permTable.getInt("permission");//NOI18N
+                final String permKey = permTable.getString("key");
                 // String permPolicy = permTable.getString("policy");
 
                 if (lsHome.equalsIgnoreCase("local")) {   // NOI18N
@@ -637,7 +663,8 @@ public class ClassCache {
                     logger.debug("==permId set ======! " + permId);   // NOI18N
                 }
 
-                classes.getClass(permTable.getInt("class_id")).getPermissions()   // NOI18N
+                classes.getClass(permTable.getInt("class_id"))//NOI18N
+                        .getPermissions()
                         .addPermission(new UserGroup(ug_id, ug_name, lsHome), new Permission(permId, permKey));
             }
 
@@ -655,4 +682,4 @@ public class ClassCache {
     public ServerProperties getProperties() {
         return properties;
     }
-} // end of class
+}

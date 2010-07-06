@@ -25,6 +25,11 @@ import java.sql.*;
  */
 public class DateFromString extends FromStringCreator implements java.io.Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 6611951854303282761L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -36,8 +41,9 @@ public class DateFromString extends FromStringCreator implements java.io.Seriali
 
     //~ Methods ----------------------------------------------------------------
 
-    public Object create(String dateString, Object hull) throws Exception {
-        ObjectAttribute oa = (ObjectAttribute)hull;
+    @Override
+    public Object create(final String dateString, final Object hull) throws Exception {
+        final ObjectAttribute oa = (ObjectAttribute)hull;
 
         if (dateString.equalsIgnoreCase("now") || dateString.equalsIgnoreCase(" ")) {//NOI18N
             oa.setValue(new Date(System.currentTimeMillis()));
@@ -50,7 +56,7 @@ public class DateFromString extends FromStringCreator implements java.io.Seriali
 
 //            try
 //            {
-            java.text.SimpleDateFormat formater = new java.text.SimpleDateFormat();
+            final java.text.SimpleDateFormat formater = new java.text.SimpleDateFormat();
 
             formater.applyPattern("dd.mm.yy");//NOI18N
 

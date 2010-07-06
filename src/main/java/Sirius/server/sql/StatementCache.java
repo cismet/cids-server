@@ -11,11 +11,11 @@
  * Created on 22. November 2003, 09:54
  */
 package Sirius.server.sql;
-import de.cismet.tools.collections.*;
-
 import java.sql.*;
 
 import java.util.*;
+
+import de.cismet.tools.collections.*;
 
 /**
  * DOCUMENT ME!
@@ -41,21 +41,21 @@ public class StatementCache {
      *
      * @param  con  DOCUMENT ME!
      */
-    StatementCache(Connection con) {
+    StatementCache(final Connection con) {
         statements = new StatementMap(50); // allocation of the hashtable
         nameAssociatesID = new HashMap();
         if (logger.isDebugEnabled()) {
             logger.debug("before load Queries");//NOI18N
         }
         try {
-            String queriesThere = "select count(*) from cs_query";//NOI18N
+            final String queriesThere = "select count(*) from cs_query";//NOI18N
 
-            String queryStmnt = "SELECT * from cs_query"; // "SELECT * from cs_query q,cs_java_class c where result =//NOI18N
-                                                          // c.id";
+            final String queryStmnt = "SELECT * from cs_query"; // "SELECT * from cs_query q,cs_java_class c where //NOI18N
+                                                                // result = c.id";
 
-            String paramStmnt = "SELECT * from cs_query_parameter";//NOI18N
+            final String paramStmnt = "SELECT * from cs_query_parameter";//NOI18N
 
-            ResultSet queryTest = (con.createStatement()).executeQuery(queriesThere);
+            final ResultSet queryTest = (con.createStatement()).executeQuery(queriesThere);
             int queryNo = 0;
 
             if (queryTest.next()) {
@@ -67,11 +67,11 @@ public class StatementCache {
                 throw new Exception("<LS> ERROR :: no system statemnts in cs_query");//NOI18N
             }
 
-            ResultSet stmntTable = (con.createStatement()).executeQuery(queryStmnt);
+            final ResultSet stmntTable = (con.createStatement()).executeQuery(queryStmnt);
 
             while (stmntTable.next()) // add all objects to the hashtable
             {
-                SystemStatement tmp = new SystemStatement(
+                final SystemStatement tmp = new SystemStatement(
                         stmntTable.getBoolean("is_root"),//NOI18N
                         stmntTable.getInt("id"),//NOI18N
                         stmntTable.getString("name").trim(),//NOI18N
@@ -104,15 +104,21 @@ public class StatementCache {
                 nameAssociatesID.put(tmp.getName(), tmp.getID());
                 if (logger.isDebugEnabled()) {
                     logger.debug(
-                        "cached statement :" + tmp.getName() + " changes ?" + tmp.getStatement() + " conjuction ??"//NOI18N
-                        + tmp.isConjunction() + "conjunctionresult" + conjunction);//NOI18N
+                        "cached statement :"//NOI18N
+                                + tmp.getName()
+                                + " changes ?"//NOI18N
+                                + tmp.getStatement()
+                                + " conjuction ??"//NOI18N
+                                + tmp.isConjunction()
+                                + "conjunctionresult"//NOI18N
+                                + conjunction);
                 }
             } // end while
             if (logger.isDebugEnabled()) {
                 logger.debug("statement hash elements #" + statements.size() + " elements" + statements);//NOI18N
             }
 
-            ResultSet paramTable = (con.createStatement()).executeQuery(paramStmnt);
+            final ResultSet paramTable = (con.createStatement()).executeQuery(paramStmnt);
 
             int query_id = 0;
 
@@ -142,7 +148,7 @@ public class StatementCache {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    protected SystemStatement getStatement(int id) throws Exception {
+    protected SystemStatement getStatement(final int id) throws Exception {
         return statements.getStatement(id);
     }
 
@@ -155,7 +161,7 @@ public class StatementCache {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public SystemStatement getStatement(String name) throws Exception {
+    public SystemStatement getStatement(final String name) throws Exception {
         return statements.getStatement(nameAssociatesID.get(name));
     }
 
@@ -184,7 +190,7 @@ public class StatementCache {
      *
      * @return  DOCUMENT ME!
      */
-    public boolean containsStatement(int id) {
+    public boolean containsStatement(final int id) {
         return statements.containsIntKey(id);
     }
 
@@ -195,7 +201,7 @@ public class StatementCache {
      *
      * @return  DOCUMENT ME!
      */
-    public boolean containsStatement(String key) {
+    public boolean containsStatement(final String key) {
         return nameAssociatesID.containsKey(key);
     }
 } // end of class statement cache

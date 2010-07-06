@@ -23,6 +23,11 @@ package Sirius.server.registry.rmplugin.exception;
  */
 public class UnableToSendMessageException extends Exception {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -8381145764583871507L;
+
     //~ Instance fields --------------------------------------------------------
 
     private int totalSended = 0;
@@ -41,7 +46,7 @@ public class UnableToSendMessageException extends Exception {
      *
      * @param  message  DOCUMENT ME!
      */
-    public UnableToSendMessageException(String message) {
+    public UnableToSendMessageException(final String message) {
         super(message);
     }
 
@@ -51,7 +56,7 @@ public class UnableToSendMessageException extends Exception {
      * @param  message      DOCUMENT ME!
      * @param  totalSended  DOCUMENT ME!
      */
-    public UnableToSendMessageException(String message, int totalSended) {
+    public UnableToSendMessageException(final String message, final int totalSended) {
         super(message);
         this.totalSended = totalSended;
     }
@@ -72,7 +77,7 @@ public class UnableToSendMessageException extends Exception {
      *
      * @param  totalSended  DOCUMENT ME!
      */
-    public void setTotalSended(int totalSended) {
+    public void setTotalSended(final int totalSended) {
         this.totalSended = totalSended;
     }
 }

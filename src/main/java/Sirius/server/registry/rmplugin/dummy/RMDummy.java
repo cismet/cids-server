@@ -15,14 +15,14 @@
  */
 package Sirius.server.registry.rmplugin.dummy;
 
-import de.cismet.rmplugin.interfaces.RMessenger;
-
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+
+import de.cismet.rmplugin.interfaces.RMessenger;
 
 /**
  * DOCUMENT ME!
@@ -52,7 +52,7 @@ public class RMDummy implements RMessenger {
     public void initRMI() {
         try {
             reg = LocateRegistry.createRegistry(9001);
-            RMessenger rm = (RMessenger)UnicastRemoteObject.exportObject(this);
+            final RMessenger rm = (RMessenger)UnicastRemoteObject.exportObject(this);
             reg.rebind("sebastian@altlasten@WUNDA_BLAU_RMPlugin", rm);//NOI18N
             System.out.println("sebastian@altlasten@WUNDA_BLAU_RMPlugin gebunden");//NOI18N
         } catch (RemoteException ex) {
@@ -66,10 +66,10 @@ public class RMDummy implements RMessenger {
      * @param  name  DOCUMENT ME!
      * @param  port  DOCUMENT ME!
      */
-    public void initRMI(String name, int port) {
+    public void initRMI(final String name, final int port) {
         try {
             reg = LocateRegistry.getRegistry(9001);
-            RMessenger rm = (RMessenger)UnicastRemoteObject.exportObject(this);
+            final RMessenger rm = (RMessenger)UnicastRemoteObject.exportObject(this);
             reg.rebind(name, rm);
             System.out.println(name + " gebunden");//NOI18N
         } catch (RemoteException ex) {
@@ -96,7 +96,7 @@ public class RMDummy implements RMessenger {
      *
      * @param  name  DOCUMENT ME!
      */
-    public void shutdown(String name) {
+    public void shutdown(final String name) {
         try {
             reg.unbind(name);
             System.out.println(name + " ungebunden");//NOI18N
@@ -107,10 +107,12 @@ public class RMDummy implements RMessenger {
         }
     }
 
-    public void sendMessage(String message, String title) throws RemoteException {
+    @Override
+    public void sendMessage(final String message, final String title) throws RemoteException {
         System.out.println("Message received Title: " + title + " Message: " + message);//NOI18N
     }
 
+    @Override
     public void test() throws RemoteException {
     }
 }

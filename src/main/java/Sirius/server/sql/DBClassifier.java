@@ -55,7 +55,7 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      * @param  pwd     DOCUMENT ME!
      * @param  driver  DOCUMENT ME!
      */
-    public DBClassifier(String url, String login, String pwd, String driver) {
+    public DBClassifier(final String url, final String login, final String pwd, final String driver) {
         this();
         this.url = url;
         this.login = login;
@@ -72,7 +72,11 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      * @param  driver           DOCUMENT ME!
      * @param  noOfConnections  DOCUMENT ME!
      */
-    public DBClassifier(String url, String login, String pwd, String driver, int noOfConnections) {
+    public DBClassifier(final String url,
+            final String login,
+            final String pwd,
+            final String driver,
+            final int noOfConnections) {
         this(url, login, pwd, driver);
         this.noOfConnections = noOfConnections;
     }
@@ -87,7 +91,12 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      * @param  noOfConnections  DOCUMENT ME!
      * @param  sqlDialect       DOCUMENT ME!
      */
-    public DBClassifier(String url, String login, String pwd, String driver, int noOfConnections, String sqlDialect) {
+    public DBClassifier(final String url,
+            final String login,
+            final String pwd,
+            final String driver,
+            final int noOfConnections,
+            final String sqlDialect) {
         this(url, login, pwd, driver, noOfConnections);
         this.sqlDialect = sqlDialect;
     }
@@ -112,6 +121,7 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
 
     /////////////////////////////////////////////////////////////////////////
 
+    @Override
     public String toString() {
         return url + "|" + login + "|" + pwd + "|" + driver + "|" + noOfConnections;//NOI18N
     }
@@ -130,9 +140,9 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      *
      * @return  DOCUMENT ME!
      */
-    private static String[] tokenizeString(String s, String delimiter) {
-        StringTokenizer tokenizer = new StringTokenizer(s, delimiter);
-        String[] stringArray = new String[tokenizer.countTokens()];
+    private static String[] tokenizeString(final String s, final String delimiter) {
+        final StringTokenizer tokenizer = new StringTokenizer(s, delimiter);
+        final String[] stringArray = new String[tokenizer.countTokens()];
         int i = 0;
 
         while (tokenizer.hasMoreTokens()) {
@@ -147,7 +157,7 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      *
      * @param  n  DOCUMENT ME!
      */
-    protected void setNoOfConnections(int n) {
+    protected void setNoOfConnections(final int n) {
         noOfConnections = n;
     }
 
@@ -165,7 +175,7 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      *
      * @param  driver  New value of property driver.
      */
-    public void setDriver(java.lang.String driver) {
+    public void setDriver(final java.lang.String driver) {
         this.driver = driver;
     }
 
@@ -183,7 +193,7 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      *
      * @param  login  New value of property login.
      */
-    public void setLogin(java.lang.String login) {
+    public void setLogin(final java.lang.String login) {
         this.login = login;
     }
 
@@ -201,7 +211,7 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      *
      * @param  pwd  New value of property pwd.
      */
-    public void setPwd(java.lang.String pwd) {
+    public void setPwd(final java.lang.String pwd) {
         this.pwd = pwd;
     }
 
@@ -219,7 +229,7 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      *
      * @param  url  New value of property url.
      */
-    public void setUrl(java.lang.String url) {
+    public void setUrl(final java.lang.String url) {
         this.url = url;
     }
 
@@ -237,7 +247,7 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      *
      * @param  sqlDialect  DOCUMENT ME!
      */
-    public void setSqlDialect(String sqlDialect) {
+    public void setSqlDialect(final String sqlDialect) {
         this.sqlDialect = sqlDialect;
     }
 }

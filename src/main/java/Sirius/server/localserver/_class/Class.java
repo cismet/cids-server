@@ -7,20 +7,18 @@
 ****************************************************/
 package Sirius.server.localserver._class;
 
-import Sirius.util.*;
-
 import Sirius.server.localserver.attribute.*;
 import Sirius.server.localserver.method.*;
+import Sirius.server.newuser.permission.*;
 
+import Sirius.util.*;
 import Sirius.util.image.*;
 
-import de.cismet.tools.collections.*;
-
-import Sirius.server.newuser.permission.*;
+import java.util.*;
 
 import de.cismet.cids.tools.tostring.ToStringConverter;
 
-import java.util.*;
+import de.cismet.tools.collections.*;
 
 /**
  * Die Klasse Class fungiert zum einen als Mittel zur Klassifkation zum anderen enth\u00E4lt Sie Eigenschaften von
@@ -29,6 +27,11 @@ import java.util.*;
  * @version  $Revision$, $Date$
  */
 public class Class implements java.io.Serializable, Mapable {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -8015908654156188429L;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -94,17 +97,16 @@ public class Class implements java.io.Serializable, Mapable {
      * @param  permissions      permission container
      * @param  attributePolicy  DOCUMENT ME!
      */
-    public Class(
-            int id,
-            String name,
-            String description,
-            Image icon,
-            Image objectIcon,
-            String tableName,
-            String primaryKey,
-            String toString,
-            PermissionHolder permissions,
-            Policy attributePolicy) {
+    public Class(final int id,
+            final String name,
+            final String description,
+            final Image icon,
+            final Image objectIcon,
+            final String tableName,
+            final String primaryKey,
+            final String toString,
+            final PermissionHolder permissions,
+            final Policy attributePolicy) {
         this(id, name, description, icon, objectIcon, tableName, primaryKey, toString, (Policy)null, attributePolicy);
         this.permissions = permissions;
     }
@@ -123,17 +125,16 @@ public class Class implements java.io.Serializable, Mapable {
      * @param  policy           DOCUMENT ME!
      * @param  attributePolicy  DOCUMENT ME!
      */
-    public Class(
-            int id,
-            String name,
-            String description,
-            Image icon,
-            Image objectIcon,
-            String tableName,
-            String primaryKey,
-            String toString,
-            Policy policy,
-            Policy attributePolicy) {
+    public Class(final int id,
+            final String name,
+            final String description,
+            final Image icon,
+            final Image objectIcon,
+            final String tableName,
+            final String primaryKey,
+            final String toString,
+            final Policy policy,
+            final Policy attributePolicy) {
         this.id = id;
 
         this.name = name;
@@ -162,8 +163,8 @@ public class Class implements java.io.Serializable, Mapable {
 
         this.getInstanceStmnt = "Select * from " + tableName + " where " + primaryKey + " = ?";  // NOI18N
 
-        this.getDefaultInstanceStmnt = "Select * from " + tableName + " where " + primaryKey + " = (select min( "  // NOI18N
-            + primaryKey + ") from " + tableName + ")";  // NOI18N
+        this.getDefaultInstanceStmnt = "Select * from " + tableName + " where " + primaryKey + " = (select min( "//NOI18N
+                    + primaryKey + ") from " + tableName + ")";//NOI18N
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -238,7 +239,7 @@ public class Class implements java.io.Serializable, Mapable {
      * @throws  Exception            DOCUMENT ME!
      * @throws  java.lang.Exception  fehler .-)
      */
-    protected final void addAttribute(java.lang.Object anyAttribute) throws Exception {
+    protected final void addAttribute(final java.lang.Object anyAttribute) throws Exception {
         if (anyAttribute instanceof ClassAttribute) {
             attribs.add((ClassAttribute)anyAttribute);
         } // end if AttributeOfClass
@@ -264,10 +265,10 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @return  DOCUMENT ME!
      */
-    public final ClassAttribute getClassAttribute(String key) {
+    public final ClassAttribute getClassAttribute(final String key) {
         // Todo: irgendwann mal auf ne Hashmap umstellen
-        ClassAttribute[] allCA = getAttribs();
-        for (ClassAttribute ca : allCA) {
+        final ClassAttribute[] allCA = getAttribs();
+        for (final ClassAttribute ca : allCA) {
             if (ca.getName().toString().equalsIgnoreCase(key)) {
                 return ca;
             }
@@ -291,10 +292,10 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @return  attribute with this name or null if no attribute with this name exists
      */
-    public Collection getAttributeByName(String name) {
-        Iterator iter = getAttributes().iterator();
+    public Collection getAttributeByName(final String name) {
+        final Iterator iter = getAttributes().iterator();
 
-        ArrayList attribsByName = new ArrayList();
+        final ArrayList attribsByName = new ArrayList();
 
         while (iter.hasNext()) {
             Attribute a = null;
@@ -324,7 +325,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @param  permission  set permissions or initialize this class' permissionHolder
      */
-    public final void setPermissions(PermissionHolder permission) {
+    public final void setPermissions(final PermissionHolder permission) {
         this.permissions = permissions;
     }
 
@@ -344,7 +345,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @param  methodID  id of a method
      */
-    public final void addMethodID(int methodID) {
+    public final void addMethodID(final int methodID) {
         if (!methodIDs.contains(methodID)) {
             methodIDs.add(methodID);
         }
@@ -357,7 +358,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @throws  Exception  java.lang.Exception error
      */
-    public final void setMethodIDs(LongVector methodIDs) throws Exception {
+    public final void setMethodIDs(final LongVector methodIDs) throws Exception {
         if (this.methodIDs.size() != 0) {
             throw new Exception("LongVector methodIds of Class allready set use addMethodID instead");  // NOI18N
         }
@@ -379,7 +380,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @param  toString  New value of property toString.
      */
-    public void setToString(java.lang.String toString) {
+    public void setToString(final java.lang.String toString) {
         this.toString = toString;
     }
 
@@ -397,7 +398,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @param  tableName  New value of property tableName.
      */
-    public void setTableName(java.lang.String tableName) {
+    public void setTableName(final java.lang.String tableName) {
         this.tableName = tableName;
     }
 
@@ -415,7 +416,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @param  primaryKey  New value of property primaryKey.
      */
-    public void setPrimaryKey(java.lang.String primaryKey) {
+    public void setPrimaryKey(final java.lang.String primaryKey) {
         this.primaryKey = primaryKey;
     }
 
@@ -425,6 +426,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @return  key to register in a Map
      */
+    @Override
     public Object getKey() {
         return new Integer(id);
     }
@@ -443,7 +445,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @param  memberAttributeInfos  New value of property memberAttributeInfos.
      */
-    public void setMemberAttributeInfos(java.util.LinkedHashMap memberAttributeInfos) {
+    public void setMemberAttributeInfos(final java.util.LinkedHashMap memberAttributeInfos) {
         this.memberAttributeInfos = memberAttributeInfos;
     }
 
@@ -452,7 +454,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @param  mai  Info set about an Attribute of this class's objects
      */
-    public void addMemberAttributeInfo(MemberAttributeInfo mai) {
+    public void addMemberAttributeInfo(final MemberAttributeInfo mai) {
         memberAttributeInfos.put(mai.getKey(), mai);
     }
 
@@ -466,7 +468,8 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @deprecated  UNUSED
      */
-    public Object constructKey(Mapable m) {
+    @Override
+    public Object constructKey(final Mapable m) {
         if (m instanceof Sirius.server.localserver._class.Class) {
             return m.getKey();
         } else {
@@ -480,9 +483,9 @@ public class Class implements java.io.Serializable, Mapable {
      * @return  attribute names
      */
     public Collection getFieldNames() {
-        Iterator iter = memberAttributeInfos.values().iterator();
+        final Iterator iter = memberAttributeInfos.values().iterator();
 
-        ArrayList fields = new ArrayList(memberAttributeInfos.size());
+        final ArrayList fields = new ArrayList(memberAttributeInfos.size());
 
         while (iter.hasNext()) {
             fields.add(((MemberAttributeInfo)iter.next()).getFieldName());
@@ -514,6 +517,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @return  string representation of this class
      */
+    @Override
     public String toString() {
         return getName();
     }
@@ -532,7 +536,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @param  editor  New value of property editor.
      */
-    public void setEditor(java.lang.String editor) {
+    public void setEditor(final java.lang.String editor) {
         this.editor = editor;
     }
 
@@ -550,7 +554,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @param  renderer  New value of property renderer.
      */
-    public void setRenderer(java.lang.String renderer) {
+    public void setRenderer(final java.lang.String renderer) {
         this.renderer = renderer;
     }
 
@@ -560,8 +564,8 @@ public class Class implements java.io.Serializable, Mapable {
      * @return  list of field name
      */
     public String getSQLFieldNames() {
-        Collection c = getFieldNames();
-        Iterator iter = c.iterator();
+        final Collection c = getFieldNames();
+        final Iterator iter = c.iterator();
 
         String res = " (";  // NOI18N
 
@@ -582,7 +586,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @param  arrayElementLink  is arrayElemtneLink
      */
-    public void setArrayElementLink(boolean arrayElementLink) {
+    public void setArrayElementLink(final boolean arrayElementLink) {
         this.arrayElementLink = arrayElementLink;
     }
 

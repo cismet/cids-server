@@ -12,15 +12,15 @@
  */
 package Sirius.server.middleware.impls.proxy;
 
-import java.rmi.*;
-import java.rmi.server.*;
-
 import Sirius.server.*;
-import Sirius.server.naming.NameServer;
 //import Sirius.middleware.interfaces.domainserver.*;
 import Sirius.server.middleware.interfaces.proxy.*;
+import Sirius.server.naming.NameServer;
 
 import Sirius.util.image.*;
+
+import java.rmi.*;
+import java.rmi.server.*;
 
 /**
  * DOCUMENT ME!
@@ -47,7 +47,8 @@ public class SystemServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public SystemServiceImpl(java.util.Hashtable activeLocalServers, NameServer nameServer) throws RemoteException {
+    public SystemServiceImpl(final java.util.Hashtable activeLocalServers, final NameServer nameServer)
+            throws RemoteException {
         this.activeLocalServers = activeLocalServers;
         this.nameServer = nameServer;
     }
@@ -63,7 +64,7 @@ public class SystemServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Image[] getDefaultIcons(String lsName) throws RemoteException {
+    public Image[] getDefaultIcons(final String lsName) throws RemoteException {
         if(logger.isInfoEnabled())
             logger.info("Info <CS> getDefIcons from " + lsName);   // NOI18N
         Image[] i = new Image[0];
@@ -98,7 +99,8 @@ public class SystemServiceImpl {
         try {
             if (activeLocalServers.size() > 0) {
                 s = (Sirius.server.middleware.interfaces.domainserver.SystemService)activeLocalServers.values()
-                            .iterator().next();
+                            .iterator()
+                            .next();
                 if (logger.isDebugEnabled()) {
                     logger.debug("<CS> getDefIcons");   // NOI18N
                 }

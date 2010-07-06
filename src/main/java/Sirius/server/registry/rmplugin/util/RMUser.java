@@ -33,6 +33,11 @@ import java.util.TimeZone;
  */
 public class RMUser implements Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -6802447016919177050L;
+
     //~ Instance fields --------------------------------------------------------
 
     private String userName;
@@ -53,7 +58,11 @@ public class RMUser implements Serializable {
      * @param  onlineTime  DOCUMENT ME!
      * @param  ipAddress   DOCUMENT ME!
      */
-    public RMUser(String userName, String group, String Domain, long onlineTime, String ipAddress) {
+    public RMUser(final String userName,
+            final String group,
+            final String Domain,
+            final long onlineTime,
+            final String ipAddress) {
         this.userName = userName;
         this.onlineTime = onlineTime;
         this.ipAddress = ipAddress;
@@ -89,7 +98,7 @@ public class RMUser implements Serializable {
      */
     public String getOnlineTimeAsString() {
         // long currentTime = System.currentTimeMillis();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");//NOI18N
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");//NOI18N
 
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));//NOI18N
         // long elapsed = currentTime - onlineTime;

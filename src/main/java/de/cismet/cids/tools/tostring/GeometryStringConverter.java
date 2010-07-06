@@ -13,11 +13,11 @@
 package de.cismet.cids.tools.tostring;
 import Sirius.server.localserver.attribute.*;
 
+import com.vividsolutions.jts.geom.*;
+
 
 //import de.cismet.tools.postgis.*;
 import java.util.*;
-
-import com.vividsolutions.jts.geom.*;
 /**
  * DOCUMENT ME!
  *
@@ -27,6 +27,9 @@ import com.vividsolutions.jts.geom.*;
 public class GeometryStringConverter extends ToStringConverter implements java.io.Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -6328761746418929471L;
 
     protected static String GEOM_CLASS = "com.vividsolutions.jts.geom.Geometry";//NOI18N
     // SRID=-1;POLYGON((191232 243117,191232 243119,191234 243117,191232 243117))
@@ -44,7 +47,8 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
 
     //~ Methods ----------------------------------------------------------------
 
-    public String convert(de.cismet.cids.tools.tostring.StringConvertable o) {
+    @Override
+    public String convert(final de.cismet.cids.tools.tostring.StringConvertable o) {
         if (logger == null) {
             logger = org.apache.log4j.Logger.getLogger(GeometryStringConverter.class);
         }
@@ -64,7 +68,7 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
                 }
             }
 
-            java.lang.Object attrObj = ((ObjectAttribute)o).getValue();
+            final java.lang.Object attrObj = ((ObjectAttribute)o).getValue();
 
             if (attrObj instanceof Geometry) {
                 if (logger != null) {
@@ -83,10 +87,10 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
                 try {
                     // problem welches attribut solls sein
 
-                    Collection c = ((Sirius.server.localserver.object.Object)attrObj).getAttributesByType(
+                    final Collection c = ((Sirius.server.localserver.object.Object)attrObj).getAttributesByType(
                             Class.forName(GEOM_CLASS));
                     // nimm das erste
-                    Iterator<Sirius.server.localserver.attribute.ObjectAttribute> iter = c.iterator();
+                    final Iterator<Sirius.server.localserver.attribute.ObjectAttribute> iter = c.iterator();
 
                     if (iter.hasNext()) {
                         return convert((StringConvertable)iter.next());
@@ -99,28 +103,28 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
                 if (logger != null) {
                     logger.error("Error while creating the string representation");//NOI18N
                 }
-                return "Fehler im erstellen der Stringrep\u00E4sentation";
+                return "Fehler im erstellen der Stringrep\u00E4sentation";//NOI18N
             }
         } else if (o instanceof Sirius.server.localserver.object.Object) {
             try {
                 // problem welches attribut solls sein
 
-                Collection c = ((Sirius.server.localserver.object.Object)o).getAttributesByType(
+                final Collection c = ((Sirius.server.localserver.object.Object)o).getAttributesByType(
                         Class.forName(GEOM_CLASS));
                 // nimm das erste
-                Iterator<Sirius.server.localserver.attribute.ObjectAttribute> iter = c.iterator();
+                final Iterator<Sirius.server.localserver.attribute.ObjectAttribute> iter = c.iterator();
 
                 if (iter.hasNext()) {
                     return convert((StringConvertable)iter.next());
                 } else {
-                    return "NO GeoAttribute found in Object";
+                    return "NO GeoAttribute found in Object";//NOI18N
                 }
             } catch (ClassNotFoundException ex) {
-                return "Wrong Type not convertable Class Not Found " + ex.getMessage();
+                return "Wrong Type not convertable Class Not Found " + ex.getMessage();//NOI18N
             }
         }
 
-        return "Wrong Type not convertable ::" + o.getClass();
+        return "Wrong Type not convertable ::" + o.getClass();//NOI18N
     }
 
 //     public  String convert(String o)

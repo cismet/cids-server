@@ -12,14 +12,14 @@
  */
 package Sirius.util.DBVersionChecker;
 
-import java.sql.*;
-
-import java.util.*;
+import org.jdom.*;
+import org.jdom.input.*;
 
 import java.io.*;
 
-import org.jdom.*;
-import org.jdom.input.*;
+import java.sql.*;
+
+import java.util.*;
 
 /**
  * Format des configfiles: Pfad der XML Beschreibung Datenbank Treiber Datenbank Name Benutzer Passwort
@@ -58,14 +58,14 @@ public class DOMVersionChecker implements VersionChecker {
      *
      * @throws  DBVersionException  DOCUMENT ME!
      */
-    public DOMVersionChecker(String configfile) throws DBVersionException {
+    public DOMVersionChecker(final String configfile) throws DBVersionException {
         versionMap = new TreeMap();
         dbStructure = new TreeMap();
         differences = new ArrayList();
         parser = new SAXBuilder();
 
         try {
-            BufferedReader cfg = new BufferedReader(new FileReader(configfile));
+            final BufferedReader cfg = new BufferedReader(new FileReader(configfile));
             xmlFile = cfg.readLine();
             readVersionsXML();
             setDB(cfg.readLine(), cfg.readLine(), cfg.readLine(), cfg.readLine());
@@ -81,7 +81,7 @@ public class DOMVersionChecker implements VersionChecker {
      * @param  xmlFile  DOCUMENT ME!
      * @param  con      DOCUMENT ME!
      */
-    public DOMVersionChecker(String xmlFile, Connection con) {
+    public DOMVersionChecker(final String xmlFile, final Connection con) {
         this.xmlFile = xmlFile;
         versionMap = new TreeMap();
         dbStructure = new TreeMap();
@@ -101,7 +101,11 @@ public class DOMVersionChecker implements VersionChecker {
      * @param  username  DOCUMENT ME!
      * @param  password  DOCUMENT ME!
      */
-    public DOMVersionChecker(String xmlFile, String driver, String database, String username, String password) {
+    public DOMVersionChecker(final String xmlFile,
+            final String driver,
+            final String database,
+            final String username,
+            final String password) {
         this.xmlFile = xmlFile;
 
         versionMap = new TreeMap();
@@ -120,18 +124,18 @@ public class DOMVersionChecker implements VersionChecker {
      *
      * @param  args  DOCUMENT ME!
      */
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         try {
-            String nL = System.getProperty("line.separator");//NOI18N
+            final String nL = System.getProperty("line.separator");//NOI18N
             if (args.length < 2) {
                 System.err.println(
                     org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.main(String[]).helpText", new Object[] {nL}) );//NOI18N
                 System.exit(0);
             }
 
-            DOMVersionChecker instance = new DOMVersionChecker(args[0]);
+            final DOMVersionChecker instance = new DOMVersionChecker(args[0]);
             if (args[1].equals("version")) {//NOI18N
-                String version = instance.checkVersion();
+                final String version = instance.checkVersion();
                 if (version != null) {
                     System.out.println(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.main(String[]).foundVersion", new Object[]{version}));//NOI18N
                 } else {
@@ -145,8 +149,8 @@ public class DOMVersionChecker implements VersionChecker {
                     System.out.println(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.main(String[]).accordanceFound"));//NOI18N
                 } else {
                     System.out.println(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.main(String[]).noAccordanceFound"));//NOI18N
-                    ArrayList diff = instance.getDifferences();
-                    Iterator it = diff.iterator();
+                    final ArrayList diff = instance.getDifferences();
+                    final Iterator it = diff.iterator();
                     while (it.hasNext()) {
                         System.out.println(it.next());
                     }
@@ -165,7 +169,7 @@ public class DOMVersionChecker implements VersionChecker {
      * @param  username  DOCUMENT ME!
      * @param  password  DOCUMENT ME!
      */
-    public void setDB(String driver, String database, String username, String password) {
+    public void setDB(final String driver, final String database, final String username, final String password) {
         try {
             Class.forName(driver).newInstance();
             setDB(DriverManager.getConnection(database, username, password));
@@ -179,7 +183,7 @@ public class DOMVersionChecker implements VersionChecker {
      *
      * @param  con  DOCUMENT ME!
      */
-    public void setDB(Connection con) {
+    public void setDB(final Connection con) {
         conn = con;
 
         try {
@@ -199,11 +203,12 @@ public class DOMVersionChecker implements VersionChecker {
      *
      * @throws  DBVersionException  wenn beim checken zu einem Fehler kommt.
      */
+    @Override
     public String checkVersion() throws DBVersionException {
-        Set versions = versionMap.keySet();
-        Iterator it = versions.iterator();
+        final Set versions = versionMap.keySet();
+        final Iterator it = versions.iterator();
         while (it.hasNext()) {
-            String version = (String)it.next();
+            final String version = (String)it.next();
             if (compareWithVersion(version)) {
                 return version;
             }
@@ -221,18 +226,19 @@ public class DOMVersionChecker implements VersionChecker {
      *
      * @throws  DBVersionException  wenn beim checken zu einem Fehler kommt.
      */
-    public boolean compareWithVersion(String version) throws DBVersionException {
-        TreeMap tables = (TreeMap)versionMap.get(version);
+    @Override
+    public boolean compareWithVersion(final String version) throws DBVersionException {
+        final TreeMap tables = (TreeMap)versionMap.get(version);
         if (tables == null) {
             throw new DBVersionException(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion(String).DBVersionException"));//NOI18N
         }
 
         differences.clear();
 
-        Set dbKeys = dbStructure.keySet();
-        Set xmlKeys = tables.keySet();
-        Iterator dbIter = dbKeys.iterator();
-        Iterator xmlIter = xmlKeys.iterator();
+        final Set dbKeys = dbStructure.keySet();
+        final Set xmlKeys = tables.keySet();
+        final Iterator dbIter = dbKeys.iterator();
+        final Iterator xmlIter = xmlKeys.iterator();
 
         while (dbIter.hasNext()) { // iterieren \u00FCber alle Tabellen der DB
             String dbTable = (String)dbIter.next();
@@ -264,13 +270,13 @@ public class DOMVersionChecker implements VersionChecker {
             }
 
             if (dbTable.compareTo(xmlTable) == 0) { // identische Tabelle in XML und DB, d.h. Spalten vergleichen
-                TreeMap dbColumnMap = (TreeMap)dbStructure.get(dbTable);
-                TreeMap xmlColumnMap = (TreeMap)tables.get(xmlTable);
+                final TreeMap dbColumnMap = (TreeMap)dbStructure.get(dbTable);
+                final TreeMap xmlColumnMap = (TreeMap)tables.get(xmlTable);
 
-                Set dbColumns = dbColumnMap.keySet();
-                Set xmlColumns = xmlColumnMap.keySet();
-                Iterator dbColumnsIter = dbColumns.iterator();
-                Iterator xmlColumnsIter = xmlColumns.iterator();
+                final Set dbColumns = dbColumnMap.keySet();
+                final Set xmlColumns = xmlColumnMap.keySet();
+                final Iterator dbColumnsIter = dbColumns.iterator();
+                final Iterator xmlColumnsIter = xmlColumns.iterator();
 
                 while (dbColumnsIter.hasNext()) { // iterieren \u00FCber die Spalten der Tabelle
                     String dbColumn = (String)dbColumnsIter.next();
@@ -305,8 +311,8 @@ public class DOMVersionChecker implements VersionChecker {
                     }
 
                     if (dbColumn.compareTo(xmlColumn) == 0) { // \u00FCbereinstimmender Spaltenname in XML und DB
-                        TreeMap dbColumnData = (TreeMap)dbColumnMap.get(dbColumn);
-                        TreeMap xmlColumnData = (TreeMap)xmlColumnMap.get(xmlColumn);
+                        final TreeMap dbColumnData = (TreeMap)dbColumnMap.get(dbColumn);
+                        final TreeMap xmlColumnData = (TreeMap)xmlColumnMap.get(xmlColumn);
 
                         if (xmlColumnData.get("nullable") != null) {//NOI18N
                             if (
@@ -318,16 +324,14 @@ public class DOMVersionChecker implements VersionChecker {
                         }
 
                         if (xmlColumnData.get("size") != null) {//NOI18N
-                            if (
-                                ((String)dbColumnData.get("size")).compareTo(xmlColumnData.get("size").toString())//NOI18N
+                            if (((String)dbColumnData.get("size")).compareTo(xmlColumnData.get("size").toString())//NOI18N
                                         != 0) {
                                 differences.add(org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion(String).sizeDiffers", new Object[] {dbTable, dbColumn, dbColumnData.get("size"), xmlColumnData.get("size")}));//NOI18N
                             }
                         }
 
                         if (xmlColumnData.get("type") != null) {//NOI18N
-                            if (
-                                ((String)dbColumnData.get("type")).compareTo(xmlColumnData.get("type").toString())//NOI18N
+                            if (((String)dbColumnData.get("type")).compareTo(xmlColumnData.get("type").toString())//NOI18N
                                         != 0) {
                                 differences.add(
                                     org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.compareWithVersion(String).typeDiffers", new Object[] {dbTable, dbColumn, dbColumnData.get("type"), xmlColumnData.get("type")}));//NOI18N
@@ -348,6 +352,7 @@ public class DOMVersionChecker implements VersionChecker {
      *
      * @throws  DBVersionException  wenn es zu einem Fehler kommt.
      */
+    @Override
     public String[] getAllVersions() throws DBVersionException {
         return (String[])versionMap.keySet().toArray(new String[0]);
     }
@@ -361,9 +366,10 @@ public class DOMVersionChecker implements VersionChecker {
      *
      * @throws  DBVersionException  wenn es zu einem Fehler kommt.
      */
-    public boolean versionAvailable(String version) throws DBVersionException {
-        Set versions = versionMap.keySet();
-        Iterator it = versions.iterator();
+    @Override
+    public boolean versionAvailable(final String version) throws DBVersionException {
+        final Set versions = versionMap.keySet();
+        final Iterator it = versions.iterator();
         while (it.hasNext()) {
             if (version.compareTo(it.next().toString()) == 0) {
                 return true;
@@ -379,10 +385,10 @@ public class DOMVersionChecker implements VersionChecker {
      * @param  fileName     Name der Datei in die gespeichert wird
      * @param  versionName  name attribut des version tag, das den Rest umschliesst
      */
-    public void writeVersionXML(String fileName, String versionName) {
+    public void writeVersionXML(final String fileName, final String versionName) {
         try {
-            FileWriter xml = new FileWriter(fileName);
-            ResultSet tables = meta.getTables(null, null, "%", null);//NOI18N
+            final FileWriter xml = new FileWriter(fileName);
+            final ResultSet tables = meta.getTables(null, null, "%", null);//NOI18N
 
             xml.write("\t<Version name=\"" + versionName + "\">\n");//NOI18N
 
@@ -394,7 +400,7 @@ public class DOMVersionChecker implements VersionChecker {
 
                 xml.write("\t\t<InternTable name=\"" + tables.getString("TABLE_NAME") + "\">\n");//NOI18N
 
-                ResultSet columns = meta.getColumns(null, null, tables.getString("TABLE_NAME"), "%");//NOI18N
+                final ResultSet columns = meta.getColumns(null, null, tables.getString("TABLE_NAME"), "%");//NOI18N
 
                 while (columns.next()) {
                     xml.write("\t\t\t<Column nullable=\"");//NOI18N
@@ -437,32 +443,32 @@ public class DOMVersionChecker implements VersionChecker {
      */
     private void readVersionsXML() {
         try {
-            File test = new File(xmlFile);
+            final File test = new File(xmlFile);
             if (!test.exists()) {
                 System.out.println(
                     org.openide.util.NbBundle.getMessage(DOMVersionChecker.class, "DOMVersionChecker.readVersionsXML().noXMLFound"));//NOI18N
                 return;
             }
-            Document xml = parser.build(test);
-            Element datamodel = xml.getRootElement();
+            final Document xml = parser.build(test);
+            final Element datamodel = xml.getRootElement();
 
-            List versions = datamodel.getChildren("Version");//NOI18N
-            Iterator versionsIter = versions.iterator();
+            final List versions = datamodel.getChildren("Version");//NOI18N
+            final Iterator versionsIter = versions.iterator();
             while (versionsIter.hasNext()) {
-                Element version = (Element)versionsIter.next();
-                List tables = version.getChildren("InternTable");//NOI18N
-                Iterator tablesIter = tables.iterator();
-                TreeMap tableMap = new TreeMap();
+                final Element version = (Element)versionsIter.next();
+                final List tables = version.getChildren("InternTable");//NOI18N
+                final Iterator tablesIter = tables.iterator();
+                final TreeMap tableMap = new TreeMap();
 
                 while (tablesIter.hasNext()) {
-                    Element table = (Element)tablesIter.next();
-                    List columns = table.getChildren("Column");//NOI18N
-                    Iterator columnsIter = columns.iterator();
-                    TreeMap columnMap = new TreeMap();
+                    final Element table = (Element)tablesIter.next();
+                    final List columns = table.getChildren("Column");//NOI18N
+                    final Iterator columnsIter = columns.iterator();
+                    final TreeMap columnMap = new TreeMap();
 
                     while (columnsIter.hasNext()) {
-                        Element column = (Element)columnsIter.next();
-                        TreeMap columnData = new TreeMap();
+                        final Element column = (Element)columnsIter.next();
+                        final TreeMap columnData = new TreeMap();
                         columnData.put("nullable", column.getAttributeValue("nullable"));//NOI18N
                         columnData.put("size", column.getAttributeValue("size"));//NOI18N
                         columnData.put("type", column.getAttributeValue("type"));//NOI18N
@@ -482,18 +488,18 @@ public class DOMVersionChecker implements VersionChecker {
      */
     private void readDBStructure() {
         try {
-            ResultSet tables = meta.getTables(null, null, "%", null);//NOI18N
+            final ResultSet tables = meta.getTables(null, null, "%", null);//NOI18N
 
             while (tables.next()) {
                 if (tables.getString("TABLE_TYPE").compareTo("TABLE") != 0) {//NOI18N
                     continue;
                 }
 
-                ResultSet columns = meta.getColumns(null, null, tables.getString("TABLE_NAME"), "%");//NOI18N
-                TreeMap columnsMap = new TreeMap();
+                final ResultSet columns = meta.getColumns(null, null, tables.getString("TABLE_NAME"), "%");//NOI18N
+                final TreeMap columnsMap = new TreeMap();
 
                 while (columns.next()) {
-                    TreeMap columnData = new TreeMap();
+                    final TreeMap columnData = new TreeMap();
 
                     if (columns.getString("IS_NULLABLE").equals("YES")) {//NOI18N
                         columnData.put("nullable", "true");//NOI18N

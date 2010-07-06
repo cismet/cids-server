@@ -15,10 +15,7 @@ import Sirius.util.Editable;
 import Sirius.util.Groupable;
 import Sirius.util.Renderable;
 
-import de.cismet.cids.dynamics.CidsBean;
-
-import de.cismet.cids.tools.fromstring.StringCreateable;
-import de.cismet.cids.tools.tostring.StringConvertable;
+import org.apache.log4j.Logger;
 
 import java.io.Serializable;
 
@@ -26,7 +23,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
 
-import org.apache.log4j.Logger;
+import de.cismet.cids.dynamics.CidsBean;
+
+import de.cismet.cids.tools.fromstring.StringCreateable;
+import de.cismet.cids.tools.tostring.StringConvertable;
 
 /**
  * DOCUMENT ME!
@@ -80,6 +80,7 @@ public interface MetaObject extends Sirius.server.localserver.object.Object,
      *
      * @return  complex editor
      */
+    @Override
     String getComplexEditor();
 
     /**
@@ -115,7 +116,9 @@ public interface MetaObject extends Sirius.server.localserver.object.Object,
      *
      * @return  grouping criterion
      */
+    @Override
     String getGroup();
+    @Override
     int getId();
 
     /**
@@ -151,6 +154,7 @@ public interface MetaObject extends Sirius.server.localserver.object.Object,
      *
      * @return  renderer
      */
+    @Override
     String getRenderer();
 
     /**
@@ -158,6 +162,7 @@ public interface MetaObject extends Sirius.server.localserver.object.Object,
      *
      * @return  siomple editor
      */
+    @Override
     String getSimpleEditor();
 
     /**

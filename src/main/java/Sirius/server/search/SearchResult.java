@@ -26,6 +26,9 @@ public class SearchResult implements java.io.Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 5975527842318427668L;
+
     private static final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(
             SearchResult.class);
 
@@ -53,7 +56,7 @@ public class SearchResult implements java.io.Serializable {
      *
      * @param  srs  DOCUMENT ME!
      */
-    public SearchResult(SearchResult srs) {
+    public SearchResult(final SearchResult srs) {
         this.data = srs.data;
     }
 
@@ -62,7 +65,7 @@ public class SearchResult implements java.io.Serializable {
      *
      * @param  nodes  DOCUMENT ME!
      */
-    public SearchResult(MetaObjectNode[] nodes) {
+    public SearchResult(final MetaObjectNode[] nodes) {
         this.data = new HashSet();
 
         for (int i = 0; i < nodes.length; i++) {
@@ -75,7 +78,7 @@ public class SearchResult implements java.io.Serializable {
      *
      * @param  data  DOCUMENT ME!
      */
-    public SearchResult(MetaObject[] data) {
+    public SearchResult(final MetaObject[] data) {
         this.data = data;
     }
 
@@ -84,7 +87,7 @@ public class SearchResult implements java.io.Serializable {
      *
      * @param  data  DOCUMENT ME!
      */
-    public SearchResult(Object data) {
+    public SearchResult(final Object data) {
         this.data = data;
     }
 
@@ -180,12 +183,12 @@ public class SearchResult implements java.io.Serializable {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public void addAll(Sirius.server.middleware.types.MetaObjectNode[] nodes) throws Exception {
+    public void addAll(final Sirius.server.middleware.types.MetaObjectNode[] nodes) throws Exception {
         if (logger.isDebugEnabled()) {
             logger.debug("addAll nodes invoked");//NOI18N
         }
 
-        HashSet result = new HashSet(nodes.length);
+        final HashSet result = new HashSet(nodes.length);
 
         // f\u00FCge nodes Hashset hinzu
         for (int i = 0; i < nodes.length; i++) {
@@ -213,7 +216,7 @@ public class SearchResult implements java.io.Serializable {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public void addAll(SearchResult sr) throws Exception {
+    public void addAll(final SearchResult sr) throws Exception {
         if (sr.isNode()) {
             addAll(sr.getNodes());
         } else if (sr.isSearchParameter()) {
@@ -231,7 +234,7 @@ public class SearchResult implements java.io.Serializable {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public void addAllAndFilter(Sirius.server.middleware.types.MetaObjectNode[] nodes) throws Exception {
+    public void addAllAndFilter(final Sirius.server.middleware.types.MetaObjectNode[] nodes) throws Exception {
         if (logger.isDebugEnabled()) {
             logger.debug("addAllandfilter nodes invoked");//NOI18N
         }
@@ -270,7 +273,7 @@ public class SearchResult implements java.io.Serializable {
      *
      * @param  classIds  DOCUMENT ME!
      */
-    public void setFilter(int[] classIds) {
+    public void setFilter(final int[] classIds) {
         filter = new HashSet(classIds.length);
 
         for (int i = 0; i < classIds.length; i++) {
@@ -285,7 +288,7 @@ public class SearchResult implements java.io.Serializable {
      *
      * @param  filterSet  DOCUMENT ME!
      */
-    public void setFilterActive(boolean filterSet) {
+    public void setFilterActive(final boolean filterSet) {
         this.filterSet = filterSet;
     }
 
@@ -358,7 +361,7 @@ public class SearchResult implements java.io.Serializable {
      *
      * @param  retainer  DOCUMENT ME!
      */
-    public void setRetainer(HashSet retainer) {
+    public void setRetainer(final HashSet retainer) {
         this.retainer = retainer;
     }
 
@@ -379,17 +382,17 @@ public class SearchResult implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public static HashSet intersect(HashSet a, HashSet b) {
+    public static HashSet intersect(final HashSet a, final HashSet b) {
         if (logger.isDebugEnabled()) {
             logger.debug("intersect \na " + a + "\nb" + b);//NOI18N
         }
 
-        HashSet c = new HashSet();
+        final HashSet c = new HashSet();
 
-        Iterator<Node> iter = a.iterator();
+        final Iterator<Node> iter = a.iterator();
 
         while (iter.hasNext()) {
-            Object o = iter.next();
+            final Object o = iter.next();
             if (logger.isDebugEnabled()) {
                 logger.debug("check whether element of a is in b" + o);//NOI18N
             }

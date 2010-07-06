@@ -12,9 +12,9 @@
  */
 package Sirius.util;
 
-import java.util.prefs.*;
-
 import java.net.Socket;
+
+import java.util.prefs.*;
 //import org.apache.log4j.*;
 //import org.apache.log4j.net.SocketAppender;
 
@@ -58,7 +58,7 @@ public class PreferencesTool {
      *
      * @throws  BackingStoreException  DOCUMENT ME!
      */
-    public String getPreference(String key, String defaultValue) throws BackingStoreException {
+    public String getPreference(final String key, final String defaultValue) throws BackingStoreException {
         return getPreference(isSysNode, pathName + PS + key, defaultValue);
     }
 
@@ -75,7 +75,7 @@ public class PreferencesTool {
      *
      * @pathName  Path zu dem Knoten.
      */
-    public boolean setData(boolean isSysNode, String pathName) throws BackingStoreException {
+    public boolean setData(final boolean isSysNode, final String pathName) throws BackingStoreException {
         this.isSysNode = isSysNode;
         this.pathName = pathName;
 
@@ -90,7 +90,7 @@ public class PreferencesTool {
      *
      * @throws  BackingStoreException  DOCUMENT ME!
      */
-    public void setPreference(String key, String value) throws BackingStoreException {
+    public void setPreference(final String key, final String value) throws BackingStoreException {
         setPreference(isSysNode, pathName + PS + key, value);
     }
 
@@ -102,7 +102,7 @@ public class PreferencesTool {
      *
      * @throws  BackingStoreException  wenn lengen der beiden Arrays ungleich
      */
-    public void setPreferences(String[] keys, String[] values) throws BackingStoreException {
+    public void setPreferences(final String[] keys, final String[] values) throws BackingStoreException {
         setPreferences(isSysNode, pathName, keys, values);
     }
 
@@ -118,10 +118,12 @@ public class PreferencesTool {
      *
      * @throws  BackingStoreException  wenn lengen der beiden Arrays ungleich
      */
-    public static void setPreferences(boolean isSysNode, String pathName, String[] keys, String[] values)
-        throws BackingStoreException {
+    public static void setPreferences(final boolean isSysNode,
+            final String pathName,
+            final String[] keys,
+            final String[] values) throws BackingStoreException {
         if (keys.length != values.length) {
-            String meldung = "Unequal amount of keys and values"//NOI18N
+            final String meldung = "Unequal number of keys and values"//NOI18N
                 + " was given to set the preferences in the backing store.";//NOI18N
 
             throw new BackingStoreException(meldung);
@@ -139,7 +141,7 @@ public class PreferencesTool {
      *
      * @return  System-RootKnoten wenn true \u00FCbergeben wurde, User-RootKnoten wenn fasle \u00FCbergeben wurde.
      */
-    private static Preferences getRootNode(boolean isSysNode) {
+    private static Preferences getRootNode(final boolean isSysNode) {
         if (isSysNode) {
             return Preferences.systemRoot();
         } else {
@@ -156,13 +158,13 @@ public class PreferencesTool {
      *
      * @throws  BackingStoreException  DOCUMENT ME!
      */
-    public static void setPreference(boolean isSysNode, String qualifiedKey, String value)
-        throws BackingStoreException {
-        int index = qualifiedKey.lastIndexOf(PS);
+    public static void setPreference(final boolean isSysNode, final String qualifiedKey, final String value)
+            throws BackingStoreException {
+        final int index = qualifiedKey.lastIndexOf(PS);
         Preferences prefs = getRootNode(isSysNode);
         String key = qualifiedKey;
         if (index > 0) {
-            String node = qualifiedKey.substring(0, index);
+            final String node = qualifiedKey.substring(0, index);
             prefs = getRootNode(isSysNode).node(node);
             key = qualifiedKey.substring(index + 1, qualifiedKey.length());
         }
@@ -184,20 +186,20 @@ public class PreferencesTool {
      *
      * @throws  BackingStoreException  DOCUMENT ME!
      */
-    public static String getPreference(boolean isSysNode, String qualifiedKey, String defaultValue)
-        throws BackingStoreException {
-        int index = qualifiedKey.lastIndexOf(PS);
+    public static String getPreference(final boolean isSysNode, final String qualifiedKey, final String defaultValue)
+            throws BackingStoreException {
+        final int index = qualifiedKey.lastIndexOf(PS);
         Preferences prefs = getRootNode(isSysNode);
         String key = qualifiedKey;
         if (index > 0) {
-            String node = qualifiedKey.substring(0, index);
+            final String node = qualifiedKey.substring(0, index);
             prefs = getRootNode(isSysNode).node(node);
             key = qualifiedKey.substring(index + 1, qualifiedKey.length());
         }
 
 //        logger.debug("Daten aus BackingStore auslesen: qulifiedKey: " +
 //        qualifiedKey + " node: " + prefs.name() + " key: " + key);
-        String ret = prefs.get(key, defaultValue);
+        final String ret = prefs.get(key, defaultValue);
 //        logger.debug("Auslesen erfolgreich. Wert: " + ret);
 
         return ret;
@@ -210,14 +212,14 @@ public class PreferencesTool {
      *
      * @param  args  DOCUMENT ME!
      */
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         try {
             if ((args.length % 2) == 0) {
                 usage();
                 System.exit(-1);
             }
 
-            PreferencesTool pt = new PreferencesTool();
+            final PreferencesTool pt = new PreferencesTool();
             if (!pt.setData(true, args[0])) {
                 System.out.println("Info: Node " + args[0] + " does not exist, yet.");//NOI18N
             }

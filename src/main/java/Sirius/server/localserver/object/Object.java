@@ -17,14 +17,14 @@ import Sirius.server.newuser.UserGroup;
 
 import Sirius.util.Mapable;
 
-import de.cismet.cids.tools.fromstring.FromStringCreator;
-import de.cismet.cids.tools.fromstring.StringCreateable;
-import de.cismet.cids.tools.tostring.StringConvertable;
-
 import java.io.Serializable;
 
 import java.util.Collection;
 import java.util.HashMap;
+
+import de.cismet.cids.tools.fromstring.FromStringCreator;
+import de.cismet.cids.tools.fromstring.StringCreateable;
+import de.cismet.cids.tools.tostring.StringConvertable;
 
 /**
  * DOCUMENT ME!
@@ -79,6 +79,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @deprecated  UNUSED
      */
+    @Override
     java.lang.Object constructKey(Mapable m);
 
     /**
@@ -104,6 +105,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @throws  Exception  java.lang.Exception error during consturction of an Object
      */
+    @Override
     java.lang.Object fromString(String objectRepresentation, java.lang.Object mo) throws Exception;
 
     /**
@@ -203,6 +205,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @return  eindeutiger Schlüssel innerhalb einer domain (i.d.R. objectID@classID)
      */
+    @Override
     java.lang.Object getKey();
 
     /**
@@ -261,6 +264,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @return  can be created from a string reprenstation of this object
      */
+    @Override
     boolean isStringCreateable();
 
     /**

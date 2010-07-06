@@ -45,14 +45,15 @@ public class ExtractAllAttr implements TypeVisitor {
      * @return  liefert diesen Attribut in einem Array der gr\u00F6se 1 zur\u00FCck oder wenn der Attribut einen
      *          MetaObject als Wert enth\u00E4lt dann alle darin enthaltenen Attribute.
      */
-    public Object visitMA(ObjectAttribute moa, Object o) {
-        Object value = moa.getValue();
+    @Override
+    public Object visitMA(final ObjectAttribute moa, final Object o) {
+        final Object value = moa.getValue();
 
         if (value instanceof MetaObject) {
             return ((MetaObject)value).accept(this, o);
         }
 
-        ObjectAttribute[] matt = { moa };
+        final ObjectAttribute[] matt = { moa };
 
         return matt;
     }
@@ -65,11 +66,12 @@ public class ExtractAllAttr implements TypeVisitor {
      *
      * @return  liefert alle in diesem und allen darunterliegenden MetaObjecten enthaltenen Attribute.
      */
-    public Object visitMO(MetaObject moa, Object o) {
+    @Override
+    public Object visitMO(final MetaObject moa, final Object o) {
         ObjectAttribute[] ret = new ObjectAttribute[0];
         ObjectAttribute[] tmp;
 
-        ObjectAttribute[] mas = moa.getAttribs();
+        final ObjectAttribute[] mas = moa.getAttribs();
 
         for (int i = 0; i < mas.length; i++) {
             tmp = (ObjectAttribute[])mas[i].accept(this, o);
@@ -89,7 +91,7 @@ public class ExtractAllAttr implements TypeVisitor {
      *
      * @return  DOCUMENT ME!
      */
-    protected static ObjectAttribute[] incrementMA(ObjectAttribute[] quelle, ObjectAttribute neu) {
+    protected static ObjectAttribute[] incrementMA(final ObjectAttribute[] quelle, final ObjectAttribute neu) {
         ObjectAttribute[] ziel = quelle;
         System.arraycopy(quelle, 0, ziel = new ObjectAttribute[quelle.length + 1], 0, quelle.length);
         ziel[ziel.length - 1] = neu;
@@ -104,12 +106,12 @@ public class ExtractAllAttr implements TypeVisitor {
      *
      * @return  DOCUMENT ME!
      */
-    protected static ObjectAttribute[] enlargeMA(ObjectAttribute[] quelleA, ObjectAttribute[] quelleB) {
+    protected static ObjectAttribute[] enlargeMA(final ObjectAttribute[] quelleA, final ObjectAttribute[] quelleB) {
         if ((quelleB == null) && (quelleA != null)) {
             return quelleA;
         }
 
-        ObjectAttribute[] ziel = new ObjectAttribute[quelleA.length + quelleB.length];
+        final ObjectAttribute[] ziel = new ObjectAttribute[quelleA.length + quelleB.length];
 
         System.arraycopy(quelleA, 0, ziel, 0, quelleA.length);
         System.arraycopy(quelleB, 0, ziel, quelleA.length, quelleB.length);

@@ -20,6 +20,11 @@ import Sirius.server.localserver.attribute.*;
  */
 public class UrlStringConverter extends ToStringConverter implements java.io.Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -2796385759299324453L;
+
     //~ Instance fields --------------------------------------------------------
 
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
@@ -42,14 +47,13 @@ public class UrlStringConverter extends ToStringConverter implements java.io.Ser
      *
      * @return  DOCUMENT ME!
      */
-    public String convert(Sirius.server.localserver.object.Object o) {
+    public String convert(final Sirius.server.localserver.object.Object o) {
         String stringRepresentation = "";//NOI18N
 
-        ObjectAttribute[] attrs = o.getAttribs();
+        final ObjectAttribute[] attrs = o.getAttribs();
 
         for (int i = 0; i < attrs.length; i++) {
-            if (
-                attrs[i].getName().equalsIgnoreCase("url_base_id")//NOI18N
+            if (attrs[i].getName().equalsIgnoreCase("url_base_id")//NOI18N
                         || attrs[i].getName().equalsIgnoreCase("object_name")) {//NOI18N
                 stringRepresentation += (attrs[i].toString());
             } else // surpress

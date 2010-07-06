@@ -22,6 +22,11 @@ import Sirius.server.middleware.types.MetaObject;
  */
 public class AdressStringConverter extends ToStringConverter implements java.io.Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 3190668550117541149L;
+
     //~ Instance fields --------------------------------------------------------
 
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
@@ -37,12 +42,13 @@ public class AdressStringConverter extends ToStringConverter implements java.io.
 
     //~ Methods ----------------------------------------------------------------
 
-    public String convert(de.cismet.cids.tools.tostring.StringConvertable o) {
-        MetaObject mo = (MetaObject)o;
+    @Override
+    public String convert(final de.cismet.cids.tools.tostring.StringConvertable o) {
+        final MetaObject mo = (MetaObject)o;
 
         String stringRepresentation = "";//NOI18N
 
-        ObjectAttribute[] attrs = mo.getAttribs();
+        final ObjectAttribute[] attrs = mo.getAttribs();
 
         for (int i = 0; i < attrs.length; i++) {
             // besser getAttributeByname

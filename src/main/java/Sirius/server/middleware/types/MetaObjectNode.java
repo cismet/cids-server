@@ -20,6 +20,9 @@ public class MetaObjectNode extends Node implements Comparable {
 
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -4873930081126373315L;
+
     private static final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(
             MetaObjectNode.class);
 
@@ -45,17 +48,16 @@ public class MetaObjectNode extends Node implements Comparable {
      * @param  icon                        DOCUMENT ME!
      * @param  derivePermissionsFromClass  DOCUMENT ME!
      */
-    public MetaObjectNode(
-            int id,
-            String localServerName,
-            MetaObject theObject,
-            String name,
-            String description,
-            boolean isLeaf,
-            Policy policy,
-            int iconFactory,
-            String icon,
-            boolean derivePermissionsFromClass) {
+    public MetaObjectNode(final int id,
+            final String localServerName,
+            final MetaObject theObject,
+            final String name,
+            final String description,
+            final boolean isLeaf,
+            final Policy policy,
+            final int iconFactory,
+            final String icon,
+            final boolean derivePermissionsFromClass) {
         super(id, name, localServerName, description, isLeaf, policy, iconFactory, icon, derivePermissionsFromClass);
         this.theObject = theObject;
         if (theObject != null) {
@@ -82,18 +84,17 @@ public class MetaObjectNode extends Node implements Comparable {
      * @param  icon                        DOCUMENT ME!
      * @param  derivePermissionsFromClass  DOCUMENT ME!
      */
-    public MetaObjectNode(
-            int id,
-            String name,
-            String description,
-            String domain,
-            int objectId,
-            int classId,
-            boolean isLeaf,
-            Policy policy,
-            int iconFactory,
-            String icon,
-            boolean derivePermissionsFromClass) {
+    public MetaObjectNode(final int id,
+            final String name,
+            final String description,
+            final String domain,
+            final int objectId,
+            final int classId,
+            final boolean isLeaf,
+            final Policy policy,
+            final int iconFactory,
+            final String icon,
+            final boolean derivePermissionsFromClass) {
         super(id, name, domain, description, isLeaf, policy, iconFactory, icon, derivePermissionsFromClass);
 
         this.objectId = objectId;
@@ -128,6 +129,7 @@ public class MetaObjectNode extends Node implements Comparable {
 // this.objectId=node.getObjectId();
 // }
 
+    @Override
     public String getDescription() {
         return super.getDescription();
     }
@@ -157,7 +159,7 @@ public class MetaObjectNode extends Node implements Comparable {
      *
      * @param  theObject  DOCUMENT ME!
      */
-    public void setObject(MetaObject theObject) {
+    public void setObject(final MetaObject theObject) {
         this.theObject = theObject;
         if (theObject != null) {
             this.classId = theObject.getClassID();
@@ -183,8 +185,9 @@ public class MetaObjectNode extends Node implements Comparable {
         return objectId;
     }
 
+    @Override
     public int hashCode() {
-        HashCodeBuilder hb = new HashCodeBuilder();
+        final HashCodeBuilder hb = new HashCodeBuilder();
 
         hb.append(id);
         hb.append(classId);
@@ -194,12 +197,13 @@ public class MetaObjectNode extends Node implements Comparable {
         return hb.toHashCode();
     }
 
-    public boolean equals(Object other) {
+    @Override
+    public boolean equals(final Object other) {
         if (!(other instanceof MetaObjectNode)) {
             return false;
         }
 
-        MetaObjectNode o = (MetaObjectNode)other;
+        final MetaObjectNode o = (MetaObjectNode)other;
 
         return (id == o.id) && domain.equals(o.domain) && (objectId == o.objectId) && (classId == o.classId);
     }

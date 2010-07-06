@@ -20,6 +20,11 @@ package Sirius.server.transaction;
  */
 public class Transaction implements java.io.Serializable, Sirius.util.Mapable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 55938615230420810L;
+
     //~ Instance fields --------------------------------------------------------
 
     // **name (identifier) der auszuf\u00FChrenden Transaktion -> Methode/
@@ -44,7 +49,7 @@ public class Transaction implements java.io.Serializable, Sirius.util.Mapable {
      * @param  name    DOCUMENT ME!
      * @param  params  DOCUMENT ME!
      */
-    public Transaction(String name, Object[] params) {
+    public Transaction(final String name, final Object[] params) {
         this.name = name;
         this.params = params;
     }
@@ -65,7 +70,7 @@ public class Transaction implements java.io.Serializable, Sirius.util.Mapable {
      *
      * @param  name  New value of property name.
      */
-    public void setName(java.lang.String name) {
+    public void setName(final java.lang.String name) {
         this.name = name;
     }
 
@@ -83,14 +88,16 @@ public class Transaction implements java.io.Serializable, Sirius.util.Mapable {
      *
      * @param  params  New value of property params.
      */
-    public void setParams(java.lang.Object[] params) {
+    public void setParams(final java.lang.Object[] params) {
         this.params = params;
     }
 
-    public Object constructKey(Sirius.util.Mapable m) {
+    @Override
+    public Object constructKey(final Sirius.util.Mapable m) {
         return m.getKey();
     }
 
+    @Override
     public Object getKey() {
         return name;
     }

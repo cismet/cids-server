@@ -20,6 +20,11 @@ package Sirius.server.newuser.permission;
  */
 public class Permission implements java.io.Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 4112877525599858208L;
+
     //~ Instance fields --------------------------------------------------------
 
     protected String key;
@@ -33,18 +38,19 @@ public class Permission implements java.io.Serializable {
      * @param  id   DOCUMENT ME!
      * @param  key  DOCUMENT ME!
      */
-    public Permission(int id, String key) {
+    public Permission(final int id, final String key) {
         this.id = id;
         this.key = key.trim();
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    public boolean equals(java.lang.Object o) {
+    @Override
+    public boolean equals(final java.lang.Object o) {
         if (this == o) {
             return true;
         }
-        Permission p = ((Permission)o);
+        final Permission p = ((Permission)o);
 
         return (key.equalsIgnoreCase(p.key));
     }
@@ -68,7 +74,7 @@ public class Permission implements java.io.Serializable {
      *
      * @param  id  New value of property id.
      */
-    public void setId(int id) {
+    public void setId(final int id) {
         this.id = id;
     }
 
@@ -86,10 +92,11 @@ public class Permission implements java.io.Serializable {
      *
      * @param  key  New value of property key.
      */
-    public void setKey(java.lang.String key) {
+    public void setKey(final java.lang.String key) {
         this.key = key.trim();
     }
 
+    @Override
     public String toString() {
         return "ID " + id + " KEY " + key;   // NOI18N
     }

@@ -7,9 +7,9 @@
 ****************************************************/
 package Sirius.server.search.store;
 
-import java.io.*;
-
 import Sirius.server.newuser.*;
+
+import java.io.*;
 
 /**
  * Repraesentiert ein Such-Profil.*
@@ -17,6 +17,11 @@ import Sirius.server.newuser.*;
  * @version  $Revision$, $Date$
  */
 public class QueryData extends QueryInfo implements java.io.Serializable, Info {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -878146480754175149L;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -42,7 +47,7 @@ public class QueryData extends QueryInfo implements java.io.Serializable, Info {
      * @param  name    DOCUMENT ME!
      * @param  data    DOCUMENT ME!
      */
-    public QueryData(int id, String domain, String name, byte[] data) {
+    public QueryData(final int id, final String domain, final String name, final byte[] data) {
         super(id, name, domain, "");//NOI18N
         this.data = data;
     }
@@ -56,7 +61,7 @@ public class QueryData extends QueryInfo implements java.io.Serializable, Info {
      * @param  fileName  isUserQuery handelt es sich um eine Suche von einem User oder UserGroup *
      * @param  data      Daten der Suche
      */
-    public QueryData(String domain, String name, String fileName, byte[] data) {
+    public QueryData(final String domain, final String name, final String fileName, final byte[] data) {
         super(-1, name, domain, fileName);
         this.data = data;
     }
@@ -71,7 +76,7 @@ public class QueryData extends QueryInfo implements java.io.Serializable, Info {
      * @param  fileName  isUserQuery handelt es sich um eine Suche von einem User oder UserGroup *
      * @param  data      Daten des Suchergebnisses
      */
-    public QueryData(int id, String domain, String name, String fileName, byte[] data) {
+    public QueryData(final int id, final String domain, final String name, final String fileName, final byte[] data) {
         this(domain, name, fileName, data);
         this.id = id;
     }
@@ -92,6 +97,7 @@ public class QueryData extends QueryInfo implements java.io.Serializable, Info {
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public String toString() {
         return "id:" + id + " lsName: " + domain + " name:" + name + " length: " + data.length;//NOI18N
     }

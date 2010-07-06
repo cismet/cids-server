@@ -27,7 +27,7 @@ public class Group {
      * @param  group  DOCUMENT ME!
      * @param  items  DOCUMENT ME!
      */
-    public Group(String group, Groupable[] items) {
+    public Group(final String group, final Groupable[] items) {
         this.group = group;
         this.items = getIDs(items);
     }
@@ -41,8 +41,8 @@ public class Group {
      *
      * @return  DOCUMENT ME!
      */
-    private int[] getIDs(Groupable[] items) {
-        int[] ids = new int[items.length];
+    private int[] getIDs(final Groupable[] items) {
+        final int[] ids = new int[items.length];
 
         // extract ids from groupables
         for (int i = 0; i < ids.length; i++) {

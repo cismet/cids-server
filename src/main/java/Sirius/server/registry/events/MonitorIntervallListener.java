@@ -29,10 +29,10 @@
 *******************************************************************************/
 package Sirius.server.registry.events;
 
-import java.awt.event.*;
-
 import Sirius.server.registry.*;
 import Sirius.server.registry.monitor.*;
+
+import java.awt.event.*;
 
 /**
  * ActionListener fuer die Einstellungen fuer das automatische Update des RegistryMonitor. Hier wird das ZeitIntervall
@@ -54,14 +54,15 @@ public class MonitorIntervallListener implements ActionListener {
      *
      * @param  registryMonitor  DOCUMENT ME!
      */
-    public MonitorIntervallListener(RegistryMonitor registryMonitor) {
+    public MonitorIntervallListener(final RegistryMonitor registryMonitor) {
         this.registryMonitor = registryMonitor;
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    public void actionPerformed(ActionEvent event) {
-        String command = event.getActionCommand();
+    @Override
+    public void actionPerformed(final ActionEvent event) {
+        final String command = event.getActionCommand();
         if (command.equals("all 1 Minute")) {  // NOI18N
             registryMonitor.setUpdateIntervall(60);
         } else if (command.equals("all 5 Minutes")) {  // NOI18N

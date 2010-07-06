@@ -14,6 +14,11 @@ package Sirius.util.image;
  */
 public class IntMapsImage extends java.util.Hashtable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -1242822549941732728L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -29,7 +34,7 @@ public class IntMapsImage extends java.util.Hashtable {
      * @param  initialCapacity  DOCUMENT ME!
      * @param  loadFactor       DOCUMENT ME!
      */
-    public IntMapsImage(int initialCapacity, float loadFactor) {
+    public IntMapsImage(final int initialCapacity, final float loadFactor) {
         super(initialCapacity, loadFactor);
     }
 
@@ -41,7 +46,7 @@ public class IntMapsImage extends java.util.Hashtable {
      * @param  id      DOCUMENT ME!
      * @param  aImage  DOCUMENT ME!
      */
-    public void add(int id, Image aImage) {
+    public void add(final int id, final Image aImage) {
         super.put(new Integer(id), aImage);
     } // end add
 
@@ -55,11 +60,11 @@ public class IntMapsImage extends java.util.Hashtable {
      * @throws  Exception                       DOCUMENT ME!
      * @throws  java.lang.NullPointerException  DOCUMENT ME!
      */
-    public Image getImageValue(int id) throws Exception {
-        Integer key = new Integer(id);
+    public Image getImageValue(final int id) throws Exception {
+        final Integer key = new Integer(id);
 
         if (super.containsKey(key)) {
-            java.lang.Object candidate = super.get(key);
+            final java.lang.Object candidate = super.get(key);
 
             if (candidate instanceof Image) {
                 return ((Image)candidate);
@@ -77,7 +82,7 @@ public class IntMapsImage extends java.util.Hashtable {
      *
      * @return  DOCUMENT ME!
      */
-    public boolean containsIntKey(int key) {
+    public boolean containsIntKey(final int key) {
         return super.containsKey(new Integer(key));
     }
 }

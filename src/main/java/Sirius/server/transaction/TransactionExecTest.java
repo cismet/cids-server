@@ -35,21 +35,21 @@ public class TransactionExecTest {
      *
      * @param  args  DOCUMENT ME!
      */
-    public static void main(String[] args) {
-        t test = new t();
+    public static void main(final String[] args) {
+        final t test = new t();
 
-        String mama = "printMama";//NOI18N
-        String param = "luv ya ";//NOI18N
+        final String mama = "printMama";//NOI18N
+        final String param = "luv ya ";//NOI18N
 
-        Object[] params = new Object[1];
+        final Object[] params = new Object[1];
 
         params[0] = param;
 
-        TransactionExecuter tex = new TransactionExecuter(test);
+        final TransactionExecuter tex = new TransactionExecuter(test);
 
-        Transaction x = new Transaction(mama, params);
+        final Transaction x = new Transaction(mama, params);
 
-        ArrayList l = new ArrayList();
+        final ArrayList l = new ArrayList();
 
         l.add(x);
 
@@ -83,7 +83,7 @@ class t {
      *
      * @param  param  DOCUMENT ME!
      */
-    public void printMama(String param) {
+    public void printMama(final String param) {
         System.out.println(param + " MAMA");//NOI18N
     }
 }

@@ -7,15 +7,17 @@
 ****************************************************/
 package Sirius.server.property;
 
+import Sirius.util.image.*;
+
+import org.apache.log4j.Logger;
+
 import java.io.*;
+
+import java.lang.reflect.*;
 
 import java.util.*;
 
-import Sirius.util.image.*;
-
 import de.cismet.tools.PasswordEncrypter;
-
-import java.lang.reflect.*;
 
 /**
  * Verwaltet Informationen zur allgemeinen Serverkonfiguration. (Local-, Call-, Translationserver). Das jeweilige
@@ -153,9 +155,9 @@ import java.lang.reflect.*;
 
 public class ServerProperties extends java.util.PropertyResourceBundle {
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
+    private static final transient Logger LOG = Logger.getLogger(ServerProperties.class);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -178,7 +180,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @throws  FileNotFoundException  DOCUMENT ME!
      * @throws  IOException            DOCUMENT ME!
      */
-    public ServerProperties(String configFile) throws FileNotFoundException, IOException {
+    public ServerProperties(final String configFile) throws FileNotFoundException, IOException {
         super(new FileInputStream(configFile));
     }
 
@@ -189,7 +191,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @throws  IOException  DOCUMENT ME!
      */
-    public ServerProperties(File file) throws IOException {
+    public ServerProperties(final File file) throws IOException {
         super(new FileInputStream(file));
     }
 
@@ -210,7 +212,126 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final int getServerPort() {
-        return new Integer(this.getString("serverPort")).intValue();  // NOI18N
+        return Integer.valueOf(getString("serverPort"));
+    }
+
+    /**
+     * Delivers the server's rest port.<br/>
+     * <br/>
+     * <b>If the port is not retrievable from the property file the port number defaults to <code>9986</code></b>.
+     *
+     * @return  the server's rest port
+     */
+    public final int getRestPort() {
+        try {
+            return Integer.valueOf(getString("server.rest.port"));                    // NOI18N
+        } catch (final NumberFormatException e) {
+            final String message = "could not parse server.rest.port property value"; // NOI18N
+            LOG.warn(message, e);
+
+            return 9986;
+        } catch (final MissingResourceException e) {
+            final String message = "server.rest.port property not set"; // NOI18N
+            if (LOG.isInfoEnabled()) {
+                LOG.info(message, e);
+            }
+
+            return 9986;
+        }
+    }
+
+    /**
+     * Indicates whether rest shall be enabled.<br/>
+     * <br/>
+     * <b>If the flag is not retrievable from the property file it defaults to <code>false</code></b>.
+     *
+     * @return  whether the server shall enable rest
+     */
+    public final boolean isRestEnabled() {
+        try {
+            return Boolean.valueOf(getString("server.rest.enable"));      // NOI18N
+        } catch (final MissingResourceException e) {
+            final String message = "server.rest.enable property not set"; // NOI18N
+            if (LOG.isInfoEnabled()) {
+                LOG.info(message, e);
+            }
+
+            return false;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getRestServerKeystore() {
+        return getString("server.rest.keystore.server"); // NOI18N
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getRestServerKeystorePW() {
+        return getString("server.rest.keystore.server.password"); // NOI18N
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getRestServerKeystoreKeyPW() {
+        return getString("server.rest.keystore.server.keypassword"); // NOI18N
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getRestClientKeystore() {
+        return getString("server.rest.keystore.client"); // NOI18N
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final boolean isRestClientAuth() {
+        return Boolean.valueOf(getString("server.rest.keystore.client.auth")); // NOI18N
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getRestClientKeystorePW() {
+        return getString("server.rest.keystore.client.password"); // NOI18N
+    }
+
+    /**
+     * Indicates whether rest shall be run in debug mode.<br/>
+     * <br/>
+     * <b>If the flag is not retrievable from the property file it defaults to <code>false</code></b>.
+     *
+     * @return  whether the server shall run rest in debug mode
+     */
+    public final boolean isRestDebug() {
+        try {
+            return Boolean.valueOf(getString("server.rest.debug"));      // NOI18N
+        } catch (final MissingResourceException e) {
+            final String message = "server.rest.debug property not set"; // NOI18N
+            if (LOG.isInfoEnabled()) {
+                LOG.info(message, e);
+            }
+
+            return false;
+        }
     }
 
     /**
@@ -326,7 +447,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @return  DOCUMENT ME!
      */
-    public final String getStartMode() {
+    public String getStartMode() {
         return this.getString("startMode");  // NOI18N
     }
 
@@ -422,12 +543,12 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public Image[] getDefaultIcons() {
-        File file = new File(getDefaultIconDir());
+        final File file = new File(getDefaultIconDir());
 
         // File file = new File("p:\\Metaservice\\Sirius\\System\\imgDefault");
-        if (logger.isDebugEnabled()) {
-            logger.debug("<SRVProperties> call getDefaultIcons");  // NOI18N
-            logger.debug("<SRVProperties> get DefaultIcons from Path: " + getDefaultIconDir() + file.exists());  // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("<SRVProperties> call getDefaultIcons");//NOI18N
+            LOG.debug("<SRVProperties> get DefaultIcons from Path: " + getDefaultIconDir() + file.exists());//NOI18N
         }
 
         File[] images = new File[0];
@@ -435,8 +556,8 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
 
         try {
             if (file.isDirectory()) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("<SRVProperties> valid Directory");  // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("<SRVProperties> valid Directory");//NOI18N
                 }
 
                 /**
@@ -447,16 +568,16 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
 
                 // System.out.println(file.listFiles());
                 images = file.listFiles();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("<SRVProperties> found " + images.length + " icons");  // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("<SRVProperties> found " + images.length + " icons");//NOI18N
                 }
                 sImages = new Image[images.length];
 
                 String s = "";  // NOI18N
                 for (int i = 0; i < images.length; i++) {
                     s += (images[i].getName() + ";");  // NOI18N
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(s);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(s);
                     }
                     sImages[i] = new Image(images[i].getAbsolutePath());
                 }
@@ -464,7 +585,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
                 throw new Exception("file is not an Directory");  // NOI18N
             }
         } catch (Exception e) {
-            logger.error(e);
+            LOG.error(e);
         }
 
         return sImages;
@@ -479,9 +600,9 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @return  Stringarray mit den einzelnen Tokens*
      */
-    public String[] getStrings(String key) {
-        StringTokenizer tokenizer = new StringTokenizer(this.getString(key), ";");  // NOI18N
-        String[] stringArray = new String[tokenizer.countTokens()];
+    public String[] getStrings(final String key) {
+        final StringTokenizer tokenizer = new StringTokenizer(this.getString(key), ";");//NOI18N
+        final String[] stringArray = new String[tokenizer.countTokens()];
         int i = 0;
 
         while (tokenizer.hasMoreTokens()) {
@@ -498,9 +619,9 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @return  DOCUMENT ME!
      */
-    public String[] getStrings(String key, String delimiter) {
-        StringTokenizer tokenizer = new StringTokenizer(this.getString(key), delimiter);
-        String[] stringArray = new String[tokenizer.countTokens()];
+    public String[] getStrings(final String key, final String delimiter) {
+        final StringTokenizer tokenizer = new StringTokenizer(this.getString(key), delimiter);
+        final String[] stringArray = new String[tokenizer.countTokens()];
         int i = 0;
 
         while (tokenizer.hasMoreTokens()) {
@@ -520,9 +641,9 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @return  DOCUMENT ME!
      */
-    public Object[] getObjectList(String key, Createable c) {
-        java.lang.String[] args = getStrings(key);
-        java.lang.Object[] objects = (Object[])Array.newInstance(c.getClass(), args.length);
+    public Object[] getObjectList(final String key, final Createable c) {
+        final java.lang.String[] args = getStrings(key);
+        final java.lang.Object[] objects = (Object[])Array.newInstance(c.getClass(), args.length);
 
         for (int i = 0; i < args.length; i++) {
             objects[i] = c.createObject(args[i], ",");  // NOI18N
@@ -538,10 +659,10 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @return  DOCUMENT ME!
      */
-    public int[] getInts(String key) {
-        StringTokenizer tokenizer = new StringTokenizer(this.getString(key), ";");  // NOI18N
+    public int[] getInts(final String key) {
+        final StringTokenizer tokenizer = new StringTokenizer(this.getString(key), ";");//NOI18N
 
-        int[] intArray = new int[tokenizer.countTokens()];
+        final int[] intArray = new int[tokenizer.countTokens()];
 
         int i = 0;
 
@@ -559,7 +680,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @return  DOCUMENT ME!
      */
-    public int getInt(String key) {
+    public int getInt(final String key) {
         return new Integer(getString(key)).intValue();
     }
 } // end class

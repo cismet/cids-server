@@ -12,10 +12,10 @@
  */
 package Sirius.server.dataretrieval;
 
-import java.util.*;
-
 import Sirius.server.middleware.types.*;
 import Sirius.server.middleware.types.MOTraverse.*;
+
+import java.util.*;
 
 /**
  * Diese Klasse verwalten die Protokole die Meta-Objekte verarbeiten k\u00F6nnen um Data-Objekte aufzufinden. Die
@@ -49,8 +49,8 @@ public class MetaObjectProtoMgr {
      *
      * @return  falls ein gleichnamige Protokol bereits enthalten war, wird dieser zur\u00FCckgegeben, sonst null.
      */
-    public static MetaObjectProto register(MetaObjectProto mop) {
-        String protoName = mop.getDataSourceClass().trim().toLowerCase();
+    public static MetaObjectProto register(final MetaObjectProto mop) {
+        final String protoName = mop.getDataSourceClass().trim().toLowerCase();
 
         return (MetaObjectProto)protocolMap.put(protoName, mop);
     }
@@ -62,7 +62,7 @@ public class MetaObjectProtoMgr {
      *
      * @return  das entfernte Protokol.
      */
-    public static MetaObjectProto deregister(MetaObjectProto mop) {
+    public static MetaObjectProto deregister(final MetaObjectProto mop) {
         return (MetaObjectProto)protocolMap.remove(mop.getDataSourceClass().trim().toLowerCase());
     }
 
@@ -74,7 +74,7 @@ public class MetaObjectProtoMgr {
      *
      * @return  der zugeh\u00F6rige Protokol oder null wenn keiner gefunden.
      */
-    public static MetaObjectProto getProtocol(String dataSourceClass) {
+    public static MetaObjectProto getProtocol(final String dataSourceClass) {
         return (MetaObjectProto)protocolMap.get(dataSourceClass.trim().toLowerCase());
     }
 
@@ -87,8 +87,8 @@ public class MetaObjectProtoMgr {
      *
      * @throws  DataRetrievalException  DOCUMENT ME!
      */
-    public static MetaObjectProto getProtocol(MetaObject metaObject) throws DataRetrievalException {
-        String protoName = new ProtoDelegator().extractProtoName(metaObject);
+    public static MetaObjectProto getProtocol(final MetaObject metaObject) throws DataRetrievalException {
+        final String protoName = new ProtoDelegator().extractProtoName(metaObject);
 
         return MetaObjectProtoMgr.getProtocol(protoName);
     }

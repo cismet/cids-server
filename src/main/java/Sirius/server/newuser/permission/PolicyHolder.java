@@ -12,7 +12,8 @@
 package Sirius.server.newuser.permission;
 
 import Sirius.server.ServerExitError;
-import Sirius.server.property.ServerProperties;
+import Sirius.server.Shutdown;
+import Sirius.server.Shutdownable;
 import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DBConnectionPool;
 
@@ -21,6 +22,7 @@ import java.io.Serializable;
 import java.sql.ResultSet;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * DOCUMENT ME!
@@ -28,16 +30,20 @@ import java.util.HashMap;
  * @author   hell
  * @version  $Revision$, $Date$
  */
-public class PolicyHolder implements Serializable {
+public class PolicyHolder extends Shutdown implements Serializable {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -1125400614035315329L;
 
     //~ Instance fields --------------------------------------------------------
 
     private final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
 
-    private HashMap<String, HashMap<Permission, Boolean>> policyHolder =
-        new HashMap<String, HashMap<Permission, Boolean>>();
-    private HashMap<Integer, String> idMapper = new HashMap<Integer, String>();
-    private HashMap<String, Integer> idReverseMapper = new HashMap<String, Integer>();
+    private Map<String, Map<Permission, Boolean>> policyHolder = new HashMap<String, Map<Permission, Boolean>>();
+    private Map<Integer, String> idMapper = new HashMap<Integer, String>();
+    private Map<String, Integer> idReverseMapper = new HashMap<String, Integer>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -48,10 +54,11 @@ public class PolicyHolder implements Serializable {
      *
      * @throws  ServerExitError  DOCUMENT ME!
      */
-    public PolicyHolder(DBConnectionPool conPool) throws ServerExitError {
-        DBConnection con = conPool.getConnection();
+    public PolicyHolder(final DBConnectionPool conPool) throws ServerExitError {
+        final DBConnection con = conPool.getConnection();
         try {
-            ResultSet serverPolicies = con.getConnection().createStatement()
+            final ResultSet serverPolicies = con.getConnection()
+                        .createStatement()
                         .executeQuery(
                             "SELECT "   // NOI18N
                             + "cs_policy.id as policyid, "   // NOI18N
@@ -74,14 +81,14 @@ public class PolicyHolder implements Serializable {
             }
 
             while (serverPolicies.next()) {
-                String policyName = serverPolicies.getString("name");   // NOI18N
-                int policyId = serverPolicies.getInt("policyid");   // NOI18N
-                int permId = serverPolicies.getInt("permissionid");   // NOI18N
-                String permissionKey = serverPolicies.getString("key");   // NOI18N
-                boolean defaultvalue = serverPolicies.getBoolean("default_value");   // NOI18N
-                Permission p = new Permission(permId, permissionKey);
+                final String policyName = serverPolicies.getString("name");//NOI18N
+                final int policyId = serverPolicies.getInt("policyid");//NOI18N
+                final int permId = serverPolicies.getInt("permissionid");//NOI18N
+                final String permissionKey = serverPolicies.getString("key");//NOI18N
+                final boolean defaultvalue = serverPolicies.getBoolean("default_value");//NOI18N
+                final Permission p = new Permission(permId, permissionKey);
                 if (!policyHolder.containsKey(policyName)) {
-                    HashMap<Permission, Boolean> policyMap = new HashMap<Permission, Boolean>();
+                    final HashMap<Permission, Boolean> policyMap = new HashMap<Permission, Boolean>();
                     policyHolder.put(policyName, policyMap);
                 }
                 policyHolder.get(policyName).put(p, defaultvalue);
@@ -90,6 +97,16 @@ public class PolicyHolder implements Serializable {
             }
 
             log.info("Serverpolicies: " + policyHolder);   // NOI18N
+
+            addShutdown(new Shutdownable() {
+
+                    @Override
+                    public void shutdown() throws ServerExitError {
+                        policyHolder.clear();
+                        idMapper.clear();
+                        idReverseMapper.clear();
+                    }
+                });
         } catch (Exception e) {
             // Safetyfirst
             log.error("Error while analysing server policies", e);   // NOI18N
@@ -106,7 +123,7 @@ public class PolicyHolder implements Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public Policy getServerPolicy(int policyId) {
+    public Policy getServerPolicy(final int policyId) {
         if (idMapper.containsKey(policyId)) {
             return getServerPolicy(idMapper.get(policyId), policyId);
         } else {
@@ -121,7 +138,7 @@ public class PolicyHolder implements Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public Policy getServerPolicy(String policyName) {
+    public Policy getServerPolicy(final String policyName) {
         return getServerPolicy(policyName, idReverseMapper.get(policyName));
     }
 
@@ -133,7 +150,7 @@ public class PolicyHolder implements Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    private Policy getServerPolicy(String policyName, int policyId) {
+    private Policy getServerPolicy(final String policyName, final int policyId) {
         return new Policy(policyHolder.get(policyName), policyId, policyName);
     }
 }

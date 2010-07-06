@@ -16,6 +16,11 @@ import java.util.Hashtable;
  */
 public class Server implements java.io.Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 1634105076311813828L;
+
     //~ Instance fields --------------------------------------------------------
 
     /** Name des Servers.* */
@@ -49,7 +54,7 @@ public class Server implements java.io.Serializable {
      * @param  ip    DOCUMENT ME!
      * @param  port  DOCUMENT ME!
      */
-    public Server(String name, String ip, String port) {
+    public Server(final String name, final String ip, final String port) {
         this.name = name;
         this.ip = ip;
         this.port = port;
@@ -66,7 +71,7 @@ public class Server implements java.io.Serializable {
      * @param  ip          IP.
      * @param  rmiPort     port, Port auf dem die RMIRegistry laeuft und and der der Server angemeldet ist*
      */
-    public Server(int serverType, String name, String ip, String rmiPort) {
+    public Server(final int serverType, final String name, final String ip, final String rmiPort) {
         this.type = serverType;
         this.name = name;
         this.ip = ip;
@@ -83,10 +88,10 @@ public class Server implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public boolean equals(java.lang.Object obj) {
-        Server server = (Server)obj;
-        if (
-            this.name.equals(server.name) /* && this.ip.equals(server.ip) && this.port.equals(server.port) */
+    @Override
+    public boolean equals(final java.lang.Object obj) {
+        final Server server = (Server)obj;
+        if (this.name.equals(server.name) /* && this.ip.equals(server.ip) && this.port.equals(server.port) */
                     && (this.type == server.type)) {
             return true;
         } else {
@@ -139,6 +144,7 @@ public class Server implements java.io.Serializable {
         return "rmi://" + ip + ":" + rmiPort + "/" + type + "/" + name;  // NOI18N
     }
 
+    @Override
     public String toString() {
         return (type + ":" + name + ":" + ip + ":" + port);  // NOI18N
     }

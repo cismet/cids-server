@@ -7,9 +7,9 @@
 ****************************************************/
 package Sirius.server.observ;
 
-import java.rmi.*;
-
 import java.io.*;
+
+import java.rmi.*;
 
 /**
  * DOCUMENT ME!

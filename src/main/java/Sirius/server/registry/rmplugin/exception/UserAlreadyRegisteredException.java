@@ -23,6 +23,11 @@ package Sirius.server.registry.rmplugin.exception;
  */
 public class UserAlreadyRegisteredException extends Exception {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 14718943934158053L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -37,7 +42,7 @@ public class UserAlreadyRegisteredException extends Exception {
      *
      * @param  message  DOCUMENT ME!
      */
-    public UserAlreadyRegisteredException(String message) {
+    public UserAlreadyRegisteredException(final String message) {
         super(message);
     }
 }

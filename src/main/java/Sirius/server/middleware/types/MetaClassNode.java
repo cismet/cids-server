@@ -18,6 +18,11 @@ import Sirius.server.newuser.permission.Policy;
 
 public class MetaClassNode extends Node implements Comparable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 8848752082990065348L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -35,18 +40,17 @@ public class MetaClassNode extends Node implements Comparable {
      * @param  derivePermissionsFromClass  DOCUMENT ME!
      * @param  classId                     DOCUMENT ME!
      */
-    public MetaClassNode(
-            int id,
-            String domain,
-            int classID,
-            String name,
-            String description,
-            boolean isLeaf,
-            Policy policy,
-            int iconFactory,
-            String icon,
-            boolean derivePermissionsFromClass,
-            int classId) {
+    public MetaClassNode(final int id,
+            final String domain,
+            final int classID,
+            final String name,
+            final String description,
+            final boolean isLeaf,
+            final Policy policy,
+            final int iconFactory,
+            final String icon,
+            final boolean derivePermissionsFromClass,
+            final int classId) {
         super(id, name, domain, description, isLeaf, policy, iconFactory, icon, derivePermissionsFromClass);
         this.classId = classID;
     }

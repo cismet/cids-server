@@ -7,13 +7,12 @@
 ****************************************************/
 package Sirius.server.registry.monitor;
 
+import Sirius.server.*;
 import Sirius.server.newuser.*;
-
-import javax.swing.table.*;
 
 import java.util.*;
 
-import Sirius.server.*;
+import javax.swing.table.*;
 
 /**
  * DOCUMENT ME!
@@ -21,6 +20,11 @@ import Sirius.server.*;
  * @version  $Revision$, $Date$
  */
 public class MonitorTableModel extends DefaultTableModel {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 7052379570359737651L;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -36,13 +40,14 @@ public class MonitorTableModel extends DefaultTableModel {
      * @param  servers  DOCUMENT ME!
      * @param  cnames   DOCUMENT ME!
      */
-    public MonitorTableModel(java.lang.Object[][] servers, java.lang.Object[] cnames) {
+    public MonitorTableModel(final java.lang.Object[][] servers, final java.lang.Object[] cnames) {
         super(servers, cnames);
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    public boolean isCellEditable(int row, int column) {
+    @Override
+    public boolean isCellEditable(final int row, final int column) {
         return false;
     }
 
@@ -53,10 +58,10 @@ public class MonitorTableModel extends DefaultTableModel {
      *
      * @return  DOCUMENT ME!
      */
-    public static java.lang.Object[][] convertToMatrix(Server[] servers) {
-        java.lang.Object[][] matrix = new java.lang.Object[servers.length][];
+    public static java.lang.Object[][] convertToMatrix(final Server[] servers) {
+        final java.lang.Object[][] matrix = new java.lang.Object[servers.length][];
         for (int i = 0; i < servers.length; i++) {
-            java.lang.Object[] columnVals = new java.lang.Object[3];
+            final java.lang.Object[] columnVals = new java.lang.Object[3];
             columnVals[0] = servers[i].getName();
             columnVals[1] = servers[i].getIP();
             columnVals[2] = servers[i].getPort();
@@ -72,10 +77,10 @@ public class MonitorTableModel extends DefaultTableModel {
      *
      * @return  DOCUMENT ME!
      */
-    public static java.lang.Object[][] convertToMatrix(Vector users) {
-        java.lang.Object[][] matrix = new java.lang.Object[users.size()][];
+    public static java.lang.Object[][] convertToMatrix(final Vector users) {
+        final java.lang.Object[][] matrix = new java.lang.Object[users.size()][];
         for (int i = 0; i < users.size(); i++) {
-            java.lang.Object[] columnVals = new java.lang.Object[6];
+            final java.lang.Object[] columnVals = new java.lang.Object[6];
 
             columnVals[0] = new Integer(0); // new Integer(((User)users.get(i)).getID());
             columnVals[1] = ((User)users.get(i)).getName();
@@ -95,7 +100,7 @@ public class MonitorTableModel extends DefaultTableModel {
      *
      * @return  DOCUMENT ME!
      */
-    public static java.util.Vector convertToVector(java.lang.Object[] obs) {
+    public static java.util.Vector convertToVector(final java.lang.Object[] obs) {
         return DefaultTableModel.convertToVector(obs);
     }
 }

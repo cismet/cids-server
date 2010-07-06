@@ -7,9 +7,9 @@
 ****************************************************/
 package Sirius.server.newuser;
 
-import java.io.*;
-
 import Sirius.util.*;
+
+import java.io.*;
 
 /**
  * Eine Klasse, die Informationen enthaelt, welche Benutzergruppen welchem Benutzer zugeordnet werden.*
@@ -17,6 +17,11 @@ import Sirius.util.*;
  * @version  $Revision$, $Date$
  */
 public class Membership implements Serializable, Mapable {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 489536707301582757L;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -35,7 +40,7 @@ public class Membership implements Serializable, Mapable {
      * @param  ug          DOCUMENT ME!
      * @param  ugDomain    DOCUMENT ME!
      */
-    public Membership(String login, String userDomain, String ug, String ugDomain) {
+    public Membership(final String login, final String userDomain, final String ug, final String ugDomain) {
         this.login = login.trim();
         this.userDomain = userDomain.trim();
         this.ug = ug.trim();
@@ -44,12 +49,26 @@ public class Membership implements Serializable, Mapable {
 
     //~ Methods ----------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    @Override
     public String toString() {
         return login + "/" + userDomain + "/" + ug + "/" + ugDomain;   // NOI18N
     }
 
-    public boolean equals(java.lang.Object mem) {
-        Membership m = (Membership)mem;
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   mem  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    @Override
+    public boolean equals(final java.lang.Object mem) {
+        final Membership m = (Membership)mem;
         return m.login.equals(this.login) && m.userDomain.equals(this.userDomain) && m.ug.equals(this.ug)
                     && m.ugDomain.equals(this.ugDomain);
     }
@@ -68,7 +87,7 @@ public class Membership implements Serializable, Mapable {
      *
      * @param  login  New value of property login.
      */
-    public void setLogin(java.lang.String login) {
+    public void setLogin(final java.lang.String login) {
         this.login = login;
     }
 
@@ -86,7 +105,7 @@ public class Membership implements Serializable, Mapable {
      *
      * @param  ug  New value of property ug.
      */
-    public void setUg(java.lang.String ug) {
+    public void setUg(final java.lang.String ug) {
         this.ug = ug;
     }
 
@@ -104,7 +123,7 @@ public class Membership implements Serializable, Mapable {
      *
      * @param  ugDomain  New value of property ugDomain.
      */
-    public void setUgDomain(java.lang.String ugDomain) {
+    public void setUgDomain(final java.lang.String ugDomain) {
         this.ugDomain = ugDomain;
     }
 
@@ -122,14 +141,28 @@ public class Membership implements Serializable, Mapable {
      *
      * @param  userDomain  New value of property userDomain.
      */
-    public void setUserDomain(java.lang.String userDomain) {
+    public void setUserDomain(final java.lang.String userDomain) {
         this.userDomain = userDomain;
     }
 
-    public Object constructKey(Mapable m) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   m  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    @Override
+    public Object constructKey(final Mapable m) {
         return getKey();
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    @Override
     public Object getKey() {
         return login + "@" + userDomain + "€" + ug + "@" + ugDomain;   // NOI18N
     }

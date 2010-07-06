@@ -63,7 +63,7 @@ public class PersistenceHelper {
      *
      * @param  dbServer  DOCUMENT ME!
      */
-    public PersistenceHelper(DBServer dbServer) {
+    public PersistenceHelper(final DBServer dbServer) {
         this.dbServer = dbServer;
     }
 
@@ -76,7 +76,7 @@ public class PersistenceHelper {
      *
      * @return  DOCUMENT ME!
      */
-    boolean toBeQuoted(java.lang.Object value) {
+    boolean toBeQuoted(final java.lang.Object value) {
         if (value == null) {
             return false;
         } else {
@@ -97,10 +97,10 @@ public class PersistenceHelper {
      *
      * @throws  java.util.MissingResourceException  DOCUMENT ME!
      */
-    boolean toBeQuoted(MemberAttributeInfo mai) throws java.util.MissingResourceException {
-        int type = mai.getTypeId();
+    boolean toBeQuoted(final MemberAttributeInfo mai) throws java.util.MissingResourceException {
+        final int type = mai.getTypeId();
 
-        int[] quotedTypes = dbServer.getProperties().getQuotedTypes();
+        final int[] quotedTypes = dbServer.getProperties().getQuotedTypes();
 
         for (int i = 0; i < quotedTypes.length; i++) {
             if (quotedTypes[i] == type) {
@@ -121,7 +121,8 @@ public class PersistenceHelper {
      *
      * @throws  java.util.MissingResourceException  DOCUMENT ME!
      */
-    boolean toBeQuoted(MemberAttributeInfo mai, java.lang.Object value) throws java.util.MissingResourceException {
+    boolean toBeQuoted(final MemberAttributeInfo mai, final java.lang.Object value)
+            throws java.util.MissingResourceException {
         boolean q = false;
 
         q &= toBeQuoted(mai);
@@ -141,14 +142,14 @@ public class PersistenceHelper {
      *
      * @throws  SQLException  DOCUMENT ME!
      */
-    int getNextID(String tableName, String key) throws SQLException {
-        Connection con = dbServer.getActiveDBConnection().getConnection();
+    int getNextID(final String tableName, final String key) throws SQLException {
+        final Connection con = dbServer.getActiveDBConnection().getConnection();
         // String query = "SELECT MAX(" + key + ") FROM " + tableName;
-        String query = "SELECT NEXTVAL('" + tableName.toUpperCase() + "_SEQ')";   // NOI18N
+        final String query = "SELECT NEXTVAL('" + tableName.toUpperCase() + "_SEQ')";//NOI18N
 
         // logger.debug("next value key "+query);
 
-        ResultSet rs = con.createStatement().executeQuery(query);
+        final ResultSet rs = con.createStatement().executeQuery(query);
 
         if (rs.next()) {
             return (rs.getInt(1));
@@ -174,7 +175,7 @@ public class PersistenceHelper {
 // }
 //
 
-    String getDefaultValue(MemberAttributeInfo mai, java.lang.Object value) {
+    String getDefaultValue(final MemberAttributeInfo mai, final java.lang.Object value) {
         String defaultVal = mai.getDefaultValue();
 
         if (defaultVal == null) {
@@ -203,18 +204,18 @@ public class PersistenceHelper {
      * @param  metaClass   DOCUMENT ME!
      * @param  primaryKey  DOCUMENT ME!
      */
-    void setPrimaryKey(MetaObject mo, MetaClass metaClass, int primaryKey) {
+    void setPrimaryKey(final MetaObject mo, final MetaClass metaClass, final int primaryKey) {
         // primary key feld der Klasse dieses Objekts
-        String priK = metaClass.getPrimaryKey();
+        final String priK = metaClass.getPrimaryKey();
 
         // theoretisch k\u00F6nnen mehrere Attribute mit dem Namen des primary keys existieren
-        Iterator iter = mo.getAttributeByName(priK, 1).iterator();
+        final Iterator iter = mo.getAttributeByName(priK, 1).iterator();
 
         // iteriere \u00FCber primary keys setze auf primaryKey falls value des pk attributs null
         // iterator hier nur f\u00FCr den Fall das mehrere attribute gefunden werden
         if (iter.hasNext()) {
             // attribut (primary key)
-            ObjectAttribute oa = (ObjectAttribute)iter.next();
+            final ObjectAttribute oa = (ObjectAttribute)iter.next();
             java.lang.Object val = oa.getValue();
 
             if (logger != null) {
@@ -225,8 +226,7 @@ public class PersistenceHelper {
 
             if (oa.isPrimaryKey()) // falls das attribut tats\u00E4chlich pk ist s.o.
             {
-                if (
-                    (val == null)
+                if ((val == null)
                             || ((val != null) && val.toString().trim().equals("-1")   // NOI18N
                                 && (val instanceof java.lang.Integer))) {
                     if (logger != null) {
@@ -241,8 +241,11 @@ public class PersistenceHelper {
                 }
             } else {
                 logger.info(
-                    "primary key name :: " + priK + " :: for class :: " + metaClass   // NOI18N
-                    + " :: is ambigious and only one attribute with this name is primary key");   // NOI18N
+                    "primary key name :: "//NOI18N
+                            + priK
+                            + " :: for class :: "//NOI18N
+                            + metaClass
+                            + " :: is ambigious and only one attribute with this name is primary key");//NOI18N
             }
         }
     }

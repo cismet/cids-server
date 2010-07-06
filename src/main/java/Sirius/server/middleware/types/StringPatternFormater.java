@@ -21,6 +21,11 @@ import java.util.Formatter;
  */
 public final class StringPatternFormater extends AbstractAttributeRepresentationFormater {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 2195620744711852650L;
+
     //~ Instance fields --------------------------------------------------------
 
     private final String[] fieldNames;
@@ -34,7 +39,7 @@ public final class StringPatternFormater extends AbstractAttributeRepresentation
      * @param  pattern     DOCUMENT ME!
      * @param  fieldNames  DOCUMENT ME!
      */
-    public StringPatternFormater(String pattern, String... fieldNames) {
+    public StringPatternFormater(final String pattern, final String... fieldNames) {
         this.fieldNames = fieldNames;
         this.pattern = pattern;
     }

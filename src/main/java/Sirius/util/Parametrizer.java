@@ -7,16 +7,16 @@
 ****************************************************/
 package Sirius.util;
 
-import java.sql.*;
-
-import java.util.*;
-
 import Sirius.server.dataretrieval.DataRetrievalException;
-import Sirius.server.middleware.types.*;
 import Sirius.server.localserver.attribute.*;
+import Sirius.server.middleware.types.*;
 import Sirius.server.middleware.types.MOTraverse.*;
 
 import org.apache.log4j.*;
+
+import java.sql.*;
+
+import java.util.*;
 
 /**
  * Parametrisiert ein String anhand der Daten aus der MetaObject-Klasse. Trennzeichen: "{" und " }"<BR>
@@ -74,7 +74,7 @@ public class Parametrizer {
      *
      * @throws  DataRetrievalException  DOCUMENT ME!
      */
-    public static String parametrize(String string, MetaObject metaObject) throws DataRetrievalException {
+    public static String parametrize(final String string, final MetaObject metaObject) throws DataRetrievalException {
         if (logger.isDebugEnabled()) {
             logger.debug("before parameterise: " + string);//NOI18N
             // MetaObjectWrapper mow = new MetaObjectWrapper(mo);
@@ -82,10 +82,10 @@ public class Parametrizer {
 
         int anfIndex = 0;
         int endIndex = -1;
-        int nameOrID;
+        final int nameOrID;
         String parametrizedStr = "";//NOI18N
-        String id = "id";//NOI18N
-        String name = "name";//NOI18N
+        final String id = "id";//NOI18N
+        final String name = "name";//NOI18N
 
         /* werden Daten abgelent die beschreiben wie das Attribut addressiert
          * werden soll: \u00FCber namen oder id, sowie der Wert. adressierung[0]: String "name" | "id" adressierung[1]:
@@ -125,10 +125,10 @@ public class Parametrizer {
             adressierung = splitParam(string.substring(anfIndex, endIndex + 1));
 
             if (adressierung[0].equalsIgnoreCase(id)) {
-                ObjectAttribute mas = findAttributeById(metaObject, adressierung[1]);
+                final ObjectAttribute mas = findAttributeById(metaObject, adressierung[1]);
                 parametrizedStr = parametrizeElement(parametrizedStr, mas);
             } else if (adressierung[0].equalsIgnoreCase(name)) {
-                ObjectAttribute[] mas = findAttributeByName(metaObject, adressierung[1]);
+                final ObjectAttribute[] mas = findAttributeByName(metaObject, adressierung[1]);
                 parametrizedStr = parametrizeElements(parametrizedStr, mas);
             } else {
                 String meldung = "Error while parameterising. Identifier: " + adressierung[0]//NOI18N
@@ -158,10 +158,9 @@ public class Parametrizer {
      *
      * @throws  DataRetrievalException  DOCUMENT ME!
      */
-    private static ObjectAttribute findAttributeById(
-            MetaObject metaObject,
-            String attrName) throws DataRetrievalException {
-        String[] qualifiedAttrName = splitAttributeName(attrName);
+    private static ObjectAttribute findAttributeById(final MetaObject metaObject, final String attrName)
+            throws DataRetrievalException {
+        final String[] qualifiedAttrName = splitAttributeName(attrName);
         String meldung;
         ObjectAttribute[] ret;
         int attrID;
@@ -230,7 +229,7 @@ public class Parametrizer {
      *
      * @throws  DataRetrievalException  DOCUMENT ME!
      */
-    private static int parseID(String attrID) throws DataRetrievalException {
+    private static int parseID(final String attrID) throws DataRetrievalException {
         try {
             return Integer.parseInt(attrID);
         } catch (NumberFormatException e) {
@@ -250,10 +249,9 @@ public class Parametrizer {
      *
      * @throws  DataRetrievalException  DOCUMENT ME!
      */
-    private static ObjectAttribute[] findAttributeByName(
-            MetaObject metaObject,
-            String attrName) throws DataRetrievalException {
-        String[] qualifiedAttrName = splitAttributeName(attrName);
+    private static ObjectAttribute[] findAttributeByName(final MetaObject metaObject, final String attrName)
+            throws DataRetrievalException {
+        final String[] qualifiedAttrName = splitAttributeName(attrName);
         String meldung;
         ObjectAttribute[] ret;
         TypeVisitor visitor;
@@ -280,7 +278,7 @@ public class Parametrizer {
                 // da MetaObject meist null (TIME_SCALE)
                 // besser: zus\u00E4tzliche Suche nach Class Name
                 visitor = new AttrForNameWithinComplexAttr(qualifiedAttrName[0]);
-                Object object = metaObject.accept(visitor, qualifiedAttrName[1]);
+                final Object object = metaObject.accept(visitor, qualifiedAttrName[1]);
                 if (metaObject != null) {
                     ret = new ObjectAttribute[] { (ObjectAttribute)object };
                 } else {
@@ -322,7 +320,7 @@ public class Parametrizer {
      */
     private static String parametrizeElement(
             String parametrized,
-            ObjectAttribute ma) {
+            final ObjectAttribute ma) {
         parametrized += ma.getValue();
         return parametrized;
     }
@@ -342,14 +340,14 @@ public class Parametrizer {
      */
     private static String parametrizeElements(
             String parametrized,
-            ObjectAttribute[] mas) throws DataRetrievalException {
+            final ObjectAttribute[] mas) throws DataRetrievalException {
         if (mas.length == 1) {
             return parametrizeElement(parametrized, mas[0]);
         }
 
         parametrized = parametrized.trim();
 
-        String lastTerm = parametrized.substring(
+        final String lastTerm = parametrized.substring(
                     parametrized.lastIndexOf(" "),//NOI18N
                     parametrized.length()).trim();
 
@@ -387,12 +385,12 @@ public class Parametrizer {
      *
      * @throws  DataRetrievalException  DOCUMENT ME!
      */
-    private static String[] splitParam(String paltzhalter) throws DataRetrievalException {
-        String delim = "=";//NOI18N
+    private static String[] splitParam(final String paltzhalter) throws DataRetrievalException {
+        final String delim = "=";//NOI18N
 
-        String str = paltzhalter.substring(1, paltzhalter.length() - 1).trim();
+        final String str = paltzhalter.substring(1, paltzhalter.length() - 1).trim();
 
-        String[] strAr = str.split(delim);
+        final String[] strAr = str.split(delim);
 
         if (strAr.length != 2) {
             String meldung = "Error while parameterising. The found parameter "//NOI18N
@@ -417,7 +415,7 @@ public class Parametrizer {
      *
      * @throws  DataRetrievalException  DOCUMENT ME!
      */
-    private static String[] splitAttributeName(String attrName) throws DataRetrievalException {
+    private static String[] splitAttributeName(final String attrName) throws DataRetrievalException {
         // falls der Name des Attributes als ".<name>" angegeben wurde,
         // wird eine Exception ausgel\u00F6sst.
         if (attrName.trim().endsWith(".")) {//NOI18N
@@ -426,7 +424,7 @@ public class Parametrizer {
             throw new DataRetrievalException(meldung, logger);
         }
 
-        String[] strAr = attrName.trim().split("\\.");//NOI18N
+        final String[] strAr = attrName.trim().split("\\.");//NOI18N
 
         if ((strAr.length == 2) && strAr[0].equals("")) {//NOI18N
             String meldung = "Error while parameterising the attribute "//NOI18N

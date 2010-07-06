@@ -7,21 +7,20 @@
 ****************************************************/
 package Sirius.server.search;
 
-import Sirius.server.localserver.tree.*;
 import Sirius.server.localserver.*;
-import Sirius.server.sql.*;
-
-import java.util.*;
-
+import Sirius.server.localserver._class.*;
+import Sirius.server.localserver.object.*;
+import Sirius.server.localserver.tree.*;
 
 //import  Sirius.search.WundaSearch.*;
 //import Sirius.server.localserver.tree.node.*;
 import Sirius.server.middleware.types.*;
 import Sirius.server.newuser.*;
-import Sirius.server.localserver._class.*;
-import Sirius.server.localserver.object.*;
 import Sirius.server.newuser.permission.PermissionHolder;
 import Sirius.server.search.searchparameter.*;
+import Sirius.server.sql.*;
+
+import java.util.*;
 
 /**
  * DOCUMENT ME!
@@ -50,7 +49,7 @@ public class Seeker {
      *
      * @param  dbServer  DOCUMENT ME!
      */
-    public Seeker(DBServer dbServer) {
+    public Seeker(final DBServer dbServer) {
         try {
             this.domain = dbServer.getSystemProperties().getServerName();
 
@@ -85,14 +84,15 @@ public class Seeker {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public SearchResult search(Query query, int[] classIds, UserGroup ug, int recursionLevel) throws Throwable {
+    public SearchResult search(final Query query, final int[] classIds, final UserGroup ug, int recursionLevel)
+            throws Throwable {
         // enth\u00E4lt die Anzahl der updated datasets
         if (query.isUpdate()) {
             return new SearchResult(new Integer(conPool.getConnection().submitUpdate(query)));
                 // xxx performantere Bedingung einfallen lassen
         }
         if (query.getResultType() == SearchResult.NODE) {
-            SearchResult result = new SearchResult(new Sirius.server.middleware.types.MetaObjectNode[0]);
+            final SearchResult result = new SearchResult(new Sirius.server.middleware.types.MetaObjectNode[0]);
 
             // Objekte werden bei addAll unter der Verwendung des Filters hinzugef\u00FCgt
 
@@ -120,15 +120,15 @@ public class Seeker {
             {
                 obs = (Vector)new DefaultResultHandler().handle(conPool.getConnection().executeQuery(query), query);
             }
-            java.util.ArrayList<Node> nodes = new java.util.ArrayList<Node>(obs.size());
+            final java.util.ArrayList<Node> nodes = new java.util.ArrayList<Node>(obs.size());
 
             // zuordnung der Objekte zu Knoten
 
             for (int i = 0; i < obs.size(); i++) {
-                java.lang.Object[] object = (java.lang.Object[])obs.get(i);
+                final java.lang.Object[] object = (java.lang.Object[])obs.get(i);
 
-                int object_id = new Integer(object[1].toString()).intValue();
-                int class_id = new Integer(object[0].toString()).intValue();
+                final int object_id = new Integer(object[1].toString()).intValue();
+                final int class_id = new Integer(object[0].toString()).intValue();
 
                 String objectName = null;
                 try {
@@ -140,12 +140,12 @@ public class Seeker {
                 }
 
                 // objectid@classId
-                String key = constructKey(object_id, class_id);
+                final String key = constructKey(object_id, class_id);
 
                 // logger.debug("objectkey found ::"+key);
 
                 if (hierarchy.classIsReferenced(class_id)) {
-                    Collection fatherStmnts = hierarchy.getFatherStatements(class_id, object_id);
+                    final Collection fatherStmnts = hierarchy.getFatherStatements(class_id, object_id);
 
                     // logger.debug("fatherstmnts" +fatherStmnts +" for classid" +class_id);
 
@@ -153,10 +153,10 @@ public class Seeker {
 
                     // logger.debug("fatherstmnts after array" +fatherStmnts+" for classid" +class_id);
 
-                    Iterator iter = fatherStmnts.iterator();
+                    final Iterator iter = fatherStmnts.iterator();
 
                     while (iter.hasNext()) {
-                        String recursiveCall = iter.next().toString();
+                        final String recursiveCall = iter.next().toString();
                         if (logger.isDebugEnabled()) {
                             logger.debug("recursive invocation of the search " + recursiveCall);//NOI18N
                         }
@@ -172,9 +172,9 @@ public class Seeker {
                     }
                 }
 
-                PermissionHolder ph = classCache.getClass(class_id).getPermissions();
+                final PermissionHolder ph = classCache.getClass(class_id).getPermissions();
                 // TODO Iconfactory setzen
-                Node objectNode = new MetaObjectNode(
+                final Node objectNode = new MetaObjectNode(
                         -1,
                         objectName,
                         null,
@@ -210,14 +210,14 @@ public class Seeker {
             if (nodes.size() > 0) {
                 n = nodes.toArray(new Node[nodes.size()]);
             }
-            Vector filtered = new Vector(n.length);
+            final Vector filtered = new Vector(n.length);
 
             // node Konvertierung und filtern
             for (int i = 0; i < n.length; i++) {
                 // only object are found
                 // logger.debug(n[i] + " is of type"+ n[i].getClass());
 
-                MetaObjectNode on = (MetaObjectNode)n[i];
+                final MetaObjectNode on = (MetaObjectNode)n[i];
 
                 if (on.getPermissions().hasPermission(ug.getKey(), PermissionHolder.READPERMISSION)) // readPermission
                 {
@@ -229,8 +229,7 @@ public class Seeker {
             }
 
             if (filtered.size() > 0) {
-                result.addAllAndFilter(
-                    (Sirius.server.middleware.types.MetaObjectNode[])filtered.toArray(
+                result.addAllAndFilter((Sirius.server.middleware.types.MetaObjectNode[])filtered.toArray(
                         new Sirius.server.middleware.types.MetaObjectNode[filtered.size()]));
             }
             return result;
@@ -245,20 +244,20 @@ public class Seeker {
                 // query wird hier ausgefuehrt, resulat ist vector<object[]>
                 objects = (Vector)new DefaultResultHandler().handle(conPool.getConnection().executeQuery(query), query);
             }
-            Sirius.server.middleware.types.MetaObject[] metaObject =
+            final Sirius.server.middleware.types.MetaObject[] metaObject =
                 new Sirius.server.middleware.types.MetaObject[objects.size()];
 
             for (int i = 0; i < objects.size(); i++) {
-                int classID;
-                int objectID;
+                final int classID;
+                final int objectID;
                 // Query hat als resultat classID und objectID  in form eines object[] geliefert
-                java.lang.Object[] object = (java.lang.Object[])objects.get(i);
+                final java.lang.Object[] object = (java.lang.Object[])objects.get(i);
 
                 try {
                     classID = Integer.parseInt(object[0].toString());
                     objectID = Integer.parseInt(object[1].toString());
                 } catch (Throwable e) {
-                    Exception ex = new Exception(
+                    final Exception ex = new Exception(
                             "The results of the Query do not possess the necessary structure. Results of the Query must be tuple (class_id, object_id).");//NOI18N
                     ex.setStackTrace(e.getStackTrace());
                     throw ex;
@@ -275,8 +274,9 @@ public class Seeker {
         } else // kein Knoten
         {
             // vorsicht
-            return new SearchResult(
-                    new StringResultHandler().handle(conPool.getConnection().submitQuery(query), query));
+            return new SearchResult(new StringResultHandler().handle(
+                        conPool.getConnection().submitQuery(query),
+                        query));
         }
     }
 
@@ -288,7 +288,7 @@ public class Seeker {
      *
      * @return  DOCUMENT ME!
      */
-    private String constructKey(int oid, int cid) {
+    private String constructKey(final int oid, final int cid) {
         return oid + "@" + cid;//NOI18N
     }
 } // end seeker

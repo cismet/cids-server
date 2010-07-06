@@ -16,16 +16,14 @@
 //
 package Sirius.util.NamingServerMonitor;
 
-import java.util.*;
-
-import java.lang.*;
+import java.io.*;
 
 import java.net.*;
 
-import java.io.*;
-
 import java.rmi.*;
 import java.rmi.registry.*;
+
+import java.util.*;
 
 /**
  * DOCUMENT ME!
@@ -53,7 +51,7 @@ public class PortScan {
      *
      * @param  pcname  DOCUMENT ME!
      */
-    public PortScan(String pcname) {
+    public PortScan(final String pcname) {
         hostName = pcname;
         scanStandardPort(pcname);
     }
@@ -67,7 +65,7 @@ public class PortScan {
      *
      * @param  name  DOCUMENT ME!
      */
-    public void scanStandardPort(String name) {
+    public void scanStandardPort(final String name) {
         try {
             socket = new Socket(name, 1099);
             System.out.println("Registry on default port");//NOI18N
@@ -88,7 +86,7 @@ public class PortScan {
      *
      * @param  name  DOCUMENT ME!
      */
-    public void scanAll(String name) {
+    public void scanAll(final String name) {
         // ports = new Vector();
 
         for (int j = 1105; j < 1115; j++) {
@@ -128,8 +126,8 @@ public class PortScan {
      *
      * @return  DOCUMENT ME!
      */
-    public boolean isRegistry(int number) {
-        java.rmi.registry.Registry rmiRegistry;
+    public boolean isRegistry(final int number) {
+        final java.rmi.registry.Registry rmiRegistry;
 
         try {
             rmiRegistry = LocateRegistry.getRegistry(hostName, number);
@@ -161,7 +159,7 @@ public class PortScan {
      *
      * @param  portnr  DOCUMENT ME!
      */
-    public void setPort(int portnr) {
+    public void setPort(final int portnr) {
         port = portnr;
     }
 //----------------------------------------------------------------------------
@@ -172,8 +170,8 @@ public class PortScan {
      *
      * @param  args  DOCUMENT ME!
      */
-    public static void main(String[] args) {
-        PortScan portscan = new PortScan("134.96.158.160");//NOI18N
+    public static void main(final String[] args) {
+        final PortScan portscan = new PortScan("134.96.158.160");//NOI18N
     }
 //----------------------------------------------------------------------------
 }

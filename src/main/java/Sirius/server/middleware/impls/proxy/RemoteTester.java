@@ -12,19 +12,18 @@
  */
 package Sirius.server.middleware.impls.proxy;
 
-import Sirius.server.middleware.interfaces.proxy.SearchService;
-import Sirius.server.search.*;
-
-import java.rmi.*;
-import java.rmi.registry.*;
-
+import Sirius.server.localserver.attribute.*;
 import Sirius.server.middleware.interfaces.proxy.*;
+import Sirius.server.middleware.interfaces.proxy.SearchService;
 import Sirius.server.middleware.types.*;
 import Sirius.server.newuser.*;
-import Sirius.server.localserver.attribute.*;
+import Sirius.server.search.*;
 import Sirius.server.search.Query;
 import Sirius.server.search.SearchResult;
 import Sirius.server.sql.SystemStatement;
+
+import java.rmi.*;
+import java.rmi.registry.*;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -54,30 +53,32 @@ public class RemoteTester {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public static void main(String[] args) throws Throwable {
-        String domain = "WUNDA_BLAU";   // NOI18N
+    public static void main(final String[] args) throws Throwable {
+        final String domain = "WUNDA_BLAU";//NOI18N
 
         // security alles unsinn :-)
         System.setSecurityManager(
             new RMISecurityManager() {
 
-                public void checkConnect(String host, int port) {
+                @Override
+                public void checkConnect(final String host, final int port) {
                 }
-                public void checkConnect(String host, int port, Object context) {
+                @Override
+                public void checkConnect(final String host, final int port, final Object context) {
                 }
             });
 
         // rmi registry lokaliseren
-        java.rmi.registry.Registry rmiRegistry = LocateRegistry.getRegistry(1099);
+        final java.rmi.registry.Registry rmiRegistry = LocateRegistry.getRegistry(1099);
 
         // lookup des callservers
-        Remote r = (Remote)Naming.lookup("rmi://localhost/callServer");   // NOI18N
+        final Remote r = (Remote)Naming.lookup("rmi://localhost/callServer");//NOI18N
 
         // ich weiss, dass die server von callserver implementiert werden
-        SearchService ss = (SearchService)r;
-        CatalogueService cat = (CatalogueService)r;
-        MetaService meta = (MetaService)r;
-        UserService us = (UserService)r;
+        final SearchService ss = (SearchService)r;
+        final CatalogueService cat = (CatalogueService)r;
+        final MetaService meta = (MetaService)r;
+        final UserService us = (UserService)r;
 
 //        System.out.println("server contacted :: "+r);
 
@@ -89,7 +90,7 @@ public class RemoteTester {
 
         // oder mit login
         // ug_domain,ug_name,u_domain,u_name,password
-        User u = us.getUser(domain, "Administratoren", domain, "admin", "x");   // NOI18N
+        final User u = us.getUser(domain, "Administratoren", domain, "admin", "x");//NOI18N
 
         System.out.println(u + "  user token retrieved");   // NOI18N
 
@@ -111,17 +112,20 @@ public class RemoteTester {
         // Beispiel:
         // Template f\u00FCr eine Object der ersten Klasse
         // MetaObject mo = meta.getInstance(u,cs[0]);
-        MetaObject mo = meta.getMetaObject(u, 5646, 6, "WUNDA_BLAU");   // NOI18N
-        System.out.println("metaobject::" + mo);   // NOI18N
+        final MetaObject mo = meta.getMetaObject(u, 5646, 6, "WUNDA_BLAU");//NOI18N
+        System.out.println("metaobject::" + mo);//NOI18N
 
 // alle attribute des Objects
         // ObjectAttribute[] attribs = mo.getAttribs();
 
-        java.util.Collection col1 = mo.getTraversedAttributesByType(Class.forName(""));   // NOI18N
-        java.util.Collection col2 = mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"));   // NOI18N
-        java.util.Collection col3 = mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"), 1);   // NOI18N
-        java.util.Collection col4 = mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"), 2);   // NOI18N
-        java.util.Collection col5 = mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"), 3);   // NOI18N
+        final java.util.Collection col1 = mo.getTraversedAttributesByType(Class.forName(""));//NOI18N
+        final java.util.Collection col2 = mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"));//NOI18N
+        final java.util.Collection col3 = mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"),//NOI18N
+                1);
+        final java.util.Collection col4 = mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"),//NOI18N
+                2);
+        final java.util.Collection col5 = mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"),//NOI18N
+                3);
 
         Iterator iter = col1.iterator();
         System.out.println("!!!!!!!!!!!! traversiert !!!!!!!!!!!!!!!!!!!");   // NOI18N

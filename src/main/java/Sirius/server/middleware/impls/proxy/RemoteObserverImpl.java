@@ -12,13 +12,13 @@
  */
 package Sirius.server.middleware.impls.proxy;
 
+import Sirius.server.*;
+import Sirius.server.middleware.interfaces.domainserver.*;
+import Sirius.server.naming.NameServer;
+import Sirius.server.observ.*;
+
 import java.rmi.*;
 import java.rmi.server.*;
-
-import Sirius.server.observ.*;
-import Sirius.server.*;
-import Sirius.server.naming.NameServer;
-import Sirius.server.middleware.interfaces.domainserver.*;
 /**
  * DOCUMENT ME!
  *
@@ -45,9 +45,8 @@ public class RemoteObserverImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public RemoteObserverImpl(
-            java.util.Hashtable activeLocalServers,
-            NameServer nameServer
+    public RemoteObserverImpl(final java.util.Hashtable activeLocalServers,
+            final NameServer nameServer
             /*,
              *Sirius.Server.Server[] localServers*/) throws RemoteException {
         this.nameServer = nameServer;
@@ -67,13 +66,13 @@ public class RemoteObserverImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public void update(RemoteObservable obs, java.lang.Object arg) throws RemoteException {
+    public void update(final RemoteObservable obs, final java.lang.Object arg) throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("Info <CS> Observer::update\n");   // NOI18N
         }
 
         try {
-            Server[] localServers;
+            final Server[] localServers;
             localServers = nameServer.getServers(ServerType.LOCALSERVER);
             if (logger.isDebugEnabled()) {
                 logger.debug("<CS> Available LocalServer:");   // NOI18N
@@ -82,7 +81,7 @@ public class RemoteObserverImpl {
             activeLocalServers.clear();
 
             for (int i = 0; i < localServers.length; i++) {
-                Remote localServer = (Remote)Naming.lookup(localServers[i].getRMIAddress());
+                final Remote localServer = (Remote)Naming.lookup(localServers[i].getRMIAddress());
                 activeLocalServers.put(localServers[i].getName(), localServer);
                 if (logger.isDebugEnabled()) {
                     logger.debug("\t" + localServers[i].getName());   // NOI18N

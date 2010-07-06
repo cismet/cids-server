@@ -18,15 +18,15 @@ package de.cismet.cids.tools;
 import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.middleware.types.MetaObject;
 
+import java.lang.reflect.Field;
+
+import java.util.Vector;
+
 import de.cismet.cids.annotations.CidsAttribute;
 
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.tools.tostring.*;
-
-import java.lang.reflect.Field;
-
-import java.util.Vector;
 
 /**
  * DOCUMENT ME!
@@ -51,7 +51,8 @@ public abstract class CustomToStringConverter extends ToStringConverter implemen
      */
     public abstract String createString();
 
-    public String convert(de.cismet.cids.tools.tostring.StringConvertable o) {
+    @Override
+    public String convert(final de.cismet.cids.tools.tostring.StringConvertable o) {
         if (o instanceof MetaObject) {
             cidsBean = ((MetaObject)o).getBean();
         }
@@ -62,21 +63,21 @@ public abstract class CustomToStringConverter extends ToStringConverter implemen
             log.debug("convert in CustomToStringConverter ");//NOI18N
         }
         String stringRepresentation = "";//NOI18N
-        Class customToString = this.getClass();
-        Field[] fields = customToString.getDeclaredFields();
-        for (Field f : fields) {
+        final Class customToString = this.getClass();
+        final Field[] fields = customToString.getDeclaredFields();
+        for (final Field f : fields) {
             if (f.isAnnotationPresent(CidsAttribute.class)) {
                 try {
-                    CidsAttribute ca = f.getAnnotation(CidsAttribute.class);
-                    String attributeName = ca.value();
+                    final CidsAttribute ca = f.getAnnotation(CidsAttribute.class);
+                    final String attributeName = ca.value();
                     Object value = null;
                     if (o instanceof MetaObject) {
-                        MetaObject mo = (MetaObject)o;
+                        final MetaObject mo = (MetaObject)o;
                         value = StaticCidsUtilities.getValueOfAttributeByString(attributeName, mo);
                     } else {
-                        Attribute attr = (Attribute)o;
+                        final Attribute attr = (Attribute)o;
                         value = StaticCidsUtilities.getValueOfAttributeByString(attributeName, attr);
-                        Vector v = new Vector();
+                        final Vector v = new Vector();
 //                        v.add("LALA");
 //                        v.add("S");
 //

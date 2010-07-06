@@ -113,7 +113,7 @@ public class ServerType implements Comparable, Sirius.server.property.Createable
      * @param  name  DOCUMENT ME!
      * @param  id    DOCUMENT ME!
      */
-    public ServerType(String name, int id) {
+    public ServerType(final String name, final int id) {
         this.name = name;
         this.id = id;
     }
@@ -127,11 +127,11 @@ public class ServerType implements Comparable, Sirius.server.property.Createable
      *
      * @return  DOCUMENT ME!
      */
-    public static String getBindString(int type) {
+    public static String getBindString(final int type) {
         // debug to make shure Class is loaded xxx
         new ServerType("", 1);  // NOI18N
 
-        Object o = typeStrings.get(new Integer(type));
+        final Object o = typeStrings.get(new Integer(type));
         // logger.debug("type :"+type +"  "+ o);
 
         return o.toString();
@@ -144,7 +144,8 @@ public class ServerType implements Comparable, Sirius.server.property.Createable
      *
      * @return  DOCUMENT ME!
      */
-    public int compareTo(Object o) {
+    @Override
+    public int compareTo(final Object o) {
         return ((ServerType)o).id - id;
     }
     // -------------------------------------------------------------------------
@@ -155,8 +156,8 @@ public class ServerType implements Comparable, Sirius.server.property.Createable
      * @return  DOCUMENT ME!
      */
     public static int[] getAllServerTypes() {
-        Enumeration enu = typeStrings.keys();
-        int[] result = new int[typeStrings.size()];
+        final Enumeration enu = typeStrings.keys();
+        final int[] result = new int[typeStrings.size()];
         int i = 0;
 
         while (enu.hasMoreElements()) {
@@ -177,8 +178,8 @@ public class ServerType implements Comparable, Sirius.server.property.Createable
      *
      * @return  DOCUMENT ME!
      */
-    public static boolean addType(int id, String name) {
-        Integer ID = new Integer(id);
+    public static boolean addType(final int id, final String name) {
+        final Integer ID = new Integer(id);
 
         if (!typeStrings.contains(ID)) {
             typeStrings.put(ID, name);
@@ -192,8 +193,9 @@ public class ServerType implements Comparable, Sirius.server.property.Createable
 
     /////////////////////////////////////////////////////////////////////////
 
-    public java.lang.Object createObject(String constructorArgs, String delimiter) {
-        String[] args = tokenizeString(constructorArgs, delimiter);
+    @Override
+    public java.lang.Object createObject(final String constructorArgs, final String delimiter) {
+        final String[] args = tokenizeString(constructorArgs, delimiter);
 
         if (args.length == 2) {
             return new ServerType(args[0], new Integer(args[1]).intValue());
@@ -211,9 +213,9 @@ public class ServerType implements Comparable, Sirius.server.property.Createable
      *
      * @return  DOCUMENT ME!
      */
-    private static String[] tokenizeString(String s, String delimiter) {
-        StringTokenizer tokenizer = new StringTokenizer(s, delimiter);
-        String[] stringArray = new String[tokenizer.countTokens()];
+    private static String[] tokenizeString(final String s, final String delimiter) {
+        final StringTokenizer tokenizer = new StringTokenizer(s, delimiter);
+        final String[] stringArray = new String[tokenizer.countTokens()];
         int i = 0;
 
         while (tokenizer.hasMoreTokens()) {

@@ -20,6 +20,11 @@ package Sirius.server.search.searchparameter;
  */
 public class DefaultSearchParameter implements SearchParameter, Comparable, java.io.Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -2523013386813979781L;
+
     //~ Instance fields --------------------------------------------------------
 
     /** Creates a new instance of DefaultSearchParameter. */
@@ -43,7 +48,7 @@ public class DefaultSearchParameter implements SearchParameter, Comparable, java
      * @param  value          DOCUMENT ME!
      * @param  isQueryResult  DOCUMENT ME!
      */
-    public DefaultSearchParameter(Object key, Object value, boolean isQueryResult) {
+    public DefaultSearchParameter(final Object key, final Object value, final boolean isQueryResult) {
         this.key = key;
         this.value = value;
         this.isQueryResult = isQueryResult;
@@ -58,7 +63,7 @@ public class DefaultSearchParameter implements SearchParameter, Comparable, java
      * @param  isQueryResult  DOCUMENT ME!
      * @param  pos            DOCUMENT ME!
      */
-    public DefaultSearchParameter(Object key, Object value, boolean isQueryResult, int pos) {
+    public DefaultSearchParameter(final Object key, final Object value, final boolean isQueryResult, final int pos) {
         this(key, value, isQueryResult);
         this.pos = pos;
     }
@@ -72,30 +77,39 @@ public class DefaultSearchParameter implements SearchParameter, Comparable, java
      * @param  pos            DOCUMENT ME!
      * @param  description    DOCUMENT ME!
      */
-    public DefaultSearchParameter(Object key, Object value, boolean isQueryResult, int pos, String description) {
+    public DefaultSearchParameter(final Object key,
+            final Object value,
+            final boolean isQueryResult,
+            final int pos,
+            final String description) {
         this(key, value, isQueryResult, pos);
         this.description = description;
     }
 
     //~ Methods ----------------------------------------------------------------
 
+    @Override
     public Object getKey() {
         return key;
     }
 
+    @Override
     public Object getValue() {
         return value;
     }
 
+    @Override
     public boolean isQueryResult() {
         return isQueryResult;
     }
 
-    public void setValue(Object parameter) {
+    @Override
+    public void setValue(final Object parameter) {
         this.value = parameter;
     }
     /////////////////////////////////////////////////////////////////
 
+    @Override
     public java.util.Collection values() throws Exception {
         if (value instanceof java.util.Collection) {
             return (java.util.Collection)value;
@@ -106,12 +120,14 @@ public class DefaultSearchParameter implements SearchParameter, Comparable, java
 
     /////////////////////////////////////////////////////////////////////
 
-    public boolean equals(Object o) {
+    @Override
+    public boolean equals(final Object o) {
         return key.equals(o);
     }
 
     //////////////////////////////////////////////////////////////////
 
+    @Override
     public int getQueryPosition() {
         return pos;
     }
@@ -122,10 +138,12 @@ public class DefaultSearchParameter implements SearchParameter, Comparable, java
      *
      * @return  DOCUMENT ME!
      */
-    public int compareTo(Object o) {
+    @Override
+    public int compareTo(final Object o) {
         return pos - ((DefaultSearchParameter)o).pos;
     }
 
+    @Override
     public String toString() {
         if (value != null) {
             return value.toString();
@@ -134,6 +152,7 @@ public class DefaultSearchParameter implements SearchParameter, Comparable, java
         }
     }
 
+    @Override
     public String getDescription() {
         return description;
     }

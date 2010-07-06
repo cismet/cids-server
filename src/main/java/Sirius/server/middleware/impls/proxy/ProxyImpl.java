@@ -7,30 +7,46 @@
 ****************************************************/
 package Sirius.server.middleware.impls.proxy;
 
-import java.rmi.*;
-import java.rmi.server.*;
+import Sirius.server.Server;
+import Sirius.server.ServerType;
+import Sirius.server.localserver.method.MethodMap;
+import Sirius.server.middleware.types.LightweightMetaObject;
+import Sirius.server.middleware.types.Link;
+import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.middleware.types.MetaObject;
+import Sirius.server.middleware.types.Node;
+import Sirius.server.naming.NameServer;
+import Sirius.server.newuser.User;
+import Sirius.server.newuser.UserException;
+import Sirius.server.newuser.UserGroup;
+import Sirius.server.newuser.UserServer;
+import Sirius.server.observ.RemoteObservable;
+import Sirius.server.observ.RemoteObserver;
+import Sirius.server.property.ServerProperties;
+import Sirius.server.search.Query;
+import Sirius.server.search.SearchOption;
+import Sirius.server.search.SearchResult;
+import Sirius.server.search.store.Info;
+import Sirius.server.search.store.QueryData;
 
-import Sirius.server.middleware.types.*;
-import Sirius.server.middleware.interfaces.proxy.*;
-import Sirius.server.localserver.method.*;
-//import Sirius.middleware.interfaces.domainserver.*;
-import Sirius.server.*;
-import Sirius.server.naming.*;
-import Sirius.server.newuser.*;
+import Sirius.util.image.Image;
 
-import java.net.*;
+import org.apache.log4j.Logger;
 
-import Sirius.server.search.*;
-import Sirius.server.observ.*;
-import Sirius.server.property.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
-import java.util.*;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
-import Sirius.server.dataretrieval.*;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Vector;
 
-import Sirius.util.image.*;
-
-import Sirius.server.search.store.*;
+import de.cismet.cids.server.CallServerService;
 
 /**
  * Benoetigte Keys fuer configFile: registryIps<br>
@@ -39,35 +55,28 @@ import Sirius.server.search.store.*;
  *
  * @version  $Revision$, $Date$
  */
-public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
-    MetaService,
-    RemoteObserver,
-    SystemService,
-    UserService,
-    DataService,
-    QueryStore,
-    SearchService,
-    TransactionService {
+public final class ProxyImpl extends UnicastRemoteObject implements CallServerService, RemoteObserver {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 5926241625731489045L;
+
+    private static final transient Logger LOG = Logger.getLogger(ProxyImpl.class);
 
     //~ Instance fields --------------------------------------------------------
 
-    protected ServerProperties properties;
+    private final transient ServerProperties properties;
     // contains DomainServers
-    protected java.util.Hashtable activeLocalServers;
-    protected NameServer nameServer;
-    protected UserServer userServer;
-    String[] registryIps;
-
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
-    private CatalogueServiceImpl catService;
-    private MetaServiceImpl metaService;
-    private RemoteObserverImpl remoteObserver;
-    private SystemServiceImpl systemService;
-    private UserServiceImpl userService;
-    private DataServiceImpl dataService;
-    private QueryStoreImpl queryStore;
-    private SearchServiceImpl searchService;
-    private TransactionServiceImpl transactionService;
+    private final transient Hashtable activeLocalServers;
+    private final transient NameServer nameServer;
+    private final transient CatalogueServiceImpl catService;
+    private final transient MetaServiceImpl metaService;
+    private final transient RemoteObserverImpl remoteObserver;
+    private final transient SystemServiceImpl systemService;
+    private final transient UserServiceImpl userService;
+    private final transient QueryStoreImpl queryStore;
+    private final transient SearchServiceImpl searchService;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -78,45 +87,52 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public ProxyImpl(ServerProperties properties) throws RemoteException {
+    public ProxyImpl(final ServerProperties properties) throws RemoteException {
         super(properties.getServerPort());
 
         try {
             this.properties = properties;
-            this.registryIps = properties.getRegistryIps();
 
-            nameServer = (NameServer)Naming.lookup("rmi://" + registryIps[0] + "/nameServer");   // NOI18N
-
-            userServer = (UserServer)nameServer; // Naming.lookup("rmi://"+registryIps[0]+"/userServer");
-
+            final String[] registryIps = properties.getRegistryIps();
+            nameServer = (NameServer)Naming.lookup("rmi://" + registryIps[0] + "/nameServer"); // NOI18N
+            final UserServer userServer = (UserServer)nameServer;                              // Naming.lookup("rmi://"+registryIps[0]+"/userServer");
             activeLocalServers = new java.util.Hashtable(5);
 
-            Server[] localServers = nameServer.getServers(ServerType.LOCALSERVER);
-            if (logger.isDebugEnabled()) {
-                logger.debug("<CS> " + localServers.length + " LocalServer received from SiriusRegistry");   // NOI18N
+            final Server[] localServers = nameServer.getServers(ServerType.LOCALSERVER);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("<CS> " + localServers.length + " LocalServer received from SiriusRegistry"); // NOI18N
             }
 
             for (int i = 0; i < localServers.length; i++) {
-                String address = localServers[i].getAddress();
-                String name = localServers[i].getName();
-                String lookupString = localServers[i].getRMIAddress();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("<CS> lookup: " + lookupString);   // NOI18N
+                final String name = localServers[i].getName();
+                final String lookupString = localServers[i].getRMIAddress();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("<CS> lookup: " + lookupString); // NOI18N
                 }
 
-                Remote localServer = (Remote)Naming.lookup(lookupString);
+                final Remote localServer = Naming.lookup(lookupString);
                 activeLocalServers.put(name, localServer);
             }
 
             register();
             registerAsObserver(registryIps[0]);
 
-            initImplementations();
-        } catch (RemoteException e) {
-            logger.error(e);
+            catService = new CatalogueServiceImpl(activeLocalServers);
+            metaService = new MetaServiceImpl(activeLocalServers, nameServer);
+            remoteObserver = new RemoteObserverImpl(activeLocalServers, nameServer);
+            systemService = new SystemServiceImpl(activeLocalServers, nameServer);
+            userService = new UserServiceImpl(activeLocalServers, userServer);
+            queryStore = new QueryStoreImpl(activeLocalServers, nameServer);
+            searchService = new SearchServiceImpl(activeLocalServers, nameServer);
+        } catch (final RemoteException e) {
+            final String message = "error during proxy startup"; // NOI18N
+            LOG.error(message, e);
             throw e;
-        } catch (Exception e) {
-            logger.error(e);
+        } catch (final Exception e) {
+            // running in an exception at construction time leads to invalid server!
+            final String message = "error during proxy startup"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
         }
     }
 
@@ -125,33 +141,14 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
     /**
      * DOCUMENT ME!
      *
-     * @throws  RemoteException  DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
-    private void initImplementations() throws RemoteException {
-        catService = new CatalogueServiceImpl(activeLocalServers);
-
-        // Problem: localServers, Fkt  validateLocalServers(ls)
-        metaService = new MetaServiceImpl(activeLocalServers, nameServer /*, localServers*/);
-
-        // Problem: localServers
-        remoteObserver = new RemoteObserverImpl(activeLocalServers, nameServer /*, localServers*/);
-
-        systemService = new SystemServiceImpl(activeLocalServers, nameServer);
-
-        userService = new UserServiceImpl(activeLocalServers, userServer);
-
-        dataService = new DataServiceImpl(activeLocalServers);
-
-        queryStore = new QueryStoreImpl(activeLocalServers, nameServer);
-
-        searchService = new SearchServiceImpl(activeLocalServers, nameServer);
-
-        transactionService = new TransactionServiceImpl(this);
+    NameServer getNameServer() {
+        return nameServer;
     }
-    // -------------------- remote methods-------------------------------------
 
     /**
-     * CatalogueService Fkt-en.
+     * DOCUMENT ME!
      *
      * @param   node  DOCUMENT ME!
      * @param   usr   DOCUMENT ME!
@@ -160,52 +157,108 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-// public Node[] getChildren(User usr, int nodeID, String localServerName)
-// throws RemoteException
-// {
-// logger.debug("getChildren f\u00FCr"+ nodeID);
-// return catService.getChildren(usr, nodeID, localServerName);
-// }
-    public Node[] getChildren(Node node, User usr) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("getChildren for" + node);   // NOI18N
+    @Override
+    public Node[] getChildren(final Node node, final User usr) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("getChildren for: " + node); // NOI18N
         }
         return catService.getChildren(node, usr);
     }
 
-//    public Node[] getParents(User usr, int nodeID, String localServerName)
-//    throws RemoteException
-//    {
-//        return catService.getParents(usr, nodeID, localServerName);
-//    }
-    public Node[] getRoots(User user, String localServerName) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user             DOCUMENT ME!
+     * @param   localServerName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public Node[] getRoots(final User user, final String localServerName) throws RemoteException {
         return catService.getRoots(user, localServerName);
     }
 
-    public Node[] getRoots(User user) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public Node[] getRoots(final User user) throws RemoteException {
         return catService.getRoots(user);
     }
 
-    public Node addNode(Node node, Link parent, User user) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   node    DOCUMENT ME!
+     * @param   parent  DOCUMENT ME!
+     * @param   user    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public Node addNode(final Node node, final Link parent, final User user) throws RemoteException {
         return catService.addNode(node, parent, user);
     }
 
-    public boolean deleteNode(Node node, User user) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   node  DOCUMENT ME!
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public boolean deleteNode(final Node node, final User user) throws RemoteException {
         return catService.deleteNode(node, user);
     }
 
-    public boolean addLink(Node from, Node to, User user) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   from  DOCUMENT ME!
+     * @param   to    DOCUMENT ME!
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public boolean addLink(final Node from, final Node to, final User user) throws RemoteException {
         return catService.addLink(from, to, user);
     }
 
-    public boolean deleteLink(Node from, Node to, User user) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   from  DOCUMENT ME!
+     * @param   to    DOCUMENT ME!
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public boolean deleteLink(final Node from, final Node to, final User user) throws RemoteException {
         return catService.deleteLink(from, to, user);
     }
 
-//    public boolean copySubTree(Node root,User user) throws RemoteException
-//    {return catService.copySubTree(root,user);}
     /**
-     * /CatalogueService Fkt-en.
+     * DOCUMENT ME!
      *
      * @param   user             DOCUMENT ME!
      * @param   localServerName  DOCUMENT ME!
@@ -214,98 +267,293 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    /**
-     * /MetaService Fkt-en.
-     *
-     * @param   user             DOCUMENT ME!
-     * @param   localServerName  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    public Node[] getClassTreeNodes(User user, String localServerName) throws RemoteException {
+    @Override
+    public Node[] getClassTreeNodes(final User user, final String localServerName) throws RemoteException {
         return metaService.getClassTreeNodes(user, localServerName);
     }
 
-    public Node[] getClassTreeNodes(User user) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public Node[] getClassTreeNodes(final User user) throws RemoteException {
         return metaService.getClassTreeNodes(user);
     }
 
-    public MetaClass getClass(User user, int classID, String localServerName) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user             DOCUMENT ME!
+     * @param   classID          DOCUMENT ME!
+     * @param   localServerName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public MetaClass getClass(final User user, final int classID, final String localServerName) throws RemoteException {
         return metaService.getClass(user, classID, localServerName);
     }
 
-    public MetaClass getClassByTableName(User user, String tableName, String localServerName) throws RemoteException {
-        String lowerTableName = null;
-        if (tableName != null) {
-            lowerTableName = tableName.trim().toLowerCase();
-        }
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user             DOCUMENT ME!
+     * @param   tableName        DOCUMENT ME!
+     * @param   localServerName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public MetaClass getClassByTableName(final User user, final String tableName, final String localServerName)
+            throws RemoteException {
         return metaService.getClassByTableName(user, tableName, localServerName);
     }
 
-    public MetaClass[] getClasses(User user, String localServerName) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user             DOCUMENT ME!
+     * @param   localServerName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public MetaClass[] getClasses(final User user, final String localServerName) throws RemoteException {
         return metaService.getClasses(user, localServerName);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
     public String[] getDomains() throws RemoteException {
         return metaService.getDomains();
     }
 
-    public Node getMetaObjectNode(User usr, int nodeID, String domain) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr     DOCUMENT ME!
+     * @param   nodeID  DOCUMENT ME!
+     * @param   domain  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public Node getMetaObjectNode(final User usr, final int nodeID, final String domain) throws RemoteException {
         return metaService.getMetaObjectNode(usr, nodeID, domain);
     }
 
-    public MetaObject getMetaObject(User usr, int objectID, int classID, String domain) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr       DOCUMENT ME!
+     * @param   objectID  DOCUMENT ME!
+     * @param   classID   DOCUMENT ME!
+     * @param   domain    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public MetaObject getMetaObject(final User usr, final int objectID, final int classID, final String domain)
+            throws RemoteException {
         return metaService.getMetaObject(usr, objectID, classID, domain);
     }
 
-    public Node[] getMetaObjectNode(User usr, String query) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr    DOCUMENT ME!
+     * @param   query  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public Node[] getMetaObjectNode(final User usr, final String query) throws RemoteException {
         return metaService.getMetaObjectNode(usr, query);
     }
 
-    public Node[] getMetaObjectNode(User usr, Query query) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr    DOCUMENT ME!
+     * @param   query  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public Node[] getMetaObjectNode(final User usr, final Query query) throws RemoteException {
         return metaService.getMetaObjectNode(usr, query);
     }
 
-    public MetaObject[] getMetaObject(User usr, String query) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr    DOCUMENT ME!
+     * @param   query  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
         return metaService.getMetaObject(usr, query);
     }
 
-    public MetaObject[] getMetaObject(User usr, Query query) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr    DOCUMENT ME!
+     * @param   query  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public MetaObject[] getMetaObject(final User usr, final Query query) throws RemoteException {
         return metaService.getMetaObject(usr, query);
     }
 
-    public int deleteMetaObject(User user, MetaObject metaObject, String domain) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user        DOCUMENT ME!
+     * @param   metaObject  DOCUMENT ME!
+     * @param   domain      DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public int deleteMetaObject(final User user, final MetaObject metaObject, final String domain)
+            throws RemoteException {
         return metaService.deleteMetaObject(user, metaObject, domain);
     }
 
-    public int insertMetaObject(User user, Query query, String domain) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user    DOCUMENT ME!
+     * @param   query   DOCUMENT ME!
+     * @param   domain  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public int insertMetaObject(final User user, final Query query, final String domain) throws RemoteException {
         return metaService.insertMetaObject(user, query, domain);
     }
 
-    public MetaObject insertMetaObject(User user, MetaObject metaObject, String domain) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user        DOCUMENT ME!
+     * @param   metaObject  DOCUMENT ME!
+     * @param   domain      DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public MetaObject insertMetaObject(final User user, final MetaObject metaObject, final String domain)
+            throws RemoteException {
         return metaService.insertMetaObject(user, metaObject, domain);
     }
 
-    public int updateMetaObject(User user, MetaObject metaObject, String domain) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user        DOCUMENT ME!
+     * @param   metaObject  DOCUMENT ME!
+     * @param   domain      DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public int updateMetaObject(final User user, final MetaObject metaObject, final String domain)
+            throws RemoteException {
         return metaService.updateMetaObject(user, metaObject, domain);
     }
 
-    public int update(User user, String query, String domain) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user    DOCUMENT ME!
+     * @param   query   DOCUMENT ME!
+     * @param   domain  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public int update(final User user, final String query, final String domain) throws RemoteException {
         return metaService.update(user, query, domain);
     }
 
-    public MethodMap getMethods(User user) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public MethodMap getMethods(final User user) throws RemoteException {
         return metaService.getMethods(user);
     }
 
-    public MethodMap getMethods(User user, String lsName) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user    DOCUMENT ME!
+     * @param   lsName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public MethodMap getMethods(final User user, final String lsName) throws RemoteException {
         return metaService.getMethods(user, lsName);
     }
 
     /**
-     * /MetaService Fkt-en.
+     * DOCUMENT ME!
      *
      * @param   lsName  DOCUMENT ME!
      *
@@ -313,25 +561,25 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    /**
-     * SystemService Fkt-en.
-     *
-     * @param   lsName  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    public Image[] getDefaultIcons(String lsName) throws RemoteException {
+    @Override
+    public Image[] getDefaultIcons(final String lsName) throws RemoteException {
         return systemService.getDefaultIcons(lsName);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
     public Image[] getDefaultIcons() throws RemoteException {
         return systemService.getDefaultIcons();
     }
 
     /**
-     * /SystemService Fkt-en.
+     * DOCUMENT ME!
      *
      * @param   userGroupLsName  DOCUMENT ME!
      * @param   userGroupName    DOCUMENT ME!
@@ -344,102 +592,66 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
      * @throws  RemoteException  DOCUMENT ME!
      * @throws  UserException    DOCUMENT ME!
      */
-    /**
-     * UserService Fkt-en.
-     *
-     * @param   userGroupLsName  DOCUMENT ME!
-     * @param   userGroupName    DOCUMENT ME!
-     * @param   userLsName       DOCUMENT ME!
-     * @param   userName         DOCUMENT ME!
-     * @param   password         DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     * @throws  UserException    DOCUMENT ME!
-     */
-// public User getUser(
-// String userLsName,
-// String userName,
-// String userGroupLsName,
-// String userGroupName,
-// String password) throws RemoteException, UserException
-// {
-    // ACHTUNG war falsch sortiert. wie konnte das jemals gehen
+    @Override
     public User getUser(
-            String userGroupLsName,
-            String userGroupName,
-            String userLsName,
-            String userName,
-            String password) throws RemoteException, UserException {
+            final String userGroupLsName,
+            final String userGroupName,
+            final String userLsName,
+            final String userName,
+            final String password) throws RemoteException, UserException {
         return userService.getUser(
                 userLsName,
-                userName,
-                userGroupLsName,
                 userGroupName,
+                userGroupLsName,
+                userName,
                 password);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
     public Vector getUserGroupNames() throws RemoteException {
         return userService.getUserGroupNames();
     }
 
-    public Vector getUserGroupNames(String userName, String lsHome) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   userName  DOCUMENT ME!
+     * @param   lsHome    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public Vector getUserGroupNames(final String userName, final String lsHome) throws RemoteException {
         return userService.getUserGroupNames(userName, lsHome);
     }
 
-    public boolean changePassword(User user, String oldPassword, String newPassword) throws RemoteException,
-        UserException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user         DOCUMENT ME!
+     * @param   oldPassword  DOCUMENT ME!
+     * @param   newPassword  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     * @throws  UserException    DOCUMENT ME!
+     */
+    @Override
+    public boolean changePassword(final User user, final String oldPassword, final String newPassword)
+            throws RemoteException, UserException {
         return userService.changePassword(user, oldPassword, newPassword);
     }
 
-    /**
-     * /UserService Fkt-en.
-     *
-     * @param   user        DOCUMENT ME!
-     * @param   metaObject  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException         DOCUMENT ME!
-     * @throws  DataRetrievalException  DOCUMENT ME!
-     */
-    /**
-     * DataService Fkt-en.
-     *
-     * @param   user        DOCUMENT ME!
-     * @param   metaObject  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException         DOCUMENT ME!
-     * @throws  DataRetrievalException  DOCUMENT ME!
-     */
-    public DataObject getDataObject(User user, MetaObject metaObject) throws RemoteException, DataRetrievalException {
-        return dataService.getDataObject(user, metaObject);
-    }
-
-    public DataObject[] getDataObject(User user, Query query) throws RemoteException, DataRetrievalException {
-        return dataService.getDataObject(user, query);
-    }
-
-    /**
-     * /DataService Fkt-en.
-     *
-     * @param   obs  DOCUMENT ME!
-     * @param   arg  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    // ----------------------------------------------------------------------------------
-    /**
-     * RemoteObserver Fkt-en.
-     *
-     * @param   obs  DOCUMENT ME!
-     * @param   arg  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
     /**
      * Diese Funktion wird immer dann aufgerufen, wenn sich ein neuer LocalServer beim CentralServer registriert. Der
      * CentralServer informiert die CallServer (Observer), dass ein neuer LocalServer hinzugekommen ist. Der/Die
@@ -450,21 +662,24 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public void update(RemoteObservable obs, java.lang.Object arg) throws RemoteException {
+    @Override
+    public void update(final RemoteObservable obs, final java.lang.Object arg) throws RemoteException {
         remoteObserver.update(obs, arg);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @throws  Exception  DOCUMENT ME!
+     * @throws  RemoteException       DOCUMENT ME!
+     * @throws  UnknownHostException  DOCUMENT ME!
      */
-    protected void register() throws Exception {
+    // TODO: at least the unknownhostexception should most certainly be handled by the method
+    protected void register() throws RemoteException, UnknownHostException {
         nameServer.registerServer(
             ServerType.CALLSERVER,
             properties.getServerName(),
             InetAddress.getLocalHost().getHostAddress(),
-            "1099"); // localSERvername in callSERname   // NOI18N
+            "1099"); // NOI18N // localSERvername in callSERname
     }
 
     /**
@@ -472,45 +687,54 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
      *
      * @param  siriusRegistryIP  DOCUMENT ME!
      */
-    void registerAsObserver(String siriusRegistryIP) {
-        if (logger.isDebugEnabled()) {
-            logger.debug(" Info <CS> registerAsObserver:: " + siriusRegistryIP);   // NOI18N
+    void registerAsObserver(final String siriusRegistryIP) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(" Info <CS> registerAsObserver:: " + siriusRegistryIP); // NOI18N
         }
         try {
-            RemoteObservable server = (RemoteObservable)Naming.lookup("rmi://" + siriusRegistryIP + "/nameServer");   // NOI18N
+            final RemoteObservable server = (RemoteObservable)Naming.lookup(
+                    "rmi://"//NOI18N
+                            + siriusRegistryIP
+                            + "/nameServer");                                 // NOI18N
             server.addObserver(this);
-            if (logger.isDebugEnabled()) {
-                logger.debug("Info <CS> added as observer");   // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Info <CS> added as observer: " + this);            // NOI18N
             }
-        } catch (NotBoundException nbe) {
-            System.err.println("<CS> No SiriusRegistry bound on RMIRegistry at " + siriusRegistryIP);   // NOI18N
-            logger.error("<CS> No SiriusRegistry bound on RMIRegistry at " + siriusRegistryIP, nbe);   // NOI18N
-        } catch (RemoteException re) {
-            System.err.println("<CS> RMIRegistry on " + siriusRegistryIP + " could not be contacted");   // NOI18N
-            logger.error("<CS> RMIRegistry on " + siriusRegistryIP + " could not be contacted", re);   // NOI18N
-        } catch (Exception e) {
-            logger.error(e);
+        } catch (final NotBoundException nbe) {
+            // TODO: why is there a serr???
+            System.err.println("<CS> No SiriusRegistry bound on RMIRegistry at " + siriusRegistryIP); // NOI18N
+            LOG.error("<CS> No SiriusRegistry bound on RMIRegistry at " + siriusRegistryIP, nbe);     // NOI18N
+        } catch (final RemoteException re) {
+            // TODO: why is there a serr???
+            System.err.println("<CS> RMIRegistry on " + siriusRegistryIP + " could not be contacted"); // NOI18N
+            LOG.error("<CS> RMIRegistry on " + siriusRegistryIP + " could not be contacted", re);      // NOI18N
+        } catch (final Exception e) {
+            LOG.error(e, e);
         }
     }
+
     /**
-     * ---------------------------------------------------------------------------------------------------
+     * DOCUMENT ME!
      *
      * @param  siriusRegistryIP  DOCUMENT ME!
      */
-    void unregisterAsObserver(String siriusRegistryIP) {
+    void unregisterAsObserver(final String siriusRegistryIP) {
         try {
-            RemoteObservable server = (RemoteObservable)Naming.lookup("rmi://" + siriusRegistryIP + "/nameServer");   // NOI18N
+            final RemoteObservable server = (RemoteObservable)Naming.lookup(
+                    "rmi://"//NOI18N
+                            + siriusRegistryIP
+                            + "/nameServer");                          // NOI18N
             server.deleteObserver(this);
-            if (logger.isDebugEnabled()) {
-                logger.debug("Info <CS> removed as observer");   // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Info <CS> removed as observer: " + this);   // NOI18N
             }
         } catch (Exception e) {
-            logger.error(e);
+            LOG.error("could not unregister as observer: " + this, e); // NOI18N
         }
     }
 
     /**
-     * /RemoteObserver Fkt-en.
+     * DOCUMENT ME!
      *
      * @param   id      DOCUMENT ME!
      * @param   domain  DOCUMENT ME!
@@ -519,38 +743,71 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    /**
-     * /QueryStore Fkt-en.
-     *
-     * @param   id      DOCUMENT ME!
-     * @param   domain  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    public boolean delete(int id, String domain) throws RemoteException {
+    @Override
+    public boolean delete(final int id, final String domain) throws RemoteException {
         return queryStore.delete(id, domain);
     }
 
-    public QueryData getQuery(int id, String domain) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   id      DOCUMENT ME!
+     * @param   domain  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public QueryData getQuery(final int id, final String domain) throws RemoteException {
         return queryStore.getQuery(id, domain);
     }
 
-    public Info[] getQueryInfos(UserGroup userGroup) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   userGroup  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public Info[] getQueryInfos(final UserGroup userGroup) throws RemoteException {
         return queryStore.getQueryInfos(userGroup);
     }
 
-    public Info[] getQueryInfos(User user) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public Info[] getQueryInfos(final User user) throws RemoteException {
         return queryStore.getQueryInfos(user);
     }
 
-    public boolean storeQuery(User user, QueryData data) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     * @param   data  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public boolean storeQuery(final User user, final QueryData data) throws RemoteException {
         return queryStore.storeQuery(user, data);
     }
 
     /**
-     * /QueryStore Fkt-en.
+     * DOCUMENT ME!
      *
      * @param   user  DOCUMENT ME!
      *
@@ -558,43 +815,71 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    /**
-     * /SearchService Fkt-en.
-     *
-     * @param   user  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    //
-    // public Collection getAllSearchOptions(User user) throws RemoteException
-    // {return searchService.getAllSearchOptions(user);}
-    //
-    // public Collection getAllSearchOptions(User user,String domain) throws RemoteException
-    // {return searchService.getAllSearchOptions(user,domain);}
-    public HashMap getSearchOptions(User user) throws RemoteException {
+    @Override
+    public HashMap getSearchOptions(final User user) throws RemoteException {
         return searchService.getSearchOptions(user);
     }
 
-    public HashMap getSearchOptions(User user, String domain) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user    DOCUMENT ME!
+     * @param   domain  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public HashMap getSearchOptions(final User user, final String domain) throws RemoteException {
         return searchService.getSearchOptions(user, domain);
     }
 
-    public SearchResult search(User user, String[] classIds, SearchOption[] searchOptions) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user           DOCUMENT ME!
+     * @param   classIds       DOCUMENT ME!
+     * @param   searchOptions  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public SearchResult search(final User user, final String[] classIds, final SearchOption[] searchOptions)
+            throws RemoteException {
         return searchService.search(user, classIds, searchOptions);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user         DOCUMENT ME!
+     * @param   name         DOCUMENT ME!
+     * @param   description  DOCUMENT ME!
+     * @param   statement    DOCUMENT ME!
+     * @param   resultType   DOCUMENT ME!
+     * @param   isUpdate     DOCUMENT ME!
+     * @param   isBatch      DOCUMENT ME!
+     * @param   isRoot       DOCUMENT ME!
+     * @param   isUnion      DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
     public int addQuery(
-            User user,
-            String name,
-            String description,
-            String statement,
-            int resultType,
-            char isUpdate,
-            char isBatch,
-            char isRoot,
-            char isUnion) throws RemoteException {
+            final User user,
+            final String name,
+            final String description,
+            final String statement,
+            final int resultType,
+            final char isUpdate,
+            final char isBatch,
+            final char isRoot,
+            final char isUnion) throws RemoteException {
         return searchService.addQuery(
                 user,
                 name,
@@ -607,18 +892,48 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
                 isUnion);
     }
 
-    public int addQuery(User user, String name, String description, String statement) throws RemoteException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user         DOCUMENT ME!
+     * @param   name         DOCUMENT ME!
+     * @param   description  DOCUMENT ME!
+     * @param   statement    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public int addQuery(final User user, final String name, final String description, final String statement)
+            throws RemoteException {
         return searchService.addQuery(user, name, description, statement);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user           DOCUMENT ME!
+     * @param   queryId        DOCUMENT ME!
+     * @param   typeId         DOCUMENT ME!
+     * @param   paramkey       DOCUMENT ME!
+     * @param   description    DOCUMENT ME!
+     * @param   isQueryResult  DOCUMENT ME!
+     * @param   queryPosition  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
     public boolean addQueryParameter(
-            User user,
-            int queryId,
-            int typeId,
-            String paramkey,
-            String description,
-            char isQueryResult,
-            int queryPosition) throws RemoteException {
+            final User user,
+            final int queryId,
+            final int typeId,
+            final String paramkey,
+            final String description,
+            final char isQueryResult,
+            final int queryPosition) throws RemoteException {
         return searchService.addQueryParameter(
                 user,
                 queryId,
@@ -629,43 +944,60 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
                 queryPosition);
     }
 
-    // position set in order of the addition
-    public boolean addQueryParameter(User user, int queryId, String paramkey, String description)
-        throws RemoteException {
+    /**
+     * position set in order of the addition.
+     *
+     * @param   user         DOCUMENT ME!
+     * @param   queryId      DOCUMENT ME!
+     * @param   paramkey     DOCUMENT ME!
+     * @param   description  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public boolean addQueryParameter(
+            final User user,
+            final int queryId,
+            final String paramkey,
+            final String description) throws RemoteException {
         return searchService.addQueryParameter(user, queryId, paramkey, description);
     }
 
     /**
-     * SearchService Fkt-en.
+     * DOCUMENT ME!
      *
-     * @param   transactions  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    /**
-     * TransactionService Fkt-en.
-     *
-     * @param   transactions  DOCUMENT ME!
+     * @param   user  DOCUMENT ME!
+     * @param   c     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public int executeTransactionList(ArrayList transactions) throws RemoteException {
-        return transactionService.executeTransactionList(transactions);
-    }
-
-    public MetaObject getInstance(User user, MetaClass c) throws RemoteException {
+    @Override
+    public MetaObject getInstance(final User user, final MetaClass c) throws RemoteException {
         return metaService.getInstance(user, c);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   classId                DOCUMENT ME!
+     * @param   user                   DOCUMENT ME!
+     * @param   representationFields   DOCUMENT ME!
+     * @param   representationPattern  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
     public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(
-            int classId,
-            User user,
-            String[] representationFields,
-            String representationPattern) throws RemoteException {
+            final int classId,
+            final User user,
+            final String[] representationFields,
+            final String representationPattern) throws RemoteException {
         return metaService.getAllLightweightMetaObjectsForClass(
                 classId,
                 user,
@@ -673,19 +1005,45 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
                 representationPattern);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   classId               DOCUMENT ME!
+     * @param   user                  DOCUMENT ME!
+     * @param   representationFields  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
     public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(
-            int classId,
-            User user,
-            String[] representationFields) throws RemoteException {
+            final int classId,
+            final User user,
+            final String[] representationFields) throws RemoteException {
         return metaService.getAllLightweightMetaObjectsForClass(classId, user, representationFields);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   classId                DOCUMENT ME!
+     * @param   user                   DOCUMENT ME!
+     * @param   query                  DOCUMENT ME!
+     * @param   representationFields   DOCUMENT ME!
+     * @param   representationPattern  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
     public LightweightMetaObject[] getLightweightMetaObjectsByQuery(
-            int classId,
-            User user,
-            String query,
-            String[] representationFields,
-            String representationPattern) throws RemoteException {
+            final int classId,
+            final User user,
+            final String query,
+            final String[] representationFields,
+            final String representationPattern) throws RemoteException {
         return metaService.getLightweightMetaObjectsByQuery(
                 classId,
                 user,
@@ -694,13 +1052,24 @@ public class ProxyImpl extends UnicastRemoteObject implements CatalogueService,
                 representationPattern);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   classId               DOCUMENT ME!
+     * @param   user                  DOCUMENT ME!
+     * @param   query                 DOCUMENT ME!
+     * @param   representationFields  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
     public LightweightMetaObject[] getLightweightMetaObjectsByQuery(
-            int classId,
-            User user,
-            String query,
-            String[] representationFields) throws RemoteException {
+            final int classId,
+            final User user,
+            final String query,
+            final String[] representationFields) throws RemoteException {
         return metaService.getLightweightMetaObjectsByQuery(classId, user, query, representationFields);
     }
-    /*************************  ende TransactionService Fkt-en *****************************/
-    // ---------------------start callserver main
-} // end class
+}

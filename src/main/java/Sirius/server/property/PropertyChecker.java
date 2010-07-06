@@ -47,11 +47,11 @@ public class PropertyChecker {
      *
      * @return  DOCUMENT ME!
      */
-    public static boolean checkProperties(ServerProperties check, ServerProperties sample) {
-        Enumeration enSample = sample.getKeys();
-        Enumeration enCheck = check.getKeys();
+    public static boolean checkProperties(final ServerProperties check, final ServerProperties sample) {
+        final Enumeration enSample = sample.getKeys();
+        final Enumeration enCheck = check.getKeys();
 
-        HashSet checkKeys = new HashSet();
+        final HashSet checkKeys = new HashSet();
 
         while (enCheck.hasMoreElements()) {
             checkKeys.add(enCheck.nextElement());
@@ -60,10 +60,10 @@ public class PropertyChecker {
         boolean correct = true;
 
         while (enSample.hasMoreElements()) {
-            Object nextElement = enSample.nextElement();
+            final Object nextElement = enSample.nextElement();
 
             if (!checkKeys.contains(nextElement)) {
-                String error = "key not found in config file " + nextElement;  // NOI18N
+                final String error = "key not found in config file " + nextElement;//NOI18N
                 logger.error(error);
                 System.err.println(error);
 

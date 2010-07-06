@@ -25,6 +25,9 @@ public class StrassStringConverter extends ToStringConverter implements java.io.
 
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -1178728757714994216L;
+
     private static final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(
             GeometryStringConverter.class);
 
@@ -39,15 +42,16 @@ public class StrassStringConverter extends ToStringConverter implements java.io.
 
     //~ Methods ----------------------------------------------------------------
 
-    public String convert(de.cismet.cids.tools.tostring.StringConvertable o) {
-        MetaObject mo = (MetaObject)o;
+    @Override
+    public String convert(final de.cismet.cids.tools.tostring.StringConvertable o) {
+        final MetaObject mo = (MetaObject)o;
 
         String stringRepresentation = "";//NOI18N
 
-        Collection<Attribute> attrs = mo.getAttributeByName("NAME", 1);//NOI18N
+        final Collection<Attribute> attrs = mo.getAttributeByName("NAME", 1);//NOI18N
 
         if (!attrs.isEmpty()) {
-            Attribute attr = attrs.iterator().next();
+            final Attribute attr = attrs.iterator().next();
 
             stringRepresentation += (attr.toString() + " ");//NOI18N
         }

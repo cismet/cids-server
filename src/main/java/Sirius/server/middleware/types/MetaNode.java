@@ -17,6 +17,11 @@ import Sirius.server.newuser.permission.Policy;
 
 public class MetaNode extends Sirius.server.middleware.types.Node {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 3625829713268727487L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -33,17 +38,16 @@ public class MetaNode extends Sirius.server.middleware.types.Node {
      * @param  derivePermissionsFromClass  DOCUMENT ME!
      * @param  classId                     DOCUMENT ME!
      */
-    public MetaNode(
-            int id,
-            String domain,
-            String name,
-            String description,
-            boolean isLeaf,
-            Policy policy,
-            int iconFactory,
-            String icon,
-            boolean derivePermissionsFromClass,
-            int classId) {
+    public MetaNode(final int id,
+            final String domain,
+            final String name,
+            final String description,
+            final boolean isLeaf,
+            final Policy policy,
+            final int iconFactory,
+            final String icon,
+            final boolean derivePermissionsFromClass,
+            final int classId) {
         super(id, name, domain, description, isLeaf, policy, iconFactory, icon, derivePermissionsFromClass);
         super.classId = classId;
     }

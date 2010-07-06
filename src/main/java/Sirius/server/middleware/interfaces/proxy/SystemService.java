@@ -7,9 +7,9 @@
 ****************************************************/
 package Sirius.server.middleware.interfaces.proxy;
 
-import java.rmi.*;
-
 import Sirius.util.image.*;
+
+import java.rmi.*;
 
 /**
  * gives access to system parameters, resources and configurations of the MIS and its domain servers.

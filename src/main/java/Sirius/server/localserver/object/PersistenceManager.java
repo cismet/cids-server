@@ -7,6 +7,7 @@
 ****************************************************/
 package Sirius.server.localserver.object;
 
+import Sirius.server.Shutdown;
 import Sirius.server.localserver.DBServer;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
@@ -17,9 +18,9 @@ import Sirius.server.newuser.UserGroup;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
+import org.apache.log4j.Logger;
 
-import de.cismet.tools.CurrentStackTrace;
+import org.postgis.PGgeometry;
 
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
@@ -30,9 +31,9 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
 
-import org.postgis.PGgeometry;
+import de.cismet.tools.CurrentStackTrace;
 
 /**
  * DOCUMENT ME!
@@ -42,32 +43,35 @@ import org.postgis.PGgeometry;
  * @author   martin.scholl@cismet.de
  * @version  $Revision$, $Date$
  */
-public final class PersistenceManager {
+public final class PersistenceManager extends Shutdown {
 
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 575613461603083526L;
+
+    private static final transient Logger LOG = Logger.getLogger(PersistenceManager.class);
+
     public static final String DEL_ATTR_STRING = "DELETE FROM cs_attr_string "       // NOI18N
-        + "WHERE class_id = ? AND object_id = ?";                                    // NOI18N
+                + "WHERE class_id = ? AND object_id = ?";                            // NOI18N
     public static final String DEL_ATTR_MAPPING = "DELETE FROM cs_all_attr_mapping " // NOI18N
-        + "WHERE class_id = ? AND object_id = ?";                                    // NOI18N
+                + "WHERE class_id = ? AND object_id = ?";                            // NOI18N
     public static final String INS_ATTR_STRING = "INSERT INTO cs_attr_string "       // NOI18N
-        + "(class_id, object_id, attr_id, string_val) VALUES (?, ?, ?, ?)";          // NOI18N
+                + "(class_id, object_id, attr_id, string_val) VALUES (?, ?, ?, ?)";  // NOI18N
     public static final String INS_ATTR_MAPPING = "INSERT INTO cs_all_attr_mapping " // NOI18N
-        + "(class_id, object_id, attr_class_id, attr_object_id) VALUES "             // NOI18N
-        + "(?, ?, ?, ?)";                                                            // NOI18N
+                + "(class_id, object_id, attr_class_id, attr_object_id) VALUES "     // NOI18N
+                + "(?, ?, ?, ?)";                                                    // NOI18N
     public static final String UP_ATTR_STRING = "UPDATE cs_attr_string "             // NOI18N
-        + "SET string_val = ? "                                                      // NOI18N
-        + "WHERE class_id = ? AND object_id = ? AND attr_id = ?";                    // NOI18N
+                + "SET string_val = ? "                                              // NOI18N
+                + "WHERE class_id = ? AND object_id = ? AND attr_id = ?";            // NOI18N
     public static final String UP_ATTR_MAPPING = "UPDATE cs_all_attr_mapping "       // NOI18N
-        + "SET attr_object_id = ? "                                                  // NOI18N
-        + "WHERE class_id = ? AND object_id = ? AND attr_class_id = ?";              // NOI18N
+                + "SET attr_object_id = ? "                                          // NOI18N
+                + "WHERE class_id = ? AND object_id = ? AND attr_class_id = ?";      // NOI18N
     public static final String NULL = "NULL";                                        // NOI18N
     private static final String DEBUG_REPLACE = "\\?";                               // NOI18N
-    private static final transient Logger LOG = Logger.getLogger(PersistenceManager.class);
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Creates a new instance of PersistenceManager. */
     private final transient DBServer dbServer;
     private final transient TransactionHelper transactionHelper;
     private final transient PersistenceHelper persistenceHelper;
@@ -103,14 +107,17 @@ public final class PersistenceManager {
     public int deleteMetaObject(final User user, final MetaObject mo) throws Throwable {
         if (LOG.isDebugEnabled()) {
             LOG.debug(
-                "deleteMetaObject entered " + mo // NOI18N
-                + "status :" + mo.getStatus()    // NOI18N
-                + " of class:" + mo.getClassID() // NOI18N
-                + " isDummy(ArrayContainer) :" + mo.isDummy()); // NOI18N
+                "deleteMetaObject entered "//NOI18N
+                        + mo              // NOI18N
+                        + "status :"//NOI18N
+                        + mo.getStatus()  // NOI18N
+                        + " of class:"//NOI18N
+                        + mo.getClassID() // NOI18N
+                        + " isDummy(ArrayContainer) :"//NOI18N
+                        + mo.isDummy());  // NOI18N
         }
 
-        if (
-            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
+        if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
                         user.getUserGroup())) {
             // start transaction
             transactionHelper.beginWork();
@@ -129,7 +136,7 @@ public final class PersistenceManager {
 
                 final ObjectAttribute[] allAttributes = mo.getAttribs();
                 boolean deeper = false;
-                for (ObjectAttribute oa : allAttributes) {
+                for (final ObjectAttribute oa : allAttributes) {
                     if (oa.isChanged()) {
                         deeper = true;
                         break;
@@ -159,7 +166,7 @@ public final class PersistenceManager {
                     LOG.debug("paramsql: " + paramStmt);                                       // NOI18N
                     LOG.debug(
                         "debugSQL: "                                                           // NOI18N
-                        + paramStmt.replace(DEBUG_REPLACE, String.valueOf(mo.getPrimaryKey().getValue())));
+                                + paramStmt.replace(DEBUG_REPLACE, String.valueOf(mo.getPrimaryKey().getValue())));
                 }
                 stmt = transactionHelper.getConnection().prepareStatement(paramStmt);
                 stmt.setObject(1, mo.getPrimaryKey().getValue());
@@ -185,7 +192,12 @@ public final class PersistenceManager {
         } else {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
-                    "'" + user + "' is not allowed to delete MO " + mo.getID() + "." + mo.getClassKey(), // NOI18N
+                    "'"//NOI18N
+                            + user
+                            + "' is not allowed to delete MO "//NOI18N
+                            + mo.getID()
+                            + "."//NOI18N
+                            + mo.getClassKey(),                      // NOI18N
                     new CurrentStackTrace());
             }
             // TODO: shouldn't that return -1 or similar to indicate that nothing has been done?
@@ -247,13 +259,16 @@ public final class PersistenceManager {
     public void updateMetaObject(final User user, final MetaObject mo) throws Throwable {
         if (LOG.isDebugEnabled()) {
             LOG.debug(
-                "updateMetaObject entered " + mo // NOI18N
-                + "status :" + mo.getStatus()    // NOI18N
-                + " of class:" + mo.getClassID() // NOI18N
-                + " isDummy(ArrayContainer) :" + mo.isDummy()); // NOI18N
+                "updateMetaObject entered "//NOI18N
+                        + mo              
+                        + "status :"//NOI18N
+                        + mo.getStatus()  
+                        + " of class:"//NOI18N
+                        + mo.getClassID() 
+                        + " isDummy(ArrayContainer) :"//NOI18N
+                        + mo.isDummy());  // NOI18N
         }
-        if (
-            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
+        if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
                         user.getUserGroup())) {
             // if Array
             if (mo.isDummy()) {
@@ -323,9 +338,12 @@ public final class PersistenceManager {
                             // should never occur
                             // TODO: consider to LOG fatal!
                             LOG.error(
-                                "error updating subobject '" + subObject // NOI18N
-                                + "' of attribute " + mai.getFieldName() // NOI18N
-                                + ": invalid status: " + subObject.getStatus()); // NOI18N
+                                "error updating subobject '"//NOI18N
+                                        + subObject          
+                                        + "' of attribute "//NOI18N
+                                        + mai.getFieldName() 
+                                        + ": invalid status: " //NOI18N
+                                        + subObject.getStatus()); 
                             // TODO: throw illegalstateexception ?
                         }
                     }
@@ -385,7 +403,12 @@ public final class PersistenceManager {
         } else {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
-                    "'" + user + "' is not allowed to update MetaObject " + mo.getID() + "." + mo.getClassKey(), // NOI18N
+                    "'"//NOI18N
+                            + user
+                            + "' is not allowed to update MetaObject "//NOI18N
+                            + mo.getID()
+                            + "."//NOI18N
+                            + mo.getClassKey(),
                     new CurrentStackTrace());
             }
             throw new SecurityException("not allowed to insert meta object");   // NOI18N
@@ -403,7 +426,7 @@ public final class PersistenceManager {
      * @throws  SQLException  DOCUMENT ME!
      */
     private PreparedStatement parameteriseStatement(final PreparedStatement stmt, final List values)
-        throws SQLException {
+            throws SQLException {
         final ParameterMetaData metaData = stmt.getParameterMetaData();
         for (int i = 0; i < values.size(); ++i) {
             final int type = metaData.getParameterType(i + 1);
@@ -542,14 +565,17 @@ public final class PersistenceManager {
     public int insertMetaObject(final User user, final MetaObject mo) throws Throwable {
         if (LOG.isDebugEnabled()) {
             LOG.debug(
-                "insertMetaObject entered " + mo // NOI18N
-                + "status :" + mo.getStatus()    // NOI18N
-                + " of class:" + mo.getClassID() // NOI18N
-                + " isDummy(ArrayContainer) :" + mo.isDummy()); // NOI18N
+                "insertMetaObject entered "//NOI18N
+                        + mo              
+                        + "status :"// NOI18N
+                        + mo.getStatus()  
+                        + " of class:"// NOI18N
+                        + mo.getClassID() 
+                        + " isDummy(ArrayContainer) :"// NOI18N
+                        + mo.isDummy());  // NOI18N
         }
 
-        if (
-            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
+        if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
                         user.getUserGroup())) {
             final StringBuffer paramSql = new StringBuffer("INSERT INTO "); // NOI18N
             // class of the new object
@@ -559,7 +585,7 @@ public final class PersistenceManager {
             final int rootPk = persistenceHelper.getNextID(metaClass.getTableName(), metaClass.getPrimaryKey());
             final ObjectAttribute[] mAttr = mo.getAttribs();
             // set the new primary key as value of the primary key attribute
-            for (ObjectAttribute maybePK : mAttr) {
+            for (final ObjectAttribute maybePK : mAttr) {
                 if (maybePK.isPrimaryKey()) {
                     maybePK.setValue(rootPk);
                 }
@@ -577,8 +603,12 @@ public final class PersistenceManager {
                 final java.lang.Object value = mAttr[i].getValue();
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(
-                        "mAttr[" + i + "].getName() of " + mo.getClassKey() // NOI18N
-                        + ": " + mAttr[i].getName());                       // NOI18N
+                        "mAttr["// NOI18N
+                                + i
+                                + "].getName() of "// NOI18N
+                                + mo.getClassKey() 
+                                + ": "// NOI18N
+                                + mAttr[i].getName()); 
                 }
                 final MemberAttributeInfo mai = mAttr[i].getMai();
                 // if object does not have mai it cannot be inserted
@@ -696,7 +726,12 @@ public final class PersistenceManager {
         } else {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
-                    "'" + user + "' is not allowed to insert MO " + mo.getID() + "." + mo.getClassKey(), // NOI18N
+                    "'"// NOI18N
+                            + user
+                            + "' is not allowed to insert MO "// NOI18N
+                            + mo.getID()
+                            + "."// NOI18N
+                            + mo.getClassKey(), // NOI18N
                     new CurrentStackTrace());
             }
             throw new SecurityException("not allowed to insert meta object");   // NOI18N
@@ -746,9 +781,12 @@ public final class PersistenceManager {
             }
         } catch (final SQLException e) {
             LOG.error(
-                "could not delete index for object '" + mo.getID()              // NOI18N
-                + "' of class '" + mo.getClass() + "'",                         // NOI18N
-                e);                                                             // NOI18N
+                "could not delete index for object '"// NOI18N
+                        + mo.getID()
+                        + "' of class '"// NOI18N
+                        + mo.getClass()
+                        + "'",// NOI18N
+                e);
             // TODO: consider to wrap exception
             throw e;
         } finally {
@@ -793,7 +831,7 @@ public final class PersistenceManager {
                         // if field represents a foreign key the attribute value
                         // is assumed to be a MetaObject
                         final MetaObject value = (MetaObject)attr.getValue();
-                        psAttrMap.setInt(1, value == null ? -1 : value.getID());
+                        psAttrMap.setInt(1, (value == null) ? -1 : value.getID());
                         psAttrMap.setInt(2, mo.getClassID());
                         psAttrMap.setInt(3, mo.getID());
                         psAttrMap.setInt(4, mai.getForeignKeyClassId());
@@ -802,7 +840,7 @@ public final class PersistenceManager {
                             // create debug statement
                             final String debugStmt = UP_ATTR_MAPPING.replaceFirst(
                                         DEBUG_REPLACE,
-                                        String.valueOf(value == null ? -1 : value.getID()))
+                                        String.valueOf((value == null) ? -1 : value.getID()))
                                         .replaceFirst(DEBUG_REPLACE, String.valueOf(mo.getClassID()))
                                         .replaceFirst(DEBUG_REPLACE, String.valueOf(mo.getID()))
                                         .replaceFirst(DEBUG_REPLACE, String.valueOf(mai.getForeignKeyClassId()));
@@ -814,7 +852,7 @@ public final class PersistenceManager {
                             psAttrString = transactionHelper.getConnection().prepareStatement(UP_ATTR_STRING);
                         }
                         // interpret the fields value as a string
-                        psAttrString.setString(1, attr.getValue() == null ? NULL : String.valueOf(attr.getValue()));
+                        psAttrString.setString(1, (attr.getValue() == null) ? NULL : String.valueOf(attr.getValue()));
                         psAttrString.setInt(2, mo.getClassID());
                         psAttrString.setInt(3, mo.getID());
                         psAttrString.setInt(4, mai.getId());
@@ -856,9 +894,12 @@ public final class PersistenceManager {
             }
         } catch (final SQLException e) {
             LOG.error(
-                "could not insert index for object '" + mo.getID()                      // NOI18N
-                + "' of class '" + mo.getClass() + "'",                                 // NOI18N
-                e);                                                                     // NOI18N
+                "could not insert index for object '"// NOI18N
+                        + mo.getID() 
+                        + "' of class '"// NOI18N
+                        + mo.getClass()
+                        + "'",// NOI18N
+                e); 
             // TODO: consider to wrap exception
             throw e;
         } finally {
@@ -925,7 +966,7 @@ public final class PersistenceManager {
                         psAttrString.setInt(2, mo.getID());
                         psAttrString.setInt(3, mai.getId());
                         // interpret the fields value as a string
-                        psAttrString.setString(4, attr.getValue() == null ? NULL : String.valueOf(attr.getValue()));
+                        psAttrString.setString(4, (attr.getValue() == null) ? NULL : String.valueOf(attr.getValue()));
                         psAttrString.addBatch();
                     }
                 }
@@ -954,9 +995,12 @@ public final class PersistenceManager {
             }
         } catch (final SQLException e) {
             LOG.error(
-                "could not insert index for object '" + mo.getID()                       // NOI18N
-                + "' of class '" + mo.getClass() + "'",                                  // NOI18N
-                e);                                                                      // NOI18N
+                "could not insert index for object '"// NOI18N
+                        + mo.getID()
+                        + "' of class '"// NOI18N
+                        + mo.getClass()
+                        + "'",// NOI18N
+                e);
             throw e;
         } finally {
             closeStatements(psAttrString, psAttrMap);

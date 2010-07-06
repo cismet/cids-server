@@ -9,11 +9,10 @@ package Sirius.server.middleware.interfaces.domainserver;
 
 import Sirius.server.localserver.tree.NodeReferenceList;
 import Sirius.server.middleware.types.Link;
-
-import java.rmi.*;
-
 import Sirius.server.middleware.types.Node;
 import Sirius.server.newuser.*;
+
+import java.rmi.*;
 
 /**
  * Interface for operations on the systems catalogue.

@@ -20,6 +20,11 @@ import Sirius.server.localserver.attribute.*;
  */
 public class UrlBaseStringConverter extends ToStringConverter implements java.io.Serializable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 6673513990961520521L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -38,14 +43,13 @@ public class UrlBaseStringConverter extends ToStringConverter implements java.io
      *
      * @return  DOCUMENT ME!
      */
-    public String convert(Sirius.server.localserver.object.Object o) {
+    public String convert(final Sirius.server.localserver.object.Object o) {
         String stringRepresentation = "";//NOI18N
 
-        ObjectAttribute[] attrs = o.getAttribs();
+        final ObjectAttribute[] attrs = o.getAttribs();
 
         for (int i = 0; i < attrs.length; i++) {
-            if (
-                attrs[i].getName().equalsIgnoreCase("prot_prefix")//NOI18N
+            if (attrs[i].getName().equalsIgnoreCase("prot_prefix")//NOI18N
                         || attrs[i].getName().equalsIgnoreCase("server")//NOI18N
                         || attrs[i].getName().equalsIgnoreCase("path")) {//NOI18N
                 stringRepresentation += (attrs[i].toString());

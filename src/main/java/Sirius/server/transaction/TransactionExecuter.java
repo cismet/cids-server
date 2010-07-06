@@ -11,9 +11,9 @@
  * Created on 10. August 2004, 11:35
  */
 package Sirius.server.transaction;
-import java.util.*;
-
 import java.lang.reflect.*;
+
+import java.util.*;
 
 /**
  * DOCUMENT ME!
@@ -37,15 +37,15 @@ public class TransactionExecuter {
      *
      * @param  o  DOCUMENT ME!
      */
-    public TransactionExecuter(Object o) {
+    public TransactionExecuter(final Object o) {
         this.o = o;
 
-        Method[] ms = o.getClass().getMethods();
+        final Method[] ms = o.getClass().getMethods();
 
         methods = new HashMap(ms.length);
 
         for (int i = 0; i < ms.length; i++) {
-            String methodName = ms[i].getName();
+            final String methodName = ms[i].getName();
             if (logger.isDebugEnabled()) {
                 logger.debug("methodname registered  " + methodName);//NOI18N
             }
@@ -62,16 +62,16 @@ public class TransactionExecuter {
      *
      * @return  DOCUMENT ME!
      */
-    public int execute(ArrayList transactions) {
+    public int execute(final ArrayList transactions) {
         int successfull = 0;
 
-        Iterator iter = transactions.iterator();
+        final Iterator iter = transactions.iterator();
 
         while (iter.hasNext()) {
-            Transaction t = (Transaction)iter.next();
+            final Transaction t = (Transaction)iter.next();
 
             if (methods.containsKey(t.getName())) {
-                Method m = (Method)methods.get(t.getName());
+                final Method m = (Method)methods.get(t.getName());
 
                 try {
                     m.invoke(o, t.getParams());

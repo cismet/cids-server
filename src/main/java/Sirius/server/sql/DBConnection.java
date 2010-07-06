@@ -10,7 +10,9 @@ package Sirius.server.sql;
 import Sirius.server.ServerExitError;
 import Sirius.server.search.Query;
 
-import de.cismet.tools.Sorter;
+import org.apache.log4j.Logger;
+
+import org.openide.util.NbBundle;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -23,9 +25,7 @@ import java.util.Collection;
 import java.util.MissingResourceException;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
-
-import org.openide.util.NbBundle;
+import de.cismet.tools.Sorter;
 
 /**
  * Datenbankverbindung.<BR>
@@ -59,7 +59,7 @@ public class DBConnection {
      * @throws  Throwable        DOCUMENT ME!
      * @throws  ServerExitError  DOCUMENT ME!
      */
-    protected DBConnection(DBClassifier dbc) throws Throwable {
+    protected DBConnection(final DBClassifier dbc) throws Throwable {
         this.dbc = dbc;
 
         try {
@@ -105,7 +105,7 @@ public class DBConnection {
      *
      * @return  DOCUMENT ME!
      */
-    public static boolean charToBool(char bool) {
+    public static boolean charToBool(final char bool) {
         return ((bool == (byte)'T') || (bool == (byte)'t'));
     }
 
@@ -116,7 +116,7 @@ public class DBConnection {
      *
      * @return  DOCUMENT ME!
      */
-    public static boolean stringToBool(String bool) {
+    public static boolean stringToBool(final String bool) {
         if ((bool == null) || (bool.length() == 0)) {
             return false;
         } else {
@@ -198,13 +198,13 @@ public class DBConnection {
             if (parameters.length
                         != ps.getParameterMetaData().getParameterCount()) {
                 final String message = "parameter count mismmatch for descriptor '" // NOI18N
-                    + descriptor
-                    + "', Statement: "                                              // NOI18N
-                    + stmt
-                    + ", Statement param count: "                                   // NOI18N
-                    + ps.getParameterMetaData().getParameterCount()
-                    + ", given param count: "                                       // NOI18N
-                    + parameters.length;
+                            + descriptor
+                            + "', Statement: "                                      // NOI18N
+                            + stmt
+                            + ", Statement param count: "                           // NOI18N
+                            + ps.getParameterMetaData().getParameterCount()
+                            + ", given param count: "                               // NOI18N
+                            + parameters.length;
                 LOG.error(message);
                 throw new IllegalArgumentException(message);
             }
@@ -252,7 +252,7 @@ public class DBConnection {
     //
     ///////////////////////////////////////////////////////////////////////////////////
 
-    public ResultSet submitQuery(String descriptor, java.lang.Object[] parameters) {
+    public ResultSet submitQuery(final String descriptor, final java.lang.Object[] parameters) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("submitQuery: " + descriptor);//NOI18N
         }
@@ -301,7 +301,8 @@ public class DBConnection {
 
     ////////////////////////////////////////////////////
 
-    public ResultSet submitQuery(int sqlID, java.lang.Object[] parameters) throws java.sql.SQLException, Exception {
+    public ResultSet submitQuery(final int sqlID, final java.lang.Object[] parameters) throws java.sql.SQLException,
+        Exception {
         if (LOG.isDebugEnabled()) {
             LOG.debug("submitQuery: " + sqlID);//NOI18N
         }
@@ -333,16 +334,16 @@ public class DBConnection {
      * @throws  java.sql.SQLException  DOCUMENT ME!
      * @throws  Exception              DOCUMENT ME!
      */
-    public ResultSet submitQuery(Query q) throws java.sql.SQLException, Exception {
+    public ResultSet submitQuery(final Query q) throws java.sql.SQLException, Exception {
         if (LOG.isDebugEnabled()) {
             LOG.debug("submitQuery: " + q.getKey() + ", batch: " + q.isBatch());//NOI18N
         }
         if (LOG.isDebugEnabled()) {
             LOG.debug("query object :: " + q);//NOI18N
         }
-        Collection tmp = q.getParameterList();
+        final Collection tmp = q.getParameterList();
 
-        Comparable[] params = (Comparable[])tmp.toArray(new Comparable[tmp.size()]);
+        final Comparable[] params = (Comparable[])tmp.toArray(new Comparable[tmp.size()]);
 
         Sorter.quickSort(params);
 
@@ -363,13 +364,13 @@ public class DBConnection {
      * @throws  java.sql.SQLException  DOCUMENT ME!
      * @throws  Exception              DOCUMENT ME!
      */
-    public int submitUpdate(Query q) throws java.sql.SQLException, Exception {
+    public int submitUpdate(final Query q) throws java.sql.SQLException, Exception {
         if (LOG.isDebugEnabled()) {
             LOG.debug("submitUpdate: " + q.getKey() + ", batch: " + q.isBatch());//NOI18N
         }
 
-        Collection tmp = q.getParameterList();
-        Comparable[] params = (Comparable[])tmp.toArray(new Comparable[tmp.size()]);
+        final Collection tmp = q.getParameterList();
+        final Comparable[] params = (Comparable[])tmp.toArray(new Comparable[tmp.size()]);
 
         Sorter.quickSort(params);
 
@@ -417,7 +418,7 @@ public class DBConnection {
 
     /////////////////////////////////////////////
 
-    public int submitUpdate(String descriptor, java.lang.Object[] parameters) throws java.sql.SQLException,
+    public int submitUpdate(final String descriptor, final java.lang.Object[] parameters) throws java.sql.SQLException,
         Exception // returns abs(rows effected)
     {
         if (LOG.isDebugEnabled()) {
@@ -464,7 +465,7 @@ public class DBConnection {
 
     ////////////////////////////////////////////////////////////
 
-    public int submitUpdate(int sqlID, java.lang.Object[] parameters) throws java.sql.SQLException,
+    public int submitUpdate(final int sqlID, final java.lang.Object[] parameters) throws java.sql.SQLException,
         Exception // returns abs(rows effected)
     {
         if (LOG.isDebugEnabled()) {
@@ -498,7 +499,7 @@ public class DBConnection {
      * @exeption  java.sql.SQLException
      */
 
-    public String fetchStatement(String descriptor) throws java.sql.SQLException, Exception {
+    public String fetchStatement(final String descriptor) throws java.sql.SQLException, Exception {
         if (LOG.isDebugEnabled()) {
             LOG.debug("fetchStatement: " + descriptor);//NOI18N
         }
@@ -547,7 +548,7 @@ if(!dbc.cacheStatements)
      * @exeption  java.sql.SQLException
      */
 
-    public String fetchStatement(int sqlID) throws java.sql.SQLException, Exception {
+    public String fetchStatement(final int sqlID) throws java.sql.SQLException, Exception {
         if (LOG.isDebugEnabled()) {
             LOG.debug("fetchStatement: " + sqlID);//NOI18N
         }
@@ -604,7 +605,7 @@ if(!dbc.cacheStatements)
      * @throws  java.sql.SQLException  DOCUMENT ME!
      * @throws  Exception              DOCUMENT ME!
      */
-    public ResultSet executeQuery(Query q) throws java.sql.SQLException, Exception {
+    public ResultSet executeQuery(final Query q) throws java.sql.SQLException, Exception {
         if (LOG.isDebugEnabled()) {
             LOG.debug("executeQuery: " + q.getKey() + ", batch: " + q.isBatch());//NOI18N
         }
@@ -616,8 +617,8 @@ if(!dbc.cacheStatements)
             String sqlStmnt = q.getStatement();
 
             try {
-                Collection tmp = q.getParameterList();
-                Comparable[] params = (Comparable[])tmp.toArray(new Comparable[tmp.size()]);
+                final Collection tmp = q.getParameterList();
+                final Comparable[] params = (Comparable[])tmp.toArray(new Comparable[tmp.size()]);
                 Sorter.quickSort(params);
                 sqlStmnt = QueryParametrizer.parametrize(sqlStmnt, params);
             } catch (Exception e) {
@@ -642,7 +643,8 @@ if(!dbc.cacheStatements)
      * @throws  java.sql.SQLException  DOCUMENT ME!
      * @throws  Exception              DOCUMENT ME!
      */
-    public int submitUpdateBatch(int qid, java.lang.Object[] parameters) throws java.sql.SQLException, Exception {
+    public int submitUpdateBatch(final int qid, final java.lang.Object[] parameters) throws java.sql.SQLException,
+        Exception {
         if (LOG.isDebugEnabled()) {
             LOG.debug("submitUpdateBatch: " + qid);//NOI18N
         }
@@ -656,9 +658,9 @@ if(!dbc.cacheStatements)
             throw e;
         }
 
-        StringTokenizer tokenizer = new StringTokenizer(updateBatch, ";");//NOI18N
+        final StringTokenizer tokenizer = new StringTokenizer(updateBatch, ";");//NOI18N
 
-        String[] updates = new String[tokenizer.countTokens()];
+        final String[] updates = new String[tokenizer.countTokens()];
 
         for (int i = 0; i < updates.length; i++) {
             updates[i] = tokenizer.nextToken();
@@ -684,8 +686,8 @@ if(!dbc.cacheStatements)
      * @throws  java.sql.SQLException  DOCUMENT ME!
      * @throws  Exception              DOCUMENT ME!
      */
-    public int submitUpdateBatch(String queryname, java.lang.Object[] parameters) throws java.sql.SQLException,
-        Exception {
+    public int submitUpdateBatch(final String queryname, final java.lang.Object[] parameters)
+            throws java.sql.SQLException, Exception {
         if (LOG.isDebugEnabled()) {
             LOG.debug("submitUpdateBatch: " + queryname);//NOI18N
         }
@@ -699,9 +701,9 @@ if(!dbc.cacheStatements)
             throw e;
         }
 
-        StringTokenizer tokenizer = new StringTokenizer(updateBatch, ";");//NOI18N
+        final StringTokenizer tokenizer = new StringTokenizer(updateBatch, ";");//NOI18N
 
-        String[] updates = new String[tokenizer.countTokens()];
+        final String[] updates = new String[tokenizer.countTokens()];
 
         for (int i = 0; i < updates.length; i++) {
             updates[i] = tokenizer.nextToken();

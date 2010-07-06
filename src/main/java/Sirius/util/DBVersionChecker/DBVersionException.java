@@ -20,6 +20,11 @@ package Sirius.util.DBVersionChecker;
  */
 public class DBVersionException extends Throwable {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -8744725339848146954L;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -33,7 +38,7 @@ public class DBVersionException extends Throwable {
      *
      * @param  message  DOCUMENT ME!
      */
-    public DBVersionException(String message) {
+    public DBVersionException(final String message) {
         super(message);
     }
 
@@ -42,7 +47,7 @@ public class DBVersionException extends Throwable {
      *
      * @param  cause  DOCUMENT ME!
      */
-    public DBVersionException(Throwable cause) {
+    public DBVersionException(final Throwable cause) {
         super(cause);
     }
 
@@ -52,7 +57,7 @@ public class DBVersionException extends Throwable {
      * @param  message  DOCUMENT ME!
      * @param  cause    DOCUMENT ME!
      */
-    public DBVersionException(String message, Throwable cause) {
+    public DBVersionException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }

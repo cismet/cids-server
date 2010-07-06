@@ -21,6 +21,11 @@ import java.util.*;
  */
 public class QueryInfo implements java.io.Serializable, Info {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = 8322629885911804823L;
+
     //~ Instance fields --------------------------------------------------------
 
     /** QueryID.* */
@@ -46,7 +51,7 @@ public class QueryInfo implements java.io.Serializable, Info {
      * @param  domain    DOCUMENT ME!
      * @param  fileName  DOCUMENT ME!
      */
-    public QueryInfo(int id, String name, String domain, String fileName) {
+    public QueryInfo(final int id, final String name, final String domain, final String fileName) {
         this(id, name, domain, fileName, new HashSet());
     }
 
@@ -59,7 +64,11 @@ public class QueryInfo implements java.io.Serializable, Info {
      * @param  fileName    DOCUMENT ME!
      * @param  userGroups  DOCUMENT ME!
      */
-    public QueryInfo(int id, String name, String domain, String fileName, HashSet userGroups) {
+    public QueryInfo(final int id,
+            final String name,
+            final String domain,
+            final String fileName,
+            final HashSet userGroups) {
         this.name = name;
         this.domain = domain;
         this.id = id;
@@ -74,6 +83,7 @@ public class QueryInfo implements java.io.Serializable, Info {
      *
      * @return  Value of property domain.
      */
+    @Override
     public java.lang.String getDomain() {
         return domain;
     }
@@ -83,7 +93,7 @@ public class QueryInfo implements java.io.Serializable, Info {
      *
      * @param  domain  New value of property domain.
      */
-    public void setDomain(java.lang.String domain) {
+    public void setDomain(final java.lang.String domain) {
         this.domain = domain;
     }
 
@@ -92,6 +102,7 @@ public class QueryInfo implements java.io.Serializable, Info {
      *
      * @return  Value of property id.
      */
+    @Override
     public int getID() {
         return id;
     }
@@ -101,7 +112,7 @@ public class QueryInfo implements java.io.Serializable, Info {
      *
      * @param  id  New value of property id.
      */
-    public void setID(int id) {
+    public void setID(final int id) {
         this.id = id;
     }
 
@@ -110,6 +121,7 @@ public class QueryInfo implements java.io.Serializable, Info {
      *
      * @return  Value of property name.
      */
+    @Override
     public java.lang.String getName() {
         return name;
     }
@@ -119,7 +131,7 @@ public class QueryInfo implements java.io.Serializable, Info {
      *
      * @param  name  New value of property name.
      */
-    public void setName(java.lang.String name) {
+    public void setName(final java.lang.String name) {
         this.name = name;
     }
 
@@ -137,7 +149,7 @@ public class QueryInfo implements java.io.Serializable, Info {
      *
      * @param  userGroups  New value of property userGroups.
      */
-    public void setUserGroups(java.util.HashSet userGroups) {
+    public void setUserGroups(final java.util.HashSet userGroups) {
         this.userGroups = userGroups;
     }
 
@@ -146,7 +158,7 @@ public class QueryInfo implements java.io.Serializable, Info {
      *
      * @param  userGroupKey  DOCUMENT ME!
      */
-    public void addUserGroup(String userGroupKey) {
+    public void addUserGroup(final String userGroupKey) {
         userGroups.add(userGroupKey);
     }
 
@@ -164,10 +176,11 @@ public class QueryInfo implements java.io.Serializable, Info {
      *
      * @param  fileName  New value of property fileName.
      */
-    public void setFileName(java.lang.String fileName) {
+    public void setFileName(final java.lang.String fileName) {
         this.fileName = fileName;
     }
 
+    @Override
     public String toString() {
         return this.getName();
     }
