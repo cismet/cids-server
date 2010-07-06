@@ -28,9 +28,13 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.client.apache.ApacheHttpClient;
+import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
+import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
+
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -64,6 +68,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.ws.Converter;
+import de.cismet.cids.server.ws.ProxyConfig;
 
 import static de.cismet.cids.server.ws.rest.RESTfulSerialInterface.*;
 
@@ -85,6 +90,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     private final transient String rootResource;
     private final transient Map<String, Client> clientCache;
 
+    private transient ProxyConfig proxyConfig;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -93,11 +100,40 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param  rootResource  DOCUMENT ME!
      */
     public RESTfulSerialInterfaceConnector(final String rootResource) {
-        this(rootResource, null);
+        this(rootResource, null, null);
     }
 
-    public RESTfulSerialInterfaceConnector(final String rootResource, final SSLConfig sslConfig){
-        if(sslConfig != null){
+    /**
+     * Creates a new RESTfulSerialInterfaceConnector object.
+     *
+     * @param  rootResource  DOCUMENT ME!
+     * @param  config        proxyURL DOCUMENT ME!
+     */
+    public RESTfulSerialInterfaceConnector(final String rootResource, final ProxyConfig config) {
+        this(rootResource, config, null);
+    }
+
+    /**
+     * Creates a new RESTfulSerialInterfaceConnector object.
+     *
+     * @param  rootResource  DOCUMENT ME!
+     * @param  sslConfig     DOCUMENT ME!
+     */
+    public RESTfulSerialInterfaceConnector(final String rootResource, final SSLConfig sslConfig) {
+        this(rootResource, null, sslConfig);
+    }
+
+    /**
+     * Creates a new RESTfulSerialInterfaceConnector object.
+     *
+     * @param  rootResource  DOCUMENT ME!
+     * @param  proxyConfig   proxyURL DOCUMENT ME!
+     * @param  sslConfig     DOCUMENT ME!
+     */
+    public RESTfulSerialInterfaceConnector(final String rootResource,
+            final ProxyConfig proxyConfig,
+            final SSLConfig sslConfig) {
+        if (sslConfig != null) {
             initSSL(sslConfig);
         }
 
@@ -108,10 +144,23 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             this.rootResource = rootResource + "/"; // NOI18N
         }
 
+        if (proxyConfig == null) {
+            this.proxyConfig = new ProxyConfig();
+        } else {
+            this.proxyConfig = proxyConfig;
+        }
+
         clientCache = new Hashtable<String, Client>();
     }
 
-    private void initSSL(final SSLConfig sslConfig){
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  sslConfig  DOCUMENT ME!
+     */
+    private void initSSL(final SSLConfig sslConfig) {
 //        try {
 //            // server certificate for trustmanager
 //            final KeyStore ks = KeyStore.getInstance("JKS");
@@ -155,8 +204,6 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 //            throw new IllegalStateException("cannot get key from keystore", e);
 //        }
     }
-
-    //~ Methods ----------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
@@ -204,10 +251,29 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
         // create new client and webresource from the given resource
         if (!clientCache.containsKey(path)) {
-            clientCache.put(path, Client.create());
+            final DefaultApacheHttpClientConfig config = new DefaultApacheHttpClientConfig();
+            if (proxyConfig.getProxyURL() != null) {
+                config.getProperties().put(ApacheHttpClientConfig.PROPERTY_PROXY_URI, proxyConfig.getProxyURL());
+            }
+            if ((proxyConfig.getUsername() != null) && (proxyConfig.getPassword() != null)) {
+                if ((proxyConfig.getComputerName() != null) && (proxyConfig.getDomain() != null)) {
+                    config.getState()
+                            .setProxyCredentials(
+                                null,
+                                null,
+                                -1,
+                                proxyConfig.getUsername(),
+                                proxyConfig.getPassword(),
+                                proxyConfig.getComputerName(),
+                                proxyConfig.getDomain());
+                } else {
+                    config.getState()
+                            .setProxyCredentials(null, null, -1, proxyConfig.getUsername(), proxyConfig.getPassword());
+                }
+            }
+            clientCache.put(path, ApacheHttpClient.create(config));
         }
         final Client c = clientCache.get(path);
-
         final UriBuilder uriBuilder = UriBuilder.fromPath(resource);
 
         // add all query params that are present

@@ -948,6 +948,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             throw new ServerExitError(re);
         }
 
+        instance = null;
+
         throw new ServerExit("Server ist regul\u00E4r beendet worden");
     }
 
