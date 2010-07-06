@@ -991,6 +991,8 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
             final String message = "could not shutdown registry"; // NOI18N
             LOG.fatal(message, e);
             throw new ServerExitError(message, e);
+        }finally{
+            instance = null;
         }
     }
 

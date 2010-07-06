@@ -918,9 +918,30 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             Naming.unbind(serverInfo.getBindString());
 
             if (properties.getStartMode().equalsIgnoreCase("simple")) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("shutting down restful interface"); // NOI18N
+                }
                 RESTfulService.down();
-                StartProxy.getInstance().shutdown();
-                Registry.getServerInstance(Integer.valueOf(properties.getRMIRegistryPort())).shutdown();
+                try {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("shutting down startproxy");    // NOI18N
+                    }
+                    StartProxy.getInstance().shutdown();
+                } catch (final ServerExit serverExit) {
+                    // skip
+                }
+                try {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("shutting down registry");      // NOI18N
+                    }
+                    Registry.getServerInstance(Integer.valueOf(properties.getRMIRegistryPort())).shutdown();
+                } catch (final ServerExit serverExit) {
+                    // skip
+                }
+            }
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("shutting down db connections"); // NOI18N
             }
 
             // alle offenen Verbindungen schliessen
@@ -943,12 +964,16 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             queryCache = null;
 
             System.gc();
-        } catch (Exception re) {
-            logger.error(re, re);
-            throw new ServerExitError(re);
-        }
+        } catch (final Exception t) {
+            logger.error("caught exception during shutdown", t);
+            throw new ServerExitError(t);
+        } finally {
+            if (logger.isDebugEnabled()) {
+                logger.debug("freeing instance"); // NOI18N
+            }
 
-        instance = null;
+            instance = null;
+        }
 
         throw new ServerExit("Server ist regul\u00E4r beendet worden");
     }

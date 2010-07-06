@@ -385,8 +385,6 @@ public final class StartProxy {
             LOG.debug("shutdown proxy: " + this); // NOI18N
         }
 
-        instance = null;
-
         try {
             callServer.unregisterAsObserver(siriusRegistryIP);
             callServer.getNameServer()
@@ -417,6 +415,8 @@ public final class StartProxy {
             final String message = "Server shutdown failure, integrity no longer guaranteed"; // NOI18N
             LOG.fatal(message, e);
             throw new ServerExitError(message, e);
+        } finally{
+            instance = null;
         }
     }
 
