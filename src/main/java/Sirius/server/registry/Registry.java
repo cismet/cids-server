@@ -177,6 +177,16 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
     }
 
     /**
+     * Returns the actual server instance.
+     * @return
+     * @throws ServerExitError
+     * @deprecated THIS IS HIGLY ERROR PRONE SINCE THE IMPLEMENTATION IS NOT A SINGLETON
+     */
+    public static synchronized Registry getServerInstance() throws ServerExitError {
+        return instance;
+    }
+
+    /**
      * DOCUMENT ME!
      *
      * @param   type  DOCUMENT ME!
@@ -1028,7 +1038,7 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
         }
 
         try {
-            new Registry(port);
+            instance = new Registry(port);
         } catch (final Exception e) {
             final String message = "could not create registry at port: " + port; // NOI18N
             LOG.error(message, e);

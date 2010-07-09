@@ -330,6 +330,17 @@ public final class StartProxy {
     /**
      * DOCUMENT ME!
      *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  IllegalStateException  DOCUMENT ME!
+     */
+    public static synchronized StartProxy getServerInstance() throws IllegalStateException {
+        return getInstance();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   configFile  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
