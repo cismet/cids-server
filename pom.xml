@@ -86,6 +86,7 @@
             <plugin>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-maven-plugin</artifactId>
+                <version>1.5-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <phase>generate-test-resources</phase>
@@ -94,6 +95,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <skip>${maven.test.skip}</skip>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
