@@ -403,11 +403,11 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 }
             }
             return mo;
-        } catch (Throwable e) {
+        } catch (final Throwable e) {
             if (logger != null) {
                 logger.error(e, e);
             }
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
