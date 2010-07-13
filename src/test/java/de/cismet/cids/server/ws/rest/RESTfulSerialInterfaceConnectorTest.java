@@ -59,7 +59,7 @@ public class RESTfulSerialInterfaceConnectorTest {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String ROOT_RESOURCE = "https://localhost:9987/callserver/binary/";                               // NOI18N
+    private static final String ROOT_RESOURCE = "http://localhost:9987/callserver/binary/";                              // NOI18N
     private static final String SERVER_CONFIG =
         "src/test/resources/Sirius/server/localserver/object/runtime.properties";                                         // NOI18N
     private static final String STARTMODE = "simple";                                                                     // NOI18N
@@ -305,8 +305,6 @@ public class RESTfulSerialInterfaceConnectorTest {
         final HashMap result1 = connector.getSearchOptions(user, "WUNDA_BLAU");
         assertNotNull(result1);
         System.out.println("getsearchoptions: " + result1);
-
-        
     }
 
     /**
@@ -316,7 +314,6 @@ public class RESTfulSerialInterfaceConnectorTest {
      */
     @Test
     public void testGetSearchOptionsByUser() throws Exception {
-
         System.out.println("\nTEST: " + getCurrentMethodName());
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
 
@@ -335,14 +332,14 @@ public class RESTfulSerialInterfaceConnectorTest {
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
 
         System.out.println("\nTEST : " + getCurrentMethodName());
-        
+
         final int queryId = 1;
         final int typeId = 1;
         final char isQueryResult = 'f';
         final int queryPosition = 1;
         final String paramKey = "testparam";
         final String description = "A test parameter";
-        
+
         final boolean result = connector.addQueryParameter(
                 user,
                 queryId,
@@ -373,7 +370,7 @@ public class RESTfulSerialInterfaceConnectorTest {
         final boolean result2 = connector.addQueryParameter(user, queryId,
                 paramKey, description);
         assertNotNull(result2);
-        
+
         System.out.println("addQueryParameter: " + result2);
     }
 
@@ -703,7 +700,7 @@ public class RESTfulSerialInterfaceConnectorTest {
         System.out.println("\nTEST: " + getCurrentMethodName());
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
         final String domain = "WUNDA_BLAU";
-        
+
         final String queryString = "select 11, postleitzahl from a_stadt";
         final Query query = new Query(new SystemStatement(true, -1, "", false, SearchResult.OBJECT, queryString),
                 domain);
@@ -711,10 +708,9 @@ public class RESTfulSerialInterfaceConnectorTest {
         final MetaObject[] result = connector.getMetaObject(user, query);
         assertNotNull(result);
 
-        for (MetaObject mo : result) {
+        for (final MetaObject mo : result) {
             System.out.println("getMetaObject: " + mo);
         }
-        
     }
 
     /**
@@ -724,7 +720,6 @@ public class RESTfulSerialInterfaceConnectorTest {
      */
     @Test
     public void testGetMetaObject_User_String() throws Exception {
-
         System.out.println("\nTEST: " + getCurrentMethodName());
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
         final String domain = "WUNDA_BLAU";
@@ -734,7 +729,7 @@ public class RESTfulSerialInterfaceConnectorTest {
         final MetaObject[] result = connector.getMetaObject(user, queryString);
         assertNotNull(result);
 
-        for (MetaObject mo : result) {
+        for (final MetaObject mo : result) {
             System.out.println("getMetaObject: " + mo);
         }
     }
@@ -798,19 +793,17 @@ public class RESTfulSerialInterfaceConnectorTest {
      */
     @Test
     public void testGetMetaObjectNode_User_String() throws Exception {
-
         System.out.println("\nTEST: " + getCurrentMethodName());
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
-        
+
         final String query = "select 11, postleitzahl from a_stadt";
-        
+
         final Node[] result = connector.getMetaObjectNode(user, query);
         assertNotNull(result);
-        
-        for (Node node : result) {
+
+        for (final Node node : result) {
             System.out.println("update: " + node);
         }
-
     }
 
     /**
@@ -820,7 +813,6 @@ public class RESTfulSerialInterfaceConnectorTest {
      */
     @Test
     public void testGetMetaObjectNode_User_Query() throws Exception {
-
         System.out.println("\nTEST: " + getCurrentMethodName());
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
         final String domain = "WUNDA_BLAU";
@@ -832,10 +824,9 @@ public class RESTfulSerialInterfaceConnectorTest {
         final Node[] result = connector.getMetaObjectNode(user, query);
         assertNotNull(result);
 
-        for (Node node : result) {
+        for (final Node node : result) {
             System.out.println("update: " + node);
         }
-
     }
 
     /**
@@ -1023,15 +1014,14 @@ public class RESTfulSerialInterfaceConnectorTest {
         }
     }
 
-     /**
+    /**
      * DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
      */
     @Test
     public void testUpdateMetaObject() throws Exception {
-
-         System.out.println("\nTEST: " + getCurrentMethodName());
+        System.out.println("\nTEST: " + getCurrentMethodName());
 
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
         final String domain = "WUNDA_BLAU";
@@ -1044,17 +1034,15 @@ public class RESTfulSerialInterfaceConnectorTest {
         assertTrue(result > 0);
 
         System.out.println("updateMetaObject: " + result);
-
     }
 
-     /**
+    /**
      * DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
      */
     @Test
     public void testInsertMetaObject() throws Exception {
-
         System.out.println("\nTEST: " + getCurrentMethodName());
 
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
@@ -1070,7 +1058,7 @@ public class RESTfulSerialInterfaceConnectorTest {
         System.out.println("insertMetaObject: " + result.getClassKey());
     }
 
-     /**
+    /**
      * DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
@@ -1079,7 +1067,6 @@ public class RESTfulSerialInterfaceConnectorTest {
     @Ignore
     // could not determine how to specify the query object correctly
     public void testInsertMetaObjectByQuery() throws Exception {
-
         System.out.println("\nTEST: " + getCurrentMethodName());
 
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
@@ -1089,13 +1076,13 @@ public class RESTfulSerialInterfaceConnectorTest {
 
         final String queryString = "Insert into b_teil (bezeichnung,id,bestandteile) values (\"welle\",1,4) ";
         final Query query = new Query(
-                new SystemStatement(true, -1, "", false, 0, queryString), domain);
+                new SystemStatement(true, -1, "", false, 0, queryString),
+                domain);
 
         final int result = connector.insertMetaObject(user, query, domain);
         assertNotNull(result);
 
         System.out.println("insertMetaObject: " + result);
-
     }
 
     //~ Inner Classes ----------------------------------------------------------

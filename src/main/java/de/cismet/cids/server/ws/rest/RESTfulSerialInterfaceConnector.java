@@ -35,11 +35,13 @@ import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
 
-
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import java.rmi.RemoteException;
 
@@ -68,7 +70,8 @@ import javax.ws.rs.core.UriBuilder;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.ws.Converter;
-import de.cismet.cids.server.ws.ProxyConfig;
+
+import de.cismet.security.Proxy;
 
 import static de.cismet.cids.server.ws.rest.RESTfulSerialInterface.*;
 
@@ -90,7 +93,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     private final transient String rootResource;
     private final transient Map<String, Client> clientCache;
 
-    private transient ProxyConfig proxyConfig;
+    private final transient Proxy proxy;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -107,10 +110,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * Creates a new RESTfulSerialInterfaceConnector object.
      *
      * @param  rootResource  DOCUMENT ME!
-     * @param  config        proxyURL DOCUMENT ME!
+     * @param  proxy         config proxyURL DOCUMENT ME!
      */
-    public RESTfulSerialInterfaceConnector(final String rootResource, final ProxyConfig config) {
-        this(rootResource, config, null);
+    public RESTfulSerialInterfaceConnector(final String rootResource, final Proxy proxy) {
+        this(rootResource, proxy, null);
     }
 
     /**
@@ -127,11 +130,11 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * Creates a new RESTfulSerialInterfaceConnector object.
      *
      * @param  rootResource  DOCUMENT ME!
-     * @param  proxyConfig   proxyURL DOCUMENT ME!
+     * @param  proxy         proxyConfig proxyURL DOCUMENT ME!
      * @param  sslConfig     DOCUMENT ME!
      */
     public RESTfulSerialInterfaceConnector(final String rootResource,
-            final ProxyConfig proxyConfig,
+            final Proxy proxy,
             final SSLConfig sslConfig) {
         if (sslConfig != null) {
             initSSL(sslConfig);
@@ -144,10 +147,13 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             this.rootResource = rootResource + "/"; // NOI18N
         }
 
-        if (proxyConfig == null) {
-            this.proxyConfig = new ProxyConfig();
+        if (proxy == null) {
+            this.proxy = new Proxy();
         } else {
-            this.proxyConfig = proxyConfig;
+            this.proxy = proxy;
+        }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("using proxy: " + proxy); // NOI18N
         }
 
         clientCache = new Hashtable<String, Client>();
@@ -252,23 +258,34 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         // create new client and webresource from the given resource
         if (!clientCache.containsKey(path)) {
             final DefaultApacheHttpClientConfig config = new DefaultApacheHttpClientConfig();
-            if (proxyConfig.getProxyURL() != null) {
-                config.getProperties().put(ApacheHttpClientConfig.PROPERTY_PROXY_URI, proxyConfig.getProxyURL());
+            if ((proxy.getHost() != null) && (proxy.getPort() > 0)) {
+                final URL url;
+                try {
+                    final String protocol;
+                    if (proxy.getHost().startsWith("http")) {                          // NOI18N
+                        protocol = "";                                                 // NOI18N
+                    } else {
+                        protocol = "http://";                                          // NOI18N
+                    }
+                    url = new URL(protocol + proxy.getHost() + ":" + proxy.getPort()); // NOI18N
+                    config.getProperties().put(ApacheHttpClientConfig.PROPERTY_PROXY_URI, url.toString());
+                } catch (final MalformedURLException ex) {
+                    LOG.warn("illegal proxy url, using no proxy", ex);                 // NOI18N
+                }
             }
-            if ((proxyConfig.getUsername() != null) && (proxyConfig.getPassword() != null)) {
-                if ((proxyConfig.getComputerName() != null) && (proxyConfig.getDomain() != null)) {
+            if ((proxy.getUsername() != null) && (proxy.getPassword() != null)) {
+                if (proxy.getDomain() != null) {
                     config.getState()
                             .setProxyCredentials(
                                 null,
                                 null,
                                 -1,
-                                proxyConfig.getUsername(),
-                                proxyConfig.getPassword(),
-                                proxyConfig.getComputerName(),
-                                proxyConfig.getDomain());
+                                proxy.getUsername(),
+                                proxy.getPassword(),
+                                "",                                                    // NOI18N
+                                proxy.getDomain());
                 } else {
-                    config.getState()
-                            .setProxyCredentials(null, null, -1, proxyConfig.getUsername(), proxyConfig.getPassword());
+                    config.getState().setProxyCredentials(null, null, -1, proxy.getUsername(), proxy.getPassword());
                 }
             }
             clientCache.put(path, ApacheHttpClient.create(config));
