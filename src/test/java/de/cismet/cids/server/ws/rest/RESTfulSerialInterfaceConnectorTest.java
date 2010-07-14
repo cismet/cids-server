@@ -682,7 +682,7 @@ public class RESTfulSerialInterfaceConnectorTest {
         System.out.println("\nTEST: " + getCurrentMethodName());
         final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
         final String domain = "WUNDA_BLAU";
-        final int objectID = 3;
+        final int objectID = 4;
         final int classID = 4;
 
         final MetaObject result = connector.getMetaObject(user, objectID, classID, domain);

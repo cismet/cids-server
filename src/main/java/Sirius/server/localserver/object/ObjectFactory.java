@@ -333,10 +333,7 @@ public final class ObjectFactory extends Shutdown {
                     new CurrentStackTrace());
             }
         }
-        System.out.println("classcache: " + classCache);
-        System.out.println("classid. " + classId);
         final Sirius.server.localserver._class.Class c = classCache.getClass(classId);
-        System.out.println("class: " + c);
 
         if (c == null) {
             return null;
@@ -365,7 +362,6 @@ public final class ObjectFactory extends Shutdown {
             return createObject(objectId, rs, c);
         } else {
             LOG.error("<LS> ERROR kein match f\u00FCr " + getObjectStmnt);
-            System.out.println("no match for object id: " + objectId + " | " + getObjectStmnt);
             return null;
         }
     }

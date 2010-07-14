@@ -282,7 +282,6 @@ public class DBServer extends Shutdown implements java.io.Serializable {
         // An dieser Stelle wird die Referenz neu gesetzt. Deshalb funzt getParent() der ObjectAttributes nicht richtig
         // zusaetzlich erzeugt auch die filter Methode eine neue Adresse
         final Sirius.server.localserver.object.Object o = objects.getObject(oId, cId, ug);
-        System.out.println("object: " + o);
 
         if (o != null) {
             final MetaObject mo = new DefaultMetaObject(o.filter(ug), properties.getServerName());
