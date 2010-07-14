@@ -333,7 +333,10 @@ public final class ObjectFactory extends Shutdown {
                     new CurrentStackTrace());
             }
         }
+        System.out.println("classcache: " + classCache);
+        System.out.println("classid. " + classId);
         final Sirius.server.localserver._class.Class c = classCache.getClass(classId);
+        System.out.println("class: " + c);
 
         if (c == null) {
             return null;

@@ -382,12 +382,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final MetaObject mo = dbServer.getObject(objectID, user.getUserGroup());
 
             final MetaClass[] classes = dbServer.getClasses(user.getUserGroup());
-            System.out.println("classes: " + classes);
-            final String servername = serverInfo.getName();
-            System.out.println("servername: " + servername);
-            final Hashtable classtable = getClassHashTable(classes, servername);
-            System.out.println("classtable: " + classtable);
-            mo.setAllClasses(classtable);
+            mo.setAllClasses(getClassHashTable(classes, serverInfo.getName()));
 
             // Check if Object can be extended
             if (mo.getMetaClass().hasExtensionAttributes()) {
