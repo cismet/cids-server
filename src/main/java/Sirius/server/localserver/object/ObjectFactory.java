@@ -365,6 +365,7 @@ public final class ObjectFactory extends Shutdown {
             return createObject(objectId, rs, c);
         } else {
             LOG.error("<LS> ERROR kein match f\u00FCr " + getObjectStmnt);
+            System.out.println("no match for object id: " + objectId + " | " + getObjectStmnt);
             return null;
         }
     }
