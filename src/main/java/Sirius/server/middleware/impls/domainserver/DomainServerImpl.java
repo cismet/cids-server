@@ -63,9 +63,7 @@ import de.cismet.cids.server.DefaultServerExceptionHandler;
 import de.cismet.cids.server.ServerSecurityManager;
 import de.cismet.cids.server.ws.rest.RESTfulService;
 
-import de.cismet.tools.ClassloadingByConventionHelper;
-import java.util.ArrayList;
-import java.util.List;
+import de.cismet.cids.utils.ClassloadingHelper;
 
 /**
  * DOCUMENT ME!
@@ -353,23 +351,6 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     /**
      * DOCUMENT ME!
      *
-     * @param   mo  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private String getExtensionFactoryClassnameByCOnvention(final MetaObject mo, boolean camelize) {
-        String className = mo.getMetaClass().getTableName().toLowerCase();
-        if (camelize) {
-            className = ClassloadingByConventionHelper.camelizeTableName(className);
-        } else {
-            className = className.substring(0, 1).toUpperCase() + className.substring(1);
-        }
-        return EXTENSION_FACTORY_PREFIX + mo.getDomain().toLowerCase() + "." + className + "ExtensionFactory";
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @param   user      DOCUMENT ME!
      * @param   objectID  DOCUMENT ME!
      *
@@ -387,11 +368,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             // Check if Object can be extended
             if (mo.getMetaClass().hasExtensionAttributes()) {
                 // TODO:Check if there is a ExtensionFactory
-                List<String> candidateClassNames = new ArrayList<String>(2);
-                candidateClassNames.add(getExtensionFactoryClassnameByCOnvention(mo,false));
-                candidateClassNames.add(getExtensionFactoryClassnameByCOnvention(mo,true));
-
-                final Class extensionFactoryClass = ClassloadingByConventionHelper.loadClassFromCandidates(candidateClassNames);
+                final Class<?> extensionFactoryClass = ClassloadingHelper.getDynamicClass(mo.getMetaClass(), ClassloadingHelper.CLASS_TYPE.EXTENSION_FACTORY);
 
                 if (extensionFactoryClass != null) {
                     final ObjectExtensionFactory ef = (ObjectExtensionFactory) extensionFactoryClass.newInstance();

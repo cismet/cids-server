@@ -19,7 +19,7 @@ import de.cismet.cids.tools.tostring.StringConvertable;
 import de.cismet.cids.tools.tostring.ToStringConverter;
 
 import de.cismet.tools.BlacklistClassloading;
-import de.cismet.tools.ClassloadingByConventionHelper;
+import de.cismet.cids.utils.ClassloadingHelper;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -254,91 +254,36 @@ public class ObjectAttribute extends Attribute implements Mapable,
     @Override
     public ToStringConverter getToStringConverter() {
         if (toStringConverter == null) {
-            List<String> candidateClassNames = new ArrayList<String>(2);
-            candidateClassNames.add(getToStringConverterClassNameByConvention());
-            candidateClassNames.add(getToStringConverterClassNameByConfiguration());
-            toStringConverter = loadToStringConverterByClassName(candidateClassNames);
-            if (toStringConverter == null) {
-
-                if (logger.isDebugEnabled()) {
-                    logger.debug(
-                            "Could not load ToStringConverter for Attribute "
-                            + mai.name
-                            + " by configuration. Using default");
-                }
-                toStringConverter = new ToStringConverter();
-            }
-
-        }
-        return toStringConverter;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private String getToStringConverterClassNameByConfiguration() {
-        if (toStringString != null) {
-            return toStringString.trim();
-        }
-        return null;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private String getToStringConverterClassNameByConvention() {
-        final Sirius.server.localserver.object.Object parObj = parentObject;
-        if (parObj instanceof MetaObject) {
-            final MetaObject mo = (MetaObject) parObj;
-            final String tabletoLower = mo.getMetaClass().getTableName().toLowerCase();
-            final String domainToLower = mo.getDomain().toLowerCase();
-            final String fieldnameToLower = mai.getFieldName().toLowerCase();
-            final String fieldNamePreparedForClassName = fieldnameToLower.substring(0, 1).toUpperCase()
-                    + fieldnameToLower.substring(1);
-            final StringBuffer lazyClassName = new StringBuffer(toStringConverterPrefix).append(domainToLower).append(".").append(tabletoLower).append(".").append(fieldNamePreparedForClassName).append(toStringConverterPostfix);
-            return lazyClassName.toString();
-        } else {
-            logger.warn("Attribute parent object is not a MetaObject on " + mai.getName() + "!");
-        }
-        return null;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   className  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private ToStringConverter loadToStringConverterByClassName(List<String> classNames) {
-        if (classNames != null) {
-            try {
-                final Class<?> converterClass = ClassloadingByConventionHelper.loadClassFromCandidates(classNames);
-                if (converterClass != null) {
-                    if (ToStringConverter.class.isAssignableFrom(converterClass)) {
-                        return (ToStringConverter) converterClass.newInstance();
-                    } else {
-                        logger.warn("Class " + converterClass + " is not subtype of ToStringConverter!");
+            final Sirius.server.localserver.object.Object parObj = parentObject;
+            if (parObj instanceof MetaObject) {
+                final MetaObject mo = (MetaObject) parObj;
+                try {
+                    final Class<?> converterClass = ClassloadingHelper.getDynamicClass(mo.getMetaClass(), mai, ClassloadingHelper.CLASS_TYPE.TO_STRING_CONVERTER);
+                    if (converterClass != null) {
+                        if (ToStringConverter.class.isAssignableFrom(converterClass)) {
+                            toStringConverter = (ToStringConverter) converterClass.newInstance();
+                        } else {
+                            logger.warn("Class " + converterClass + " is not subtype of ToStringConverter!");
+                        }
+                    }
+                } catch (Throwable t) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Error while trying to load ToStringConverter !", t);
                     }
                 }
-            } catch (Throwable t) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Error while trying to load ToStringConverter " + classNames + " !", t);
+                if (toStringConverter == null) {
+                    toStringConverter = new ToStringConverter();
                 }
             }
         }
-        return null;
+        return toStringConverter;
     }
 
     @Override
     public String toString() {
         setLogger();
         if (logger.isDebugEnabled()) {
-            logger.debug("entered toString for ObjectAttribute value=" + value);
+            logger.debug("entered toString for ObjectAttribute " + name + ", value=" + value);
         }
 
         if (value != null) {
@@ -349,7 +294,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
                 return value.toString();
             }
         }
-        logger.warn("Value is null!");
+        logger.warn("Value is null for " + getName() + "!");
         return "";
     }
 

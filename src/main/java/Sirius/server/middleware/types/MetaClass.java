@@ -21,9 +21,7 @@ import java.util.LinkedHashMap;
 import de.cismet.cids.tools.tostring.ToStringConverter;
 
 import de.cismet.tools.BlacklistClassloading;
-import de.cismet.tools.ClassloadingByConventionHelper;
-import java.util.ArrayList;
-import java.util.List;
+import de.cismet.cids.utils.ClassloadingHelper;
 
 /**
  * Return Type of a RMI method.
@@ -197,26 +195,14 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
                 }
             }
 
-            Class converterClass = null;
-            List<String> candidateClassNames = new ArrayList<String>(2);
+            Class<?> converterClass = null;
             try {
-                final String tableNamePreparedForClassName = getTableName().substring(0, 1).toUpperCase()
-                        + getTableName().substring(1).toLowerCase();
-                candidateClassNames.add(toStringConverterPrefix + (domain + ".").toLowerCase() + tableNamePreparedForClassName
-                        + toStringConverterPostfix);
-                candidateClassNames.add(toStringConverterPrefix + (domain + ".").toLowerCase() + ClassloadingByConventionHelper.camelizeTableName(tableNamePreparedForClassName)
-                        + toStringConverterPostfix);
-
-                converterClass = ClassloadingByConventionHelper.loadClassFromCandidates(candidateClassNames);
+                converterClass = ClassloadingHelper.getDynamicClass(this, ClassloadingHelper.CLASS_TYPE.TO_STRING_CONVERTER);
             } catch (Exception e) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("no lazy toStringConverter found (" + candidateClassNames + ")");
+                    logger.debug("no lazy toStringConverter found!");
                 }
             }
-
-//            if ((converterClass == null) && (toString != null)) {
-//                converterClass = BlacklistClassloading.forName(toString.trim());
-//            }
             if ((converterClass != null)
                     && de.cismet.cids.tools.tostring.ToStringConverter.class.isAssignableFrom(converterClass)) {
                 this.toStringConverter = (ToStringConverter) converterClass.newInstance();
