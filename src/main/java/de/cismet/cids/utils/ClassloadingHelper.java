@@ -58,7 +58,8 @@ public class ClassloadingHelper {
         result.add(plainClassNameBuilder.toString());
         result.add(camelCaseClassNameBuilder.toString());
         //
-        String configurationClassName = getClassNameByConfiguration(metaClass, classType);
+
+        String configurationClassName = mai == null ? getClassNameByConfiguration(metaClass, classType) : getClassNameByConfiguration(mai, classType);
         if (configurationClassName != null) {
             result.add(configurationClassName);
         }
@@ -117,6 +118,21 @@ public class ClassloadingHelper {
                 return getClassAttributeValue("FEATURE_RENDERER", metaClass);
 //            case EXTENSION_FACTORY:
 //                break;
+            default:
+                return null;
+        }
+    }
+
+    public static String getClassNameByConfiguration(MemberAttributeInfo mai, CLASS_TYPE classType) {
+        switch (classType) {
+            case TO_STRING_CONVERTER:
+                return mai.getToString();
+            case RENDERER:
+                return mai.getRenderer();
+            case EDITOR:
+                return mai.getEditor();
+            case AGGREGATION_RENDERER:
+                return mai.getRenderer();
             default:
                 return null;
         }
