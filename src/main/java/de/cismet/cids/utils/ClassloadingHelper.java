@@ -41,10 +41,10 @@ public class ClassloadingHelper {
     private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(ClassloadingHelper.class);
 
     public static List<String> getClassNames(MetaClass metaClass, MemberAttributeInfo mai, CLASS_TYPE classType) {
+        List<String> result = new ArrayList<String>();
         String domain = metaClass.getDomain().toLowerCase();
         String tableName = metaClass.getTableName().toLowerCase();
         String fieldName = mai.getFieldName().toLowerCase();
-        List<String> result = new ArrayList<String>();
         String overrideClassName = System.getProperty(domain + "." + tableName + "." + fieldName + "." + classType.overrideProperty);
         if (overrideClassName != null) {
             result.add(overrideClassName);
@@ -58,8 +58,7 @@ public class ClassloadingHelper {
         result.add(plainClassNameBuilder.toString());
         result.add(camelCaseClassNameBuilder.toString());
         //
-
-        String configurationClassName = mai == null ? getClassNameByConfiguration(metaClass, classType) : getClassNameByConfiguration(mai, classType);
+        String configurationClassName = (mai == null ? getClassNameByConfiguration(metaClass, classType) : getClassNameByConfiguration(mai, classType));
         if (configurationClassName != null) {
             result.add(configurationClassName);
         }
@@ -73,9 +72,9 @@ public class ClassloadingHelper {
     }
 
     public static List<String> getClassNames(MetaClass metaClass, CLASS_TYPE classType) {
+        List<String> result = new ArrayList<String>();
         String tableName = metaClass.getTableName().toLowerCase();
         String domain = metaClass.getDomain().toLowerCase();
-        List<String> result = new ArrayList<String>();
         String overrideClassName = System.getProperty(domain + "." + tableName + "." + classType.overrideProperty);
         if (overrideClassName != null) {
             result.add(overrideClassName);
@@ -86,7 +85,6 @@ public class ClassloadingHelper {
             StringBuilder camelCaseClassNameBuilder = new StringBuilder(plainClassNameBuilder);
             //
             plainClassNameBuilder.append(capitalize(tableName)).append(classType.classNameSuffix);
-            //
             camelCaseClassNameBuilder.append(camelize(tableName)).append(classType.classNameSuffix);
             //
             result.add(plainClassNameBuilder.toString());
