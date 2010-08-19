@@ -140,7 +140,7 @@ public class Seeker {
                 }
 
                 // objectid@classId
-                final String key = constructKey(object_id, class_id);
+//                final String key = constructKey(object_id, class_id);
 
                 // logger.debug("objectkey found ::"+key);
 
