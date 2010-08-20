@@ -178,6 +178,16 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
     }
 
     /**
+     * Returns the actual server instance.
+     * @return
+     * @throws ServerExitError
+     * @deprecated THIS IS HIGLY ERROR PRONE SINCE THE IMPLEMENTATION IS NOT A SINGLETON
+     */
+    public static synchronized Registry getServerInstance() throws ServerExitError {
+        return instance;
+    }
+
+    /**
      * DOCUMENT ME!
      *
      * @param   type  DOCUMENT ME!
@@ -1003,6 +1013,8 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
             final String message = "could not shutdown registry"; // NOI18N
             LOG.fatal(message, e);
             throw new ServerExitError(message, e);
+        }finally{
+            instance = null;
         }
     }
 
@@ -1023,22 +1035,26 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
      * @throws  ServerExitError  DOCUMENT ME!
      */
     public static void main(final String[] args) throws ServerExitError {
-        final int port;
+        int port;
 
         try {
             if (args == null) {
-                throw new ServerExitError("no command prompt parameters");         // NOI18N
+                LOG.warn("no command line parameters, using default port: 1099"); // NOI18N
+                port = 1099;
             } else if (args.length > 0) {
                 port = Integer.valueOf(args[0]);
             } else {
                 port = 1099;
             }
         } catch (final NumberFormatException nfexp) {
-            throw new ServerExitError("invalid port argument: " + args[0], nfexp); // NOI18N
+            final String message = "invalid port argument: '" + args[0] + "', using default port: 1099"; // NOI18N
+            LOG.warn(message, nfexp);
+            port = 1099;
+            //throw new ServerExitError(message, nfexp); // NOI18N
         }
 
         try {
-            new Registry(port);
+            instance = new Registry(port);
         } catch (final Exception e) {
             final String message = "could not create registry at port: " + port; // NOI18N
             LOG.error(message, e);

@@ -26,7 +26,7 @@
         <dependency>
             <groupId>de.cismet.commons</groupId>
             <artifactId>cismet-commons</artifactId>
-            <version>1.0</version>
+            <version>1.1-SNAPSHOT</version>
         </dependency>
         <!--ToDo use newest Version see issue0000892-->
         <dependency>
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>de.cismet.commons</groupId>
             <artifactId>cismet-gui-commons</artifactId>
-            <version>1.0</version>
+            <version>1.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>javassist</groupId>
@@ -70,14 +70,20 @@
             <version>1.1.5.1</version>
         </dependency>
         <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-client</artifactId>
+            <groupId>com.sun.jersey.contribs</groupId>
+            <artifactId>jersey-apache-client</artifactId>
             <version>1.1.5.1</version>
         </dependency>
         <dependency>
             <groupId>org.mortbay.jetty</groupId>
             <artifactId>jetty-embedded</artifactId>
             <version>6.1.9</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.1</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -86,12 +92,17 @@
             <plugin>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-maven-plugin</artifactId>
+                <version>1.5-SNAPSHOT</version>
                 <executions>
                     <execution>
+                        <id>cids-maven-plugin-reset-refsystem</id>
                         <phase>generate-test-resources</phase>
                         <goals>
                             <goal>reset-refsystem</goal>
                         </goals>
+                        <configuration>
+                            <skip>${maven.test.skip}</skip>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

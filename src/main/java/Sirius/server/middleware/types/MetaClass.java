@@ -1,10 +1,10 @@
 /***************************************************
-*
-* cismet GmbH, Saarbruecken, Germany
-*
-*              ... and it just works.
-*
-****************************************************/
+ *
+ * cismet GmbH, Saarbruecken, Germany
+ *
+ *              ... and it just works.
+ *
+ ****************************************************/
 package Sirius.server.middleware.types;
 
 import Sirius.server.localserver.attribute.AttributeVector;
@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import de.cismet.cids.tools.tostring.ToStringConverter;
 
 import de.cismet.tools.BlacklistClassloading;
+import de.cismet.cids.utils.ClassloadingHelper;
 
 /**
  * Return Type of a RMI method.
@@ -28,20 +29,16 @@ import de.cismet.tools.BlacklistClassloading;
  * @version  $Revision$, $Date$
  */
 public class MetaClass extends Sirius.server.localserver._class.Class implements java.io.Serializable,
-    Groupable,
-    Renderable,
-    Editable {
+        Groupable,
+        Renderable,
+        Editable {
 
     //~ Static fields/initializers ---------------------------------------------
-
     /** Use serialVersionUID for interoperability. */
     private static final long serialVersionUID = -1080130275226708408L;
-
     private static String toStringConverterPrefix = "de.cismet.cids.custom.tostringconverter.";//NOI18N
     private static String toStringConverterPostfix = "ToStringConverter";//NOI18N
-
     //~ Instance fields --------------------------------------------------------
-
     /** domain. */
     protected String domain;
     private transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
@@ -52,7 +49,6 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
     // -------------------------------------------------------------------
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * constuructor adding the domain.
      *
@@ -63,16 +59,16 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
         /*SystemProperties*/
 
         super(
-            c.getID(),
-            c.getName(),
-            c.getDescription(),
-            c.getIcon(),
-            c.getObjectIcon(),
-            c.getTableName(),
-            c.getPrimaryKey(),
-            c.getToString(),
-            c.getPermissions(),
-            c.getAttributePolicy());
+                c.getID(),
+                c.getName(),
+                c.getDescription(),
+                c.getIcon(),
+                c.getObjectIcon(),
+                c.getTableName(),
+                c.getPrimaryKey(),
+                c.getToString(),
+                c.getPermissions(),
+                c.getAttributePolicy());
         super.attribs = new AttributeVector(c.getAttributes());
         super.memberAttributeInfos = new LinkedHashMap(c.getMemberAttributeInfos());
         // Hell
@@ -85,7 +81,6 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
     }
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * grouping criterion.
      *
@@ -200,32 +195,22 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
                 }
             }
 
-            Class converterClass = null;
-            String lazyClassName = null;
-
+            Class<?> converterClass = null;
             try {
-                final String tableNamePreparedForClassName = getTableName().substring(0, 1).toUpperCase()
-                            + getTableName().substring(1).toLowerCase();
-                lazyClassName = toStringConverterPrefix + (domain + ".").toLowerCase() + tableNamePreparedForClassName   // NOI18N
-                            + toStringConverterPostfix;
-                converterClass = BlacklistClassloading.forName(lazyClassName);
+                converterClass = ClassloadingHelper.getDynamicClass(this, ClassloadingHelper.CLASS_TYPE.TO_STRING_CONVERTER);
             } catch (Exception e) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("no lazy toStringConverter found (" + lazyClassName + ")");   // NOI18N
+                    logger.debug("no lazy toStringConverter found!");
                 }
             }
-
-            if ((converterClass == null) && (toString != null)) {
-                converterClass = BlacklistClassloading.forName(toString.trim());
-            }
             if ((converterClass != null)
-                        && de.cismet.cids.tools.tostring.ToStringConverter.class.isAssignableFrom(converterClass)) {
-                this.toStringConverter = (ToStringConverter)converterClass.newInstance();
+                    && de.cismet.cids.tools.tostring.ToStringConverter.class.isAssignableFrom(converterClass)) {
+                this.toStringConverter = (ToStringConverter) converterClass.newInstance();
             } else if (logger != null) {
                 if (logger.isDebugEnabled()) {
                     logger.debug(
-                        " customized stringconverter could not be loaded as ClassQualifer ist not a valid ToSTringconverter "   // NOI18N
-                                + toString);
+                            " customized stringconverter could not be loaded as ClassQualifer ist not a valid ToSTringconverter "
+                            + toString);
                 }
             }
 
@@ -238,9 +223,11 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
         } catch (Exception e) {
             if (logger != null) {
                 logger.error(
-                    toString + " for class " + name   // NOI18N
-                    + " could not be loaded. Set string converter to Default ",   // NOI18N
-                    e);
+                        toString
+                        + " f\u00FCr Klasse "
+                        + name
+                        + " konnte nicht geladen werden set string converter to Default ",
+                        e);
             }
             this.toStringConverter = new ToStringConverter();
         }
@@ -303,7 +290,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
             final Iterator iter = getMemberAttributeInfos().values().iterator();
 
             while (iter.hasNext()) {
-                final MemberAttributeInfo mai = (MemberAttributeInfo)iter.next();
+                final MemberAttributeInfo mai = (MemberAttributeInfo) iter.next();
 
                 final ObjectAttribute oAttr;
                 oAttr = new ObjectAttribute(mai, -1, null, getAttributePolicy());
@@ -338,7 +325,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
         if (hasExtensionAttributes == null) {
             final Iterator iter = getMemberAttributeInfos().values().iterator();
             while (iter.hasNext()) {
-                final MemberAttributeInfo mai = (MemberAttributeInfo)iter.next();
+                final MemberAttributeInfo mai = (MemberAttributeInfo) iter.next();
                 if (mai.isExtensionAttribute()) {
                     hasExtensionAttributes = true;
                     break;
@@ -356,9 +343,9 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
         if (this == obj) {
             return true;
         } else if (obj instanceof MetaClass) {
-            final MetaClass other = (MetaClass)obj;
+            final MetaClass other = (MetaClass) obj;
             final boolean sameDomain = (getDomain() == other.getDomain())
-                        || ((getDomain() != null) && getDomain().equals(other.getDomain()));
+                    || ((getDomain() != null) && getDomain().equals(other.getDomain()));
             return sameDomain && (getID() == other.getID());
         } else {
             return false;

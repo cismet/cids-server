@@ -330,6 +330,17 @@ public final class StartProxy {
     /**
      * DOCUMENT ME!
      *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  IllegalStateException  DOCUMENT ME!
+     */
+    public static synchronized StartProxy getServerInstance() throws IllegalStateException {
+        return getInstance();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   configFile  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -385,8 +396,6 @@ public final class StartProxy {
             LOG.debug("shutdown proxy: " + this); // NOI18N
         }
 
-        instance = null;
-
         try {
             callServer.unregisterAsObserver(siriusRegistryIP);
             callServer.getNameServer()
@@ -417,6 +426,8 @@ public final class StartProxy {
             final String message = "Server shutdown failure, integrity no longer guaranteed"; // NOI18N
             LOG.fatal(message, e);
             throw new ServerExitError(message, e);
+        } finally{
+            instance = null;
         }
     }
 

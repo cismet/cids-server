@@ -1,10 +1,10 @@
 /***************************************************
-*
-* cismet GmbH, Saarbruecken, Germany
-*
-*              ... and it just works.
-*
-****************************************************/
+ *
+ * cismet GmbH, Saarbruecken, Germany
+ *
+ *              ... and it just works.
+ *
+ ****************************************************/
 /*
  * ToString.java
  *
@@ -25,16 +25,12 @@ import java.util.*;
 public class ToStringConverter implements java.io.Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
-
     /** Use serialVersionUID for interoperability. */
     private static final long serialVersionUID = 8894419084787216662L;
-
     //~ Instance fields --------------------------------------------------------
-
-    private transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
+    private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(ToStringConverter.class);
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * DOCUMENT ME!
      *
@@ -44,16 +40,15 @@ public class ToStringConverter implements java.io.Serializable {
      * @return  DOCUMENT ME!
      */
     public String convert(final Sirius.server.localserver.object.Object o, final HashMap classes) {
-        String stringRepresentation = "";//NOI18N
+        StringBuilder stringRepresentation = new StringBuilder();
 
         // ObjectAttribute[] attrs = o.getAttribs();
-        final Collection names = o.getAttributeByName("name", 1);//NOI18N
+        final Collection<Attribute> names = o.getAttributeByName("name", 1);
         final Iterator iter = names.iterator();
-
         if (iter.hasNext()) {
-            stringRepresentation += ((ObjectAttribute)iter.next()).getValue();
+            stringRepresentation.append(((ObjectAttribute) iter.next()).getValue());
         } else {
-            stringRepresentation += o.getKey().toString();
+            stringRepresentation.append(o.getKey().toString());
         }
 
 //
@@ -66,7 +61,7 @@ public class ToStringConverter implements java.io.Serializable {
 //
 //        }
 //
-        return stringRepresentation;
+        return stringRepresentation.toString();
     }
 
     /**
@@ -77,56 +72,25 @@ public class ToStringConverter implements java.io.Serializable {
      * @return  DOCUMENT ME!
      */
     public String convert(final de.cismet.cids.tools.tostring.StringConvertable o) {
-        setLogger();
 
-        if (logger != null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("convert invoked from ToStringconverter");//NOI18N
-            }
+        if (logger.isDebugEnabled()) {
+            logger.debug("convert von ToStringconverter gerufen");
         }
-
-        String stringRepresentation = "";//NOI18N
+        final StringBuilder stringRepresentation = new StringBuilder();
 
         if (o instanceof Sirius.server.localserver.object.Object) {
-            final Collection names = ((Sirius.server.localserver.object.Object)o).getAttributeByName("name", 1);//NOI18N
-            final Iterator iter = names.iterator();
-
-            if (iter.hasNext()) {
-                stringRepresentation += ((ObjectAttribute)iter.next()).getValue();
-            } else {
-                stringRepresentation += "";//NOI18N
+            final Collection<Attribute> names = ((Sirius.server.localserver.object.Object) o).getAttributeByName("name", 1);
+            for (Attribute cur : names) {
+                stringRepresentation.append(cur.getValue());
             }
-//            ObjectAttribute[] attrs = ((Sirius.server.localserver.object.Object)o).getAttribs();
-//
-//            for(int i = 0; i< attrs.length;i++)
-//            {
-//
-//                stringRepresentation+=( attrs[i].toString() + " ");
-//
-//
-//            }
         } else if (o instanceof Sirius.server.localserver.attribute.ObjectAttribute) {
-            if (logger != null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("call convert for ObjectAttribute");//NOI18N
-                }
+            if (logger.isDebugEnabled()) {
+                logger.debug("call convert for ObjectAttribute");
             }
-            stringRepresentation += ((ObjectAttribute)o).getValue();
+            stringRepresentation.append(((ObjectAttribute) o).getValue());
         } else {
-            if (logger != null) {
-                logger.warn("Unknown Type for StringConversion ::" + o.getClass());//NOI18N
-            }
+            logger.warn("Unknown Type for StringConversion ::" + o.getClass());
         }
-
-        return stringRepresentation;
-    }
-
-    /**
-     * DOCUMENT ME!
-     */
-    public void setLogger() {
-        if (logger == null) {
-            logger = org.apache.log4j.Logger.getLogger(this.getClass());
-        }
+        return stringRepresentation.toString();
     }
 }

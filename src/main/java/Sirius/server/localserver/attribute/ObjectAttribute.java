@@ -1,10 +1,10 @@
 /***************************************************
-*
-* cismet GmbH, Saarbruecken, Germany
-*
-*              ... and it just works.
-*
-****************************************************/
+ *
+ * cismet GmbH, Saarbruecken, Germany
+ *
+ *              ... and it just works.
+ *
+ ****************************************************/
 package Sirius.server.localserver.attribute;
 
 import Sirius.server.middleware.types.*;
@@ -18,7 +18,7 @@ import de.cismet.cids.tools.fromstring.StringCreateable;
 import de.cismet.cids.tools.tostring.StringConvertable;
 import de.cismet.cids.tools.tostring.ToStringConverter;
 
-import de.cismet.tools.BlacklistClassloading;
+import de.cismet.cids.utils.ClassloadingHelper;
 
 /**
  * DOCUMENT ME!
@@ -26,22 +26,18 @@ import de.cismet.tools.BlacklistClassloading;
  * @version  $Revision$, $Date$
  */
 public class ObjectAttribute extends Attribute implements Mapable,
-    java.io.Serializable,
-    Renderable,
-    Editable,
-    StringCreateable,
-    StringConvertable {
+        java.io.Serializable,
+        Renderable,
+        Editable,
+        StringCreateable,
+        StringConvertable {
 
     //~ Static fields/initializers ---------------------------------------------
-
     /** Use serialVersionUID for interoperability. */
     private static final long serialVersionUID = 2266358985361133488L;
-
     private static String toStringConverterPrefix = "de.cismet.cids.custom.tostringconverter.";//NOI18N
     private static String toStringConverterPostfix = "ToStringConverter";//NOI18N
-
     //~ Instance fields --------------------------------------------------------
-
     // xxx not initialized yet
     public FromStringCreator objectCreator;
     // objekt zu dem das Attribut gehoert
@@ -55,11 +51,9 @@ public class ObjectAttribute extends Attribute implements Mapable,
     protected String complexEditor;
     protected String toStringString;
     protected Sirius.server.localserver.object.Object parentObject;
-
     private transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new ObjectAttribute object.
      *
@@ -75,6 +69,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
         // id????
         this(mai.getId() + "", mai, objectID, value, policy);   // NOI18N
     }
+
     /**
      * /////////////constructor///////////////////////////////////////
      *
@@ -100,7 +95,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
         super.referencesObject = mai.foreignKey;
         super.optional = mai.isOptional();
         if (value instanceof java.lang.String) {
-            this.value = ((String)value).trim();
+            this.value = ((String) value).trim();
         } else {
             this.value = value;
         }
@@ -117,7 +112,6 @@ public class ObjectAttribute extends Attribute implements Mapable,
     }
 
     //~ Methods ----------------------------------------------------------------
-
 // public ObjectAttribute(String id, java.lang.Object value,int objectID, int classID,String name, String description, boolean visible)
 //    {
 //        super(id,name,description);
@@ -257,20 +251,24 @@ public class ObjectAttribute extends Attribute implements Mapable,
     @Override
     public ToStringConverter getToStringConverter() {
         if (toStringConverter == null) {
-            String classNameToLoad = getToStringConverterClassNameByConvention();
-            toStringConverter = loadToStringConverterByClassName(classNameToLoad);
-            if (toStringConverter == null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Could not load ToStringConverter for Attribute " + mai.name + " by convention.");   // NOI18N
-                }
-                classNameToLoad = getToStringConverterClassNameByConfiguration();
-                toStringConverter = loadToStringConverterByClassName(classNameToLoad);
-                if (toStringConverter == null) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(
-                            "Could not load ToStringConverter for Attribute " + mai.name   // NOI18N
-                            + " by configuration. Using default");   // NOI18N
+            final Sirius.server.localserver.object.Object parObj = parentObject;
+            if (parObj instanceof MetaObject) {
+                final MetaObject mo = (MetaObject) parObj;
+                try {
+                    final Class<?> converterClass = ClassloadingHelper.getDynamicClass(mo.getMetaClass(), mai, ClassloadingHelper.CLASS_TYPE.TO_STRING_CONVERTER);
+                    if (converterClass != null) {
+                        if (ToStringConverter.class.isAssignableFrom(converterClass)) {
+                            toStringConverter = (ToStringConverter) converterClass.newInstance();
+                        } else {
+                            logger.warn("Class " + converterClass + " is not subtype of ToStringConverter!");
+                        }
                     }
+                } catch (Throwable t) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Error while trying to load ToStringConverter !", t);
+                    }
+                }
+                if (toStringConverter == null) {
                     toStringConverter = new ToStringConverter();
                 }
             }
@@ -278,74 +276,11 @@ public class ObjectAttribute extends Attribute implements Mapable,
         return toStringConverter;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private String getToStringConverterClassNameByConfiguration() {
-        if (toStringString != null) {
-            return toStringString.trim();
-        }
-        return null;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private String getToStringConverterClassNameByConvention() {
-        final Sirius.server.localserver.object.Object parObj = parentObject;
-        if (parObj instanceof MetaObject) {
-            final MetaObject mo = (MetaObject)parObj;
-            final String tabletoLower = mo.getMetaClass().getTableName().toLowerCase();
-            final String domainToLower = mo.getDomain().toLowerCase();
-            final String fieldnameToLower = mai.getFieldName().toLowerCase();
-            final String fieldNamePreparedForClassName = fieldnameToLower.substring(0, 1).toUpperCase()
-                        + fieldnameToLower.substring(1);
-            final StringBuffer lazyClassName = new StringBuffer(toStringConverterPrefix).append(domainToLower)
-                        .append(".").append(tabletoLower).append(".").append(fieldNamePreparedForClassName)   // NOI18N
-                        .append(toStringConverterPostfix);
-            return lazyClassName.toString();
-        } else {
-            logger.warn("Attribute parent object is not a MetaObject on " + mai.getName() + "!");   // NOI18N
-        }
-        return null;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   className  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private ToStringConverter loadToStringConverterByClassName(final String className) {
-        if (className != null) {
-            try {
-                final Class<?> converterClass = BlacklistClassloading.forName(className.toString());
-                if (converterClass != null) {
-                    if (ToStringConverter.class.isAssignableFrom(converterClass)) {
-                        return (ToStringConverter)converterClass.newInstance();
-                    } else {
-                        logger.warn("Class " + className + " is not subtype of ToStringConverter!");   // NOI18N
-                    }
-                }
-            } catch (Throwable t) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Error while trying to load ToStringConverter " + className.toString() + " !", t);   // NOI18N
-                }
-            }
-        }
-        return null;
-    }
-
     @Override
     public String toString() {
         setLogger();
         if (logger.isDebugEnabled()) {
-            logger.debug("entered toString for ObjectAttribute value=" + value);   // NOI18N
+            logger.debug("entered toString for ObjectAttribute " + name + ", value=" + value);
         }
 
         if (value != null) {
@@ -356,9 +291,10 @@ public class ObjectAttribute extends Attribute implements Mapable,
                 return value.toString();
             }
         }
-        logger.warn("Value is null!");   // NOI18N
-        return "";   // NOI18N
+        logger.warn("Value is null for " + getName() + "!");
+        return "";
     }
+
     /**
      * muss total neu gemacht werden.
      *
@@ -376,30 +312,32 @@ public class ObjectAttribute extends Attribute implements Mapable,
                 final java.lang.Class c = java.lang.Class.forName(fromString.trim());
 
                 if (c0.isAssignableFrom(c)) {
-                    this.objectCreator = (FromStringCreator)c.newInstance();
+                    this.objectCreator = (FromStringCreator) c.newInstance();
                     if (logger.isDebugEnabled()) {
                         logger.debug(this.objectCreator + " of type " + fromString + " successfully assigned");   // NOI18N
                     }
                 } else {
                     logger.warn(
-                        "<LS> info ::  fromSTringObjectCreator " + fromString + " not loaded: reference is :"   // NOI18N
-                        + this.objectCreator);
+                            "<LS> info ::  fromSTringObjectCreator "
+                            + fromString
+                            + "nicht geladen: reference is :"
+                            + this.objectCreator);
                 }
             } catch (Exception e) {
                 logger.error(
-                    "<LS> ERROR :: "//NOI18N
-                            + fromString
-                            + " for class "//NOI18N
-                            + name
-                            + " could not be loaded. Set string converter to Default ",//NOI18N
-                    e);
+                        "<LS> ERROR :: "
+                        + fromString
+                        + " f\u00FCr Klasse "
+                        + name
+                        + " konnte nicht geladen werden set string converter to Default ",
+                        e);
             }
         } else // fromString==null nicht gesetz aber value evtl vorhanden
         {
             // default from string
             if ((value instanceof java.sql.Date)
-                        || (value instanceof java.util.Date)
-                        || ((typeId > 78) && (typeId < 87))) {
+                    || (value instanceof java.util.Date)
+                    || ((typeId > 78) && (typeId < 87))) {
                 this.objectCreator = new DateFromString();
             }
         }
@@ -458,3 +396,4 @@ public class ObjectAttribute extends Attribute implements Mapable,
 //        this.deletedValue = deletedValue;
 //    }
 } // end of class
+
