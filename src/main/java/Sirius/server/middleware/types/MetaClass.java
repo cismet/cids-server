@@ -36,8 +36,8 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
     //~ Static fields/initializers ---------------------------------------------
     /** Use serialVersionUID for interoperability. */
     private static final long serialVersionUID = -1080130275226708408L;
-    private static String toStringConverterPrefix = "de.cismet.cids.custom.tostringconverter.";
-    private static String toStringConverterPostfix = "ToStringConverter";
+    private static String toStringConverterPrefix = "de.cismet.cids.custom.tostringconverter.";//NOI18N
+    private static String toStringConverterPostfix = "ToStringConverter";//NOI18N
     //~ Instance fields --------------------------------------------------------
     /** domain. */
     protected String domain;
@@ -134,7 +134,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
      */
     @Override
     public Object getKey() {
-        return id + "@" + domain;
+        return id + "@" + domain;   // NOI18N
     }
 
     /**
@@ -191,7 +191,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
         try {
             if (logger != null) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("try to load stringconverter if not null : " + toString);
+                    logger.debug("try to load stringconverter if not null : " + toString);   // NOI18N
                 }
             }
 
@@ -217,7 +217,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
             if (converterClass == null) {
                 this.toStringConverter = new ToStringConverter();
                 if (logger.isDebugEnabled()) {
-                    logger.debug(" default stringconverter loaded: reference is :" + this.toStringConverter);
+                    logger.debug(" default stringconverter loaded: reference is :" + this.toStringConverter);   // NOI18N
                 }
             }
         } catch (Exception e) {
@@ -269,7 +269,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
             try {
                 javaClass = BeanFactory.getInstance().getJavaClass(this);
             } catch (Exception e) {
-                getLogger().error("Javaklasse fuer " + this.getName() + " konnte nicht erzeugt werden.", e);
+                getLogger().error("Javaclass for " + this.getName() + " could not be created.", e);   // NOI18N
             }
         }
         return javaClass;
@@ -305,13 +305,13 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
                 }
                 oAttr.setOptional(mai.isOptional());
 
-                oAttr.setClassKey(mai.getForeignKeyClassId() + "@" + domain);
+                oAttr.setClassKey(mai.getForeignKeyClassId() + "@" + domain);   // NOI18N
                 o.addAttribute(oAttr);
             }
 
             return new DefaultMetaObject(o, getDomain());
         } catch (Exception e) {
-            getLogger().error("Fehler in getEmptyInstance", e);
+            getLogger().error("Error in getEmptyInstance", e);   // NOI18N
             return null;
         }
     }

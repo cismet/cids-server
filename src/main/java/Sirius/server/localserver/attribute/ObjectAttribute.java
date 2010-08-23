@@ -35,8 +35,8 @@ public class ObjectAttribute extends Attribute implements Mapable,
     //~ Static fields/initializers ---------------------------------------------
     /** Use serialVersionUID for interoperability. */
     private static final long serialVersionUID = 2266358985361133488L;
-    private static String toStringConverterPrefix = "de.cismet.cids.custom.tostringconverter.";
-    private static String toStringConverterPostfix = "ToStringConverter";
+    private static String toStringConverterPrefix = "de.cismet.cids.custom.tostringconverter.";//NOI18N
+    private static String toStringConverterPostfix = "ToStringConverter";//NOI18N
     //~ Instance fields --------------------------------------------------------
     // xxx not initialized yet
     public FromStringCreator objectCreator;
@@ -67,7 +67,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
             final java.lang.Object value,
             final Policy policy) {
         // id????
-        this(mai.getId() + "", mai, objectID, value, policy);
+        this(mai.getId() + "", mai, objectID, value, policy);   // NOI18N
     }
 
     /**
@@ -180,7 +180,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
     // mapable
     @Override
     public java.lang.Object getKey() {
-        return id + "@" + classID;
+        return id + "@" + classID;   // NOI18N
     }
 
     @Override
@@ -217,10 +217,10 @@ public class ObjectAttribute extends Attribute implements Mapable,
     @Override
     public String getComplexEditor() {
         if (this.complexEditor == null) {
-            complexEditor = "Sirius.navigator.ui.attributes.editor.metaobject.DefaultComplexMetaAttributeEditor";
+            complexEditor = "Sirius.navigator.ui.attributes.editor.metaobject.DefaultComplexMetaAttributeEditor";   // NOI18N
         }
         if (this.editor == null) {
-            editor = "Sirius.navigator.ui.attributes.editor.metaobject.DefaultSimpleComplexMetaAttributeEditor";
+            editor = "Sirius.navigator.ui.attributes.editor.metaobject.DefaultSimpleComplexMetaAttributeEditor";   // NOI18N
         }
         if (this.referencesObject()) {
             return complexEditor;
@@ -305,16 +305,16 @@ public class ObjectAttribute extends Attribute implements Mapable,
         if (fromString != null) {
             try {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("<LS> info :: try to load fromString if not null : " + fromString);
+                    logger.debug("<LS> info :: try to load fromString if not null : " + fromString);   // NOI18N
                 }
 
-                final java.lang.Class c0 = java.lang.Class.forName("Sirius.util.FromStringCreator");
+                final java.lang.Class c0 = java.lang.Class.forName("Sirius.util.FromStringCreator");//NOI18N
                 final java.lang.Class c = java.lang.Class.forName(fromString.trim());
 
                 if (c0.isAssignableFrom(c)) {
                     this.objectCreator = (FromStringCreator) c.newInstance();
                     if (logger.isDebugEnabled()) {
-                        logger.debug(this.objectCreator + "vom typ" + fromString + " erfolgreich zugewiesen");
+                        logger.debug(this.objectCreator + " of type " + fromString + " successfully assigned");   // NOI18N
                     }
                 } else {
                     logger.warn(

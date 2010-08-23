@@ -47,7 +47,7 @@ public class TransactionExecuter {
         for (int i = 0; i < ms.length; i++) {
             final String methodName = ms[i].getName();
             if (logger.isDebugEnabled()) {
-                logger.debug("methodname registered  " + methodName);
+                logger.debug("methodname registered  " + methodName);//NOI18N
             }
             methods.put(methodName, ms[i]);
         }
@@ -77,10 +77,10 @@ public class TransactionExecuter {
                     m.invoke(o, t.getParams());
                     successfull++;
                 } catch (Exception e) {
-                    logger.error("failed to execute " + t.getName(), e);
+                    logger.error("failed to execute " + t.getName(), e);//NOI18N
                 }
             } else {
-                logger.error("failed to execute " + t.getName() + " as method doesn't exist here");
+                logger.error("failed to execute " + t.getName() + " as method doesn't exist here");//NOI18N
             }
         }
 

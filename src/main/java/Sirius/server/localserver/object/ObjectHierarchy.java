@@ -59,11 +59,11 @@ public class ObjectHierarchy {
         ResultSet rs = stmnt.executeQuery(initLookupTable);
 
         while (rs.next()) {
-            final Integer key = new Integer(rs.getInt("child"));
+            final Integer key = new Integer(rs.getInt("child"));//NOI18N
 
-            final String pk = rs.getString("pk");
+            final String pk = rs.getString("pk");//NOI18N
 
-            final int father = rs.getInt("father");
+            final int father = rs.getInt("father");//NOI18N
             final boolean isArray = rs.getBoolean("isarray");
 
             // konstruiere select string f\u00FCr Vaterobjekt mit Auswahlkriterium = Objektid des Attributes
@@ -71,7 +71,7 @@ public class ObjectHierarchy {
             final String value = "Select " + father + " as class_id ," + pk + " as object_id" + " from "
                     + rs.getString("table_name") + " where " + rs.getString("field_name") + " = ";
             if (logger.isDebugEnabled()) {
-                logger.debug(" get Father key :: " + key + " value :: " + value);
+                logger.debug(" get Father key :: " + key + " value :: " + value);   // NOI18N
             }
             if (!isArray) {
                 fatherStmnts.put(key, value);
@@ -88,21 +88,21 @@ public class ObjectHierarchy {
         rs = stmnt.executeQuery(initArrayLookupTable);
 
         while (rs.next()) {
-            final String arrayKey = rs.getString("array_key");
-            final Integer key = new Integer(rs.getInt("child"));
-            final String father_pk = rs.getString("father_pk");
-            final int father = rs.getInt("father");
-            final String attribute = rs.getString("attribute");
-            final String child_table = rs.getString("child_table");
-            final String father_table = rs.getString("father_table");
-            final String child_pk = rs.getString("child_pk");
+            final String arrayKey = rs.getString("array_key");//NOI18N
+            final Integer key = new Integer(rs.getInt("child"));//NOI18N
+            final String father_pk = rs.getString("father_pk");//NOI18N
+            final int father = rs.getInt("father");//NOI18N
+            final String attribute = rs.getString("attribute");//NOI18N
+            final String child_table = rs.getString("child_table");//NOI18N
+            final String father_table = rs.getString("father_table");//NOI18N
+            final String child_pk = rs.getString("child_pk");//NOI18N
 
-            final String value = "Select " + father + " as class_id ," + father_pk + " as object_id" + " from "
+            final String value = "Select " + father + " as class_id ," + father_pk + " as object_id" + " from "//NOI18N
                     + father_table
                     + " where " + attribute + " in "
                     + " (select " + arrayKey + " from " + child_table + " where  " + child_pk + " = "; // ? )
             if (logger.isDebugEnabled()) {
-                logger.debug(" get Array Father key :: " + key + " value :: " + value);
+                logger.debug(" get Array Father key :: " + key + " value :: " + value);   // NOI18N
             }
 
             arrayFatherStmnts.put(key, value);
@@ -251,7 +251,7 @@ public class ObjectHierarchy {
 
             result = new ArrayList(statements.size());
             while (iter.hasNext()) {
-                result.add(iter.next().toString() + objectId + ")");
+                result.add(iter.next().toString() + objectId + ")");   // NOI18N
             }
         }
 

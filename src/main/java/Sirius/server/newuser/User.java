@@ -167,7 +167,7 @@ public class User implements java.io.Serializable, Mapable {
     @Override
     public Object getKey() {
         if (userGroup != null) {
-            return name + "@" + userGroup.getKey();
+            return name + "@" + userGroup.getKey();   // NOI18N
         } else {
             return name + "";
         }
@@ -179,7 +179,7 @@ public class User implements java.io.Serializable, Mapable {
      * @return  DOCUMENT ME!
      */
     public Object getRegistryKey() {
-        return name + "@" + domain;
+        return name + "@" + domain;   // NOI18N
     }
 
     @Override

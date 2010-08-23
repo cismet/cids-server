@@ -39,7 +39,7 @@ public class Transaction implements java.io.Serializable, Sirius.util.Mapable {
      * Creates a new instance of Transasction.
      */
     public Transaction() {
-        name = "";
+        name = "";//NOI18N
         params = new Object[0];
     }
 

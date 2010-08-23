@@ -693,7 +693,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
         }
         try {
             final RemoteObservable server = (RemoteObservable)Naming.lookup(
-                    "rmi://"
+                    "rmi://"//NOI18N
                             + siriusRegistryIP
                             + "/nameServer");                                 // NOI18N
             server.addObserver(this);
@@ -721,7 +721,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     void unregisterAsObserver(final String siriusRegistryIP) {
         try {
             final RemoteObservable server = (RemoteObservable)Naming.lookup(
-                    "rmi://"
+                    "rmi://"//NOI18N
                             + siriusRegistryIP
                             + "/nameServer");                          // NOI18N
             server.deleteObserver(this);

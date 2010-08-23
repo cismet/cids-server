@@ -65,7 +65,8 @@ public class SystemServiceImpl {
      * @throws  RemoteException  DOCUMENT ME!
      */
     public Image[] getDefaultIcons(final String lsName) throws RemoteException {
-        logger.info("Info <CS> getDefIcons from " + lsName);
+        if(logger.isInfoEnabled())
+            logger.info("Info <CS> getDefIcons from " + lsName);   // NOI18N
         Image[] i = new Image[0];
         Sirius.server.middleware.interfaces.domainserver.SystemService s = null;
 
@@ -73,12 +74,12 @@ public class SystemServiceImpl {
             s = (Sirius.server.middleware.interfaces.domainserver.SystemService)activeLocalServers.get(lsName.trim());
             i = s.getDefaultIcons();
             if (logger.isDebugEnabled()) {
-                logger.debug("image[] " + i);
+                logger.debug("image[] " + i);   // NOI18N
             }
         } catch (Exception e) {
-            logger.error("Info <CS> getDefIcons from " + lsName + " failed", e);
+            logger.error("Info <CS> getDefIcons from " + lsName + " failed", e);   // NOI18N
 
-            throw new RemoteException("getDefIcons(lsName) failed", e);
+            throw new RemoteException("getDefIcons(lsName) failed", e);   // NOI18N
         }
 
         return i;
@@ -101,16 +102,16 @@ public class SystemServiceImpl {
                             .iterator()
                             .next();
                 if (logger.isDebugEnabled()) {
-                    logger.debug("<CS> getDefIcons");
+                    logger.debug("<CS> getDefIcons");   // NOI18N
                 }
                 i = s.getDefaultIcons();
             } else {
-                throw new Exception("kein LocalServer bei der Registry eingetragen!");
+                throw new Exception("no LocalServer registered!");   // NOI18N
             }
         } catch (Exception e) {
-            logger.error("Info <CS> getDefIcons failed", e);
+            logger.error("Info <CS> getDefIcons failed", e);   // NOI18N
 
-            throw new RemoteException("getDefIcons(void) fehlgeschlagen", e);
+            throw new RemoteException("getDefIcons(void) failed", e);   // NOI18N
         }
 
         return i;

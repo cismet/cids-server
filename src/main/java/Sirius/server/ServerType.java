@@ -96,11 +96,11 @@ public class ServerType implements Comparable, Sirius.server.property.Createable
 
     // class constuctor
     {
-        typeStrings.put(new Integer(NOT_PREDEFINED), "unknown");
-        typeStrings.put(new Integer(LOCALSERVER), "localServer");
-        typeStrings.put(new Integer(CALLSERVER), "callServer");
+        typeStrings.put(new Integer(NOT_PREDEFINED), "unknown");  // NOI18N
+        typeStrings.put(new Integer(LOCALSERVER), "localServer");  // NOI18N
+        typeStrings.put(new Integer(CALLSERVER), "callServer");  // NOI18N
         // typeStrings.put(new Integer(PROTOCOLSERVER),"protocolServer");
-        typeStrings.put(new Integer(USERSERVER), "userServer");
+        typeStrings.put(new Integer(USERSERVER), "userServer");  // NOI18N
         // typeStrings.put(new Integer(MODELSERVER),"modelServer"); typeStrings.put(new
         // Integer(IRSEARCHSERVER),"irSearchServer");
     }
@@ -129,7 +129,7 @@ public class ServerType implements Comparable, Sirius.server.property.Createable
      */
     public static String getBindString(final int type) {
         // debug to make shure Class is loaded xxx
-        new ServerType("", 1);
+        new ServerType("", 1);  // NOI18N
 
         final Object o = typeStrings.get(new Integer(type));
         // logger.debug("type :"+type +"  "+ o);
@@ -200,7 +200,7 @@ public class ServerType implements Comparable, Sirius.server.property.Createable
         if (args.length == 2) {
             return new ServerType(args[0], new Integer(args[1]).intValue());
         } else {
-            logger.error("<LS> ERROR Warning :: creatObject falsche Anzahl ConstructorParameter " + args.length);
+            logger.error("<LS> ERROR Warning :: creatObject falsche Anzahl ConstructorParameter " + args.length);  // NOI18N
             return null;
         }
     }

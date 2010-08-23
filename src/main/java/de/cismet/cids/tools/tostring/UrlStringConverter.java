@@ -48,19 +48,19 @@ public class UrlStringConverter extends ToStringConverter implements java.io.Ser
      * @return  DOCUMENT ME!
      */
     public String convert(final Sirius.server.localserver.object.Object o) {
-        String stringRepresentation = "";
+        String stringRepresentation = "";//NOI18N
 
         final ObjectAttribute[] attrs = o.getAttribs();
 
         for (int i = 0; i < attrs.length; i++) {
-            if (attrs[i].getName().equalsIgnoreCase("url_base_id")
-                        || attrs[i].getName().equalsIgnoreCase("object_name")) {
+            if (attrs[i].getName().equalsIgnoreCase("url_base_id")//NOI18N
+                        || attrs[i].getName().equalsIgnoreCase("object_name")) {//NOI18N
                 stringRepresentation += (attrs[i].toString());
             } else // surpress
             {
                 if (logger.isDebugEnabled()) {
                     // stringRepresentation+=( attrs[i].toString() + "?");
-                    logger.debug("unerwartetes Attribut im StringConverter");
+                    logger.debug("unexpected attribute in StringConverter");//NOI18N
                 }
             }
         }

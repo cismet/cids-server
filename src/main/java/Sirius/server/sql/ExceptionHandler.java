@@ -36,15 +36,15 @@ public abstract class ExceptionHandler {
      * @return  DOCUMENT ME!
      */
     public static Throwable handle(final Throwable t) {
-        String message = "";
+        String message = "";//NOI18N
 
         if (t instanceof SQLException) {
             final SQLException e = (SQLException)t;
 
             do {
                 message += (e.toString());
-                message += ("\nSQL-State: " + e.getSQLState());
-                message += ("\nError-Code :" + e.getErrorCode());
+                message += ("\nSQL-State: " + e.getSQLState());//NOI18N
+                message += ("\nError-Code :" + e.getErrorCode());//NOI18N
             } while (e.getNextException() != null);
         }
 

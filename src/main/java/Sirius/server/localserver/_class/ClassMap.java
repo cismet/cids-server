@@ -62,7 +62,7 @@ public class ClassMap extends java.util.Hashtable {
         final Integer Key = new Integer(key);
         super.put(Key, value);
         if (!super.containsKey(Key)) {
-            throw new java.lang.Exception("Couldn't add class ID:" + key);
+            throw new java.lang.Exception("Couldn't add class ID:" + key);   // NOI18N 
         }
     } // end add
 

@@ -71,7 +71,7 @@ public final class UserStore extends Shutdown {
         final DBConnection con = conPool.getConnection();
 
         try {
-            final ResultSet userTable = con.submitQuery("get_all_users", new Object[0]);
+            final ResultSet userTable = con.submitQuery("get_all_users", new Object[0]);//NOI18N
 
             // --------------------load users--------------------------------------------------
 
@@ -83,10 +83,10 @@ public final class UserStore extends Shutdown {
                     // User(userTable.getString("login_name").trim(),properties.getServerName(),userTable.getInt("id"),DBConnection.stringToBool(userTable.getString("administrator"))
                     // );
                     final User tmp = new User(
-                            userTable.getInt("id"),
-                            userTable.getString("login_name").trim(),
+                            userTable.getInt("id"),   // NOI18N
+                            userTable.getString("login_name").trim(),   // NOI18N
                             properties.getServerName(),
-                            userTable.getBoolean("administrator"));
+                            userTable.getBoolean("administrator"));   // NOI18N
 
                     users.addElement(tmp);
                 } catch (Exception e) {
@@ -102,7 +102,7 @@ public final class UserStore extends Shutdown {
 
             // --------------------load userGroups--------------------------------------------------
 
-            final ResultSet userGroupTable = con.submitQuery("get_all_usergroups", new Object[0]);
+            final ResultSet userGroupTable = con.submitQuery("get_all_usergroups", new Object[0]);//NOI18N
 
             while (userGroupTable.next()) {
                 try {
@@ -111,10 +111,10 @@ public final class UserStore extends Shutdown {
                     // );
 
                     final UserGroup tmp = new UserGroup(
-                            userGroupTable.getInt("id"),
-                            userGroupTable.getString("name").trim(),
+                            userGroupTable.getInt("id"),   // NOI18N
+                            userGroupTable.getString("name").trim(),   // NOI18N
                             properties.getServerName(),
-                            userGroupTable.getString("descr"));
+                            userGroupTable.getString("descr"));   // NOI18N
                     userGroups.addElement(tmp);
                     // userGroupHash.put(new Integer(tmp.getID()),tmp);
                 } catch (Exception e) {
@@ -130,7 +130,7 @@ public final class UserStore extends Shutdown {
 
             // --------------------load memberships--------------------------------------------------
 
-            final ResultSet memberTable = con.submitQuery("get_all_memberships", new Object[0]);
+            final ResultSet memberTable = con.submitQuery("get_all_memberships", new Object[0]);//NOI18N
 
             while (memberTable.next()) {
                 try {
@@ -139,9 +139,9 @@ public final class UserStore extends Shutdown {
                     final String login = memberTable.getString("login_name");
                     final String ug = memberTable.getString("ug");
 
-                    String ugDomain = memberTable.getString("ugDomain");
+                    String ugDomain = memberTable.getString("ugDomain");   // NOI18N
 
-                    if ((ugDomain == null) || ugDomain.equalsIgnoreCase("local")) {
+                    if ((ugDomain == null) || ugDomain.equalsIgnoreCase("local")) {   // NOI18N
                         ugDomain = lsName;
                     }
 
@@ -166,7 +166,7 @@ public final class UserStore extends Shutdown {
 
             // prepare statement for validate user (called very often) :-)
             final String valUser =
-                "select count(*) from cs_usr as u ,cs_ug as ug ,cs_ug_membership as m where u.id=m.usr_id and  ug.id = m.ug_id and trim(login_name) = ? and trim(ug.name) = ?";
+                "select count(*) from cs_usr as u ,cs_ug as ug ,cs_ug_membership as m where u.id=m.usr_id and  ug.id = m.ug_id and trim(login_name) = ? and trim(ug.name) = ?";   // NOI18N
             validateUser = con.getConnection().prepareStatement(valUser);
 
             addShutdown(new Shutdownable() {
@@ -185,7 +185,7 @@ public final class UserStore extends Shutdown {
                 });
         } catch (java.lang.Exception e) {
             ExceptionHandler.handle(e);
-            LOG.error("<LS> ERROR ::  in membership statement" + e.getMessage(), e);
+            LOG.error("<LS> ERROR ::  in membership statement" + e.getMessage(), e);   // NOI18N
         }
     }                                                                                // end Konstruktor
 
@@ -239,7 +239,7 @@ public final class UserStore extends Shutdown {
         params[1] = user.getName().toLowerCase();
         params[2] = oldPassword;
 
-        if (con.submitUpdate("change_user_password", params) > 0) {
+        if (con.submitUpdate("change_user_password", params) > 0) {   // NOI18N
             return true;
         } else {
             return false;
@@ -307,7 +307,7 @@ public final class UserStore extends Shutdown {
         try {
             // TODO: should username and password be trimmed?
             result = con.submitInternalQuery(
-                    "verify_user_password",
+                    "verify_user_password",   // NOI18N
                     user.getName().trim().toLowerCase(),
                     password.trim().toLowerCase());
             return result.next() && (result.getInt(1) == 1);

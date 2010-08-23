@@ -27,14 +27,14 @@ public class Visualizer implements TypeVisitor {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String NEW_LINE = System.getProperty("line.separator");
+    private static final String NEW_LINE = System.getProperty("line.separator");   // NOI18N
 
     //~ Instance fields --------------------------------------------------------
 
     private int step = 0;
-    private final String STEP_LENGTH = "   ";
+    private final String STEP_LENGTH = "   ";   // NOI18N
 
-    private String visualized = "";
+    private String visualized = "";   // NOI18N
 
     //~ Constructors -----------------------------------------------------------
 
@@ -65,7 +65,7 @@ public class Visualizer implements TypeVisitor {
         if (value instanceof MetaObject) {
             ((MetaObject)value).accept(this, o);
         } else {
-            visualized += ": " + value + NEW_LINE;
+            visualized += ": " + value + NEW_LINE;   // NOI18N
         }
 
         return visualized;
@@ -84,9 +84,9 @@ public class Visualizer implements TypeVisitor {
         step++;
 
         try {
-            visualized += "-->/MetaObject " + moa.getName() + "/" + NEW_LINE;
+            visualized += "-->/MetaObject " + moa.getName() + "/" + NEW_LINE;   // NOI18N
         } catch (NullPointerException e) {
-            visualized += "-->/MetaObject/" + NEW_LINE;
+            visualized += "-->/MetaObject/" + NEW_LINE;   // NOI18N
         }
 
         final ObjectAttribute[] mas = moa.getAttribs();
@@ -106,7 +106,7 @@ public class Visualizer implements TypeVisitor {
      * @return  DOCUMENT ME!
      */
     private String getPrefix() {
-        String ret = "";
+        String ret = "";   // NOI18N
 
         for (int i = 0; i < step; i++) {
             ret += STEP_LENGTH;

@@ -107,13 +107,13 @@ public final class PersistenceManager extends Shutdown {
     public int deleteMetaObject(final User user, final MetaObject mo) throws Throwable {
         if (LOG.isDebugEnabled()) {
             LOG.debug(
-                "deleteMetaObject entered "
+                "deleteMetaObject entered "//NOI18N
                         + mo              // NOI18N
-                        + "status :"
+                        + "status :"//NOI18N
                         + mo.getStatus()  // NOI18N
-                        + " of class:"
+                        + " of class:"//NOI18N
                         + mo.getClassID() // NOI18N
-                        + " isDummy(ArrayContainer) :"
+                        + " isDummy(ArrayContainer) :"//NOI18N
                         + mo.isDummy());  // NOI18N
         }
 
@@ -192,16 +192,16 @@ public final class PersistenceManager extends Shutdown {
         } else {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
-                    "'"
+                    "'"//NOI18N
                             + user
-                            + "' is not allowed to delete MO "
+                            + "' is not allowed to delete MO "//NOI18N
                             + mo.getID()
-                            + "."
+                            + "."//NOI18N
                             + mo.getClassKey(),                      // NOI18N
                     new CurrentStackTrace());
             }
             // TODO: shouldn't that return -1 or similar to indicate that nothing has been done?
-            throw new SecurityException("not allowed to insert meta object");
+            throw new SecurityException("not allowed to insert meta object");   // NOI18N
         }
     }
 
@@ -259,13 +259,13 @@ public final class PersistenceManager extends Shutdown {
     public void updateMetaObject(final User user, final MetaObject mo) throws Throwable {
         if (LOG.isDebugEnabled()) {
             LOG.debug(
-                "updateMetaObject entered "
-                        + mo              // NOI18N
-                        + "status :"
-                        + mo.getStatus()  // NOI18N
-                        + " of class:"
-                        + mo.getClassID() // NOI18N
-                        + " isDummy(ArrayContainer) :"
+                "updateMetaObject entered "//NOI18N
+                        + mo              
+                        + "status :"//NOI18N
+                        + mo.getStatus()  
+                        + " of class:"//NOI18N
+                        + mo.getClassID() 
+                        + " isDummy(ArrayContainer) :"//NOI18N
                         + mo.isDummy());  // NOI18N
         }
         if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
@@ -277,7 +277,7 @@ public final class PersistenceManager extends Shutdown {
             }
             // variables for sql statement
             final StringBuffer paramStmt = new StringBuffer("UPDATE "); // NOI18N
-            String sep = "";
+            String sep = "";   // NOI18N
             // retrieve class object
             final MetaClass metaClass = dbServer.getClass(mo.getClassID());
             // add table name and set clause
@@ -338,12 +338,12 @@ public final class PersistenceManager extends Shutdown {
                             // should never occur
                             // TODO: consider to LOG fatal!
                             LOG.error(
-                                "error updating subobject '"
-                                        + subObject          // NOI18N
-                                        + "' of attribute "
-                                        + mai.getFieldName() // NOI18N
-                                        + ": invalid status: "
-                                        + subObject.getStatus()); // NOI18N
+                                "error updating subobject '"//NOI18N
+                                        + subObject          
+                                        + "' of attribute "//NOI18N
+                                        + mai.getFieldName() 
+                                        + ": invalid status: " //NOI18N
+                                        + subObject.getStatus()); 
                             // TODO: throw illegalstateexception ?
                         }
                     }
@@ -361,7 +361,7 @@ public final class PersistenceManager extends Shutdown {
                 ++updateCounter;
 
                 // comma between 'fieldname = ?, ' set in first iteration
-                sep = ",";
+                sep = ",";   // NOI18N
             }
 
             if (updateCounter > 0) {
@@ -403,15 +403,15 @@ public final class PersistenceManager extends Shutdown {
         } else {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
-                    "'"
+                    "'"//NOI18N
                             + user
-                            + "' is not allowed to update MetaObject "
+                            + "' is not allowed to update MetaObject "//NOI18N
                             + mo.getID()
-                            + "."
-                            + mo.getClassKey(), // NOI18N
+                            + "."//NOI18N
+                            + mo.getClassKey(),
                     new CurrentStackTrace());
             }
-            throw new SecurityException("not allowed to insert meta object");
+            throw new SecurityException("not allowed to insert meta object");   // NOI18N
         }
     }
 
@@ -484,15 +484,12 @@ public final class PersistenceManager extends Shutdown {
                         // should never occur
                         // TODO: consider LOG fatal
                         LOG.error(
-                            "error f\u00FCr array element "
-                                    + metaObject
-                                    + " hat ung\u00FCltigen status ::"
-                                    + status);
+                            "error for array element " + metaObject + " has invalid status ::" + status);   // NOI18N
                         // TODO: throw illegalstateexception?
                     }
                 }
             } else {
-                LOG.warn("ArrayElement is no MetaObject and won't be inserted");
+                LOG.warn("ArrayElement is no MetaObject and won't be inserted");   // NOI18N
             }
         }
 
@@ -568,13 +565,13 @@ public final class PersistenceManager extends Shutdown {
     public int insertMetaObject(final User user, final MetaObject mo) throws Throwable {
         if (LOG.isDebugEnabled()) {
             LOG.debug(
-                "insertMetaObject entered "
-                        + mo              // NOI18N
-                        + "status :"
-                        + mo.getStatus()  // NOI18N
-                        + " of class:"
-                        + mo.getClassID() // NOI18N
-                        + " isDummy(ArrayContainer) :"
+                "insertMetaObject entered "//NOI18N
+                        + mo              
+                        + "status :"// NOI18N
+                        + mo.getStatus()  
+                        + " of class:"// NOI18N
+                        + mo.getClassID() 
+                        + " isDummy(ArrayContainer) :"// NOI18N
                         + mo.isDummy());  // NOI18N
         }
 
@@ -599,19 +596,19 @@ public final class PersistenceManager extends Shutdown {
             mo.setArrayKey2PrimaryKey();
 
             final ArrayList values = new ArrayList(mAttr.length);
-            String sep = "";
+            String sep = "";   // NOI18N
             // iterate all attributes to create insert statement
             for (int i = 0; i < mAttr.length; i++) {
                 // attribute value
                 final java.lang.Object value = mAttr[i].getValue();
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(
-                        "mAttr["
+                        "mAttr["// NOI18N
                                 + i
-                                + "].getName() of "
-                                + mo.getClassKey() // NOI18N
-                                + ": "
-                                + mAttr[i].getName()); // NOI18N
+                                + "].getName() of "// NOI18N
+                                + mo.getClassKey() 
+                                + ": "// NOI18N
+                                + mAttr[i].getName()); 
                 }
                 final MemberAttributeInfo mai = mAttr[i].getMai();
                 // if object does not have mai it cannot be inserted
@@ -685,7 +682,7 @@ public final class PersistenceManager extends Shutdown {
                 sep = ", "; // NOI18N
             }
             // finalise param stmt
-            sep = "";
+            sep = "";   // NOI18N
             paramSql.append(") VALUES (");        // NOI18N
             for (int i = 0; i < values.size(); ++i) {
                 paramSql.append(sep).append('?'); // NOI18N
@@ -729,15 +726,15 @@ public final class PersistenceManager extends Shutdown {
         } else {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
-                    "'"
+                    "'"// NOI18N
                             + user
-                            + "' is not allowed to insert MO "
+                            + "' is not allowed to insert MO "// NOI18N
                             + mo.getID()
-                            + "."
+                            + "."// NOI18N
                             + mo.getClassKey(), // NOI18N
                     new CurrentStackTrace());
             }
-            throw new SecurityException("not allowed to insert meta object");
+            throw new SecurityException("not allowed to insert meta object");   // NOI18N
         }
     }
 
@@ -784,12 +781,12 @@ public final class PersistenceManager extends Shutdown {
             }
         } catch (final SQLException e) {
             LOG.error(
-                "could not delete index for object '"
-                        + mo.getID()                                            // NOI18N
-                        + "' of class '"
+                "could not delete index for object '"// NOI18N
+                        + mo.getID()
+                        + "' of class '"// NOI18N
                         + mo.getClass()
-                        + "'",
-                e);                                                             // NOI18N
+                        + "'",// NOI18N
+                e);
             // TODO: consider to wrap exception
             throw e;
         } finally {
@@ -897,12 +894,12 @@ public final class PersistenceManager extends Shutdown {
             }
         } catch (final SQLException e) {
             LOG.error(
-                "could not insert index for object '"
-                        + mo.getID()                                                    // NOI18N
-                        + "' of class '"
+                "could not insert index for object '"// NOI18N
+                        + mo.getID() 
+                        + "' of class '"// NOI18N
                         + mo.getClass()
-                        + "'",
-                e);                                                                     // NOI18N
+                        + "'",// NOI18N
+                e); 
             // TODO: consider to wrap exception
             throw e;
         } finally {
@@ -998,12 +995,12 @@ public final class PersistenceManager extends Shutdown {
             }
         } catch (final SQLException e) {
             LOG.error(
-                "could not insert index for object '"
-                        + mo.getID()                                                     // NOI18N
-                        + "' of class '"
+                "could not insert index for object '"// NOI18N
+                        + mo.getID()
+                        + "' of class '"// NOI18N
                         + mo.getClass()
-                        + "'",
-                e);                                                                      // NOI18N
+                        + "'",// NOI18N
+                e);
             throw e;
         } finally {
             closeStatements(psAttrString, psAttrMap);

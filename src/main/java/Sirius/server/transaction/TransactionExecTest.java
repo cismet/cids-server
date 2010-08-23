@@ -38,8 +38,8 @@ public class TransactionExecTest {
     public static void main(final String[] args) {
         final t test = new t();
 
-        final String mama = "printMama";
-        final String param = "luv ya ";
+        final String mama = "printMama";//NOI18N
+        final String param = "luv ya ";//NOI18N
 
         final Object[] params = new Object[1];
 
@@ -84,6 +84,6 @@ class t {
      * @param  param  DOCUMENT ME!
      */
     public void printMama(final String param) {
-        System.out.println(param + " MAMA");
+        System.out.println(param + " MAMA");//NOI18N
     }
 }

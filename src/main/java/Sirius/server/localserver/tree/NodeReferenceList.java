@@ -87,10 +87,10 @@ public class NodeReferenceList implements java.io.Serializable {
                 }
             } catch (Throwable e) {
                 logger.error(
-                    "<LS> ERROR :: fehler im NodeReferenceList Konstruktor"
-                            + " index "
+                    "<LS> ERROR :: fehler im NodeReferenceList Konstruktor"//NOI18N
+                            + " index "//NOI18N
                             + i
-                            + "size"
+                            + "size"//NOI18N
                             + size,
                     e);
             }
@@ -119,7 +119,7 @@ public class NodeReferenceList implements java.io.Serializable {
 
             setRemotes(new java.util.ArrayList<Link>(0));
         } catch (Throwable e) {
-            logger.error("<LS> ERROR :: fehler im NodeReferenceList Konstruktor", e);
+            logger.error("<LS> ERROR :: Error in NodeReferenceList Construktor", e);   // NOI18N
         }
     }
 

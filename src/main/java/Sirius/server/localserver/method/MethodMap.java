@@ -71,7 +71,7 @@ public class MethodMap extends java.util.HashMap implements java.io.Serializable
         }
 
         if (!containsMethod(method.getKey())) {
-            throw new java.lang.Exception("Couldn't add Method:" + method.getKey());
+            throw new java.lang.Exception("Couldn't add Method:" + method.getKey());   // NOI18N
         }
     } // end add
 
@@ -91,10 +91,10 @@ public class MethodMap extends java.util.HashMap implements java.io.Serializable
             if (candidate instanceof Method) {
                 return (Method)candidate;
             }
-            throw new java.lang.NullPointerException("Entry is not a Method :" + key);
+            throw new java.lang.NullPointerException("Entry is not a Method :" + key);   // NOI18N
         } // endif
 
-        throw new java.lang.NullPointerException("No entry Method :" + key); // to be changed in further versions
+        throw new java.lang.NullPointerException("No entry Method :" + key);    // NOI18N // to be changed in further versions
                                                                              // when exception concept is
                                                                              // accomplished
     }                                                                        // end getMethod
@@ -125,9 +125,9 @@ public class MethodMap extends java.util.HashMap implements java.io.Serializable
                 this.add((String)e.getKey(), e);
             } catch (Exception ex) {
                 if (logger != null) {
-                    logger.error("Fehler beim Methode hinzuf\u00FCgen (putAll)", ex);
+                    logger.error("Error while adding method (putAll)", ex);   // NOI18N
                 } else {
-                    System.err.println("Fehler beim Methode hinzuf\u00FCgen (putAll)/n" + ex.getMessage());
+                    System.err.println("Error while adding method (putAll)/n" + ex.getMessage());   // NOI18N
                 }
             }
         }

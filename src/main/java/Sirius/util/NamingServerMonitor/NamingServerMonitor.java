@@ -53,7 +53,7 @@ public class NamingServerMonitor extends JPanel implements Runnable, ActionListe
     /** Referenz auf den PortScan.* */
     private PortScan portscan;
 
-    private java.lang.Object[] columnnamesForBounds = { "URL" };
+    private java.lang.Object[] columnnamesForBounds = { org.openide.util.NbBundle.getMessage(NamingServerMonitor.class, "NamingServerMonitor.columnnamesForBounds") };//NOI18N
     /** Tabelle.* */
     private JTable boundsTable;
 
@@ -83,7 +83,7 @@ public class NamingServerMonitor extends JPanel implements Runnable, ActionListe
 
                 // java.rmi.registry.Registry rmiRegistry;
 
-                System.out.println("\u00FCbermittelter Port: " + portscan.getPort());
+                System.out.println("Received Port: " + portscan.getPort());//NOI18N
 
                 rmiRegistry = LocateRegistry.getRegistry(enterHost.getText(), portscan.getPort());
                 bounds = new String[rmiRegistry.list().length];
@@ -92,13 +92,13 @@ public class NamingServerMonitor extends JPanel implements Runnable, ActionListe
                 // update();
             } catch (Exception e) {
                 messageLabel.setForeground(Color.red);
-                message("Registry not on Port: " + portscan.getPort());
+                message(org.openide.util.NbBundle.getMessage(NamingServerMonitor.class, "NamingServerMonitor.NamingServerMonitor.message", new Object[]{portscan.getPort()}));//NOI18N
             }
 
-            System.out.println("L\u00E4nge: " + bounds.length);
+            System.out.println("Length: " + bounds.length);//NOI18N
 
             for (int i = 0; i < bounds.length; i++) {
-                System.out.println("Inhalt: " + bounds[i]);
+                System.out.println("Content: " + bounds[i]);//NOI18N
             }
 
             initMainPanel();
@@ -122,13 +122,13 @@ public class NamingServerMonitor extends JPanel implements Runnable, ActionListe
 
         // JTabbedPane erzeugen und Tabellen hinzufuegen
         final JTabbedPane boundsPanel = new JTabbedPane();
-        boundsPanel.add("bounds", new JScrollPane(boundsTable));
+        boundsPanel.add("bounds", new JScrollPane(boundsTable));//NOI18N
 
         messageLabel = new JLabel();
 
         // UpdateButton fuer manuelles Update
-        final JButton updateButton = new JButton("update");
-        updateButton.setActionCommand("update");
+        JButton updateButton = new JButton(org.openide.util.NbBundle.getMessage(NamingServerMonitor.class, "NamingServerMonitor.updateButton.text"));//NOI18N
+        updateButton.setActionCommand("update");//NOI18N
         updateButton.addActionListener(new UpdateListener(this));
         // updateButton.addActionListener(new MonitorUpdateListener());
 
@@ -138,17 +138,17 @@ public class NamingServerMonitor extends JPanel implements Runnable, ActionListe
 
         // Panel fuer updateIntervall Einstellungen
         final JPanel timePanel = new JPanel();
-        timePanel.setBorder(BorderFactory.createTitledBorder("Intervall for automatical update"));
+        timePanel.setBorder(BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(NamingServerMonitor.class, "NamingServerMonitor.timePanel.border.title")));//NOI18N
 
         final ButtonGroup buttonGroup = new ButtonGroup();
-        final JRadioButton oneMin = (new JRadioButton("all 1 Minute"));
-        oneMin.setActionCommand("all 1 Minute");
+        final JRadioButton oneMin = (new JRadioButton(org.openide.util.NbBundle.getMessage(NamingServerMonitor.class, "NamingServerMonitor.oneMin.text")));//NOI18N
+        oneMin.setActionCommand("all 1 Minute");//NOI18N
         oneMin.addActionListener(this);
-        final JRadioButton fiveMin = new JRadioButton("all 5 Minutes");
-        fiveMin.setActionCommand("all 5 Minutes");
+        final JRadioButton fiveMin = new JRadioButton(org.openide.util.NbBundle.getMessage(NamingServerMonitor.class, "NamingServerMonitor.fiveMin.text"));//NOI18N
+        fiveMin.setActionCommand("all 5 Minutes");//NOI18N
         oneMin.addActionListener(this);
-        final JRadioButton tenMin = new JRadioButton("all 10 Minutes");
-        tenMin.setActionCommand("all 10 Minutes");
+        final JRadioButton tenMin = new JRadioButton(org.openide.util.NbBundle.getMessage(NamingServerMonitor.class, "NamingServerMonitor.tenMin.text"));//NOI18N
+        tenMin.setActionCommand("all 10 Minutes");//NOI18N
         oneMin.addActionListener(this);
 
         timePanel.add(oneMin);
@@ -164,7 +164,7 @@ public class NamingServerMonitor extends JPanel implements Runnable, ActionListe
         final JPanel hostPanel = new JPanel();
         hostPanel.setLayout(new BorderLayout());
         enterHost = new JTextField();
-        hostPanel.setBorder(BorderFactory.createTitledBorder("Enter IP - Address"));
+        hostPanel.setBorder(BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(NamingServerMonitor.class, "NamingServerMonitor.hostPanel.border.title")));//NOI18N
 
         hostPanel.add(enterHost, BorderLayout.CENTER);
 
@@ -173,7 +173,7 @@ public class NamingServerMonitor extends JPanel implements Runnable, ActionListe
 
         // MessageLabel und MessagePanel
         final JPanel messagePanel = new JPanel();
-        messagePanel.setBorder(BorderFactory.createTitledBorder("Messages"));
+        messagePanel.setBorder(BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(NamingServerMonitor.class, "NamingServerMonitor.messagePanel.border.title")));//NOI18N
         messagePanel.add(messageLabel);
 
         final JPanel buttonAndMessagePanel = new JPanel();
@@ -238,7 +238,7 @@ public class NamingServerMonitor extends JPanel implements Runnable, ActionListe
             bounds = rmiRegistry.list();
         } catch (Exception e) {
             messageLabel.setForeground(Color.red);
-            message("Registry not on Port: " + portscan.getPort());
+            message(org.openide.util.NbBundle.getMessage(NamingServerMonitor.class, "NamingServerMonitor.update().message", new Object[] {portscan.getPort()}) + portscan.getPort());//NOI18N
         }
     }
 //----------------------------------------------------------------------------------------
@@ -253,7 +253,7 @@ public class NamingServerMonitor extends JPanel implements Runnable, ActionListe
 
             tmboundsTable.setDataVector(TableModel.convertToMatrix(bounds), columnnamesForBounds);
 
-            message("last update: " + (new Date(System.currentTimeMillis())));
+            message(org.openide.util.NbBundle.getMessage(NamingServerMonitor.class, "NamingServerMonitor.updateTables().message", new Object[] {new Date(System.currentTimeMillis())}));//NOI18N
         } catch (IllegalArgumentException e) {
             boundsTable.setModel(new TableModel());
         }
@@ -270,7 +270,7 @@ public class NamingServerMonitor extends JPanel implements Runnable, ActionListe
             try {
                 final Thread t = Thread.currentThread();
                 messageLabel.setForeground(new Color(102, 102, 153));
-                message("last update: " + (new Date(System.currentTimeMillis())));
+                message(org.openide.util.NbBundle.getMessage(NamingServerMonitor.class, "NamingServerMonitor.run().message", new Object[] {new Date(System.currentTimeMillis())}));//NOI18N
                 t.sleep(updateIntervall * 1000);
                 updateTables();
             } catch (InterruptedException e) {
@@ -288,7 +288,7 @@ public class NamingServerMonitor extends JPanel implements Runnable, ActionListe
         // setHost("134.96.158.158");
         final NamingServerMonitor monitor = new NamingServerMonitor();
 
-        final JFrame frame = new JFrame("NamingServerMonitor");
+        final JFrame frame = new JFrame(org.openide.util.NbBundle.getMessage(NamingServerMonitor.class, "NamingServerMonitor.main(String[]).frame.title"));//NOI18N
 
         frame.getContentPane().add(monitor);
         frame.setSize(400, 400);
@@ -299,11 +299,11 @@ public class NamingServerMonitor extends JPanel implements Runnable, ActionListe
     @Override
     public void actionPerformed(final ActionEvent event) {
         final String command = event.getActionCommand();
-        if (command.equals("all 1 Minute")) {
+        if (command.equals("all 1 Minute")) {//NOI18N
             setUpdateIntervall(60);
-        } else if (command.equals("all 5 Minutes")) {
+        } else if (command.equals("all 5 Minutes")) {//NOI18N
             setUpdateIntervall(300);
-        } else if (command.equals("all 10 Minutes")) {
+        } else if (command.equals("all 10 Minutes")) {//NOI18N
             setUpdateIntervall(600);
         }
     }

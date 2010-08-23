@@ -49,7 +49,7 @@ public class ClassAttribute extends Attribute implements java.io.Serializable {
             final String name,
             final int typeID,
             final Policy policy) {
-        super(id, name, "", policy);
+        super(id, name, "", policy);   // NOI18N 
         this.classID = classID;
         super.visible = true;
         this.typeID = typeID;

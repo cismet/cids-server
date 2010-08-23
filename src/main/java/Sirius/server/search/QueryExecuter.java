@@ -66,9 +66,9 @@ public class QueryExecuter {
 
         if (s == null) {
             logger.error(
-                "query for ls "
+                "query for ls "//NOI18N
                         + q.getQueryIdentifier().getDomain()
-                        + " not possible as server is not online");
+                        + " not possible as server is not online");//NOI18N
             return new SearchResult(new MetaObjectNode[0]);
         }
 
@@ -86,7 +86,7 @@ public class QueryExecuter {
         // keine ausgew\u00E4hlte Klasse
         if ((cIds != null) && (cIds.length == 1) && (cIds[0] == -1)) {
             if (logger.isDebugEnabled()) {
-                logger.debug("kein Klasse auf diesem Localserver ausgew\u00E4hlt daher zur\u00FCck");
+                logger.debug("No class on this local server selected. For this reason return");//NOI18N
             }
             return new SearchResult(new MetaObjectNode[0]);
         }
@@ -125,7 +125,7 @@ public class QueryExecuter {
         v.add(new Integer(-1));
 
         for (int i = 0; i < classIds.length; i++) {
-            final String[] res = classIds[i].split("@");
+            final String[] res = classIds[i].split("@");//NOI18N
 
             // secon part contains domain
             if (res[1].equals(domain)) {
@@ -135,7 +135,7 @@ public class QueryExecuter {
 
         v.trimToSize();
         if (logger.isDebugEnabled()) {
-            logger.debug("classids " + v + "for domain" + domain);
+            logger.debug("classids " + v + "for domain" + domain);//NOI18N
         }
 
         final int[] result = new int[v.size()];

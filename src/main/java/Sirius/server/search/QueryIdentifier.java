@@ -48,8 +48,8 @@ public class QueryIdentifier implements java.io.Serializable, Mapable {
     public QueryIdentifier(final String domain, final int queryId) {
         this.domain = domain;
         this.queryId = queryId;
-        name = "";
-        description = "";
+        name = "";//NOI18N
+        description = "";//NOI18N
     }
 
     /**
@@ -62,7 +62,7 @@ public class QueryIdentifier implements java.io.Serializable, Mapable {
         this.domain = domain;
         this.queryId = -1; // unkown
         this.name = name;
-        description = "";
+        description = "";//NOI18N
     }
 
     /**
@@ -133,10 +133,10 @@ public class QueryIdentifier implements java.io.Serializable, Mapable {
 
     @Override
     public Object getKey() {
-        if (name.equals("")) {
-            return queryId + "@" + domain;
+        if (name.equals("")) {//NOI18N
+            return queryId + "@" + domain;//NOI18N
         } else {
-            return name + "@" + domain;
+            return name + "@" + domain;//NOI18N
         }
     }
 

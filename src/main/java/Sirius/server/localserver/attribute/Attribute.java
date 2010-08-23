@@ -163,7 +163,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
     // Mapable schl\u00FCssel \u00E4ndern xxx
     @Override
     public Object getKey() {
-        return id + "";
+        return id + "";   // NOI18N
     }
 
     /**
@@ -273,7 +273,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
                 return value.toString();
             }
         } else {
-            return "";
+            return "";   // NOI18N
         }
     }
 
@@ -317,7 +317,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
 //            return ((MetaObject)value).getClassKey();
         else {
             if (logger != null) {
-                logger.error("Attribute Value kein Type f\u00FCr getCLassKey ::" + value.getClass());
+                logger.error("Attribute Value no type for getCLassKey ::" + value.getClass());   // NOI18N 
             }
             return null;
         }
@@ -375,7 +375,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
         if (!referencesObject) {
             value = null;
             if (logger.isDebugEnabled()) {
-                logger.debug("would set " + value + " to null");
+                logger.debug("would set " + value + " to null");   // NOI18N
             }
         } else {
             ((Sirius.server.localserver.object.Object)value).setValuesNull();
@@ -449,7 +449,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      * DOCUMENT ME!
      */
     public void printMe() {
-        System.out.println(name + " : " + value);
+        System.out.println(name + " : " + value);   // NOI18N
     }
 
     /**

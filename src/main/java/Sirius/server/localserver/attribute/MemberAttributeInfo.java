@@ -249,7 +249,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
 
     @Override
     public Object getKey() {
-        return id + "@" + classId;
+        return id + "@" + classId;   // NOI18N
     }
 
     @Override

@@ -90,18 +90,18 @@ public class ProtoDelegator {
         final ObjectAttribute ma = getSingleAttribute(metaObject, name);
 
         if (ma == null) {
-            final String message = "The attribute " + name + " within object "
-                        + metaObject.getName() + " could not be found.";
+            final String message = "The attribute " + name + " within object "//NOI18N
+                        + metaObject.getName() + " could not be found.";//NOI18N
 
             throw new DataRetrievalException(message, logger);
         }
 
         if ((ma.getValue() instanceof MetaObject)) {
-            final String message = "The attribut " + name + " within object "
-                        + metaObject.getName() + " does not contains a value, but a further object.";
+            final String message = "The attribut " + name + " within object "//NOI18N
+                        + metaObject.getName() + " does not contains a value, but a further object.";//NOI18N
 
-            final String gebug = message + "ObjectAttribute-Value " + name
-                        + " is an instanz of class MetaObject.";
+            final String gebug = message + "ObjectAttribute-Value " + name //NOI18N
+                        + " is an instanz of class MetaObject.";//NOI18N
             if (logger.isDebugEnabled()) {
                 logger.debug(gebug);
             }
@@ -148,12 +148,12 @@ public class ProtoDelegator {
         if ((access_parameter == null)
                     || (access_parameter.getValue() == null)
                     || !(access_parameter.getValue() instanceof MetaObject)) {
-            final String message = "Data communication did not come to conditions, "
-                        + " because the attribute " + Names.Data_Object_Type.ACCESS_PARAMETER
-                        + " does not contain connecting data. ";
+            final String message = "Data communication did not come to conditions, " //NOI18N
+                        + " because the attribute " + Names.Data_Object_Type.ACCESS_PARAMETER //NOI18N
+                        + " does not contain connecting data. ";//NOI18N
 
-            final String gebug = message + "Attribute " + Names.Data_Object_Type.ACCESS_PARAMETER
-                        + " is not an instance of MetaObject.";
+            final String gebug = message + "Attribute " + Names.Data_Object_Type.ACCESS_PARAMETER //NOI18N
+                        + " is not an instance of MetaObject.";//NOI18N
             if (logger.isDebugEnabled()) {
                 logger.debug(gebug);
             }
@@ -181,16 +181,16 @@ public class ProtoDelegator {
             logger.debug(mas);
         }
         if (mas == null) {
-            String message = "Protocol name could not be determined "
-                        + " because the Attribute " + Names.Data_Object_Type.ACCESS_PARAMETER + " or the Attribute "
-                        + Names.Access_Parameter.getName() + "." + Names.Access_Parameter.DATA_SOURCE_CLASS
-                        + " were not found.";
+            String message = "Protocol name could not be determined " //NOI18N
+                        + " because the Attribute " + Names.Data_Object_Type.ACCESS_PARAMETER + " or the Attribute " //NOI18N
+                        + Names.Access_Parameter.getName() + "." + Names.Access_Parameter.DATA_SOURCE_CLASS //NOI18N
+                        + " were not found.";//NOI18N
             if (logger.isDebugEnabled()) {
                 logger.debug(message);
             }
 
-            message = "Data source class type could not be determined. Only objects of the class "
-                        + Names.Data_Object_Type.getName() + " can be processed.";
+            message = "Data source class type could not be determined. Only objects of the class "  // NOI18N
+                + Names.Data_Object_Type.getName() + " can be processed.";  // NOI18N
 
             throw new DataRetrievalException(message, logger);
         }
@@ -208,7 +208,7 @@ public class ProtoDelegator {
      * @throws  DataRetrievalException  DOCUMENT ME!
      */
     public String getURL(final MetaObject parameter) throws DataRetrievalException {
-        final String message = "";
+        final String message = "";//NOI18N
         try {
             final ObjectAttribute attr_url = (ObjectAttribute)getSingleAttribute(parameter, Names.URL.getName());
 
@@ -216,13 +216,13 @@ public class ProtoDelegator {
             // ObjectAttribute attr_url = (ObjectAttribute)parameter.accept(tv, Names.URL.getName());
 
             if (attr_url == null) {
-                throw new DataRetrievalException("Parameter " + Names.URL.getName() + " was not found.", logger);
+                throw new DataRetrievalException("Parameter " + Names.URL.getName() + " was not found.", logger);  // NOI18N
             }
 
             final Object mo_url = attr_url.getValue();
             if (!(mo_url instanceof MetaObject)) {
                 throw new DataRetrievalException(
-                    "URL-meta object was not found. Guarantee that value of the column ACCESS_PARAMETER.URL references an existing ID of the table URL",
+                    "URL-meta object was not found. Guarantee that value of the column ACCESS_PARAMETER.URL references an existing ID of the table URL",  // NOI18N
                     logger);
             }
 
@@ -230,13 +230,13 @@ public class ProtoDelegator {
                     Names.URL.URL_BASE_ID);
 
             if (attr_url_base == null) {
-                throw new DataRetrievalException("Parameter " + Names.URL.URL_BASE_ID + " was not found.", logger);
+                throw new DataRetrievalException("Parameter " + Names.URL.URL_BASE_ID + " was not found.", logger);  // NOI18N
             }
 
             final Object mo_url_base = attr_url_base.getValue();
             if (!(mo_url_base instanceof MetaObject)) {
                 throw new DataRetrievalException(
-                    "URL_BASE-meta object was not found. Guarantee that value of the column URL.URL_BASE_ID references an existing ID of the table URL_BASE",
+                    "URL_BASE-meta object was not found. Guarantee that value of the column URL.URL_BASE_ID references an existing ID of the table URL_BASE",  // NOI18N
                     logger);
             }
 
@@ -250,7 +250,8 @@ public class ProtoDelegator {
 
             final String url = protokol + server + path;
 
-            logger.info("generated URL: " + url);
+            if(logger.isInfoEnabled())
+                logger.info("generated URL: " + url);  // NOI18N
 
             return url;
         } catch (java.lang.ClassCastException e) {

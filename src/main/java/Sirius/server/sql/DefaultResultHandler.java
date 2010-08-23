@@ -66,7 +66,7 @@ public class DefaultResultHandler implements ResultHandler {
 
         handledResult.trimToSize();
         if (logger.isDebugEnabled()) {
-            logger.debug("suchergebnis" + handledResult);
+            logger.debug("search result" + handledResult);//NOI18N
         }
 
         // if(!(resultType.newInstance() instanceof Createable))
@@ -102,7 +102,7 @@ public class DefaultResultHandler implements ResultHandler {
      */
     private String toString(final Vector v) {
         final StringBuffer buf = new StringBuffer();
-        buf.append("(");
+        buf.append("(");//NOI18N
 
         final Iterator i = v.iterator();
         boolean hasNext = i.hasNext();
@@ -111,11 +111,11 @@ public class DefaultResultHandler implements ResultHandler {
             buf.append(String.valueOf(o));
             hasNext = i.hasNext();
             if (hasNext) {
-                buf.append(",");
+                buf.append(",");//NOI18N
             }
         }
 
-        buf.append(")");
+        buf.append(")");//NOI18N
         return buf.toString();
     }
 }

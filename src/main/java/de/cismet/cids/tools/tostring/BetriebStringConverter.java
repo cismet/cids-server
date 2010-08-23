@@ -44,13 +44,13 @@ public class BetriebStringConverter extends ToStringConverter implements java.io
      * @return  DOCUMENT ME!
      */
     public String convert(final Sirius.server.localserver.object.Object o) {
-        String stringRepresentation = "";
+        String stringRepresentation = "";//NOI18N
 
         final ObjectAttribute[] attrs = o.getAttribs();
 
         for (int i = 0; i < attrs.length; i++) {
-            if (attrs[i].getName().equalsIgnoreCase("name")) {
-                stringRepresentation += (attrs[i].toString() + " ");
+            if (attrs[i].getName().equalsIgnoreCase("name")) {//NOI18N
+                stringRepresentation += (attrs[i].toString() + " ");//NOI18N
             } else // surpress
             {
                 // stringRepresentation+=( attrs[i].toString() + "?");

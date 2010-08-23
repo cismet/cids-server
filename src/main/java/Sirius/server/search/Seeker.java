@@ -135,7 +135,7 @@ public class Seeker {
                     objectName = object[2].toString();
                 } catch (Exception skip) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug("ObjectName=null");
+                        logger.debug("ObjectName=null");//NOI18N
                     }
                 }
 
@@ -158,13 +158,13 @@ public class Seeker {
                     while (iter.hasNext()) {
                         final String recursiveCall = iter.next().toString();
                         if (logger.isDebugEnabled()) {
-                            logger.debug("rekursiver Aufruf der suche " + recursiveCall);
+                            logger.debug("recursive invocation of the search " + recursiveCall);//NOI18N
                         }
 
                         result.addAllAndFilter(
                             this.search(
                                 new Query(
-                                    new SystemStatement(true, -1, "", false, SearchResult.NODE, recursiveCall),
+                                    new SystemStatement(true, -1, "", false, SearchResult.NODE, recursiveCall),//NOI18N
                                     domain),
                                 classIds,
                                 ug,
@@ -224,7 +224,7 @@ public class Seeker {
                     // objectzuordnung abgeschaltet
                     filtered.add(on);
                 } else {
-                    logger.info("UserGroup " + ug + "has no Read Permission for node " + on);
+                    logger.info("UserGroup " + ug + "has no Read Permission for node " + on);//NOI18N
                 }
             }
 
@@ -258,7 +258,7 @@ public class Seeker {
                     objectID = Integer.parseInt(object[1].toString());
                 } catch (Throwable e) {
                     final Exception ex = new Exception(
-                            "The results of the Query do not possess the necessary structure. Results of the Query must be tuple (class_id, object_id).");
+                            "The results of the Query do not possess the necessary structure. Results of the Query must be tuple (class_id, object_id).");//NOI18N
                     ex.setStackTrace(e.getStackTrace());
                     throw ex;
                 }
@@ -289,6 +289,6 @@ public class Seeker {
      * @return  DOCUMENT ME!
      */
     private String constructKey(final int oid, final int cid) {
-        return oid + "@" + cid;
+        return oid + "@" + cid;//NOI18N
     }
 } // end seeker

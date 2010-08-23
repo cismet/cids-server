@@ -161,10 +161,10 @@ public class Class implements java.io.Serializable, Mapable {
 
         this.toString = toString;
 
-        this.getInstanceStmnt = "Select * from " + tableName + " where " + primaryKey + " = ?";
+        this.getInstanceStmnt = "Select * from " + tableName + " where " + primaryKey + " = ?";  // NOI18N
 
-        this.getDefaultInstanceStmnt = "Select * from " + tableName + " where " + primaryKey + " = (select min( "
-                    + primaryKey + ") from " + tableName + ")";
+        this.getDefaultInstanceStmnt = "Select * from " + tableName + " where " + primaryKey + " = (select min( "//NOI18N
+                    + primaryKey + ") from " + tableName + ")";//NOI18N
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -244,7 +244,7 @@ public class Class implements java.io.Serializable, Mapable {
             attribs.add((ClassAttribute)anyAttribute);
         } // end if AttributeOfClass
         else {
-            throw new java.lang.Exception(" no subtype of ClassAttribute");
+            throw new java.lang.Exception(" no subtype of ClassAttribute");  // NOI18N
         }
     }     // end of addAttribute
 
@@ -360,7 +360,7 @@ public class Class implements java.io.Serializable, Mapable {
      */
     public final void setMethodIDs(final LongVector methodIDs) throws Exception {
         if (this.methodIDs.size() != 0) {
-            throw new Exception("LongVector methodIds of Class allready set use addMethodID instead");
+            throw new Exception("LongVector methodIds of Class allready set use addMethodID instead");  // NOI18N
         }
 
         this.methodIDs = methodIDs;
@@ -567,17 +567,17 @@ public class Class implements java.io.Serializable, Mapable {
         final Collection c = getFieldNames();
         final Iterator iter = c.iterator();
 
-        String res = " (";
+        String res = " (";  // NOI18N
 
         while (iter.hasNext()) {
             res += iter.next();
 
             if (iter.hasNext()) {
-                res += ",";
+                res += ",";  // NOI18N
             }
         }
 
-        res += ") ";
+        res += ") ";  // NOI18N
         return res;
     }
 

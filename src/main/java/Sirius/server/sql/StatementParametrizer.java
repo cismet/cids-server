@@ -71,7 +71,7 @@ public class StatementParametrizer {
 
         final char auf = '§';
         final char zu = '$';
-        String parameter = new String("");
+        String parameter = new String("");//NOI18N
         String join = new String();
 
         int parameterIndex = 0;
@@ -80,7 +80,7 @@ public class StatementParametrizer {
         int bis = statement.indexOf(zu);
 
         if ((von == -1) || (bis == -1)) {
-            throw new Exception("kein Parameter zum ersetzen da Trennzeichen nicht gefunden");
+            throw new Exception("No parameter to replace, because no delimiter was found");//NOI18N
         }
 
         String parametrizedStmnt = statement.substring(0, von); // statement bis zum ersten parameter
@@ -94,7 +94,7 @@ public class StatementParametrizer {
                         // Array
 
                         if (parameter.length() > 2) {
-                            throw new Exception("Syntaxfehler :" + parameter);
+                            throw new Exception("syntax error :" + parameter);//NOI18N
                         }
 
                         switch (parameter.charAt(1)) {
@@ -106,10 +106,10 @@ public class StatementParametrizer {
                                             parameters[parameterIndex]);
                                 } else {
                                     throw new Exception(
-                                        "parameter passt nicht zum Typ im Statement"
-                                                + " parameterIndex :"
+                                        "parameter passt nicht zum Typ im Statement"//NOI18N
+                                                + " parameterIndex :"//NOI18N
                                                 + parameterIndex
-                                                + "  erwarteter Typ : Integer[]");
+                                                + "  erwarteter Typ : Integer[]");//NOI18N
                                 }
 
                                 break;
@@ -123,10 +123,10 @@ public class StatementParametrizer {
                                             false);
                                 } else {
                                     throw new Exception(
-                                        "parameter passt nicht zum Typ im Statement"
-                                                + " parameterIndex :"
+                                        "parameter passt nicht zum Typ im Statement"//NOI18N
+                                                + " parameterIndex :"//NOI18N
                                                 + parameterIndex
-                                                + "  erwarteter Typ : String[]");
+                                                + "  erwarteter Typ : String[]");//NOI18N
                                 }
 
                                 break;
@@ -141,10 +141,8 @@ public class StatementParametrizer {
                                             true);
                                 } else {
                                     throw new Exception(
-                                        "parameter passt nicht zum Typ im Statement"
-                                                + " parameterIndex :"
-                                                + parameterIndex
-                                                + "  erwarteter Typ : String[]");
+                                        "parameter is not conform to the type within the statement" + " parameterIndex :"//NOI18N
+                                        + parameterIndex + "  expected type : String[]");//NOI18N
                                 }
 
                                 break;
@@ -162,10 +160,8 @@ public class StatementParametrizer {
                                             false);
                                 } else {
                                     throw new Exception(
-                                        "parameter passt nicht zum Typ im Statement"
-                                                + " parameterIndex :"
-                                                + parameterIndex
-                                                + "  erwarteter Typ : String[]");
+                                        "parameter is not conform to the type within the statement" + " parameterIndex :"//NOI18N
+                                        + parameterIndex + "  expected type : String[]");//NOI18N
                                 }
 
                                 break;
@@ -179,15 +175,13 @@ public class StatementParametrizer {
                                 // String
                                 if (parameters[parameterIndex] instanceof java.lang.String[]) {
                                     statement.trim();
-                                    final int ende = statement.indexOf(" ", bis + 2);
-                                    join = " " + statement.substring(bis + 1, ende).trim().toUpperCase() + " ";
+                                    final int ende = statement.indexOf(" ", bis + 2);//NOI18N
+                                    join = " " + statement.substring(bis + 1, ende).trim().toUpperCase() + " ";//NOI18N
                                     parametrizedStmnt += convertConditionsArrayForSql(parameters, parameterIndex, join);
                                 } else {
                                     throw new Exception(
-                                        "parameter passt nicht zum Typ im Statement"
-                                                + " parameterIndex :"
-                                                + parameterIndex
-                                                + "  erwarteter Typ : String[]");
+                                        "parameter is not conform to the type within the statement" + " parameterIndex :"//NOI18N
+                                        + parameterIndex + "  expected type : String[]");//NOI18N
                                 }
 
                                 break;
@@ -204,10 +198,8 @@ public class StatementParametrizer {
                                             true);
                                 } else {
                                     throw new Exception(
-                                        "parameter passt nicht zum Typ im Statement"
-                                                + " parameterIndex :"
-                                                + parameterIndex
-                                                + "  erwarteter Typ : Char[]");
+                                        "parameter is not conform to the type within the statement" + " parameterIndex :"//NOI18N
+                                        + parameterIndex + "  expected type : Char[]");//NOI18N
                                 }
 
                                 break;
@@ -221,10 +213,8 @@ public class StatementParametrizer {
                                             parameters[parameterIndex]);
                                 } else {
                                     throw new Exception(
-                                        "parameter passt nicht zum Typ im Statement"
-                                                + " parameterIndex :"
-                                                + parameterIndex
-                                                + "  erwarteter Typ : DOUBLE[]");
+                                        "parameter is not conform to the type within the statement" + " parameterIndex :"//NOI18N
+                                        + parameterIndex + "  expected type : DOUBLE[]");//NOI18N
                                 }
 
                                 break;
@@ -232,8 +222,7 @@ public class StatementParametrizer {
 
                             default: {
                                 throw new java.lang.Exception(
-                                    "nicht unterst\u00FCtzter ArrayTyp oder kein Array :"
-                                            + parameter.charAt(1));
+                                    "Not supported arraay type or no array :" + parameter.charAt(1));//NOI18N
                             }
                         } // end inner switch
 
@@ -247,12 +236,8 @@ public class StatementParametrizer {
                             parametrizedStmnt += parameters[parameterIndex];
                         } else {
                             throw new Exception(
-                                "parameter passt nicht zum Typ im Statement"
-                                        + " parameterIndex :"
-                                        + parameterIndex
-                                        + "  erwarteter Typ : Integer "
-                                        + " parameter :"
-                                        + parameter);
+                                "parameter is not conform to the type within the statement" + " parameterIndex :" + parameterIndex//NOI18N
+                                + "  expected type : Integer " + " parameter :" + parameter);//NOI18N
                         }
 
                         break;
@@ -262,16 +247,12 @@ public class StatementParametrizer {
                         // String
 
                         if ((parameters[parameterIndex] instanceof java.lang.String) && (parameter.length() < 2)) {
-                            parametrizedStmnt += "'" + ((java.lang.String)parameters[parameterIndex]).replace('*', '%')
-                                        + "'";
+                            parametrizedStmnt += "'" + ((java.lang.String)parameters[parameterIndex]).replace('*', '%')//NOI18N
+                                + "'";//NOI18N
                         } else {
                             throw new Exception(
-                                "parameter passt nicht zum Typ im Statement"
-                                        + " parameterIndex :"
-                                        + parameterIndex
-                                        + "  erwarteter Typ : String "
-                                        + " parameter :"
-                                        + parameter);
+                                "parameter is not conform to the type within the statement" + " parameterIndex :" + parameterIndex //NOI18N
+                                + "  expected type : String " + " parameter :" + parameter);//NOI18N
                         }
 
                         break;
@@ -281,17 +262,12 @@ public class StatementParametrizer {
                         // String war upper ist jetzt lower
 
                         if ((parameters[parameterIndex] instanceof java.lang.String) && (parameter.length() < 2)) {
-                            parametrizedStmnt += "'"
-                                        + ((java.lang.String)parameters[parameterIndex]).replace('*', '%').toLowerCase()
-                                        + "'";
+                            parametrizedStmnt += "'"//NOI18N
+                                + ((java.lang.String)parameters[parameterIndex]).replace('*', '%').toLowerCase() + "'";//NOI18N
                         } else {
                             throw new Exception(
-                                "parameter passt nicht zum Typ im Statement"
-                                        + " parameterIndex :"
-                                        + parameterIndex
-                                        + "  erwarteter Typ : String "
-                                        + " parameter :"
-                                        + parameter);
+                                "parameter is not conform to the type within the statement" + " parameterIndex :" + parameterIndex //NOI18N
+                                + "  expected type : String " + " parameter :" + parameter);//NOI18N
                         }
 
                         break;
@@ -322,12 +298,8 @@ public class StatementParametrizer {
                             parametrizedStmnt += ((java.lang.String)parameters[parameterIndex]).toUpperCase();
                         } else {
                             throw new Exception(
-                                "parameter passt nicht zum Typ im Statement"
-                                        + " parameterIndex :"
-                                        + parameterIndex
-                                        + "  erwarteter Typ : String "
-                                        + " parameter :"
-                                        + parameter);
+                                "parameter is not conform to the type within the statement" + " parameterIndex :" + parameterIndex //NOI18N
+                                + "  expected type : String " + " parameter :" + parameter);//NOI18N
                         }
 
                         break;
@@ -340,12 +312,8 @@ public class StatementParametrizer {
                             parametrizedStmnt += parameters[parameterIndex];
                         } else {
                             throw new Exception(
-                                "parameter passt nicht zum Typ im Statement"
-                                        + " parameterIndex :"
-                                        + parameterIndex
-                                        + "  erwarteter Typ : Byte "
-                                        + " parameter :"
-                                        + parameter);
+                                "parameter is not conform to the type within the statement" + " parameterIndex :" + parameterIndex //NOI18N
+                                + "  expected type : Byte " + " parameter :" + parameter);//NOI18N
                         }
 
                         break;
@@ -358,12 +326,8 @@ public class StatementParametrizer {
                             parametrizedStmnt += parameters[parameterIndex];
                         } else {
                             throw new Exception(
-                                "parameter passt nicht zum Typ im Statement"
-                                        + " parameterIndex :"
-                                        + parameterIndex
-                                        + "  erwarteter Typ : Boolean "
-                                        + " parameter :"
-                                        + parameter);
+                                "parameter is not conform to the type within the statement" + " parameterIndex :" + parameterIndex //NOI18N
+                                + "  expected type : Boolean " + " parameter :" + parameter);//NOI18N
                         }
 
                         break;
@@ -376,12 +340,8 @@ public class StatementParametrizer {
                             parametrizedStmnt += parameters[parameterIndex];
                         } else {
                             throw new Exception(
-                                "parameter passt nicht zum Typ im Statement"
-                                        + " parameterIndex :"
-                                        + parameterIndex
-                                        + "  erwarteter Typ : Character "
-                                        + " parameter :"
-                                        + parameter);
+                                "parameter is not conform to the type within the statement" + " parameterIndex :" + parameterIndex //NOI18N
+                                + "  expected type : Character " + " parameter :" + parameter);//NOI18N
                         }
 
                         break;
@@ -394,12 +354,8 @@ public class StatementParametrizer {
                             parametrizedStmnt += parameters[parameterIndex];
                         } else {
                             throw new Exception(
-                                "parameter passt nicht zum Typ im Statement"
-                                        + " parameterIndex :"
-                                        + parameterIndex
-                                        + "  erwarteter  Typ : Double "
-                                        + " parameter :"
-                                        + parameter);
+                                "parameter is not conform to the type within the statement" + " parameterIndex :" + parameterIndex //NOI18N
+                                + "  expected  type : Double " + " parameter :" + parameter);//NOI18N
                         }
 
                         break;
@@ -413,7 +369,7 @@ public class StatementParametrizer {
                             // parametrizedStmnt+= "{ d '" + ((java.sql.Date) parameters[parameterIndex]) + "'}";
                             // parametrizedStmnt+= ("'" +(tmp.getMonth()+1)+"/"+ tmp.getDate() + "/" +(
                             // tmp.getYear()+1900) +"'");
-                            parametrizedStmnt += ("'" + tmp + "'");
+                            parametrizedStmnt += ("'" + tmp + "'");//NOI18N
                             // logger.debug("sql-datum :"+tmp);
                         }
                         /*else if(parameters[parameterIndex] instanceof java.util.Date && parameter.length() < 2)
@@ -422,19 +378,15 @@ public class StatementParametrizer {
                          * parametrizedStmnt+= "{ d '" + forStmnt  + "'}";}*/
                         else {
                             throw new Exception(
-                                "parameter passt nicht zum Typ im Statement"
-                                        + " parameterIndex :"
-                                        + parameterIndex
-                                        + " erwarteter Typ : Date "
-                                        + " parameter :"
-                                        + parameter);
+                                "parameter is not conform to the type within the statement" + " parameterIndex :" + parameterIndex //NOI18N
+                                + " expected type : Date " + " parameter :" + parameter);//NOI18N
                         }
 
                         break;
                     }
 
                     default: {
-                        throw new java.lang.Exception("nicht unterst\u00FCtzter Typ :" + parameter.charAt(0));
+                        throw new java.lang.Exception("not supported type :" + parameter.charAt(0));//NOI18N
                     }
                 } // end outer switch
 
@@ -462,7 +414,7 @@ public class StatementParametrizer {
                 parameterIndex++;
             } // end while
         } catch (Exception e) {
-            logger.error("Info :: Fehler beim parmetrisieren von :" + statement, e);
+            logger.error("Info :: error while parameterising :" + statement, e);//NOI18N
             throw e;
         }
 
@@ -496,7 +448,7 @@ public static final PreparedStatement parametrize(PreparedStatement statement, j
      */
 
     public static String convertNumberArrayForSql(final java.lang.Object[] arr) {
-        String sql = new String("(");
+        String sql = new String("(");//NOI18N
         int i = 0;
 
         try {
@@ -504,14 +456,14 @@ public static final PreparedStatement parametrize(PreparedStatement statement, j
                 if (i == 0) {
                     sql += arr[i];
                 } else {
-                    sql += "," + arr[i];
+                    sql += "," + arr[i];//NOI18N
                 }
             }
 
-            sql += ")";
+            sql += ")";//NOI18N
         } catch (Exception e) {
-            logger.error("<LS> ERROR :: convertNumberArrayForSql Error at " + i, e);
-            sql = new String("()");
+            logger.error("<LS> ERROR :: convertNumberArrayForSql Error at " + i, e);//NOI18N
+            sql = new String("()");//NOI18N
         }
 
         return sql;
@@ -525,7 +477,7 @@ public static final PreparedStatement parametrize(PreparedStatement statement, j
      * @return  DOCUMENT ME!
      */
     public static String convertIntArrayForSql(final int[] arr) {
-        String sql = new String("(");
+        String sql = new String("(");//NOI18N
         int i = 0;
 
         try {
@@ -533,14 +485,14 @@ public static final PreparedStatement parametrize(PreparedStatement statement, j
                 if (i == 0) {
                     sql += arr[i];
                 } else {
-                    sql += "," + arr[i];
+                    sql += "," + arr[i];//NOI18N
                 }
             }
 
-            sql += ")";
+            sql += ")";//NOI18N
         } catch (Exception e) {
-            logger.error("<LS> ERROR :: convertIntArrayForSql Error at " + i, e);
-            sql = new String("()");
+            logger.error("<LS> ERROR :: convertIntArrayForSql Error at " + i, e);//NOI18N
+            sql = new String("()");//NOI18N
         }
 
         return sql;
@@ -564,10 +516,10 @@ public static final PreparedStatement parametrize(PreparedStatement statement, j
         // rpiontek
         String comma = new String();
         if (withComma) {
-            comma = "'";
+            comma = "'";//NOI18N
         }
 
-        String sql = new String("(" + comma);
+        String sql = new String("(" + comma);//NOI18N
         int i = 0;
 
         try {
@@ -580,17 +532,17 @@ public static final PreparedStatement parametrize(PreparedStatement statement, j
                     }
                 } else {
                     if (!caseSensitive) {
-                        sql += comma + "," + comma + ((java.lang.String)arr[i]).toUpperCase();
+                        sql += comma + "," + comma + ((java.lang.String)arr[i]).toUpperCase();//NOI18N
                     } else {
-                        sql += comma + "," + comma + ((java.lang.String)arr[i]);
+                        sql += comma + "," + comma + ((java.lang.String)arr[i]);//NOI18N
                     }
                 }
             }
 
-            sql += comma + ")";
+            sql += comma + ")";//NOI18N
         } catch (Exception e) {
-            logger.error("<LS> ERROR :: convertStringArrayForSql Error at " + i, e);
-            sql = new String("()");
+            logger.error("<LS> ERROR :: convertStringArrayForSql Error at " + i, e);//NOI18N
+            sql = new String("()");//NOI18N
         }
 
         return sql;
@@ -606,7 +558,7 @@ public static final PreparedStatement parametrize(PreparedStatement statement, j
      * @return  DOCUMENT ME!
      */
     private static String convertStringArrayForSql(final java.lang.Object[] arr, final boolean caseSensitive) {
-        String sql = "(";
+        String sql = "(";//NOI18N
         int i = 0;
 
         try {
@@ -619,17 +571,17 @@ public static final PreparedStatement parametrize(PreparedStatement statement, j
                     }
                 } else {
                     if (!caseSensitive) {
-                        sql += "," + ((java.lang.String)arr[i]).toLowerCase();
+                        sql += "," + ((java.lang.String)arr[i]).toLowerCase();//NOI18N
                     } else {
-                        sql += "," + ((java.lang.String)arr[i]);
+                        sql += "," + ((java.lang.String)arr[i]);//NOI18N
                     }
                 }
             }
 
-            sql += ")";
+            sql += ")";//NOI18N
         } catch (Exception e) {
-            logger.error("<LS> ERROR ::  convertStringArrayForSql Error at " + i, e);
-            sql = new String("()");
+            logger.error("<LS> ERROR ::  convertStringArrayForSql Error at " + i, e);//NOI18N
+            sql = new String("()");//NOI18N
         }
 
         return sql;
@@ -657,7 +609,7 @@ public static final PreparedStatement parametrize(PreparedStatement statement, j
     private static String convertConditionsArrayForSql(final java.lang.Object[] parameters,
             final int parameterIndex,
             final String join) throws Exception {
-        StringBuffer resultString = new StringBuffer(" ");
+        StringBuffer resultString = new StringBuffer(" ");//NOI18N
         int i = 0;
 
         final String[] fields = (java.lang.String[])parameters[parameterIndex];
@@ -665,24 +617,21 @@ public static final PreparedStatement parametrize(PreparedStatement statement, j
 
         if (fields.length != values.length) {
             throw new Exception(
-                "Es kann keine Where-Liste gebildet werden, da die Anzahl Felder ("
-                        + fields.length
-                        + ") mit der Anzahl der zu Werte ("
-                        + values.length
-                        + ") nicht uebereinstimmt");
+                "It is not possible to create a WHERE list, because the number of fields (" + fields.length //NOI18N
+                + ") is different from the number of values (" + values.length + ")");//NOI18N
         }
         try {
             for (i = 0; i < fields.length; i++) {
                 resultString.append((java.lang.String)fields[i]);
-                resultString.append(" = ");
-                resultString.append("'" + (java.lang.String)values[i] + "'");
+                resultString.append(" = ");//NOI18N
+                resultString.append("'" + (java.lang.String)values[i] + "'");//NOI18N
                 if (i < (fields.length - 1)) {
                     resultString.append(join);
                 }
-                resultString.append(" ");
+                resultString.append(" ");//NOI18N
             }
         } catch (Exception e) {
-            logger.error("<LS> ERROR :: convertConditionsArrayForSql Error at " + i, e);
+            logger.error("<LS> ERROR :: convertConditionsArrayForSql Error at " + i, e);//NOI18N
             resultString = new StringBuffer();
         }
 

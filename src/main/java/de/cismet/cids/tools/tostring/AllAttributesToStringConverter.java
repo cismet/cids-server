@@ -37,13 +37,13 @@ public class AllAttributesToStringConverter extends ToStringConverter implements
 
     @Override
     public String convert(final Sirius.server.localserver.object.Object o, final HashMap classes) {
-        String stringRepresentation = "";
+        String stringRepresentation = "";//NOI18N
         final ObjectAttribute[] attrs = o.getAttribs();
         for (int i = 0; i < attrs.length; i++) {
             if (!attrs[i].referencesObject()) {
-                stringRepresentation += (attrs[i].toString() + " ");
+                stringRepresentation += (attrs[i].toString() + " ");//NOI18N
             } else {
-                stringRepresentation += (((MetaObject)attrs[i].getValue()).toString(classes) + " ");
+                stringRepresentation += (((MetaObject)attrs[i].getValue()).toString(classes) + " ");//NOI18N
             }
         }
         return stringRepresentation;
@@ -51,11 +51,11 @@ public class AllAttributesToStringConverter extends ToStringConverter implements
 
     @Override
     public String convert(final de.cismet.cids.tools.tostring.StringConvertable o) {
-        String stringRepresentation = "";
+        String stringRepresentation = "";//NOI18N
         if (o instanceof Sirius.server.localserver.object.Object) {
             final ObjectAttribute[] attrs = ((Sirius.server.localserver.object.Object)o).getAttribs();
             for (int i = 0; i < attrs.length; i++) {
-                stringRepresentation += (attrs[i].toString() + " ");
+                stringRepresentation += (attrs[i].toString() + " ");//NOI18N
             }
         } else if (o instanceof Sirius.server.localserver.attribute.ObjectAttribute) {
             return ((ObjectAttribute)o).getValue().toString();

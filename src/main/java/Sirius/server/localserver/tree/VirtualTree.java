@@ -135,34 +135,34 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 //                "SELECT distinct x.* ,p.id*0 as perm_id from (select n.id,name,class_id,object_id,node_type,dynamic_children,sql_sort,prot_prefix||server||path||object_name as url from (select  id,name,class_id,object_id,node_type,dynamic_children,sql_sort, descr  from cs_cat_node as x where x.id in ( select id_to  from cs_cat_link  where id_from =" + nodeId + ")) as n left outer join url  on ( n.descr=url.id ) left outer join url_base as ub  on (url.url_base_id=ub.id)) as x left outer join cs_ug_cat_node_perm as p on p.cat_node_id=x.id and ug_id =" + ug_id +
 //                "EXCEPT select distinct x.* ,p.id*0 as perm_id from (select n.id,name,class_id,object_id,node_type,dynamic_children,sql_sort,prot_prefix||server||path||object_name as url from (select  id,name,class_id,object_id,node_type,dynamic_children,sql_sort, descr  from cs_cat_node as x where x.id in ( select id_to  from cs_cat_link  where id_from =" + nodeId + ")) as n left outer join url  on ( n.descr=url.id ) left outer join url_base as ub  on (url.url_base_id=ub.id)) as x , cs_ug_cat_node_perm as p where  p.cat_node_id=x.id and p.permission=0  and ug_id = " + ug_id;
         //
-        final String localChildren = "select "
-                    + "y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url , p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from  "
-                    + "( "
-                    + "select  "
-                    + "n.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name as url,iconfactory,icon,derive_permissions_from_class   "
-                    + "from  "
-                    + "cs_cat_node as n left outer join url  on ( n.descr=url.id )  "
-                    + "left outer join url_base as ub  on (url.url_base_id=ub.id) "
-                    + ") as y  "
-                    + "left outer join cs_ug_cat_node_perm as p on p.cat_node_id=y.id  "
-                    + "left outer join cs_permission as pp on p.permission=pp.id and ug_id=" + ug_id
-                    + " where  "
-                    + "y.id in ( select id_to  from cs_cat_link  where id_from =" + nodeId + ") ";
+        final String localChildren = "select "//NOI18N
+                    + "y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url , p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from  "//NOI18N
+                    + "( "//NOI18N
+                    + "select  "//NOI18N
+                    + "n.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name as url,iconfactory,icon,derive_permissions_from_class   "//NOI18N
+                    + "from  "//NOI18N
+                    + "cs_cat_node as n left outer join url  on ( n.descr=url.id )  "//NOI18N
+                    + "left outer join url_base as ub  on (url.url_base_id=ub.id) "//NOI18N
+                    + ") as y  "//NOI18N
+                    + "left outer join cs_ug_cat_node_perm as p on p.cat_node_id=y.id  "//NOI18N
+                    + "left outer join cs_permission as pp on p.permission=pp.id and ug_id=" + ug_id //NOI18N
+                    + " where  "//NOI18N
+                    + "y.id in ( select id_to  from cs_cat_link  where id_from =" + nodeId + ") ";//NOI18N
         if (log.isDebugEnabled()) {
-            log.debug("getChildren f\u00FCr " + nodeId + "  gerufen\nlocalChildren aus:" + localChildren);
+            log.debug("getChildren for " + nodeId + "  called\nlocalChildren from:" + localChildren);   // NOI18N
         }
 
         // select remote child links
-        final String remoteChildren = "select "
-                    + "id_to as id,domain_to as domain "
-                    + "from "
-                    + "cs_cat_link "
-                    + "where "
-                    + "domain_to not in "
-                    + "( select id from cs_domain "
-                    + "where lower(name)='local'  "
-                    + "or lower(name)= lower('" + properties.getServerName().trim() + "')) "
-                    + "and  id_from = " + nodeId;
+        final String remoteChildren = "select "//NOI18N
+                    + "id_to as id,domain_to as domain "//NOI18N
+                    + "from "//NOI18N
+                    + "cs_cat_link "//NOI18N
+                    + "where "//NOI18N
+                    + "domain_to not in "//NOI18N
+                    + "( select id from cs_domain "//NOI18N
+                    + "where lower(name)='local'  "//NOI18N
+                    + "or lower(name)= lower('" + properties.getServerName().trim() + "')) "//NOI18N
+                    + "and  id_from = " + nodeId;//NOI18N
 
         final Statement s = conPool.getConnection().getConnection().createStatement();
 
@@ -194,7 +194,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     @Override
     public NodeReferenceList getChildren(final Node parentNode, final UserGroup ug) throws Throwable {
         if (log.isDebugEnabled()) {
-            log.debug("NodeReferenceList getChildren(Node node, UserGroup ug) ");
+            log.debug("NodeReferenceList getChildren(Node node, UserGroup ug) ");   // NOI18N
         }
         final String statement = parentNode.getDynamicChildrenStatement();
 
@@ -203,7 +203,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             return this.getChildren(parentNode.getId(), ug, null);
         }
         if (log.isDebugEnabled()) {
-            log.debug("getChildren aufgerufen (dynamische kinder)\nstatement:" + statement);
+            log.debug("getChildren called (dynamic children)\nstatement:" + statement);   // NOI18N
         }
         final Statement s = conPool.getConnection().getConnection().createStatement();
 
@@ -214,7 +214,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         for (final Node n : result) {
             if (!n.isDerivePermissionsFromClass()) {
                 if (log.isDebugEnabled()) {
-                    log.debug(n + ": Weise die Rechte des Parentnodes zu.");
+                    log.debug(n + ": Assigning rights of the parent node.");   // NOI18N
                 }
                 n.setPermissions(parentNode.getPermissions());
             }
@@ -243,7 +243,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             final Sirius.server.middleware.types.Link parent,
             final User user) throws Throwable {
         if (log.isDebugEnabled()) {
-            log.debug("addNode gerufen :: " + node);
+            log.debug("addNode called :: " + node);   // NOI18N
         }
 
         final DBConnection con = conPool.getConnection();
@@ -269,33 +269,33 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             boolean isRoot = false;
             char root = 'F';
 
-            String policy = "null";
+            String policy = "null";   // NOI18N
 
             if ((parent == null) && (parent.getNodeId() < 0)) {
                 isRoot = true;
                 root = 'T';
             } else {
                 final Node parentNode = getNode(parent.getNodeId(), user.getUserGroup());
-                policy = parentNode.getPermissions().getPolicy().getDbID() + "";
+                policy = parentNode.getPermissions().getPolicy().getDbID() + "";   // NOI18N
             }
             final int nodeId = getNextNodeID();
 
             final String addNode =
-                "insert into cs_cat_node (id, name, descr, class_id, object_id, node_type, is_root, org,dynamic_children,sql_sort,policy) values ( "
+                "insert into cs_cat_node (id, name, descr, class_id, object_id, node_type, is_root, org,dynamic_children,sql_sort,policy) values ( "//NOI18N
                         + nodeId
-                        + ",'"
+                        + ",'"//NOI18N
                         + node.getName()
-                        + "',1,"
+                        + "',1,"//NOI18N
                         + classId
-                        + ","
+                        + ","//NOI18N
                         + objectId
-                        + ",'"
+                        + ",'"//NOI18N
                         + nodeType
-                        + "','"
+                        + "','"//NOI18N
                         + root
-                        + "', NULL,NULL,false,"
+                        + "', NULL,NULL,false,"//NOI18N
                         + policy
-                        + " )"; // , (select id from cs_domain where name
+                        + " )"; // , (select id from cs_domain where name //NOI18N
                                 // ='"+properties.getServerName().trim()+"')
 
             final Statement add = con.getConnection().createStatement();
@@ -331,27 +331,27 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     @Override
     public boolean deleteNode(final Sirius.server.middleware.types.Node node, final User user) throws Throwable {
         if (!nodeIsLeaf(node.getId())) {
-            log.error("Node is no leaf, cannot delete!!!");
+            log.error("Node is no leaf, cannot delete!!!");   // NOI18N
             return false;
         }
 
-        final String deleteNode = "DELETE FROM cs_cat_node where id = "
+        final String deleteNode = "DELETE FROM cs_cat_node where id = " //NOI18N
                     + node.getId();
         if (log.isDebugEnabled()) {
-            log.debug("delete Node " + deleteNode);
+            log.debug("delete Node " + deleteNode);   // NOI18N
         }
 
-        final String delLink = "DELETE FROM cs_cat_link where id_to = "
+        final String delLink = "DELETE FROM cs_cat_link where id_to = "//NOI18N
                     + node.getId();
         if (log.isDebugEnabled()) {
-            log.debug("delte Link in delete node " + delLink);
+            log.debug("delte Link in delete node " + delLink);   // NOI18N
         }
 
         final DBConnection con = conPool.getConnection();
 
         final Statement del = con.getConnection().createStatement();
 
-        final String delPerm = "DELETE FROM cs_ug_cat_node_perm where cat_node_id = "
+        final String delPerm = "DELETE FROM cs_ug_cat_node_perm where cat_node_id = "//NOI18N
                     + node.getId();
         if (log.isDebugEnabled()) {
             log.debug(delPerm);
@@ -378,17 +378,17 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     public boolean addLink(final int father, final int child) throws Exception {
         final DBConnection con = conPool.getConnection();
 
-        final String addLink = "INSERT INTO cs_cat_link (id_from,id_to,org,domain_to) values("
+        final String addLink = "INSERT INTO cs_cat_link (id_from,id_to,org,domain_to) values("//NOI18N
                     + father
-                    + ","
+                    + ","//NOI18N
                     + child
-                    + ",null, (select id from cs_domain where name ='"
+                    + ",null, (select id from cs_domain where name ='"//NOI18N
                     + properties.getServerName().trim()
-                    + "'))";
+                    + "'))";//NOI18N
 
         final Statement s = con.getConnection().createStatement();
         if (log.isDebugEnabled()) {
-            log.debug("addLink " + addLink);
+            log.debug("addLink " + addLink);   // NOI18N
         }
 
         // update the noLeaf Hash as the Father is no Leaf anymore
@@ -416,21 +416,21 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             final User user) throws Exception {
         if (log.isDebugEnabled()) {
             // user check notwendig ??
-            log.debug("delete link from :" + from.toString() + " to :" + to.toString());
+            log.debug("delete link from :" + from.toString() + " to :" + to.toString());   // NOI18N
         }
 
         final Statement del = conPool.getConnection().getConnection().createStatement();
 
-        final String deleteLink = "DELETE FROM cs_cat_link WHERE id_from = "
+        final String deleteLink = "DELETE FROM cs_cat_link WHERE id_from = "//NOI18N
                     + from.getId()
-                    + " AND id_to =  "
+                    + " AND id_to =  "  //NOI18N
                     + to.getId()
-                    + "AND domain_to = "
-                    + "( SELECT id from cs_domain where lower(name) = lower("
+                    + "AND domain_to = "//NOI18N
+                    + "( SELECT id from cs_domain where lower(name) = lower("//NOI18N
                     + to.getDomain()
-                    + ")  )";
+                    + ")  )";//NOI18N
         if (log.isDebugEnabled()) {
-            log.debug("deleteLink " + del);
+            log.debug("deleteLink " + del);   // NOI18N
         }
 
         final int affected = del.executeUpdate(deleteLink);
@@ -440,7 +440,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                 nonLeafs.remove(new Integer(from.getId()));
             }
         } catch (Throwable ex) {
-            log.error("could not update nonLeafCache", ex);
+            log.error("could not update nonLeafCache", ex);   // NOI18N
         }
 
         return affected
@@ -486,7 +486,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      */
     @Override
     public int getNextNodeID() throws SQLException {
-        final String query = "SELECT NEXTVAL('cs_cat_node_sequence')";
+        final String query = "SELECT NEXTVAL('cs_cat_node_sequence')";//NOI18N
 
         final ResultSet rs = conPool.getConnection().getConnection().createStatement().executeQuery(query);
 
@@ -545,20 +545,20 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             // url  from cs_cat_node as n left outer join url  on ( n.descr=url.id ) left outer join url_base as ub  on
             // (url.url_base_id=ub.id)   where is_root=true and node_type='C' ) as y ,cs_ug_cat_node_perm as p where
             // p.cat_node_id=y.id and p.permission=0 and ug_id = " + ug_id;
-            final String statement = "select  distinct "
-                        + "y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from "
-                        + "("
-                        + "select "
-                        + "n.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name as url,iconfactory,icon,derive_permissions_from_class  "
-                        + "from "
-                        + "cs_cat_node as n left outer join url  on ( n.descr=url.id ) "
-                        + "left outer join url_base as ub  on (url.url_base_id=ub.id)   "
-                        + "where "
-                        + "is_root=true and node_type='C' "
-                        + ") as y "
-                        + "left outer join cs_ug_cat_node_perm as p on p.cat_node_id=y.id and ug_id="
+            final String statement = "select  distinct "//NOI18N
+                        + "y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from "//NOI18N
+                        + "("//NOI18N
+                        + "select "//NOI18N
+                        + "n.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name as url,iconfactory,icon,derive_permissions_from_class  "//NOI18N
+                        + "from "//NOI18N
+                        + "cs_cat_node as n left outer join url  on ( n.descr=url.id ) "//NOI18N
+                        + "left outer join url_base as ub  on (url.url_base_id=ub.id)   "//NOI18N
+                        + "where "//NOI18N
+                        + "is_root=true and node_type='C' "//NOI18N
+                        + ") as y "//NOI18N
+                        + "left outer join cs_ug_cat_node_perm as p on p.cat_node_id=y.id and ug_id="//NOI18N
                         + ug_id
-                        + " left outer join cs_permission as pp on p.permission=pp.id ";
+                        + " left outer join cs_permission as pp on p.permission=pp.id ";//NOI18N
 
             final Statement s = conPool.getConnection().getConnection().createStatement();
 
@@ -574,7 +574,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
             return removeUnReadableNodes(nodes, ug);
         } catch (Throwable t) {
-            log.error("Error in getCLassTreeNodes", t);
+            log.error("Error in getCLassTreeNodes", t);   // NOI18N
             throw t;
         }
     }
@@ -591,11 +591,11 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     @Deprecated
     public void inheritNodePermission(final int nodeId, final int parentNodeId) throws Throwable {
         // precondition id is set with autokey (sequence)
-        final String statement = "insert into cs_ug_cat_node_perm  (ug_id,cat_node_id,permission)  (select ug_id,"
+        final String statement = "insert into cs_ug_cat_node_perm  (ug_id,cat_node_id,permission)  (select ug_id,"//NOI18N
                     + nodeId
-                    + ",permission  from cs_ug_cat_node_perm where cat_node_id="
+                    + ",permission  from cs_ug_cat_node_perm where cat_node_id="//NOI18N
                     + parentNodeId
-                    + ")";
+                    + ")";//NOI18N
 
         try {
             final Connection c = conPool.getConnection().getConnection();
@@ -604,7 +604,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
             s.executeUpdate(statement);
         } catch (Throwable t) {
-            log.error("Error in inheritNodePermissions", t);
+            log.error("Error in inheritNodePermissions", t);   // NOI18N
             throw t;
         }
     }
@@ -621,12 +621,12 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     @Override
     public boolean hasNodes(final String objectId) throws Throwable {
         // oId@cId
-        final String[] ids = objectId.split("@");
+        final String[] ids = objectId.split("@");//NOI18N
 
         try {
-            final String statement = "select count(id) from cs_cat_node where object_id = "
+            final String statement = "select count(id) from cs_cat_node where object_id = "//NOI18N
                         + ids[0]
-                        + " and class_id = "
+                        + " and class_id = "//NOI18N
                         + ids[1];
 
             final Connection c = conPool.getConnection().getConnection();
@@ -639,7 +639,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                 return (r.getInt(1) == 0);
             }
         } catch (Throwable t) {
-            log.error("Error in hasNodes", t);
+            log.error("Error in hasNodes", t);   // NOI18N
             throw t;
         }
 
@@ -658,7 +658,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      */
     @Override
     public Node[] getTopNodes(final UserGroup ug) throws Throwable {
-        log.info("get top nodes for UserGroup:" + ug.getName() + "@" + ug.getDomain());
+        log.info("get top nodes for UserGroup:" + ug.getName() + "@" + ug.getDomain());   // NOI18N
         // usercheck !! -> statement erweitern
         // beschaffe lokale ug_id
         final int ug_id = idMap.getLocalUgId(ug);
@@ -677,20 +677,20 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             // (url.url_base_id=ub.id)   where is_root=true and node_type<>'C' ) as y ,cs_ug_cat_node_perm as p where
             // p.cat_node_id=y.id and p.permission=0 and ug_id = " + ug_id;
 
-            final String statement = "select  distinct "
-                        + "y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from "
-                        + "("
-                        + "select "
-                        + "n.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name as url,iconfactory,icon,derive_permissions_from_class  "
-                        + "from "
-                        + "cs_cat_node as n left outer join url  on ( n.descr=url.id ) "
-                        + "left outer join url_base as ub  on (url.url_base_id=ub.id)   "
-                        + "where "
-                        + "is_root=true and node_type<>'C' "
-                        + ") as y "
-                        + "left outer join cs_ug_cat_node_perm as p on p.cat_node_id=y.id and ug_id="
+            final String statement = "select  distinct "//NOI18N
+                        + "y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from "//NOI18N
+                        + "("//NOI18N
+                        + "select "//NOI18N
+                        + "n.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name as url,iconfactory,icon,derive_permissions_from_class  "//NOI18N
+                        + "from "//NOI18N
+                        + "cs_cat_node as n left outer join url  on ( n.descr=url.id ) "//NOI18N
+                        + "left outer join url_base as ub  on (url.url_base_id=ub.id)   "//NOI18N
+                        + "where "//NOI18N
+                        + "is_root=true and node_type<>'C' "//NOI18N
+                        + ") as y "//NOI18N
+                        + "left outer join cs_ug_cat_node_perm as p on p.cat_node_id=y.id and ug_id="//NOI18N
                         + ug_id
-                        + " left outer join cs_permission as pp on p.permission=pp.id ";
+                        + " left outer join cs_permission as pp on p.permission=pp.id ";//NOI18N
 
             final Statement s = conPool.getConnection().getConnection().createStatement();
 
@@ -700,7 +700,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
             // Die Knoten die nicht angezeigt werden dürfen müssen noch rausgefiltert werden
         } catch (Throwable t) {
-            log.error("Error in getTopNodes", t);
+            log.error("Error in getTopNodes", t);   // NOI18N
             throw t;
         }
     }
@@ -715,13 +715,15 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      */
     private Node[] removeUnReadableNodes(final java.util.ArrayList<Node> n, final UserGroup ug) {
         final Vector<Node> v = new Vector<Node>();
-        log.info("removeUnReadableNodes " + n.size() + " Elements before");
+        if(log.isInfoEnabled())
+            log.info("removeUnReadableNodes " + n.size() + " Elements before");   // NOI18N
         for (final Node node : n) {
             if (node.getPermissions().hasReadPermission(ug)) {
                 v.add(node);
             }
         }
-        log.info("removeUnReadableNodes " + v.size() + " Elements after");
+        if(log.isInfoEnabled())
+            log.info("removeUnReadableNodes " + v.size() + " Elements after");   // NOI18N
         return v.toArray(new Node[v.size()]);
     }
 
@@ -777,17 +779,17 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
         try {
             final String statement =
-                "select  y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url , p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  "
-                        + "from"
-                        + " (select n.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name as url,iconfactory,icon,derive_permissions_from_class  from cs_cat_node as n left outer join url  on ( n.descr=url.id ) "
-                        + "left outer join url_base as ub  on (url.url_base_id=ub.id)   "
-                        + "where n.id="
+                "select  y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url , p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  "//NOI18N
+                        + "from"//NOI18N
+                        + " (select n.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name as url,iconfactory,icon,derive_permissions_from_class  from cs_cat_node as n left outer join url  on ( n.descr=url.id ) "//NOI18N
+                        + "left outer join url_base as ub  on (url.url_base_id=ub.id)   "//NOI18N
+                        + "where n.id="//NOI18N
                         + nodeId
-                        + " ) as y "
-                        + "left outer join cs_ug_cat_node_perm as p on p.cat_node_id=y.id and ug_id = "
+                        + " ) as y "//NOI18N
+                        + "left outer join cs_ug_cat_node_perm as p on p.cat_node_id=y.id and ug_id = "//NOI18N
                         + ug_id
-                        + " "
-                        + "left outer join cs_permission as pp on p.permission=pp.id";
+                        + " "//NOI18N
+                        + "left outer join cs_permission as pp on p.permission=pp.id";//NOI18N
 
             final Statement s = conPool.getConnection().getConnection().createStatement();
 
@@ -795,7 +797,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
             return nodesFromResult(r, ug).get(0);
         } catch (Throwable t) {
-            log.error("Error in getNode", t);
+            log.error("Error in getNode", t);   // NOI18N
             throw t;
         }
     }
@@ -812,7 +814,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     @Override
     public boolean nodeIsLeaf(final int nodeId) throws Throwable {
         try {
-            final String statement = "select count(id_from) from cs_cat_link where id_from = "
+            final String statement = "select count(id_from) from cs_cat_link where id_from = "//NOI18N
                         + nodeId;
 
             final Connection c = conPool.getConnection().getConnection();
@@ -825,7 +827,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                 return (r.getInt(1) == 0);
             }
         } catch (Throwable t) {
-            log.error("Error in nodeIsLeaf", t);
+            log.error("Error in nodeIsLeaf", t);   // NOI18N
             throw t;
         }
 
@@ -871,50 +873,50 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             // current Node
             Node tmp = null;
             int id = 0;
-            String name = "";
+            String name = "";   // NOI18N
             String descr = null;
             String dynamicChildren = null;
             int classId = -1;
             try {
-                if (nodeTable.getObject("class_id") != null) {
-                    classId = nodeTable.getInt("class_id");
+                if (nodeTable.getObject("class_id") != null) {   // NOI18N
+                    classId = nodeTable.getInt("class_id");   // NOI18N
                 }
             } catch (Exception skip) {
             }
             boolean derivePermissionsFromClass = false;
             try {
-                derivePermissionsFromClass = nodeTable.getBoolean("derive_permissions_from_class");
+                derivePermissionsFromClass = nodeTable.getBoolean("derive_permissions_from_class");   // NOI18N
             } catch (Exception skip) {
             }
             int iconFactory = -1;
             try {
-                if (nodeTable.getObject("iconfactory") != null) {
-                    iconFactory = nodeTable.getInt("iconfactory");
+                if (nodeTable.getObject("iconfactory") != null) {   // NOI18N
+                    iconFactory = nodeTable.getInt("iconfactory");   // NOI18N
                 }
             } catch (Exception skip) {
             }
 
             String icon = null;
             try {
-                if (nodeTable.getObject("icon") != null) {
-                    icon = nodeTable.getString("icon");
+                if (nodeTable.getObject("icon") != null) {   // NOI18N
+                    icon = nodeTable.getString("icon");   // NOI18N
                 }
             } catch (Exception skip) {
             }
 
-            c = nodeTable.getString("node_type").charAt(0); // alias for the leftmost character of the
+            c = nodeTable.getString("node_type").charAt(0); // alias for the leftmost character of the   // NOI18N
 
             try {
-                name = nodeTable.getString("name").trim();
+                name = nodeTable.getString("name").trim();   // NOI18N
             } catch (Exception skip) {
                 name = null;
             }
 
-            descr = nodeTable.getString("url");
+            descr = nodeTable.getString("url");   // NOI18N
             descr = StringTools.deleteWhitespaces(descr);
 
-            id = nodeTable.getInt("id");
-            dynamicChildren = nodeTable.getString("dynamic_children");
+            id = nodeTable.getInt("id");   // NOI18N
+            dynamicChildren = nodeTable.getString("dynamic_children");   // NOI18N
 
             if (dynamicChildren != null) {
                 dynamicChildren = dynamicChildren.trim();
@@ -924,19 +926,19 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             // tmp.setLeaf(this.nodeIsLeaf(tmp.getID()));
             // xyc
 
-            final Boolean sqlSort = nodeTable.getBoolean("sql_sort");
+            final Boolean sqlSort = nodeTable.getBoolean("sql_sort");//NOI18N
             Policy policy = null;
 
             try {
-                final Object policytester = nodeTable.getObject("policy");
+                final Object policytester = nodeTable.getObject("policy");//NOI18N
 
                 if (policytester != null) {
-                    final int p = nodeTable.getInt("policy");
+                    final int p = nodeTable.getInt("policy");//NOI18N
                     policy = policyHolder.getServerPolicy(p);
                 }
             } catch (Exception e) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Policy war nicht im resultset. Ist aber bei DynamicChildrenStatements normal", e);
+                    log.debug("Policy was not in resultset. But is normal at DynamicChildrenStatements ", e);   // NOI18N
                 }
             }
 
@@ -960,7 +962,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                         try {
                             policy = classCache.getClass(classId).getPolicy();
                         } catch (Exception e) {
-                            log.warn("Fehler bei: classCache.getClass(nodeTable.getInt(\"class_id\")).getPolicy() ", e);
+                            log.warn("Error at: classCache.getClass(nodeTable.getInt(\"class_id\")).getPolicy() ", e);   // NOI18N
                         }
                     }
                 } else if ((c == (byte)'C') || (c == (byte)'c')) {
@@ -970,7 +972,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                         policy = policyHolder.getServerPolicy(properties.getClassNodePolicy());
                     }
                 } else {
-                    throw new Exception("Kein bekannter Knotentyp : " + (char)c + " ?");
+                    throw new Exception("Not a known node type : " + (char)c + " ?");   // NOI18N
                 }
 
                 // serverPolicy in runtime.properties
@@ -980,7 +982,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
                 // PARANOID Policy als Fallback
                 if (policy == null) {
-                    log.warn("ACHTUNG: Das sollte eigentlich nicht noetig sein. Setze fallbackPolicy: PARANOID");
+                    log.warn("WARNING: This should not be neccessary. Setting fallback policy: PARANOID");   // NOI18N
                     policy = Policy.createParanoidPolicy();
                 }
             }
@@ -1005,7 +1007,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                 try {
                     metaclass = classCache.getClass(classId);
                 } catch (Exception e) {
-                    log.warn("getClass ist schiefgegangen. kann keinen objekt/klassenknoten erzeugen", e);
+                    log.warn("getClass failed. cannot create objekt/classnode", e);   // NOI18N
                 }
                 if ((metaclass != null) && metaclass.getPermissions().hasReadPermission(ug)) {
                     if ((c == (byte)'O') || (c == (byte)'o')) {
@@ -1014,7 +1016,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                                 name,
                                 descr,
                                 domain,
-                                nodeTable.getInt("object_id"),
+                                nodeTable.getInt("object_id"),   // NOI18N
                                 classId,
                                 leaf,
                                 policy,
@@ -1035,7 +1037,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                                 derivePermissionsFromClass,
                                 classId);
                     } else {
-                        throw new Exception("Kein bekannter Knotentyp : " + (char)c + " ?");
+                        throw new Exception("Nodetype not known : " + (char)c + " ?");   // NOI18N
                     }
                 }
             }
@@ -1045,9 +1047,9 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                 if (sqlSort != null) {
                     tmp.setSqlSort(sqlSort);
                 }
-                final String nodeKey = "Node:"
+                final String nodeKey = "Node:"//NOI18N
                             + tmp.getId()
-                            + "@"
+                            + "@"//NOI18N
                             + tmp.getDomain();
                 // Das hinzufügen zu nodes bzw. nodesHM auf doppelte Einträge braucht/kann nur gecheckt werden , wenn
                 // die Nodes nicht dynamisch sind. Deshalb der Check auf isDynamic) bzw auf nodeId==-1 (Das soll wieder
@@ -1058,31 +1060,33 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                 }
 
                 if (tmp.isDerivePermissionsFromClass()) {
-                    log.info(tmp + "(" + c + "): Permissions derived from class.");
+                    if(log.isInfoEnabled())
+                        log.info(tmp + "(" + c + "): Permissions derived from class.");   // NOI18N
                     final Sirius.server.localserver._class.Class cc = classCache.getClass(tmp.getClassId());
                     if (cc != null) {
                         tmp.setPermissions(cc.getPermissions());
                     }
                 } else {
                     try {
-                        final Object permId = nodeTable.getObject("perm_id");
-                        final String permKey = nodeTable.getString("perm_key");
+                        final Object permId = nodeTable.getObject("perm_id");//NOI18N
+                        final String permKey = nodeTable.getString("perm_key");//NOI18N
 
                         if ((permId != null) && (permKey != null)) {
-                            final Permission pp = new Permission(nodeTable.getInt("perm_id"), permKey);
+                            final Permission pp = new Permission(nodeTable.getInt("perm_id"), permKey);//NOI18N
                             nodeHM.get(nodeKey).getPermissions().addPermission(ug, pp);
                             if (log.isDebugEnabled()) {
                                 log.debug(
-                                    "Permission "
+                                    "Permission "//NOI18N
                                             + pp.getKey()
-                                            + " added to node"
+                                            + " added to node"//NOI18N
                                             + tmp.getId()
-                                            + " for ug "
+                                            + " for ug "//NOI18N
                                             + ug.getKey().toString());
                             }
                         }
                     } catch (Throwable t) {
-                        log.info("could not set permissions for node::" + id, t);
+                        if(log.isInfoEnabled())
+                            log.info("could not set permissions for node::" + id, t);   // NOI18N
                     }
                 }
             }
@@ -1106,8 +1110,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         final String domain = properties.getServerName();
 
         while (linkTable.next()) {
-            final int id = linkTable.getInt("id");
-            String toServer = linkTable.getString("domain");
+            final int id = linkTable.getInt("id");//NOI18N
+            String toServer = linkTable.getString("domain");//NOI18N
 
             if (toServer == null) {
                 toServer = domain;
@@ -1128,7 +1132,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         // a where id_to  in (select distinct id_from from cs_cat_link) union select distinct id from cs_cat_node where
         // is_root=true ";
         final String statement =
-            "select distinct id_from from cs_cat_link union select distinct id as id_from from cs_cat_node where dynamic_children is not null";
+            "select distinct id_from from cs_cat_link union select distinct id as id_from from cs_cat_node where dynamic_children is not null";   // NOI18N
 
         // the non leafs are of the order 10K in wundalive
         final HashSet<Integer> nl = new HashSet<Integer>(12000);
@@ -1139,13 +1143,13 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             final ResultSet r = s.executeQuery(statement);
 
             while (r.next()) {
-                nl.add(r.getInt("id_from"));
+                nl.add(r.getInt("id_from"));   // NOI18N
             }
             if (log.isDebugEnabled()) {
-                log.debug("added # of leafentries::" + nl.size());
+                log.debug("added # of leafentries::" + nl.size());   // NOI18N
             }
         } catch (SQLException ex) {
-            log.error("Fehler beim Laden der Leaf Eigenschaft", ex);
+            log.error("Error while loading Leaf property", ex);   // NOI18N
         }
 
         return nl;
@@ -1177,17 +1181,17 @@ public class VirtualTree extends Shutdown implements AbstractTree {
          */
         UserGroupIdentifiers(final DBConnectionPool conPool) {
             final String statement =
-                "select u.id, u.name||'@'||d.name as ug_identifier  from cs_ug as u , cs_domain as d where u.domain=d.id and not (lower(d.name) = 'local')";
+                "select u.id, u.name||'@'||d.name as ug_identifier  from cs_ug as u , cs_domain as d where u.domain=d.id and not (lower(d.name) = 'local')";//NOI18N
             try {
                 final Statement s = conPool.getConnection().getConnection().createStatement();
 
                 final ResultSet r = s.executeQuery(statement);
 
                 while (r.next()) {
-                    idsByUgIdentifier.put(r.getString("ug_identifier"), r.getInt("id"));
+                    idsByUgIdentifier.put(r.getString("ug_identifier"), r.getInt("id"));//NOI18N
                 }
             } catch (SQLException ex) {
-                logger.error("Fehler beim Laden der UG Fremssystemfeferenzen", ex);
+                logger.error("Fehler beim Laden der UG Fremssystemfeferenzen", ex);//NOI18N
             }
         }
 

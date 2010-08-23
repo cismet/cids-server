@@ -60,29 +60,29 @@ public final class MethodCache extends Shutdown {
 
         final DBConnection con = conPool.getConnection();
         try {
-            final ResultSet methodTable = con.submitQuery("get_all_methods", new Object[0]);
+            final ResultSet methodTable = con.submitQuery("get_all_methods", new Object[0]);//NOI18N
 
             while (methodTable.next()) // add all objects to the hashtable
             {
                 final Method tmp = new Method(
-                        methodTable.getInt("id"),
-                        methodTable.getString("plugin_id").trim(),
-                        methodTable.getString("method_id").trim(),
-                        methodTable.getBoolean("class_mult"),
-                        methodTable.getBoolean("mult"),
-                        methodTable.getString("descr"),
+                        methodTable.getInt("id"),   // NOI18N
+                        methodTable.getString("plugin_id").trim(),   // NOI18N
+                        methodTable.getString("method_id").trim(),   // NOI18N
+                        methodTable.getBoolean("class_mult"),   // NOI18N
+                        methodTable.getBoolean("mult"),   // NOI18N
+                        methodTable.getString("descr"),   // NOI18N
                         null);
                 methods.add(properties.getServerName(), tmp);
                 methodArray.add(tmp);
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Methode " + tmp + "gecacht");
+                    LOG.debug("Methode " + tmp + "cached");   // NOI18N
                 }
             }                          // end while
 
             methodTable.close();
             if (LOG.isDebugEnabled()) {
                 // methods.rehash(); MethodMap jetzt hashmap
-                LOG.debug("methodmap :" + methods);
+                LOG.debug("methodmap :" + methods);//NOI18N
             }
 
             addMethodPermissions(conPool);
@@ -99,7 +99,7 @@ public final class MethodCache extends Shutdown {
                 });
         } catch (java.lang.Exception e) {
             ExceptionHandler.handle(e);
-            LOG.error("<LS> ERROR :: when trying to submit get_all_methods statement", e);
+            LOG.error("<LS> ERROR :: when trying to submit get_all_methods statement", e);   // NOI18N
         }
     }
 
@@ -114,28 +114,28 @@ public final class MethodCache extends Shutdown {
         try {
             final DBConnection con = conPool.getConnection();
 
-            final ResultSet permTable = con.submitQuery("get_all_method_permissions", new Object[0]);
+            final ResultSet permTable = con.submitQuery("get_all_method_permissions", new Object[0]);//NOI18N
 
             final String lsName = properties.getServerName();
 
             while (permTable.next()) {
-                final String methodID = permTable.getString("method_id").trim();
-                final String pluginID = permTable.getString("plugin_id").trim();
-                String ugLsHome = permTable.getString("ls").trim();
-                final int ugID = permTable.getInt("ug_id");
+                final String methodID = permTable.getString("method_id").trim();//NOI18N
+                final String pluginID = permTable.getString("plugin_id").trim();//NOI18N
+                String ugLsHome = permTable.getString("ls").trim();//NOI18N
+                final int ugID = permTable.getInt("ug_id");//NOI18N
 
-                final String mkey = methodID + "@" + pluginID;
+                final String mkey = methodID + "@" + pluginID;//NOI18N
 
                 if (methods.containsMethod(mkey)) {
                     final Method tmp = methods.getMethod(mkey);
 
-                    if ((ugLsHome == null) || ugLsHome.equalsIgnoreCase("local")) {
+                    if ((ugLsHome == null) || ugLsHome.equalsIgnoreCase("local")) {   // NOI18N
                         ugLsHome = new String(lsName);
                     }
 
-                    tmp.addPermission(new UserGroup(ugID, "", ugLsHome));
+                    tmp.addPermission(new UserGroup(ugID, "", ugLsHome));   // NOI18N
                 } else {
-                    LOG.error("<LS> ERROR :: theres a method permission without method methodID " + mkey);
+                    LOG.error("<LS> ERROR :: theres a method permission without method methodID " + mkey);//NOI18N
                 }
             }
 
@@ -143,7 +143,7 @@ public final class MethodCache extends Shutdown {
         } catch (java.lang.Exception e) {
             ExceptionHandler.handle(e);
 
-            LOG.error("<LS> ERROR :: addMethodPermissions", e);
+            LOG.error("<LS> ERROR :: addMethodPermissions", e);//NOI18N
         }
     }
 
@@ -152,9 +152,9 @@ public final class MethodCache extends Shutdown {
      *
      * @return  DOCUMENT ME!
      */
-    public MethodMap getMethods() {
+    public final MethodMap getMethods() {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("getMethods gerufen" + methods);
+            LOG.debug("getMethods called" + methods);   // NOI18N
         }
         return methods;
     }
@@ -195,26 +195,26 @@ public final class MethodCache extends Shutdown {
             final DBConnection con = conPool.getConnection();
 
             final String sql =
-                "select c.id as c_id , m.plugin_id as p_id,m.method_id as m_id  from cs_class as c, cs_method as m, cs_method_class_assoc as assoc where c.id=assoc.class_id and m.id = assoc.method_id";
+                "select c.id as c_id , m.plugin_id as p_id,m.method_id as m_id  from cs_class as c, cs_method as m, cs_method_class_assoc as assoc where c.id=assoc.class_id and m.id = assoc.method_id";   // NOI18N
 
             final ResultSet table = con.getConnection().createStatement().executeQuery(sql);
 
             final String lsName = properties.getServerName();
 
             while (table.next()) {
-                final String methodID = table.getString("m_id").trim();
-                final String pluginID = table.getString("p_id").trim();
-                final int classID = table.getInt("c_id");
+                final String methodID = table.getString("m_id").trim();//NOI18N
+                final String pluginID = table.getString("p_id").trim();//NOI18N
+                final int classID = table.getInt("c_id");//NOI18N
 
-                final String key = methodID + "@" + pluginID;
+                final String key = methodID + "@" + pluginID;//NOI18N
                 if (methods.containsMethod(key)) {
-                    final String cKey = classID + "@" + lsName;
+                    final String cKey = classID + "@" + lsName;//NOI18N
                     methods.getMethod(key).addClassKey(cKey);
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("add class key " + cKey + "to mehtod " + key);
+                        LOG.debug("add class key " + cKey + "to mehtod " + key);//NOI18N
                     }
                 } else {
-                    LOG.error("no method key " + key);
+                    LOG.error("no method key " + key);//NOI18N
                 }
             }
 
@@ -222,7 +222,7 @@ public final class MethodCache extends Shutdown {
         } catch (java.lang.Exception e) {
             ExceptionHandler.handle(e);
 
-            LOG.error("<LS> ERROR :: addMethodClassKeys", e);
+            LOG.error("<LS> ERROR :: addMethodClassKeys", e);//NOI18N
         }
     }
 }

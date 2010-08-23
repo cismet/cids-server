@@ -35,7 +35,7 @@ public class NodeComparator implements java.util.Comparator {
     //~ Static fields/initializers ---------------------------------------------
 
     // ganze Zahl
-    static Pattern p = Pattern.compile("[0-9]+");
+    static Pattern p = Pattern.compile("[0-9]+");//NOI18N
 
     //~ Constructors -----------------------------------------------------------
 
@@ -66,10 +66,10 @@ public class NodeComparator implements java.util.Comparator {
         }
 
         if (o1String == null) {
-            o1String = "";
+            o1String = "";//NOI18N
         }
         if (o2String == null) {
-            o2String = "";
+            o2String = "";//NOI18N
         }
 
         int balance = 0;
@@ -148,7 +148,7 @@ public class NodeComparator implements java.util.Comparator {
         // Construct result
         int resultSize = matchList.size();
         if (limit == 0) {
-            while ((resultSize > 0) && matchList.get(resultSize - 1).equals("")) {
+            while ((resultSize > 0) && matchList.get(resultSize - 1).equals("")) {//NOI18N
                 resultSize--;
             }
         }
@@ -162,10 +162,10 @@ public class NodeComparator implements java.util.Comparator {
      * @param  args  DOCUMENT ME!
      */
     public static void main(final String[] args) {
-        final String s = "Flurst\u00FCck: 218 / 2";
-        final String s2 = "Flurst\u00FCck: 218 / 11";
+        final String s = "Flurst\u00FCck: 218 / 2";//NOI18N
+        final String s2 = "Flurst\u00FCck: 218 / 11";//NOI18N
 
-        System.out.println("STringcompare:: " + s.compareTo(s2));
+        System.out.println("STringcompare:: " + s.compareTo(s2));//NOI18N
 
         final Object[] as = split(s, 0);
 
@@ -175,6 +175,6 @@ public class NodeComparator implements java.util.Comparator {
 
         final Comparator c = new NodeComparator();
 
-        System.out.println("nodecompare " + c.compare(s, s2));
+        System.out.println("nodecompare " + c.compare(s, s2));//NOI18N
     }
 }

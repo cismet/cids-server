@@ -29,7 +29,7 @@ public class PreferencesTool {
     //~ Static fields/initializers ---------------------------------------------
 
     /** PathSepatrator. */
-    private static final String PS = "/";
+    private static final String PS = "/";//NOI18N
 
     //~ Instance fields --------------------------------------------------------
 
@@ -123,8 +123,8 @@ public class PreferencesTool {
             final String[] keys,
             final String[] values) throws BackingStoreException {
         if (keys.length != values.length) {
-            final String meldung = "Ungleiche anzahl der Schl\u00FCssel und Werte"
-                        + " wurden \u00FCbergeben zum setzen der Preferences in die backing store.";
+            final String meldung = "Unequal number of keys and values"//NOI18N
+                + " was given to set the preferences in the backing store.";//NOI18N
 
             throw new BackingStoreException(meldung);
         }
@@ -221,14 +221,14 @@ public class PreferencesTool {
 
             final PreferencesTool pt = new PreferencesTool();
             if (!pt.setData(true, args[0])) {
-                System.out.println("Info: Knoten " + args[0] + " existiert noch nicht.");
+                System.out.println("Info: Node " + args[0] + " does not exist, yet.");//NOI18N
             }
 
             for (int i = 1; i < args.length; i = i + 2) {
                 pt.setPreference(args[i], args[i + 1]);
             }
 
-            System.out.println("Werte wurden erfolgreich geschrieben.");
+            System.out.println("Values were successfully written.");//NOI18N
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -238,7 +238,7 @@ public class PreferencesTool {
      * DOCUMENT ME!
      */
     private static void usage() {
-        System.out.println("Benutzung: ");
-        System.out.println("   java " + PreferencesTool.class.getName() + " <NODEPATH> " + "(<KEY> <VALUE>)+");
+        System.out.println("Usage: ");//NOI18N
+        System.out.println("   java " + PreferencesTool.class.getName() + " <NODEPATH> " + "(<KEY> <VALUE>)+");//NOI18N
     }
 }

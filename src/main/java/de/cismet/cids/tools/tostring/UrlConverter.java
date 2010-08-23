@@ -35,16 +35,16 @@ public class UrlConverter extends CustomToStringConverter implements java.io.Ser
 
     //~ Instance fields --------------------------------------------------------
 
-    @CidsAttribute("URL_BASE_ID.PROT_PREFIX")
+    @CidsAttribute("URL_BASE_ID.PROT_PREFIX")//NOI18N
     public String prot;
 
-    @CidsAttribute("URL_BASE_ID.SERVER")
+    @CidsAttribute("URL_BASE_ID.SERVER")//NOI18N
     public String server;
 
-    @CidsAttribute("URL_BASE_ID.PATH")
+    @CidsAttribute("URL_BASE_ID.PATH")//NOI18N
     public String path;
 
-    @CidsAttribute("OBJECT_NAME")
+    @CidsAttribute("OBJECT_NAME")//NOI18N
     public String name;
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
 

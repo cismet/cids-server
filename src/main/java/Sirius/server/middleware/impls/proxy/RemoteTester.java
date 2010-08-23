@@ -54,7 +54,7 @@ public class RemoteTester {
      * @throws  Throwable  DOCUMENT ME!
      */
     public static void main(final String[] args) throws Throwable {
-        final String domain = "WUNDA_BLAU";
+        final String domain = "WUNDA_BLAU";//NOI18N
 
         // security alles unsinn :-)
         System.setSecurityManager(
@@ -72,7 +72,7 @@ public class RemoteTester {
         final java.rmi.registry.Registry rmiRegistry = LocateRegistry.getRegistry(1099);
 
         // lookup des callservers
-        final Remote r = (Remote)Naming.lookup("rmi://localhost/callServer");
+        final Remote r = (Remote)Naming.lookup("rmi://localhost/callServer");//NOI18N
 
         // ich weiss, dass die server von callserver implementiert werden
         final SearchService ss = (SearchService)r;
@@ -90,9 +90,9 @@ public class RemoteTester {
 
         // oder mit login
         // ug_domain,ug_name,u_domain,u_name,password
-        final User u = us.getUser(domain, "Administratoren", domain, "admin", "x");
+        final User u = us.getUser(domain, "Administratoren", domain, "admin", "x");//NOI18N
 
-        System.out.println(u + "  user token retrieved");
+        System.out.println(u + "  user token retrieved");   // NOI18N
 
         // meta.getC
 
@@ -112,47 +112,47 @@ public class RemoteTester {
         // Beispiel:
         // Template f\u00FCr eine Object der ersten Klasse
         // MetaObject mo = meta.getInstance(u,cs[0]);
-        final MetaObject mo = meta.getMetaObject(u, 5646, 6, "WUNDA_BLAU");
-        System.out.println("metaobject::" + mo);
+        final MetaObject mo = meta.getMetaObject(u, 5646, 6, "WUNDA_BLAU");//NOI18N
+        System.out.println("metaobject::" + mo);//NOI18N
 
 // alle attribute des Objects
         // ObjectAttribute[] attribs = mo.getAttribs();
 
-        final java.util.Collection col1 = mo.getTraversedAttributesByType(Class.forName(""));
-        final java.util.Collection col2 = mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"));
-        final java.util.Collection col3 = mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"),
+        final java.util.Collection col1 = mo.getTraversedAttributesByType(Class.forName(""));//NOI18N
+        final java.util.Collection col2 = mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"));//NOI18N
+        final java.util.Collection col3 = mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"),//NOI18N
                 1);
-        final java.util.Collection col4 = mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"),
+        final java.util.Collection col4 = mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"),//NOI18N
                 2);
-        final java.util.Collection col5 = mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"),
+        final java.util.Collection col5 = mo.getAttributesByType(Class.forName("com.vividsolutions.jts.geom.Geometry"),//NOI18N
                 3);
 
         Iterator iter = col1.iterator();
-        System.out.println("!!!!!!!!!!!! traversiert !!!!!!!!!!!!!!!!!!!");
+        System.out.println("!!!!!!!!!!!! traversiert !!!!!!!!!!!!!!!!!!!");   // NOI18N
         while (iter.hasNext()) {
             System.out.println(iter.next());
         }
 
         iter = col2.iterator();
-        System.out.println("!!!!!!!!!!!! level 0 !!!!!!!!!!!!!!!!!!!");
+        System.out.println("!!!!!!!!!!!! level 0 !!!!!!!!!!!!!!!!!!!");   // NOI18N
         while (iter.hasNext()) {
             System.out.println(iter.next());
         }
 
         iter = col3.iterator();
-        System.out.println("!!!!!!!!!!!! level 1 !!!!!!!!!!!!!!!!!!!");
+        System.out.println("!!!!!!!!!!!! level 1 !!!!!!!!!!!!!!!!!!!");   // NOI18N
         while (iter.hasNext()) {
             System.out.println(iter.next());
         }
 
         iter = col4.iterator();
-        System.out.println("!!!!!!!!!!!! level 2 !!!!!!!!!!!!!!!!!!!");
+        System.out.println("!!!!!!!!!!!! level 2 !!!!!!!!!!!!!!!!!!!");   // NOI18N
         while (iter.hasNext()) {
             System.out.println(iter.next());
         }
 
         iter = col5.iterator();
-        System.out.println("!!!!!!!!!!!! level 3 !!!!!!!!!!!!!!!!!!!");
+        System.out.println("!!!!!!!!!!!! level 3 !!!!!!!!!!!!!!!!!!!");   // NOI18N
         while (iter.hasNext()) {
             System.out.println(iter.next());
         }

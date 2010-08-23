@@ -87,32 +87,32 @@ public class Store {
     public Store(final Connection con, final ServerProperties properties) {
         try {
             storeUserQuery = con.prepareStatement(
-                    "INSERT INTO cs_query_store (id, user_id,name, file_name) VALUES (?,?,?,?)");
+                    "INSERT INTO cs_query_store (id, user_id,name, file_name) VALUES (?,?,?,?)");   // NOI18N
 
             storeUserGroupQuery = con.prepareStatement(
-                    "INSERT INTO cs_query_store_ug_assoc (ug_id, domainname, query_store_id, permission) VALUES (?,(select distinct id from cs_domain where name = ?),?,1)");
+                    "INSERT INTO cs_query_store_ug_assoc (ug_id, domainname, query_store_id, permission) VALUES (?,(select distinct id from cs_domain where name = ?),?,1)");   // NOI18N
 
-            getUserQueryInfo = con.prepareStatement("SELECT * FROM cs_query_store WHERE user_id = ?");
+            getUserQueryInfo = con.prepareStatement("SELECT * FROM cs_query_store WHERE user_id = ?");   // NOI18N
 
             getUserGroupInfo = con.prepareStatement(
-                    "SELECT ug_id,query_store_id FROM cs_query_store_ug_assoc,cs_query_store WHERE user_id = ? and cs_query_store.id = cs_query_store_ug_assoc.query_store_id");
+                    "SELECT ug_id,query_store_id FROM cs_query_store_ug_assoc,cs_query_store WHERE user_id = ? and cs_query_store.id = cs_query_store_ug_assoc.query_store_id");   // NOI18N
 
             getUserGroupQueryInfo = con.prepareStatement(
-                    "SELECT qs.id, qs.name,qs.file_name FROM cs_query_store_ug_assoc qsa, cs_query_store qs WHERE qsa.ug_id = ? and qs.id = qsa.query_store_id");
+                    "SELECT qs.id, qs.name,qs.file_name FROM cs_query_store_ug_assoc qsa, cs_query_store qs WHERE qsa.ug_id = ? and qs.id = qsa.query_store_id");   // NOI18N
 
-            getUserQuery = con.prepareStatement("SELECT file_name,name FROM cs_query_store WHERE id = ? ");
+            getUserQuery = con.prepareStatement("SELECT file_name,name FROM cs_query_store WHERE id = ? ");   // NOI18N
 
-            updateUserQuery = con.prepareStatement("UPDATE cs_query_store SET file_name = ? WHERE id =?");
+            updateUserQuery = con.prepareStatement("UPDATE cs_query_store SET file_name = ? WHERE id =?");   // NOI18N
 
-            deleteUserQuery = con.prepareStatement("DELETE from cs_query_store WHERE id = ?");
+            deleteUserQuery = con.prepareStatement("DELETE from cs_query_store WHERE id = ?");   // NOI18N
 
             deleteUserQueryGroupAssoc = con.prepareStatement(
-                    "DELETE from cs_query_store_ug_assoc WHERE query_store_id = ?");
+                    "DELETE from cs_query_store_ug_assoc WHERE query_store_id = ?");   // NOI18N
 
-            maxId = con.prepareStatement("SELECT MAX(id) FROM cs_query_store");
+            maxId = con.prepareStatement("SELECT MAX(id) FROM cs_query_store");   // NOI18N
 
             getUserGroupId = con.prepareStatement(
-                    "SELECT distinct id from cs_ug where upper(name) = upper(?) and domain = ( select id from cs_domain where upper(name)=upper(?))");
+                    "SELECT distinct id from cs_ug where upper(name) = upper(?) and domain = ( select id from cs_domain where upper(name)=upper(?))");   // NOI18N
 
             // -----------------------------------------------------------------------------------------
 
@@ -170,12 +170,12 @@ public class Store {
 
             final HashSet ugs = data.getUserGroups();
             if (logger.isDebugEnabled()) {
-                logger.debug("user group in storeQuery" + ugs);
+                logger.debug("user group in storeQuery" + ugs);   // NOI18N
             }
 
             if (!ugs.isEmpty()) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("ugs is not empty try to insert userGroupProfile");
+                    logger.debug("ugs is not empty try to insert userGroupProfile");   // NOI18N
                 }
 
                 final Iterator iter = ugs.iterator();
@@ -187,7 +187,7 @@ public class Store {
                     if (properties.getServerName().equalsIgnoreCase((String)ugk[1])) {
                         ;
                     }
-                    ugk[1] = "LOCAL";
+                    ugk[1] = "LOCAL";   // NOI18N
 
                     getUserGroupId.setString(1, (String)ugk[0]);
                     getUserGroupId.setString(2, (String)ugk[1]);
@@ -199,13 +199,13 @@ public class Store {
                         ugid = ugidSet.getInt(1);
                     }
                     if (logger.isDebugEnabled()) {
-                        logger.debug(ugid + " usergroupid f\u00FCr " + ugKey);
+                        logger.debug(ugid + " usergroupid for " + ugKey);   // NOI18N
                     }
                     if (ugid == -1) {
                         break; // raus da:-)
                     }
                     if (logger.isDebugEnabled()) {
-                        logger.debug("vor insert ugProfile f\u00FCr ugid ==" + ugid);
+                        logger.debug("before insert ugProfile for ugid ==" + ugid);   // NOI18N
                     }
 
                     storeUserGroupQuery.setInt(1, ugid); // ck[1] == domainname nur f\u00FCr lokale ugs
@@ -213,13 +213,12 @@ public class Store {
                     storeUserGroupQuery.setInt(3, maxId);
                     if (logger.isDebugEnabled()) {
                         logger.debug(
-                            "beim insert in UserProfile wurden datens\u00E4tze hinzugef\u00FCgt #="
-                                    + effected);
+                            "Datasets where inserted into UserProfile during insert  #=" + effected);   // NOI18N
                     }
                     effected += storeUserGroupQuery.executeUpdate();
                     if (logger.isDebugEnabled()) {
                         logger.debug(
-                            "beim insert in UserGroupProfile + Userprofile wurden datens\u00E4tze hinzugef\u00FCgt #="
+                            "Datasets where inserted into UserGroupProfile + Userprofile during insert #="   // NOI18N
                                     + effected);
                     }
                 }
@@ -243,35 +242,35 @@ public class Store {
         try {
             getUserQueryInfo.setInt(1, user.getId());
             if (logger.isDebugEnabled()) {
-                logger.debug("try to retrieve UserQueryInfo in getQueryInfos(usr)");
+                logger.debug("try to retrieve UserQueryInfo in getQueryInfos(usr)");   // NOI18N
             }
             final ResultSet rs = getUserQueryInfo.executeQuery();
             final String domain = properties.getServerName();
             while (rs.next()) {
                 if (logger.isDebugEnabled()) {
                     logger.debug(
-                        "try to retrieve UserQueryInfo in getQueryInfos(usr) result retrieved try to getInt(id)");
+                        "try to retrieve UserQueryInfo in getQueryInfos(usr) result retrieved try to getInt(id)");   // NOI18N
                 }
-                final int id = rs.getInt("id");
+                final int id = rs.getInt("id");//NOI18N
                 result.put(
                     new Integer(id),
-                    new QueryInfo(id, (rs.getString("name")).trim(), domain, rs.getString("file_name")));
+                    new QueryInfo(id, (rs.getString("name")).trim(), domain, rs.getString("file_name")));   // NOI18N
             }
 
             getUserGroupInfo.setInt(1, user.getId());
             if (logger.isDebugEnabled()) {
-                logger.debug("try to retrieve UserGroupinfos for" + user);
+                logger.debug("try to retrieve UserGroupinfos for" + user);   // NOI18N
             }
             final ResultSet rs2 = getUserGroupInfo.executeQuery();
 
             int qs_id = 0;
             int ug_id = 0;
             while (rs2.next()) {
-                qs_id = rs2.getInt("query_store_id"); // xxx
-                ug_id = rs2.getInt("ug_id");
+                qs_id = rs2.getInt("query_store_id"); // xxx   // NOI18N
+                ug_id = rs2.getInt("ug_id");   // NOI18N
 
                 // add userGroup to QueryInfo of this user
-                ((QueryInfo)result.get(new Integer(qs_id))).addUserGroup(ug_id + "@" + domain);
+                ((QueryInfo)result.get(new Integer(qs_id))).addUserGroup(ug_id + "@" + domain);   // NOI18N
             }
         } catch (Exception e) {
             ExceptionHandler.handle(e);
@@ -292,20 +291,20 @@ public class Store {
         try {
             getUserGroupQueryInfo.setInt(1, ug.getId());
             if (logger.isDebugEnabled()) {
-                logger.debug("try to retrieve UserGroupQueryInfo in getQueryInfos(ug)");
+                logger.debug("try to retrieve UserGroupQueryInfo in getQueryInfos(ug)");   // NOI18N
             }
             final ResultSet rs = getUserGroupQueryInfo.executeQuery();
             final String domain = properties.getServerName();
             while (rs.next()) {
                 if (logger.isDebugEnabled()) {
                     logger.debug(
-                        "try to retrieve UserGroupQueryInfo in getQueryInfos(ug) result retrieved try to getInt(id)");
+                        "try to retrieve UserGroupQueryInfo in getQueryInfos(ug) result retrieved try to getInt(id)");   // NOI18N
                 }
 
-                final int id = rs.getInt("id");
+                final int id = rs.getInt("id");//NOI18N
                 result.put(
                     new Integer(id),
-                    new QueryInfo(id, (rs.getString("name")).trim(), domain, rs.getString("file_name")));
+                    new QueryInfo(id, (rs.getString("name")).trim(), domain, rs.getString("file_name")));   // NOI18N
             }
 
             // interessiert hier nicht oder ??? xxx
@@ -342,13 +341,13 @@ public class Store {
             byte[] data = new byte[0];
 
             if (rs.next()) {
-                fileName = rs.getString("file_name").trim();
-                rs.getString("name").trim();
+                fileName = rs.getString("file_name").trim();   // NOI18N
+                rs.getString("name").trim();   // NOI18N
             }
 
             data = readFile(fileName);
             if (logger.isDebugEnabled()) {
-                logger.debug("info :: data " + data);
+                logger.debug("info :: data " + data);//NOI18N
             }
 
             q = new QueryData(queryId, properties.getServerName(), name, fileName, data); // file auslesen
@@ -446,7 +445,7 @@ public class Store {
 
             out.close();
         } catch (Exception e) {
-            logger.error("<LS> ERROR :: ", e);
+            logger.error("<LS> ERROR :: ", e);   // NOI18N
         }
     }
 
@@ -473,14 +472,14 @@ public class Store {
             final int bytesRead = stream.read(data, 0, (int)inFile.length());
 
             if (bytesRead == -1) { // error occured during readingprocess
-                throw new Exception("read fehlgeschlagen");
+                throw new Exception("read failed");   // NOI18N
             } else if (bytesRead != (int)inFile.length()) {
-                throw new Exception("Information wahrscheinlich Fehlerhaft");
+                throw new Exception("Information probably erroneous");   // NOI18N
             }
 
             stream.close();
         } catch (Exception e) {
-            logger.error("<LS> ERROR :: ", e);
+            logger.error("<LS> ERROR :: ", e);   // NOI18N
             data = new byte[0];
         }
 
@@ -507,6 +506,6 @@ public class Store {
      * @return  DOCUMENT ME!
      */
     public String createFilename(final QueryData data, final User user, final int id) {
-        return id + user.getName() + data.getName() + System.currentTimeMillis() + ".str";
+        return id + user.getName() + data.getName() + System.currentTimeMillis() + ".str";   // NOI18N
     }
 } // end class
