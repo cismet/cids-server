@@ -31,6 +31,7 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
@@ -66,6 +67,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
 
 import de.cismet.cids.server.CallServerService;
@@ -303,69 +305,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         final WebResource wr = c.resource(uriBuilder.build());
 
         // this is the binary interface so we accept the octet stream type only
-        return wr.type(MediaType.APPLICATION_OCTET_STREAM_TYPE).accept(MediaType.APPLICATION_OCTET_STREAM_TYPE);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   <T>   DOCUMENT ME!
-     * @param   path  DOCUMENT ME!
-     * @param   type  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  IOException             DOCUMENT ME!
-     * @throws  ClassNotFoundException  DOCUMENT ME!
-     */
-    private <T> T getResponseGET(final String path, final Class<T> type) throws IOException, ClassNotFoundException {
-        final WebResource.Builder builder = createWebResourceBuilder(path);
-
-        return getResponseGET(builder, type);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   <T>          DOCUMENT ME!
-     * @param   path         DOCUMENT ME!
-     * @param   queryParams  DOCUMENT ME!
-     * @param   type         DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  IOException             DOCUMENT ME!
-     * @throws  ClassNotFoundException  DOCUMENT ME!
-     */
-    private <T> T getResponseGET(final String path, final Map<String, String> queryParams, final Class<T> type)
-            throws IOException, ClassNotFoundException {
-        final WebResource.Builder builder = createWebResourceBuilder(path, queryParams);
-
-        return getResponseGET(builder, type);
-    }
-
-    /**
-     * Extracts the real return value from the web service call's response.
-     *
-     * @param   <T>      Type of the response value
-     * @param   builder  initialised {@link WebResouce.Builder}
-     * @param   type     Class of the return type
-     *
-     * @return  the extracted response of type <code>T</code>
-     *
-     * @throws  IOException             if any error occurs during response conversion
-     * @throws  ClassNotFoundException  if the class to convert in cannot be found
-     * @throws  IllegalStateException   DOCUMENT ME!
-     */
-    private <T> T getResponseGET(final WebResource.Builder builder, final Class<T> type) throws IOException,
-        ClassNotFoundException {
-        if ((builder == null) || (type == null)) {
-            throw new IllegalStateException("neither builder nor type may be null"); // NOI18N
-        }
-
-        final byte[] bytes = builder.get(byte[].class);
-
-        return Converter.deserialiseFromBase64(bytes, type);
+        return wr.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).accept(MediaType.APPLICATION_OCTET_STREAM_TYPE);
     }
 
     /**
@@ -383,97 +323,36 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     private <T> T getResponsePOST(final String path, final Class<T> type) throws IOException, ClassNotFoundException {
         final WebResource.Builder builder = createWebResourceBuilder(path);
 
-        return getResponsePOST(builder, type);
+        return getResponsePOST(builder, type, null);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   <T>          DOCUMENT ME!
-     * @param   path         DOCUMENT ME!
-     * @param   queryParams  DOCUMENT ME!
-     * @param   type         DOCUMENT ME!
+     * @param   <T>        DOCUMENT ME!
+     * @param   path       DOCUMENT ME!
+     * @param   queryData  DOCUMENT ME!
+     * @param   type       DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  IOException             DOCUMENT ME!
      * @throws  ClassNotFoundException  DOCUMENT ME!
      */
-    private <T> T getResponsePOST(final String path, final Map<String, String> queryParams, final Class<T> type)
-            throws IOException, ClassNotFoundException {
-        final WebResource.Builder builder = createWebResourceBuilder(path, queryParams);
-
-        return getResponsePOST(builder, type);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   <T>      DOCUMENT ME!
-     * @param   builder  DOCUMENT ME!
-     * @param   type     DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  IOException             DOCUMENT ME!
-     * @throws  ClassNotFoundException  DOCUMENT ME!
-     * @throws  IllegalStateException   DOCUMENT ME!
-     */
-    private <T> T getResponsePOST(final WebResource.Builder builder, final Class<T> type) throws IOException,
+    private <T> T getResponsePOST(final String path, final Map queryData, final Class<T> type) throws IOException,
         ClassNotFoundException {
-        if ((builder == null) || (type == null)) {
-            throw new IllegalStateException("neither builder nor type may be null"); // NOI18N
-        }
-
-        final byte[] bytes = builder.post(byte[].class);
-
-        return Converter.deserialiseFromBase64(bytes, type);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   <T>   DOCUMENT ME!
-     * @param   path  DOCUMENT ME!
-     * @param   type  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  IOException             DOCUMENT ME!
-     * @throws  ClassNotFoundException  DOCUMENT ME!
-     */
-    private <T> T getResponsePUT(final String path, final Class<T> type) throws IOException, ClassNotFoundException {
         final WebResource.Builder builder = createWebResourceBuilder(path);
 
-        return getResponsePUT(builder, type);
+        return getResponsePOST(builder, type, queryData);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   <T>          DOCUMENT ME!
-     * @param   path         DOCUMENT ME!
-     * @param   queryParams  DOCUMENT ME!
-     * @param   type         DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  IOException             DOCUMENT ME!
-     * @throws  ClassNotFoundException  DOCUMENT ME!
-     */
-    private <T> T getResponsePUT(final String path, final Map<String, String> queryParams, final Class<T> type)
-            throws IOException, ClassNotFoundException {
-        final WebResource.Builder builder = createWebResourceBuilder(path, queryParams);
-
-        return getResponsePUT(builder, type);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   <T>      DOCUMENT ME!
-     * @param   builder  DOCUMENT ME!
-     * @param   type     DOCUMENT ME!
+     * @param   <T>        DOCUMENT ME!
+     * @param   builder    DOCUMENT ME!
+     * @param   type       DOCUMENT ME!
+     * @param   queryData  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -481,75 +360,14 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @throws  ClassNotFoundException  DOCUMENT ME!
      * @throws  IllegalStateException   DOCUMENT ME!
      */
-    private <T> T getResponsePUT(final WebResource.Builder builder, final Class<T> type) throws IOException,
-        ClassNotFoundException {
+    private <T> T getResponsePOST(final WebResource.Builder builder,
+            final Class<T> type,
+            final Map queryData) throws IOException, ClassNotFoundException {
         if ((builder == null) || (type == null)) {
             throw new IllegalStateException("neither builder nor type may be null"); // NOI18N
         }
 
-        final byte[] bytes = builder.put(byte[].class);
-
-        return Converter.deserialiseFromBase64(bytes, type);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   <T>   DOCUMENT ME!
-     * @param   path  DOCUMENT ME!
-     * @param   type  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  IOException             DOCUMENT ME!
-     * @throws  ClassNotFoundException  DOCUMENT ME!
-     */
-    private <T> T getResponseDELETE(final String path, final Class<T> type) throws IOException, ClassNotFoundException {
-        final WebResource.Builder builder = createWebResourceBuilder(path);
-
-        return getResponseDELETE(builder, type);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   <T>          DOCUMENT ME!
-     * @param   path         DOCUMENT ME!
-     * @param   queryParams  DOCUMENT ME!
-     * @param   type         DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  IOException             DOCUMENT ME!
-     * @throws  ClassNotFoundException  DOCUMENT ME!
-     */
-    private <T> T getResponseDELETE(final String path, final Map<String, String> queryParams, final Class<T> type)
-            throws IOException, ClassNotFoundException {
-        final WebResource.Builder builder = createWebResourceBuilder(path, queryParams);
-
-        return getResponseDELETE(builder, type);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   <T>      DOCUMENT ME!
-     * @param   builder  DOCUMENT ME!
-     * @param   type     DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  IOException             DOCUMENT ME!
-     * @throws  ClassNotFoundException  DOCUMENT ME!
-     * @throws  IllegalStateException   DOCUMENT ME!
-     */
-    private <T> T getResponseDELETE(final WebResource.Builder builder, final Class<T> type) throws IOException,
-        ClassNotFoundException {
-        if ((builder == null) || (type == null)) {
-            throw new IllegalStateException("neither builder nor type may be null"); // NOI18N
-        }
-
-        final byte[] bytes = builder.delete(byte[].class);
+        final byte[] bytes = builder.post(byte[].class, queryData);
 
         return Converter.deserialiseFromBase64(bytes, type);
     }
@@ -567,17 +385,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public Node[] getRoots(final User user, final String domainName) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(2, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (domainName != null) {
-                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domainName));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domainName));
             }
 
             try {
-                return getResponseGET("getRootsByDomain", queryParams, Node[].class); // NOI18N
+                return getResponsePOST("getRootsByDomain", queryParams, Node[].class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -615,14 +433,14 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public Node[] getRoots(final User user) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(1, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
 
             try {
-                return getResponseGET("getRoots", queryParams, Node[].class); // NOI18N
+                return getResponsePOST("getRoots", queryParams, Node[].class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -661,17 +479,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public Node[] getChildren(final Node node, final User usr) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(3, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (node != null) {
-                queryParams.put(PARAM_NODE, Converter.serialiseToString(node));
+                queryParams.add(PARAM_NODE, Converter.serialiseToString(node));
             }
             if (usr != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(usr));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
             }
 
             try {
-                return getResponseGET("getChildren", queryParams, Node[].class); // NOI18N
+                return getResponsePOST("getChildren", queryParams, Node[].class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -711,16 +529,16 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public Node addNode(final Node node, final Link parent, final User user) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(3, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (node != null) {
-                queryParams.put(PARAM_NODE, Converter.serialiseToString(node));
+                queryParams.add(PARAM_NODE, Converter.serialiseToString(node));
             }
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (parent != null) {
-                queryParams.put(PARAM_LINK_PARENT, Converter.serialiseToString(parent));
+                queryParams.add(PARAM_LINK_PARENT, Converter.serialiseToString(parent));
             }
 
             try {
@@ -763,17 +581,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public boolean deleteNode(final Node node, final User user) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(2, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (node != null) {
-                queryParams.put(PARAM_NODE, Converter.serialiseToString(node));
+                queryParams.add(PARAM_NODE, Converter.serialiseToString(node));
             }
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
 
             try {
-                return getResponseDELETE("deleteNode", queryParams, boolean.class); // NOI18N
+                return getResponsePOST("deleteNode", queryParams, boolean.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -813,16 +631,16 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public boolean addLink(final Node from, final Node to, final User user) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(3, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (from != null) {
-                queryParams.put(PARAM_NODE_FROM, Converter.serialiseToString(from));
+                queryParams.add(PARAM_NODE_FROM, Converter.serialiseToString(from));
             }
             if (to != null) {
-                queryParams.put(PARAM_NODE_TO, Converter.serialiseToString(to));
+                queryParams.add(PARAM_NODE_TO, Converter.serialiseToString(to));
             }
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
 
             try {
@@ -866,20 +684,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public boolean deleteLink(final Node from, final Node to, final User user) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(3, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (from != null) {
-                queryParams.put(PARAM_NODE_FROM, Converter.serialiseToString(from));
+                queryParams.add(PARAM_NODE_FROM, Converter.serialiseToString(from));
             }
             if (to != null) {
-                queryParams.put(PARAM_NODE_TO, Converter.serialiseToString(to));
+                queryParams.add(PARAM_NODE_TO, Converter.serialiseToString(to));
             }
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
 
             try {
-                return getResponseDELETE("deleteLink", queryParams, boolean.class); // NOI18N
+                return getResponsePOST("deleteLink", queryParams, boolean.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -915,7 +733,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public String[] getDomains() throws RemoteException {
         try {
-            return getResponseGET("getDomains", String[].class); // NOI18N
+            return getResponsePOST("getDomains", String[].class); // NOI18N
         } catch (final UniformInterfaceException ex) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("exception during request, remapping", ex);
@@ -954,20 +772,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public Node getMetaObjectNode(final User usr, final int nodeID, final String domain) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(3, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (usr != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(usr));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
             }
             if (nodeID >= 0) {
-                queryParams.put(PARAM_NODE_ID, Converter.serialiseToString(nodeID));
+                queryParams.add(PARAM_NODE_ID, Converter.serialiseToString(nodeID));
             }
             if (domain != null) {
-                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
             try {
-                return getResponseGET("getMetaObjectNodeByID", queryParams, Node.class); // NOI18N
+                return getResponsePOST("getMetaObjectNodeByID", queryParams, Node.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1006,17 +824,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public Node[] getMetaObjectNode(final User usr, final String query) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(2, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (usr != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(usr));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
             }
             if (query != null) {
-                queryParams.put(PARAM_QUERY, Converter.serialiseToString(query));
+                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
             }
 
             try {
-                return getResponseGET("getMetaObjectNodeByString", queryParams, Node[].class); // NOI18N
+                return getResponsePOST("getMetaObjectNodeByString", queryParams, Node[].class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1055,17 +873,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public Node[] getMetaObjectNode(final User usr, final Query query) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(2, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (usr != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(usr));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
             }
             if (query != null) {
-                queryParams.put(PARAM_QUERY, Converter.serialiseToString(query));
+                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
             }
 
             try {
-                return getResponseGET("getMetaObjectNodeByQuery", queryParams, Node[].class); // NOI18N
+                return getResponsePOST("getMetaObjectNodeByQuery", queryParams, Node[].class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1104,17 +922,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(2, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (usr != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(usr));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
             }
             if (query != null) {
-                queryParams.put(PARAM_QUERY, Converter.serialiseToString(query));
+                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
             }
 
             try {
-                return getResponseGET("getMetaObjectByString", queryParams, MetaObject[].class); // NOI18N
+                return getResponsePOST("getMetaObjectByString", queryParams, MetaObject[].class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1153,17 +971,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public MetaObject[] getMetaObject(final User usr, final Query query) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(2, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (usr != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(usr));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
             }
             if (query != null) {
-                queryParams.put(PARAM_QUERY, Converter.serialiseToString(query));
+                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
             }
 
             try {
-                return getResponseGET("getMetaObjectByQuery", queryParams, MetaObject[].class); // NOI18N
+                return getResponsePOST("getMetaObjectByQuery", queryParams, MetaObject[].class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1205,23 +1023,23 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     public MetaObject getMetaObject(final User usr, final int objectID, final int classID, final String domain)
             throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(4, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (usr != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(usr));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
             }
             if (objectID != -1) {
-                queryParams.put(PARAM_OBJECT_ID, Converter.serialiseToString(objectID));
+                queryParams.add(PARAM_OBJECT_ID, Converter.serialiseToString(objectID));
             }
             if (classID != -1) {
-                queryParams.put(PARAM_CLASS_ID, Converter.serialiseToString(classID));
+                queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classID));
             }
             if (domain != null) {
-                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
             try {
-                return getResponseGET("getMetaObjectByID", queryParams, MetaObject.class); // NOI18N
+                return getResponsePOST("getMetaObjectByID", queryParams, MetaObject.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1262,16 +1080,16 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     public MetaObject insertMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(3, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (metaObject != null) {
-                queryParams.put(PARAM_METAOBJECT, Converter.serialiseToString(metaObject));
+                queryParams.add(PARAM_METAOBJECT, Converter.serialiseToString(metaObject));
             }
             if (domain != null) {
-                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
             try {
@@ -1315,16 +1133,16 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public int insertMetaObject(final User user, final Query query, final String domain) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(3, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (query != null) {
-                queryParams.put(PARAM_QUERY, Converter.serialiseToString(query));
+                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
             }
             if (domain != null) {
-                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
             try {
@@ -1369,20 +1187,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     public int updateMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(3, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (metaObject != null) {
-                queryParams.put(PARAM_METAOBJECT, Converter.serialiseToString(metaObject));
+                queryParams.add(PARAM_METAOBJECT, Converter.serialiseToString(metaObject));
             }
             if (domain != null) {
-                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
             try {
-                return getResponsePUT("updateMetaObject", queryParams, int.class); // NOI18N
+                return getResponsePOST("updateMetaObject", queryParams, int.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1423,20 +1241,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     public int deleteMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(3, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (metaObject != null) {
-                queryParams.put(PARAM_METAOBJECT, Converter.serialiseToString(metaObject));
+                queryParams.add(PARAM_METAOBJECT, Converter.serialiseToString(metaObject));
             }
             if (domain != null) {
-                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
             try {
-                return getResponseDELETE("deleteMetaObject", queryParams, int.class); // NOI18N
+                return getResponsePOST("deleteMetaObject", queryParams, int.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1476,20 +1294,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public int update(final User user, final String query, final String domain) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(3, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (query != null) {
-                queryParams.put(PARAM_QUERY, Converter.serialiseToString(query));
+                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
             }
             if (domain != null) {
-                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
             try {
-                return getResponsePUT("update", queryParams, int.class); // NOI18N
+                return getResponsePOST("update", queryParams, int.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1528,17 +1346,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public MetaObject getInstance(final User user, final MetaClass c) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(2, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (c != null) {
-                queryParams.put(PARAM_METACLASS, Converter.serialiseToString(c));
+                queryParams.add(PARAM_METACLASS, Converter.serialiseToString(c));
             }
 
             try {
-                return getResponseGET("getInstance", queryParams, MetaObject.class); // NOI18N
+                return getResponsePOST("getInstance", queryParams, MetaObject.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1579,20 +1397,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     public MetaClass getClassByTableName(final User user, final String tableName, final String domain)
             throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(3, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (tableName != null) {
-                queryParams.put(PARAM_TABLE_NAME, Converter.serialiseToString(tableName));
+                queryParams.add(PARAM_TABLE_NAME, Converter.serialiseToString(tableName));
             }
             if (domain != null) {
-                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
             try {
-                return getResponseGET("getClassByTableName", queryParams, MetaClass.class); // NOI18N
+                return getResponsePOST("getClassByTableName", queryParams, MetaClass.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1632,20 +1450,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public MetaClass getClass(final User user, final int classID, final String domain) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(3, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (domain != null) {
-                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
             if (classID >= 0) {
-                queryParams.put(PARAM_CLASS_ID, Converter.serialiseToString(classID));
+                queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classID));
             }
 
             try {
-                return getResponseGET("getClassByID", queryParams, MetaClass.class); // NOI18N
+                return getResponsePOST("getClassByID", queryParams, MetaClass.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1684,17 +1502,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public MetaClass[] getClasses(final User user, final String domain) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(2, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (domain != null) {
-                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
             try {
-                return getResponseGET("getClasses", queryParams, MetaClass[].class); // NOI18N
+                return getResponsePOST("getClasses", queryParams, MetaClass[].class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1732,14 +1550,14 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public Node[] getClassTreeNodes(final User user) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(1, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
 
             try {
-                return getResponseGET("getClassTreeNodesByUser", queryParams, Node[].class); // NOI18N
+                return getResponsePOST("getClassTreeNodesByUser", queryParams, Node[].class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1778,17 +1596,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public Node[] getClassTreeNodes(final User user, final String domain) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(2, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (domain != null) {
-                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
             try {
-                return getResponseGET("getClassTreeNodesByDomain", queryParams, Node[].class); // NOI18N
+                return getResponsePOST("getClassTreeNodesByDomain", queryParams, Node[].class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1826,14 +1644,14 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public MethodMap getMethods(final User user) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(1, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
 
             try {
-                return getResponseGET("getMethodsByUser", queryParams, MethodMap.class); // NOI18N
+                return getResponsePOST("getMethodsByUser", queryParams, MethodMap.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1872,17 +1690,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public MethodMap getMethods(final User user, final String localServerName) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(2, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (localServerName != null) {
-                queryParams.put(PARAM_LOCAL_SERVER_NAME, Converter.serialiseToString(localServerName));
+                queryParams.add(PARAM_LOCAL_SERVER_NAME, Converter.serialiseToString(localServerName));
             }
 
             try {
-                return getResponseGET("getMethodsByDomain", queryParams, MethodMap.class); // NOI18N
+                return getResponsePOST("getMethodsByDomain", queryParams, MethodMap.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1926,23 +1744,23 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final String[] representationFields,
             final String representationPattern) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(4, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (classId >= 0) {
-                queryParams.put(PARAM_CLASS_ID, Converter.serialiseToString(classId));
+                queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId));
             }
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (representationFields != null) {
-                queryParams.put(PARAM_REP_FIELDS, Converter.serialiseToString(representationFields));
+                queryParams.add(PARAM_REP_FIELDS, Converter.serialiseToString(representationFields));
             }
             if (representationPattern != null) {
-                queryParams.put(PARAM_REP_PATTERN, Converter.serialiseToString(representationPattern));
+                queryParams.add(PARAM_REP_PATTERN, Converter.serialiseToString(representationPattern));
             }
 
             try {
-                return getResponseGET(
+                return getResponsePOST(
                         "getAllLightweightMetaObjectsForClassByPattern", // NOI18N
                         queryParams,
                         LightweightMetaObject[].class);
@@ -1987,20 +1805,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final User user,
             final String[] representationFields) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(3, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (classId >= 0) {
-                queryParams.put(PARAM_CLASS_ID, Converter.serialiseToString(classId));
+                queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId));
             }
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (representationFields != null) {
-                queryParams.put(PARAM_REP_FIELDS, Converter.serialiseToString(representationFields));
+                queryParams.add(PARAM_REP_FIELDS, Converter.serialiseToString(representationFields));
             }
 
             try {
-                return getResponseGET(
+                return getResponsePOST(
                         "getAllLightweightMetaObjectsForClass", // NOI18N
                         queryParams,
                         LightweightMetaObject[].class);
@@ -2049,24 +1867,24 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final String[] representationFields,
             final String representationPattern) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(5, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
-            queryParams.put(PARAM_CLASS_ID, Converter.serialiseToString(classId));
+            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId));
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (query != null) {
-                queryParams.put(PARAM_QUERY, Converter.serialiseToString(query));
+                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
             }
             if (representationFields != null) {
-                queryParams.put(PARAM_REP_FIELDS, Converter.serialiseToString(representationFields));
+                queryParams.add(PARAM_REP_FIELDS, Converter.serialiseToString(representationFields));
             }
             if (representationPattern != null) {
-                queryParams.put(PARAM_REP_PATTERN, Converter.serialiseToString(representationPattern));
+                queryParams.add(PARAM_REP_PATTERN, Converter.serialiseToString(representationPattern));
             }
 
             try {
-                return getResponseGET(
+                return getResponsePOST(
                         "getLightweightMetaObjectsByQueryAndPattern", // NOI18N
                         queryParams,
                         LightweightMetaObject[].class);
@@ -2113,21 +1931,21 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final String query,
             final String[] representationFields) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(5, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
-            queryParams.put(PARAM_CLASS_ID, Converter.serialiseToString(classId));
+            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId));
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (query != null) {
-                queryParams.put(PARAM_QUERY, Converter.serialiseToString(query));
+                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
             }
             if (representationFields != null) {
-                queryParams.put(PARAM_REP_FIELDS, Converter.serialiseToString(representationFields));
+                queryParams.add(PARAM_REP_FIELDS, Converter.serialiseToString(representationFields));
             }
 
             try {
-                return getResponseGET(
+                return getResponsePOST(
                         "getLightweightMetaObjectsByQuery", // NOI18N
                         queryParams,
                         LightweightMetaObject[].class);
@@ -2169,17 +1987,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public boolean storeQuery(final User user, final QueryData data) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(2, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (data != null) {
-                queryParams.put(PARAM_QUERY_DATA, Converter.serialiseToString(data));
+                queryParams.add(PARAM_QUERY_DATA, Converter.serialiseToString(data));
             }
 
             try {
-                return getResponsePUT("storeQuery", queryParams, boolean.class); // NOI18N
+                return getResponsePOST("storeQuery", queryParams, boolean.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -2217,14 +2035,14 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public Info[] getQueryInfos(final User user) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(1, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
 
             try {
-                return getResponseGET("getQueryInfosByUser", queryParams, Info[].class); // NOI18N
+                return getResponsePOST("getQueryInfosByUser", queryParams, Info[].class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -2262,14 +2080,14 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public Info[] getQueryInfos(final UserGroup userGroup) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(1, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (userGroup != null) {
-                queryParams.put(PARAM_USERGROUP, Converter.serialiseToString(userGroup));
+                queryParams.add(PARAM_USERGROUP, Converter.serialiseToString(userGroup));
             }
 
             try {
-                return getResponseGET("getQueryInfosByUserGroup", queryParams, Info[].class); // NOI18N
+                return getResponsePOST("getQueryInfosByUserGroup", queryParams, Info[].class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -2308,17 +2126,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public QueryData getQuery(final int id, final String domain) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(2, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (id >= 0) {
-                queryParams.put(PARAM_QUERY_ID, Converter.serialiseToString(id));
+                queryParams.add(PARAM_QUERY_ID, Converter.serialiseToString(id));
             }
             if (domain != null) {
-                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
             try {
-                return getResponseGET("getQuery", queryParams, QueryData.class); // NOI18N
+                return getResponsePOST("getQuery", queryParams, QueryData.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -2357,17 +2175,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public boolean delete(final int id, final String domain) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(2, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (id >= 0) {
-                queryParams.put(PARAM_QUERY_ID, Converter.serialiseToString(id));
+                queryParams.add(PARAM_QUERY_ID, Converter.serialiseToString(id));
             }
             if (domain != null) {
-                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
             try {
-                return getResponseDELETE("delete", queryParams, boolean.class); // NOI18N
+                return getResponsePOST("delete", queryParams, boolean.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -2421,42 +2239,42 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final char isRoot,
             final char isUnion) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(9, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (name != null) {
-                queryParams.put(PARAM_QUERY_NAME, Converter.serialiseToString(name));
+                queryParams.add(PARAM_QUERY_NAME, Converter.serialiseToString(name));
             }
             if (description != null) {
-                queryParams.put(PARAM_DESCRIPTION, Converter.serialiseToString(description));
+                queryParams.add(PARAM_DESCRIPTION, Converter.serialiseToString(description));
             }
             if (statement != null) {
-                queryParams.put(PARAM_STATEMENT, Converter.serialiseToString(statement));
+                queryParams.add(PARAM_STATEMENT, Converter.serialiseToString(statement));
             }
             if (resultType >= 0) {
-                queryParams.put(PARAM_RESULT_TYPE, Converter.serialiseToString(resultType));
+                queryParams.add(PARAM_RESULT_TYPE, Converter.serialiseToString(resultType));
             }
             if (('f' == isBatch) || ('t' == isBatch)
                         || ('1' == isBatch)
                         || ('0' == isBatch)) {
-                queryParams.put(PARAM_IS_BATCH, Converter.serialiseToString(isBatch));
+                queryParams.add(PARAM_IS_BATCH, Converter.serialiseToString(isBatch));
             }
             if (('f' == isUpdate) || ('t' == isUpdate)
                         || ('1' == isUpdate)
                         || ('0' == isUpdate)) {
-                queryParams.put(PARAM_IS_UPDATE, Converter.serialiseToString(isUpdate));
+                queryParams.add(PARAM_IS_UPDATE, Converter.serialiseToString(isUpdate));
             }
             if (('f' == isRoot) || ('t' == isRoot)
                         || ('1' == isRoot)
                         || ('0' == isRoot)) {
-                queryParams.put(PARAM_IS_ROOT, Converter.serialiseToString(isRoot));
+                queryParams.add(PARAM_IS_ROOT, Converter.serialiseToString(isRoot));
             }
             if (('f' == isUnion) || ('t' == isUnion)
                         || ('1' == isUnion)
                         || ('0' == isUnion)) {
-                queryParams.put(PARAM_IS_UNION, Converter.serialiseToString(isUnion));
+                queryParams.add(PARAM_IS_UNION, Converter.serialiseToString(isUnion));
             }
 
             try {
@@ -2502,19 +2320,19 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     public int addQuery(final User user, final String name, final String description, final String statement)
             throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(4, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (name != null) {
-                queryParams.put(PARAM_QUERY_NAME, Converter.serialiseToString(name));
+                queryParams.add(PARAM_QUERY_NAME, Converter.serialiseToString(name));
             }
             if (description != null) {
-                queryParams.put(PARAM_DESCRIPTION, Converter.serialiseToString(description));
+                queryParams.add(PARAM_DESCRIPTION, Converter.serialiseToString(description));
             }
             if (statement != null) {
-                queryParams.put(PARAM_STATEMENT, Converter.serialiseToString(statement));
+                queryParams.add(PARAM_STATEMENT, Converter.serialiseToString(statement));
             }
 
             try {
@@ -2568,29 +2386,29 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final char isQueryResult,
             final int queryPosition) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(7, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (queryId >= 0) {
-                queryParams.put(PARAM_QUERY_ID, Converter.serialiseToString(queryId));
+                queryParams.add(PARAM_QUERY_ID, Converter.serialiseToString(queryId));
             }
             if (paramkey != null) {
-                queryParams.put(PARAM_PARAM_KEY, Converter.serialiseToString(paramkey));
+                queryParams.add(PARAM_PARAM_KEY, Converter.serialiseToString(paramkey));
             }
             if (description != null) {
-                queryParams.put(PARAM_DESCRIPTION, Converter.serialiseToString(description));
+                queryParams.add(PARAM_DESCRIPTION, Converter.serialiseToString(description));
             }
             if (typeId >= 0) {
-                queryParams.put(PARAM_TYPE_ID, Converter.serialiseToString(typeId));
+                queryParams.add(PARAM_TYPE_ID, Converter.serialiseToString(typeId));
             }
             if (('f' == isQueryResult) || ('t' == isQueryResult)
                         || ('1' == isQueryResult)
                         || ('0' == isQueryResult)) {
-                queryParams.put(PARAM_QUERY_RESULT, Converter.serialiseToString(isQueryResult));
+                queryParams.add(PARAM_QUERY_RESULT, Converter.serialiseToString(isQueryResult));
             }
             if (queryPosition != -1) {
-                queryParams.put(PARAM_QUERY_POSITION, Converter.serialiseToString(queryPosition));
+                queryParams.add(PARAM_QUERY_POSITION, Converter.serialiseToString(queryPosition));
             }
 
             try {
@@ -2638,18 +2456,18 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final String paramkey,
             final String description) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(4, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (queryId >= 0) {
-                queryParams.put(PARAM_QUERY_ID, Converter.serialiseToString(queryId));
+                queryParams.add(PARAM_QUERY_ID, Converter.serialiseToString(queryId));
             }
             if (paramkey != null) {
-                queryParams.put(PARAM_PARAM_KEY, Converter.serialiseToString(paramkey));
+                queryParams.add(PARAM_PARAM_KEY, Converter.serialiseToString(paramkey));
             }
             if (description != null) {
-                queryParams.put(PARAM_DESCRIPTION, Converter.serialiseToString(description));
+                queryParams.add(PARAM_DESCRIPTION, Converter.serialiseToString(description));
             }
 
             try {
@@ -2691,14 +2509,14 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public HashMap getSearchOptions(final User user) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(1, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
 
             try {
-                return getResponseGET("getSearchOptionsByUser", queryParams, HashMap.class); // NOI18N
+                return getResponsePOST("getSearchOptionsByUser", queryParams, HashMap.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -2737,17 +2555,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public HashMap getSearchOptions(final User user, final String domain) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(2, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (domain != null) {
-                queryParams.put(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
 
             try {
-                return getResponseGET("getSearchOptionsByDomain", queryParams, HashMap.class); // NOI18N
+                return getResponsePOST("getSearchOptionsByDomain", queryParams, HashMap.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -2788,20 +2606,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     public SearchResult search(final User user, final String[] classIds, final SearchOption[] searchOptions)
             throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(3, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (classIds != null) {
-                queryParams.put(PARAM_CLASS_ID, Converter.serialiseToString(classIds));
+                queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classIds));
             }
             if (searchOptions != null) {
-                queryParams.put(PARAM_SEARCH_OPTIONS, Converter.serialiseToString(searchOptions));
+                queryParams.add(PARAM_SEARCH_OPTIONS, Converter.serialiseToString(searchOptions));
             }
 
             try {
-                return getResponseGET("search", queryParams, SearchResult.class); // NOI18N
+                return getResponsePOST("search", queryParams, SearchResult.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -2839,14 +2657,14 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public Image[] getDefaultIcons(final String lsName) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(1, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (lsName != null) {
-                queryParams.put(PARAM_LS_NAME, Converter.serialiseToString(lsName));
+                queryParams.add(PARAM_LS_NAME, Converter.serialiseToString(lsName));
             }
 
             try {
-                return getResponseGET("getDefaultIconsByLSName", queryParams, Image[].class);
+                return getResponsePOST("getDefaultIconsByLSName", queryParams, Image[].class);
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -2882,10 +2700,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public Image[] getDefaultIcons() throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(0, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             try {
-                return getResponseGET("getDefaultIcons", queryParams, Image[].class);
+                return getResponsePOST("getDefaultIcons", queryParams, Image[].class);
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -2927,20 +2745,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     public boolean changePassword(final User user, final String oldPassword, final String newPassword)
             throws RemoteException, UserException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(3, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.put(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
             if (oldPassword != null) {
-                queryParams.put(PARAM_OLD_PASSWORD, Converter.serialiseToString(oldPassword));
+                queryParams.add(PARAM_OLD_PASSWORD, Converter.serialiseToString(oldPassword));
             }
             if (newPassword != null) {
-                queryParams.put(PARAM_NEW_PASSWORD, Converter.serialiseToString(newPassword));
+                queryParams.add(PARAM_NEW_PASSWORD, Converter.serialiseToString(newPassword));
             }
 
             try {
-                return getResponsePUT("changePassword", queryParams, Boolean.class); // NOI18N
+                return getResponsePOST("changePassword", queryParams, Boolean.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -2996,26 +2814,26 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final String userName,
             final String password) throws RemoteException, UserException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(5, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (userGroupLsName != null) {
-                queryParams.put(PARAM_USERGROUP_LS_NAME, Converter.serialiseToString(userGroupLsName));
+                queryParams.add(PARAM_USERGROUP_LS_NAME, Converter.serialiseToString(userGroupLsName));
             }
             if (userGroupName != null) {
-                queryParams.put(PARAM_USERGROUP_NAME, Converter.serialiseToString(userGroupName));
+                queryParams.add(PARAM_USERGROUP_NAME, Converter.serialiseToString(userGroupName));
             }
             if (userLsName != null) {
-                queryParams.put(PARAM_USER_LS_NAME, Converter.serialiseToString(userLsName));
+                queryParams.add(PARAM_USER_LS_NAME, Converter.serialiseToString(userLsName));
             }
             if (userName != null) {
-                queryParams.put(PARAM_USERNAME, Converter.serialiseToString(userName));
+                queryParams.add(PARAM_USERNAME, Converter.serialiseToString(userName));
             }
             if (password != null) {
-                queryParams.put(PARAM_PASSWORD, Converter.serialiseToString(password));
+                queryParams.add(PARAM_PASSWORD, Converter.serialiseToString(password));
             }
 
             try {
-                return getResponseGET("getUser", queryParams, User.class); // NOI18N
+                return getResponsePOST("getUser", queryParams, User.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -3059,7 +2877,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public Vector getUserGroupNames() throws RemoteException {
         try {
-            return getResponseGET("getUserGroupNames", Vector.class); // NOI18N
+            return getResponsePOST("getUserGroupNames", Vector.class); // NOI18N
         } catch (final UniformInterfaceException ex) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("exception during request, remapping", ex);
@@ -3097,21 +2915,21 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public Vector getUserGroupNames(final String userName, final String lsHome) throws RemoteException {
         try {
-            final HashMap<String, String> queryParams = new HashMap<String, String>(2, 1);
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
             if (userName != null) {
-                queryParams.put(PARAM_USERNAME, Converter.serialiseToString(userName));
+                queryParams.add(PARAM_USERNAME, Converter.serialiseToString(userName));
             }
             if (lsHome != null) {
-                queryParams.put(PARAM_LS_HOME, Converter.serialiseToString(lsHome));
+                queryParams.add(PARAM_LS_HOME, Converter.serialiseToString(lsHome));
             }
 
-            return getResponseGET("getUserGroupNamesByUser", queryParams, Vector.class); // NOI18N
+            return getResponsePOST("getUserGroupNamesByUser", queryParams, Vector.class); // NOI18N
         } catch (final IOException ex) {
-            final String message = "could not convert params";                           // NOI18N
+            final String message = "could not convert params";                            // NOI18N
             LOG.error(message, ex);
             throw new RemoteException(message, ex);
         } catch (final ClassNotFoundException e) {
-            final String message = "could not create vector";                            // NOI18N
+            final String message = "could not create vector";                             // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }

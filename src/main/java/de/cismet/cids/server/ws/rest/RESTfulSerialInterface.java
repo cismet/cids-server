@@ -26,10 +26,8 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -131,12 +129,12 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getRootsByDomain")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getRootsByDomain(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainNameBytes) throws RemoteException {
+    public Response getRootsByDomain(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_DOMAIN) final String domainNameBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String domain = Converter.deserialiseFromString(domainNameBytes, String.class);
@@ -162,11 +160,11 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getRoots")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getRoots(@QueryParam(PARAM_USER) final String userBytes) throws RemoteException {
+    public Response getRoots(@FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
 
@@ -192,12 +190,12 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getChildren")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getChildren(@QueryParam(PARAM_NODE) final String nodeBytes,
-            @QueryParam(PARAM_USER) final String usrBytes) throws RemoteException {
+    public Response getChildren(@FormParam(PARAM_NODE) final String nodeBytes,
+            @FormParam(PARAM_USER) final String usrBytes) throws RemoteException {
         try {
             final Node node = Converter.deserialiseFromString(nodeBytes, Node.class);
             final User user = Converter.deserialiseFromString(usrBytes, User.class);
@@ -227,11 +225,11 @@ public final class RESTfulSerialInterface {
      */
     @POST
     @Path("/addNode")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response addNode(@QueryParam(PARAM_NODE) final String nodeBytes,
-            @QueryParam(PARAM_LINK_PARENT) final String parentBytes,
-            @QueryParam(PARAM_USER) final String userBytes) throws RemoteException {
+    public Response addNode(@FormParam(PARAM_NODE) final String nodeBytes,
+            @FormParam(PARAM_LINK_PARENT) final String parentBytes,
+            @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final Node node = Converter.deserialiseFromString(nodeBytes, Node.class);
             final Link parent = Converter.deserialiseFromString(parentBytes, Link.class);
@@ -259,12 +257,12 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @DELETE
+    @POST
     @Path("/deleteNode")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response deleteNode(@QueryParam(PARAM_NODE) final String nodeBytes,
-            @QueryParam(PARAM_USER) final String userBytes) throws RemoteException {
+    public Response deleteNode(@FormParam(PARAM_NODE) final String nodeBytes,
+            @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final Node node = Converter.deserialiseFromString(nodeBytes, Node.class);
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -294,11 +292,11 @@ public final class RESTfulSerialInterface {
      */
     @POST
     @Path("/addLink")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response addLink(@QueryParam(PARAM_NODE_FROM) final String fromBytes,
-            @QueryParam(PARAM_NODE_TO) final String toBytes,
-            @QueryParam(PARAM_USER) final String userBytes) throws RemoteException {
+    public Response addLink(@FormParam(PARAM_NODE_FROM) final String fromBytes,
+            @FormParam(PARAM_NODE_TO) final String toBytes,
+            @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final Node from = Converter.deserialiseFromString(fromBytes, Node.class);
@@ -327,13 +325,13 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @DELETE
+    @POST
     @Path("/deleteLink")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response deleteLink(@QueryParam(PARAM_NODE_FROM) final String fromBytes,
-            @QueryParam(PARAM_NODE_TO) final String toBytes,
-            @QueryParam(PARAM_USER) final String userBytes) throws RemoteException {
+    public Response deleteLink(@FormParam(PARAM_NODE_FROM) final String fromBytes,
+            @FormParam(PARAM_NODE_TO) final String toBytes,
+            @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final Node from = Converter.deserialiseFromString(fromBytes, Node.class);
@@ -358,7 +356,7 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getDomains")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getDomains() throws RemoteException {
@@ -382,13 +380,13 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getMetaObjectNodeByID")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMetaObjectNode(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_NODE_ID) final String nodeIDBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+    public Response getMetaObjectNode(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_NODE_ID) final String nodeIDBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final int nodeID = Converter.deserialiseFromString(nodeIDBytes, int.class);
@@ -416,12 +414,12 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getMetaObjectNodeByString")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMetaObjectNodeByString(@QueryParam(PARAM_USER) final String usrBytes,
-            @QueryParam(PARAM_QUERY) final String queryBytes) throws RemoteException {
+    public Response getMetaObjectNodeByString(@FormParam(PARAM_USER) final String usrBytes,
+            @FormParam(PARAM_QUERY) final String queryBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(usrBytes, User.class);
             final String query = Converter.deserialiseFromString(queryBytes, String.class);
@@ -448,12 +446,12 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getMetaObjectNodeByQuery")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMetaObjectNodeByQuery(@QueryParam(PARAM_USER) final String usrBytes,
-            @QueryParam(PARAM_QUERY) final String queryBytes) throws RemoteException {
+    public Response getMetaObjectNodeByQuery(@FormParam(PARAM_USER) final String usrBytes,
+            @FormParam(PARAM_QUERY) final String queryBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(usrBytes, User.class);
             final Query query = Converter.deserialiseFromString(queryBytes, Query.class);
@@ -480,12 +478,12 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getMetaObjectByString")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMetaObjectByString(@QueryParam(PARAM_USER) final String usrBytes,
-            @QueryParam(PARAM_QUERY) final String queryBytes) throws RemoteException {
+    public Response getMetaObjectByString(@FormParam(PARAM_USER) final String usrBytes,
+            @FormParam(PARAM_QUERY) final String queryBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(usrBytes, User.class);
             final String query = Converter.deserialiseFromString(queryBytes, String.class);
@@ -512,12 +510,12 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getMetaObjectByQuery")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMetaObjectByQuery(@QueryParam(PARAM_USER) final String usrBytes,
-            @QueryParam(PARAM_QUERY) final String queryBytes) throws RemoteException {
+    public Response getMetaObjectByQuery(@FormParam(PARAM_USER) final String usrBytes,
+            @FormParam(PARAM_QUERY) final String queryBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(usrBytes, User.class);
             final Query query = Converter.deserialiseFromString(queryBytes, Query.class);
@@ -546,14 +544,14 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getMetaObjectByID")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMetaObject(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_OBJECT_ID) final String objectIDBytes,
-            @QueryParam(PARAM_CLASS_ID) final String classIDBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+    public Response getMetaObject(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_OBJECT_ID) final String objectIDBytes,
+            @FormParam(PARAM_CLASS_ID) final String classIDBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final int objectID = Converter.deserialiseFromString(objectIDBytes, int.class);
@@ -585,11 +583,11 @@ public final class RESTfulSerialInterface {
      */
     @POST
     @Path("/insertMetaObject")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response insertMetaObject(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_METAOBJECT) final String metaObjectBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+    public Response insertMetaObject(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_METAOBJECT) final String metaObjectBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final MetaObject metaObject = Converter.deserialiseFromString(metaObjectBytes, MetaObject.class);
@@ -620,11 +618,11 @@ public final class RESTfulSerialInterface {
      */
     @POST
     @Path("/insertMetaObjectByQuery")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response insertMetaObjectByQuery(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_QUERY) final String queryBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+    public Response insertMetaObjectByQuery(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_QUERY) final String queryBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final Query query = Converter.deserialiseFromString(queryBytes, Query.class);
@@ -653,13 +651,13 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @PUT
+    @POST
     @Path("/updateMetaObject")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response updateMetaObject(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_METAOBJECT) final String metaObjectBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+    public Response updateMetaObject(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_METAOBJECT) final String metaObjectBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final MetaObject metaObject = Converter.deserialiseFromString(metaObjectBytes, MetaObject.class);
@@ -688,13 +686,13 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @DELETE
+    @POST
     @Path("/deleteMetaObject")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response deleteMetaObject(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_METAOBJECT) final String metaObjectBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+    public Response deleteMetaObject(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_METAOBJECT) final String metaObjectBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final MetaObject metaObject = Converter.deserialiseFromString(metaObjectBytes, MetaObject.class);
@@ -723,13 +721,13 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @PUT
+    @POST
     @Path("/update")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response update(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_QUERY) final String queryBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+    public Response update(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_QUERY) final String queryBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String query = Converter.deserialiseFromString(queryBytes, String.class);
@@ -757,12 +755,12 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getInstance")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getInstance(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_METACLASS) final String metaClassBytes) throws RemoteException {
+    public Response getInstance(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_METACLASS) final String metaClassBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final MetaClass metaClass = Converter.deserialiseFromString(metaClassBytes, MetaClass.class);
@@ -790,13 +788,13 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getClassByTableName")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getClassByTableName(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_TABLE_NAME) final String tableNameBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+    public Response getClassByTableName(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_TABLE_NAME) final String tableNameBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String tableName = Converter.deserialiseFromString(tableNameBytes, String.class);
@@ -825,13 +823,13 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getClassByID")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getClass(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_CLASS_ID) final String classIdBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+    public Response getClass(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_CLASS_ID) final String classIdBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class);
@@ -859,12 +857,12 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getClasses")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getClasses(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+    public Response getClasses(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
@@ -889,11 +887,11 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getClassTreeNodesByUser")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getClassTreeNodes(@QueryParam(PARAM_USER) final String userBytes) throws RemoteException {
+    public Response getClassTreeNodes(@FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
 
@@ -919,12 +917,12 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getClassTreeNodesByDomain")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getClassTreeNodes(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+    public Response getClassTreeNodes(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
@@ -950,11 +948,11 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getMethodsByUser")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMethodsByUser(@QueryParam(PARAM_USER) final String userBytes) throws RemoteException {
+    public Response getMethodsByUser(@FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
 
@@ -980,12 +978,12 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getMethodsByDomain")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMethods(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_LOCAL_SERVER_NAME) final String localServerNameBytes) throws RemoteException {
+    public Response getMethods(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_LOCAL_SERVER_NAME) final String localServerNameBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String localServerName = Converter.deserialiseFromString(localServerNameBytes, String.class);
@@ -1014,15 +1012,15 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getAllLightweightMetaObjectsForClassByPattern")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getAllLightweightMetaObjectsForClassWithPattern(
-            @QueryParam(PARAM_CLASS_ID) final String classIdBytes,
-            @QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_REP_FIELDS) final String representationFieldsBytes,
-            @QueryParam(PARAM_REP_PATTERN) final String representationPatternBytes) throws RemoteException {
+            @FormParam(PARAM_CLASS_ID) final String classIdBytes,
+            @FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_REP_FIELDS) final String representationFieldsBytes,
+            @FormParam(PARAM_REP_PATTERN) final String representationPatternBytes) throws RemoteException {
         try {
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class);
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -1060,13 +1058,13 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getAllLightweightMetaObjectsForClass")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getAllLightweightMetaObjectsForClass(@QueryParam(PARAM_CLASS_ID) final String classIdBytes,
-            @QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_REP_FIELDS) final String representationFieldsBytes) throws RemoteException {
+    public Response getAllLightweightMetaObjectsForClass(@FormParam(PARAM_CLASS_ID) final String classIdBytes,
+            @FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_REP_FIELDS) final String representationFieldsBytes) throws RemoteException {
         try {
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class);
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -1102,15 +1100,15 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getLightweightMetaObjectsByQueryAndPattern")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getLightweightMetaObjectsByQueryAndPattern(@QueryParam(PARAM_CLASS_ID) final String classIdBytes,
-            @QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_QUERY) final String queryBytes,
-            @QueryParam(PARAM_REP_FIELDS) final String representationFieldsBytes,
-            @QueryParam(PARAM_REP_PATTERN) final String representationPatternBytes) throws RemoteException {
+    public Response getLightweightMetaObjectsByQueryAndPattern(@FormParam(PARAM_CLASS_ID) final String classIdBytes,
+            @FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_QUERY) final String queryBytes,
+            @FormParam(PARAM_REP_FIELDS) final String representationFieldsBytes,
+            @FormParam(PARAM_REP_PATTERN) final String representationPatternBytes) throws RemoteException {
         try {
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class);
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -1151,14 +1149,14 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getLightweightMetaObjectsByQuery")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getLightweightMetaObjectsByQuery(@QueryParam(PARAM_CLASS_ID) final String classIdBytes,
-            @QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_QUERY) final String queryBytes,
-            @QueryParam(PARAM_REP_FIELDS) final String representationFieldsBytes) throws RemoteException {
+    public Response getLightweightMetaObjectsByQuery(@FormParam(PARAM_CLASS_ID) final String classIdBytes,
+            @FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_QUERY) final String queryBytes,
+            @FormParam(PARAM_REP_FIELDS) final String representationFieldsBytes) throws RemoteException {
         try {
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class);
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -1193,12 +1191,12 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
-    @PUT
+    @POST
     @Path("/storeQuery")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response storeQuery(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_QUERY_DATA) final String queryDataBytes) throws RemoteException {
+    public Response storeQuery(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_QUERY_DATA) final String queryDataBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final QueryData data = Converter.deserialiseFromString(queryDataBytes, QueryData.class);
@@ -1224,11 +1222,11 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getQueryInfosByUser")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getQueryInfosByUser(@QueryParam(PARAM_USER) final String userBytes) throws RemoteException {
+    public Response getQueryInfosByUser(@FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
 
@@ -1253,11 +1251,11 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getQueryInfosByUserGroup")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getQueryInfosByUserGroup(@QueryParam(PARAM_USERGROUP) final String userGroupBytes)
+    public Response getQueryInfosByUserGroup(@FormParam(PARAM_USERGROUP) final String userGroupBytes)
             throws RemoteException {
         try {
             final UserGroup userGroup = Converter.deserialiseFromString(userGroupBytes, UserGroup.class);
@@ -1284,12 +1282,12 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getQuery")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getQuery(@QueryParam(PARAM_QUERY_ID) final String idBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+    public Response getQuery(@FormParam(PARAM_QUERY_ID) final String idBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final int id = Converter.deserialiseFromString(idBytes, int.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
@@ -1316,12 +1314,12 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
-    @DELETE
+    @POST
     @Path("/delete")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response delete(@QueryParam(PARAM_QUERY_ID) final String idBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+    public Response delete(@FormParam(PARAM_QUERY_ID) final String idBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final int id = Converter.deserialiseFromString(idBytes, int.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
@@ -1357,17 +1355,17 @@ public final class RESTfulSerialInterface {
      */
     @POST
     @Path("/addQueryFull")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response addQueryFull(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_QUERY_NAME) final String nameBytes,
-            @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes,
-            @QueryParam(PARAM_STATEMENT) final String statementBytes,
-            @QueryParam(PARAM_RESULT_TYPE) final String resultTypeBytes,
-            @QueryParam(PARAM_IS_UPDATE) final String isUpdateBytes,
-            @QueryParam(PARAM_IS_BATCH) final String isBatchBytes,
-            @QueryParam(PARAM_IS_ROOT) final String isRootBytes,
-            @QueryParam(PARAM_IS_UNION) final String isUnionBytes) throws RemoteException {
+    public Response addQueryFull(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_QUERY_NAME) final String nameBytes,
+            @FormParam(PARAM_DESCRIPTION) final String descriptionBytes,
+            @FormParam(PARAM_STATEMENT) final String statementBytes,
+            @FormParam(PARAM_RESULT_TYPE) final String resultTypeBytes,
+            @FormParam(PARAM_IS_UPDATE) final String isUpdateBytes,
+            @FormParam(PARAM_IS_BATCH) final String isBatchBytes,
+            @FormParam(PARAM_IS_ROOT) final String isRootBytes,
+            @FormParam(PARAM_IS_UNION) final String isUnionBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String name = Converter.deserialiseFromString(nameBytes, String.class);
@@ -1414,12 +1412,12 @@ public final class RESTfulSerialInterface {
      */
     @POST
     @Path("/addQuery")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response addQuery(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_QUERY_NAME) final String nameBytes,
-            @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes,
-            @QueryParam(PARAM_STATEMENT) final String statementBytes) throws RemoteException {
+    public Response addQuery(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_QUERY_NAME) final String nameBytes,
+            @FormParam(PARAM_DESCRIPTION) final String descriptionBytes,
+            @FormParam(PARAM_STATEMENT) final String statementBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String name = Converter.deserialiseFromString(nameBytes, String.class);
@@ -1455,15 +1453,15 @@ public final class RESTfulSerialInterface {
      */
     @POST
     @Path("/addQueryParameterFull")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response addQueryParameterFull(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_QUERY_ID) final String queryIdBytes,
-            @QueryParam(PARAM_TYPE_ID) final String typeIdBytes,
-            @QueryParam(PARAM_PARAM_KEY) final String paramkeyBytes,
-            @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes,
-            @QueryParam(PARAM_QUERY_RESULT) final String isQueryResultBytes,
-            @QueryParam(PARAM_QUERY_POSITION) final String queryPositionBytes) throws RemoteException {
+    public Response addQueryParameterFull(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_QUERY_ID) final String queryIdBytes,
+            @FormParam(PARAM_TYPE_ID) final String typeIdBytes,
+            @FormParam(PARAM_PARAM_KEY) final String paramkeyBytes,
+            @FormParam(PARAM_DESCRIPTION) final String descriptionBytes,
+            @FormParam(PARAM_QUERY_RESULT) final String isQueryResultBytes,
+            @FormParam(PARAM_QUERY_POSITION) final String queryPositionBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final int queryId = Converter.deserialiseFromString(queryIdBytes, int.class);
@@ -1506,12 +1504,12 @@ public final class RESTfulSerialInterface {
      */
     @POST
     @Path("/addQueryParameter")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response addQueryParameter(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_QUERY_ID) final String queryIdBytes,
-            @QueryParam(PARAM_PARAM_KEY) final String paramkeyBytes,
-            @QueryParam(PARAM_DESCRIPTION) final String descriptionBytes) throws RemoteException {
+    public Response addQueryParameter(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_QUERY_ID) final String queryIdBytes,
+            @FormParam(PARAM_PARAM_KEY) final String paramkeyBytes,
+            @FormParam(PARAM_DESCRIPTION) final String descriptionBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final int queryID = Converter.deserialiseFromString(queryIdBytes, int.class);
@@ -1539,11 +1537,11 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getSearchOptionsByUser")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getSearchOptions(@QueryParam(PARAM_USER) final String userBytes) throws RemoteException {
+    public Response getSearchOptions(@FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
 
@@ -1569,12 +1567,12 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getSearchOptionsByDomain")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getSearchOptions(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+    public Response getSearchOptions(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
@@ -1601,13 +1599,13 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/search")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response search(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_CLASS_ID) final String classIdsBytes,
-            @QueryParam(PARAM_SEARCH_OPTIONS) final String searchOptionsBytes) throws RemoteException {
+    public Response search(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_CLASS_ID) final String classIdsBytes,
+            @FormParam(PARAM_SEARCH_OPTIONS) final String searchOptionsBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String[] classIds = Converter.deserialiseFromString(classIdsBytes, String[].class);
@@ -1634,12 +1632,11 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getDefaultIconsByLSName")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getDefaultIconsByLSName(@QueryParam(PARAM_LS_NAME) final String lsNameBytes)
-            throws RemoteException {
+    public Response getDefaultIconsByLSName(@FormParam(PARAM_LS_NAME) final String lsNameBytes) throws RemoteException {
         try {
             final String lsName = Converter.deserialiseFromString(lsNameBytes, String.class);
 
@@ -1662,7 +1659,7 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getDefaultIcons")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getDefaultIcons() throws RemoteException {
@@ -1687,13 +1684,13 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      * @throws  UserException    DOCUMENT ME!
      */
-    @PUT
+    @POST
     @Path("/changePassword")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response changePasswordGET(@QueryParam(PARAM_USER) final String userBytes,
-            @QueryParam(PARAM_OLD_PASSWORD) final String oldPasswordBytes,
-            @QueryParam(PARAM_NEW_PASSWORD) final String newPasswordBytes) throws RemoteException, UserException {
+    public Response changePasswordGET(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_OLD_PASSWORD) final String oldPasswordBytes,
+            @FormParam(PARAM_NEW_PASSWORD) final String newPasswordBytes) throws RemoteException, UserException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String oldPassword = Converter.deserialiseFromString(oldPasswordBytes, String.class);
@@ -1725,15 +1722,15 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException  WebApplicationException DOCUMENT ME!
      * @throws  UserException    DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getUser")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getUserGET(@QueryParam(PARAM_USERGROUP_LS_NAME) final String ugLsNameBytes,
-            @QueryParam(PARAM_USERGROUP_NAME) final String ugNameBytes,
-            @QueryParam(PARAM_USER_LS_NAME) final String uLsNameBytes,
-            @QueryParam(PARAM_USERNAME) final String unameBytes,
-            @QueryParam(PARAM_PASSWORD) final String passwordBytes) throws RemoteException, UserException {
+    public Response getUserGET(@FormParam(PARAM_USERGROUP_LS_NAME) final String ugLsNameBytes,
+            @FormParam(PARAM_USERGROUP_NAME) final String ugNameBytes,
+            @FormParam(PARAM_USER_LS_NAME) final String uLsNameBytes,
+            @FormParam(PARAM_USERNAME) final String unameBytes,
+            @FormParam(PARAM_PASSWORD) final String passwordBytes) throws RemoteException, UserException {
         try {
             final String ugLsName = Converter.deserialiseFromString(ugLsNameBytes, String.class);
             final String ugName = Converter.deserialiseFromString(ugNameBytes, String.class);
@@ -1760,7 +1757,7 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getUserGroupNames")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getUserGroupNames() throws RemoteException {
@@ -1783,12 +1780,12 @@ public final class RESTfulSerialInterface {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    @GET
+    @POST
     @Path("/getUserGroupNamesByUser")
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getUserGroupNamesGET(@QueryParam(PARAM_USERNAME) final String unameBytes,
-            @QueryParam(PARAM_LS_HOME) final String lsHomeBytes) throws RemoteException {
+    public Response getUserGroupNamesGET(@FormParam(PARAM_USERNAME) final String unameBytes,
+            @FormParam(PARAM_LS_HOME) final String lsHomeBytes) throws RemoteException {
         try {
             final String uname = Converter.deserialiseFromString(unameBytes, String.class);
             final String lsHome = Converter.deserialiseFromString(lsHomeBytes, String.class);
