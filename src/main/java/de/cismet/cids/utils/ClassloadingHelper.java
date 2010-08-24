@@ -1,24 +1,44 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.cids.utils;
 
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.middleware.types.MetaClass;
-import de.cismet.tools.BlacklistClassloading;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import de.cismet.tools.BlacklistClassloading;
+
 /**
+ * DOCUMENT ME!
  *
- * @author stefan
+ * @author   stefan
+ * @version  $Revision$, $Date$
  */
 public class ClassloadingHelper {
 
-    private ClassloadingHelper() {
-        throw new AssertionError();
-    }
+    //~ Static fields/initializers ---------------------------------------------
 
+    private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(ClassloadingHelper.class);
+
+    //~ Enums ------------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
     public enum CLASS_TYPE {
+
+        //~ Enum constants -----------------------------------------------------
 
         ICON_FACTORY("de.cismet.cids.custom.treeicons", "IconFactory", "iconfactory"),
         EXTENSION_FACTORY("de.cismet.cids.custom.extensionfactories", "ExtensionFactory", "extensionfactory"),
@@ -29,60 +49,113 @@ public class ClassloadingHelper {
         ATTRIBUTE_EDITOR("de.cismet.cids.custom.objecteditors", "AttributeEditor", "attributeeditor"),
         FEATURE_RENDERER("de.cismet.cids.custom.featurerenderer", "FeatureRenderer", "featurerenderer");
 
-        private CLASS_TYPE(String packagePrefix, String classNameSuffix, String overrideProperty) {
+        //~ Instance fields ----------------------------------------------------
+
+        final String packagePrefix;
+        final String classNameSuffix;
+        final String overrideProperty;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new CLASS_TYPE object.
+         *
+         * @param  packagePrefix     DOCUMENT ME!
+         * @param  classNameSuffix   DOCUMENT ME!
+         * @param  overrideProperty  DOCUMENT ME!
+         */
+        private CLASS_TYPE(final String packagePrefix, final String classNameSuffix, final String overrideProperty) {
             this.packagePrefix = packagePrefix;
             this.classNameSuffix = classNameSuffix;
             this.overrideProperty = overrideProperty;
         }
-        final String packagePrefix;
-        final String classNameSuffix;
-        final String overrideProperty;
     }
-    private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(ClassloadingHelper.class);
 
-    public static List<String> getClassNames(MetaClass metaClass, MemberAttributeInfo mai, CLASS_TYPE classType) {
-        List<String> result = new ArrayList<String>();
-        String domain = metaClass.getDomain().toLowerCase();
-        String tableName = metaClass.getTableName().toLowerCase();
-        String fieldName = mai.getFieldName().toLowerCase();
-        String overrideClassName = System.getProperty(domain + "." + tableName + "." + fieldName + "." + classType.overrideProperty);
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new ClassloadingHelper object.
+     *
+     * @throws  AssertionError  DOCUMENT ME!
+     */
+    private ClassloadingHelper() {
+        throw new AssertionError();
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   metaClass  DOCUMENT ME!
+     * @param   mai        DOCUMENT ME!
+     * @param   classType  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static List<String> getClassNames(final MetaClass metaClass,
+            final MemberAttributeInfo mai,
+            final CLASS_TYPE classType) {
+        final List<String> result = new ArrayList<String>();
+        final String domain = metaClass.getDomain().toLowerCase();
+        final String tableName = metaClass.getTableName().toLowerCase();
+        final String fieldName = mai.getFieldName().toLowerCase();
+        final String overrideClassName = System.getProperty(domain + "." + tableName + "." + fieldName + "."
+                        + classType.overrideProperty);
         if (overrideClassName != null) {
             result.add(overrideClassName);
         }
-        StringBuilder plainClassNameBuilder = new StringBuilder(classType.packagePrefix);
+        final StringBuilder plainClassNameBuilder = new StringBuilder(classType.packagePrefix);
         plainClassNameBuilder.append(".").append(domain).append(".").append(tableName).append(".");
-        StringBuilder camelCaseClassNameBuilder = new StringBuilder(plainClassNameBuilder);
+        final StringBuilder camelCaseClassNameBuilder = new StringBuilder(plainClassNameBuilder);
         plainClassNameBuilder.append(capitalize(fieldName)).append(classType.classNameSuffix);
         camelCaseClassNameBuilder.append(camelize(fieldName)).append(classType.classNameSuffix);
         //
         result.add(plainClassNameBuilder.toString());
         result.add(camelCaseClassNameBuilder.toString());
         //
-        String configurationClassName = (mai == null ? getClassNameByConfiguration(metaClass, classType) : getClassNameByConfiguration(mai, classType));
+        final String configurationClassName = ((mai == null) ? getClassNameByConfiguration(metaClass, classType)
+                                                             : getClassNameByConfiguration(mai, classType));
         if (configurationClassName != null) {
             result.add(configurationClassName);
         }
         return result;
     }
 
-    public static String capitalize(String toCapitalize) {
-        StringBuilder result = new StringBuilder(toCapitalize.length());
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   toCapitalize  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static String capitalize(final String toCapitalize) {
+        final StringBuilder result = new StringBuilder(toCapitalize.length());
         result.append(toCapitalize.substring(0, 1).toUpperCase()).append(toCapitalize.substring(1).toLowerCase());
         return result.toString();
     }
 
-    public static List<String> getClassNames(MetaClass metaClass, CLASS_TYPE classType) {
-        List<String> result = new ArrayList<String>();
-        String tableName = metaClass.getTableName().toLowerCase();
-        String domain = metaClass.getDomain().toLowerCase();
-        String overrideClassName = System.getProperty(domain + "." + tableName + "." + classType.overrideProperty);
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   metaClass  DOCUMENT ME!
+     * @param   classType  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static List<String> getClassNames(final MetaClass metaClass, final CLASS_TYPE classType) {
+        final List<String> result = new ArrayList<String>();
+        final String tableName = metaClass.getTableName().toLowerCase();
+        final String domain = metaClass.getDomain().toLowerCase();
+        final String overrideClassName = System.getProperty(domain + "." + tableName + "."
+                        + classType.overrideProperty);
         if (overrideClassName != null) {
             result.add(overrideClassName);
         }
         if (tableName.length() > 2) {
-            StringBuilder plainClassNameBuilder = new StringBuilder(classType.packagePrefix);
+            final StringBuilder plainClassNameBuilder = new StringBuilder(classType.packagePrefix);
             plainClassNameBuilder.append(".").append(domain).append(".");
-            StringBuilder camelCaseClassNameBuilder = new StringBuilder(plainClassNameBuilder);
+            final StringBuilder camelCaseClassNameBuilder = new StringBuilder(plainClassNameBuilder);
             //
             plainClassNameBuilder.append(capitalize(tableName)).append(classType.classNameSuffix);
             camelCaseClassNameBuilder.append(camelize(tableName)).append(classType.classNameSuffix);
@@ -90,7 +163,7 @@ public class ClassloadingHelper {
             result.add(plainClassNameBuilder.toString());
             result.add(camelCaseClassNameBuilder.toString());
             //
-            String configurationClassName = getClassNameByConfiguration(metaClass, classType);
+            final String configurationClassName = getClassNameByConfiguration(metaClass, classType);
             if (configurationClassName != null) {
                 result.add(configurationClassName);
             }
@@ -100,56 +173,104 @@ public class ClassloadingHelper {
         return result;
     }
 
-    public static String getClassNameByConfiguration(MetaClass metaClass, CLASS_TYPE classType) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   metaClass  DOCUMENT ME!
+     * @param   classType  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static String getClassNameByConfiguration(final MetaClass metaClass, final CLASS_TYPE classType) {
         switch (classType) {
 //            case ICON_FACTORY:
 //                break;
-            case TO_STRING_CONVERTER:
+            case TO_STRING_CONVERTER: {
                 return metaClass.getToString();
-            case RENDERER:
+            }
+            case RENDERER: {
                 return metaClass.getRenderer();
-            case EDITOR:
+            }
+            case EDITOR: {
                 return metaClass.getEditor();
-            case AGGREGATION_RENDERER:
+            }
+            case AGGREGATION_RENDERER: {
                 return metaClass.getRenderer();
-            case FEATURE_RENDERER:
+            }
+            case FEATURE_RENDERER: {
                 return getClassAttributeValue("FEATURE_RENDERER", metaClass);
+            }
 //            case EXTENSION_FACTORY:
 //                break;
-            default:
+            default: {
                 return null;
+            }
         }
     }
 
-    public static String getClassNameByConfiguration(MemberAttributeInfo mai, CLASS_TYPE classType) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   mai        DOCUMENT ME!
+     * @param   classType  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static String getClassNameByConfiguration(final MemberAttributeInfo mai, final CLASS_TYPE classType) {
         switch (classType) {
-            case TO_STRING_CONVERTER:
+            case TO_STRING_CONVERTER: {
                 return mai.getToString();
-            case RENDERER:
+            }
+            case RENDERER: {
                 return mai.getRenderer();
-            case EDITOR:
+            }
+            case EDITOR: {
                 return mai.getEditor();
-            case AGGREGATION_RENDERER:
+            }
+            case AGGREGATION_RENDERER: {
                 return mai.getRenderer();
-            default:
+            }
+            default: {
                 return null;
+            }
         }
     }
 
-    public static String getClassNameByConfiguration(MetaClass metaClass, MemberAttributeInfo mai, CLASS_TYPE classType) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   metaClass  DOCUMENT ME!
+     * @param   mai        DOCUMENT ME!
+     * @param   classType  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static String getClassNameByConfiguration(final MetaClass metaClass,
+            final MemberAttributeInfo mai,
+            final CLASS_TYPE classType) {
         switch (classType) {
-            case ATTRIBUTE_EDITOR:
+            case ATTRIBUTE_EDITOR: {
                 return mai.getEditor();
-            default:
+            }
+            default: {
                 return getClassNameByConfiguration(metaClass, classType);
+            }
         }
     }
 
-    private static String getClassAttributeValue(String name, final MetaClass mc) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   name  DOCUMENT ME!
+     * @param   mc    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private static String getClassAttributeValue(final String name, final MetaClass mc) {
         final Collection cca = mc.getAttributeByName(name);
         if (cca.size() > 0) {
-            final ClassAttribute ca = (ClassAttribute) (cca.toArray()[0]);
-            Object valueObj = ca.getValue();
+            final ClassAttribute ca = (ClassAttribute)(cca.toArray()[0]);
+            final Object valueObj = ca.getValue();
             if (valueObj != null) {
                 return valueObj.toString();
             }
@@ -157,9 +278,16 @@ public class ClassloadingHelper {
         return null;
     }
 
-    public static String camelize(String tableName) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   tableName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static String camelize(final String tableName) {
         boolean upperCase = true;
-        char[] result = new char[tableName.length()];
+        final char[] result = new char[tableName.length()];
         int resultPosition = 0;
         for (int i = 0; i < tableName.length(); ++i) {
             char current = tableName.charAt(i);
@@ -178,9 +306,16 @@ public class ClassloadingHelper {
         return String.valueOf(result, 0, resultPosition);
     }
 
-    public static Class<?> loadClassFromCandidates(List<String> candidateClassNames) {
-        for (String candidateClassName : candidateClassNames) {
-            Class<?> result = BlacklistClassloading.forName(candidateClassName);
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   candidateClassNames  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static Class<?> loadClassFromCandidates(final List<String> candidateClassNames) {
+        for (final String candidateClassName : candidateClassNames) {
+            final Class<?> result = BlacklistClassloading.forName(candidateClassName);
             if (result != null) {
                 return result;
             }
@@ -188,12 +323,31 @@ public class ClassloadingHelper {
         return null;
     }
 
-    public static Class<?> getDynamicClass(MetaClass metaClass, MemberAttributeInfo mai, CLASS_TYPE classType) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   metaClass  DOCUMENT ME!
+     * @param   mai        DOCUMENT ME!
+     * @param   classType  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static Class<?> getDynamicClass(final MetaClass metaClass,
+            final MemberAttributeInfo mai,
+            final CLASS_TYPE classType) {
         final List<String> classNames = getClassNames(metaClass, mai, classType);
         return loadClassFromCandidates(classNames);
     }
 
-    public static Class<?> getDynamicClass(MetaClass metaClass, CLASS_TYPE classType) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   metaClass  DOCUMENT ME!
+     * @param   classType  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static Class<?> getDynamicClass(final MetaClass metaClass, final CLASS_TYPE classType) {
         final List<String> classNames = getClassNames(metaClass, classType);
         return loadClassFromCandidates(classNames);
     }

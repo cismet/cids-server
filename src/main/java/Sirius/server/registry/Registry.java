@@ -24,6 +24,8 @@ import Sirius.server.registry.rmplugin.RMRegistryServerImpl;
 
 import org.apache.log4j.Logger;
 
+import org.openide.util.NbBundle;
+
 import java.io.Serializable;
 
 import java.rmi.Naming;
@@ -37,7 +39,6 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import de.cismet.cids.server.ServerSecurityManager;
-import org.openide.util.NbBundle;
 
 /**
  * Name- und UserServer des gesammten Siriussystems. Jede Art von Server (LocalServer,CallServer,ProtocolServer)
@@ -123,17 +124,17 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
             final String[] list = reg.list();
 
             if (list.length > 0) {
-                System.out.println("<Reg> STATUS registerd with RMIRegistry:");  // NOI18N
+                System.out.println("<Reg> STATUS registerd with RMIRegistry:"); // NOI18N
             }
 
-            final String bindInfo = "<REG> INFO: Bind SiriusRegistry on RMIRegistry as nameServer and userServer";//NOI18N
+            final String bindInfo = "<REG> INFO: Bind SiriusRegistry on RMIRegistry as nameServer and userServer"; // NOI18N
             if (LOG.isInfoEnabled()) {
                 final StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < list.length; i++) {
                     sb.append('\t').append(list[i]);
                 }
 
-                LOG.info("registry listing: " + sb.toString());//NOI18N
+                LOG.info("registry listing: " + sb.toString()); // NOI18N
                 LOG.info(bindInfo);
             }
             System.out.println(bindInfo);
@@ -142,13 +143,13 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
             Naming.bind("rmi://localhost:" + port + "/userServer", this); // NOI18N
             Naming.bind("rmi://localhost:" + port + "/nameServer", this); // NOI18N
 
-            final String started = "<REG> ----------Sirius.Registry.Registry STARTED!!!----------\n";//NOI18N
+            final String started = "<REG> ----------Sirius.Registry.Registry STARTED!!!----------\n"; // NOI18N
             if (LOG.isInfoEnabled()) {
                 LOG.info(started);
             }
             System.out.println(started);
         } catch (final Exception e) {
-            final String message = "could not start RMI server, port: " + port; // NOI18N
+            final String message = "could not start RMI server, port: " + port;                       // NOI18N
             LOG.fatal(message, e);
             throw new ServerExitError(message, e);
         }
@@ -179,9 +180,12 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
 
     /**
      * Returns the actual server instance.
-     * @return
-     * @throws ServerExitError
-     * @deprecated THIS IS HIGLY ERROR PRONE SINCE THE IMPLEMENTATION IS NOT A SINGLETON
+     *
+     * @return      DOCUMENT ME!
+     *
+     * @throws      ServerExitError  DOCUMENT ME!
+     *
+     * @deprecated  THIS IS HIGLY ERROR PRONE SINCE THE IMPLEMENTATION IS NOT A SINGLETON
      */
     public static synchronized Registry getServerInstance() throws ServerExitError {
         return instance;
@@ -208,16 +212,21 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
             if (sm.registerServer(type, name, ip)) {
                 obs.setChanged();
                 obs.notifyObservers();
-                status.addMessage(NbBundle.getMessage(Registry.class, "Registry.registerServer(int,String,String).title")//NOI18N
-                        , NbBundle.getMessage(Registry.class, "Registry.registerServer(int,String,String).message"        //NOI18N
-                            , new Object[]{name, sm.getServerCount(type), type}));
+                status.addMessage(
+                    NbBundle.getMessage(Registry.class, "Registry.registerServer(int,String,String).title") // NOI18N
+                    ,
+                    NbBundle.getMessage(
+                        Registry.class,
+                        "Registry.registerServer(int,String,String).message"                                // NOI18N
+                        ,
+                        new Object[] { name, sm.getServerCount(type), type }));
                 return true;
             } else {
                 return false;
             }
         } catch (final Exception e) {
-            final String message = "could not register server :: type = " // NOI18N
-                        + type + " :: name = " + name + " :: ip = " + ip; // NOI18N
+            final String message = "could not register server :: type = "                                   // NOI18N
+                        + type + " :: name = " + name + " :: ip = " + ip;                                   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -242,11 +251,11 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
             LOG.debug(
                 "registerServer called :: type = " // NOI18N
                         + type
-                        + " :: name = "//NOI18N
+                        + " :: name = "            // NOI18N
                         + name
-                        + " :: ip = "//NOI18N
+                        + " :: ip = "              // NOI18N
                         + ip
-                        + " :: port = "//NOI18N
+                        + " :: port = "            // NOI18N
                         + port);
         }
 
@@ -254,16 +263,21 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
             if (sm.registerServer(type, name, ip, port)) {
                 obs.setChanged();
                 obs.notifyObservers();
-                status.addMessage(NbBundle.getMessage(Registry.class, "Registry.registerServer(int,String,String,String).title")//NOI18N
-                        , NbBundle.getMessage(Registry.class, "Registry.registerServer(int,String,String,String).message"        //NOI18N
-                            , new Object[]{name, sm.getServerCount(type), type}));
+                status.addMessage(
+                    NbBundle.getMessage(Registry.class, "Registry.registerServer(int,String,String,String).title") // NOI18N
+                    ,
+                    NbBundle.getMessage(
+                        Registry.class,
+                        "Registry.registerServer(int,String,String,String).message"                                // NOI18N
+                        ,
+                        new Object[] { name, sm.getServerCount(type), type }));
                 return true;
             } else {
                 return false;
             }
         } catch (final Exception e) {
-            final String message = "could not register server :: type = "                        // NOI18N
-                        + type + " :: name = " + name + " :: ip = " + ip + " :: port = " + port; // NOI18N
+            final String message = "could not register server :: type = "                                          // NOI18N
+                        + type + " :: name = " + name + " :: ip = " + ip + " :: port = " + port;                   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -290,16 +304,21 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
             if (sm.unregisterServer(type, name, ip)) {
                 obs.setChanged();
                 obs.notifyObservers();
-                status.addMessage(NbBundle.getMessage(Registry.class, "Registry.unregisterServer(int,String,String).title")//NOI18N
-                        , NbBundle.getMessage(Registry.class, "Registry.unregisterServer(int,String,String).message"        //NOI18N
-                            , new Object[]{name, sm.getServerCount(type), type}));
+                status.addMessage(
+                    NbBundle.getMessage(Registry.class, "Registry.unregisterServer(int,String,String).title") // NOI18N
+                    ,
+                    NbBundle.getMessage(
+                        Registry.class,
+                        "Registry.unregisterServer(int,String,String).message"                                // NOI18N
+                        ,
+                        new Object[] { name, sm.getServerCount(type), type }));
                 return true;
             } else {
                 return false;
             }
         } catch (final Exception e) {
-            final String message = "could not unregister server :: type = " // NOI18N
-                        + type + " :: name = " + name + " :: ip = " + ip;   // NOI18N
+            final String message = "could not unregister server :: type = "                                   // NOI18N
+                        + type + " :: name = " + name + " :: ip = " + ip;                                     // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -324,20 +343,25 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
             LOG.debug(
                 "unregisterServer called :: type = " // NOI18N
                         + type
-                        + " :: name = "//NOI18N
+                        + " :: name = "              // NOI18N
                         + name
-                        + " :: ip = "//NOI18N
+                        + " :: ip = "                // NOI18N
                         + ip
-                        + " :: port = "//NOI18N
+                        + " :: port = "              // NOI18N
                         + port);
         }
         try {
             if (sm.unregisterServer(type, name, ip, port)) {
                 obs.setChanged();
                 obs.notifyObservers();
-                status.addMessage(NbBundle.getMessage(Registry.class, "Registry.unregisterServer(int,String,String,String).title")//NOI18N
-                        , NbBundle.getMessage(Registry.class, "Registry.unregisterServer(int,String,String,String).message"        //NOI18N
-                            , new Object[]{name, sm.getServerCount(type), type}));
+                status.addMessage(
+                    NbBundle.getMessage(Registry.class, "Registry.unregisterServer(int,String,String,String).title") // NOI18N
+                    ,
+                    NbBundle.getMessage(
+                        Registry.class,
+                        "Registry.unregisterServer(int,String,String,String).message" // NOI18N
+                        ,
+                        new Object[] { name, sm.getServerCount(type), type }));
                 return true;
             } else {
                 return false;
@@ -493,15 +517,15 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
             final String password) throws RemoteException, UserException {
         if (LOG.isDebugEnabled()) {
             LOG.debug(
-                "getUser called :: userGroupLocalServerName = "//NOI18N
-                        + userGroupLocalServerName 
-                        + " :: userGroupName = "        //NOI18N
-                        + userGroupName            
-                        + " :: userLocalServerName = "  //NOI18N
-                        + userLocalServerName      
-                        + " :: username = "             //NOI18N
+                "getUser called :: userGroupLocalServerName = " // NOI18N
+                        + userGroupLocalServerName
+                        + " :: userGroupName = "                // NOI18N
+                        + userGroupName
+                        + " :: userLocalServerName = "          // NOI18N
+                        + userLocalServerName
+                        + " :: username = "                     // NOI18N
                         + userName
-                        + " :: password = "             //NOI18N
+                        + " :: password = "                     // NOI18N
                         + password);
         }
 
@@ -510,26 +534,26 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
         } catch (final UserException e) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
-                    "userexception at getuser :: userGroupLocalServerName = "//NOI18N
-                            + userGroupLocalServerName 
-                            + " :: userGroupName = "        //NOI18N
+                    "userexception at getuser :: userGroupLocalServerName = " // NOI18N
+                            + userGroupLocalServerName
+                            + " :: userGroupName = "                          // NOI18N
                             + userGroupName
-                            + " :: userLocalServerName = "  //NOI18N
+                            + " :: userLocalServerName = "                    // NOI18N
                             + userLocalServerName
-                            + " :: username = "             //NOI18N
+                            + " :: username = "                               // NOI18N
                             + userName
-                            + " :: password = "             //NOI18N
+                            + " :: password = "                               // NOI18N
                             + password,
                     e);
             }
             throw e;
         } catch (final Exception e) {
-            final String message = "could not get user :: userGroupLocalServerName = "//NOI18N
-                        + userGroupLocalServerName     // NOI18N
-                        + " :: userGroupName = " + userGroupName // NOI18N
-                        + " :: userLocalServerName = " + userLocalServerName // NOI18N
-                        + " :: username = " + userName // NOI18N
-                        + " :: password = " + password; // NOI18N
+            final String message = "could not get user :: userGroupLocalServerName = " // NOI18N
+                        + userGroupLocalServerName                            // NOI18N
+                        + " :: userGroupName = " + userGroupName              // NOI18N
+                        + " :: userLocalServerName = " + userLocalServerName  // NOI18N
+                        + " :: username = " + userName                        // NOI18N
+                        + " :: password = " + password;                       // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -545,14 +569,16 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
     @Override
     public void registerUser(final User user) throws RemoteException {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("registerUser called :: user = " + user); // NOI18N
+            LOG.debug("registerUser called :: user = " + user);                           // NOI18N
         }
         try {
             um.registerUser(user);
             status.addMessage(
-                    NbBundle.getMessage( Registry.class, "Registry.registerUser(User).title" ), //NOI18N
-                    NbBundle.getMessage( Registry.class, "Registry.registerUser(User).message", //NOI18N
-                        new Object[]{user.toString()} ));
+                NbBundle.getMessage(Registry.class, "Registry.registerUser(User).title"), // NOI18N
+                NbBundle.getMessage(
+                    Registry.class,
+                    "Registry.registerUser(User).message",                                // NOI18N
+                    new Object[] { user.toString() }));
         } catch (final Exception e) {
             LOG.error(e);
             throw new RemoteException(e.getMessage(), e);
@@ -575,9 +601,11 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
         try {
             um.unregisterUser(user);
             status.addMessage(
-                    NbBundle.getMessage( Registry.class, "Registry.unregisterUser(User).title" ), //NOI18N
-                    NbBundle.getMessage( Registry.class, "Registry.unregisterUser(User).message",   //NOI18N
-                        new Object[]{user.toString()} ));
+                NbBundle.getMessage(Registry.class, "Registry.unregisterUser(User).title"), // NOI18N
+                NbBundle.getMessage(
+                    Registry.class,
+                    "Registry.unregisterUser(User).message", // NOI18N
+                    new Object[] { user.toString() }));
         } catch (final Exception e) {
             final String message = "could not unregister user :: user = " + user; // NOI18N
             LOG.error(message, e);
@@ -601,9 +629,11 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
         try {
             um.registerUsers(users);
             status.addMessage(
-                    NbBundle.getMessage( Registry.class, "Registry.registerUsers(Vector).title" ),  //NOI18N
-                    NbBundle.getMessage( Registry.class, "Registry.registerUsers(Vector).message",  //NOI18N
-                        new Object[]{users.toString()} ));
+                NbBundle.getMessage(Registry.class, "Registry.registerUsers(Vector).title"), // NOI18N
+                NbBundle.getMessage(
+                    Registry.class,
+                    "Registry.registerUsers(Vector).message", // NOI18N
+                    new Object[] { users.toString() }));
         } catch (final Exception e) {
             final String message = "could not register users :: users = " + users; // NOI18N
             LOG.error(message, e);
@@ -626,11 +656,16 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
 
         try {
             um.unregisterUsers(users);
-            status.addMessage(NbBundle.getMessage(Registry.class, "Registry.unregisterUsers(Vector).title")//NOI18N
-                    , NbBundle.getMessage(Registry.class, "Registry.unregisterUsers(Vector).message"        //NOI18N
-                        , new Object[]{users.toString()}));
+            status.addMessage(
+                NbBundle.getMessage(Registry.class, "Registry.unregisterUsers(Vector).title") // NOI18N
+                ,
+                NbBundle.getMessage(
+                    Registry.class,
+                    "Registry.unregisterUsers(Vector).message"                                // NOI18N
+                    ,
+                    new Object[] { users.toString() }));
         } catch (final Exception e) {
-            final String message = "could not unregister users :: users = " + users; // NOI18N
+            final String message = "could not unregister users :: users = " + users;          // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -651,11 +686,16 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
 
         try {
             um.registerUserGroup(userGroup);
-            status.addMessage(NbBundle.getMessage(Registry.class, "Registry.registerUserGroup(UserGroup).title")//NOI18N
-                    , NbBundle.getMessage(Registry.class, "Registry.registerUserGroup(UserGroup).message"        //NOI18N
-                        , new Object[]{userGroup.toString()}));
+            status.addMessage(
+                NbBundle.getMessage(Registry.class, "Registry.registerUserGroup(UserGroup).title") // NOI18N
+                ,
+                NbBundle.getMessage(
+                    Registry.class,
+                    "Registry.registerUserGroup(UserGroup).message"                                // NOI18N
+                    ,
+                    new Object[] { userGroup.toString() }));
         } catch (final Exception e) {
-            final String message = "could not register usergroup :: usergroup = " + userGroup; // NOI18N
+            final String message = "could not register usergroup :: usergroup = " + userGroup;     // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -676,11 +716,16 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
 
         try {
             um.unregisterUserGroup(userGroup);
-            status.addMessage(NbBundle.getMessage(Registry.class, "Registry.unregisterUserGroup(UserGroup).title")//NOI18N
-                    , NbBundle.getMessage(Registry.class, "Registry.unregisterUserGroup(UserGroup).message"        //NOI18N
-                        , new Object[]{userGroup.toString()}));
+            status.addMessage(
+                NbBundle.getMessage(Registry.class, "Registry.unregisterUserGroup(UserGroup).title") // NOI18N
+                ,
+                NbBundle.getMessage(
+                    Registry.class,
+                    "Registry.unregisterUserGroup(UserGroup).message"                                // NOI18N
+                    ,
+                    new Object[] { userGroup.toString() }));
         } catch (Exception e) {
-            final String message = "could not unregister usergroup :: usergroup = " + userGroup; // NOI18N
+            final String message = "could not unregister usergroup :: usergroup = " + userGroup;     // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -701,9 +746,14 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
 
         try {
             um.registerUserGroups(userGroups);
-            status.addMessage(NbBundle.getMessage(Registry.class, "Registry.registerUserGroups(Vector).title")//NOI18N
-                    , NbBundle.getMessage(Registry.class, "Registry.registerUserGroups(Vector).message"        //NOI18N
-                        , new Object[]{userGroups.toString()}));
+            status.addMessage(
+                NbBundle.getMessage(Registry.class, "Registry.registerUserGroups(Vector).title") // NOI18N
+                ,
+                NbBundle.getMessage(
+                    Registry.class,
+                    "Registry.registerUserGroups(Vector).message"                                // NOI18N
+                    ,
+                    new Object[] { userGroups.toString() }));
         } catch (final Exception e) {
             final String message = "could not register usergroups :: usergroups = " + userGroups; // NOI18N
             LOG.error(message, e);
@@ -726,9 +776,14 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
 
         try {
             um.unregisterUserGroups(userGroups);
-            status.addMessage(NbBundle.getMessage(Registry.class, "Registry.unregisterUserGroups(Vector).title")//NOI18N
-                    , NbBundle.getMessage(Registry.class, "Registry.unregisterUserGroups(Vector).message"        //NOI18N
-                        , new Object[]{userGroups.toString()}));
+            status.addMessage(
+                NbBundle.getMessage(Registry.class, "Registry.unregisterUserGroups(Vector).title") // NOI18N
+                ,
+                NbBundle.getMessage(
+                    Registry.class,
+                    "Registry.unregisterUserGroups(Vector).message"                                // NOI18N
+                    ,
+                    new Object[] { userGroups.toString() }));
         } catch (final Exception e) {
             final String message = "could not unregister usergroups :: usergroups = " + userGroups; // NOI18N
             LOG.error(message, e);
@@ -1008,12 +1063,12 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
             rmRegistryServer.stopRMRegistryServer();
 
             // TODO: refactor server exit
-            throw new ServerExit("Server ist regulär beendet worden");  //NOI18N
+            throw new ServerExit("Server ist regulär beendet worden"); // NOI18N
         } catch (final Exception e) {
-            final String message = "could not shutdown registry"; // NOI18N
+            final String message = "could not shutdown registry";       // NOI18N
             LOG.fatal(message, e);
             throw new ServerExitError(message, e);
-        }finally{
+        } finally {
             instance = null;
         }
     }
@@ -1039,7 +1094,7 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
 
         try {
             if (args == null) {
-                LOG.warn("no command line parameters, using default port: 1099"); // NOI18N
+                LOG.warn("no command line parameters, using default port: 1099");                        // NOI18N
                 port = 1099;
             } else if (args.length > 0) {
                 port = Integer.valueOf(args[0]);
@@ -1050,7 +1105,7 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
             final String message = "invalid port argument: '" + args[0] + "', using default port: 1099"; // NOI18N
             LOG.warn(message, nfexp);
             port = 1099;
-            //throw new ServerExitError(message, nfexp); // NOI18N
+            // throw new ServerExitError(message, nfexp); // NOI18N
         }
 
         try {

@@ -55,7 +55,7 @@ public class QueryPlaner {
 
         setSubqueryParameters(convertSearchOptions(searchOptions));
         if (logger.isDebugEnabled()) {
-            logger.debug("List of the Query domains created" + domainList);//NOI18N
+            logger.debug("List of the Query domains created" + domainList); // NOI18N
         }
 
         final String[] domains = (String[])domainList.toArray(new String[domainList.size()]);
@@ -63,12 +63,12 @@ public class QueryPlaner {
         // query
         for (int i = 0; i < domains.length; i++) {
             if (logger.isDebugEnabled()) {
-                logger.debug("construct queryplan for domain " + domains[i] + "of # of domains :" + domains.length);//NOI18N
+                logger.debug("construct queryplan for domain " + domains[i] + "of # of domains :" + domains.length); // NOI18N
             }
 
             final String[] cIds = filterClassIdsForDomain(domains[i], classIds);
             if (logger.isDebugEnabled()) {
-                logger.debug("classids for domain" + domains[i] + " ids:" + cIds);//NOI18N
+                logger.debug("classids for domain" + domains[i] + " ids:" + cIds); // NOI18N
             }
 
             final ArrayList<Query> qs = extractQueriesForDomain(domains[i], convertSearchOptions(searchOptions));
@@ -96,11 +96,11 @@ public class QueryPlaner {
      */
     private static String extractDomainFromClassId(final String classId) {
         if (!checkClassId(classId)) {
-            logger.error("improper classid has to be of the form: digit@domain");//NOI18N
+            logger.error("improper classid has to be of the form: digit@domain"); // NOI18N
             return null;
         }
 
-        return classId.split("@")[1];//NOI18N
+        return classId.split("@")[1]; // NOI18N
     }
 
     /**
@@ -112,11 +112,11 @@ public class QueryPlaner {
      */
     private static String extractDomainFromQueryId(final String qId) {
         if (!checkQueryId(qId)) {
-            logger.error("improper classid has to be of the form: query@domain");//NOI18N
+            logger.error("improper classid has to be of the form: query@domain"); // NOI18N
             return null;
         }
 
-        return qId.split("@")[1];//NOI18N
+        return qId.split("@")[1]; // NOI18N
     }
 
     /**
@@ -128,11 +128,11 @@ public class QueryPlaner {
      */
     private static int extractClassId(final String classId) {
         if (!checkClassId(classId)) {
-            logger.error("improper classid has to be of the form: digit@domain");//NOI18N
+            logger.error("improper classid has to be of the form: digit@domain"); // NOI18N
             return -1;
         }
 
-        return new Integer(classId.split("@")[0]).intValue();//NOI18N
+        return new Integer(classId.split("@")[0]).intValue(); // NOI18N
     }
     /**
      * DOCUMENT ME!
@@ -143,11 +143,11 @@ public class QueryPlaner {
      */
     private static int extractQueryId(final String qId) {
         if (!checkQueryId(qId)) {
-            logger.error("improper queryid has to be of the form: quid@domain");//NOI18N
+            logger.error("improper queryid has to be of the form: quid@domain"); // NOI18N
             return -1;
         }
 
-        return new Integer(qId.split("@")[0]).intValue();//NOI18N
+        return new Integer(qId.split("@")[0]).intValue(); // NOI18N
     }
 
     /**
@@ -202,20 +202,20 @@ public class QueryPlaner {
         for (int i = 0; i < classIds.length; i++) {
             final String cdomain = extractDomainFromClassId(classIds[i]);
             if (logger.isDebugEnabled()) {
-                logger.debug("domain aus class id " + classIds[i] + " extrahiert" + cdomain);//NOI18N
+                logger.debug("domain aus class id " + classIds[i] + " extrahiert" + cdomain); // NOI18N
             }
 
             if (domain.equals(cdomain)) {
                 v.add(classIds[i]);
                 if (logger.isDebugEnabled()) {
-                    logger.debug(classIds[i] + " added to the class ids of the domain" + domain);//NOI18N
+                    logger.debug(classIds[i] + " added to the class ids of the domain" + domain);             // NOI18N
                 }
             } else if (logger.isDebugEnabled()) {
-                logger.debug(cdomain + "of classId:: " + classIds[i] + " ::does not match domain " + domain);//NOI18N
+                logger.debug(cdomain + "of classId:: " + classIds[i] + " ::does not match domain " + domain); // NOI18N
             }
         }
         if (logger.isDebugEnabled()) {
-            logger.debug(" classids for domain" + domain + " are" + v);//NOI18N
+            logger.debug(" classids for domain" + domain + " are" + v);                                       // NOI18N
         }
         return (String[])v.toArray(new String[v.size()]);
     }
@@ -331,7 +331,7 @@ public class QueryPlaner {
      * @param  args  DOCUMENT ME!
      */
     public static void main(final String[] args) {
-        final String t = "444444444444444444@oppp";//NOI18N
+        final String t = "444444444444444444@oppp"; // NOI18N
 
         System.out.println(extractDomainFromClassId(t));
     }

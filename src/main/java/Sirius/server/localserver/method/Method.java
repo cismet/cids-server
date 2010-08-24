@@ -7,11 +7,15 @@
 ****************************************************/
 package Sirius.server.localserver.method;
 
-import Sirius.server.newuser.permission.*;
+import Sirius.server.newuser.permission.PermissionHolder;
+import Sirius.server.newuser.permission.Policy;
 
-import Sirius.util.*;
+import Sirius.util.Mapable;
 
-import java.util.*;
+import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * DOCUMENT ME!
@@ -24,6 +28,7 @@ public class Method implements java.io.Serializable, Cloneable, Mapable {
 
     /** Use serialVersionUID for interoperability. */
     private static final long serialVersionUID = 6425033203378672306L;
+    private static final transient Logger LOG = Logger.getLogger(Method.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -43,13 +48,11 @@ public class Method implements java.io.Serializable, Cloneable, Mapable {
     boolean o_multiple;
 
     boolean c_multiple;
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
 
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * ----------------------------------------------------------------------------------- public Method(int id){this.id
-     * = id;} //dummy.
+     * Creates a new Method object.
      *
      * @param  id          DOCUMENT ME!
      * @param  plugin_id   DOCUMENT ME!
@@ -71,7 +74,7 @@ public class Method implements java.io.Serializable, Cloneable, Mapable {
             policy = Policy.createParanoidPolicy();
         }
         permissions = new PermissionHolder(policy);
-        description = "";   // NOI18N
+        description = "";             // NOI18N
         this.c_multiple = c_multiple; // beliebig viele klassen beliebig viele Objekte
         this.o_multiple = o_multiple; // 1 klasse mehrer Objekte
     }
@@ -139,7 +142,7 @@ public class Method implements java.io.Serializable, Cloneable, Mapable {
 
     @Override
     public Object getKey() {
-        return method_id + "@" + plugin_id;   // NOI18N
+        return method_id + "@" + plugin_id; // NOI18N
     }
 
     /**
@@ -162,7 +165,7 @@ public class Method implements java.io.Serializable, Cloneable, Mapable {
 
     @Override
     public String toString() {
-        return "Name ::" + getKey() + " id::" + id;   // NOI18N
+        return "Name ::" + getKey() + " id::" + id; // NOI18N
     }
 
     /**
@@ -194,9 +197,9 @@ public class Method implements java.io.Serializable, Cloneable, Mapable {
      * @param  key  DOCUMENT ME!
      */
     public void addClassKey(final String key) {
-        if (logger != null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("add class key" + key + " to method " + this);   // NOI18N
+        if (LOG != null) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("add class key" + key + " to method " + this); // NOI18N
             }
         }
         classKeys.add(key);

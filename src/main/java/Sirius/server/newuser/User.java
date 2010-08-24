@@ -41,13 +41,6 @@ public class User implements java.io.Serializable, Mapable {
 
     //~ Constructors -----------------------------------------------------------
 
-    // /**  Konstruktor fuer Testzwecke, initialisert id = -1, name = default, localServerName = default **/
-    // public User() {
-    // id = -1;
-    // name = "default";
-    // domain = "default";
-    // }
-
     /**
      * Creates a new User object.
      *
@@ -112,8 +105,6 @@ public class User implements java.io.Serializable, Mapable {
         return name;
     }
 
-    // public void changePassword(/*UserServer userServer,*/String oldPassword,String newPassword) throws Exception {}
-
     /**
      * weist dem User eine UserGroup zu und setzt valid = true. Mit isValid() kann abgefragt werden, ob schon eine
      * UserGroup gesetzt wurde *
@@ -149,6 +140,7 @@ public class User implements java.io.Serializable, Mapable {
     public boolean isValid() {
         return valid;
     }
+
     /**
      * hiermit kann abgefragt werden, ob es sich um einen Admin handelt.
      *
@@ -167,7 +159,7 @@ public class User implements java.io.Serializable, Mapable {
     @Override
     public Object getKey() {
         if (userGroup != null) {
-            return name + "@" + userGroup.getKey();   // NOI18N
+            return name + "@" + userGroup.getKey(); // NOI18N
         } else {
             return name + "";
         }
@@ -179,7 +171,7 @@ public class User implements java.io.Serializable, Mapable {
      * @return  DOCUMENT ME!
      */
     public Object getRegistryKey() {
-        return name + "@" + domain;   // NOI18N
+        return name + "@" + domain; // NOI18N
     }
 
     @Override

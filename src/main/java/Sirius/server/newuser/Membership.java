@@ -56,7 +56,7 @@ public class Membership implements Serializable, Mapable {
      */
     @Override
     public String toString() {
-        return login + "/" + userDomain + "/" + ug + "/" + ugDomain;   // NOI18N
+        return login + "/" + userDomain + "/" + ug + "/" + ugDomain; // NOI18N
     }
 
     /**
@@ -164,7 +164,7 @@ public class Membership implements Serializable, Mapable {
      */
     @Override
     public Object getKey() {
-        return login + "@" + userDomain + "€" + ug + "@" + ugDomain;   // NOI18N
+        return login + "@" + userDomain + "€" + ug + "@" + ugDomain; // NOI18N
     }
 
     /**
@@ -173,7 +173,7 @@ public class Membership implements Serializable, Mapable {
      * @return  DOCUMENT ME!
      */
     public Object getUserKey() {
-        return login + "@" + userDomain;   // NOI18N
+        return login + "@" + userDomain; // NOI18N
     }
 
     /**
@@ -182,7 +182,7 @@ public class Membership implements Serializable, Mapable {
      * @return  DOCUMENT ME!
      */
     public Object getUserGroupkey() {
-        return ug + "@" + ugDomain;   // NOI18N
+        return ug + "@" + ugDomain; // NOI18N
     }
 
 // end equals

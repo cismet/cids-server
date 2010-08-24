@@ -1,35 +1,37 @@
 /***************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- *
- *              ... and it just works.
- *
- ****************************************************/
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.server.localserver._class;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Vector;
 
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-public class ClassMap extends java.util.HashMap {
+public class ClassMap extends HashMap {
 
     //~ Static fields/initializers ---------------------------------------------
+
     /** Use serialVersionUID for interoperability. */
     private static final long serialVersionUID = 8694508933671049122L;
 
     //~ Constructors -----------------------------------------------------------
+
     /**
-     * constructor.
+     * Creates a new ClassMap object.
      */
     public ClassMap() {
-        super();
     }
 
     /**
-     * constructor.
+     * Creates a new ClassMap object.
      *
      * @param  capacity  DOCUMENT ME!
      */
@@ -38,7 +40,7 @@ public class ClassMap extends java.util.HashMap {
     }
 
     /**
-     * constructor.
+     * Creates a new ClassMap object.
      *
      * @param  capacity  DOCUMENT ME!
      * @param  factor    DOCUMENT ME!
@@ -48,24 +50,24 @@ public class ClassMap extends java.util.HashMap {
     }
 
     //~ Methods ----------------------------------------------------------------
+
     /**
-     * //////////////////////////////////////////////////
+     * DOCUMENT ME!
      *
      * @param   key    DOCUMENT ME!
      * @param   value  DOCUMENT ME!
      *
-     * @throws  Exception            DOCUMENT ME!
-     * @throws  java.lang.Exception  DOCUMENT ME!
+     * @throws  Exception  java.lang.Exception DOCUMENT ME!
      */
     public void add(final int key, final Class value) throws Exception {
         super.put(key, value);
         if (!super.containsKey(key)) {
-            throw new java.lang.Exception("Couldn't add class ID:" + key);   // NOI18N 
+            throw new Exception("Couldn't add class ID:" + key); // NOI18N
         }
-    } // end add
+    }
 
     /**
-     * /////////////////////////////////////////////////////////////
+     * DOCUMENT ME!
      *
      * @param   key  DOCUMENT ME!
      *
@@ -78,20 +80,14 @@ public class ClassMap extends java.util.HashMap {
         if (super.containsKey(Key)) {
             final java.lang.Object candidate = super.get(Key);
 
-            // if (candidate instanceof Class)
-            return (Class) candidate;
+            return (Class)candidate;
         } else {
             return null;
         }
-        // throw new java.lang.NullPointerException("Entry is not a Class ID :" +key);
-        // }// endif
-
-        // throw new java.lang.NullPointerException("No entry ClassID :"+key); // to be changed in further versions
-        // when exception concept is accomplished
-    } // end getClass
+    }
 
     /**
-     * ///// containsIntKey/////////////////////////////////
+     * DOCUMENT ME!
      *
      * @param   key  DOCUMENT ME!
      *
@@ -109,5 +105,4 @@ public class ClassMap extends java.util.HashMap {
     public Vector getAll() {
         return new Vector(this.values());
     }
-} // end of class ClassMap
-
+}

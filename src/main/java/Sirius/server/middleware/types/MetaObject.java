@@ -239,11 +239,6 @@ public interface MetaObject extends Sirius.server.localserver.object.Object,
 
     /**
      * DOCUMENT ME!
-     */
-    void setLogger();
-
-    /**
-     * DOCUMENT ME!
      *
      * @param  metaClass  DOCUMENT ME!
      */

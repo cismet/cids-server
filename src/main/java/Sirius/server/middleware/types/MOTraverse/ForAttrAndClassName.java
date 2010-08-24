@@ -58,7 +58,7 @@ public class ForAttrAndClassName extends AttrForName {
 /*        String[] ob = (String[])o;
         String objectName = (String)ob[0];*/
         if (logger.isDebugEnabled()) {
-            logger.debug("visitMO: " + mo.getClass().getName() + " / " + o + "/ objectName: " + objectName);   // NOI18N
+            logger.debug("visitMO: " + mo.getClass().getName() + " / " + o + "/ objectName: " + objectName); // NOI18N
         }
 
         final String className = mo.getClass().getName();
@@ -84,7 +84,7 @@ public class ForAttrAndClassName extends AttrForName {
      */
     private Object searchMetaAttribute(final MetaObject mo, final Object o) {
         if (logger.isDebugEnabled()) {
-            logger.debug("searchMetaAttribute: " + mo.getName() + " / " + o);   // NOI18N
+            logger.debug("searchMetaAttribute: " + mo.getName() + " / " + o); // NOI18N
         }
 
         ObjectAttribute[] ret = new ObjectAttribute[0];
@@ -111,7 +111,7 @@ public class ForAttrAndClassName extends AttrForName {
      */
     private Object searchMetaObject(final MetaObject mo, final Object o) {
         if (logger.isDebugEnabled()) {
-            logger.debug("searchMetaObject: " + mo.getName() + " / " + o);   // NOI18N
+            logger.debug("searchMetaObject: " + mo.getName() + " / " + o); // NOI18N
         }
 
         ObjectAttribute[] ret = new ObjectAttribute[0];

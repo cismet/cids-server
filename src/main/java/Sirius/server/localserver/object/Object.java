@@ -5,10 +5,6 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package Sirius.server.localserver.object;
 
 import Sirius.server.localserver.attribute.Attribute;
@@ -128,8 +124,8 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
     java.lang.Object getAttribute(java.lang.Object key);
 
     /**
-     * Method from Hell liefert ein Attribut �ber den Fieldname Es wird davon ausgegangen, dass nur ObjectAttributes im
-     * getAttributes() sind.
+     * Method from Hell liefert ein Attribut �ber den Fieldname Es wird davon ausgegangen, dass nur ObjectAttributes
+     * im getAttributes() sind.
      *
      * @param   fieldname  DOCUMENT ME!
      *

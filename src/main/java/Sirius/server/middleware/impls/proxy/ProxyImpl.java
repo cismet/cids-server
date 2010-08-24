@@ -693,7 +693,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
         }
         try {
             final RemoteObservable server = (RemoteObservable)Naming.lookup(
-                    "rmi://"//NOI18N
+                    "rmi://"                                                  // NOI18N
                             + siriusRegistryIP
                             + "/nameServer");                                 // NOI18N
             server.addObserver(this);
@@ -721,12 +721,12 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     void unregisterAsObserver(final String siriusRegistryIP) {
         try {
             final RemoteObservable server = (RemoteObservable)Naming.lookup(
-                    "rmi://"//NOI18N
+                    "rmi://" // NOI18N
                             + siriusRegistryIP
-                            + "/nameServer");                          // NOI18N
+                            + "/nameServer"); // NOI18N
             server.deleteObserver(this);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Info <CS> removed as observer: " + this);   // NOI18N
+                LOG.debug("Info <CS> removed as observer: " + this); // NOI18N
             }
         } catch (Exception e) {
             LOG.error("could not unregister as observer: " + this, e); // NOI18N

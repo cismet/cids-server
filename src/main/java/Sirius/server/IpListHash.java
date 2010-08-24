@@ -6,7 +6,9 @@
 *
 ****************************************************/
 package Sirius.server;
-import java.util.*;
+
+import java.util.HashMap;
+import java.util.Hashtable;
 
 /**
  * DOCUMENT ME!
@@ -57,8 +59,9 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
      * -------------------------------------------------------------------------
      */
     private void init() {
+        // FIXME: very nasty workaround!!!
         // debug make sure class is loaded xxx
-        new ServerType("", 1);  // NOI18N
+        new ServerType("", 1); // NOI18N
 
         final int[] types = ServerType.getAllServerTypes();
 
@@ -85,7 +88,7 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
             throws Exception {
         // vorsicht xxx ip port werden ueberschrieben
         if (!contains(serverTyp, name, ip, port)) {
-            getServerIPs(serverTyp).put(name, ip + ":" + port);  // NOI18N
+            getServerIPs(serverTyp).put(name, ip + ":" + port); // NOI18N
             return true;
         } else {
             return false;
@@ -109,7 +112,7 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
         final HashMap<String, String> sms = getServerIPs(serverTyp);
 
         if (sms.containsKey(name)) {
-            if (sms.get(name).equals(ip + ":" + port)) {  // NOI18N
+            if (sms.get(name).equals(ip + ":" + port)) { // NOI18N
                 return true;
             }
         }
@@ -130,8 +133,6 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
         return contains(server.getType(), server.getName(), server.getIP(), server.getPort());
     }
 
-    // -------------------------------------------------------------------------
-
     /**
      * Lievert zu einem definierten Servertyp alle Serverips in einer Datenstruktur StringMapsString.
      *
@@ -144,8 +145,6 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
     public HashMap<String, String> getServerIPs(final int serverTyp) throws Exception {
         return get(serverTyp);
     }
-
-    // -------------------------------------------------------------------------
 
     /**
      * liefert die IP eines Servers.
@@ -164,7 +163,7 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
     }
 
     /**
-     * -------------------------------------------------------------------------
+     * DOCUMENT ME!
      *
      * @param   serverTyp  DOCUMENT ME!
      * @param   name       DOCUMENT ME!
@@ -188,7 +187,7 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
     }
 
     /**
-     * ------------------------------------------------------------------------------------
+     * DOCUMENT ME!
      *
      * @param   serverTyp  DOCUMENT ME!
      *
@@ -203,7 +202,4 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
             return false;
         }
     }
-
-//-------------------------------------------------------------------------
-
 }

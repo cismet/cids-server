@@ -11,8 +11,6 @@ import Sirius.server.newuser.User;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.sql.DBConnectionPool;
 
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -22,6 +20,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.Properties;
 
 import static org.junit.Assert.*;
 
@@ -61,14 +61,14 @@ public class UserStoreTest {
         props = new ServerProperties(
                 UserStoreTest.class.getResourceAsStream(
                     "/Sirius/server/localserver/object/" // NOI18N
-                    + "runtime.properties"));            // NOI18N
+                            + "runtime.properties"));    // NOI18N
         pool = new DBConnectionPool(props);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @throws  Exception  DOCUMENT ME!
+     * @throws  Throwable  Exception DOCUMENT ME!
      */
     @AfterClass
     public static void tearDownClass() throws Throwable {

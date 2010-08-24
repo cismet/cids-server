@@ -7,7 +7,7 @@
 ****************************************************/
 package Sirius.server.sql;
 
-import java.sql.*;
+import org.apache.log4j.Logger;
 
 /**
  * DOCUMENT ME!
@@ -18,30 +18,26 @@ public class QueryParametrizer {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(
-            QueryParametrizer.class);
+    private static final transient Logger LOG = Logger.getLogger(QueryParametrizer.class);
 
     //~ Methods ----------------------------------------------------------------
 
     /**
      * Hauptfunktionalit\u00E4t der Klasse Parametrizer siehe Klassenbeschreibung.<BR>
      *
-     * @param     statement   java.lang.String statement
-     * @param     parameters  java.lang.Object[] parameters
+     * @param   statement   java.lang.String statement
+     * @param   parameters  java.lang.Object[] parameters
      *
-     * @return    DOCUMENT ME!
+     * @return  DOCUMENT ME!
      *
-     * @throws    java.lang.Exception  DOCUMENT ME!
-     *
-     * @exeption  java.lang.Exception
+     * @throws  Exception  java.lang.Exception DOCUMENT ME!
      */
-
-    public static final String parametrize(String statement, final java.lang.Object[] parameters)
-            throws java.lang.Exception {
+    // FIXME: The statement parameter is modified!
+    public static String parametrize(String statement, final Object[] parameters) throws Exception {
         if (statement != null) {
             statement = statement.trim();
         } else {
-            logger.error("Stmnt in parametrizer NUll");//NOI18N
+            LOG.error("Stmnt in parametrizer NUll"); // NOI18N
         }
 
         // nothing to parametrize
@@ -49,7 +45,7 @@ public class QueryParametrizer {
             return statement;
         }
 
-        String parametrizedStmnt = "";//NOI18N
+        String parametrizedStmnt = ""; // NOI18N
 
         final char chr = '?';
 
@@ -70,24 +66,10 @@ public class QueryParametrizer {
         }
 
         parametrizedStmnt += statement.substring(start, statement.length()); // rest after last '?'
-        if (logger.isDebugEnabled()) {
-            logger.debug("INFO Stment :  " + parametrizedStmnt);//NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("INFO Stment :  " + parametrizedStmnt);                // NOI18N
         }
 
         return parametrizedStmnt;
-    } // end parametrize()
-
-// ---------------------------------------
-
-/*
-
-
-public static void main(String[] args) throws Exception
-{
-    Object[] param = {"altlasten","5"};
-   System.out.println( parametrize("select * from ? where id = ? and emil = 34",param ) );
-
+    }
 }
-*/
-
-} // end class

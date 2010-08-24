@@ -98,7 +98,7 @@ public class Permission implements java.io.Serializable {
 
     @Override
     public String toString() {
-        return "ID " + id + " KEY " + key;   // NOI18N
+        return "ID " + id + " KEY " + key; // NOI18N
     }
 
     /**
@@ -107,6 +107,6 @@ public class Permission implements java.io.Serializable {
      * @return  DOCUMENT ME!
      */
     public String toSQL() {
-        return "insert into cs_permission values (" + id + ", " + key + ")";   // NOI18N
+        return "insert into cs_permission values (" + id + ", " + key + ")"; // NOI18N
     }
 }

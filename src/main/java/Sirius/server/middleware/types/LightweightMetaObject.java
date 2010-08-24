@@ -40,7 +40,10 @@ import de.cismet.cids.tools.fromstring.FromStringCreator;
  */
 public final class LightweightMetaObject implements MetaObject, Comparable<LightweightMetaObject> {
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -184563987179817455L;
 
     // <editor-fold defaultstate="collapsed" desc="delegation-only methods">
     @Override
@@ -161,11 +164,6 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     @Override
     public void setEditor(final String editor) {
         getRealMetaObject().setEditor(editor);
-    }
-
-    @Override
-    public void setLogger() {
-        getRealMetaObject().setLogger();
     }
 
     @Override
@@ -562,7 +560,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
             formater.setAttributes(attributesMap);
             representation = formater.getRepresentation();
         } else {
-            representation = "FORMATER IS NULL! (cID=" + classID + ", oID=" + objectID + ")";   // NOI18N
+            representation = "FORMATER IS NULL! (cID=" + classID + ", oID=" + objectID + ")"; // NOI18N
         }
     }
 
@@ -597,8 +595,9 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     private MetaObject fetchRealMetaObject() throws Exception {
         if (metaService == null) {
             throw new IllegalStateException(
-                "Can not retrieve MetaObject, as Metaservice for LightweightMetaObject \"" + toString()   // NOI18N
-                + "\" is null!");   // NOI18N
+                "Can not retrieve MetaObject, as Metaservice for LightweightMetaObject \""
+                        + toString() // NOI18N
+                        + "\" is null!"); // NOI18N
         }
         return metaService.getMetaObject(getUser(), getObjectID(), getClassID(), getUser().getDomain());
     }
@@ -667,7 +666,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public int compareTo(final LightweightMetaObject o) {
-        return representation.compareTo(o + "");   // NOI18N
+        return representation.compareTo(o + ""); // NOI18N
     }
 
     /**
@@ -741,6 +740,6 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
 
     @Override
     public String getClassKey() {
-        return classID + "@" + getUser().getDomain();   // NOI18N
+        return classID + "@" + getUser().getDomain(); // NOI18N
     }
 }

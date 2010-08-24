@@ -53,8 +53,8 @@ public class RMDummy implements RMessenger {
         try {
             reg = LocateRegistry.createRegistry(9001);
             final RMessenger rm = (RMessenger)UnicastRemoteObject.exportObject(this);
-            reg.rebind("sebastian@altlasten@WUNDA_BLAU_RMPlugin", rm);//NOI18N
-            System.out.println("sebastian@altlasten@WUNDA_BLAU_RMPlugin gebunden");//NOI18N
+            reg.rebind("sebastian@altlasten@WUNDA_BLAU_RMPlugin", rm);              // NOI18N
+            System.out.println("sebastian@altlasten@WUNDA_BLAU_RMPlugin gebunden"); // NOI18N
         } catch (RemoteException ex) {
             ex.printStackTrace();
         }
@@ -71,7 +71,7 @@ public class RMDummy implements RMessenger {
             reg = LocateRegistry.getRegistry(9001);
             final RMessenger rm = (RMessenger)UnicastRemoteObject.exportObject(this);
             reg.rebind(name, rm);
-            System.out.println(name + " gebunden");//NOI18N
+            System.out.println(name + " gebunden"); // NOI18N
         } catch (RemoteException ex) {
             ex.printStackTrace();
         }
@@ -82,8 +82,8 @@ public class RMDummy implements RMessenger {
      */
     public void shutdown() {
         try {
-            reg.unbind("sebastian@altlasten@WUNDA_BLAU_RMPlugin");//NOI18N
-            System.out.println("sebastian@altlasten@WUNDA_BLAU_RMPlugin ungebunden");//NOI18N
+            reg.unbind("sebastian@altlasten@WUNDA_BLAU_RMPlugin");                    // NOI18N
+            System.out.println("sebastian@altlasten@WUNDA_BLAU_RMPlugin ungebunden"); // NOI18N
         } catch (RemoteException ex) {
             ex.printStackTrace();
         } catch (NotBoundException ex) {
@@ -99,7 +99,7 @@ public class RMDummy implements RMessenger {
     public void shutdown(final String name) {
         try {
             reg.unbind(name);
-            System.out.println(name + " ungebunden");//NOI18N
+            System.out.println(name + " ungebunden"); // NOI18N
         } catch (RemoteException ex) {
             ex.printStackTrace();
         } catch (NotBoundException ex) {
@@ -109,7 +109,7 @@ public class RMDummy implements RMessenger {
 
     @Override
     public void sendMessage(final String message, final String title) throws RemoteException {
-        System.out.println("Message received Title: " + title + " Message: " + message);//NOI18N
+        System.out.println("Message received Title: " + title + " Message: " + message); // NOI18N
     }
 
     @Override

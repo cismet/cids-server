@@ -46,14 +46,14 @@ public class AdressStringConverter extends ToStringConverter implements java.io.
     public String convert(final de.cismet.cids.tools.tostring.StringConvertable o) {
         final MetaObject mo = (MetaObject)o;
 
-        String stringRepresentation = "";//NOI18N
+        String stringRepresentation = ""; // NOI18N
 
         final ObjectAttribute[] attrs = mo.getAttribs();
 
         for (int i = 0; i < attrs.length; i++) {
             // besser getAttributeByname
-            if (attrs[i].getName().equalsIgnoreCase("strasse") || attrs[i].getName().equalsIgnoreCase("hausnummer")) {//NOI18N
-                stringRepresentation += (attrs[i].toString() + " ");//NOI18N
+            if (attrs[i].getName().equalsIgnoreCase("strasse") || attrs[i].getName().equalsIgnoreCase("hausnummer")) { // NOI18N
+                stringRepresentation += (attrs[i].toString() + " ");                                                   // NOI18N
             }
 
 //            else //surpress

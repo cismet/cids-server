@@ -63,7 +63,7 @@ public class PropertyChecker {
             final Object nextElement = enSample.nextElement();
 
             if (!checkKeys.contains(nextElement)) {
-                final String error = "key not found in config file " + nextElement;//NOI18N
+                final String error = "key not found in config file " + nextElement; // NOI18N
                 logger.error(error);
                 System.err.println(error);
 

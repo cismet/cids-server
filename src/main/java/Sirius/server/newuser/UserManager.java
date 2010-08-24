@@ -5,15 +5,17 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * UserManager.java
- *
- * Created on 14. M\u00E4rz 2005, 12:20
- */
 package Sirius.server.newuser;
-import java.util.*;
 
-import de.cismet.tools.collections.*;
+import Sirius.util.collections.MultiMap;
+
+import org.apache.log4j.Logger;
+
+import java.rmi.RemoteException;
+
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Vector;
 
 /**
  * DOCUMENT ME!
@@ -21,7 +23,11 @@ import de.cismet.tools.collections.*;
  * @author   schlob
  * @version  $Revision$, $Date$
  */
-public class UserManager implements Sirius.server.newuser.UserServer {
+public class UserManager implements UserServer {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final transient Logger LOG = Logger.getLogger(UserManager.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -30,12 +36,11 @@ public class UserManager implements Sirius.server.newuser.UserServer {
     protected Hashtable ugs;
 
     protected MultiMap memberships;
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
 
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Creates a new instance of UserManager.
+     * Creates a new UserManager object.
      */
     public UserManager() {
         this.users = new Hashtable();
@@ -52,8 +57,8 @@ public class UserManager implements Sirius.server.newuser.UserServer {
             final String user,
             final String password) throws java.rmi.RemoteException, UserException {
         final User u = (User)users.get(constructKey(user, userDomain));
-        if (logger.isDebugEnabled()) {
-            logger.debug("user found :: " + u + " for " + user + "@" + userDomain + " :: users available " + users); // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("user found :: " + u + " for " + user + "@" + userDomain + " :: users available " + users); // NOI18N
         }
 
         // check ob membership
@@ -121,41 +126,41 @@ public class UserManager implements Sirius.server.newuser.UserServer {
     }
 
     @Override
-    public java.util.Vector getUserGroupNames(final User user) throws java.rmi.RemoteException {
-        if (user == null) { // throw new java.rmi.RemoteException("UserException::no Usergroup for ::"+userName + "
-                            // -- "+domain);
-            if (logger != null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("no  user " + user);   // NOI18N
+    public Vector getUserGroupNames(final User user) throws RemoteException {
+        if (user == null) {
+            if (LOG != null) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("no  user " + user); // NOI18N
                 }
             }
+
             return new Vector(0);
         }
+
         return getUserGroupNames(user.getName(), user.getDomain());
     }
 
     @Override
-    public java.util.Vector getUserGroupNames(final String userName, final String domain)
-            throws java.rmi.RemoteException {
-        if ((userName == null) || (domain == null)) { // throw new java.rmi.RemoteException("UserException::no
-                                                      // Usergroup for ::"+userName + " -- "+domain);
-            if (logger != null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("no  user " + userName + "or no domain " + domain);   // NOI18N
+    public Vector getUserGroupNames(final String userName, final String domain) throws java.rmi.RemoteException {
+        if ((userName == null) || (domain == null)) {
+            if (LOG != null) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("no  user " + userName + "or no domain " + domain); // NOI18N
                 }
             }
+
             return new Vector(0);
         }
 
         final List l = (List)memberships.get(constructKey(userName, domain));
 
-        if (l == null) { // throw new java.rmi.RemoteException("UserException::no Usergroup for ::"+userName + " --
-                         // "+domain);
-            if (logger != null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("no usergroup for user " + userName);   // NOI18N
+        if (l == null) {
+            if (LOG != null) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("no usergroup for user " + userName); // NOI18N
                 }
             }
+
             return new Vector(0);
         }
 
@@ -181,83 +186,83 @@ public class UserManager implements Sirius.server.newuser.UserServer {
     }
 
     @Override
-    public java.util.Vector getUserGroups() throws java.rmi.RemoteException {
+    public Vector getUserGroups() throws RemoteException {
         return new Vector(ugs.values());
     }
 
     @Override
-    public java.util.Vector getUsers() throws java.rmi.RemoteException {
+    public Vector getUsers() throws RemoteException {
         return new Vector(users.values());
     }
 
     @Override
-    public void registerUser(final User user) throws java.rmi.RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("register user " + user);   // NOI18N
+    public void registerUser(final User user) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("register user " + user); // NOI18N
         }
         users.put(user.getRegistryKey(), user);
     }
 
     @Override
-    public void registerUserGroup(final UserGroup userGroup) throws java.rmi.RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("register userGroup " + userGroup);   // NOI18N
+    public void registerUserGroup(final UserGroup userGroup) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("register userGroup " + userGroup); // NOI18N
         }
         ugs.put(userGroup.getKey(), userGroup);
     }
 
     @Override
-    public void registerUserGroups(final java.util.Vector userGroups) throws java.rmi.RemoteException {
+    public void registerUserGroups(final Vector userGroups) throws RemoteException {
         for (int i = 0; i < userGroups.size(); i++) {
             registerUserGroup((UserGroup)userGroups.get(i));
         }
     }
 
     @Override
-    public boolean registerUserMembership(final Membership membership) throws java.rmi.RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("register Membership " + membership);   // NOI18N
+    public boolean registerUserMembership(final Membership membership) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("register Membership " + membership); // NOI18N
         }
         memberships.put(membership.getUserKey(), membership);
-        return true; // unsinn
+        return true;                                        // unsinn
     }
 
     @Override
-    public void registerUserMemberships(final java.util.Vector memberships) throws java.rmi.RemoteException {
+    public void registerUserMemberships(final Vector memberships) throws RemoteException {
         for (int i = 0; i < memberships.size(); i++) {
             registerUserMembership((Membership)memberships.get(i));
         }
     }
 
     @Override
-    public void registerUsers(final java.util.Vector users) throws java.rmi.RemoteException {
+    public void registerUsers(final Vector users) throws RemoteException {
         for (int i = 0; i < users.size(); i++) {
             registerUser((User)users.get(i));
         }
     }
 
     @Override
-    public void unregisterUser(final User user) throws java.rmi.RemoteException {
+    public void unregisterUser(final User user) throws RemoteException {
         this.users.remove(user.getRegistryKey());
 
         memberships.remove(user.getRegistryKey());
     }
 
     @Override
-    public void unregisterUserGroup(final UserGroup userGroup) throws java.rmi.RemoteException {
+    public void unregisterUserGroup(final UserGroup userGroup) throws RemoteException {
         this.ugs.remove(userGroup.getKey());
         // memberships
     }
 
     @Override
-    public void unregisterUserGroups(final java.util.Vector userGroups) throws java.rmi.RemoteException {
+    public void unregisterUserGroups(final Vector userGroups) throws RemoteException {
         for (int i = 0; i < userGroups.size(); i++) {
             unregisterUserGroup((UserGroup)userGroups.get(i));
         }
     }
 
     @Override
-    public void unregisterUsers(final java.util.Vector users) throws java.rmi.RemoteException {
+    public void unregisterUsers(final java.util.Vector users) throws RemoteException {
         for (int i = 0; i < users.size(); i++) {
             unregisterUser((User)users.get(i));
         }
@@ -275,24 +280,7 @@ public class UserManager implements Sirius.server.newuser.UserServer {
         if ((first == null) || (second == null)) {
             return null;
         } else {
-            return first + "@" + second;   // NOI18N
+            return first + "@" + second; // NOI18N
         }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   s  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private String constructKey(final String[] s) {
-        String result = s[0];
-
-        for (int i = 1; i < s.length; i++) {
-            result += s[i];
-        }
-
-        return result;
     }
 }

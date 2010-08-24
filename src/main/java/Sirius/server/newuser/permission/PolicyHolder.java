@@ -60,32 +60,32 @@ public class PolicyHolder extends Shutdown implements Serializable {
             final ResultSet serverPolicies = con.getConnection()
                         .createStatement()
                         .executeQuery(
-                            "SELECT "   // NOI18N
-                            + "cs_policy.id as policyid, "   // NOI18N
-                            + "cs_policy.name,"   // NOI18N
-                            + "cs_permission.id as permissionid,"   // NOI18N
-                            + "cs_permission.key,"   // NOI18N
-                            + "default_value "   // NOI18N
-                            + "FROM "   // NOI18N
-                            + "cs_permission,"   // NOI18N
-                            + "cs_policy,"   // NOI18N
-                            + "cs_policy_rule "   // NOI18N
-                            + "WHERE "   // NOI18N
-                            + "cs_policy_rule.permission= cs_permission.id "   // NOI18N
+                            "SELECT "                                        // NOI18N
+                            + "cs_policy.id as policyid, "                   // NOI18N
+                            + "cs_policy.name,"                              // NOI18N
+                            + "cs_permission.id as permissionid,"            // NOI18N
+                            + "cs_permission.key,"                           // NOI18N
+                            + "default_value "                               // NOI18N
+                            + "FROM "                                        // NOI18N
+                            + "cs_permission,"                               // NOI18N
+                            + "cs_policy,"                                   // NOI18N
+                            + "cs_policy_rule "                              // NOI18N
+                            + "WHERE "                                       // NOI18N
+                            + "cs_policy_rule.permission= cs_permission.id " // NOI18N
                             + "and cs_policy_rule.policy= cs_policy.id ");   // NOI18N
             if (serverPolicies == null) {
                 log.error(
-                    "<LS> ERROR :: Serverpolicies could not be loaded. Fatal Error. Program exits");   // NOI18N
+                    "<LS> ERROR :: Serverpolicies could not be loaded. Fatal Error. Program exits"); // NOI18N
                 throw new ServerExitError(
-                    "Serverpolicies could not be loaded. Fatal Error. Program exits");   // NOI18N
+                    "Serverpolicies could not be loaded. Fatal Error. Program exits"); // NOI18N
             }
 
             while (serverPolicies.next()) {
-                final String policyName = serverPolicies.getString("name");//NOI18N
-                final int policyId = serverPolicies.getInt("policyid");//NOI18N
-                final int permId = serverPolicies.getInt("permissionid");//NOI18N
-                final String permissionKey = serverPolicies.getString("key");//NOI18N
-                final boolean defaultvalue = serverPolicies.getBoolean("default_value");//NOI18N
+                final String policyName = serverPolicies.getString("name");              // NOI18N
+                final int policyId = serverPolicies.getInt("policyid");                  // NOI18N
+                final int permId = serverPolicies.getInt("permissionid");                // NOI18N
+                final String permissionKey = serverPolicies.getString("key");            // NOI18N
+                final boolean defaultvalue = serverPolicies.getBoolean("default_value"); // NOI18N
                 final Permission p = new Permission(permId, permissionKey);
                 if (!policyHolder.containsKey(policyName)) {
                     final HashMap<Permission, Boolean> policyMap = new HashMap<Permission, Boolean>();
@@ -96,7 +96,7 @@ public class PolicyHolder extends Shutdown implements Serializable {
                 idReverseMapper.put(policyName, policyId);
             }
 
-            log.info("Serverpolicies: " + policyHolder);   // NOI18N
+            log.info("Serverpolicies: " + policyHolder); // NOI18N
 
             addShutdown(new Shutdownable() {
 
@@ -109,8 +109,8 @@ public class PolicyHolder extends Shutdown implements Serializable {
                 });
         } catch (Exception e) {
             // Safetyfirst
-            log.error("Error while analysing server policies", e);   // NOI18N
-            throw new ServerExitError("Error while analysing server policies", e);   // NOI18N
+            log.error("Error while analysing server policies", e);                 // NOI18N
+            throw new ServerExitError("Error while analysing server policies", e); // NOI18N
         }
     }
 

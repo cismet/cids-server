@@ -7,14 +7,14 @@
 ****************************************************/
 package Sirius.server;
 
-import java.util.Hashtable;
+import java.io.Serializable;
 
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-public class Server implements java.io.Serializable {
+public class Server implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -40,10 +40,10 @@ public class Server implements java.io.Serializable {
      * StandardKonstruktor, setzt name = default, ip = 127.0.0.1, port 1099.*
      */
     public Server() {
-        name = "default";  // NOI18N
-        ip = "127.0.0.1";  // NOI18N
-        rmiPort = "1099";  // NOI18N
-        port = "1099";     // NOI18N
+        name = "default"; // NOI18N
+        ip = "127.0.0.1"; // NOI18N
+        rmiPort = "1099"; // NOI18N
+        port = "1099";    // NOI18N
         type = ServerType.NOT_PREDEFINED;
     }
 
@@ -58,7 +58,7 @@ public class Server implements java.io.Serializable {
         this.name = name;
         this.ip = ip;
         this.port = port;
-        this.rmiPort = "1099";  // NOI18N
+        this.rmiPort = "1099"; // NOI18N
         this.type = ServerType.NOT_PREDEFINED;
     }
 
@@ -76,7 +76,7 @@ public class Server implements java.io.Serializable {
         this.name = name;
         this.ip = ip;
         this.rmiPort = rmiPort;
-        port = "1099";  // NOI18N
+        port = "1099"; // NOI18N
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -114,7 +114,7 @@ public class Server implements java.io.Serializable {
      * @return  DOCUMENT ME!
      */
     public String getAddress() {
-        return (ip + ":" + port);  // NOI18N
+        return (ip + ":" + port); // NOI18N
     }
 
     /**
@@ -141,12 +141,12 @@ public class Server implements java.io.Serializable {
      * @return  DOCUMENT ME!
      */
     public String getRMIAddress() {
-        return "rmi://" + ip + ":" + rmiPort + "/" + type + "/" + name;  // NOI18N
+        return "rmi://" + ip + ":" + rmiPort + "/" + type + "/" + name; // NOI18N
     }
 
     @Override
     public String toString() {
-        return (type + ":" + name + ":" + ip + ":" + port);  // NOI18N
+        return (type + ":" + name + ":" + ip + ":" + port); // NOI18N
     }
 
     /**
@@ -173,6 +173,6 @@ public class Server implements java.io.Serializable {
      * @return  DOCUMENT ME!
      */
     public String getBindString() {
-        return type + "/" + name;  // NOI18N
+        return type + "/" + name; // NOI18N
     }
 }

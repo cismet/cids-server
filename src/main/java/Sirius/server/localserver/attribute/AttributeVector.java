@@ -7,15 +7,17 @@
 ****************************************************/
 package Sirius.server.localserver.attribute;
 
-import java.util.*;
+import java.io.Serializable;
+
+import java.util.Collection;
 import java.util.Vector;
 
 /**
- * //////// Class AttributeVector//////////////////////////////////////.
+ * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-public class AttributeVector extends java.util.Vector implements java.io.Serializable {
+public class AttributeVector extends Vector implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -25,11 +27,12 @@ public class AttributeVector extends java.util.Vector implements java.io.Seriali
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * constructors.
+     * Creates a new AttributeVector object.
      */
     public AttributeVector() {
         super();
     }
+
     /**
      * Creates a new AttributeVector object.
      *
@@ -38,6 +41,7 @@ public class AttributeVector extends java.util.Vector implements java.io.Seriali
     public AttributeVector(final int initialCapacity) {
         super(initialCapacity);
     }
+
     /**
      * Creates a new AttributeVector object.
      *
@@ -46,6 +50,7 @@ public class AttributeVector extends java.util.Vector implements java.io.Seriali
     public AttributeVector(final Collection c) {
         super(c);
     }
+
     /**
      * Creates a new AttributeVector object.
      *
@@ -59,37 +64,41 @@ public class AttributeVector extends java.util.Vector implements java.io.Seriali
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * //////////////////methods/////////////////////////////////////////
+     * DOCUMENT ME!
      *
      * @param   index  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  Exception                            DOCUMENT ME!
-     * @throws  java.lang.NullPointerException       DOCUMENT ME!
-     * @throws  java.lang.IndexOutOfBoundsException  DOCUMENT ME!
+     * @throws  Exception                  DOCUMENT ME!
+     * @throws  NullPointerException       DOCUMENT ME!
+     * @throws  IndexOutOfBoundsException  DOCUMENT ME!
      */
+    // FIXME: impl bad
     public Attribute at(final int index) throws Exception {
         if (size() > index) {
             final java.lang.Object attrib = super.get(index);
             if (attrib instanceof Attribute) {
                 return (Attribute)attrib;
             }
-            throw new java.lang.NullPointerException();
+
+            throw new NullPointerException();
         }
-        throw new java.lang.IndexOutOfBoundsException();
+
+        throw new IndexOutOfBoundsException();
     }
+
     /**
-     * /////// converts to LinkArray/////////////////////
+     * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
     public Attribute[] convertToArray() {
         return (Attribute[])toArray(new Attribute[size()]);
-    } // end of convertToArray
+    }
 
     @Override
-    public java.lang.Object clone() {
+    public Object clone() {
         return new AttributeVector((Vector)super.clone());
     }
-} // end of class AttributeVector
+}

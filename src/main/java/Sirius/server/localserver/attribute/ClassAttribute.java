@@ -23,20 +23,14 @@ public class ClassAttribute extends Attribute implements java.io.Serializable {
 
     //~ Instance fields --------------------------------------------------------
 
-/////////////////members//////////////////////////////////////////
-
     protected int classID;
 
     protected int typeID;
 
-//protected String fieldName;
-
-//protected int foreignKeyClassID;
-
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * /////////////constructor///////////////////////////////////////
+     * Creates a new ClassAttribute object.
      *
      * @param  id       DOCUMENT ME!
      * @param  classID  DOCUMENT ME!
@@ -49,7 +43,7 @@ public class ClassAttribute extends Attribute implements java.io.Serializable {
             final String name,
             final int typeID,
             final Policy policy) {
-        super(id, name, "", policy);   // NOI18N 
+        super(id, name, "", policy); // NOI18N
         this.classID = classID;
         super.visible = true;
         this.typeID = typeID;
@@ -58,46 +52,13 @@ public class ClassAttribute extends Attribute implements java.io.Serializable {
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * ///////////////////////methods///////////////////////////////////
+     * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
     public final int getClassID() {
         return classID;
     }
-
-    /**
-     * Getter for property fieldName.
-     *
-     * @return  Value of property fieldName.
-     */
-// public final java.lang.String getFieldName() {
-// return fieldName;
-// }
-//
-///** Setter for property fieldName.
-// * @param fieldName New value of property fieldName.
-// *
-// */
-//public final void setFieldName(java.lang.String fieldName) {
-//    this.fieldName = fieldName;
-//}
-//
-///** Getter for property foreignKeyClassID.
-// * @return Value of property foreignKeyClassID.
-// *
-// */
-//public final int getForeignKeyClassID() {
-//    return foreignKeyClassID;
-//}
-//
-///** Setter for property foreignKeyClassID.
-// * @param foreignKeyClassID New value of property foreignKeyClassID.
-// *
-// */
-//public final void setForeignKeyClassID(int foreignKeyClassID) {
-//    this.foreignKeyClassID = foreignKeyClassID;
-//}
 
     /**
      * Getter for property typeID.

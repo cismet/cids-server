@@ -133,7 +133,7 @@ public class SearchResult implements java.io.Serializable {
             return (MetaObjectNode[])((Collection)this.data).toArray(
                     new MetaObjectNode[((Collection)this.data).size()]);
         } else {
-            throw new Exception("SearchResult.data no Node[]");//NOI18N
+            throw new Exception("SearchResult.data no Node[]"); // NOI18N
         }
     }
 
@@ -148,7 +148,7 @@ public class SearchResult implements java.io.Serializable {
         if (isObject()) {
             return (MetaObject[])data;
         } else {
-            throw new Exception("SearchResult.data no MetaObject[]");//NOI18N
+            throw new Exception("SearchResult.data no MetaObject[]"); // NOI18N
         }
     }
 
@@ -163,7 +163,7 @@ public class SearchResult implements java.io.Serializable {
         if (isSearchParameter()) {
             return data;
         } else {
-            throw new Exception("SearchResult.data no SearchParameter");//NOI18N
+            throw new Exception("SearchResult.data no SearchParameter"); // NOI18N
         }
     }
 
@@ -185,7 +185,7 @@ public class SearchResult implements java.io.Serializable {
      */
     public void addAll(final Sirius.server.middleware.types.MetaObjectNode[] nodes) throws Exception {
         if (logger.isDebugEnabled()) {
-            logger.debug("addAll nodes invoked");//NOI18N
+            logger.debug("addAll nodes invoked"); // NOI18N
         }
 
         final HashSet result = new HashSet(nodes.length);
@@ -195,7 +195,7 @@ public class SearchResult implements java.io.Serializable {
             result.add(nodes[i]);
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("newly added:" + result + " retainer :" + retainer + " already in:" + ((HashSet)data));//NOI18N
+            logger.debug("newly added:" + result + " retainer :" + retainer + " already in:" + ((HashSet)data)); // NOI18N
         }
 
         ((HashSet)data).addAll(result);
@@ -221,7 +221,7 @@ public class SearchResult implements java.io.Serializable {
             addAll(sr.getNodes());
         } else if (sr.isSearchParameter()) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Info :: no merging of search parameters, overwrite data");//NOI18N
+                logger.debug("Info :: no merging of search parameters, overwrite data"); // NOI18N
             }
             this.data = sr.data;
         }
@@ -236,7 +236,7 @@ public class SearchResult implements java.io.Serializable {
      */
     public void addAllAndFilter(final Sirius.server.middleware.types.MetaObjectNode[] nodes) throws Exception {
         if (logger.isDebugEnabled()) {
-            logger.debug("addAllandfilter nodes invoked");//NOI18N
+            logger.debug("addAllandfilter nodes invoked"); // NOI18N
         }
         // no filtering necessary
         if (!filterSet) {
@@ -252,8 +252,10 @@ public class SearchResult implements java.io.Serializable {
                 } else {
                     if (logger != null) {
                         logger.error(
-                            "tried to add a node that was no node:-) type:" + nodes[i].getClass()//NOI18N
-                            + "\n node contains" + nodes[i]);//NOI18N
+                            "tried to add a node that was no node:-) type:"
+                                    + nodes[i].getClass() // NOI18N
+                                    + "\n node contains"
+                                    + nodes[i]);          // NOI18N
                     }
                     // element auslassen n\u00E4chstes probieren
                     continue;
@@ -384,7 +386,7 @@ public class SearchResult implements java.io.Serializable {
      */
     public static HashSet intersect(final HashSet a, final HashSet b) {
         if (logger.isDebugEnabled()) {
-            logger.debug("intersect \na " + a + "\nb" + b);//NOI18N
+            logger.debug("intersect \na " + a + "\nb" + b); // NOI18N
         }
 
         final HashSet c = new HashSet();
@@ -394,15 +396,15 @@ public class SearchResult implements java.io.Serializable {
         while (iter.hasNext()) {
             final Object o = iter.next();
             if (logger.isDebugEnabled()) {
-                logger.debug("check whether element of a is in b" + o);//NOI18N
+                logger.debug("check whether element of a is in b" + o);        // NOI18N
             }
             if (b.contains(o)) {
                 c.add(o);
                 if (logger.isDebugEnabled()) {
-                    logger.debug("mutual element added to c" + o);//NOI18N
+                    logger.debug("mutual element added to c" + o);             // NOI18N
                 }
             } else if (logger.isDebugEnabled()) {
-                logger.debug("element  not added to c as it is not in b" + o);//NOI18N
+                logger.debug("element  not added to c as it is not in b" + o); // NOI18N
             }
         }
 

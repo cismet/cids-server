@@ -7,10 +7,15 @@
 ****************************************************/
 package Sirius.server.localserver.attribute;
 
-import Sirius.server.middleware.types.*;
-import Sirius.server.newuser.permission.*;
+import Sirius.server.middleware.types.MetaObject;
+import Sirius.server.newuser.permission.PermissionHolder;
+import Sirius.server.newuser.permission.Policy;
 
-import Sirius.util.*;
+import Sirius.util.Mapable;
+
+import org.apache.log4j.Logger;
+
+import java.io.Serializable;
 
 import de.cismet.cids.tools.tostring.StringConvertable;
 import de.cismet.cids.tools.tostring.ToStringConverter;
@@ -20,7 +25,11 @@ import de.cismet.cids.tools.tostring.ToStringConverter;
  *
  * @version  $Revision$, $Date$
  */
-public abstract class Attribute implements Mapable, java.io.Serializable, StringConvertable {
+public abstract class Attribute implements Mapable, Serializable, StringConvertable {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final transient Logger LOG = Logger.getLogger(Attribute.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -63,8 +72,6 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
     // protected String defaultValue="";
 
     protected boolean optional = false;
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
-    /////////////////members////////////////////////////////
 
     //~ Constructors -----------------------------------------------------------
 
@@ -75,15 +82,16 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      */
     public Attribute(final Attribute a) {
         this.id = a.id;
-        this.name = new String(a.name).trim();
-        this.description = description;
+        this.name = a.name.trim();
+        // TODO: error
+        this.description = a.description;
         this.permissions = a.getPermissions();
         this.visible = a.visible;
         this.referencesObject = a.referencesObject;
     }
 
     /**
-     * //////////////constructors/////////////////////////////
+     * Creates a new Attribute object.
      *
      * @param  id           DOCUMENT ME!
      * @param  name         DOCUMENT ME!
@@ -92,7 +100,6 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      */
     public Attribute(final String id, final String name, final String description, final Policy policy) {
         this.id = id;
-
         this.name = name;
         this.description = description;
         this.permissions = new PermissionHolder(policy);
@@ -152,7 +159,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * //////////////methods//////////////////////////////////////////
+     * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
@@ -163,7 +170,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
     // Mapable schl\u00FCssel \u00E4ndern xxx
     @Override
     public Object getKey() {
-        return id + "";   // NOI18N
+        return id + ""; // NOI18N
     }
 
     /**
@@ -171,7 +178,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @return  DOCUMENT ME!
      */
-    public final java.lang.Object getValue() {
+    public final Object getValue() {
         return value;
     }
 
@@ -238,18 +245,12 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
         this.permissions = permissions;
     }
 
-//    final public void addPermission(Mapable userGroup)
-//    {
-//        permissions.addPermission(userGroup);
-//    }
-//
-
     /**
      * Setter for property value.
      *
      * @param  value  New value of property value.
      */
-    public void setValue(final java.lang.Object value) {
+    public void setValue(final Object value) {
         this.value = value;
     }
 
@@ -267,13 +268,13 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
         if (value != null) {
             if (toStringConverter != null) {
                 return toStringConverter.convert(this);
-            } else if (referencesObject /*&& value!=null*/ && (value instanceof MetaObject)) {
+            } else if (referencesObject && (value instanceof MetaObject)) {
                 return ((MetaObject)value).toString();
             } else {
                 return value.toString();
             }
         } else {
-            return "";   // NOI18N
+            return ""; // NOI18N
         }
     }
 
@@ -312,13 +313,8 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
     public String getClassKey() {
         if (classKey != null) {
             return classKey;
-        }
-//         else if(referencesObject && value!= null && value instanceof MetaObject)
-//            return ((MetaObject)value).getClassKey();
-        else {
-            if (logger != null) {
-                logger.error("Attribute Value no type for getCLassKey ::" + value.getClass());   // NOI18N 
-            }
+        } else {
+            LOG.error("Attribute Value no type for getCLassKey ::" + value.getClass()); // NOI18N
             return null;
         }
     }
@@ -374,8 +370,8 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
     public void setValuesNull() {
         if (!referencesObject) {
             value = null;
-            if (logger.isDebugEnabled()) {
-                logger.debug("would set " + value + " to null");   // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("would set " + value + " to null"); // NOI18N
             }
         } else {
             ((Sirius.server.localserver.object.Object)value).setValuesNull();
@@ -405,7 +401,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @return  Value of property javaType.
      */
-    public java.lang.String getJavaType() {
+    public String getJavaType() {
         return javaType;
     }
 
@@ -414,7 +410,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @param  javaType  New value of property javaType.
      */
-    public void setJavaType(final java.lang.String javaType) {
+    public void setJavaType(final String javaType) {
         this.javaType = javaType;
     }
 
@@ -449,7 +445,7 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      * DOCUMENT ME!
      */
     public void printMe() {
-        System.out.println(name + " : " + value);   // NOI18N
+        System.out.println(name + " : " + value); // NOI18N
     }
 
     /**
@@ -457,20 +453,12 @@ public abstract class Attribute implements Mapable, java.io.Serializable, String
      *
      * @return  Value of property toString.
      */
-    public de.cismet.cids.tools.tostring.ToStringConverter getToStringConverter() {
+    public ToStringConverter getToStringConverter() {
         return toStringConverter;
     }
 
     /**
-     * Setter for property toString.
-     *
-     * @param  toString  New value of property toString.
-     */
-    public void setToString(final de.cismet.cids.tools.tostring.ToStringConverter toString) {
-        this.toStringConverter = toStringConverter;
-    }
-    /**
-     * public void setDefaultValue(String val){this.defaultValue=val;}.
+     * DOCUMENT ME!
      *
      * @param  optional  DOCUMENT ME!
      */

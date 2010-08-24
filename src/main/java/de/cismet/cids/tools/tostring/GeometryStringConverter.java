@@ -31,7 +31,7 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
     /** Use serialVersionUID for interoperability. */
     private static final long serialVersionUID = -6328761746418929471L;
 
-    protected static String GEOM_CLASS = "com.vividsolutions.jts.geom.Geometry";//NOI18N
+    protected static String GEOM_CLASS = "com.vividsolutions.jts.geom.Geometry"; // NOI18N
     // SRID=-1;POLYGON((191232 243117,191232 243119,191234 243117,191232 243117))
     private static transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(
             GeometryStringConverter.class);
@@ -56,7 +56,7 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
 
         if (logger != null) {
             if (logger.isDebugEnabled()) {
-                logger.debug("convert of GeometryStringconverter called");//NOI18N
+                logger.debug("convert of GeometryStringconverter called"); // NOI18N
             }
         }
 
@@ -64,7 +64,7 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
         if (o instanceof Sirius.server.localserver.attribute.ObjectAttribute) {
             if (logger != null) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug(" o instanceof ObjectAttribute");//NOI18N
+                    logger.debug(" o instanceof ObjectAttribute"); // NOI18N
                 }
             }
 
@@ -73,7 +73,7 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
             if (attrObj instanceof Geometry) {
                 if (logger != null) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug(" o instanceof Geometry");//NOI18N
+                        logger.debug(" o instanceof Geometry"); // NOI18N
                     }
                 }
 
@@ -81,7 +81,7 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
             } else if (attrObj instanceof Sirius.server.localserver.object.Object) {
                 if (logger != null) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug(" o instanceof ServerObject");//NOI18N
+                        logger.debug(" o instanceof ServerObject"); // NOI18N
                     }
                 }
                 try {
@@ -96,14 +96,14 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
                         return convert((StringConvertable)iter.next());
                     }
                 } catch (ClassNotFoundException ex) {
-                    return "Wrong Type not convertable Class Not Found " + ex.getMessage();//NOI18N
+                    return "Wrong Type not convertable Class Not Found " + ex.getMessage(); // NOI18N
                 }
-            } else // irgendwas
+            } else                                                                          // irgendwas
             {
                 if (logger != null) {
-                    logger.error("Error while creating the string representation");//NOI18N
+                    logger.error("Error while creating the string representation");         // NOI18N
                 }
-                return "Fehler im erstellen der Stringrep\u00E4sentation";//NOI18N
+                return "Fehler im erstellen der Stringrep\u00E4sentation";                  // NOI18N
             }
         } else if (o instanceof Sirius.server.localserver.object.Object) {
             try {
@@ -117,14 +117,14 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
                 if (iter.hasNext()) {
                     return convert((StringConvertable)iter.next());
                 } else {
-                    return "NO GeoAttribute found in Object";//NOI18N
+                    return "NO GeoAttribute found in Object";                           // NOI18N
                 }
             } catch (ClassNotFoundException ex) {
-                return "Wrong Type not convertable Class Not Found " + ex.getMessage();//NOI18N
+                return "Wrong Type not convertable Class Not Found " + ex.getMessage(); // NOI18N
             }
         }
 
-        return "Wrong Type not convertable ::" + o.getClass();//NOI18N
+        return "Wrong Type not convertable ::" + o.getClass(); // NOI18N
     }
 
 //     public  String convert(String o)

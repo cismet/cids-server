@@ -9,7 +9,6 @@ package de.cismet.cids.server.ws.rest;
 
 import Sirius.server.ServerExit;
 import Sirius.server.ServerExitError;
-import Sirius.server.localserver.method.MethodMap;
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.impls.proxy.StartProxy;
 import Sirius.server.middleware.types.LightweightMetaObject;
@@ -59,7 +58,7 @@ public class RESTfulSerialInterfaceConnectorTest {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String ROOT_RESOURCE = "http://localhost:9987/callserver/binary/";                              // NOI18N
+    private static final String ROOT_RESOURCE = "http://localhost:9987/callserver/binary/";                               // NOI18N
     private static final String SERVER_CONFIG =
         "src/test/resources/Sirius/server/localserver/object/runtime.properties";                                         // NOI18N
     private static final String STARTMODE = "simple";                                                                     // NOI18N
@@ -558,37 +557,6 @@ public class RESTfulSerialInterfaceConnectorTest {
                 representationPattern);
         assertNotNull(result);
         System.out.println("getAllLightweightMetaObjectsForClass: " + result);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    @Test
-    public void testGetMethods_User() throws Exception {
-        System.out.println("\nTEST: " + getCurrentMethodName());
-        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
-
-        final MethodMap result = connector.getMethods(user);
-        assertNotNull(result);
-        System.out.println("getMethods: " + result);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    @Test
-    public void testGetMethods_User_String() throws Exception {
-        System.out.println("\nTEST: " + getCurrentMethodName());
-        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
-        final String localServerName = "WUNDA_BLAU";
-
-        final MethodMap result = connector.getMethods(user, localServerName);
-        assertNotNull(result);
-        System.out.println("getMethods: " + result);
     }
 
     /**

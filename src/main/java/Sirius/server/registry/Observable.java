@@ -92,7 +92,7 @@ public class Observable {
         if (!observers.contains(ob)) {
             observers.addElement(ob);
             if (logger.isDebugEnabled()) {
-                logger.debug(" Info Observer registered::" + ob.toString() + "\n");  // NOI18N
+                logger.debug(" Info Observer registered::" + ob.toString() + "\n"); // NOI18N
             }
         }
     }
@@ -107,10 +107,10 @@ public class Observable {
         if (observers.contains(ob)) {
             observers.removeElement(ob);
             if (logger.isDebugEnabled()) {
-                logger.debug("Info <REG> Observer removed::" + ob.toString() + "\n");  // NOI18N
+                logger.debug("Info <REG> Observer removed::" + ob.toString() + "\n"); // NOI18N
             }
         } else if (logger.isDebugEnabled()) {
-            logger.debug("Info <REG> Observer not found" + ob);  // NOI18N
+            logger.debug("Info <REG> Observer not found" + ob);                       // NOI18N
         }
     }
 
@@ -163,7 +163,7 @@ public class Observable {
                     final RemoteObserver r = (RemoteObserver)observers.elementAt(i);
                     r.update(rmobs, arg);
                 } catch (Exception e) {
-                    logger.error("Exception in performNotify:: ", e);  // NOI18N
+                    logger.error("Exception in performNotify:: ", e); // NOI18N
                 }
             }
             clearChanged();

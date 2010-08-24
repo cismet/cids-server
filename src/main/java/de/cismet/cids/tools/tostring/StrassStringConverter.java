@@ -1,19 +1,16 @@
 /***************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- *
- *              ... and it just works.
- *
- ****************************************************/
-/*
- * StrassStringConverter.java
- *
- * Created on 11. Mai 2004, 13:44
- */
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.cids.tools.tostring;
 
-import Sirius.server.localserver.attribute.*;
+import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.middleware.types.MetaObject;
+
+import java.io.Serializable;
 
 import java.util.Collection;
 
@@ -23,15 +20,15 @@ import java.util.Collection;
  * @author   schlob
  * @version  $Revision$, $Date$
  */
-public class StrassStringConverter extends ToStringConverter implements java.io.Serializable {
+public class StrassStringConverter extends ToStringConverter implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
+
     /** Use serialVersionUID for interoperability. */
     private static final long serialVersionUID = -1178728757714994216L;
-    private static final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(
-            GeometryStringConverter.class);
 
     //~ Constructors -----------------------------------------------------------
+
     /**
      * Creates a new instance of StrassStringConverter.
      */
@@ -40,14 +37,15 @@ public class StrassStringConverter extends ToStringConverter implements java.io.
     }
 
     //~ Methods ----------------------------------------------------------------
+
     @Override
-    public String convert(final de.cismet.cids.tools.tostring.StringConvertable o) {
+    public String convert(final StringConvertable o) {
         if (o instanceof MetaObject) {
-            final MetaObject mo = (MetaObject) o;
+            final MetaObject mo = (MetaObject)o;
 
-            String stringRepresentation = "";
+            String stringRepresentation = ""; // NOI18N
 
-            final Collection<Attribute> attrs = mo.getAttributeByName("NAME", 1);
+            final Collection<Attribute> attrs = mo.getAttributeByName("NAME", 1); // NOI18N
 
             if (!attrs.isEmpty()) {
                 final Attribute attr = attrs.iterator().next();
@@ -57,10 +55,12 @@ public class StrassStringConverter extends ToStringConverter implements java.io.
 
             return stringRepresentation;
         } else if (o instanceof Attribute) {
-            Attribute a = (Attribute) o;
+            final Attribute a = (Attribute)o;
             return String.valueOf(a.getValue());
         }
-        //TODO log problem
+
+        // TODO log problem
+
         return "";
     }
 }

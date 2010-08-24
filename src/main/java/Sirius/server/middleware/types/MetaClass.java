@@ -1,10 +1,10 @@
 /***************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- *
- *              ... and it just works.
- *
- ****************************************************/
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.server.middleware.types;
 
 import Sirius.server.localserver.attribute.AttributeVector;
@@ -20,8 +20,9 @@ import java.util.LinkedHashMap;
 
 import de.cismet.cids.tools.tostring.ToStringConverter;
 
-import de.cismet.tools.BlacklistClassloading;
 import de.cismet.cids.utils.ClassloadingHelper;
+
+import de.cismet.tools.BlacklistClassloading;
 
 /**
  * Return Type of a RMI method.
@@ -29,16 +30,19 @@ import de.cismet.cids.utils.ClassloadingHelper;
  * @version  $Revision$, $Date$
  */
 public class MetaClass extends Sirius.server.localserver._class.Class implements java.io.Serializable,
-        Groupable,
-        Renderable,
-        Editable {
+    Groupable,
+    Renderable,
+    Editable {
 
     //~ Static fields/initializers ---------------------------------------------
+
     /** Use serialVersionUID for interoperability. */
     private static final long serialVersionUID = -1080130275226708408L;
-    private static String toStringConverterPrefix = "de.cismet.cids.custom.tostringconverter.";//NOI18N
-    private static String toStringConverterPostfix = "ToStringConverter";//NOI18N
+    private static String toStringConverterPrefix = "de.cismet.cids.custom.tostringconverter."; // NOI18N
+    private static String toStringConverterPostfix = "ToStringConverter";                       // NOI18N
+
     //~ Instance fields --------------------------------------------------------
+
     /** domain. */
     protected String domain;
     private transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
@@ -49,6 +53,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
     // -------------------------------------------------------------------
 
     //~ Constructors -----------------------------------------------------------
+
     /**
      * constuructor adding the domain.
      *
@@ -59,16 +64,16 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
         /*SystemProperties*/
 
         super(
-                c.getID(),
-                c.getName(),
-                c.getDescription(),
-                c.getIcon(),
-                c.getObjectIcon(),
-                c.getTableName(),
-                c.getPrimaryKey(),
-                c.getToString(),
-                c.getPermissions(),
-                c.getAttributePolicy());
+            c.getID(),
+            c.getName(),
+            c.getDescription(),
+            c.getIcon(),
+            c.getObjectIcon(),
+            c.getTableName(),
+            c.getPrimaryKey(),
+            c.getToString(),
+            c.getPermissions(),
+            c.getAttributePolicy());
         super.attribs = new AttributeVector(c.getAttributes());
         super.memberAttributeInfos = new LinkedHashMap(c.getMemberAttributeInfos());
         // Hell
@@ -81,6 +86,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
     }
 
     //~ Methods ----------------------------------------------------------------
+
     /**
      * grouping criterion.
      *
@@ -134,7 +140,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
      */
     @Override
     public Object getKey() {
-        return id + "@" + domain;   // NOI18N
+        return id + "@" + domain; // NOI18N
     }
 
     /**
@@ -191,43 +197,45 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
         try {
             if (logger != null) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("try to load stringconverter if not null : " + toString);   // NOI18N
+                    logger.debug("try to load stringconverter if not null : " + toString); // NOI18N
                 }
             }
 
             Class<?> converterClass = null;
             try {
-                converterClass = ClassloadingHelper.getDynamicClass(this, ClassloadingHelper.CLASS_TYPE.TO_STRING_CONVERTER);
+                converterClass = ClassloadingHelper.getDynamicClass(
+                        this,
+                        ClassloadingHelper.CLASS_TYPE.TO_STRING_CONVERTER);
             } catch (Exception e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("no lazy toStringConverter found!");
                 }
             }
             if ((converterClass != null)
-                    && de.cismet.cids.tools.tostring.ToStringConverter.class.isAssignableFrom(converterClass)) {
-                this.toStringConverter = (ToStringConverter) converterClass.newInstance();
+                        && de.cismet.cids.tools.tostring.ToStringConverter.class.isAssignableFrom(converterClass)) {
+                this.toStringConverter = (ToStringConverter)converterClass.newInstance();
             } else if (logger != null) {
                 if (logger.isDebugEnabled()) {
                     logger.debug(
-                            " customized stringconverter could not be loaded as ClassQualifer ist not a valid ToSTringconverter "
-                            + toString);
+                        " customized stringconverter could not be loaded as ClassQualifer ist not a valid ToSTringconverter "
+                                + toString);
                 }
             }
 
             if (converterClass == null) {
                 this.toStringConverter = new ToStringConverter();
                 if (logger.isDebugEnabled()) {
-                    logger.debug(" default stringconverter loaded: reference is :" + this.toStringConverter);   // NOI18N
+                    logger.debug(" default stringconverter loaded: reference is :" + this.toStringConverter); // NOI18N
                 }
             }
         } catch (Exception e) {
             if (logger != null) {
                 logger.error(
-                        toString
-                        + " f\u00FCr Klasse "
-                        + name
-                        + " konnte nicht geladen werden set string converter to Default ",
-                        e);
+                    toString
+                            + " f\u00FCr Klasse "
+                            + name
+                            + " konnte nicht geladen werden set string converter to Default ",
+                    e);
             }
             this.toStringConverter = new ToStringConverter();
         }
@@ -269,7 +277,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
             try {
                 javaClass = BeanFactory.getInstance().getJavaClass(this);
             } catch (Exception e) {
-                getLogger().error("Javaclass for " + this.getName() + " could not be created.", e);   // NOI18N
+                getLogger().error("Javaclass for " + this.getName() + " could not be created.", e); // NOI18N
             }
         }
         return javaClass;
@@ -290,7 +298,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
             final Iterator iter = getMemberAttributeInfos().values().iterator();
 
             while (iter.hasNext()) {
-                final MemberAttributeInfo mai = (MemberAttributeInfo) iter.next();
+                final MemberAttributeInfo mai = (MemberAttributeInfo)iter.next();
 
                 final ObjectAttribute oAttr;
                 oAttr = new ObjectAttribute(mai, -1, null, getAttributePolicy());
@@ -305,13 +313,13 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
                 }
                 oAttr.setOptional(mai.isOptional());
 
-                oAttr.setClassKey(mai.getForeignKeyClassId() + "@" + domain);   // NOI18N
+                oAttr.setClassKey(mai.getForeignKeyClassId() + "@" + domain); // NOI18N
                 o.addAttribute(oAttr);
             }
 
             return new DefaultMetaObject(o, getDomain());
         } catch (Exception e) {
-            getLogger().error("Error in getEmptyInstance", e);   // NOI18N
+            getLogger().error("Error in getEmptyInstance", e); // NOI18N
             return null;
         }
     }
@@ -325,7 +333,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
         if (hasExtensionAttributes == null) {
             final Iterator iter = getMemberAttributeInfos().values().iterator();
             while (iter.hasNext()) {
-                final MemberAttributeInfo mai = (MemberAttributeInfo) iter.next();
+                final MemberAttributeInfo mai = (MemberAttributeInfo)iter.next();
                 if (mai.isExtensionAttribute()) {
                     hasExtensionAttributes = true;
                     break;
@@ -343,9 +351,9 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
         if (this == obj) {
             return true;
         } else if (obj instanceof MetaClass) {
-            final MetaClass other = (MetaClass) obj;
+            final MetaClass other = (MetaClass)obj;
             final boolean sameDomain = (getDomain() == other.getDomain())
-                    || ((getDomain() != null) && getDomain().equals(other.getDomain()));
+                        || ((getDomain() != null) && getDomain().equals(other.getDomain()));
             return sameDomain && (getID() == other.getID());
         } else {
             return false;

@@ -7,7 +7,10 @@
 ****************************************************/
 package Sirius.server.localserver.method;
 
-import java.util.*;
+import org.apache.log4j.Logger;
+
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * DOCUMENT ME!
@@ -21,8 +24,7 @@ public class MethodMap extends java.util.HashMap implements java.io.Serializable
     /** Use serialVersionUID for interoperability. */
     private static final long serialVersionUID = 1088110127510028259L;
 
-    private static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(MethodMap.class);
-//constructor
+    private static final transient Logger LOG = Logger.getLogger(MethodMap.class);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -45,7 +47,7 @@ public class MethodMap extends java.util.HashMap implements java.io.Serializable
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * //////////////////////////////////////////////////
+     * DOCUMENT ME!
      *
      * @param   key     DOCUMENT ME!
      * @param   method  DOCUMENT ME!
@@ -71,9 +73,9 @@ public class MethodMap extends java.util.HashMap implements java.io.Serializable
         }
 
         if (!containsMethod(method.getKey())) {
-            throw new java.lang.Exception("Couldn't add Method:" + method.getKey());   // NOI18N
+            throw new java.lang.Exception("Couldn't add Method:" + method.getKey()); // NOI18N
         }
-    } // end add
+    }
 
     /**
      * /////////////////////////////////////////////////////////////
@@ -82,8 +84,8 @@ public class MethodMap extends java.util.HashMap implements java.io.Serializable
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  Exception                       DOCUMENT ME!
-     * @throws  java.lang.NullPointerException  DOCUMENT ME!
+     * @throws  Exception             DOCUMENT ME!
+     * @throws  NullPointerException  DOCUMENT ME!
      */
     public Method getMethod(final String key) throws Exception {
         if (containsMethod(key)) {
@@ -91,16 +93,16 @@ public class MethodMap extends java.util.HashMap implements java.io.Serializable
             if (candidate instanceof Method) {
                 return (Method)candidate;
             }
-            throw new java.lang.NullPointerException("Entry is not a Method :" + key);   // NOI18N
-        } // endif
+            throw new NullPointerException("Entry is not a Method :" + key); // NOI18N
+        }                                                                    // endif
 
-        throw new java.lang.NullPointerException("No entry Method :" + key);    // NOI18N // to be changed in further versions
-                                                                             // when exception concept is
-                                                                             // accomplished
-    }                                                                        // end getMethod
+        throw new NullPointerException("No entry Method :" + key); // NOI18N // to be changed in further
+                                                                   // versions when exception concept is
+                                                                   // accomplished
+    }                                                              // end getMethod
 
     /**
-     * ///// containsIKey/////////////////////////////////
+     * DOCUMENT ME!
      *
      * @param   key  DOCUMENT ME!
      *
@@ -109,8 +111,6 @@ public class MethodMap extends java.util.HashMap implements java.io.Serializable
     public boolean containsMethod(final java.lang.Object key) {
         return super.containsKey(key);
     }
-
-// \u00FCberschreiben da berechtigungen f\u00FCr gleiche methoden auf verschiedenen ls vergeben werden
 
     @Override
     public void putAll(final Map t) {
@@ -124,16 +124,12 @@ public class MethodMap extends java.util.HashMap implements java.io.Serializable
             try {
                 this.add((String)e.getKey(), e);
             } catch (Exception ex) {
-                if (logger != null) {
-                    logger.error("Error while adding method (putAll)", ex);   // NOI18N
+                if (LOG != null) {
+                    LOG.error("Error while adding method (putAll)", ex);                          // NOI18N
                 } else {
-                    System.err.println("Error while adding method (putAll)/n" + ex.getMessage());   // NOI18N
+                    System.err.println("Error while adding method (putAll)/n" + ex.getMessage()); // NOI18N
                 }
             }
         }
     }
-
-//    public void rehash()
-//    {super.rehash();}
-
-} // end of class MethodMap
+}

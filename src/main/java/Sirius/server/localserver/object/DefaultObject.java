@@ -7,15 +7,21 @@
 ****************************************************/
 package Sirius.server.localserver.object;
 
-import Sirius.server.localserver.attribute.*;
-import Sirius.server.newuser.*;
+import Sirius.server.localserver.attribute.Attribute;
+import Sirius.server.localserver.attribute.ObjectAttribute;
+import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.permission.PermissionHolder;
+import Sirius.util.Mapable;
+import de.cismet.cids.tools.fromstring.FromStringCreator;
 
-import Sirius.util.*;
 
-import java.util.*;
 
-import de.cismet.cids.tools.fromstring.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import org.apache.log4j.Logger;
 
 /**
  * DefaultObject ist die ist die Eiheitliche Darstellung eines Tabelleneintrages in Sirius.
@@ -23,6 +29,11 @@ import de.cismet.cids.tools.fromstring.*;
  * @version  $Revision$, $Date$
  */
 public class DefaultObject implements Object {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -3071961882225512597L;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -32,17 +43,13 @@ public class DefaultObject implements Object {
     protected int objectID;
     /** indicates whether this object was constucted artificially eg array object. */
     protected boolean dummy = false;
-    /** generiert eine Stringrepr\u00E4sentation des Objekts. */
-    // protected ToStringConverter toStringConverter;
     /** container for this objects attributes. */
-    protected LinkedHashMap attribHash;                      // **indicates whether a metaobject was instantiated from
-                                                             // the database (already stored)*/
+    protected LinkedHashMap attribHash;                      
     /** indicates wheter this object was loaded from a domainservers database. */
-    protected boolean persistent = true;                                      // xxxx not initialized yet
+    protected boolean persistent = true;                                      
     protected ObjectAttribute referencingObjectAttribute;
-    //////////////////// constructors///////////////////////////////////////
 
-    private transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass()); ////////////////member/////////////////////////////////////////////
+    private static final transient Logger LOG = Logger.getLogger(DefaultObject.class);
     /** helper for generating an DefaultObject instance from a string. */
     private FromStringCreator objectCreator;
     private int status = NO_STATUS;
@@ -54,27 +61,19 @@ public class DefaultObject implements Object {
      *
      * @param  o  original
      */
-    public DefaultObject(final Sirius.server.localserver.object.Object o) { // copy constructor
+    public DefaultObject(final Sirius.server.localserver.object.Object o) { 
         this((o != null) ? o.getID() : -1, (o != null) ? o.getClassID() : -1);
-        // System.out.println("Kopierkonstruktor object "+objectID + " Klasse " +classID);
         if (o != null) {
             if (o.getAttributes() != null) {
                 attribHash = new LinkedHashMap(o.getAttributes());
             } else {
-                attribHash = new LinkedHashMap(10, 0.75f, false); // logger.debug("Kopierkonstruktor  attribute
-                // "+attribHash);
-// if(o.toStringConverter!=null)
-// this.toStringConverter=o.toStringConverter;
-// else
-// this.toStringConverter= new ToStringConverter();
-//
-                // logger.debug("Kopierkonstruktor  converter "+toStringConverter);
+                attribHash = new LinkedHashMap(10, 0.75f, false);
             }
             this.objectCreator = o.getObjectCreator();
             this.referencingObjectAttribute = o.getReferencingObjectAttribute();
             this.status = o.getStatus();
         } else {
-            logger.error("object null default object created");   // NOI18N
+            LOG.error("object null default object created"); // NOI18N
         }
     }
 
@@ -90,42 +89,8 @@ public class DefaultObject implements Object {
 
         // insertion order
         attribHash = new LinkedHashMap(10, 0.75f, false);
-        // this.toStringConverter= new ToStringConverter();
-
-//        if(classID==1)// BoundingBOx
-//        {
-//            this.objectCreator=new Sirius.util.BoundingBoxFromString();
-//
-//            this.toStringConverter= new BoundingBoxStringConverter();
-//
-////            System.out.println("Bounding box creator zugewiesen "+this);
-//        }
-////        else
-////            System.out.println("standard fromstring creator zugewiesen "+this);
-//
-
     }
-    // ---------------------------------------------------------------------------
 
-    //~ Methods ----------------------------------------------------------------
-
-// /**
-// * Erzeug ein unattributiertes Objekt<BR>
-// * @param objectID id des Objekts
-// * @param classID id der Klasse des Objekts
-// * @param toStringConverter ist in der Lage eine Stringrepr\u00E4sentation des Objekts zu generieren
-// */
-// public DefaultObject(int objectID,int classID, ToStringConverter toStringConverter )
-// {
-// this(objectID,classID);
-//
-// this.toStringConverter= toStringConverter;
-// }
-//
-//
-    //////////////////methods/////////////////////////////////////////////////
-    // public final Sirius.Image.Image getIcon()
-    // {return icon;}
     /**
      * getter for classID.
      *
@@ -137,7 +102,6 @@ public class DefaultObject implements Object {
     public final int getClassID() {
         return classID;
     }
-    // --------------------------------------------------------------------
 
     /**
      * getter for ID.
@@ -163,9 +127,8 @@ public class DefaultObject implements Object {
      */
     @Override
     public java.lang.Object getKey() {
-        return objectID + "@" + classID;   // NOI18N
+        return objectID + "@" + classID; // NOI18N
     }
-    // -------------------------------------------------------------------------
 
     /**
      * F\u00FCgt ein Attribut in die davor vorgesehenen AtrributVectoren ein.<BR>
@@ -185,15 +148,17 @@ public class DefaultObject implements Object {
          * if (anyAttribute instanceof ObjectAttribute ) { attribs.add((Attribute)anyAttribute); }// end if
          * AttributeOfClass else throw new java.lang.Exception(" no subtype of Attribute");
          */
-        if (dummy) // in einem arrayLink Objekt m\u00FCssen alle Felder ausgef\u00FCllt sein egal was gesetzt wurde
-                   // (Unsinnsbeschr\u00E4nkung)
+        if (dummy)                                                           // in einem arrayLink Objekt m\u00FCssen
+                                                                             // alle Felder ausgef\u00FCllt sein egal
+                                                                             // was gesetzt wurde
+                                                                             // (Unsinnsbeschr\u00E4nkung)
         {
             anyAttribute.setOptional(false);
-            if (logger != null && logger.isInfoEnabled()) {
-                logger.info(
-                    "optional set to false for attribute : "//NOI18N
+            if ((LOG != null) && LOG.isInfoEnabled()) {
+                LOG.info(
+                    "optional set to false for attribute : "                 // NOI18N
                             + anyAttribute
-                            + " because it belongs to a arrayLink (dummy)");//NOI18N
+                            + " because it belongs to a arrayLink (dummy)"); // NOI18N
             }
         }
 
@@ -205,7 +170,6 @@ public class DefaultObject implements Object {
         attribHash.remove(anyAttribute.getKey());
     }
 
-    /////////////////////////////getAttribvectors as arrays////////////////////////////////
     /**
      * beschafft eine Arrayrprenstation aller Attribute des DefaultObject.<BR>
      *
@@ -217,9 +181,6 @@ public class DefaultObject implements Object {
     public ObjectAttribute[] getAttribs() {
         return (ObjectAttribute[])attribHash.values().toArray(new ObjectAttribute[attribHash.size()]);
     }
-    // public Collection getAttributes()
-    // {return attribHash.values();}
-    //
 
     /**
      * getter for attribHash.
@@ -266,7 +227,6 @@ public class DefaultObject implements Object {
         while ((maxResult > 0) && iter.hasNext()) {
             Attribute a = null;
             a = iter.next();
-            // if(logger!=null)logger.debug(a.getName()+":: attribut gefunden mit Wert ::"+a.getValue());
             if (a.getName().equalsIgnoreCase(name)) {
                 attribsByName.add(a);
                 maxResult--;
@@ -296,7 +256,6 @@ public class DefaultObject implements Object {
         return null;
     }
 
-    // --------------------------------------------------------------------------
     /**
      * beschafft eine Collection welche alle Attribute enth\u00E4lt deren Schl\u00FCssel dem parameter name entsprechen.
      *
@@ -408,18 +367,6 @@ public class DefaultObject implements Object {
             return null;
         }
     }
-    ///////////////////////////////////////////////end of getAttribs//////////////////////////////////////////////////////////
-//    /**
-//     * String representation of this DefaultObject
-//     * @return DefaultObject as a String
-//     */
-//    public String toString()
-//    {
-//        //if (logger != null)logger.debug("to string von DefaultObject gerufen "+toStringConverter.convert(this));
-//        return toStringConverter.convert(this);
-//
-//    }
-//
 
     /**
      * adds all attributes to the DefaultObject.
@@ -432,7 +379,7 @@ public class DefaultObject implements Object {
             try {
                 addAttribute(objectAttributes[i]);
             } catch (Exception e) {
-                logger.error("add attribute", e);   // NOI18N
+                LOG.error("add attribute", e); // NOI18N
             }
         }
     }
@@ -499,7 +446,6 @@ public class DefaultObject implements Object {
             // as[i].setValue(null);
         }
     }
-    // -----------------------------
 
     @Override
     public void setPrimaryKeysNull() {
@@ -544,33 +490,6 @@ public class DefaultObject implements Object {
         return null;
     }
 
-//    // setzt die array attribute auf den wert des pks (nur auf der obersten Ebene)
-//    public void setArrayKeys(String arrayKeyName, int newArrayKey) {
-//
-//        Attribute pk = getPrimaryKey();
-//
-//        if(pk!=null) {
-//
-//            Iterator iter = getAttributes().values().iterator();
-//
-//            ArrayList attribsByName = new ArrayList();
-//
-//
-//
-//            while (iter.hasNext()) {
-//
-//                Attribute a = null;
-//                a = (Attribute) iter.next();
-//
-//                if (a.getName().equalsIgnoreCase(arrayKeyName)) {
-//                    a.setValue(pk.getValue());
-//                }
-//            }
-//        } else {
-//            return;
-//
-//        }
-//    }
     /**
      * getter for dummy.
      *
@@ -618,14 +537,7 @@ public class DefaultObject implements Object {
      */
     @Override
     public void setStatus(final int status) {
-        try {
-//                logger = org.apache.log4j.Logger.getLogger(MetaObject.this.getClass());
-//            logger.debug("setStatus() : Status alt :" + getStatusDebugString(this.status) + "  .. Status neu:" + getStatusDebugString(status) + "\n" + getDebugString());
-        } catch (Exception e) {
-            getLogger().error("Error while setting status", e);   // NOI18N 
-        }
         if (this.status == NEW) {
-//            logger.debug("Status New ist nicht ver\u00E4nderbar auch nicht mit :" + getStatusDebugString(status));
         } else if ((status > 0) && (status < 5)) {
             this.status = status;
         } else {
@@ -646,43 +558,31 @@ public class DefaultObject implements Object {
      * @return  DOCUMENT ME!
      */
     protected static String getStatusDebugString(final int status) {
-        String statusString = "unknown";   // NOI18N
+        String statusString = "unknown"; // NOI18N
 
         switch (status) {
             case 0: {
-                statusString = "No Status";   // NOI18N
+                statusString = "No Status"; // NOI18N
                 break;
             }
             case 1: {
-                statusString = "New";   // NOI18N
+                statusString = "New";       // NOI18N
                 break;
             }
             case 2: {
-                statusString = "Modified";   // NOI18N
+                statusString = "Modified";  // NOI18N
                 break;
             }
             case 3: {
-                statusString = "To Delete";   // NOI18N
+                statusString = "To Delete"; // NOI18N
                 break;
             }
             case 4: {
-                statusString = "Template";   // NOI18N
+                statusString = "Template";  // NOI18N
                 break;
             }
         }
         return statusString;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private org.apache.log4j.Logger getLogger() {
-        if (logger == null) {
-            logger = org.apache.log4j.Logger.getLogger(this.getClass());
-        }
-        return logger;
     }
 
     /**
@@ -694,4 +594,4 @@ public class DefaultObject implements Object {
     public FromStringCreator getObjectCreator() {
         return objectCreator;
     }
-} // end of class DefaultObject
+}

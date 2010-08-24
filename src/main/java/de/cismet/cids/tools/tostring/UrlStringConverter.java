@@ -5,29 +5,28 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * UrlStringConverter.java
- *
- * Created on 11. Mai 2004, 13:45
- */
 package de.cismet.cids.tools.tostring;
-import Sirius.server.localserver.attribute.*;
+
+import Sirius.server.localserver.attribute.ObjectAttribute;
+
+import org.apache.log4j.Logger;
+
+import java.io.Serializable;
+
 /**
  * DOCUMENT ME!
  *
  * @author   schlob
  * @version  $Revision$, $Date$
  */
-public class UrlStringConverter extends ToStringConverter implements java.io.Serializable {
+public class UrlStringConverter extends ToStringConverter implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
     /** Use serialVersionUID for interoperability. */
     private static final long serialVersionUID = -2796385759299324453L;
 
-    //~ Instance fields --------------------------------------------------------
-
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
+    private static final transient Logger LOG = Logger.getLogger(UrlStringConverter.class);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -48,19 +47,18 @@ public class UrlStringConverter extends ToStringConverter implements java.io.Ser
      * @return  DOCUMENT ME!
      */
     public String convert(final Sirius.server.localserver.object.Object o) {
-        String stringRepresentation = "";//NOI18N
+        String stringRepresentation = ""; // NOI18N
 
         final ObjectAttribute[] attrs = o.getAttribs();
 
         for (int i = 0; i < attrs.length; i++) {
-            if (attrs[i].getName().equalsIgnoreCase("url_base_id")//NOI18N
-                        || attrs[i].getName().equalsIgnoreCase("object_name")) {//NOI18N
+            if (attrs[i].getName().equalsIgnoreCase("url_base_id")               // NOI18N
+                        || attrs[i].getName().equalsIgnoreCase("object_name")) { // NOI18N
                 stringRepresentation += (attrs[i].toString());
-            } else // surpress
+            } else                                                               // surpress
             {
-                if (logger.isDebugEnabled()) {
-                    // stringRepresentation+=( attrs[i].toString() + "?");
-                    logger.debug("unexpected attribute in StringConverter");//NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("unexpected attribute in StringConverter");        // NOI18N
                 }
             }
         }

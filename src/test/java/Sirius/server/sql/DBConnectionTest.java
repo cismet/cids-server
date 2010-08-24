@@ -7,10 +7,6 @@
 ****************************************************/
 package Sirius.server.sql;
 
-import java.sql.ResultSet;
-
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -20,6 +16,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.sql.ResultSet;
+
+import java.util.Properties;
 
 import static org.junit.Assert.*;
 
@@ -35,12 +35,12 @@ public class DBConnectionTest {
 
     private static final transient Logger LOG = Logger.getLogger(
             DBConnectionTest.class);
-    private static final String TEST = "TEST ";           // NOI18N
+    private static final String TEST = "TEST ";             // NOI18N
     private static final DBClassifier DB_CLASSIFIER = new DBClassifier(
             "jdbc:postgresql://kif:5432/cids_reference_db", // NOI18N
-            "postgres",                                   // NOI18N
-            "x",                                          // NOI18N
-            "org.postgresql.Driver");                     // NOI18N
+            "postgres",                                     // NOI18N
+            "x",                                            // NOI18N
+            "org.postgresql.Driver");                       // NOI18N
 
     //~ Methods ----------------------------------------------------------------
 

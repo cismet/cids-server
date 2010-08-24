@@ -5,11 +5,6 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * MemberAttributeInfo.java
- *
- * Created on 25. November 2003, 14:56
- */
 package Sirius.server.localserver.attribute;
 
 import Sirius.util.Mapable;
@@ -135,7 +130,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  fieldName  New value of property fieldName.
      */
-    public void setFieldName(final java.lang.String fieldName) {
+    public void setFieldName(final String fieldName) {
         this.fieldName = fieldName;
     }
 
@@ -249,7 +244,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
 
     @Override
     public Object getKey() {
-        return id + "@" + classId;   // NOI18N
+        return id + "@" + classId; // NOI18N
     }
 
     @Override
@@ -266,7 +261,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @return  Value of property name.
      */
-    public java.lang.String getName() {
+    public String getName() {
         return name;
     }
 
@@ -275,7 +270,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  name  New value of property name.
      */
-    public void setName(final java.lang.String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -347,7 +342,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  arrayKeyFieldName  New value of property arrayKeyFieldName.
      */
-    public void setArrayKeyFieldName(final java.lang.String arrayKeyFieldName) {
+    public void setArrayKeyFieldName(final String arrayKeyFieldName) {
         this.arrayKeyFieldName = arrayKeyFieldName;
     }
 
@@ -356,7 +351,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @return  Value of property editor.
      */
-    public java.lang.String getEditor() {
+    public String getEditor() {
         return editor;
     }
 
@@ -365,7 +360,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  editor  New value of property editor.
      */
-    public void setEditor(final java.lang.String editor) {
+    public void setEditor(final String editor) {
         this.editor = editor;
     }
 
@@ -374,7 +369,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @return  Value of property renderer.
      */
-    public java.lang.String getToString() {
+    public String getToString() {
         return toString;
     }
 
@@ -383,7 +378,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      *
      * @param  toString  renderer New value of property renderer.
      */
-    public void setToString(final java.lang.String toString) {
+    public void setToString(final String toString) {
         this.toString = toString;
     }
 

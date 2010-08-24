@@ -21,8 +21,8 @@ import de.cismet.tools.collections.MultiMap;
 
 /**
  * Bei der Intstanzierung eines PermissionHolders erlaubt dieser zunaechst jeglichen Zugriff (hasPermission ist immer
- * wahr) Sobald ein Recht für ein PermissionHolder Objekt gesetzt wird (addPermission), werden allen anderen Schluesseln
- * die Rechte entzogen (restricted = true).
+ * wahr) Sobald ein Recht für ein PermissionHolder Objekt gesetzt wird (addPermission), werden allen anderen
+ * Schluesseln die Rechte entzogen (restricted = true).
  *
  * @version  $Revision$, $Date$
  */
@@ -163,9 +163,9 @@ public final class PermissionHolder implements Serializable {
     public boolean hasPermission(final Object key, final Permission perm) {
         if (getPolicy() == null) {
             LOG.warn(
-                "No Policy was set. Set PARANOID Policy. "   // NOI18N
-                + "Attention. This could lead to something " // NOI18N
-                + "that you not want.",                      // NOI18N
+                "No Policy was set. Set PARANOID Policy. "           // NOI18N
+                        + "Attention. This could lead to something " // NOI18N
+                        + "that you not want.",                      // NOI18N
                 new CurrentStackTrace());
             setPolicy(Policy.createParanoidPolicy());
         }

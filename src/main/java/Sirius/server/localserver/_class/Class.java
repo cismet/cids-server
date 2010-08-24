@@ -7,18 +7,22 @@
 ****************************************************/
 package Sirius.server.localserver._class;
 
-import Sirius.server.localserver.attribute.*;
-import Sirius.server.localserver.method.*;
-import Sirius.server.newuser.permission.*;
+import Sirius.server.localserver.attribute.Attribute;
+import Sirius.server.localserver.attribute.AttributeVector;
+import Sirius.server.localserver.attribute.ClassAttribute;
+import Sirius.server.localserver.attribute.MemberAttributeInfo;
+import Sirius.server.newuser.permission.PermissionHolder;
+import Sirius.server.newuser.permission.Policy;
 
-import Sirius.util.*;
-import Sirius.util.image.*;
+import Sirius.util.Mapable;
+import Sirius.util.collections.LongVector;
+import Sirius.util.image.Image;
 
-import java.util.*;
-
-import de.cismet.cids.tools.tostring.ToStringConverter;
-
-import de.cismet.tools.collections.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 /**
  * Die Klasse Class fungiert zum einen als Mittel zur Klassifkation zum anderen enth\u00E4lt Sie Eigenschaften von
@@ -82,7 +86,6 @@ public class Class implements java.io.Serializable, Mapable {
 
     //~ Constructors -----------------------------------------------------------
 
-    //////////////////// constructors///////////////////////////////////////
     /**
      * Erzeug eine unattributierte Klasse.<BR>
      *
@@ -161,16 +164,15 @@ public class Class implements java.io.Serializable, Mapable {
 
         this.toString = toString;
 
-        this.getInstanceStmnt = "Select * from " + tableName + " where " + primaryKey + " = ?";  // NOI18N
+        this.getInstanceStmnt = "Select * from " + tableName + " where " + primaryKey + " = ?"; // NOI18N
 
-        this.getDefaultInstanceStmnt = "Select * from " + tableName + " where " + primaryKey + " = (select min( "//NOI18N
-                    + primaryKey + ") from " + tableName + ")";//NOI18N
+        this.getDefaultInstanceStmnt = "Select * from " + tableName + " where " + primaryKey // NOI18N
+                    + " = (select min( "                                                     // NOI18N
+                    + primaryKey + ") from " + tableName + ")";                              // NOI18N
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //////////////////methods/////////////////////////////////////////////////
-    // --------------------------------------------------
     /**
      * get f\u00FCr ObjectIcon.
      *
@@ -182,7 +184,6 @@ public class Class implements java.io.Serializable, Mapable {
         return objectIcon;
     }
 
-    // ----------------------------------------------------------------------------
     /**
      * getter f\u00FCr Icon.
      *
@@ -194,7 +195,6 @@ public class Class implements java.io.Serializable, Mapable {
         return icon;
     }
 
-    // -------------------------------------------------------------------
     /**
      * getter f\u00FCr ID.
      *
@@ -206,7 +206,6 @@ public class Class implements java.io.Serializable, Mapable {
         return id;
     }
 
-    // --------------------------------------------------------------------
     /**
      * getter f\u00FCr name.
      *
@@ -218,7 +217,6 @@ public class Class implements java.io.Serializable, Mapable {
         return name;
     }
 
-    // --------------------------------------------------------------------
     /**
      * getter for description.
      *
@@ -230,25 +228,21 @@ public class Class implements java.io.Serializable, Mapable {
         return description;
     }
 
-    // -------------------------------------------------------------------------
     /**
      * F\u00FCgt ein Klassenattribut in die davor vorgesehenen AtrributVectoren ein.<BR>
      *
      * @param   anyAttribute  Klassenattribut
      *
-     * @throws  Exception            DOCUMENT ME!
-     * @throws  java.lang.Exception  fehler .-)
+     * @throws  Exception  DOCUMENT ME!
      */
     protected final void addAttribute(final java.lang.Object anyAttribute) throws Exception {
         if (anyAttribute instanceof ClassAttribute) {
             attribs.add((ClassAttribute)anyAttribute);
-        } // end if AttributeOfClass
-        else {
-            throw new java.lang.Exception(" no subtype of ClassAttribute");  // NOI18N
+        } else {
+            throw new Exception(" no subtype of ClassAttribute"); // NOI18N
         }
-    }     // end of addAttribute
+    }
 
-    // -----------------------------------------------------------------------------------
     /**
      * retrives class attributes.
      *
@@ -268,11 +262,13 @@ public class Class implements java.io.Serializable, Mapable {
     public final ClassAttribute getClassAttribute(final String key) {
         // Todo: irgendwann mal auf ne Hashmap umstellen
         final ClassAttribute[] allCA = getAttribs();
+
         for (final ClassAttribute ca : allCA) {
             if (ca.getName().toString().equalsIgnoreCase(key)) {
                 return ca;
             }
         }
+
         return null;
     }
 
@@ -308,7 +304,6 @@ public class Class implements java.io.Serializable, Mapable {
 
         return attribsByName;
     }
-    // -----------------------------------------------------------------------------------
 
     /**
      * getter for permissions.
@@ -319,17 +314,6 @@ public class Class implements java.io.Serializable, Mapable {
         return permissions;
     }
 
-    // -----------------------------------------------------------------------------------
-    /**
-     * setter for permissions.
-     *
-     * @param  permission  set permissions or initialize this class' permissionHolder
-     */
-    public final void setPermissions(final PermissionHolder permission) {
-        this.permissions = permissions;
-    }
-
-    // -----------------------------------------------------------------------------------
     /**
      * retrieves all ids of registered methods in a vector.
      *
@@ -339,7 +323,6 @@ public class Class implements java.io.Serializable, Mapable {
         return methodIDs;
     }
 
-    // ------------------------------------------------------------------------------------
     /**
      * adds a methd id to the member (container).
      *
@@ -360,7 +343,7 @@ public class Class implements java.io.Serializable, Mapable {
      */
     public final void setMethodIDs(final LongVector methodIDs) throws Exception {
         if (this.methodIDs.size() != 0) {
-            throw new Exception("LongVector methodIds of Class allready set use addMethodID instead");  // NOI18N
+            throw new Exception("LongVector methodIds of Class allready set use addMethodID instead"); // NOI18N
         }
 
         this.methodIDs = methodIDs;
@@ -371,7 +354,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @return  Value of property toString.
      */
-    public java.lang.String getToString() {
+    public String getToString() {
         return toString;
     }
 
@@ -380,7 +363,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @param  toString  New value of property toString.
      */
-    public void setToString(final java.lang.String toString) {
+    public void setToString(final String toString) {
         this.toString = toString;
     }
 
@@ -389,7 +372,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @return  Value of property tableName.
      */
-    public java.lang.String getTableName() {
+    public String getTableName() {
         return tableName;
     }
 
@@ -398,7 +381,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @param  tableName  New value of property tableName.
      */
-    public void setTableName(final java.lang.String tableName) {
+    public void setTableName(final String tableName) {
         this.tableName = tableName;
     }
 
@@ -407,7 +390,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @return  Value of property primaryKey.
      */
-    public java.lang.String getPrimaryKey() {
+    public String getPrimaryKey() {
         return primaryKey;
     }
 
@@ -416,7 +399,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @param  primaryKey  New value of property primaryKey.
      */
-    public void setPrimaryKey(final java.lang.String primaryKey) {
+    public void setPrimaryKey(final String primaryKey) {
         this.primaryKey = primaryKey;
     }
 
@@ -436,7 +419,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @return  Value of property memberAttributeInfos.
      */
-    public java.util.HashMap getMemberAttributeInfos() {
+    public HashMap getMemberAttributeInfos() {
         return memberAttributeInfos;
     }
 
@@ -445,7 +428,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @param  memberAttributeInfos  New value of property memberAttributeInfos.
      */
-    public void setMemberAttributeInfos(final java.util.LinkedHashMap memberAttributeInfos) {
+    public void setMemberAttributeInfos(final LinkedHashMap memberAttributeInfos) {
         this.memberAttributeInfos = memberAttributeInfos;
     }
 
@@ -499,7 +482,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @return  Value of property getInstanceStmnt.
      */
-    public java.lang.String getGetInstanceStmnt() {
+    public String getGetInstanceStmnt() {
         return getInstanceStmnt;
     }
 
@@ -508,7 +491,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @return  sql statement capable of creating a default instance
      */
-    public java.lang.String getGetDefaultInstanceStmnt() {
+    public String getGetDefaultInstanceStmnt() {
         return getDefaultInstanceStmnt;
     }
 
@@ -527,7 +510,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @return  Value of property editor.
      */
-    public java.lang.String getEditor() {
+    public String getEditor() {
         return editor;
     }
 
@@ -536,7 +519,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @param  editor  New value of property editor.
      */
-    public void setEditor(final java.lang.String editor) {
+    public void setEditor(final String editor) {
         this.editor = editor;
     }
 
@@ -545,7 +528,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @return  Value of property renderer.
      */
-    public java.lang.String getRenderer() {
+    public String getRenderer() {
         return renderer;
     }
 
@@ -554,7 +537,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @param  renderer  New value of property renderer.
      */
-    public void setRenderer(final java.lang.String renderer) {
+    public void setRenderer(final String renderer) {
         this.renderer = renderer;
     }
 
@@ -567,17 +550,18 @@ public class Class implements java.io.Serializable, Mapable {
         final Collection c = getFieldNames();
         final Iterator iter = c.iterator();
 
-        String res = " (";  // NOI18N
+        String res = " ("; // NOI18N
 
         while (iter.hasNext()) {
             res += iter.next();
 
             if (iter.hasNext()) {
-                res += ",";  // NOI18N
+                res += ","; // NOI18N
             }
         }
 
-        res += ") ";  // NOI18N
+        res += ") "; // NOI18N
+
         return res;
     }
 

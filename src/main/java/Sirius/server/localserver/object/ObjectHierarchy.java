@@ -1,24 +1,24 @@
 /***************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- *
- *              ... and it just works.
- *
- ****************************************************/
-/*
- * ObjectHierarchy.java
- *
- * Created on 25. Mai 2004, 11:48
- */
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.server.localserver.object;
 
-import Sirius.server.sql.*;
+import Sirius.server.sql.DBConnectionPool;
 
-import java.sql.*;
+import Sirius.util.collections.MultiMap;
 
-import java.util.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
-import de.cismet.tools.collections.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * Generiert die Objekthierarchie f\u00FCr alle !!!!indizierten!!!! Strukturen
@@ -29,6 +29,7 @@ import de.cismet.tools.collections.*;
 public class ObjectHierarchy {
 
     //~ Instance fields --------------------------------------------------------
+
     // getFatherstmnt hierarchy
     protected MultiMap fatherStmnts = new MultiMap();
     protected MultiMap arrayFatherStmnts = new MultiMap();
@@ -38,6 +39,7 @@ public class ObjectHierarchy {
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
 
     //~ Constructors -----------------------------------------------------------
+
     /**
      * Creates a new instance of ObjectHierarchy.
      *
@@ -52,26 +54,23 @@ public class ObjectHierarchy {
         final Statement stmnt = con.createStatement();
         // schl\u00FCssel , vatertabellen name , Atrributname
         final String initLookupTable =
-                "select  a.foreign_key_references_to as child,a.class_id as father,c.primary_key_field as pk,c.table_name,a.field_name, isarray  from cs_attr a,cs_class  c where a.foreign_key ='T' and  a.class_id = c.id   and a.indexed=true";
-//            "select  a.foreign_key_references_to as child,a.class_id as father,c.primary_key_field as pk,c.table_name,a.field_name  from cs_attr a,cs_class  c where a.foreign_key ='T' and  a.class_id = c.id   and a.indexed=true and isarray ='F'";
-        // and a.indexed=true
-        // and ( a.isarray is null or a.isarray = 'F') rausgenommen
+            "select  a.foreign_key_references_to as child,a.class_id as father,c.primary_key_field as pk,c.table_name,a.field_name, isarray  from cs_attr a,cs_class  c where a.foreign_key ='T' and  a.class_id = c.id   and a.indexed=true";
         ResultSet rs = stmnt.executeQuery(initLookupTable);
 
         while (rs.next()) {
-            final Integer key = new Integer(rs.getInt("child"));//NOI18N
+            final Integer key = new Integer(rs.getInt("child")); // NOI18N
 
-            final String pk = rs.getString("pk");//NOI18N
+            final String pk = rs.getString("pk"); // NOI18N
 
-            final int father = rs.getInt("father");//NOI18N
+            final int father = rs.getInt("father"); // NOI18N
             final boolean isArray = rs.getBoolean("isarray");
 
             // konstruiere select string f\u00FCr Vaterobjekt mit Auswahlkriterium = Objektid des Attributes
 
             final String value = "Select " + father + " as class_id ," + pk + " as object_id" + " from "
-                    + rs.getString("table_name") + " where " + rs.getString("field_name") + " = ";
+                        + rs.getString("table_name") + " where " + rs.getString("field_name") + " = ";
             if (logger.isDebugEnabled()) {
-                logger.debug(" get Father key :: " + key + " value :: " + value);   // NOI18N
+                logger.debug(" get Father key :: " + key + " value :: " + value); // NOI18N
             }
             if (!isArray) {
                 fatherStmnts.put(key, value);
@@ -83,26 +82,27 @@ public class ObjectHierarchy {
         // init array stmns notwendig da array merkmal nicht der primary key ist
 
         final String initArrayLookupTable =
-                "select cf.primary_key_field as father_pk,cc.primary_key_field as child_pk,a.array_key, a.foreign_key_references_to as child,a.class_id as father,cf.table_name as father_table, cc.table_name as child_table,a.field_name as attribute  from cs_attr a,cs_class  cf, cs_class cc where a.foreign_key ='T' and  a.class_id = cf.id and isarray ='T' and a.foreign_key_references_to =cc.id";
+            "select cf.primary_key_field as father_pk,cc.primary_key_field as child_pk,a.array_key, a.foreign_key_references_to as child,a.class_id as father,cf.table_name as father_table, cc.table_name as child_table,a.field_name as attribute  from cs_attr a,cs_class  cf, cs_class cc where a.foreign_key ='T' and  a.class_id = cf.id and isarray ='T' and a.foreign_key_references_to =cc.id";
 
         rs = stmnt.executeQuery(initArrayLookupTable);
 
         while (rs.next()) {
-            final String arrayKey = rs.getString("array_key");//NOI18N
-            final Integer key = new Integer(rs.getInt("child"));//NOI18N
-            final String father_pk = rs.getString("father_pk");//NOI18N
-            final int father = rs.getInt("father");//NOI18N
-            final String attribute = rs.getString("attribute");//NOI18N
-            final String child_table = rs.getString("child_table");//NOI18N
-            final String father_table = rs.getString("father_table");//NOI18N
-            final String child_pk = rs.getString("child_pk");//NOI18N
+            final String arrayKey = rs.getString("array_key");        // NOI18N
+            final Integer key = new Integer(rs.getInt("child"));      // NOI18N
+            final String father_pk = rs.getString("father_pk");       // NOI18N
+            final int father = rs.getInt("father");                   // NOI18N
+            final String attribute = rs.getString("attribute");       // NOI18N
+            final String child_table = rs.getString("child_table");   // NOI18N
+            final String father_table = rs.getString("father_table"); // NOI18N
+            final String child_pk = rs.getString("child_pk");         // NOI18N
 
-            final String value = "Select " + father + " as class_id ," + father_pk + " as object_id" + " from "//NOI18N
-                    + father_table
-                    + " where " + attribute + " in "
-                    + " (select " + arrayKey + " from " + child_table + " where  " + child_pk + " = "; // ? )
+            final String value = "Select " + father + " as class_id ," + father_pk + " as object_id"
+                        + " from "                                                                         // NOI18N
+                        + father_table
+                        + " where " + attribute + " in "
+                        + " (select " + arrayKey + " from " + child_table + " where  " + child_pk + " = "; // ? )
             if (logger.isDebugEnabled()) {
-                logger.debug(" get Array Father key :: " + key + " value :: " + value);   // NOI18N
+                logger.debug(" get Array Father key :: " + key + " value :: " + value);                    // NOI18N
             }
 
             arrayFatherStmnts.put(key, value);
@@ -111,6 +111,7 @@ public class ObjectHierarchy {
     }
 
     //~ Methods ----------------------------------------------------------------
+
     /**
      * DOCUMENT ME!
      *
@@ -146,7 +147,7 @@ public class ObjectHierarchy {
 
         if (fatherStmnts.containsKey(new Integer(classId))) {
             // Liste
-            final Collection statements = (LinkedList) fatherStmnts.get(new Integer(classId));
+            final Collection statements = (LinkedList)fatherStmnts.get(new Integer(classId));
 
             if (statements == null) {
                 return result;
@@ -176,14 +177,14 @@ public class ObjectHierarchy {
 
         if (classIdHierarchy.containsKey(new Integer(parentClassId))) {
             // Liste
-            final Collection ids = (LinkedList) classIdHierarchy.get(new Integer(parentClassId));
+            final Collection ids = (LinkedList)classIdHierarchy.get(new Integer(parentClassId));
 
             final Iterator iter = ids.iterator();
 
             result = new ArrayList(ids.size());
 
             while (iter.hasNext()) {
-                final Integer child = (Integer) iter.next();
+                final Integer child = (Integer)iter.next();
                 result.add(child);
 
                 // recursion
@@ -225,7 +226,7 @@ public class ObjectHierarchy {
             }
         }
 
-        return (Integer[]) result.toArray(new Integer[result.size()]);
+        return (Integer[])result.toArray(new Integer[result.size()]);
     }
 
     /**
@@ -241,7 +242,7 @@ public class ObjectHierarchy {
 
         if (arrayFatherStmnts.containsKey(new Integer(classId))) {
             // Liste
-            final Collection statements = (LinkedList) arrayFatherStmnts.get(new Integer(classId));
+            final Collection statements = (LinkedList)arrayFatherStmnts.get(new Integer(classId));
 
             if (statements == null) {
                 return result;
@@ -251,7 +252,7 @@ public class ObjectHierarchy {
 
             result = new ArrayList(statements.size());
             while (iter.hasNext()) {
-                result.add(iter.next().toString() + objectId + ")");   // NOI18N
+                result.add(iter.next().toString() + objectId + ")"); // NOI18N
             }
         }
 

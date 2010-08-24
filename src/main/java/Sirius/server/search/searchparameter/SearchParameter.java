@@ -18,7 +18,7 @@ public interface SearchParameter {
 
     //~ Instance fields --------------------------------------------------------
 
-    String CLASSIDS = "cs_classids";//NOI18N
+    String CLASSIDS = "cs_classids"; // NOI18N
 
     //~ Methods ----------------------------------------------------------------
 

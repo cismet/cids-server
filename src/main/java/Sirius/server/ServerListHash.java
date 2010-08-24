@@ -7,7 +7,10 @@
 ****************************************************/
 package Sirius.server;
 
-import java.util.*;
+import org.apache.log4j.Logger;
+
+import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * DOCUMENT ME!
@@ -21,11 +24,9 @@ public class ServerListHash extends Hashtable {
     /** Use serialVersionUID for interoperability. */
     private static final long serialVersionUID = -3481440359460437818L;
 
-    //~ Instance fields --------------------------------------------------------
-
     // 'Elemente sind Vectoren von servern
 
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
+    private static final transient Logger LOG = Logger.getLogger(ServerListHash.class);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -64,8 +65,9 @@ public class ServerListHash extends Hashtable {
      * -------------------------------------------------------------------------
      */
     private void init() {
+        // FIXME: nasty workaround
         // Debug xxx not necessary if Xoption for Garbagecollector ist set
-        new ServerType("", 1);  // NOI18N
+        new ServerType("", 1); // NOI18N
 
         final int[] types = ServerType.getAllServerTypes();
 
@@ -86,8 +88,8 @@ public class ServerListHash extends Hashtable {
      */
     public boolean addServer(final int serverTyp, final String name, final String ip, final String port) {
         Server s = findServer(serverTyp, name /*,ip,port*/);
-        if (logger.isDebugEnabled()) {
-            logger.debug("server there? " + name + " not null?" + s);  // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("server there? " + name + " not null?" + s); // NOI18N
         }
 
         if (s == null) // not found
@@ -100,16 +102,16 @@ public class ServerListHash extends Hashtable {
             }
         }
 
-        logger.error(
-            "tried to add server "//NOI18N
+        LOG.error(
+            "tried to add server "                                                    // NOI18N
                     + name
-                    + " "//NOI18N
+                    + " "                                                             // NOI18N
                     + ip
-                    + " "//NOI18N
+                    + " "                                                             // NOI18N
                     + port
-                    + " but it's already there - or servertype is not defined type::"//NOI18N
+                    + " but it's already there - or servertype is not defined type::" // NOI18N
                     + serverTyp
-                    + " "//NOI18N
+                    + " "                                                             // NOI18N
                     + s);
         return false;
     }
@@ -133,8 +135,8 @@ public class ServerListHash extends Hashtable {
      *
      * @return  DOCUMENT ME!
      */
-    public Server getServer(final int serverTyp, final String name /*, String ip, String port*/) {
-        return findServer(serverTyp, name                          /*,ip,port*/);
+    public Server getServer(final int serverTyp, final String name) {
+        return findServer(serverTyp, name);
     }
 
     /**
@@ -145,8 +147,9 @@ public class ServerListHash extends Hashtable {
      *
      * @return  DOCUMENT ME!
      */
-    public boolean removeServer(final int serverTyp, final String name /*, String ip, String port*/) {
-        final Server s = findServer(serverTyp, name                    /*,ip,port*/);
+    public boolean removeServer(final int serverTyp, final String name) {
+        final Server s = findServer(serverTyp, name);
+
         if (s != null) {
             if (containsKey(new Integer(serverTyp))) {
                 getServerList(serverTyp).remove(s);
@@ -166,7 +169,7 @@ public class ServerListHash extends Hashtable {
      *
      * @return  DOCUMENT ME!
      */
-    protected Server findServer(final int serverTyp, final String name /*, String ip, String port*/) {
+    protected Server findServer(final int serverTyp, final String name) {
         final Integer key = new Integer(serverTyp);
 
         if (!containsKey(key)) {

@@ -78,7 +78,7 @@ public class RMInfo implements Serializable {
         this.onlineSince = onlineSince;
         this.rmiAddress = rmiAddress;
         this.ip = ip;
-        key = userName + "@" + userGroup + "@" + userDomain;//NOI18N
+        key = userName + "@" + userGroup + "@" + userDomain; // NOI18N
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -184,9 +184,9 @@ public class RMInfo implements Serializable {
      */
     public String getOnlineTimeAsText() {
         final long currentTime = System.currentTimeMillis();
-        final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");//NOI18N
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss"); // NOI18N
 
-        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));//NOI18N
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT")); // NOI18N
         final long elapsed = currentTime - onlineSince;
         return dateFormat.format(new Date(elapsed));
     }

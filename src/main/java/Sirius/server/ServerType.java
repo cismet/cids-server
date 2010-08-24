@@ -7,14 +7,20 @@
 ****************************************************/
 package Sirius.server;
 
-import java.util.*;
+import Sirius.server.property.Createable;
+
+import org.apache.log4j.Logger;
+
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.StringTokenizer;
 
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-public class ServerType implements Comparable, Sirius.server.property.Createable {
+public class ServerType implements Comparable, Createable {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -57,13 +63,6 @@ public class ServerType implements Comparable, Sirius.server.property.Createable
      */
     public static final int USERSERVER = 4;
 
-    ////////////                        /** Konstante, die den ServerTyp TranslationServer repraesentiert. Wird benoetigt bei
-    ////////////                        {@link #registerServer(int, String, String) registerServer},
-    ////////////                        {@link #unregisterServer(int , String, String)  unregisterServer},
-    ////////////                        {@link #getServerIP(int, String) getServerIP }
-    ////////////                        {@link #getServerIPs(int) getServerIPs }**/
-    ////////////                        public static final int TRANSLATIONSERVER = 5;
-
     /**
      * Konstante, die den ServerTyp ModelServer repraesentiert. Wird benoetigt bei
      * {@link #registerServer(int, String, String) registerServer},
@@ -82,28 +81,12 @@ public class ServerType implements Comparable, Sirius.server.property.Createable
 
     protected static final Hashtable typeStrings = new Hashtable(10);
 
-    //~ Instance fields --------------------------------------------------------
+    private static final transient Logger LOG = Logger.getLogger(ServerType.class);
 
-    // --------------------------------------------------------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     protected int id;
     protected String name;
-
-    // --------------------------------------------------------------------------------------------------
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
-
-    //~ Instance initializers --------------------------------------------------
-
-    // class constuctor
-    {
-        typeStrings.put(new Integer(NOT_PREDEFINED), "unknown");  // NOI18N
-        typeStrings.put(new Integer(LOCALSERVER), "localServer");  // NOI18N
-        typeStrings.put(new Integer(CALLSERVER), "callServer");  // NOI18N
-        // typeStrings.put(new Integer(PROTOCOLSERVER),"protocolServer");
-        typeStrings.put(new Integer(USERSERVER), "userServer");  // NOI18N
-        // typeStrings.put(new Integer(MODELSERVER),"modelServer"); typeStrings.put(new
-        // Integer(IRSEARCHSERVER),"irSearchServer");
-    }
 
     //~ Constructors -----------------------------------------------------------
 
@@ -114,6 +97,10 @@ public class ServerType implements Comparable, Sirius.server.property.Createable
      * @param  id    DOCUMENT ME!
      */
     public ServerType(final String name, final int id) {
+        typeStrings.put(new Integer(NOT_PREDEFINED), "unknown");  // NOI18N
+        typeStrings.put(new Integer(LOCALSERVER), "localServer"); // NOI18N
+        typeStrings.put(new Integer(CALLSERVER), "callServer");   // NOI18N
+        typeStrings.put(new Integer(USERSERVER), "userServer");   // NOI18N
         this.name = name;
         this.id = id;
     }
@@ -128,17 +115,18 @@ public class ServerType implements Comparable, Sirius.server.property.Createable
      * @return  DOCUMENT ME!
      */
     public static String getBindString(final int type) {
+        // FIXME: nasty
         // debug to make shure Class is loaded xxx
-        new ServerType("", 1);  // NOI18N
+        new ServerType("", 1); // NOI18N
 
         final Object o = typeStrings.get(new Integer(type));
         // logger.debug("type :"+type +"  "+ o);
 
         return o.toString();
     }
+
     /**
-     * --------------------------------------------------------------------------------------------------
-     * ///////////Comparable///////////////////////////////////////////////////////////
+     * DOCUMENT ME!
      *
      * @param   o  DOCUMENT ME!
      *
@@ -148,7 +136,6 @@ public class ServerType implements Comparable, Sirius.server.property.Createable
     public int compareTo(final Object o) {
         return ((ServerType)o).id - id;
     }
-    // -------------------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
@@ -170,8 +157,9 @@ public class ServerType implements Comparable, Sirius.server.property.Createable
 
         return result;
     }
+
     /**
-     * -------------------------------------------------------------------------------- adds not predefined.
+     * DOCUMENT ME!
      *
      * @param   id    DOCUMENT ME!
      * @param   name  DOCUMENT ME!
@@ -189,10 +177,6 @@ public class ServerType implements Comparable, Sirius.server.property.Createable
         }
     }
 
-    // ------------------------------------------------------------------------------------------
-
-    /////////////////////////////////////////////////////////////////////////
-
     @Override
     public java.lang.Object createObject(final String constructorArgs, final String delimiter) {
         final String[] args = tokenizeString(constructorArgs, delimiter);
@@ -200,13 +184,13 @@ public class ServerType implements Comparable, Sirius.server.property.Createable
         if (args.length == 2) {
             return new ServerType(args[0], new Integer(args[1]).intValue());
         } else {
-            logger.error("<LS> ERROR Warning :: creatObject falsche Anzahl ConstructorParameter " + args.length);  // NOI18N
+            LOG.error("<LS> ERROR Warning :: creatObject falsche Anzahl ConstructorParameter " + args.length); // NOI18N
             return null;
         }
     }
 
     /**
-     * /////////////////////////////////////////////////////////////////////////
+     * DOCUMENT ME!
      *
      * @param   s          DOCUMENT ME!
      * @param   delimiter  DOCUMENT ME!

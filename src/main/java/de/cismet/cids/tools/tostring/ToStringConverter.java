@@ -1,36 +1,35 @@
 /***************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- *
- *              ... and it just works.
- *
- ****************************************************/
-/*
- * ToString.java
- *
- * Created on 10. Mai 2004, 16:02
- */
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.cids.tools.tostring;
 
-import Sirius.server.localserver.attribute.*;
-import Sirius.server.middleware.types.*;
+import Sirius.server.localserver.attribute.Attribute;
+import Sirius.server.localserver.attribute.ObjectAttribute;
 
-import java.util.*;
+import java.io.Serializable;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-public class ToStringConverter implements java.io.Serializable {
+public class ToStringConverter implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
+
     /** Use serialVersionUID for interoperability. */
     private static final long serialVersionUID = 8894419084787216662L;
-    //~ Instance fields --------------------------------------------------------
-    private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(ToStringConverter.class);
 
     //~ Methods ----------------------------------------------------------------
+
     /**
      * DOCUMENT ME!
      *
@@ -40,27 +39,16 @@ public class ToStringConverter implements java.io.Serializable {
      * @return  DOCUMENT ME!
      */
     public String convert(final Sirius.server.localserver.object.Object o, final HashMap classes) {
-        StringBuilder stringRepresentation = new StringBuilder();
+        final StringBuilder stringRepresentation = new StringBuilder();
 
-        // ObjectAttribute[] attrs = o.getAttribs();
-        final Collection<Attribute> names = o.getAttributeByName("name", 1);
+        final Collection<Attribute> names = o.getAttributeByName("name", 1); // NOI18N
         final Iterator iter = names.iterator();
         if (iter.hasNext()) {
-            stringRepresentation.append(((ObjectAttribute) iter.next()).getValue());
+            stringRepresentation.append(((ObjectAttribute)iter.next()).getValue());
         } else {
             stringRepresentation.append(o.getKey().toString());
         }
 
-//
-//        for(int i = 0; i< attrs.length;i++)
-//        {
-//            if(!attrs[i].referencesObject())
-//                stringRepresentation+=(attrs[i].toString()+ " ");
-//            else
-//                stringRepresentation+= ( ( (MetaObject)attrs[i].getValue()).toString(classes) + " " );
-//
-//        }
-//
         return stringRepresentation.toString();
     }
 
@@ -71,27 +59,20 @@ public class ToStringConverter implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public String convert(final de.cismet.cids.tools.tostring.StringConvertable o) {
-
-//        if (logger.isDebugEnabled()) {
-//            logger.debug("convert von ToStringconverter gerufen");
-//        }
+    public String convert(final StringConvertable o) {
         final StringBuilder stringRepresentation = new StringBuilder();
 
         if (o instanceof Sirius.server.localserver.object.Object) {
-            final Collection<Attribute> names = ((Sirius.server.localserver.object.Object) o).getAttributeByName("name", 1);
-            for (Attribute cur : names) {
+            final Collection<Attribute> names = ((Sirius.server.localserver.object.Object)o).getAttributeByName(
+                    "name", // NOI18N
+                    1);
+            for (final Attribute cur : names) {
                 stringRepresentation.append(cur.getValue());
             }
         } else if (o instanceof Sirius.server.localserver.attribute.ObjectAttribute) {
-//            if (logger.isDebugEnabled()) {
-//                logger.debug("call convert for ObjectAttribute");
-//            }
-            stringRepresentation.append(((ObjectAttribute) o).getValue());
+            stringRepresentation.append(((ObjectAttribute)o).getValue());
         }
-//        else {
-//            logger.warn("Unknown Type for StringConversion ::" + o.getClass());
-//        }
+
         return stringRepresentation.toString();
     }
 }

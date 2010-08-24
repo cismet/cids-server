@@ -5,10 +5,6 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package Sirius.server.middleware.types;
 
 import java.util.Formatter;
@@ -49,7 +45,7 @@ public final class StringPatternFormater extends AbstractAttributeRepresentation
     @Override
     public String getRepresentation() {
         if (fieldNames == null) {
-            return "Fieldname array is null!";   // NOI18N
+            return "Fieldname array is null!"; // NOI18N
         }
         final Object[] values = new Object[fieldNames.length];
         for (int i = 0; i < fieldNames.length; ++i) {

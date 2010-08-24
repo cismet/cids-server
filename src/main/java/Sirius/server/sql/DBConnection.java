@@ -64,34 +64,34 @@ public class DBConnection {
 
         try {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("driver  :" + dbc.driver);//NOI18N
+                LOG.debug("driver  :" + dbc.driver); // NOI18N
             }
 
             Class.forName(dbc.driver); // can raise an ClassNotFoundExc.
 
             con = DriverManager.getConnection(dbc.url, dbc.login, dbc.pwd); // can raise an SQl EXc.
 
-            if (dbc.driver.equals("org.postgresql.Driver")) {//NOI18N
-                ((org.postgresql.PGConnection)con).addDataType("geometry", "org.postgis.PGgeometry");//NOI18N
-                ((org.postgresql.PGConnection)con).addDataType("box3d", "org.postgis.PGbox3d");//NOI18N
+            if (dbc.driver.equals("org.postgresql.Driver")) {                                         // NOI18N
+                ((org.postgresql.PGConnection)con).addDataType("geometry", "org.postgis.PGgeometry"); // NOI18N
+                ((org.postgresql.PGConnection)con).addDataType("box3d", "org.postgis.PGbox3d");       // NOI18N
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("postgis datatypes added to connection");//NOI18N
+                    LOG.debug("postgis datatypes added to connection");                               // NOI18N
                 }
             }
             if (LOG.isDebugEnabled()) {
-                LOG.debug("connection established to " + this.dbc);//NOI18N
+                LOG.debug("connection established to " + this.dbc);                                   // NOI18N
             }
 
             cache = new StatementCache(con);
         } catch (java.lang.ClassNotFoundException e) {
-            LOG.error("<LS> ERROR :: " + e.getMessage() + " Driver Not Found", e);//NOI18N
-            throw new ServerExitError(" Driver Not Found", e);//NOI18N
+            LOG.error("<LS> ERROR :: " + e.getMessage() + " Driver Not Found", e); // NOI18N
+            throw new ServerExitError(" Driver Not Found", e);                     // NOI18N
         } catch (java.sql.SQLException e) {
             ExceptionHandler.handle(e);
-            LOG.error("<LS> ERROR :: could not connect to " + dbc, e);//NOI18N
-            throw new ServerExitError(" could not connect to db", e);//NOI18N
+            LOG.error("<LS> ERROR :: could not connect to " + dbc, e);             // NOI18N
+            throw new ServerExitError(" could not connect to db", e);              // NOI18N
         } catch (java.lang.Exception e) {
-            LOG.error("<LS> ERROR :: " + e.getMessage(), e);//NOI18N
+            LOG.error("<LS> ERROR :: " + e.getMessage(), e);                       // NOI18N
             throw new ServerExitError(e);
         }
     }
@@ -254,19 +254,19 @@ public class DBConnection {
 
     public ResultSet submitQuery(final String descriptor, final java.lang.Object[] parameters) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("submitQuery: " + descriptor);//NOI18N
+            LOG.debug("submitQuery: " + descriptor); // NOI18N
         }
 
         try {
             String sqlStmnt = fetchStatement(descriptor);
             sqlStmnt = QueryParametrizer.parametrize(sqlStmnt, parameters);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("info :: " + sqlStmnt);//NOI18N
+                LOG.debug("info :: " + sqlStmnt); // NOI18N
             }
 
             return (con.createStatement()).executeQuery(sqlStmnt);
         } catch (Exception e) {
-            LOG.error(" Error in SubmitQuery()", e);//NOI18N
+            LOG.error(" Error in SubmitQuery()", e); // NOI18N
             ExceptionHandler.handle(e);
         }
 
@@ -304,12 +304,12 @@ public class DBConnection {
     public ResultSet submitQuery(final int sqlID, final java.lang.Object[] parameters) throws java.sql.SQLException,
         Exception {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("submitQuery: " + sqlID);//NOI18N
+            LOG.debug("submitQuery: " + sqlID); // NOI18N
         }
 
         String sqlStmnt = fetchStatement(sqlID);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Statement :" + sqlStmnt);//NOI18N
+            LOG.debug("Statement :" + sqlStmnt); // NOI18N
         }
 
         try {
@@ -319,7 +319,7 @@ public class DBConnection {
             throw e;
         }
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Statement :" + sqlStmnt);//NOI18N
+            LOG.debug("Statement :" + sqlStmnt); // NOI18N
         }
         return (con.createStatement()).executeQuery(sqlStmnt);
     }
@@ -336,10 +336,10 @@ public class DBConnection {
      */
     public ResultSet submitQuery(final Query q) throws java.sql.SQLException, Exception {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("submitQuery: " + q.getKey() + ", batch: " + q.isBatch());//NOI18N
+            LOG.debug("submitQuery: " + q.getKey() + ", batch: " + q.isBatch()); // NOI18N
         }
         if (LOG.isDebugEnabled()) {
-            LOG.debug("query object :: " + q);//NOI18N
+            LOG.debug("query object :: " + q);                                   // NOI18N
         }
         final Collection tmp = q.getParameterList();
 
@@ -347,7 +347,7 @@ public class DBConnection {
 
         Sorter.quickSort(params);
 
-        if (q.getQueryIdentifier().getName().equals("")) {//NOI18N
+        if (q.getQueryIdentifier().getName().equals("")) { // NOI18N
             return submitQuery(q.getQueryIdentifier().getQueryId(), params);
         } else {
             return submitQuery(q.getQueryIdentifier().getName(), params);
@@ -366,7 +366,7 @@ public class DBConnection {
      */
     public int submitUpdate(final Query q) throws java.sql.SQLException, Exception {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("submitUpdate: " + q.getKey() + ", batch: " + q.isBatch());//NOI18N
+            LOG.debug("submitUpdate: " + q.getKey() + ", batch: " + q.isBatch()); // NOI18N
         }
 
         final Collection tmp = q.getParameterList();
@@ -375,13 +375,13 @@ public class DBConnection {
         Sorter.quickSort(params);
 
         if (q.isBatch()) {
-            if (q.getQueryIdentifier().getName().equals("")) {//NOI18N
+            if (q.getQueryIdentifier().getName().equals("")) { // NOI18N
                 return submitUpdateBatch(q.getQueryIdentifier().getQueryId(), params);
             } else {
                 return submitUpdateBatch(q.getQueryIdentifier().getName(), params);
             }
         } else {
-            if (q.getQueryIdentifier().getName().equals("")) {//NOI18N
+            if (q.getQueryIdentifier().getName().equals("")) { // NOI18N
                 return submitUpdate(q.getQueryIdentifier().getQueryId(), params);
             } else {
                 return submitUpdate(q.getQueryIdentifier().getName(), params);
@@ -419,10 +419,10 @@ public class DBConnection {
     /////////////////////////////////////////////
 
     public int submitUpdate(final String descriptor, final java.lang.Object[] parameters) throws java.sql.SQLException,
-        Exception // returns abs(rows effected)
+        Exception                                     // returns abs(rows effected)
     {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("submitUpdate: " + descriptor);//NOI18N
+            LOG.debug("submitUpdate: " + descriptor); // NOI18N
         }
 
         String sqlStmnt = fetchStatement(descriptor);
@@ -466,10 +466,10 @@ public class DBConnection {
     ////////////////////////////////////////////////////////////
 
     public int submitUpdate(final int sqlID, final java.lang.Object[] parameters) throws java.sql.SQLException,
-        Exception // returns abs(rows effected)
+        Exception                                // returns abs(rows effected)
     {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("submitUpdate: " + sqlID);//NOI18N
+            LOG.debug("submitUpdate: " + sqlID); // NOI18N
         }
 
         String sqlStmnt = fetchStatement(sqlID);
@@ -501,7 +501,7 @@ public class DBConnection {
 
     public String fetchStatement(final String descriptor) throws java.sql.SQLException, Exception {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("fetchStatement: " + descriptor);//NOI18N
+            LOG.debug("fetchStatement: " + descriptor); // NOI18N
         }
 /*
 if(!dbc.cacheStatements)
@@ -550,7 +550,7 @@ if(!dbc.cacheStatements)
 
     public String fetchStatement(final int sqlID) throws java.sql.SQLException, Exception {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("fetchStatement: " + sqlID);//NOI18N
+            LOG.debug("fetchStatement: " + sqlID); // NOI18N
         }
 /*
 if(!dbc.cacheStatements)
@@ -607,7 +607,7 @@ if(!dbc.cacheStatements)
      */
     public ResultSet executeQuery(final Query q) throws java.sql.SQLException, Exception {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("executeQuery: " + q.getKey() + ", batch: " + q.isBatch());//NOI18N
+            LOG.debug("executeQuery: " + q.getKey() + ", batch: " + q.isBatch()); // NOI18N
         }
 
         if (q.getStatement() == null) { // sql aus dem cache
@@ -626,7 +626,7 @@ if(!dbc.cacheStatements)
                 throw e;
             }
             if (LOG.isDebugEnabled()) {
-                LOG.debug("INFO executeQuery :: " + sqlStmnt);//NOI18N
+                LOG.debug("INFO executeQuery :: " + sqlStmnt); // NOI18N
             }
             return (con.createStatement()).executeQuery(sqlStmnt);
         }
@@ -646,7 +646,7 @@ if(!dbc.cacheStatements)
     public int submitUpdateBatch(final int qid, final java.lang.Object[] parameters) throws java.sql.SQLException,
         Exception {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("submitUpdateBatch: " + qid);//NOI18N
+            LOG.debug("submitUpdateBatch: " + qid); // NOI18N
         }
 
         String updateBatch = fetchStatement(qid);
@@ -658,7 +658,7 @@ if(!dbc.cacheStatements)
             throw e;
         }
 
-        final StringTokenizer tokenizer = new StringTokenizer(updateBatch, ";");//NOI18N
+        final StringTokenizer tokenizer = new StringTokenizer(updateBatch, ";"); // NOI18N
 
         final String[] updates = new String[tokenizer.countTokens()];
 
@@ -689,7 +689,7 @@ if(!dbc.cacheStatements)
     public int submitUpdateBatch(final String queryname, final java.lang.Object[] parameters)
             throws java.sql.SQLException, Exception {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("submitUpdateBatch: " + queryname);//NOI18N
+            LOG.debug("submitUpdateBatch: " + queryname); // NOI18N
         }
 
         String updateBatch = fetchStatement(queryname);
@@ -701,7 +701,7 @@ if(!dbc.cacheStatements)
             throw e;
         }
 
-        final StringTokenizer tokenizer = new StringTokenizer(updateBatch, ";");//NOI18N
+        final StringTokenizer tokenizer = new StringTokenizer(updateBatch, ";"); // NOI18N
 
         final String[] updates = new String[tokenizer.countTokens()];
 
@@ -731,7 +731,7 @@ if(!dbc.cacheStatements)
                         set.close();
                     }
                 } catch (final SQLException e) {
-                    LOG.warn("could not close resultset: " + set, e);//NOI18N
+                    LOG.warn("could not close resultset: " + set, e); // NOI18N
                 }
             }
         }
@@ -750,7 +750,7 @@ if(!dbc.cacheStatements)
                         stmt.close();
                     }
                 } catch (final SQLException e) {
-                    LOG.warn("could not close statement: " + stmt, e);//NOI18N
+                    LOG.warn("could not close statement: " + stmt, e); // NOI18N
                 }
             }
         }
