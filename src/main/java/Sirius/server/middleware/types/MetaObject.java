@@ -21,7 +21,6 @@ import java.io.Serializable;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Hashtable;
 
 import de.cismet.cids.dynamics.CidsBean;
 
@@ -59,7 +58,7 @@ public interface MetaObject extends Sirius.server.localserver.object.Object,
      *
      * @return  DOCUMENT ME!
      */
-    Hashtable getAllClasses();
+    HashMap getAllClasses();
 
     /**
      * DOCUMENT ME!
@@ -205,7 +204,7 @@ public interface MetaObject extends Sirius.server.localserver.object.Object,
      *
      * @param  classes  DOCUMENT ME!
      */
-    void setAllClasses(Hashtable classes);
+    void setAllClasses(HashMap classes);
 
     /**
      * DOCUMENT ME!

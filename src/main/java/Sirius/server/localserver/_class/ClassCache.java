@@ -30,7 +30,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 
 import java.util.HashMap;
-import java.util.Hashtable;
+//import java.util.Hashtable;
 import java.util.Vector;
 
 /**
@@ -182,7 +182,7 @@ public class ClassCache extends Shutdown {
             } // end while
 
             classTable.close();
-            classes.rehash();
+//            classes.rehash();
         } catch (java.lang.Exception e) {
             ExceptionHandler.handle(e);
         }
@@ -296,7 +296,7 @@ public class ClassCache extends Shutdown {
      *
      * @return  DOCUMENT ME!
      */
-    public Hashtable getClassHashMap() {
+    public HashMap getClassHashMap() {
         return classes;
     }
     /**

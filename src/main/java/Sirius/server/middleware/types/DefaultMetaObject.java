@@ -1,10 +1,10 @@
 /***************************************************
-*
-* cismet GmbH, Saarbruecken, Germany
-*
-*              ... and it just works.
-*
-****************************************************/
+ *
+ * cismet GmbH, Saarbruecken, Germany
+ *
+ *              ... and it just works.
+ *
+ ****************************************************/
 package Sirius.server.middleware.types;
 
 import Sirius.server.localserver.attribute.*;
@@ -28,7 +28,6 @@ import de.cismet.cids.utils.MetaClassCacheService;
 public final class DefaultMetaObject extends Sirius.server.localserver.object.DefaultObject implements MetaObject {
 
     //~ Instance fields --------------------------------------------------------
-
     /** domain (localserver) of where this object is hosted. */
     protected String domain;
     /** this object was changed (needs to be modified according to status). */
@@ -41,11 +40,10 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
     /** this objects status (NO_STATUS,NEW,MODIFIED,TO_DELETE,TEMPLATE). */
     /** this objects MetaClass (to be set in a clientApplication after retrieval ). */
     private MetaClass metaClass;
-    private transient Hashtable classes;
+    private transient HashMap classes;
     private transient CidsBean bean = null;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * constructs a metaObject out of a (server) object. mainly adds the domain infromation
      *
@@ -61,7 +59,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
         setStatus(o.getStatus());
         if (o instanceof DefaultMetaObject) {
             // this.status = ((MetaObject) o).status;
-            this.classes = ((DefaultMetaObject)o).classes;
+            this.classes = ((DefaultMetaObject) o).classes;
         } else {
             // this.status = NO_STATUS;
         }
@@ -69,8 +67,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
 
         for (int i = 0; i < attr.length; i++) {
             if (attr[i].referencesObject()) {
-                final Sirius.server.localserver.object.Object ob = (Sirius.server.localserver.object.Object)
-                    attr[i].getValue();
+                final Sirius.server.localserver.object.Object ob = (Sirius.server.localserver.object.Object) attr[i].getValue();
 
                 if (ob != null) {
                     final MetaObject mo = new DefaultMetaObject(ob, domain);
@@ -107,9 +104,8 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
     // --------------------------------------------------------------
 
     //~ Methods ----------------------------------------------------------------
-
     @Override
-    public Hashtable getAllClasses() {
+    public HashMap getAllClasses() {
         if (classes == null) {
             setAllClasses();
         }
@@ -144,13 +140,13 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
      */
     @Override
     public String getName() {
-        final Collection c = getAttributeByName(new String("name"), 1);//NOI18N
+        final Collection c = getAttributeByName("name", 1);//NOI18N
 
         final Iterator iter = c.iterator();
         Attribute a = null;
 
         if (iter.hasNext()) {
-            a = (Attribute)iter.next();
+            a = (Attribute) iter.next();
 
             final Object value = a.getValue();
 
@@ -170,12 +166,12 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
      */
     @Override
     public String getDescription() {
-        final Collection c = getAttributeByName(new String("description"), 1);//NOI18N
+        final Collection c = getAttributeByName("description", 1);//NOI18N
 
         final Iterator iter = c.iterator();
 
         if (iter.hasNext()) {
-            final Object o = ((Attribute)iter.next()).getValue();
+            final Object o = ((Attribute) iter.next()).getValue();
 
             if (o != null) {
                 return o.toString();
@@ -205,12 +201,12 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
 
         for (final ObjectAttribute oa : allAttribs) {
             if (oa.getMai().isArray()) {
-                final MetaObject dummyObject = (MetaObject)oa.getValue();
+                final MetaObject dummyObject = (MetaObject) oa.getValue();
                 final String backreferenceFieldName = oa.getMai().getArrayKeyFieldName();
                 try {
                     final ObjectAttribute[] dummyEntries = dummyObject.getAttribs();
                     for (final ObjectAttribute dummyEntry : dummyEntries) {
-                        final MetaObject dummyEntryMO = (MetaObject)dummyEntry.getValue();
+                        final MetaObject dummyEntryMO = (MetaObject) dummyEntry.getValue();
                         dummyEntryMO.getAttributeByFieldName(backreferenceFieldName).setValue(primaryKey);
                     }
                 } catch (Exception e) {
@@ -381,11 +377,11 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
         final Iterator attributes = attribHash.values().iterator();
 
         while (attributes.hasNext()) {
-            final ObjectAttribute a = (ObjectAttribute)attributes.next();
+            final ObjectAttribute a = (ObjectAttribute) attributes.next();
 
             // recursion
             if (a.referencesObject()) {
-                final MetaObject mo = (MetaObject)a.getValue();
+                final MetaObject mo = (MetaObject) a.getValue();
 
                 if (mo != null) {
                     mo.setAllStatus(status);
@@ -420,11 +416,11 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
         final Iterator attributes = attribHash.values().iterator();
 
         while (attributes.hasNext()) {
-            final ObjectAttribute a = (ObjectAttribute)attributes.next();
+            final ObjectAttribute a = (ObjectAttribute) attributes.next();
 
             // recursion
             if (a.referencesObject()) {
-                final MetaObject mo = (MetaObject)a.getValue();
+                final MetaObject mo = (MetaObject) a.getValue();
 
                 if (mo != null) {
                     l.addAll(mo.getURLs(classKeys));
@@ -469,11 +465,11 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
         final Iterator attributes = attrs.iterator();
 
         while (attributes.hasNext()) {
-            final ObjectAttribute a = (ObjectAttribute)attributes.next();
+            final ObjectAttribute a = (ObjectAttribute) attributes.next();
 
             // recursion
             if (a.referencesObject()) {
-                final MetaObject mo = (MetaObject)a.getValue();
+                final MetaObject mo = (MetaObject) a.getValue();
 
                 if (mo != null) {
                     l.addAll(mo.getURLs(classKeys));
@@ -502,7 +498,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
     }
 
     @Override
-    public void setAllClasses(final Hashtable classes) {
+    public void setAllClasses(final HashMap classes) {
         this.classes = classes;
         setAllClasses();
     }
@@ -525,8 +521,8 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
             }
         }
         if (classes != null) {
-            final String classKey = new String(domain + this.classID);
-            final MetaClass mc = (MetaClass)classes.get(classKey);
+            final String classKey = domain + this.classID;
+            final MetaClass mc = (MetaClass) classes.get(classKey);
 
             if (mc != null) {
                 metaClass = mc;
@@ -535,7 +531,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
 
             for (int i = 0; i < oas.length; i++) {
                 if (oas[i].referencesObject()) {
-                    final MetaObject mo = (MetaObject)oas[i].getValue();
+                    final MetaObject mo = (MetaObject) oas[i].getValue();
                     // recursion
                     if (mo != null) {
                         mo.setAllClasses(classes);
@@ -554,27 +550,39 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
      */
     @Override
     public String toString() {
-        setLogger();
-        if (log != null) {
-            if (log.isDebugEnabled()) {
-                log.debug("MetaClass set ? " + metaClass);   // NOI18N
-            }
-        }
-
-        if (getMetaClass() != null) {
-            if (getMetaClass().getToStringConverter() != null) {
-                return getMetaClass().getToStringConverter().convert(this);
+//        setLogger();
+//        if (log != null) {
+//            if (log.isDebugEnabled()) {
+//                log.debug("MetaClass gesetzt ? " + metaClass);
+//            }
+//        }
+//
+//        if (getMetaClass() != null) {
+//            if (getMetaClass().getToStringConverter() != null) {
+//                return getMetaClass().getToStringConverter().convert(this);
+//            } else {
+//                log.warn("kein Stringvonverter gesetzt");
+//                return "";
+//            }
+//        } else {
+//            if (log != null) {
+//                log.warn(
+//                        "keine Klasse und daher kein StringConverter f\u00FCr dieses MetaObject gesetzt : "
+//                        + this.getID());
+//            }
+//            log.error("Metaclass was null classId=" + classID);
+//            return "Metaclass was null";
+//        }
+        MetaClass mc = getMetaClass();
+        if (mc != null) {
+            ToStringConverter converter = metaClass.getToStringConverter();
+            if (converter != null) {
+                return converter.convert(this);
             } else {
-                log.warn("no Stringvonverter set");   // NOI18N
-                return "";   // NOI18N
+                return "";//NOI18N
             }
         } else {
-            if (log != null) {
-                log.warn(
-                    "no class and therefore no StringConverter set for this MetaObject : " + this.getID());   // NOI18N
-            }
-            log.error("Metaclass was null classId=" + classID);   // NOI18N
-            return "Metaclass was null";   // NOI18N
+            return "Metaclass was null";//NOI18N
         }
     }
 
@@ -626,44 +634,45 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
         // System.out.println("class :: "+classID+"object :: " +objectID+"  atrubutes"+ attribHash);
         // border=\"1\"  bgcolor=\"#E0E0E0\"
         ret =
-            "<table border=\"1\" rules=\"all\" cellspacing=\"0\" cellpadding=\"2\"> <tr><th colspan=\"2\" align=\"left\">class = "   // NOI18N
-            + classID
-            + "<br>object id =" + objectID   // NOI18N
-            + "<br>status = " + getStatusDebugString()   // NOI18N
-            + "<br>dummy = " + isDummy()   // NOI18N
-            + "</th></tr>";   // NOI18N
+                "<table border=\"1\" rules=\"all\" cellspacing=\"0\" cellpadding=\"2\"> <tr><th colspan=\"2\" align=\"left\">class = "//NOI18N
+                + classID
+                + "<br>object id ="//NOI18N
+                + objectID
+                + "<br>status = "//NOI18N
+                + getStatusDebugString()
+                + "<br>dummy = "//NOI18N
+                + isDummy()
+                + "</th></tr>";//NOI18N
 
         final ObjectAttribute[] as = getAttribs();
-        ret += "";   // NOI18N
         for (int i = 0; i < as.length; i++) {
             if (as[i].referencesObject() && (as[i].getValue() != null)) {
                 ret += "<tr><td bgcolor="//NOI18N
-                            + getColorForChangedFlag(as[i].isChanged())
-                            + " valign=\"top\" align=\"right\">"//NOI18N
-                            + as[i].getName()
-                            + "</td><td bgcolor="//NOI18N
-                            + getColorForChangedFlag(as[i].isChanged())
-                            + " valign=\"top\" align=\"right\">["//NOI18N
-                            + as[i].getMai().getFieldName()
-                            + "]</td><td>"//NOI18N
-                            + ((MetaObject)as[i].getValue()).getDebugString()
-                            + "</td></tr>";//NOI18N
+                        + getColorForChangedFlag(as[i].isChanged())
+                        + " valign=\"top\" align=\"right\">"//NOI18N
+                        + as[i].getName()
+                        + "</td><td bgcolor="//NOI18N
+                        + getColorForChangedFlag(as[i].isChanged())
+                        + " valign=\"top\" align=\"right\">["//NOI18N
+                        + as[i].getMai().getFieldName()
+                        + "]</td><td>"//NOI18N
+                        + ((MetaObject) as[i].getValue()).getDebugString()
+                        + "</td></tr>";//NOI18N
             } else {
                 ret += "<tr><td bgcolor="//NOI18N
-                            + getColorForChangedFlag(as[i].isChanged())
-                            + " valign=\"top\" align=\"right\">"//NOI18N
-                            + as[i].getName()
-                            + "</td><td bgcolor="//NOI18N
-                            + getColorForChangedFlag(as[i].isChanged())
-                            + " valign=\"top\" align=\"right\">["//NOI18N
-                            + as[i].getMai().getFieldName()
-                            + "]</td><td>"//NOI18N
-                            + as[i].toString()
-                            + "</td></tr>";//NOI18N
+                        + getColorForChangedFlag(as[i].isChanged())
+                        + " valign=\"top\" align=\"right\">"//NOI18N
+                        + as[i].getName()
+                        + "</td><td bgcolor="//NOI18N
+                        + getColorForChangedFlag(as[i].isChanged())
+                        + " valign=\"top\" align=\"right\">["//NOI18N
+                        + as[i].getMai().getFieldName()
+                        + "]</td><td>"//NOI18N
+                        + as[i].toString()
+                        + "</td></tr>";//NOI18N
             }
         }
-        ret += "";   // NOI18N
-        ret += "</table>";   // NOI18N
+        ret += "</table>";//NOI18N
         return ret;
     }
 
@@ -671,10 +680,10 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
     public String getPropertyString() {
         String ret = "";//NOI18N
         ret = "Properties:("//NOI18N
-                    + classID
-                    + ","//NOI18N
-                    + objectID
-                    + "):\n";//NOI18N
+                + classID
+                + ","//NOI18N
+                + objectID
+                + "):\n";//NOI18N
 
         final ObjectAttribute[] as = getAttribs();
         for (int i = 0; i < as.length; i++) {
@@ -723,18 +732,18 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
     @Override
     public boolean equals(final Object obj) {
         if (obj instanceof MetaObject) {
-            final MetaObject tmp = (MetaObject)obj;
+            final MetaObject tmp = (MetaObject) obj;
             // debug: if ((getClassID() == tmp.getClassID()) && (getID() == tmp.getID()) &&
             // getDomain().equals(tmp.getDomain()) != equals(obj)) { logger.fatal("Different Equals: " + toString() +
             // "\n VS \n" + obj); }
             if (getID() > -1) {
                 return (getClassID() == tmp.getClassID())
-                            && (getID() == tmp.getID())
-                            && getDomain().equals(tmp.getDomain());
+                        && (getID() == tmp.getID())
+                        && getDomain().equals(tmp.getDomain());
             } else {
                 // not persisted MOs are only equal if they have the same reference
                 return this
-                            == obj;
+                        == obj;
             }
         }
         return false;
@@ -744,11 +753,11 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
     public int hashCode() {
         int hash = 5;
         hash = (11 * hash)
-                    + this.getClassID();
+                + this.getClassID();
         hash = (11 * hash)
-                    + this.getID();
+                + this.getID();
         hash = (11 * hash)
-                    + this.getDomain().hashCode();
+                + this.getDomain().hashCode();
         return hash;
     }
 }

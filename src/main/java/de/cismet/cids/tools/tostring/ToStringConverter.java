@@ -73,9 +73,9 @@ public class ToStringConverter implements java.io.Serializable {
      */
     public String convert(final de.cismet.cids.tools.tostring.StringConvertable o) {
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("convert von ToStringconverter gerufen");
-        }
+//        if (logger.isDebugEnabled()) {
+//            logger.debug("convert von ToStringconverter gerufen");
+//        }
         final StringBuilder stringRepresentation = new StringBuilder();
 
         if (o instanceof Sirius.server.localserver.object.Object) {
@@ -84,13 +84,14 @@ public class ToStringConverter implements java.io.Serializable {
                 stringRepresentation.append(cur.getValue());
             }
         } else if (o instanceof Sirius.server.localserver.attribute.ObjectAttribute) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("call convert for ObjectAttribute");
-            }
+//            if (logger.isDebugEnabled()) {
+//                logger.debug("call convert for ObjectAttribute");
+//            }
             stringRepresentation.append(((ObjectAttribute) o).getValue());
-        } else {
-            logger.warn("Unknown Type for StringConversion ::" + o.getClass());
         }
+//        else {
+//            logger.warn("Unknown Type for StringConversion ::" + o.getClass());
+//        }
         return stringRepresentation.toString();
     }
 }

@@ -278,10 +278,10 @@ public class ObjectAttribute extends Attribute implements Mapable,
 
     @Override
     public String toString() {
-        setLogger();
-        if (logger.isDebugEnabled()) {
-            logger.debug("entered toString for ObjectAttribute " + name + ", value=" + value);
-        }
+//        setLogger();
+//        if (logger.isDebugEnabled()) {
+//            logger.debug("entered toString for ObjectAttribute " + name + ", value=" + value);
+//        }
 
         if (value != null) {
             final ToStringConverter toStringConv = getToStringConverter();
@@ -291,7 +291,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
                 return value.toString();
             }
         }
-        logger.warn("Value is null for " + getName() + "!");
+//        logger.warn("Value is null for " + getName() + "!");
         return "";
     }
 

@@ -1,10 +1,10 @@
 /***************************************************
-*
-* cismet GmbH, Saarbruecken, Germany
-*
-*              ... and it just works.
-*
-****************************************************/
+ *
+ * cismet GmbH, Saarbruecken, Germany
+ *
+ *              ... and it just works.
+ *
+ ****************************************************/
 package Sirius.server.localserver._class;
 
 import java.util.*;
@@ -14,21 +14,20 @@ import java.util.*;
  *
  * @version  $Revision$, $Date$
  */
-public class ClassMap extends java.util.Hashtable {
+public class ClassMap extends java.util.HashMap {
 
     //~ Static fields/initializers ---------------------------------------------
-
     /** Use serialVersionUID for interoperability. */
     private static final long serialVersionUID = 8694508933671049122L;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * constructor.
      */
     public ClassMap() {
         super();
     }
+
     /**
      * constructor.
      *
@@ -37,6 +36,7 @@ public class ClassMap extends java.util.Hashtable {
     public ClassMap(final int capacity) {
         super(capacity);
     }
+
     /**
      * constructor.
      *
@@ -48,7 +48,6 @@ public class ClassMap extends java.util.Hashtable {
     }
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * //////////////////////////////////////////////////
      *
@@ -59,9 +58,8 @@ public class ClassMap extends java.util.Hashtable {
      * @throws  java.lang.Exception  DOCUMENT ME!
      */
     public void add(final int key, final Class value) throws Exception {
-        final Integer Key = new Integer(key);
-        super.put(Key, value);
-        if (!super.containsKey(Key)) {
+        super.put(key, value);
+        if (!super.containsKey(key)) {
             throw new java.lang.Exception("Couldn't add class ID:" + key);   // NOI18N 
         }
     } // end add
@@ -81,7 +79,7 @@ public class ClassMap extends java.util.Hashtable {
             final java.lang.Object candidate = super.get(Key);
 
             // if (candidate instanceof Class)
-            return (Class)candidate;
+            return (Class) candidate;
         } else {
             return null;
         }
@@ -100,12 +98,7 @@ public class ClassMap extends java.util.Hashtable {
      * @return  DOCUMENT ME!
      */
     public boolean containsIntKey(final int key) {
-        return super.containsKey(new Integer(key));
-    }
-
-    @Override
-    public void rehash() {
-        super.rehash();
+        return super.containsKey(key);
     }
 
     /**
@@ -117,3 +110,4 @@ public class ClassMap extends java.util.Hashtable {
         return new Vector(this.values());
     }
 } // end of class ClassMap
+

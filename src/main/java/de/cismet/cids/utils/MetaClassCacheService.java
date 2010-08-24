@@ -13,7 +13,7 @@ package de.cismet.cids.utils;
 
 import Sirius.server.middleware.types.MetaClass;
 
-import java.util.Hashtable;
+import java.util.HashMap;
 
 /**
  * DOCUMENT ME!
@@ -50,5 +50,5 @@ public interface MetaClassCacheService {
      *
      * @return  DOCUMENT ME!
      */
-    Hashtable getAllClasses(String domain);
+    HashMap getAllClasses(String domain);
 }

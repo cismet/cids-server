@@ -396,10 +396,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
      *
      * @return  DOCUMENT ME!
      */
-    public static Hashtable getClassHashTable(final MetaClass[] classes, final String serverName) {
-        final Hashtable classHash = new Hashtable();
+    public static HashMap getClassHashTable(final MetaClass[] classes, final String serverName) {
+        final HashMap classHash = new HashMap();
         for (int i = 0; i < classes.length; i++) {
-            final String key = new String(serverName + classes[i].getID());
+            final String key = serverName + classes[i].getID();
             if (!classHash.containsKey(key)) {
                 classHash.put(key, classes[i]);
             }

@@ -49,7 +49,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     }
 
     @Override
-    public Hashtable getAllClasses() {
+    public HashMap getAllClasses() {
         return getRealMetaObject().getAllClasses();
     }
 
@@ -134,7 +134,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     }
 
     @Override
-    public void setAllClasses(final Hashtable classes) {
+    public void setAllClasses(final HashMap classes) {
         getRealMetaObject().setAllClasses(classes);
     }
 
