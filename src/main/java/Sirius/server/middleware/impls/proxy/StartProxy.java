@@ -35,6 +35,7 @@ import java.util.MissingResourceException;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.ServerSecurityManager;
+import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
 import de.cismet.cids.server.ws.rest.RESTfulService;
 
 /**
@@ -52,7 +53,7 @@ public final class StartProxy {
 
     //~ Instance fields --------------------------------------------------------
 
-    private final transient ProxyImpl callServer;
+    private final transient CallServerService callServer;
     private final transient String siriusRegistryIP;
     private final transient Server serverInfo;
     private final transient ServerStatus status;
@@ -64,7 +65,8 @@ public final class StartProxy {
      *
      * @param   configFile  DOCUMENT ME!
      *
-     * @throws  ServerExitError  DOCUMENT ME!
+     * @throws  ServerExitError        DOCUMENT ME!
+     * @throws  IllegalStateException  DOCUMENT ME!
      */
     private StartProxy(final String configFile) throws ServerExitError {
         if (LOG.isDebugEnabled()) {
@@ -84,63 +86,83 @@ public final class StartProxy {
             }
         }
 
-        // init server registry ip
-        siriusRegistryIP = initServerRegistryIP(properties);
-
-        // TODO: why sout???
-        System.out.println("<CS> INFO: siriusRegistryIP:: " + siriusRegistryIP); // NOI18N
-        System.out.println("<CS> INFO: configFile:: " + configFile);             // NOI18N
-        if (LOG.isInfoEnabled()) {
-            LOG.info("<CS> INFO: siriusRegistryIP:: " + siriusRegistryIP);       // NOI18N
-            LOG.info("<CS> INFO: configFile:: " + configFile);                   // NOI18N
-        }
-
-        // create a securitymanager if it is not registered yet
-        try {
-            if (System.getSecurityManager() == null) {
-                System.setSecurityManager(new ServerSecurityManager());
+        if ("proxy".equalsIgnoreCase(properties.getStartMode())) {
+            if (LOG.isInfoEnabled()) {
+                LOG.info("<CS> INFO: starting RESTful pass-through proxy");
             }
-        } catch (final Exception e) {
-            final String message = "could not create security manager"; // NOI18N
-            LOG.fatal(message, e);
-            throw new ServerExitError(message, e);
-        }
 
-        // init server
-        serverInfo = initServer(properties);
+            siriusRegistryIP = null;
+            serverInfo = null;
+            status = null;
 
-        // init RMI registry
-        final Registry rmiRegistry = initRegistry(Integer.valueOf(serverInfo.getRMIPort()));
-
-        // create and bind callserver instance
-        callServer = createAndBindProxy(properties);
-        status = new ServerStatus();
-
-        // bring up the RESTful Service after initialisation if rest is enabled
-        if(properties.isRestEnabled())
-        {
-            try {
-                RESTfulService.up(properties);
-            } catch (final ServerExitError e) {
-                LOG.error("could not bring up RESTful interface", e); // NOI18N
+            if (!properties.isRestEnabled()) {
+                throw new IllegalStateException("if the startmode is proxy then REST must be enabled"); // NOI18N
             }
-        }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("<CS> RMIRegistry does exist...");                                           // NOI18N
-            final String[] list;
+            if (LOG.isInfoEnabled()) {
+                LOG.info("<CS> INFO: pass-through url: " + properties.getServerProxyURL());
+            }
+
+            callServer = new RESTfulSerialInterfaceConnector(properties.getServerProxyURL());
+            RESTfulService.up(properties);
+        } else {
+            // init server registry ip
+            siriusRegistryIP = initServerRegistryIP(properties);
+
+            // TODO: why sout???
+            System.out.println("<CS> INFO: siriusRegistryIP:: " + siriusRegistryIP); // NOI18N
+            System.out.println("<CS> INFO: configFile:: " + configFile);             // NOI18N
+            if (LOG.isInfoEnabled()) {
+                LOG.info("<CS> INFO: siriusRegistryIP:: " + siriusRegistryIP);       // NOI18N
+                LOG.info("<CS> INFO: configFile:: " + configFile);                   // NOI18N
+            }
+
+            // create a securitymanager if it is not registered yet
             try {
-                list = rmiRegistry.list();
-                final StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < list.length; i++) {
-                    sb.append('\t').append(list[i]);
+                if (System.getSecurityManager() == null) {
+                    System.setSecurityManager(new ServerSecurityManager());
                 }
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug(" Info <CS> Already registered with RMIRegistry: " + sb.toString()); // NOI18N
+            } catch (final Exception e) {
+                final String message = "could not create security manager"; // NOI18N
+                LOG.fatal(message, e);
+                throw new ServerExitError(message, e);
+            }
+
+            // init server
+            serverInfo = initServer(properties);
+
+            // init RMI registry
+            final Registry rmiRegistry = initRegistry(Integer.valueOf(serverInfo.getRMIPort()));
+
+            // create and bind callserver instance
+            callServer = createAndBindProxy(properties);
+            status = new ServerStatus();
+
+            // bring up the RESTful Service after initialisation if rest is enabled
+            if (properties.isRestEnabled()) {
+                try {
+                    RESTfulService.up(properties);
+                } catch (final ServerExitError e) {
+                    LOG.error("could not bring up RESTful interface", e); // NOI18N
                 }
-            } catch (final Exception ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("cannot list registered services", ex);                              // NOI18N
+            }
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("<CS> RMIRegistry does exist...");                                           // NOI18N
+                final String[] list;
+                try {
+                    list = rmiRegistry.list();
+                    final StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < list.length; i++) {
+                        sb.append('\t').append(list[i]);
+                    }
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(" Info <CS> Already registered with RMIRegistry: " + sb.toString()); // NOI18N
+                    }
+                } catch (final Exception ex) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("cannot list registered services", ex);                              // NOI18N
+                    }
                 }
             }
         }
@@ -170,6 +192,7 @@ public final class StartProxy {
             throw new ServerExitError(message, ex);
         }
     }
+
     /**
      * DOCUMENT ME!
      *
@@ -397,23 +420,28 @@ public final class StartProxy {
         }
 
         try {
-            callServer.unregisterAsObserver(siriusRegistryIP);
-            callServer.getNameServer()
-                    .unregisterServer(
-                        ServerType.CALLSERVER,
-                        serverInfo.getName(),
-                        serverInfo.getIP(),
-                        serverInfo.getRMIPort());
+            if (callServer instanceof ProxyImpl) {
+                final ProxyImpl proxyimpl = (ProxyImpl)callServer;
+                proxyimpl.unregisterAsObserver(siriusRegistryIP);
+                proxyimpl.getNameServer()
+                        .unregisterServer(
+                            ServerType.CALLSERVER,
+                            serverInfo.getName(),
+                            serverInfo.getIP(),
+                            serverInfo.getRMIPort());
 
-            RESTfulService.down();
+                RESTfulService.down();
 
-            try {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("unbind callserver");                                          // NOI18N
+                try {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("unbind callserver");                                          // NOI18N
+                    }
+                    Naming.unbind("callServer");                                                 // NOI18N
+                } catch (final NotBoundException e) {
+                    LOG.warn("callserver not available (anymore), probably already unbound", e); // NOI18N
                 }
-                Naming.unbind("callServer");                                                 // NOI18N
-            } catch (final NotBoundException e) {
-                LOG.warn("callserver not available (anymore), probably already unbound", e); // NOI18N
+            } else {
+                RESTfulService.down();
             }
 
             final String message = "Server shutdown success"; // NOI18N
@@ -426,7 +454,7 @@ public final class StartProxy {
             final String message = "Server shutdown failure, integrity no longer guaranteed"; // NOI18N
             LOG.fatal(message, e);
             throw new ServerExitError(message, e);
-        } finally{
+        } finally {
             instance = null;
         }
     }

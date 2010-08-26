@@ -15,7 +15,6 @@ import Sirius.server.newuser.permission.PermissionHolder;
 import Sirius.server.newuser.permission.Policy;
 
 import Sirius.util.Mapable;
-import Sirius.util.collections.LongVector;
 import Sirius.util.image.Image;
 
 import java.util.ArrayList;
@@ -23,6 +22,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+
+import de.cismet.tools.collections.LongVector;
 
 /**
  * Die Klasse Class fungiert zum einen als Mittel zur Klassifkation zum anderen enth\u00E4lt Sie Eigenschaften von
