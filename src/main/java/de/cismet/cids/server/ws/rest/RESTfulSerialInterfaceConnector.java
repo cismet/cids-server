@@ -777,9 +777,9 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             if (usr != null) {
                 queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
             }
-            if (nodeID >= 0) {
-                queryParams.add(PARAM_NODE_ID, Converter.serialiseToString(nodeID));
-            }
+
+            queryParams.add(PARAM_NODE_ID, Converter.serialiseToString(nodeID));
+
             if (domain != null) {
                 queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
@@ -1028,12 +1028,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             if (usr != null) {
                 queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
             }
-            if (objectID != -1) {
-                queryParams.add(PARAM_OBJECT_ID, Converter.serialiseToString(objectID));
-            }
-            if (classID != -1) {
-                queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classID));
-            }
+
+            queryParams.add(PARAM_OBJECT_ID, Converter.serialiseToString(objectID));
+            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classID));
+
             if (domain != null) {
                 queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
@@ -1458,9 +1456,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             if (domain != null) {
                 queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
-            if (classID >= 0) {
-                queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classID));
-            }
+
+            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classID));
 
             try {
                 return getResponsePOST("getClassByID", queryParams, MetaClass.class); // NOI18N
@@ -1746,9 +1743,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         try {
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
-            if (classId >= 0) {
-                queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId));
-            }
+            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId));
+
             if (user != null) {
                 queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
@@ -1807,9 +1803,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         try {
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
-            if (classId >= 0) {
-                queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId));
-            }
+            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId));
+
             if (user != null) {
                 queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
@@ -1870,6 +1865,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId));
+
             if (user != null) {
                 queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
@@ -1934,6 +1930,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId));
+
             if (user != null) {
                 queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
@@ -2128,9 +2125,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         try {
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
-            if (id >= 0) {
-                queryParams.add(PARAM_QUERY_ID, Converter.serialiseToString(id));
-            }
+            queryParams.add(PARAM_QUERY_ID, Converter.serialiseToString(id));
+
             if (domain != null) {
                 queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
@@ -2177,9 +2173,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         try {
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
-            if (id >= 0) {
-                queryParams.add(PARAM_QUERY_ID, Converter.serialiseToString(id));
-            }
+            queryParams.add(PARAM_QUERY_ID, Converter.serialiseToString(id));
+
             if (domain != null) {
                 queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
             }
@@ -2253,29 +2248,12 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             if (statement != null) {
                 queryParams.add(PARAM_STATEMENT, Converter.serialiseToString(statement));
             }
-            if (resultType >= 0) {
-                queryParams.add(PARAM_RESULT_TYPE, Converter.serialiseToString(resultType));
-            }
-            if (('f' == isBatch) || ('t' == isBatch)
-                        || ('1' == isBatch)
-                        || ('0' == isBatch)) {
-                queryParams.add(PARAM_IS_BATCH, Converter.serialiseToString(isBatch));
-            }
-            if (('f' == isUpdate) || ('t' == isUpdate)
-                        || ('1' == isUpdate)
-                        || ('0' == isUpdate)) {
-                queryParams.add(PARAM_IS_UPDATE, Converter.serialiseToString(isUpdate));
-            }
-            if (('f' == isRoot) || ('t' == isRoot)
-                        || ('1' == isRoot)
-                        || ('0' == isRoot)) {
-                queryParams.add(PARAM_IS_ROOT, Converter.serialiseToString(isRoot));
-            }
-            if (('f' == isUnion) || ('t' == isUnion)
-                        || ('1' == isUnion)
-                        || ('0' == isUnion)) {
-                queryParams.add(PARAM_IS_UNION, Converter.serialiseToString(isUnion));
-            }
+
+            queryParams.add(PARAM_RESULT_TYPE, Converter.serialiseToString(resultType));
+            queryParams.add(PARAM_IS_BATCH, Converter.serialiseToString(isBatch));
+            queryParams.add(PARAM_IS_UPDATE, Converter.serialiseToString(isUpdate));
+            queryParams.add(PARAM_IS_ROOT, Converter.serialiseToString(isRoot));
+            queryParams.add(PARAM_IS_UNION, Converter.serialiseToString(isUnion));
 
             try {
                 return getResponsePOST("addQueryFull", queryParams, int.class); // NOI18N
@@ -2390,9 +2368,9 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             if (user != null) {
                 queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
-            if (queryId >= 0) {
-                queryParams.add(PARAM_QUERY_ID, Converter.serialiseToString(queryId));
-            }
+
+            queryParams.add(PARAM_QUERY_ID, Converter.serialiseToString(queryId));
+
             if (paramkey != null) {
                 queryParams.add(PARAM_PARAM_KEY, Converter.serialiseToString(paramkey));
             }
@@ -2402,14 +2380,9 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             if (typeId >= 0) {
                 queryParams.add(PARAM_TYPE_ID, Converter.serialiseToString(typeId));
             }
-            if (('f' == isQueryResult) || ('t' == isQueryResult)
-                        || ('1' == isQueryResult)
-                        || ('0' == isQueryResult)) {
-                queryParams.add(PARAM_QUERY_RESULT, Converter.serialiseToString(isQueryResult));
-            }
-            if (queryPosition != -1) {
-                queryParams.add(PARAM_QUERY_POSITION, Converter.serialiseToString(queryPosition));
-            }
+
+            queryParams.add(PARAM_QUERY_RESULT, Converter.serialiseToString(isQueryResult));
+            queryParams.add(PARAM_QUERY_POSITION, Converter.serialiseToString(queryPosition));
 
             try {
                 return getResponsePOST("addQueryParameterFull", queryParams, boolean.class); // NOI18N
@@ -2460,9 +2433,9 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             if (user != null) {
                 queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
-            if (queryId >= 0) {
-                queryParams.add(PARAM_QUERY_ID, Converter.serialiseToString(queryId));
-            }
+
+            queryParams.add(PARAM_QUERY_ID, Converter.serialiseToString(queryId));
+
             if (paramkey != null) {
                 queryParams.add(PARAM_PARAM_KEY, Converter.serialiseToString(paramkey));
             }
