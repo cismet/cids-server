@@ -23,8 +23,6 @@ public class UrlStringConverter extends ToStringConverter implements Serializabl
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -2796385759299324453L;
 
     private static final transient Logger LOG = Logger.getLogger(UrlStringConverter.class);
 

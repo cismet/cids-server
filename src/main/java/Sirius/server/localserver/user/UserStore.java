@@ -38,8 +38,6 @@ public final class UserStore extends Shutdown {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 3902369677120412592L;
 
     private static final transient Logger LOG = Logger.getLogger(UserStore.class);
 

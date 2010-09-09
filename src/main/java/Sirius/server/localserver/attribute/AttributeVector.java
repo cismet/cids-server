@@ -21,8 +21,6 @@ public class AttributeVector extends Vector implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 595320627200541410L;
 
     //~ Constructors -----------------------------------------------------------
 

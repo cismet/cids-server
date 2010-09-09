@@ -20,8 +20,6 @@ public class Link implements java.io.Serializable, Groupable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 1635588337104297051L;
 
     //~ Instance fields --------------------------------------------------------
 

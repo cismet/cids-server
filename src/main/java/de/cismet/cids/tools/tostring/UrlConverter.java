@@ -21,8 +21,6 @@ public class UrlConverter extends CustomToStringConverter implements java.io.Ser
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -688440112385974683L;
 
     //~ Instance fields --------------------------------------------------------
 

@@ -20,8 +20,6 @@ public class QueryData extends QueryInfo implements java.io.Serializable, Info {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -878146480754175149L;
 
     //~ Instance fields --------------------------------------------------------
 

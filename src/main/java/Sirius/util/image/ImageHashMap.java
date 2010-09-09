@@ -22,8 +22,6 @@ public class ImageHashMap extends HashMap implements java.io.Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -2422765008443979812L;
 
     //~ Constructors -----------------------------------------------------------
 

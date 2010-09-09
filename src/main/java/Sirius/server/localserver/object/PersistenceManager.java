@@ -47,8 +47,6 @@ public final class PersistenceManager extends Shutdown {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 575613461603083526L;
 
     private static final transient Logger LOG = Logger.getLogger(PersistenceManager.class);
 

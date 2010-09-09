@@ -30,8 +30,6 @@ public final class PermissionHolder implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -6756474437714547583L;
 
     private static final transient Logger LOG = Logger.getLogger(
             PermissionHolder.class);

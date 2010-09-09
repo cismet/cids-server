@@ -22,8 +22,6 @@ public class QueryIdentifier implements java.io.Serializable, Mapable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 3142905678383207275L;
 
     //~ Instance fields --------------------------------------------------------
 

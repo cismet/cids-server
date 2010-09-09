@@ -22,9 +22,6 @@ public class DefaultSearchParameter implements SearchParameter, Comparable, java
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -2523013386813979781L;
-
     //~ Instance fields --------------------------------------------------------
 
     /** Creates a new instance of DefaultSearchParameter. */

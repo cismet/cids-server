@@ -19,8 +19,6 @@ public class MetaNode extends Sirius.server.middleware.types.Node {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 3625829713268727487L;
 
     //~ Constructors -----------------------------------------------------------
 

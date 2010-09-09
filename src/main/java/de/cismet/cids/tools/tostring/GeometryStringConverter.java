@@ -28,8 +28,6 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -6328761746418929471L;
 
     protected static String GEOM_CLASS = "com.vividsolutions.jts.geom.Geometry"; // NOI18N
     // SRID=-1;POLYGON((191232 243117,191232 243119,191234 243117,191232 243117))

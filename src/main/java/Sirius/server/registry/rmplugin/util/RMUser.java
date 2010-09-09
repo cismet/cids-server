@@ -35,8 +35,6 @@ public class RMUser implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -6802447016919177050L;
 
     //~ Instance fields --------------------------------------------------------
 

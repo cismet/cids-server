@@ -36,8 +36,6 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -1080130275226708408L;
     private static String toStringConverterPrefix = "de.cismet.cids.custom.tostringconverter."; // NOI18N
     private static String toStringConverterPostfix = "ToStringConverter";                       // NOI18N
 

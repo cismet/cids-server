@@ -26,8 +26,6 @@ public class Method implements java.io.Serializable, Cloneable, Mapable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 6425033203378672306L;
     private static final transient Logger LOG = Logger.getLogger(Method.class);
 
     //~ Instance fields --------------------------------------------------------

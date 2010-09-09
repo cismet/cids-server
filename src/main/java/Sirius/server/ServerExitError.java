@@ -22,8 +22,6 @@ public class ServerExitError extends java.lang.Throwable implements java.io.Seri
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -1971133805133292009L;
 
     //~ Constructors -----------------------------------------------------------
 

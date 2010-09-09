@@ -34,8 +34,6 @@ public class PolicyHolder extends Shutdown implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -1125400614035315329L;
 
     //~ Instance fields --------------------------------------------------------
 

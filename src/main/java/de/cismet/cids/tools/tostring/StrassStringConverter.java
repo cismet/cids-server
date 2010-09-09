@@ -24,8 +24,6 @@ public class StrassStringConverter extends ToStringConverter implements Serializ
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -1178728757714994216L;
 
     //~ Constructors -----------------------------------------------------------
 

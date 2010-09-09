@@ -18,8 +18,6 @@ public class Image implements java.io.Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -6133455025375731456L;
 
     //~ Instance fields --------------------------------------------------------
 

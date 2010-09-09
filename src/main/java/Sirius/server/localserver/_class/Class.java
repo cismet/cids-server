@@ -35,8 +35,6 @@ public class Class implements java.io.Serializable, Mapable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -8015908654156188429L;
 
     //~ Instance fields --------------------------------------------------------
 

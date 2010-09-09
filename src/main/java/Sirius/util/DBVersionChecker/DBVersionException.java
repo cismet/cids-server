@@ -22,8 +22,6 @@ public class DBVersionException extends Throwable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -8744725339848146954L;
 
     //~ Constructors -----------------------------------------------------------
 

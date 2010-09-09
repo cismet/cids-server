@@ -54,8 +54,6 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 5160154078176476013L;
 
     private static final transient Logger LOG = Logger.getLogger(Registry.class);
 

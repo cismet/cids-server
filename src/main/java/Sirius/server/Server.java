@@ -18,8 +18,6 @@ public class Server implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 1634105076311813828L;
 
     //~ Instance fields --------------------------------------------------------
 

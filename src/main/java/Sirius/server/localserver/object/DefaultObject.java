@@ -32,8 +32,6 @@ public class DefaultObject implements Object {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -3071961882225512597L;
 
     //~ Instance fields --------------------------------------------------------
 

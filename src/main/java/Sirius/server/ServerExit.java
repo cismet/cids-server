@@ -22,8 +22,6 @@ public class ServerExit extends java.lang.Throwable implements java.io.Serializa
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -192976002992054464L;
 
     //~ Constructors -----------------------------------------------------------
 

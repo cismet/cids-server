@@ -19,8 +19,6 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 1172278959184473585L;
 
     //~ Instance fields --------------------------------------------------------
 

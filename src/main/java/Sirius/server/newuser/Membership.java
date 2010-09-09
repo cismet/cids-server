@@ -20,8 +20,6 @@ public class Membership implements Serializable, Mapable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 489536707301582757L;
 
     //~ Instance fields --------------------------------------------------------
 

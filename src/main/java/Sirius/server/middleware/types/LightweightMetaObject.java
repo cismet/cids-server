@@ -42,8 +42,6 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -184563987179817455L;
 
     // <editor-fold defaultstate="collapsed" desc="delegation-only methods">
     @Override

@@ -34,8 +34,6 @@ public class SearchOption implements java.io.Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -394178321247717376L;
 
     //~ Instance fields --------------------------------------------------------
 

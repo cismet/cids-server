@@ -26,8 +26,6 @@ public class SearchResult implements java.io.Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 5975527842318427668L;
 
     private static final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(
             SearchResult.class);

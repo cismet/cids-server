@@ -20,8 +20,6 @@ public class UserGroup implements Serializable, Mapable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -3239404220837275098L;
 
     //~ Instance fields --------------------------------------------------------
 

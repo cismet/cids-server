@@ -25,8 +25,6 @@ public class ToStringConverter implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 8894419084787216662L;
 
     //~ Methods ----------------------------------------------------------------
 

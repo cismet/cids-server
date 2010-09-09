@@ -30,8 +30,6 @@ public class Query implements Mapable, java.io.Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 3315572338758162152L;
 
     //~ Instance fields --------------------------------------------------------
 

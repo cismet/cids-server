@@ -19,8 +19,6 @@ public final class StringPatternFormater extends AbstractAttributeRepresentation
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 2195620744711852650L;
 
     //~ Instance fields --------------------------------------------------------
 

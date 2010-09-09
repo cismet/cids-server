@@ -22,8 +22,6 @@ public class BetriebStringConverter extends ToStringConverter implements java.io
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 5766292237110599317L;
 
     //~ Constructors -----------------------------------------------------------
 

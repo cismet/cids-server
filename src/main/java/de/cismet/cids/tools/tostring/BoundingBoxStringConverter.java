@@ -23,8 +23,6 @@ public class BoundingBoxStringConverter extends ToStringConverter implements jav
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -458019032045305986L;
 
     //~ Instance fields --------------------------------------------------------
 

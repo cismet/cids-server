@@ -22,8 +22,6 @@ public class Permission implements java.io.Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 4112877525599858208L;
 
     //~ Instance fields --------------------------------------------------------
 

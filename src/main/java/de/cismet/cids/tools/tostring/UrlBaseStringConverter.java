@@ -21,8 +21,6 @@ public class UrlBaseStringConverter extends ToStringConverter implements Seriali
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 6673513990961520521L;
 
     //~ Constructors -----------------------------------------------------------
 

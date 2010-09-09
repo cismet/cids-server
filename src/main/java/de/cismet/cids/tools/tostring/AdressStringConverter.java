@@ -24,8 +24,6 @@ public class AdressStringConverter extends ToStringConverter implements java.io.
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 3190668550117541149L;
 
     //~ Instance fields --------------------------------------------------------
 

@@ -22,8 +22,6 @@ public class AltstandortBetriebStringConverter extends ToStringConverter impleme
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 9085331627464787426L;
 
     //~ Constructors -----------------------------------------------------------
 

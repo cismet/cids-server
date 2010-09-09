@@ -18,8 +18,6 @@ public class ClassAttribute extends Attribute implements java.io.Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -5292371264242940827L;
 
     //~ Instance fields --------------------------------------------------------
 

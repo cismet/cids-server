@@ -78,8 +78,6 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         SearchService { // ActionListener
 
     //~ Static fields/initializers ---------------------------------------------
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 2905210154509680168L;
     private static final String EXTENSION_FACTORY_PREFIX = "de.cismet.cids.custom.extensionfactories."; // NOI18N
     private static transient DomainServerImpl instance;
     //~ Instance fields --------------------------------------------------------

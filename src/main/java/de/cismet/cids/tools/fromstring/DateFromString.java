@@ -27,8 +27,6 @@ public class DateFromString extends FromStringCreator implements java.io.Seriali
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 6611951854303282761L;
 
     //~ Constructors -----------------------------------------------------------
 

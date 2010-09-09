@@ -43,8 +43,6 @@ public class DBServer extends Shutdown implements java.io.Serializable {
 
     private static final transient Logger LOG = Logger.getLogger(DBServer.class);
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -1903621257460438111L;
 
     //~ Instance fields --------------------------------------------------------
 

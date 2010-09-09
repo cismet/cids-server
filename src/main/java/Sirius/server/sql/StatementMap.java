@@ -22,8 +22,6 @@ public class StatementMap extends Hashtable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -1932787571594802315L;
 
     //~ Constructors -----------------------------------------------------------
 

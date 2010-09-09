@@ -28,8 +28,6 @@ public class TransactionHelper extends Shutdown {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 6441019856601097112L;
 
     private static final transient Logger LOG = Logger.getLogger(TransactionHelper.class);
 

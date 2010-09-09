@@ -59,8 +59,6 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 5926241625731489045L;
 
     private static final transient Logger LOG = Logger.getLogger(ProxyImpl.class);
 

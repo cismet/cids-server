@@ -28,8 +28,6 @@ public class DBConnectionPool extends Shutdown {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 3648687296733790106L;
 
     private static final transient Logger LOG = Logger.getLogger(DBConnectionPool.class);
 

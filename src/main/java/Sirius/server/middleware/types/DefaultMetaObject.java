@@ -31,8 +31,6 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -5863651888991993056L;
     private static final transient Logger LOG = Logger.getLogger(DefaultMetaObject.class);
 
     //~ Instance fields --------------------------------------------------------

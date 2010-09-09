@@ -19,8 +19,6 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -6535120085516271972L;
 
     //~ Constructors -----------------------------------------------------------
 

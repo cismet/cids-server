@@ -21,8 +21,6 @@ public class ServerListHash extends Hashtable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -3481440359460437818L;
 
     // 'Elemente sind Vectoren von servern
 

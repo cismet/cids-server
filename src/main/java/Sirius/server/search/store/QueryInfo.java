@@ -23,8 +23,6 @@ public class QueryInfo implements java.io.Serializable, Info {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 8322629885911804823L;
 
     //~ Instance fields --------------------------------------------------------
 

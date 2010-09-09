@@ -36,8 +36,6 @@ public class RMInfo implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -1353516191493375384L;
 
     //~ Instance fields --------------------------------------------------------
 

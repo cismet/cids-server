@@ -43,8 +43,6 @@ public class ClassCache extends Shutdown {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -7020351584449229634L;
 
     private static final transient Logger LOG = Logger.getLogger(ClassCache.class);
 

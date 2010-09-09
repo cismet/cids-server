@@ -40,8 +40,6 @@ public class ObjectAttribute extends Attribute implements Mapable,
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 2266358985361133488L;
     private static final transient Logger LOG = Logger.getLogger(ObjectAttribute.class);
 
     //~ Instance fields --------------------------------------------------------

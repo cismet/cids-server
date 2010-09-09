@@ -17,8 +17,6 @@ public class User implements java.io.Serializable, Mapable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -4238528747971223246L;
 
     //~ Instance fields --------------------------------------------------------
 

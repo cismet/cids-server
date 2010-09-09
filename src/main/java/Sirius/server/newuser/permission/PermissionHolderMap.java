@@ -17,8 +17,6 @@ public class PermissionHolderMap extends java.util.Hashtable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -4697637169426531583L;
 
     //~ Constructors -----------------------------------------------------------
 

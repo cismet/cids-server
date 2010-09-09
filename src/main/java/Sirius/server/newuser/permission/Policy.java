@@ -28,8 +28,6 @@ public class Policy implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -2566287872445265371L;
 
     private static final int PARANOID = 0;
     private static final int WIKI = 1;

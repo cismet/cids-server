@@ -17,8 +17,6 @@ public class UserException extends Exception implements java.io.Serializable // 
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 2163490283456783757L;
 
     //~ Instance fields --------------------------------------------------------
 
