@@ -89,6 +89,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient Logger LOG = Logger.getLogger(RESTfulSerialInterfaceConnector.class);
+    private static final int TIMEOUT = 5000;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -293,6 +294,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             clientCache.put(path, ApacheHttpClient.create(config));
         }
         final Client c = clientCache.get(path);
+        c.setConnectTimeout(TIMEOUT);
         final UriBuilder uriBuilder = UriBuilder.fromPath(resource);
 
         // add all query params that are present
