@@ -89,7 +89,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient Logger LOG = Logger.getLogger(RESTfulSerialInterfaceConnector.class);
-    private static final int TIMEOUT = 5000;
+    private static final int TIMEOUT = 10000;
 
     //~ Instance fields --------------------------------------------------------
 
