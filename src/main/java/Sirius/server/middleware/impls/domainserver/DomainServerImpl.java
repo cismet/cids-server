@@ -42,6 +42,7 @@ import Sirius.server.search.Seeker;
 import Sirius.server.search.store.Info;
 import Sirius.server.search.store.QueryData;
 import Sirius.server.sql.SystemStatement;
+import java.sql.SQLException;
 
 import org.apache.log4j.PropertyConfigurator;
 
@@ -64,6 +65,7 @@ import de.cismet.cids.server.ServerSecurityManager;
 import de.cismet.cids.server.ws.rest.RESTfulService;
 
 import de.cismet.cids.utils.ClassloadingHelper;
+import org.openide.util.Exceptions;
 
 /**
  * DOCUMENT ME!
@@ -1030,5 +1032,25 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             }
             throw new ServerExitError(e);
         }
+    }
+
+    @Override
+    public String getConfigAttr(final User user, String key) throws RemoteException
+    {
+        try
+        {
+            return userstore.getConfigAttr(user, key);
+        }catch(final SQLException ex)
+        {
+            final String message = "could not retrieve config attr: user: " + user + " || key: " + key;
+            logger.error(message, ex);
+            throw new RemoteException(message, ex);
+        }
+    }
+
+    @Override
+    public boolean hasConfigAttr(User user, String key) throws RemoteException
+    {
+        return getConfigAttr(user, key) != null;
     }
 }

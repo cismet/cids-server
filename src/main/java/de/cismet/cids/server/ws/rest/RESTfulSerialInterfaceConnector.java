@@ -7,6 +7,8 @@
 ****************************************************/
 package de.cismet.cids.server.ws.rest;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import Sirius.server.localserver.method.MethodMap;
 import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.Link;
@@ -41,9 +43,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import java.rmi.RemoteException;
 
 import java.security.KeyManagementException;
@@ -67,7 +66,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
 
 import de.cismet.cids.server.CallServerService;
@@ -140,7 +138,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final Proxy proxy,
             final SSLConfig sslConfig) {
         if (sslConfig != null) {
-            initSSL(sslConfig);
+//            initSSL(sslConfig);
         }
 
         // add training '/' to the root resource if not present
@@ -167,51 +165,54 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     /**
      * DOCUMENT ME!
      *
-     * @param  sslConfig  DOCUMENT ME!
+     * @param   sslConfig  DOCUMENT ME!
+     *
+     * @throws  IllegalStateException     DOCUMENT ME!
+     * @throws  IllegalArgumentException  DOCUMENT ME!
      */
     private void initSSL(final SSLConfig sslConfig) {
-//        try {
-//            // server certificate for trustmanager
-//            final KeyStore ks = KeyStore.getInstance("JKS");
-//            ks.load(null, null);
-//            final CertificateFactory cf = CertificateFactory.getInstance("X.509");
-//            final X509Certificate cert = (X509Certificate)cf.generateCertificate(new BufferedInputStream(
-//                        new FileInputStream(
-//                            "/Users/mscholl/svnwork/central/de/cismet/cids/cids-server/trunk/src/main/cert/cids-server-jetty.cert")));
-//            ks.setCertificateEntry("cids-server-jetty", cert);
-//            final TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-//            tmf.init(ks);
-//
-//            // client certificate and key for key manager
-//            final KeyStore keystore = KeyStore.getInstance("JKS");
-//            keystore.load(new BufferedInputStream(
-//                    new FileInputStream(
-//                        "/Users/mscholl/svnwork/central/de/cismet/cids/cids-server/trunk/src/main/cert/cids-server-client.keystore")),
-//                "b3vwi98zb".toCharArray());
-//            final KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-//            kmf.init(keystore, "345txfx97c".toCharArray());
-//
-//            // init context
-//            final SSLContext context = SSLContext.getInstance("TLS");
-//            context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-//
-//            HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
-//            HttpsURLConnection.setDefaultHostnameVerifier(new SSLHostnameVerifier());
-//        } catch (final NoSuchAlgorithmException e) {
-//            throw new IllegalStateException("system does not support SSL", e);
-//        } catch (final KeyStoreException e) {
-//            throw new IllegalStateException("system does not support java keystores", e);
-//        } catch (final FileNotFoundException e) {
-//            throw new IllegalStateException("cannot find keystore file", e);
-//        } catch (final IOException e) {
-//            throw new IllegalArgumentException("cannot read keystore", e);
-//        } catch (final CertificateException e) {
-//            throw new IllegalArgumentException("illegal certificate", e);
-//        } catch (final KeyManagementException e) {
-//            throw new IllegalStateException("ssl context init properly initialised", e);
-//        } catch (final UnrecoverableKeyException e) {
-//            throw new IllegalStateException("cannot get key from keystore", e);
-//        }
+        try {
+            // server certificate for trustmanager
+            final KeyStore ks = KeyStore.getInstance("JKS");
+            ks.load(null, null);
+            final CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            final X509Certificate cert = (X509Certificate)cf.generateCertificate(new BufferedInputStream(
+                        new FileInputStream(
+                            "/Users/mscholl/svnwork/central/de/cismet/cids/cids-server/trunk/src/main/cert/cids-server-jetty.cert")));
+            ks.setCertificateEntry("cids-server-jetty", cert);
+            final TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+            tmf.init(ks);
+
+            // client certificate and key for key manager
+            final KeyStore keystore = KeyStore.getInstance("JKS");
+            keystore.load(new BufferedInputStream(
+                    new FileInputStream(
+                        "/Users/mscholl/svnwork/central/de/cismet/cids/cids-server/trunk/src/main/cert/cids-server-client.keystore")),
+                "b3vwi98zb".toCharArray());
+            final KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+            kmf.init(keystore, "345txfx97c".toCharArray());
+
+            // init context
+            final SSLContext context = SSLContext.getInstance("TLS");
+            context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+
+            HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
+            HttpsURLConnection.setDefaultHostnameVerifier(new SSLHostnameVerifier());
+        } catch (final NoSuchAlgorithmException e) {
+            throw new IllegalStateException("system does not support SSL", e);
+        } catch (final KeyStoreException e) {
+            throw new IllegalStateException("system does not support java keystores", e);
+        } catch (final FileNotFoundException e) {
+            throw new IllegalStateException("cannot find keystore file", e);
+        } catch (final IOException e) {
+            throw new IllegalArgumentException("cannot read keystore", e);
+        } catch (final CertificateException e) {
+            throw new IllegalArgumentException("illegal certificate", e);
+        } catch (final KeyManagementException e) {
+            throw new IllegalStateException("ssl context init properly initialised", e);
+        } catch (final UnrecoverableKeyException e) {
+            throw new IllegalStateException("cannot get key from keystore", e);
+        }
     }
 
     /**
@@ -260,39 +261,37 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
         // create new client and webresource from the given resource
         if (!clientCache.containsKey(path)) {
-            final DefaultApacheHttpClientConfig config = new DefaultApacheHttpClientConfig();
+            final DefaultApacheHttpClientConfig clientConfig = new DefaultApacheHttpClientConfig();
             if ((proxy.getHost() != null) && (proxy.getPort() > 0)) {
-                final URL url;
-                try {
-                    final String protocol;
-                    if (proxy.getHost().startsWith("http")) {                          // NOI18N
-                        protocol = "";                                                 // NOI18N
-                    } else {
-                        protocol = "http://";                                          // NOI18N
-                    }
-                    url = new URL(protocol + proxy.getHost() + ":" + proxy.getPort()); // NOI18N
-                    config.getProperties().put(ApacheHttpClientConfig.PROPERTY_PROXY_URI, url.toString());
-                } catch (final MalformedURLException ex) {
-                    LOG.warn("illegal proxy url, using no proxy", ex);                 // NOI18N
+                clientConfig.getProperties()
+                        .put(
+                            ApacheHttpClientConfig.PROPERTY_PROXY_URI,
+                            "http://"
+                            + proxy.getHost()
+                            + ":"
+                            + proxy.getPort());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("proxy set: " + proxy);
                 }
-            }
-            if ((proxy.getUsername() != null) && (proxy.getPassword() != null)) {
-                if (proxy.getDomain() != null) {
-                    config.getState()
+
+                if ((proxy.getUsername() != null) && (proxy.getPassword() != null)) {
+                    clientConfig.getState()
                             .setProxyCredentials(
                                 null,
-                                null,
-                                -1,
+                                proxy.getHost(),
+                                proxy.getPort(),
                                 proxy.getUsername(),
                                 proxy.getPassword(),
-                                "",                                                    // NOI18N
-                                proxy.getDomain());
-                } else {
-                    config.getState().setProxyCredentials(null, null, -1, proxy.getUsername(), proxy.getPassword());
+                                proxy.getDomain(),
+                                "");
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("proxy credentials set: " + proxy);
+                    }
                 }
             }
-            clientCache.put(path, ApacheHttpClient.create(config));
+            clientCache.put(path, ApacheHttpClient.create(clientConfig));
         }
+
         final Client c = clientCache.get(path);
         c.setConnectTimeout(TIMEOUT);
         final UriBuilder uriBuilder = UriBuilder.fromPath(resource);
@@ -2905,6 +2904,52 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             throw new RemoteException(message, ex);
         } catch (final ClassNotFoundException e) {
             final String message = "could not create vector";                             // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
+    @Override
+    public String getConfigAttr(final User user, final String key) throws RemoteException {
+        try {
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
+            if (user != null) {
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+            }
+            if (key != null) {
+                queryParams.add(PARAM_KEY, Converter.serialiseToString(key));
+            }
+
+            return getResponsePOST("getConfigAttr", queryParams, String.class);
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create String";  // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
+    @Override
+    public boolean hasConfigAttr(final User user, final String key) throws RemoteException {
+        try {
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
+            if (user != null) {
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+            }
+            if (key != null) {
+                queryParams.add(PARAM_KEY, Converter.serialiseToString(key));
+            }
+
+            return getResponsePOST("hasConfigAttr", queryParams, boolean.class);
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create boolean"; // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }

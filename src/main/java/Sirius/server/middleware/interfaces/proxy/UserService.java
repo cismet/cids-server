@@ -76,4 +76,8 @@ public interface UserService extends Remote {
      * @throws  RemoteException  server error (bad login)
      */
     Vector getUserGroupNames(String userName, String lsHome) throws RemoteException;
+
+    String getConfigAttr(final User user, final String key) throws RemoteException;
+
+    boolean hasConfigAttr(final User user, final String key) throws RemoteException;
 }

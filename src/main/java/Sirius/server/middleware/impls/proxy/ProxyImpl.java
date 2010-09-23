@@ -59,7 +59,6 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
 
     //~ Static fields/initializers ---------------------------------------------
 
-
     private static final transient Logger LOG = Logger.getLogger(ProxyImpl.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -1069,5 +1068,15 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             final String query,
             final String[] representationFields) throws RemoteException {
         return metaService.getLightweightMetaObjectsByQuery(classId, user, query, representationFields);
+    }
+
+    @Override
+    public String getConfigAttr(final User user, final String key) throws RemoteException {
+        return userService.getConfigAttr(user, key);
+    }
+
+    @Override
+    public boolean hasConfigAttr(final User user, final String key) throws RemoteException {
+        return getConfigAttr(user, key) != null;
     }
 }

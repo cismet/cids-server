@@ -38,7 +38,6 @@ public final class UserStore extends Shutdown {
 
     //~ Static fields/initializers ---------------------------------------------
 
-
     private static final transient Logger LOG = Logger.getLogger(UserStore.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -263,12 +262,103 @@ public final class UserStore extends Shutdown {
         try {
             // TODO: should username and password be trimmed?
             result = con.submitInternalQuery(
-                    "verify_user_password", // NOI18N
+                    DBConnection.DESC_VERIFY_USER_PW,
                     user.getName().trim().toLowerCase(),
                     password.trim().toLowerCase());
             return result.next() && (result.getInt(1) == 1);
         } finally {
             DBConnection.closeResultSets(result);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     * @param   key   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException           DOCUMENT ME!
+     * @throws  IllegalStateException  DOCUMENT ME!
+     */
+    public String getConfigAttr(final User user, final String key) throws SQLException {
+        if ((user == null) || (key == null)) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("user and/or key is null, returning null: user: " + user + " || key: " + key);
+            }
+            
+            return null;
+        }
+
+        final DBConnection con = conPool.getConnection();
+        ResultSet keyIdSet = null;
+        int keyId = -1;
+        try {
+            keyIdSet = con.submitInternalQuery(DBConnection.DESC_FETCH_CONFIG_ATTR_KEY_ID, key);
+            if (keyIdSet.next()) {
+                keyId = keyIdSet.getInt(1);
+            } else {
+                if (LOG.isInfoEnabled()) {
+                    LOG.info("key not present: " + key); // NOI18N
+                }
+
+                return null;
+            }
+        } finally {
+            DBConnection.closeResultSets(keyIdSet);
+        }
+
+        assert keyId > 0 : "invalid key id"; // NOI18N
+
+        ResultSet userValueSet = null;
+        ResultSet ugValueSet = null;
+        ResultSet domainValueSet = null;
+        ResultSet domainIdSet = null;
+        try {
+            domainIdSet = con.submitInternalQuery(
+                    DBConnection.DESC_FETCH_DOMAIN_ID_FROM_DOMAIN_STRING,
+                    user.getUserGroup().getDomain());
+            final int domainId;
+            if (domainIdSet.next()) {
+                domainId = domainIdSet.getInt(1);
+            } else {
+                throw new IllegalStateException("domain of user not present");
+            }
+
+            final String value;
+            userValueSet = con.submitInternalQuery(
+                    DBConnection.DESC_FETCH_CONFIG_ATTR_USER_VALUE,
+                    user.getId(),
+                    user.getUserGroup().getId(),
+                    domainId,
+                    keyId);
+            if (userValueSet.next()) {
+                value = userValueSet.getString(1);
+            } else {
+                ugValueSet = con.submitInternalQuery(
+                        DBConnection.DESC_FETCH_CONFIG_ATTR_UG_VALUE,
+                        user.getUserGroup().getId(),
+                        domainId,
+                        keyId);
+                if (ugValueSet.next()) {
+                    value = ugValueSet.getString(1);
+                } else {
+                    domainValueSet = con.submitInternalQuery(
+                            DBConnection.DESC_FETCH_CONFIG_ATTR_DOMAIN_VALUE,
+                            domainId,
+                            keyId);
+                    if (domainValueSet.next()) {
+                        value = domainValueSet.getString(1);
+                    } else {
+                        value = null;
+                    }
+                }
+            }
+
+            return value;
+        } finally {
+            DBConnection.closeResultSets(userValueSet, ugValueSet, domainValueSet, domainIdSet);
         }
     }
 }

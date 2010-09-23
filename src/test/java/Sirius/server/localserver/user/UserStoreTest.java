@@ -8,6 +8,7 @@
 package Sirius.server.localserver.user;
 
 import Sirius.server.newuser.User;
+import Sirius.server.newuser.UserGroup;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.sql.DBConnectionPool;
 
@@ -20,6 +21,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import java.util.Properties;
 
@@ -52,17 +57,24 @@ public class UserStoreTest {
     @BeforeClass
     public static void setUpClass() throws Throwable {
         final Properties p = new Properties();
-        p.put("log4j.appender.Remote", "org.apache.log4j.net.SocketAppender");
-        p.put("log4j.appender.Remote.remoteHost", "localhost");
-        p.put("log4j.appender.Remote.port", "4445");
-        p.put("log4j.appender.Remote.locationInfo", "true");
-        p.put("log4j.rootLogger", "ALL,Remote");
+        p.put("log4j.appender.Remote", "org.apache.log4j.net.SocketAppender"); // NOI18N
+        p.put("log4j.appender.Remote.remoteHost", "localhost");                // NOI18N
+        p.put("log4j.appender.Remote.port", "4445");                           // NOI18N
+        p.put("log4j.appender.Remote.locationInfo", "true");                   // NOI18N
+        p.put("log4j.rootLogger", "ALL,Remote");                               // NOI18N
         PropertyConfigurator.configure(p);
-        props = new ServerProperties(
-                UserStoreTest.class.getResourceAsStream(
-                    "/Sirius/server/localserver/object/" // NOI18N
-                            + "runtime.properties"));    // NOI18N
+        props = new ServerProperties(UserStoreTest.class.getResourceAsStream(
+                    "/Sirius/server/localserver/object/runtime.properties"));  // NOI18N
         pool = new DBConnectionPool(props);
+        final ScriptRunner runner = new ScriptRunner(pool.getConnection().getConnection(), false, true);
+        final InputStream scriptStream = UserStoreTest.class.getResourceAsStream(
+                "/Sirius/server/localserver/user/configAttrTestData.sql");     // NOI18N
+        final BufferedReader scriptReader = new BufferedReader(new InputStreamReader(scriptStream));
+        try {
+            runner.runScript(scriptReader);
+        } finally {
+            scriptReader.close();
+        }
     }
 
     /**
@@ -183,5 +195,37 @@ public class UserStoreTest {
         final UserStore us = new UserStore(pool, props);
         assertFalse("valid user + password",
             us.validateUserPassword(new User(-1, "invalid", null), "s"));
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    @Test
+    public void testGetConfigAttr() throws Exception {
+        if (LOG.isInfoEnabled()) {
+            LOG.info(TEST + getCurrentMethodName());
+        }
+        final UserStore us = new UserStore(pool, props);
+        final UserGroup adminGroup = new UserGroup(1, "Administratoren", "LOCAL");
+        final User admin = new User(1, "admin", "LOCAL", adminGroup);
+        String result = us.getConfigAttr(admin, "abc");
+        assertEquals("alphabeth3", result);
+        result = us.getConfigAttr(admin, "cba");
+        assertNull(result);
+        final User group = new User(-1, "admin", "LOCAL", adminGroup);
+        result = us.getConfigAttr(group, "abc");
+        assertEquals("alphabeth2", result);
+        final UserGroup domainGroup = new UserGroup(-1, "", "LOCAL");
+        final User domain = new User(-1, "", "", domainGroup);
+        result = us.getConfigAttr(domain, "abc");
+        assertEquals("alphabeth", result);
+        result = us.getConfigAttr(null, "abc");
+        assertNull(result);
+        result = us.getConfigAttr(domain, null);
+        assertNull(result);
+        result = us.getConfigAttr(domain, "abcd");
+        assertNull(result);
     }
 }

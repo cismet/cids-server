@@ -188,4 +188,9 @@ public class UserServiceImpl {
         return ((Sirius.server.middleware.interfaces.domainserver.UserService)activeLocalServers.get(user.getDomain()))
                     .changePassword(user, oldPassword, newPassword);
     }
+
+    public String getConfigAttr(final User user, final String key) throws RemoteException {
+        return ((Sirius.server.middleware.interfaces.domainserver.UserService)activeLocalServers.get(user.getDomain()))
+                    .getConfigAttr(user, key);
+    }
 }

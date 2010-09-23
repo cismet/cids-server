@@ -138,15 +138,68 @@ public class DBConnectionTest {
         if (LOG.isInfoEnabled()) {
             LOG.info(TEST + getCurrentMethodName());
         }
+
         final DBConnection con = new DBConnection(DB_CLASSIFIER);
         ResultSet set1 = null;
         try {
-            set1 = con.submitInternalQuery(
-                    "verify_user_password",
-                    "admin",
-                    "cismet");
+            set1 = con.submitInternalQuery(DBConnection.DESC_VERIFY_USER_PW, "admin", "cismet");
             if (set1.next()) {
                 assertEquals("not exactly one user found", 1, set1.getInt(1));
+            } else {
+                fail("illegal resultset state");
+            }
+        } finally {
+            DBConnection.closeResultSets(set1);
+        }
+
+        try {
+            set1 = con.submitInternalQuery(DBConnection.DESC_FETCH_CONFIG_ATTR_KEY_ID, "abc");
+            if (set1.next()) {
+                assertEquals("not exactly one key found", 1, set1.getInt(1));
+            } else {
+                fail("illegal resultset state");
+            }
+        } finally {
+            DBConnection.closeResultSets(set1);
+        }
+
+        try {
+            set1 = con.submitInternalQuery(DBConnection.DESC_FETCH_CONFIG_ATTR_DOMAIN_VALUE, 1, 1);
+            if (set1.next()) {
+                assertEquals("not exactly one value found", "alphabeth", set1.getString(1));
+            } else {
+                fail("illegal resultset state");
+            }
+        } finally {
+            DBConnection.closeResultSets(set1);
+        }
+
+        try {
+            set1 = con.submitInternalQuery(DBConnection.DESC_FETCH_CONFIG_ATTR_UG_VALUE, 1, 1, 1);
+            if (set1.next()) {
+                assertEquals("not exactly one value found", "alphabeth2", set1.getString(1));
+            } else {
+                fail("illegal resultset state");
+            }
+        } finally {
+            DBConnection.closeResultSets(set1);
+        }
+
+        try {
+            set1 = con.submitInternalQuery(DBConnection.DESC_FETCH_CONFIG_ATTR_USER_VALUE, 1, 1, 1, 1);
+            if (set1.next()) {
+                assertEquals("not exactly one value found", "alphabeth3", set1.getString(1));
+            } else {
+                fail("illegal resultset state");
+            }
+        } finally {
+            DBConnection.closeResultSets(set1);
+        }
+
+        try {
+            set1 = con.submitInternalQuery(DBConnection.DESC_FETCH_DOMAIN_ID_FROM_DOMAIN_STRING, "LOCAL");
+            if (set1.next()) {
+                assertEquals("not exactly one value found", 1, set1.getInt(1));
             } else {
                 fail("illegal resultset state");
             }

@@ -22,6 +22,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.StringTokenizer;
 
@@ -35,12 +37,18 @@ import de.cismet.tools.Sorter;
  * @since    DOCUMENT ME!
  */
 
-public class DBConnection {
+public final class DBConnection {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final transient Logger LOG = Logger.getLogger(
-            DBConnection.class);
+    private static final transient Logger LOG = Logger.getLogger(DBConnection.class);
+
+    public static final String DESC_VERIFY_USER_PW = "verify_user_password";                                   // NOI18N
+    public static final String DESC_FETCH_DOMAIN_ID_FROM_DOMAIN_STRING = "fetch_domain_id_from_domain_string"; // NOI18N
+    public static final String DESC_FETCH_CONFIG_ATTR_KEY_ID = "fetch_config_attr_key_id";                     // NOI18N
+    public static final String DESC_FETCH_CONFIG_ATTR_USER_VALUE = "fetch_config_attr_user_value";             // NOI18N
+    public static final String DESC_FETCH_CONFIG_ATTR_UG_VALUE = "fetch_config_attr_ug_value";                 // NOI18N
+    public static final String DESC_FETCH_CONFIG_ATTR_DOMAIN_VALUE = "fetch_config_attr_domain_value";         // NOI18N
 
     //~ Instance fields --------------------------------------------------------
 
@@ -48,6 +56,7 @@ public class DBConnection {
 
     private Connection con;
     private StatementCache cache;
+    private final Map<String, PreparedStatement> internalQueries;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -61,6 +70,7 @@ public class DBConnection {
      */
     protected DBConnection(final DBClassifier dbc) throws Throwable {
         this.dbc = dbc;
+        internalQueries = new HashMap<String, PreparedStatement>(7, 0.8f);
 
         try {
             if (LOG.isDebugEnabled()) {
@@ -124,56 +134,46 @@ public class DBConnection {
         }
     }
 
-    //////////////////////////////////////
-
     /**
-     * Der momentan angemeldete DBUser.<BR>
+     * The currently logged-in db username.
      *
-     * @return    java.lang.String User
-     *
-     * @exeption  DOCUMENT ME!
+     * @return  DB username
      */
-
-    public final String getUser() {
+    public String getUser() {
         return dbc.login;
     }
 
-    ///////////////////////////////////////
-
     /**
-     * Das Passwort des momentan angemeldete DBUsers.<BR>
+     * The password of the currently logged-in db user.
      *
-     * @return    java.lang.String passwd
-     *
-     * @exeption  DOCUMENT ME!
+     * @return  DB user password
      */
-
-    public final String getPassword() {
+    public String getPassword() {
         return dbc.pwd;
     }
 
     /**
-     * url des jdbc-Drivers.
+     * The URL of the jdbc driver connection.
      *
-     * @return  DOCUMENT ME!
+     * @return  DB jdbc connection url
      */
-    public final String getURL() {
+    public String getURL() {
         return dbc.url;
     }
 
     /**
-     * Klasse des jdbc-Drivers.
+     * The driver class of the jdbc driver.
      *
-     * @return  DOCUMENT ME!
+     * @return  driver class of jdbc driver
      */
-    public final String getDriver() {
+    public String getDriver() {
         return dbc.driver;
     }
 
     /**
-     * DOCUMENT ME!
+     * The {@link Connection} used by this <code>DBConnection.</code>
      *
-     * @return  DOCUMENT ME!
+     * @return  the {@link Connection} used by this <code>DBConnection</code>
      */
     public Connection getConnection() {
         return con;
@@ -190,68 +190,48 @@ public class DBConnection {
      * @throws  SQLException              DOCUMENT ME!
      * @throws  IllegalArgumentException  DOCUMENT ME!
      */
-    public ResultSet submitInternalQuery(final String descriptor,
-            final Object... parameters) throws SQLException {
+    public ResultSet submitInternalQuery(final String descriptor, final Object... parameters) throws SQLException {
         try {
-            final String stmt = NbBundle.getMessage(DBConnection.class, descriptor);
-            final PreparedStatement ps = con.prepareStatement(stmt);
-            if (parameters.length
-                        != ps.getParameterMetaData().getParameterCount()) {
-                final String message = "parameter count mismmatch for descriptor '" // NOI18N
-                            + descriptor
-                            + "', Statement: "                                      // NOI18N
-                            + stmt
-                            + ", Statement param count: "                           // NOI18N
-                            + ps.getParameterMetaData().getParameterCount()
-                            + ", given param count: "                               // NOI18N
-                            + parameters.length;
-                LOG.error(message);
-                throw new IllegalArgumentException(message);
+            if (!internalQueries.containsKey(descriptor)) {
+                final String stmt = NbBundle.getMessage(DBConnection.class, descriptor);
+                final PreparedStatement ps = con.prepareStatement(stmt);
+                if (parameters.length == ps.getParameterMetaData().getParameterCount()) {
+                    internalQueries.put(descriptor, ps);
+                } else {
+                    final String message = "parameter count mismmatch for descriptor '" // NOI18N
+                                + descriptor
+                                + "', Statement: "                                      // NOI18N
+                                + stmt
+                                + ", Statement param count: "                           // NOI18N
+                                + ps.getParameterMetaData().getParameterCount()
+                                + ", given param count: "                               // NOI18N
+                                + parameters.length;
+                    LOG.error(message);
+                    throw new IllegalArgumentException(message);
+                }
             }
+
+            final PreparedStatement ps = internalQueries.get(descriptor);
             for (int i = 0; i < parameters.length; ++i) {
                 ps.setObject(i + 1, parameters[i]);
             }
+
             return ps.executeQuery();
         } catch (final MissingResourceException e) {
-            final String message = "invalid descriptor: " + descriptor;             // NOI18N
+            final String message = "invalid descriptor: " + descriptor; // NOI18N
             LOG.error(message, e);
             throw new IllegalArgumentException(message, e);
         }
     }
 
-    ////////////////////////////////////////
-
     /**
-     * Setzt das descriptor zugeordnete Statement (Select) ab.<BR>
+     * DOCUMENT ME!
      *
-     * @param     descriptor  java.lang.String descriptor
-     * @param     parameters  DOCUMENT ME!
+     * @param   descriptor  DOCUMENT ME!
+     * @param   parameters  DOCUMENT ME!
      *
-     * @return    java.sql.ResultSet
-     *
-     * @exeption  java.sql.SQLException
+     * @return  DOCUMENT ME!
      */
-
-    // public ResultSet submitQuery(String descriptor)
-    // {
-    //
-    // try
-    // {
-    // String sqlStmnt = fetchStatement(descriptor);
-    //
-    // return (con.createStatement()).executeQuery(sqlStmnt);
-    // }
-    // catch (Exception e)
-    // {
-    // ExceptionHandler.handle(e);
-    // }
-    //
-    // return null;
-    //
-    // }
-    //
-    ///////////////////////////////////////////////////////////////////////////////////
-
     public ResultSet submitQuery(final String descriptor, final java.lang.Object[] parameters) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("submitQuery: " + descriptor); // NOI18N
@@ -273,34 +253,17 @@ public class DBConnection {
         return null;
     }
 
-    ///////////////////////////////////////////////
-
     /**
-     * Setzt das Statement mit der id SqlID (Select) ab.<BR>
+     * DOCUMENT ME!
      *
-     * @param     sqlID       int sqlID
-     * @param     parameters  DOCUMENT ME!
+     * @param   sqlID       DOCUMENT ME!
+     * @param   parameters  DOCUMENT ME!
      *
-     * @return    java.sql.ResultSet
+     * @return  DOCUMENT ME!
      *
-     * @throws    java.sql.SQLException  DOCUMENT ME!
-     * @throws    Exception              DOCUMENT ME!
-     *
-     * @exeption  java.sql.SQLException
+     * @throws  java.sql.SQLException  DOCUMENT ME!
+     * @throws  Exception              DOCUMENT ME!
      */
-
-    // public ResultSet submitQuery(int sqlID) throws java.sql.SQLException,Exception
-    // {
-    //
-    // String sqlStmnt = fetchStatement(sqlID);
-    //
-    // //System.out.println(sqlStmnt);
-    // return (con.createStatement()).executeQuery(sqlStmnt);
-    //
-    // }
-
-    ////////////////////////////////////////////////////
-
     public ResultSet submitQuery(final int sqlID, final java.lang.Object[] parameters) throws java.sql.SQLException,
         Exception {
         if (LOG.isDebugEnabled()) {
@@ -325,7 +288,7 @@ public class DBConnection {
     }
 
     /**
-     * ////////////////////////////////////////////////////////////////////////////////
+     * DOCUMENT ME!
      *
      * @param   q  DOCUMENT ME!
      *
@@ -389,38 +352,19 @@ public class DBConnection {
         }
     }
 
-    ////////////////////////////////////////////
-
     /**
-     * Setzt das descriptor zugeordnete Statement (Update|Insert|Delete) ab.<BR>
+     * DOCUMENT ME!
      *
-     * @param     descriptor  java.lang.String descriptor
-     * @param     parameters  DOCUMENT ME!
+     * @param   descriptor  DOCUMENT ME!
+     * @param   parameters  DOCUMENT ME!
      *
-     * @return    int
+     * @return  DOCUMENT ME!
      *
-     * @throws    java.sql.SQLException  DOCUMENT ME!
-     * @throws    Exception              DOCUMENT ME!
-     *
-     * @exeption  java.sql.SQLException
+     * @throws  java.sql.SQLException  DOCUMENT ME!
+     * @throws  Exception              DOCUMENT ME!
      */
-
-    // public int submitUpdate(String descriptor) throws java.sql.SQLException, Exception// returns abs(rows effected)
-    // {
-    //
-    // String sqlStmnt = fetchStatement(descriptor);
-    //
-    //
-    // return (con.createStatement()).executeUpdate(sqlStmnt);
-    //
-    //
-    // }
-
-    /////////////////////////////////////////////
-
     public int submitUpdate(final String descriptor, final java.lang.Object[] parameters) throws java.sql.SQLException,
-        Exception                                     // returns abs(rows effected)
-    {
+        Exception {
         if (LOG.isDebugEnabled()) {
             LOG.debug("submitUpdate: " + descriptor); // NOI18N
         }
@@ -437,37 +381,19 @@ public class DBConnection {
         return (con.createStatement()).executeUpdate(sqlStmnt);
     }
 
-    ///////////////////////////////////////////////////////////////////
-
     /**
-     * Setzt das Statement mit der id sqlID (Update|Insert|Delete) ab.<BR>
+     * DOCUMENT ME!
      *
-     * @param     sqlID       int sqlID
-     * @param     parameters  DOCUMENT ME!
+     * @param   sqlID       DOCUMENT ME!
+     * @param   parameters  DOCUMENT ME!
      *
-     * @return    int rowsEffected
+     * @return  DOCUMENT ME!
      *
-     * @throws    java.sql.SQLException  DOCUMENT ME!
-     * @throws    Exception              DOCUMENT ME!
-     *
-     * @exeption  java.sql.SQLException
+     * @throws  java.sql.SQLException  DOCUMENT ME!
+     * @throws  Exception              DOCUMENT ME!
      */
-
-    // public int submitUpdate(int sqlID) throws java.sql.SQLException,Exception// returns abs(rows effected)
-    // {
-    //
-    // String sqlStmnt = fetchStatement(sqlID);
-    //
-    // return (con.createStatement()).executeUpdate(sqlStmnt);
-    //
-    //
-    // }
-
-    ////////////////////////////////////////////////////////////
-
     public int submitUpdate(final int sqlID, final java.lang.Object[] parameters) throws java.sql.SQLException,
-        Exception                                // returns abs(rows effected)
-    {
+        Exception {
         if (LOG.isDebugEnabled()) {
             LOG.debug("submitUpdate: " + sqlID); // NOI18N
         }
@@ -484,107 +410,49 @@ public class DBConnection {
         return (con.createStatement()).executeUpdate(sqlStmnt);
     }
 
-    /////////////////////////////////////////////////////////////////
-
     /**
-     * Holt das descriptor zugeordnete Statement aus der Statement-Tabelle.<BR>
+     * DOCUMENT ME!
      *
-     * @param     descriptor  java.lang.String descriptor
+     * @param   descriptor  DOCUMENT ME!
      *
-     * @return    java.lang.String sqlStatement
+     * @return  DOCUMENT ME!
      *
-     * @throws    java.sql.SQLException  DOCUMENT ME!
-     * @throws    Exception              DOCUMENT ME!
-     *
-     * @exeption  java.sql.SQLException
+     * @throws  java.sql.SQLException  DOCUMENT ME!
+     * @throws  Exception              DOCUMENT ME!
      */
-
     public String fetchStatement(final String descriptor) throws java.sql.SQLException, Exception {
         if (LOG.isDebugEnabled()) {
             LOG.debug("fetchStatement: " + descriptor); // NOI18N
         }
-/*
-if(!dbc.cacheStatements)
-{
-        char changes = 'F';
-
-        if(effectsChanges)
-        changes='T';
-
-
-        String sqlStmnt = "SELECT statement from system_statement where id = " + cache.getStatement(descriptor).getID() +
-                                   "and effect_Changes = '"+ changes +"' and number_of_param =" +parameterNum;
-
-        ResultSet id = (con.createStatement()).executeQuery(sqlStmnt);
-
-        id.next();
-        return id.getString("Statement").trim();
-}
- */
 
         if (cache.containsStatement(descriptor)) {
             return cache.getStatement(descriptor).getStatement();
         } else {
             return null;
         }
-
-        // if(tmp.effectsChanges() == effectsChanges && tmp.getNumberOfParameters() == parameterNum)
-
-        // throw new Exception("SystemStatement stimmt nicht mit den Aufrufoptionen \u00FCberein");
     }
 
-    ///////////////////////////////////////////////////////////
-
     /**
-     * Holt das Statement mit der id sqlID aus der Statement-Tabelle.<BR>
+     * DOCUMENT ME!
      *
-     * @param     sqlID  int sqlID
+     * @param   sqlID  DOCUMENT ME!
      *
-     * @return    java.lang.String sqlStatement
+     * @return  DOCUMENT ME!
      *
-     * @throws    java.sql.SQLException  DOCUMENT ME!
-     * @throws    Exception              DOCUMENT ME!
-     *
-     * @exeption  java.sql.SQLException
+     * @throws  java.sql.SQLException  DOCUMENT ME!
+     * @throws  Exception              DOCUMENT ME!
      */
-
     public String fetchStatement(final int sqlID) throws java.sql.SQLException, Exception {
         if (LOG.isDebugEnabled()) {
             LOG.debug("fetchStatement: " + sqlID); // NOI18N
         }
-/*
-if(!dbc.cacheStatements)
-{
-        char changes = 'F';// Informix knows no boolean xxxxxxxxxxx
 
-        if(effectsChanges)
-        changes='T';
-
-
-        String sqlStmnt = "SELECT statement from system_statement where (id = " + sqlID+ ") and (effect_Changes = '"+ changes +"') and (number_of_param =" +parameterNum+")";
-
-        //System.out.println("Statement :" + sqlStmnt);
-
-
-        ResultSet id = (con.createStatement()).executeQuery(sqlStmnt);
-
-        id.next();
-        return id.getString("Statement").trim();
-
-}
-
- */
         if (cache.containsStatement(sqlID)) {
             return cache.getStatement(sqlID).getStatement();
+        } else {
+            return null;
         }
-
-        // if(tmp.effectsChanges() == effectsChanges && tmp.getNumberOfParameters() == parameterNum)
-        // return tmp.getStatement();
-        //
-        // throw new Exception("SystemStatement stimmt nicht mit den Aufrufoptionen \u00FCberein");
-        return null;
     }
-    ////////////////////////////////////////////
 
     /**
      * DOCUMENT ME!
@@ -613,7 +481,6 @@ if(!dbc.cacheStatements)
         if (q.getStatement() == null) { // sql aus dem cache
             return submitQuery(q);
         } else {
-            // nimm statement as is
             String sqlStmnt = q.getStatement();
 
             try {
@@ -633,7 +500,7 @@ if(!dbc.cacheStatements)
     }
 
     /**
-     * /////////////////////
+     * DOCUMENT ME!
      *
      * @param   qid         DOCUMENT ME!
      * @param   parameters  DOCUMENT ME!

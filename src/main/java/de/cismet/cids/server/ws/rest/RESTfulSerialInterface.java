@@ -89,6 +89,7 @@ public final class RESTfulSerialInterface {
     public static final String PARAM_NODE = "node";                         // NOI18N
     public static final String PARAM_LINK_PARENT = "linkParent";            // NOI18N
     public static final String PARAM_NODE_ID = "nodeID";                    // NOI18N
+    public static final String PARAM_KEY = "key";                           // NOI18N
 
     //~ Instance fields --------------------------------------------------------
 
@@ -1796,6 +1797,70 @@ public final class RESTfulSerialInterface {
             throw new RemoteException(message, e);
         } catch (final ClassNotFoundException e) {
             final String message = "could not get usergroup names"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   userBytes  DOCUMENT ME!
+     * @param   keyBytes   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @POST
+    @Path("/getConfigAttr")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response getConfigAttr(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_KEY) final String keyBytes) throws RemoteException {
+        try {
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final String key = Converter.deserialiseFromString(keyBytes, String.class);
+
+            return createResponse(callserver.getConfigAttr(user, key));
+        } catch (final IOException e) {
+            final String message = "could not get config attr"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get config attr"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   userBytes  DOCUMENT ME!
+     * @param   keyBytes   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @POST
+    @Path("/hasConfigAttr")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response hasConfigAttr(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_KEY) final String keyBytes) throws RemoteException {
+        try {
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final String key = Converter.deserialiseFromString(keyBytes, String.class);
+
+            return createResponse(callserver.hasConfigAttr(user, key));
+        } catch (final IOException e) {
+            final String message = "could not determine config attr"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not determine config attr"; // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }

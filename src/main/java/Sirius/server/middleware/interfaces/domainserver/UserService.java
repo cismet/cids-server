@@ -48,4 +48,28 @@ public interface UserService extends Remote {
      * @throws  RemoteException  DOCUMENT ME!
      */
     boolean validateUser(User user, String password) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     * @param   key   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    String getConfigAttr(final User user, final String key) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     * @param   key   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    boolean hasConfigAttr(final User user, final String key) throws RemoteException;
 }
