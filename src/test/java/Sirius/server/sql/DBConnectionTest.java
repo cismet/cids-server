@@ -7,6 +7,12 @@
 ****************************************************/
 package Sirius.server.sql;
 
+import Sirius.server.property.ServerProperties;
+import Sirius.server.localserver.user.ScriptRunner;
+import Sirius.server.localserver.user.UserStoreTest;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -48,7 +54,7 @@ public class DBConnectionTest {
      * DOCUMENT ME!
      */
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws Throwable {
         final Properties p = new Properties();
         p.put("log4j.appender.Remote", "org.apache.log4j.net.SocketAppender");
         p.put("log4j.appender.Remote.remoteHost", "localhost");
@@ -56,6 +62,18 @@ public class DBConnectionTest {
         p.put("log4j.appender.Remote.locationInfo", "true");
         p.put("log4j.rootLogger", "ALL,Remote");
         PropertyConfigurator.configure(p);
+        final ServerProperties props = new ServerProperties(UserStoreTest.class.getResourceAsStream(
+                    "/Sirius/server/localserver/object/runtime.properties"));  // NOI18N
+        final DBConnectionPool pool = new DBConnectionPool(props);
+        final ScriptRunner runner = new ScriptRunner(pool.getConnection().getConnection(), false, true);
+        final InputStream scriptStream = UserStoreTest.class.getResourceAsStream(
+                "/Sirius/server/localserver/user/configAttrTestData.sql");     // NOI18N
+        final BufferedReader scriptReader = new BufferedReader(new InputStreamReader(scriptStream));
+        try {
+            runner.runScript(scriptReader);
+        } finally {
+            scriptReader.close();
+        }
     }
 
     /**
