@@ -626,7 +626,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
         // System.out.println("class :: "+classID+"object :: " +objectID+"  atrubutes"+ attribHash);
         // border=\"1\"  bgcolor=\"#E0E0E0\"
         ret =
-            "<table border=\"1\" rules=\"all\" cellspacing=\"0\" cellpadding=\"2\"> <tr><th colspan=\"2\" align=\"left\">class = " // NOI18N
+            "<table border=\"1\" rules=\"all\" cellspacing=\"0\" cellpadding=\"2\"> <tr><th colspan=\"3\" align=\"left\">class = " // NOI18N
                     + classID
                     + "<br>object id ="                                                                                            // NOI18N
                     + objectID
@@ -651,6 +651,13 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
                             + ((MetaObject)as[i].getValue()).getDebugString()
                             + "</td></tr>";                       // NOI18N
             } else {
+                final int maxLength = 255;
+                final String suffix = "...";
+                String string = as[i].toString();
+                if (string.length() >= maxLength) {
+                    string = string.substring(0, maxLength - suffix.length()) + suffix;
+                }
+
                 ret += "<tr><td bgcolor="                         // NOI18N
                             + getColorForChangedFlag(as[i].isChanged())
                             + " valign=\"top\" align=\"right\">"  // NOI18N
@@ -660,7 +667,7 @@ public final class DefaultMetaObject extends Sirius.server.localserver.object.De
                             + " valign=\"top\" align=\"right\">[" // NOI18N
                             + as[i].getMai().getFieldName()
                             + "]</td><td>"                        // NOI18N
-                            + as[i].toString()
+                            + string
                             + "</td></tr>";                       // NOI18N
             }
         }
