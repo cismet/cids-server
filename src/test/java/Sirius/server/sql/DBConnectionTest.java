@@ -8,7 +8,7 @@
 package Sirius.server.sql;
 
 import Sirius.server.property.ServerProperties;
-import Sirius.server.localserver.user.ScriptRunner;
+import de.cismet.tools.ScriptRunner;
 import Sirius.server.localserver.user.UserStoreTest;
 import java.io.BufferedReader;
 import java.io.InputStream;

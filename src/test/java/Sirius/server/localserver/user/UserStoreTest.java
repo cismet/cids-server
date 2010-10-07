@@ -7,6 +7,7 @@
 ****************************************************/
 package Sirius.server.localserver.user;
 
+import de.cismet.tools.ScriptRunner;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
 import Sirius.server.property.ServerProperties;
