@@ -287,7 +287,7 @@ public final class UserStore extends Shutdown {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("user and/or key is null, returning null: user: " + user + " || key: " + key);
             }
-            
+
             return null;
         }
 
@@ -316,14 +316,18 @@ public final class UserStore extends Shutdown {
         ResultSet domainValueSet = null;
         ResultSet domainIdSet = null;
         try {
-            domainIdSet = con.submitInternalQuery(
-                    DBConnection.DESC_FETCH_DOMAIN_ID_FROM_DOMAIN_STRING,
-                    user.getUserGroup().getDomain());
+            String domain = user.getUserGroup().getDomain();
+            if (properties.getServerName().equals(domain)) {
+                domain = "LOCAL"; // NOI18N
+            }
+
+            domainIdSet = con.submitInternalQuery(DBConnection.DESC_FETCH_DOMAIN_ID_FROM_DOMAIN_STRING, domain);
+
             final int domainId;
             if (domainIdSet.next()) {
                 domainId = domainIdSet.getInt(1);
             } else {
-                throw new IllegalStateException("domain of user not present");
+                throw new IllegalStateException("domain of user not present"); // NOI18N
             }
 
             final String value;
