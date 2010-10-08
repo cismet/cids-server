@@ -7,11 +7,14 @@
 ****************************************************/
 package Sirius.server.middleware.interfaces.proxy;
 
-import Sirius.server.newuser.*;
+import Sirius.server.newuser.User;
+import Sirius.server.newuser.UserException;
+import Sirius.server.newuser.UserGroup;
 
-import java.rmi.*;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
-import java.util.*;
+import java.util.Vector;
 
 /**
  * encapsulates methods relatad to user management.
@@ -77,7 +80,46 @@ public interface UserService extends Remote {
      */
     Vector getUserGroupNames(String userName, String lsHome) throws RemoteException;
 
+    /**
+     * Retrieves the value for the given key for the given {@link User}. That means if a user requests a value for a key
+     * the value is delivered with the following strategy:
+     *
+     * <ul>
+     *   <li>the value of the <code>User</code> if it is set</li>
+     *   <li>the value of the <code>User</code>'s {@link UserGroup} if it is set</li>
+     *   <li>the value of the <code>UserGroup</code>'s <code>Domain</code> if it is set.</li>
+     *   <li><code>null</code> otherwise.</li>
+     * </ul>
+     * <br/>
+     * <br/>
+     * If you want to explicitely retrieve the value for the <code>UserGroup</code> though the <code>User</code>'s value
+     * is set hand over an <code>User</code> object with <code>id < 0</code>.<br/>
+     * If you want to explicitely retrieve the value for the <code>Domain</code> though any other value is set hand over
+     * an <code>User</code> object with <code>id < 0</code> that contains a <code>UserGroup</code> object with <code>id
+     * < 0</code>.
+     *
+     * @param   user  the <code>User</code> whose value shall be retrieved
+     * @param   key   the key for the value to be retrieved
+     *
+     * @return  the associated value or <code>null</code>
+     *
+     * @throws  RemoteException  if an internal error occurs
+     */
     String getConfigAttr(final User user, final String key) throws RemoteException;
 
+    /**
+     * Determines whether the given {@link User} has a value associated with the given key or not. For value retrieval
+     * strategy see {@link #getConfigAttr(Sirius.server.newuser.User, java.lang.String) }.
+     *
+     * @param   user  the <code>User</code> to be checked
+     * @param   key   the key to be checked
+     *
+     * @return  true whether there is a value associated with the given key for the given <code>User</code>, false
+     *          otherwise.
+     *
+     * @throws  RemoteException  if an internal error occurs
+     *
+     * @see     #getConfigAttr(Sirius.server.newuser.User, java.lang.String)
+     */
     boolean hasConfigAttr(final User user, final String key) throws RemoteException;
 }
