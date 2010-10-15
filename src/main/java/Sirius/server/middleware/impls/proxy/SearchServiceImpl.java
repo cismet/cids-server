@@ -12,12 +12,17 @@
  */
 package Sirius.server.middleware.impls.proxy;
 import Sirius.server.*;
+import Sirius.server.middleware.interfaces.domainserver.MetaService;
+
 import Sirius.server.middleware.types.*;
 import Sirius.server.naming.NameServer;
 import Sirius.server.newuser.*;
+import Sirius.server.newuser.permission.Policy;
 import Sirius.server.search.*;
 
 import java.rmi.*;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
 import java.util.*;
 /**
@@ -381,4 +386,13 @@ public class SearchServiceImpl {
 
         return v;
     }
+
+
+    public Collection customServerSearch(final User user,CidsServerSearch serverSearch){
+        serverSearch.setUser(user);
+        serverSearch.setActiveLoaclServers(activeLocalServers);
+        return serverSearch.performServerSearch();
+    }
+
+
 }

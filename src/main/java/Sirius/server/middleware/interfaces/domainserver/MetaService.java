@@ -14,6 +14,7 @@ import Sirius.server.newuser.*;
 import Sirius.server.search.*;
 
 import java.rmi.*;
+import java.util.ArrayList;
 
 /**
  * Interface for retrieving or modifying meta information sets.
@@ -287,4 +288,9 @@ public interface MetaService extends Remote {
             User user,
             String query,
             String[] representationFields) throws RemoteException;
+
+
+
+
+    ArrayList<ArrayList> performCustomSearch(String query) throws RemoteException;
 }

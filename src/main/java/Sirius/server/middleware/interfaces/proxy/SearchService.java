@@ -1,10 +1,10 @@
 /***************************************************
-*
-* cismet GmbH, Saarbruecken, Germany
-*
-*              ... and it just works.
-*
-****************************************************/
+ *
+ * cismet GmbH, Saarbruecken, Germany
+ *
+ *              ... and it just works.
+ *
+ ****************************************************/
 /*
  * SearchService.java
  *
@@ -12,24 +12,22 @@
  */
 package Sirius.server.middleware.interfaces.proxy;
 
-import Sirius.server.middleware.types.*;
 import Sirius.server.newuser.*;
 import Sirius.server.search.*;
 
 import java.rmi.*;
 
 import java.util.*;
+
 /**
  * encapsulates query, search mechanisms.
  *
  * @author   schlob
  * @version  $Revision$, $Date$
  */
-
 public interface SearchService extends Remote {
 
     //~ Methods ----------------------------------------------------------------
-
     // add single query root and leaf returns a query_id
     /**
      * enables user to register queries with a domain server.
@@ -164,4 +162,6 @@ public interface SearchService extends Remote {
      * @throws  RemoteException  server error
      */
     SearchResult search(User user, String[] classIds, SearchOption[] searchOptions) throws RemoteException;
+
+    public Collection customServerSearch(final User user, CidsServerSearch serverSearch) throws RemoteException;
 }

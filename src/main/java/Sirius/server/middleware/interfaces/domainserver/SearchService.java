@@ -124,4 +124,6 @@ public interface SearchService extends Remote {
      * @throws  RemoteException  DOCUMENT ME!
      */
     SearchResult search(User user, int[] classIds, Query query) throws RemoteException;
+
+    
 }

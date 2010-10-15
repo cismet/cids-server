@@ -18,6 +18,7 @@ import Sirius.server.middleware.types.Node;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 import Sirius.server.newuser.UserGroup;
+import Sirius.server.search.CidsServerSearch;
 import Sirius.server.search.Query;
 import Sirius.server.search.SearchOption;
 import Sirius.server.search.SearchResult;
@@ -34,6 +35,7 @@ import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
+import java.util.Collection;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
@@ -2953,7 +2955,34 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
+
     }
+
+
+
+    @Override
+    public Collection customServerSearch(User user, CidsServerSearch serverSearch) throws RemoteException {
+        try {
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
+            if (user != null) {
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+            }
+            if (serverSearch != null) {
+                queryParams.add(PARAM_CUSTOM_SERVER_SEARCH, Converter.serialiseToString(serverSearch));
+            }
+
+            return getResponsePOST("customServerSearch", queryParams, Collection.class); // NOI18N
+        } catch (final IOException ex) {
+            final String message = "could not convert params";                            // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create collection";                             // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
 
     //~ Inner Classes ----------------------------------------------------------
 

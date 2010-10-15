@@ -41,6 +41,7 @@ import Sirius.server.search.SearchResult;
 import Sirius.server.search.Seeker;
 import Sirius.server.search.store.Info;
 import Sirius.server.search.store.QueryData;
+import Sirius.server.sql.DBConnectionPool;
 import Sirius.server.sql.SystemStatement;
 import java.sql.SQLException;
 
@@ -55,7 +56,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.MissingResourceException;
 
 import de.cismet.cids.objectextension.ObjectExtensionFactory;
@@ -65,7 +65,9 @@ import de.cismet.cids.server.ServerSecurityManager;
 import de.cismet.cids.server.ws.rest.RESTfulService;
 
 import de.cismet.cids.utils.ClassloadingHelper;
-import org.openide.util.Exceptions;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
 
 /**
  * DOCUMENT ME!
@@ -783,6 +785,29 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         }
     }
 
+    @Override
+    public ArrayList<ArrayList> performCustomSearch(String query) throws RemoteException {
+        try {
+            Statement s = getConnectionPool().getConnection().getConnection().createStatement();
+            ResultSet rs = s.executeQuery(query);
+            ArrayList<ArrayList> result = new ArrayList<ArrayList>();
+            while (rs.next()) {
+                ArrayList row = new ArrayList();
+                for (int i = 0; i < rs.getMetaData().getColumnCount(); ++i) {
+                    row.add(rs.getObject(i + 1));
+                }
+                result.add(row);
+            }
+            logger.fatal(result);
+            return result;
+
+        } catch (Exception e) {
+            final String msg = "Error during sql statement: " + query;
+            logger.error(msg, e);
+            throw new RemoteException(msg, e);
+        }
+    }
+
     /**
      * DOCUMENT ME!
      *
@@ -965,6 +990,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         return instance;
     }
 
+    public DBConnectionPool getConnectionPool() {
+        return dbServer.getConnectionPool();
+    }
+
     /**
      * DOCUMENT ME!
      *
@@ -1035,13 +1064,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     }
 
     @Override
-    public String getConfigAttr(final User user, String key) throws RemoteException
-    {
-        try
-        {
+    public String getConfigAttr(final User user, String key) throws RemoteException {
+        try {
             return userstore.getConfigAttr(user, key);
-        }catch(final SQLException ex)
-        {
+        } catch (final SQLException ex) {
             final String message = "could not retrieve config attr: user: " + user + " || key: " + key;
             logger.error(message, ex);
             throw new RemoteException(message, ex);
@@ -1049,8 +1075,9 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     }
 
     @Override
-    public boolean hasConfigAttr(User user, String key) throws RemoteException
-    {
+    public boolean hasConfigAttr(User user, String key) throws RemoteException {
         return getConfigAttr(user, key) != null;
     }
+
+
 }

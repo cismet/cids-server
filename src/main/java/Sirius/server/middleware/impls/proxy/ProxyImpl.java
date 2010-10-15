@@ -23,6 +23,7 @@ import Sirius.server.newuser.UserServer;
 import Sirius.server.observ.RemoteObservable;
 import Sirius.server.observ.RemoteObserver;
 import Sirius.server.property.ServerProperties;
+import Sirius.server.search.CidsServerSearch;
 import Sirius.server.search.Query;
 import Sirius.server.search.SearchOption;
 import Sirius.server.search.SearchResult;
@@ -30,6 +31,7 @@ import Sirius.server.search.store.Info;
 import Sirius.server.search.store.QueryData;
 
 import Sirius.util.image.Image;
+import java.util.Collection;
 
 import org.apache.log4j.Logger;
 
@@ -1078,5 +1080,10 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     public boolean hasConfigAttr(final User user, final String key) throws RemoteException {
         return getConfigAttr(user, key) != null;
+    }
+
+     @Override
+    public Collection customServerSearch(User user, CidsServerSearch serverSearch) throws RemoteException {
+        return searchService.customServerSearch(user, serverSearch);
     }
 }

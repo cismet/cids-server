@@ -324,7 +324,7 @@ public class MetaServiceImpl {
                 logger.debug("<CS> getMetaObjectNode for user" + usr + "query ::" + query); // NOI18N
             }
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(usr.getDomain()))
+        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(usr.getDomain())) // ?? BUG !?! das bedeutet ich kann nur Objekte meiner Domain anfragen
                     .getMetaObjectNode(usr, query);
     }
 

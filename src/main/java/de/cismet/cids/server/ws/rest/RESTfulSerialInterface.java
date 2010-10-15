@@ -1,10 +1,10 @@
 /***************************************************
-*
-* cismet GmbH, Saarbruecken, Germany
-*
-*              ... and it just works.
-*
-****************************************************/
+ *
+ * cismet GmbH, Saarbruecken, Germany
+ *
+ *              ... and it just works.
+ *
+ ****************************************************/
 package de.cismet.cids.server.ws.rest;
 
 import Sirius.server.middleware.impls.proxy.StartProxy;
@@ -15,6 +15,7 @@ import Sirius.server.middleware.types.Node;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 import Sirius.server.newuser.UserGroup;
+import Sirius.server.search.CidsServerSearch;
 import Sirius.server.search.Query;
 import Sirius.server.search.SearchOption;
 import Sirius.server.search.store.QueryData;
@@ -46,7 +47,6 @@ import de.cismet.cids.server.ws.Converter;
 public final class RESTfulSerialInterface {
 
     //~ Static fields/initializers ---------------------------------------------
-
     private static final transient Logger LOG = Logger.getLogger(RESTfulSerialInterface.class);
     public static final String PARAM_USERGROUP_LS_NAME = "ugLsName";        // NOI18N
     public static final String PARAM_USERGROUP_NAME = "ugName";             // NOI18N
@@ -90,13 +90,11 @@ public final class RESTfulSerialInterface {
     public static final String PARAM_LINK_PARENT = "linkParent";            // NOI18N
     public static final String PARAM_NODE_ID = "nodeID";                    // NOI18N
     public static final String PARAM_KEY = "key";                           // NOI18N
-
+    public static final String PARAM_CUSTOM_SERVER_SEARCH = "customServerSearch"; //NOI18N
     //~ Instance fields --------------------------------------------------------
-
     private final transient CallServerService callserver;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new RESTfulSerialInterface object.
      */
@@ -105,7 +103,6 @@ public final class RESTfulSerialInterface {
     }
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * DOCUMENT ME!
      *
@@ -1032,10 +1029,10 @@ public final class RESTfulSerialInterface {
                     String.class);
 
             return createResponse(callserver.getAllLightweightMetaObjectsForClass(
-                        classId,
-                        user,
-                        representationFields,
-                        representationPattern));
+                    classId,
+                    user,
+                    representationFields,
+                    representationPattern));
         } catch (final IOException e) {
             final String message = "could not get LightwightMetaObjects for class";  // NOI18N
             LOG.error(message, e);
@@ -1073,9 +1070,9 @@ public final class RESTfulSerialInterface {
                     String[].class);
 
             return createResponse(callserver.getAllLightweightMetaObjectsForClass(
-                        classId,
-                        user,
-                        representationFields));
+                    classId,
+                    user,
+                    representationFields));
         } catch (final IOException e) {
             final String message = "could not get LightweightMetaObjects for class"; // NOI18N
             LOG.error(message, e);
@@ -1121,11 +1118,11 @@ public final class RESTfulSerialInterface {
                     String.class);
 
             return createResponse(callserver.getLightweightMetaObjectsByQuery(
-                        classId,
-                        user,
-                        query,
-                        representationFields,
-                        representationPattern));
+                    classId,
+                    user,
+                    query,
+                    representationFields,
+                    representationPattern));
         } catch (final IOException e) {
             final String message = "could not get LightweightMetaObjects"; // NOI18N
             LOG.error(message, e);
@@ -1166,10 +1163,10 @@ public final class RESTfulSerialInterface {
                     String[].class);
 
             return createResponse(callserver.getLightweightMetaObjectsByQuery(
-                        classId,
-                        user,
-                        query,
-                        representationFields));
+                    classId,
+                    user,
+                    query,
+                    representationFields));
         } catch (final IOException e) {
             final String message = "could not get LightweightMetaObjects"; // NOI18N
             LOG.error(message, e);
@@ -1378,15 +1375,15 @@ public final class RESTfulSerialInterface {
             final char isUnion = Converter.deserialiseFromString(isUnionBytes, char.class);
 
             return createResponse(callserver.addQuery(
-                        user,
-                        name,
-                        description,
-                        statement,
-                        resultType,
-                        isUpdate,
-                        isBatch,
-                        isRoot,
-                        isUnion));
+                    user,
+                    name,
+                    description,
+                    statement,
+                    resultType,
+                    isUpdate,
+                    isBatch,
+                    isRoot,
+                    isUnion));
         } catch (final IOException e) {
             final String message = "could not add query"; // NOI18N
             LOG.error(message, e);
@@ -1472,13 +1469,13 @@ public final class RESTfulSerialInterface {
             final int queryPosition = Converter.deserialiseFromString(queryPositionBytes, int.class);
 
             return createResponse(callserver.addQueryParameter(
-                        user,
-                        queryId,
-                        typeId,
-                        paramkey,
-                        description,
-                        isQueryResult,
-                        queryPosition));
+                    user,
+                    queryId,
+                    typeId,
+                    paramkey,
+                    description,
+                    isQueryResult,
+                    queryPosition));
         } catch (final IOException e) {
             final String message = "could not add query parameter"; // NOI18N
             LOG.error(message, e);
@@ -1861,6 +1858,27 @@ public final class RESTfulSerialInterface {
             throw new RemoteException(message, e);
         } catch (final ClassNotFoundException e) {
             final String message = "could not determine config attr"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
+    @POST
+    @Path("customServerSearch")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response customServerSearchPOST(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_CUSTOM_SERVER_SEARCH) final String customServerSearchBytes) throws RemoteException {
+        try {
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final CidsServerSearch serverSearch = Converter.deserialiseFromString(customServerSearchBytes, CidsServerSearch.class);
+            return createResponse(callserver.customServerSearch(user, serverSearch));
+        } catch (final IOException e) {
+            final String message = "could execute custom search"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could execute custom search"; // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
