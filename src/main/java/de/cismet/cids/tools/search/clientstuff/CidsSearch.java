@@ -12,7 +12,7 @@ import javax.swing.ImageIcon;
  */
 public interface CidsSearch {
 
-    Collection<MetaClass> getPossibleResultClasses();
+    //Collection<MetaClass> getPossibleResultClasses();
 
     CidsServerSearch getServerSearch();
 
