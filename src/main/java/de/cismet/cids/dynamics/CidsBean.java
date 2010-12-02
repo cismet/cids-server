@@ -607,7 +607,7 @@ public class CidsBean implements PropertyChangeListener {
 
     private String beanToJSONStringHelper(CidsBean bean, int depth) {
         StringBuilder sb = new StringBuilder();
-        char[] einrueckung = new char[Math.max(0, depth - 1)];
+        char[] einrueckung = new char[depth];
         for (int i = 0; i < einrueckung.length; ++i) {
             einrueckung[i] = '\t';
         }
@@ -615,33 +615,31 @@ public class CidsBean implements PropertyChangeListener {
         String[] propNames = bean.getPropertyNames();
         for (int i = 0; i < propNames.length; ++i) {
             String attribute = propNames[i];
-            if (!"id".equals(attribute)) {
-                sb.append(einrueckung).append('\t').append('"').append(attribute).append("\": ");
-                Object object = bean.getProperty(attribute);
-                if (object instanceof CidsBean) {
-                    sb.append('\n');
-                    sb.append(beanToJSONStringHelper((CidsBean) object, depth + 1));
-                    sb.append('\n');
-                } else if (object instanceof List) {
-                    List<CidsBean> collection = (List<CidsBean>) object;
-                    sb.append('\n').append(einrueckung).append('[');
-                    for (int j = 0; j < collection.size(); ++j) {
-                        CidsBean colBean = collection.get(j);
-                        sb.append(beanToJSONStringHelper(colBean, depth + 1));
-                        if (j < collection.size() - 1) {
-                            sb.append(',');
-                        }
+            sb.append(einrueckung).append('\t').append('"').append(attribute).append("\": ");
+            Object object = bean.getProperty(attribute);
+            if (object instanceof CidsBean) {
+                sb.append('\n');
+                sb.append(beanToJSONStringHelper((CidsBean) object, depth + 1));
+                sb.append('\n');
+            } else if (object instanceof List) {
+                List<CidsBean> collection = (List<CidsBean>) object;
+                sb.append('\n').append(einrueckung).append('[');
+                for (int j = 0; j < collection.size(); ++j) {
+                    CidsBean colBean = collection.get(j);
+                    sb.append(beanToJSONStringHelper(colBean, depth + 1));
+                    if (j < collection.size() - 1) {
+                        sb.append(',');
                         sb.append('\n');
-
                     }
-                    sb.append('\n').append(einrueckung).append(']');
-                } else {
-                    sb.append('"').append(object).append('"').append('\n');
                 }
-                if (i < propNames.length - 1) {
-                    sb.append(',');
-                }
+                sb.append('\n').append(einrueckung).append(']');
+            } else {
+                sb.append('"').append(object).append('"');
             }
+            if (i < propNames.length - 1) {
+                sb.append(',');
+            }
+            sb.append('\n');
         }
         sb.append(einrueckung).append("}");
         return sb.toString();
