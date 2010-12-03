@@ -1,10 +1,10 @@
 /***************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- *
- *              ... and it just works.
- *
- ****************************************************/
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.cids.server.ws.rest;
 
 import Sirius.server.middleware.impls.proxy.StartProxy;
@@ -47,54 +47,59 @@ import de.cismet.cids.server.ws.Converter;
 public final class RESTfulSerialInterface {
 
     //~ Static fields/initializers ---------------------------------------------
+
     private static final transient Logger LOG = Logger.getLogger(RESTfulSerialInterface.class);
-    public static final String PARAM_USERGROUP_LS_NAME = "ugLsName";        // NOI18N
-    public static final String PARAM_USERGROUP_NAME = "ugName";             // NOI18N
-    public static final String PARAM_USER_LS_NAME = "uLsName";              // NOI18N
-    public static final String PARAM_USERNAME = "uname";                    // NOI18N
-    public static final String PARAM_PASSWORD = "password";                 // NOI18N
-    public static final String PARAM_LS_HOME = "lsHome";                    // NOI18N
-    public static final String PARAM_USER = "user";                         // NOI18N
-    public static final String PARAM_OLD_PASSWORD = "old_password";         // NOI18N
-    public static final String PARAM_NEW_PASSWORD = "new_password";         // NOI18N
-    public static final String PARAM_CLASS_ID = "classIds";                 // NOI18N
-    public static final String PARAM_LS_NAME = "lsName";                    // NOI18N
-    public static final String PARAM_SEARCH_OPTIONS = "searchOptions";      // NOI18N
-    public static final String PARAM_DOMAIN = "domain";                     // NOI18N
-    public static final String PARAM_QUERY_ID = "queryID";                  // NOI18N
-    public static final String PARAM_PARAM_KEY = "paramKey";                // NOI18N
-    public static final String PARAM_DESCRIPTION = "description";           // NOI18N
-    public static final String PARAM_TYPE_ID = "typeId";                    // NOI18N
-    public static final String PARAM_QUERY = "query";                       // NOI18N
-    public static final String PARAM_QUERY_RESULT = "queryResult";          // NOI18N
-    public static final String PARAM_QUERY_POSITION = "queryPosition";      // NOI18N
-    public static final String PARAM_QUERY_NAME = "queryName";              // NOI18N
-    public static final String PARAM_STATEMENT = "statement";               // NOI18N
-    public static final String PARAM_RESULT_TYPE = "resultType";            // NOI18N
-    public static final String PARAM_IS_UPDATE = "isUpdate";                // NOI18N
-    public static final String PARAM_IS_BATCH = "isBatch";                  // NOI18N
-    public static final String PARAM_IS_ROOT = "isRoot";                    // NOI18N
-    public static final String PARAM_IS_UNION = "isUnion";                  // NOI18N
-    public static final String PARAM_USERGROUP = "userGroup";               // NOI18N
-    public static final String PARAM_QUERY_DATA = "queryData";              // NOI18N
-    public static final String PARAM_REP_FIELDS = "representationFields";   // NOI18N
-    public static final String PARAM_REP_PATTERN = "representationPatter";  // NOI18N
-    public static final String PARAM_LOCAL_SERVER_NAME = "localServerName"; // NOI18N
-    public static final String PARAM_TABLE_NAME = "tableName";              // NOI18N
-    public static final String PARAM_METAOBJECT = "metaObject";             // NOI18N
-    public static final String PARAM_METACLASS = "metaClass";               // NOI18N
-    public static final String PARAM_OBJECT_ID = "objectID";                // NOI18N
-    public static final String PARAM_NODE_FROM = "fromNode";                // NOI18N
-    public static final String PARAM_NODE_TO = "toNode";                    // NOI18N
-    public static final String PARAM_NODE = "node";                         // NOI18N
-    public static final String PARAM_LINK_PARENT = "linkParent";            // NOI18N
-    public static final String PARAM_NODE_ID = "nodeID";                    // NOI18N
-    public static final String PARAM_KEY = "key";                           // NOI18N
-    public static final String PARAM_CUSTOM_SERVER_SEARCH = "customServerSearch"; //NOI18N
+    public static final String PARAM_USERGROUP_LS_NAME = "ugLsName";              // NOI18N
+    public static final String PARAM_USERGROUP_NAME = "ugName";                   // NOI18N
+    public static final String PARAM_USER_LS_NAME = "uLsName";                    // NOI18N
+    public static final String PARAM_USERNAME = "uname";                          // NOI18N
+    public static final String PARAM_PASSWORD = "password";                       // NOI18N
+    public static final String PARAM_LS_HOME = "lsHome";                          // NOI18N
+    public static final String PARAM_USER = "user";                               // NOI18N
+    public static final String PARAM_OLD_PASSWORD = "old_password";               // NOI18N
+    public static final String PARAM_NEW_PASSWORD = "new_password";               // NOI18N
+    public static final String PARAM_CLASS_ID = "classIds";                       // NOI18N
+    public static final String PARAM_LS_NAME = "lsName";                          // NOI18N
+    public static final String PARAM_SEARCH_OPTIONS = "searchOptions";            // NOI18N
+    public static final String PARAM_DOMAIN = "domain";                           // NOI18N
+    public static final String PARAM_QUERY_ID = "queryID";                        // NOI18N
+    public static final String PARAM_PARAM_KEY = "paramKey";                      // NOI18N
+    public static final String PARAM_DESCRIPTION = "description";                 // NOI18N
+    public static final String PARAM_TYPE_ID = "typeId";                          // NOI18N
+    public static final String PARAM_QUERY = "query";                             // NOI18N
+    public static final String PARAM_QUERY_RESULT = "queryResult";                // NOI18N
+    public static final String PARAM_QUERY_POSITION = "queryPosition";            // NOI18N
+    public static final String PARAM_QUERY_NAME = "queryName";                    // NOI18N
+    public static final String PARAM_STATEMENT = "statement";                     // NOI18N
+    public static final String PARAM_RESULT_TYPE = "resultType";                  // NOI18N
+    public static final String PARAM_IS_UPDATE = "isUpdate";                      // NOI18N
+    public static final String PARAM_IS_BATCH = "isBatch";                        // NOI18N
+    public static final String PARAM_IS_ROOT = "isRoot";                          // NOI18N
+    public static final String PARAM_IS_UNION = "isUnion";                        // NOI18N
+    public static final String PARAM_USERGROUP = "userGroup";                     // NOI18N
+    public static final String PARAM_QUERY_DATA = "queryData";                    // NOI18N
+    public static final String PARAM_REP_FIELDS = "representationFields";         // NOI18N
+    public static final String PARAM_REP_PATTERN = "representationPatter";        // NOI18N
+    public static final String PARAM_LOCAL_SERVER_NAME = "localServerName";       // NOI18N
+    public static final String PARAM_TABLE_NAME = "tableName";                    // NOI18N
+    public static final String PARAM_METAOBJECT = "metaObject";                   // NOI18N
+    public static final String PARAM_METACLASS = "metaClass";                     // NOI18N
+    public static final String PARAM_OBJECT_ID = "objectID";                      // NOI18N
+    public static final String PARAM_NODE_FROM = "fromNode";                      // NOI18N
+    public static final String PARAM_NODE_TO = "toNode";                          // NOI18N
+    public static final String PARAM_NODE = "node";                               // NOI18N
+    public static final String PARAM_LINK_PARENT = "linkParent";                  // NOI18N
+    public static final String PARAM_NODE_ID = "nodeID";                          // NOI18N
+    public static final String PARAM_KEY = "key";                                 // NOI18N
+    public static final String PARAM_CUSTOM_SERVER_SEARCH = "customServerSearch"; // NOI18N
+    public static final String PARAM_ELEMENTS = "elements";                       // NOI18N
+
     //~ Instance fields --------------------------------------------------------
+
     private final transient CallServerService callserver;
 
     //~ Constructors -----------------------------------------------------------
+
     /**
      * Creates a new RESTfulSerialInterface object.
      */
@@ -103,6 +108,7 @@ public final class RESTfulSerialInterface {
     }
 
     //~ Methods ----------------------------------------------------------------
+
     /**
      * DOCUMENT ME!
      *
@@ -1029,10 +1035,10 @@ public final class RESTfulSerialInterface {
                     String.class);
 
             return createResponse(callserver.getAllLightweightMetaObjectsForClass(
-                    classId,
-                    user,
-                    representationFields,
-                    representationPattern));
+                        classId,
+                        user,
+                        representationFields,
+                        representationPattern));
         } catch (final IOException e) {
             final String message = "could not get LightwightMetaObjects for class";  // NOI18N
             LOG.error(message, e);
@@ -1070,9 +1076,9 @@ public final class RESTfulSerialInterface {
                     String[].class);
 
             return createResponse(callserver.getAllLightweightMetaObjectsForClass(
-                    classId,
-                    user,
-                    representationFields));
+                        classId,
+                        user,
+                        representationFields));
         } catch (final IOException e) {
             final String message = "could not get LightweightMetaObjects for class"; // NOI18N
             LOG.error(message, e);
@@ -1118,11 +1124,11 @@ public final class RESTfulSerialInterface {
                     String.class);
 
             return createResponse(callserver.getLightweightMetaObjectsByQuery(
-                    classId,
-                    user,
-                    query,
-                    representationFields,
-                    representationPattern));
+                        classId,
+                        user,
+                        query,
+                        representationFields,
+                        representationPattern));
         } catch (final IOException e) {
             final String message = "could not get LightweightMetaObjects"; // NOI18N
             LOG.error(message, e);
@@ -1163,10 +1169,10 @@ public final class RESTfulSerialInterface {
                     String[].class);
 
             return createResponse(callserver.getLightweightMetaObjectsByQuery(
-                    classId,
-                    user,
-                    query,
-                    representationFields));
+                        classId,
+                        user,
+                        query,
+                        representationFields));
         } catch (final IOException e) {
             final String message = "could not get LightweightMetaObjects"; // NOI18N
             LOG.error(message, e);
@@ -1375,15 +1381,15 @@ public final class RESTfulSerialInterface {
             final char isUnion = Converter.deserialiseFromString(isUnionBytes, char.class);
 
             return createResponse(callserver.addQuery(
-                    user,
-                    name,
-                    description,
-                    statement,
-                    resultType,
-                    isUpdate,
-                    isBatch,
-                    isRoot,
-                    isUnion));
+                        user,
+                        name,
+                        description,
+                        statement,
+                        resultType,
+                        isUpdate,
+                        isBatch,
+                        isRoot,
+                        isUnion));
         } catch (final IOException e) {
             final String message = "could not add query"; // NOI18N
             LOG.error(message, e);
@@ -1469,13 +1475,13 @@ public final class RESTfulSerialInterface {
             final int queryPosition = Converter.deserialiseFromString(queryPositionBytes, int.class);
 
             return createResponse(callserver.addQueryParameter(
-                    user,
-                    queryId,
-                    typeId,
-                    paramkey,
-                    description,
-                    isQueryResult,
-                    queryPosition));
+                        user,
+                        queryId,
+                        typeId,
+                        paramkey,
+                        description,
+                        isQueryResult,
+                        queryPosition));
         } catch (final IOException e) {
             final String message = "could not add query parameter"; // NOI18N
             LOG.error(message, e);
@@ -1863,6 +1869,16 @@ public final class RESTfulSerialInterface {
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   userBytes                DOCUMENT ME!
+     * @param   customServerSearchBytes  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     @POST
     @Path("customServerSearch")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -1871,7 +1887,10 @@ public final class RESTfulSerialInterface {
             @FormParam(PARAM_CUSTOM_SERVER_SEARCH) final String customServerSearchBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
-            final CidsServerSearch serverSearch = Converter.deserialiseFromString(customServerSearchBytes, CidsServerSearch.class);
+            final CidsServerSearch serverSearch = Converter.deserialiseFromString(
+                    customServerSearchBytes,
+                    CidsServerSearch.class);
+
             return createResponse(callserver.customServerSearch(user, serverSearch));
         } catch (final IOException e) {
             final String message = "could execute custom search"; // NOI18N
@@ -1879,6 +1898,47 @@ public final class RESTfulSerialInterface {
             throw new RemoteException(message, e);
         } catch (final ClassNotFoundException e) {
             final String message = "could execute custom search"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   classIdBytes   DOCUMENT ME!
+     * @param   objectIdBytes  DOCUMENT ME!
+     * @param   domainBytes    DOCUMENT ME!
+     * @param   userBytes      DOCUMENT ME!
+     * @param   elementsBytes  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @POST
+    @Path("getHistory")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response getHistoryPOST(@FormParam(PARAM_CLASS_ID) final String classIdBytes,
+            @FormParam(PARAM_OBJECT_ID) final String objectIdBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes,
+            @FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_ELEMENTS) final String elementsBytes) throws RemoteException {
+        try {
+            final int classId = Converter.deserialiseFromString(classIdBytes, int.class);
+            final int objectId = Converter.deserialiseFromString(objectIdBytes, int.class);
+            final String domain = Converter.deserialiseFromString(domainBytes, String.class);
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final int elements = Converter.deserialiseFromString(elementsBytes, int.class);
+
+            return createResponse(callserver.getHistory(classId, objectId, domain, user, elements));
+        } catch (final IOException e) {
+            final String message = "could not get history"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get history"; // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }

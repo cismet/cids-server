@@ -10,6 +10,7 @@ package Sirius.server.middleware.impls.proxy;
 import Sirius.server.Server;
 import Sirius.server.ServerType;
 import Sirius.server.localserver.method.MethodMap;
+import Sirius.server.middleware.types.HistoryObject;
 import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.Link;
 import Sirius.server.middleware.types.MetaClass;
@@ -31,7 +32,6 @@ import Sirius.server.search.store.Info;
 import Sirius.server.search.store.QueryData;
 
 import Sirius.util.image.Image;
-import java.util.Collection;
 
 import org.apache.log4j.Logger;
 
@@ -44,6 +44,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -1082,8 +1083,17 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
         return getConfigAttr(user, key) != null;
     }
 
-     @Override
-    public Collection customServerSearch(User user, CidsServerSearch serverSearch) throws RemoteException {
+    @Override
+    public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) throws RemoteException {
         return searchService.customServerSearch(user, serverSearch);
+    }
+
+    @Override
+    public HistoryObject[] getHistory(final int classId,
+            final int objectId,
+            final String domain,
+            final User user,
+            final int elements) throws RemoteException {
+        return metaService.getHistory(classId, objectId, domain, user, elements);
     }
 }

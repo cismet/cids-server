@@ -12,12 +12,14 @@
  */
 package Sirius.server.search;
 
-import Sirius.server.middleware.interfaces.proxy.*;
-import Sirius.server.middleware.types.*;
-import Sirius.server.newuser.*;
-import Sirius.server.search.searchparameter.*;
+import Sirius.server.middleware.types.MetaObjectNode;
+import Sirius.server.newuser.User;
 
-import java.util.*;
+import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * DOCUMENT ME!
@@ -27,12 +29,14 @@ import java.util.*;
  */
 public class QueryExecuter {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final transient Logger LOG = Logger.getLogger(QueryExecuter.class);
+
     //~ Instance fields --------------------------------------------------------
 
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
-
     // conatins references to all local servers available
-    private java.util.Hashtable activeLocalServers;
+    private Map activeLocalServers;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -41,7 +45,7 @@ public class QueryExecuter {
      *
      * @param  activeLocalServers  DOCUMENT ME!
      */
-    public QueryExecuter(final Hashtable activeLocalServers) {
+    public QueryExecuter(final Map activeLocalServers) {
         this.activeLocalServers = activeLocalServers;
     }
 
@@ -65,7 +69,7 @@ public class QueryExecuter {
         q.isExecuted();
 
         if (s == null) {
-            logger.error(
+            LOG.error(
                 "query for ls " // NOI18N
                         + q.getQueryIdentifier().getDomain()
                         + " not possible as server is not online"); // NOI18N
@@ -85,8 +89,8 @@ public class QueryExecuter {
 
         // keine ausgew\u00E4hlte Klasse
         if ((cIds != null) && (cIds.length == 1) && (cIds[0] == -1)) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("No class on this local server selected. For this reason return"); // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("No class on this local server selected. For this reason return"); // NOI18N
             }
             return new SearchResult(new MetaObjectNode[0]);
         }
@@ -104,7 +108,7 @@ public class QueryExecuter {
         // else
         // return new SearchResult(new Sirius.server.middleware.types.Node[0]);
 
-        return ((SearchResult)s.search(u, cIds, q));
+        return s.search(u, cIds, q);
     }
     /**
      * such classIds bzgl. ls raus
@@ -134,8 +138,8 @@ public class QueryExecuter {
         }
 
         v.trimToSize();
-        if (logger.isDebugEnabled()) {
-            logger.debug("classids " + v + "for domain" + domain); // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("classids " + v + "for domain" + domain); // NOI18N
         }
 
         final int[] result = new int[v.size()];

@@ -9,15 +9,14 @@ package Sirius.server;
 
 import org.apache.log4j.Logger;
 
-import org.openide.util.Exceptions;
 
 import java.io.Serializable;
 
 import java.lang.reflect.Field;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
@@ -50,7 +49,7 @@ public abstract class Shutdown implements Shutdownable, Serializable {
      * Creates a new Shutdown object.
      */
     protected Shutdown() {
-        shutdowns = new Hashtable<Integer, Set<Shutdownable>>();
+        shutdowns = new HashMap<Integer, Set<Shutdownable>>();
         down = false;
     }
 

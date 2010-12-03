@@ -14,6 +14,9 @@ import org.apache.log4j.Logger;
 
 import org.openide.util.NbBundle;
 
+import org.postgis.PGbox3d;
+import org.postgis.PGgeometry;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -49,6 +52,9 @@ public final class DBConnection {
     public static final String DESC_FETCH_CONFIG_ATTR_USER_VALUE = "fetch_config_attr_user_value";             // NOI18N
     public static final String DESC_FETCH_CONFIG_ATTR_UG_VALUE = "fetch_config_attr_ug_value";                 // NOI18N
     public static final String DESC_FETCH_CONFIG_ATTR_DOMAIN_VALUE = "fetch_config_attr_domain_value";         // NOI18N
+    public static final String DESC_FETCH_HISTORY = "fetch_history";                                           // NOI18N
+    public static final String DESC_FETCH_HISTORY_LIMIT = "fetch_history_limit";                               // NOI18N
+    public static final String DESC_INSERT_HISTORY_ENTRY = "insert_history_entry";                             // NOI18N
 
     //~ Instance fields --------------------------------------------------------
 
@@ -81,15 +87,15 @@ public final class DBConnection {
 
             con = DriverManager.getConnection(dbc.url, dbc.login, dbc.pwd); // can raise an SQl EXc.
 
-            if (dbc.driver.equals("org.postgresql.Driver")) {                                         // NOI18N
-                ((org.postgresql.PGConnection)con).addDataType("geometry", "org.postgis.PGgeometry"); // NOI18N
-                ((org.postgresql.PGConnection)con).addDataType("box3d", "org.postgis.PGbox3d");       // NOI18N
+            if (dbc.driver.equals("org.postgresql.Driver")) {                                 // NOI18N
+                ((org.postgresql.PGConnection)con).addDataType("geometry", PGgeometry.class); // NOI18N
+                ((org.postgresql.PGConnection)con).addDataType("box3d", PGbox3d.class);       // NOI18N
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("postgis datatypes added to connection");                               // NOI18N
+                    LOG.debug("postgis datatypes added to connection");                       // NOI18N
                 }
             }
             if (LOG.isDebugEnabled()) {
-                LOG.debug("connection established to " + this.dbc);                                   // NOI18N
+                LOG.debug("connection established to " + this.dbc);                           // NOI18N
             }
 
             cache = new StatementCache(con);
@@ -192,36 +198,72 @@ public final class DBConnection {
      */
     public ResultSet submitInternalQuery(final String descriptor, final Object... parameters) throws SQLException {
         try {
-            if (!internalQueries.containsKey(descriptor)) {
-                final String stmt = NbBundle.getMessage(DBConnection.class, descriptor);
-                final PreparedStatement ps = con.prepareStatement(stmt);
-                if (parameters.length == ps.getParameterMetaData().getParameterCount()) {
-                    internalQueries.put(descriptor, ps);
-                } else {
-                    final String message = "parameter count mismmatch for descriptor '" // NOI18N
-                                + descriptor
-                                + "', Statement: "                                      // NOI18N
-                                + stmt
-                                + ", Statement param count: "                           // NOI18N
-                                + ps.getParameterMetaData().getParameterCount()
-                                + ", given param count: "                               // NOI18N
-                                + parameters.length;
-                    LOG.error(message);
-                    throw new IllegalArgumentException(message);
-                }
-            }
-
-            final PreparedStatement ps = internalQueries.get(descriptor);
-            for (int i = 0; i < parameters.length; ++i) {
-                ps.setObject(i + 1, parameters[i]);
-            }
-
-            return ps.executeQuery();
+            return prepareQuery(descriptor, parameters).executeQuery();
         } catch (final MissingResourceException e) {
             final String message = "invalid descriptor: " + descriptor; // NOI18N
             LOG.error(message, e);
             throw new IllegalArgumentException(message, e);
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   descriptor  DOCUMENT ME!
+     * @param   parameters  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException              DOCUMENT ME!
+     * @throws  IllegalArgumentException  DOCUMENT ME!
+     */
+    public int submitInternalUpdate(final String descriptor, final Object... parameters) throws SQLException {
+        try {
+            return prepareQuery(descriptor, parameters).executeUpdate();
+        } catch (final MissingResourceException e) {
+            final String message = "invalid descriptor: " + descriptor; // NOI18N
+            LOG.error(message, e);
+            throw new IllegalArgumentException(message, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   descriptor  DOCUMENT ME!
+     * @param   parameters  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException              DOCUMENT ME!
+     * @throws  IllegalArgumentException  DOCUMENT ME!
+     */
+    private PreparedStatement prepareQuery(final String descriptor, final Object... parameters) throws SQLException {
+        if (!internalQueries.containsKey(descriptor)) {
+            final String stmt = NbBundle.getMessage(DBConnection.class, descriptor);
+            final PreparedStatement ps = con.prepareStatement(stmt);
+            if (parameters.length == ps.getParameterMetaData().getParameterCount()) {
+                internalQueries.put(descriptor, ps);
+            } else {
+                final String message = "parameter count mismmatch for descriptor '" // NOI18N
+                            + descriptor
+                            + "', Statement: "                                      // NOI18N
+                            + stmt
+                            + ", Statement param count: "                           // NOI18N
+                            + ps.getParameterMetaData().getParameterCount()
+                            + ", given param count: "                               // NOI18N
+                            + parameters.length;
+                LOG.error(message);
+                throw new IllegalArgumentException(message);
+            }
+        }
+
+        final PreparedStatement ps = internalQueries.get(descriptor);
+        for (int i = 0; i < parameters.length; ++i) {
+            ps.setObject(i + 1, parameters[i]);
+        }
+
+        return ps;
     }
 
     /**

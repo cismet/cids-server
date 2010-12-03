@@ -8,8 +8,8 @@
 package Sirius.server.localserver;
 
 import Sirius.server.Shutdown;
-import Sirius.server.Shutdownable;
 import Sirius.server.localserver._class.ClassCache;
+import Sirius.server.localserver.history.HistoryServer;
 import Sirius.server.localserver.method.MethodCache;
 import Sirius.server.localserver.method.MethodMap;
 import Sirius.server.localserver.object.ObjectFactory;
@@ -30,41 +30,42 @@ import Sirius.server.sql.DBConnectionPool;
 
 import org.apache.log4j.Logger;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-public class DBServer extends Shutdown implements java.io.Serializable {
+public final class DBServer extends Shutdown implements java.io.Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient Logger LOG = Logger.getLogger(DBServer.class);
 
-
     //~ Instance fields --------------------------------------------------------
 
     // DefaultObject of the inner class for updates and inserts etc. of the meta data base
-    protected PersistenceManager objectPersistence;
+    private final PersistenceManager objectPersistence;
     /** The Navigational structure of a localserver. */
-    protected AbstractTree tree;
+    private final AbstractTree tree;
     /** Holds several connection to ths ls' db and other used dbs. */
-    transient DBConnectionPool connectionPool;
+    private final transient DBConnectionPool connectionPool;
 
     /** Holds and delivers a localsservers objects. */
-    private ObjectFactory objects;
+    private final ObjectFactory objects;
     /** Holds and delivers a localsservers classes. */
-    private ClassCache classes;
+    private final ClassCache classes;
     /** Holds and delivers a localsservers methods. */
-    private MethodCache methods;
+    private final MethodCache methods;
     /** To check user rights. */
-    private UserStore userstore;
+    private final UserStore userstore;
     /** To check policies. */
-    private PolicyHolder policyHolder;
+    private final PolicyHolder policyHolder;
+    /** provides object history.* */
+    private final HistoryServer historyServer;
     /** Initial server-settings. */
-    private ServerProperties properties;
+    private final ServerProperties properties;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -113,6 +114,8 @@ public class DBServer extends Shutdown implements java.io.Serializable {
 
         userstore = new UserStore(connectionPool, properties);
 
+        historyServer = new HistoryServer(connectionPool, classes);
+
         objectPersistence = new PersistenceManager(this);
     }
 
@@ -138,7 +141,7 @@ public class DBServer extends Shutdown implements java.io.Serializable {
      * @throws  Throwable  DOCUMENT ME!
      */
     public MetaClass[] getClasses() throws Throwable {
-        final Vector tmpClasses = classes.getAllClasses();
+        final List tmpClasses = classes.getAllClasses();
 
         final MetaClass[] middleWareClasses = new MetaClass[tmpClasses.size()];
 
@@ -196,7 +199,7 @@ public class DBServer extends Shutdown implements java.io.Serializable {
      * @throws  Throwable  DOCUMENT ME!
      */
     public MetaClass[] getClasses(final UserGroup ug) throws Throwable {
-        final Vector tmpClasses = classes.getAllClasses(ug);
+        final List tmpClasses = classes.getAllClasses(ug);
         MetaClass[] middleWareClasses = null;
 
         if (tmpClasses != null) {
@@ -337,6 +340,7 @@ public class DBServer extends Shutdown implements java.io.Serializable {
 
         return n;
     }
+
     /**
      * public Sirius.server.localserver.tree.NodeReferenceList getObjectNodes(String[] objectIDs,UserGroup ug) throws
      * Throwable { //estimated 2 Nodes per object in average ! java.util.ArrayList<Node> v = new
@@ -348,7 +352,7 @@ public class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public final AbstractTree getTree() throws Throwable {
+    public AbstractTree getTree() throws Throwable {
         return tree;
     }
     /**
@@ -356,7 +360,7 @@ public class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public final DBConnection getActiveDBConnection() {
+    public DBConnection getActiveDBConnection() {
         return connectionPool.getConnection();
     }
 
@@ -365,7 +369,7 @@ public class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public final DBConnectionPool getConnectionPool() {
+    public DBConnectionPool getConnectionPool() {
         return connectionPool;
     }
     /**
@@ -373,7 +377,7 @@ public class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public final ServerProperties getSystemProperties() {
+    public ServerProperties getSystemProperties() {
         return properties;
     }
 
@@ -382,7 +386,7 @@ public class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public final MethodMap getMethods() {
+    public MethodMap getMethods() {
         return methods.getMethods();
     }
 
@@ -395,7 +399,7 @@ public class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public final MethodMap getMethods(final UserGroup ug) throws Throwable {
+    public MethodMap getMethods(final UserGroup ug) throws Throwable {
         return methods.getMethods(ug);
     }
 
@@ -404,7 +408,7 @@ public class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public final UserStore getUserStore() {
+    public UserStore getUserStore() {
         return userstore;
     }
 
@@ -413,7 +417,7 @@ public class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public final ObjectFactory getObjectFactory() {
+    public ObjectFactory getObjectFactory() {
         return objects;
     }
 
@@ -422,7 +426,7 @@ public class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public final PersistenceManager getObjectPersitenceManager() {
+    public PersistenceManager getObjectPersitenceManager() {
         return objectPersistence;
     }
 
@@ -434,4 +438,13 @@ public class DBServer extends Shutdown implements java.io.Serializable {
     public ServerProperties getProperties() {
         return properties;
     }
-} // end class DBServer
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public HistoryServer getHistoryServer() {
+        return historyServer;
+    }
+}

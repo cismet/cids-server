@@ -31,8 +31,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * DOCUMENT ME!
@@ -42,7 +43,6 @@ import java.util.Vector;
 public class ClassCache extends Shutdown {
 
     //~ Static fields/initializers ---------------------------------------------
-
 
     private static final transient Logger LOG = Logger.getLogger(ClassCache.class);
 
@@ -247,7 +247,7 @@ public class ClassCache extends Shutdown {
      *
      * @return  DOCUMENT ME!
      */
-    public final Vector getAllClasses() {
+    public final List getAllClasses() {
         return classes.getAll();
     }
 
@@ -309,18 +309,17 @@ public class ClassCache extends Shutdown {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public final Vector getAllClasses(final UserGroup ug) throws Exception {
-        final Vector all = getAllClasses();
-        final Vector cs = new Vector(all.size());
+    public final List getAllClasses(final UserGroup ug) throws Exception {
+        final List all = getAllClasses();
+        final List cs = new ArrayList(all.size());
 
         for (int i = 0; i < all.size(); i++) {
             final Class c = (Class)all.get(i);
             if (c.getPermissions().hasReadPermission(ug)) {
-                cs.addElement(c);
+                cs.add(c);
             }
         }
 
-        cs.trimToSize();
         return cs;
     }
 
@@ -374,7 +373,7 @@ public class ClassCache extends Shutdown {
         final HashMap<Integer, HashMap<String, String>> classfieldtypes =
             new HashMap<Integer, HashMap<String, String>>();
 
-        final Vector<Sirius.server.localserver._class.Class> vc = getAllClasses();
+        final List<Sirius.server.localserver._class.Class> vc = getAllClasses();
 
         try {
             for (final Sirius.server.localserver._class.Class c : vc) {
@@ -641,7 +640,7 @@ public class ClassCache extends Shutdown {
                 final String permKey = permTable.getString("key");
 
                 if (lsHome.equalsIgnoreCase("local")) {          // NOI18N
-                    lsHome = new String(lsName);
+                    lsHome = String.valueOf(lsName);
                 }
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("==permId set ======! " + permId); // NOI18N

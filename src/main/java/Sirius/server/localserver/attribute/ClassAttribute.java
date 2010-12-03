@@ -18,6 +18,7 @@ public class ClassAttribute extends Attribute implements java.io.Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
+    public static final String HISTORY_ENABLED = "history_enabled"; // NOI18N
 
     //~ Instance fields --------------------------------------------------------
 

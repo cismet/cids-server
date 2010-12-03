@@ -7,8 +7,7 @@
 ****************************************************/
 package de.cismet.cids.server.ws.rest;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import Sirius.server.middleware.types.HistoryObject;
 import Sirius.server.localserver.method.MethodMap;
 import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.Link;
@@ -35,7 +34,6 @@ import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
-import java.util.Collection;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
@@ -56,8 +54,8 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
@@ -139,8 +137,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     public RESTfulSerialInterfaceConnector(final String rootResource,
             final Proxy proxy,
             final SSLConfig sslConfig) {
-        if (sslConfig != null) {
-//            initSSL(sslConfig);
+        if (true) {//sslConfig == null) {
+            LOG.warn("cannot initialise ssl because sslConfig is null"); // NOI18N
+        } else {
+            initSSL(sslConfig);
         }
 
         // add training '/' to the root resource if not present
@@ -159,7 +159,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             LOG.debug("using proxy: " + proxy); // NOI18N
         }
 
-        clientCache = new Hashtable<String, Client>();
+        clientCache = new HashMap<String, Client>();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -2955,13 +2955,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
-
     }
 
-
-
     @Override
-    public Collection customServerSearch(User user, CidsServerSearch serverSearch) throws RemoteException {
+    public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) throws RemoteException {
         try {
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
             if (user != null) {
@@ -2973,16 +2970,48 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
             return getResponsePOST("customServerSearch", queryParams, Collection.class); // NOI18N
         } catch (final IOException ex) {
-            final String message = "could not convert params";                            // NOI18N
+            final String message = "could not convert params";                           // NOI18N
             LOG.error(message, ex);
             throw new RemoteException(message, ex);
         } catch (final ClassNotFoundException e) {
-            final String message = "could not create collection";                             // NOI18N
+            final String message = "could not create collection";                        // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
     }
 
+    @Override
+    public HistoryObject[] getHistory(final int classId,
+            final int objectId,
+            final String domain,
+            final User user,
+            final int elements) throws RemoteException {
+        try {
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
+            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId));
+            queryParams.add(PARAM_OBJECT_ID, Converter.serialiseToString(objectId));
+
+            if (domain != null) {
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
+            }
+
+            if (user != null) {
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+            }
+
+            queryParams.add(PARAM_ELEMENTS, Converter.serialiseToString(elements));
+
+            return getResponsePOST("getHistory", queryParams, HistoryObject[].class); // NOI18N
+        } catch (final IOException ex) {
+            final String message = "could not convert params";                     // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create MetaObject[]";                // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
 
     //~ Inner Classes ----------------------------------------------------------
 
@@ -3001,6 +3030,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         private transient boolean useSSL;
         private transient String serverKeystore;
         private transient String serverKeystorePass;
+        private transient String clientKeystore;
+        private transient String clientKeystorePass;
 
         //~ Constructors -------------------------------------------------------
 

@@ -1,10 +1,10 @@
 /***************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- *
- *              ... and it just works.
- *
- ****************************************************/
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.server.middleware.impls.domainserver;
 
 import Sirius.server.Server;
@@ -12,6 +12,8 @@ import Sirius.server.ServerExit;
 import Sirius.server.ServerExitError;
 import Sirius.server.ServerType;
 import Sirius.server.localserver.DBServer;
+import Sirius.server.localserver.history.HistoryException;
+import Sirius.server.localserver.history.HistoryServer;
 import Sirius.server.localserver.method.MethodMap;
 import Sirius.server.localserver.query.QueryCache;
 import Sirius.server.localserver.query.querystore.Store;
@@ -25,6 +27,7 @@ import Sirius.server.middleware.interfaces.domainserver.SearchService;
 import Sirius.server.middleware.interfaces.domainserver.SystemService;
 import Sirius.server.middleware.interfaces.domainserver.UserService;
 import Sirius.server.middleware.types.DefaultMetaObject;
+import Sirius.server.middleware.types.HistoryObject;
 import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.Link;
 import Sirius.server.middleware.types.MetaClass;
@@ -43,9 +46,10 @@ import Sirius.server.search.store.Info;
 import Sirius.server.search.store.QueryData;
 import Sirius.server.sql.DBConnectionPool;
 import Sirius.server.sql.SystemStatement;
-import java.sql.SQLException;
 
 import org.apache.log4j.PropertyConfigurator;
+
+import java.io.File;
 
 import java.net.InetAddress;
 
@@ -55,6 +59,11 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.MissingResourceException;
 
@@ -65,9 +74,6 @@ import de.cismet.cids.server.ServerSecurityManager;
 import de.cismet.cids.server.ws.rest.RESTfulService;
 
 import de.cismet.cids.utils.ClassloadingHelper;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.ArrayList;
 
 /**
  * DOCUMENT ME!
@@ -75,20 +81,25 @@ import java.util.ArrayList;
  * @version  $Revision$, $Date$
  */
 public class DomainServerImpl extends UnicastRemoteObject implements CatalogueService,
-        MetaService,
-        SystemService,
-        UserService,
-        QueryStore,
-        SearchService { // ActionListener
+    MetaService,
+    SystemService,
+    UserService,
+    QueryStore,
+    SearchService { // ActionListener
 
     //~ Static fields/initializers ---------------------------------------------
+
     private static final String EXTENSION_FACTORY_PREFIX = "de.cismet.cids.custom.extensionfactories."; // NOI18N
     private static transient DomainServerImpl instance;
+
     //~ Instance fields --------------------------------------------------------
+
     // dbaccess of the mis (catalogue, classes and objects
     protected DBServer dbServer;
     // userservice of a localserver
     protected UserStore userstore;
+    // history server of a localserver
+    protected HistoryServer historyServer;
     // executing the searchservice
     protected Seeker seeker;
     // this servers configuration
@@ -106,6 +117,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
 
     //~ Constructors -----------------------------------------------------------
+
     /**
      * protected ServerStatus status;
      *
@@ -180,6 +192,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     }
 
     //~ Methods ----------------------------------------------------------------
+
     @Override
     public NodeReferenceList getChildren(final Node node, final User user) throws RemoteException {
         try {
@@ -210,7 +223,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 logger.error(e, e);
             }
             return new NodeReferenceList();
-            // throw new RemoteException(e.getMessage());
+                // throw new RemoteException(e.getMessage());
         }
     }
 
@@ -320,7 +333,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public MetaClass getClassByTableName(final User user, final String tableName) throws RemoteException {
         try { // if(userstore.validateUser(user))
             return dbServer.getClassByTableName(user.getUserGroup(), tableName);
-            // return null;
+                // return null;
         } catch (Throwable e) {
             if (logger != null) {
                 logger.error(e, e);
@@ -364,9 +377,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         try {
             final MetaObject mo = dbServer.getObject(objectID, user.getUserGroup());
             if (mo != null) {
-
                 final MetaClass[] classes = dbServer.getClasses(user.getUserGroup());
-
 
                 mo.setAllClasses(getClassHashTable(classes, serverInfo.getName()));
 
@@ -377,7 +388,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                             ClassloadingHelper.CLASS_TYPE.EXTENSION_FACTORY);
 
                     if (extensionFactoryClass != null) {
-                        final ObjectExtensionFactory ef = (ObjectExtensionFactory) extensionFactoryClass.newInstance();
+                        final ObjectExtensionFactory ef = (ObjectExtensionFactory)extensionFactoryClass.newInstance();
                         try {
                             ef.extend(mo.getBean());
                         } catch (Exception e) {
@@ -418,7 +429,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     // retrieves a Meta data object( as Node)  referenced by a symbolic pointer to the MIS
     @Override
     public Node getMetaObjectNode(final User usr, final int nodeID) throws RemoteException {
-        final int[] tmp = {nodeID};
+        final int[] tmp = { nodeID };
 
         // single value directly referenced
         return getNodes(usr, tmp)[0];
@@ -436,7 +447,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public MetaObject[] getMetaObject(final User usr, final Query query) throws RemoteException {
         try {
             // user spaeter erweitern
-            return (MetaObject[]) seeker.search(query, new int[0], usr.getUserGroup(), 0).getObjects();
+            return seeker.search(query, new int[0], usr.getUserGroup(), 0).getObjects();
         } catch (Throwable e) {
             if (logger != null) {
                 logger.error(e, e);
@@ -448,7 +459,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
     @Override
     public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
-        final MetaObject[] o = (MetaObject[]) getMetaObject(
+        final MetaObject[] o = getMetaObject(
                 usr,
                 new Query(new SystemStatement(true, -1, "", false, SearchResult.OBJECT, query), usr.getDomain())); // NOI18N
 
@@ -460,11 +471,11 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         if (logger != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug(
-                        "<html>insert MetaObject for User :+:"
-                        + user
-                        + "  MO "
-                        + metaObject.getDebugString()
-                        + "</html>");
+                    "<html>insert MetaObject for User :+:"
+                            + user
+                            + "  MO "
+                            + metaObject.getDebugString()
+                            + "</html>");
             }
         }
         try {
@@ -605,11 +616,12 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String[] representationFields,
             final String representationPattern) throws RemoteException {
         try {
-            return dbServer.getObjectFactory().getAllLightweightMetaObjectsForClass(
-                    classId,
-                    user,
-                    representationFields,
-                    representationPattern);
+            return dbServer.getObjectFactory()
+                        .getAllLightweightMetaObjectsForClass(
+                            classId,
+                            user,
+                            representationFields,
+                            representationPattern);
         } catch (Throwable ex) {
             throw new RemoteException("Error on getAllLightweightMetaObjectsForClass(...)", ex); // NOI18N
         }
@@ -620,10 +632,11 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final User user,
             final String[] representationFields) throws RemoteException {
         try {
-            return dbServer.getObjectFactory().getAllLightweightMetaObjectsForClass(
-                    classId,
-                    user,
-                    representationFields);
+            return dbServer.getObjectFactory()
+                        .getAllLightweightMetaObjectsForClass(
+                            classId,
+                            user,
+                            representationFields);
         } catch (Throwable ex) {
             throw new RemoteException("Error on getAllLightweightMetaObjectsForClass(...)", ex); // NOI18N
         }
@@ -636,12 +649,13 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String[] representationFields,
             final String representationPattern) throws RemoteException {
         try {
-            return dbServer.getObjectFactory().getLightweightMetaObjectsByQuery(
-                    classId,
-                    user,
-                    query,
-                    representationFields,
-                    representationPattern);
+            return dbServer.getObjectFactory()
+                        .getLightweightMetaObjectsByQuery(
+                            classId,
+                            user,
+                            query,
+                            representationFields,
+                            representationPattern);
         } catch (Throwable ex) {
             throw new RemoteException("Error on getLightweightMetaObjectsByQuery(...)", ex); // NOI18N
         }
@@ -653,7 +667,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String query,
             final String[] representationFields) throws RemoteException {
         try {
-            return dbServer.getObjectFactory().getLightweightMetaObjectsByQuery(classId, user, query, representationFields);
+            return dbServer.getObjectFactory()
+                        .getLightweightMetaObjectsByQuery(classId, user, query, representationFields);
         } catch (Throwable ex) {
             throw new RemoteException("Error on getLightweightMetaObjectsByQuery(...)", ex); // NOI18N
         }
@@ -786,13 +801,13 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     }
 
     @Override
-    public ArrayList<ArrayList> performCustomSearch(String query) throws RemoteException {
+    public ArrayList<ArrayList> performCustomSearch(final String query) throws RemoteException {
         try {
-            Statement s = getConnectionPool().getConnection().getConnection().createStatement();
-            ResultSet rs = s.executeQuery(query);
-            ArrayList<ArrayList> result = new ArrayList<ArrayList>();
+            final Statement s = getConnectionPool().getConnection().getConnection().createStatement();
+            final ResultSet rs = s.executeQuery(query);
+            final ArrayList<ArrayList> result = new ArrayList<ArrayList>();
             while (rs.next()) {
-                ArrayList row = new ArrayList();
+                final ArrayList row = new ArrayList();
                 for (int i = 0; i < rs.getMetaData().getColumnCount(); ++i) {
                     row.add(rs.getObject(i + 1));
                 }
@@ -800,7 +815,6 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             }
             logger.fatal(result);
             return result;
-
         } catch (Exception e) {
             final String msg = "Error during sql statement: " + query;
             logger.error(msg, e);
@@ -825,19 +839,19 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
             for (int i = 0; i < registryIPs.length; i++) {
                 try {
-                    nameServer = (NameServer) Naming.lookup("rmi://" + registryIPs[i] + "/nameServer");
-                    userServer = (UserServer) nameServer; // (UserServer)
+                    nameServer = (NameServer)Naming.lookup("rmi://" + registryIPs[i] + "/nameServer");
+                    userServer = (UserServer)nameServer; // (UserServer)
                     // Naming.lookup("rmi://"+registryIPs[i]+"/userServer");
 
                     nameServer.registerServer(ServerType.LOCALSERVER, lsName, ip, rmiPort);
 
                     logger.info(
-                            "\n<LS> registered at SiriusRegistry "
-                            + registryIPs[i]
-                            + " with "
-                            + lsName
-                            + "  "
-                            + ip);
+                        "\n<LS> registered at SiriusRegistry "
+                                + registryIPs[i]
+                                + " with "
+                                + lsName
+                                + "  "
+                                + ip);
 
                     final UserStore userStore = dbServer.getUserStore();
 
@@ -847,25 +861,25 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
                     registered++;
                     logger.info(
-                            "<LS> users registered at SiriusRegistry"
-                            + registryIPs[i]
-                            + " with "
-                            + lsName
-                            + "  "
-                            + ip);
+                        "<LS> users registered at SiriusRegistry"
+                                + registryIPs[i]
+                                + " with "
+                                + lsName
+                                + "  "
+                                + ip);
                 } catch (NotBoundException nbe) {
                     System.err.println("<LS> No SiriusRegistry bound on RMIRegistry at " + registryIPs[i]); // NOI18N
                     logger.error("<LS> No SiriusRegistry bound on RMIRegistry at " + registryIPs[i], nbe);  // NOI18N
                 } catch (RemoteException re) {
                     System.err.println(
-                            "<LS> No RMIRegistry on "
-                            + registryIPs[i]
-                            + ", therefore SiriusRegistry could not be contacted");
+                        "<LS> No RMIRegistry on "
+                                + registryIPs[i]
+                                + ", therefore SiriusRegistry could not be contacted");
                     logger.error(
-                            "<LS> No RMIRegistry on "
-                            + registryIPs[i]
-                            + ", therefore SiriusRegistry could not be contacted",
-                            re);
+                        "<LS> No RMIRegistry on "
+                                + registryIPs[i]
+                                + ", therefore SiriusRegistry could not be contacted",
+                        re);
                 }
             }
         } catch (Throwable e) {
@@ -896,8 +910,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
         for (int i = 0; i < registryIPs.length; i++) {
             try {
-                nameServer = (NameServer) Naming.lookup("rmi://" + registryIPs[i] + "/nameServer");
-                userServer = (UserServer) nameServer;
+                nameServer = (NameServer)Naming.lookup("rmi://" + registryIPs[i] + "/nameServer");
+                userServer = (UserServer)nameServer;
 
                 // User und UserGroups bei Registry abmelden
                 userServer.unregisterUsers(userstore.getUsers());
@@ -990,6 +1004,11 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         return instance;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public DBConnectionPool getConnectionPool() {
         return dbServer.getConnectionPool();
     }
@@ -1030,6 +1049,12 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 rmiPort = 1099;
             }
 
+            try {
+                initLog4J(properties);
+            } catch (final Exception e) {
+                System.err.println("WARN :: <LS> Could not init log4j_: " + e); // NOI18N
+            }
+
             System.out.println("<LS> ConfigFile: " + args[0]); // NOI18N
 
             // abfragen, ob schon eine  RMI Registry exitiert.
@@ -1055,7 +1080,6 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             System.out.println("Info :: <LS>  !!!LocalSERVER started!!!!");               // NOI18N
         } catch (Exception e) {
             System.err.println("Error while starting domainserver :: " + e.getMessage()); // NOI18N
-            e.printStackTrace();
             if (instance != null) {
                 instance.shutdown();
             }
@@ -1063,8 +1087,24 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   properties  DOCUMENT ME!
+     *
+     * @throws  IllegalArgumentException  DOCUMENT ME!
+     */
+    private static void initLog4J(final ServerProperties properties) {
+        final File log4jPropFile = new File(properties.getLog4jPropertyFile());
+        if ((log4jPropFile == null) || !log4jPropFile.isFile() || !log4jPropFile.canRead()) {
+            throw new IllegalArgumentException("serverproperties provided invalid log4j config file: " + log4jPropFile); // NOI18N
+        } else {
+            PropertyConfigurator.configure(log4jPropFile.getAbsolutePath());
+        }
+    }
+
     @Override
-    public String getConfigAttr(final User user, String key) throws RemoteException {
+    public String getConfigAttr(final User user, final String key) throws RemoteException {
         try {
             return userstore.getConfigAttr(user, key);
         } catch (final SQLException ex) {
@@ -1075,9 +1115,20 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     }
 
     @Override
-    public boolean hasConfigAttr(User user, String key) throws RemoteException {
+    public boolean hasConfigAttr(final User user, final String key) throws RemoteException {
         return getConfigAttr(user, key) != null;
     }
 
-
+    @Override
+    public HistoryObject[] getHistory(final int classId, final int objectId, final User user, final int elements)
+            throws RemoteException {
+        try {
+            return historyServer.getHistory(classId, objectId, user.getUserGroup(), elements);
+        } catch (final HistoryException e) {
+            final String message = "could not retrieve history: user: " + user + " || classid: " + classId // NOI18N
+                        + "|| objectId: " + objectId + " || elements: " + elements;                        // NOI18N
+            logger.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
 }

@@ -7,8 +7,9 @@
 ****************************************************/
 package Sirius.server.localserver._class;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * DOCUMENT ME!
@@ -100,7 +101,7 @@ public class ClassMap extends HashMap {
      *
      * @return  DOCUMENT ME!
      */
-    public Vector getAll() {
-        return new Vector(this.values());
+    public List getAll() {
+        return new ArrayList(this.values());
     }
 }

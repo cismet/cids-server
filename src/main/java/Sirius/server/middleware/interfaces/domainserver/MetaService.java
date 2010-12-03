@@ -7,13 +7,19 @@
 ****************************************************/
 package Sirius.server.middleware.interfaces.domainserver;
 
-import Sirius.server.localserver.method.*;
+import Sirius.server.localserver.method.MethodMap;
 import Sirius.server.localserver.tree.NodeReferenceList;
-import Sirius.server.middleware.types.*;
-import Sirius.server.newuser.*;
-import Sirius.server.search.*;
+import Sirius.server.middleware.types.HistoryObject;
+import Sirius.server.middleware.types.LightweightMetaObject;
+import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.middleware.types.MetaObject;
+import Sirius.server.middleware.types.Node;
+import Sirius.server.newuser.User;
+import Sirius.server.search.Query;
 
-import java.rmi.*;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
 import java.util.ArrayList;
 
 /**
@@ -289,8 +295,20 @@ public interface MetaService extends Remote {
             String query,
             String[] representationFields) throws RemoteException;
 
-
-
-
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   query  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     ArrayList<ArrayList> performCustomSearch(String query) throws RemoteException;
+
+    /**
+     * @see  Sirius.server.middleware.interfaces.proxy.MetaService#getHistory(int, int, java.lang.String,
+     *       Sirius.server.newuser.User, int)
+     */
+    HistoryObject[] getHistory(int classId, int objectId, User user, int elements) throws RemoteException;
 }

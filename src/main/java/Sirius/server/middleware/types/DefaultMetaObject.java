@@ -27,7 +27,7 @@ import de.cismet.cids.utils.MetaClassCacheService;
  *
  * @version  $Revision$, $Date$
  */
-public final class DefaultMetaObject extends Sirius.server.localserver.object.DefaultObject implements MetaObject {
+public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultObject implements MetaObject {
 
     //~ Static fields/initializers ---------------------------------------------
 

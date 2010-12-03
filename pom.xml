@@ -132,6 +132,30 @@
         </plugins>
         <finalName>cidsServer</finalName>
     </build>
+
+    <profiles>
+        <profile>
+            <id>sudplan-runtime</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>de.cismet.cids.custom.sudplan</groupId>
+                    <artifactId>cids-custom-sudplan</artifactId>
+                    <version>1.0-SNAPSHOT</version>
+                    <scope>runtime</scope>
+                </dependency>
+                <!-- cannot depend on transitive dependency resolution as the above dependency creates a cycle -->
+                <dependency>
+                    <groupId>de.cismet.commons</groupId>
+                    <artifactId>cismap-commons</artifactId>
+                    <version>1.0-SNAPSHOT</version>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>
 
 

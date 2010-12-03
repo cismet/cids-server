@@ -379,4 +379,27 @@ public interface MetaService extends Remote {
             User user,
             String query,
             String[] representationFields) throws RemoteException;
+
+    /**
+     * Returns the history of the given object of the given class. The number of historic elements that will be
+     * retrieved depends on the given element count and the amount of available historic elements. Resolution strategy:
+     *
+     * <ul>
+     *   <li>elements < 1: order by timestamp</li>
+     *   <li>elements > 0: order by timestamp limit <code>elements</code></li>
+     * </ul>
+     *
+     * @param   classId   the id of the desired class
+     * @param   objectId  the id of the object of the desired class
+     * @param   domain    the name of the domain the desired class belongs to
+     * @param   user      the user that requests the history
+     * @param   elements  the number of historic elements to be retrieved or an int < 1 to retrieve all available
+     *                    elements
+     *
+     * @return  the historic objects
+     *
+     * @throws  RemoteException  if any error occurs
+     */
+    HistoryObject[] getHistory(int classId, int objectId, String domain, User user, int elements)
+            throws RemoteException;
 }

@@ -9,6 +9,7 @@ package Sirius.server.localserver.object;
 
 import Sirius.server.Shutdown;
 import Sirius.server.localserver.DBServer;
+import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaClass;
@@ -29,6 +30,7 @@ import java.sql.Statement;
 import java.sql.Types;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
@@ -46,7 +48,6 @@ import de.cismet.tools.CurrentStackTrace;
 public final class PersistenceManager extends Shutdown {
 
     //~ Static fields/initializers ---------------------------------------------
-
 
     private static final transient Logger LOG = Logger.getLogger(PersistenceManager.class);
 
@@ -178,7 +179,14 @@ public final class PersistenceManager extends Shutdown {
                  * since the meta-jdbc driver is obsolete the index must be refreshed by the server explicitly
                  */
                 deleteIndex(mo);
+
+                // if the metaobject is deleted it is obviously not persistent anymore
+                mo.setPersistent(false);
+
+                createHistory(mo, user);
+
                 transactionHelper.commit();
+                
                 return result;
             } catch (final Throwable e) {
                 transactionHelper.rollback();
@@ -195,11 +203,28 @@ public final class PersistenceManager extends Shutdown {
                             + "' is not allowed to delete MO "       // NOI18N
                             + mo.getID()
                             + "."                                    // NOI18N
-                            + mo.getClassKey(),                      // NOI18N
+                            + mo.getClassKey(),
                     new CurrentStackTrace());
             }
             // TODO: shouldn't that return -1 or similar to indicate that nothing has been done?
             throw new SecurityException("not allowed to insert meta object"); // NOI18N
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  mo    DOCUMENT ME!
+     * @param  user  DOCUMENT ME!
+     */
+    private void createHistory(final MetaObject mo, final User user) {
+        try {
+            if (mo.getMetaClass().getClassAttribute(ClassAttribute.HISTORY_ENABLED) != null) {
+                // immediately returns
+                dbServer.getHistoryServer().enqueueEntry(mo, user, new Date());
+            }
+        } catch (final Exception e) {
+            LOG.error("cannot enqueue mo for history creation", e); // NOI18N
         }
     }
 
@@ -388,6 +413,8 @@ public final class PersistenceManager extends Shutdown {
                      */
                     updateIndex(mo);
 
+                    createHistory(mo, user);
+
                     transactionHelper.commit();
                 } catch (final SQLException e) {
                     transactionHelper.rollback();
@@ -437,6 +464,7 @@ public final class PersistenceManager extends Shutdown {
                 stmt.setObject(i + 1, values.get(i), type);
             }
         }
+        
         return stmt;
     }
 
@@ -712,6 +740,8 @@ public final class PersistenceManager extends Shutdown {
                  * since the meta-jdbc driver is obsolete the index must be refreshed by the server explicitly
                  */
                 insertIndex(mo);
+
+                createHistory(mo, user);
 
                 transactionHelper.commit();
             } catch (final SQLException e) {
