@@ -159,6 +159,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
             dbServer = new DBServer(properties);
 
+
+
             userstore = dbServer.getUserStore();
 
             seeker = new Seeker(dbServer);
@@ -183,6 +185,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (logger.isDebugEnabled()) {
                 logger.debug("Server Referenz " + this); // NOI18N
             }
+
+
+
+            historyServer = dbServer.getHistoryServer();
 
             // initFrame();
         } catch (Throwable e) {
