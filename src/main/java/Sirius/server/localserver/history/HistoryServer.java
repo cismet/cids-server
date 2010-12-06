@@ -96,15 +96,14 @@ public final class HistoryServer extends Shutdown {
                     set = con.submitInternalQuery(
                             DBConnection.DESC_FETCH_HISTORY,
                             classId,
-                            objectId,
-                            new Timestamp(System.currentTimeMillis()));
+                            objectId);
                     expectedElements = 15;
                 } else {
                     set = con.submitInternalQuery(
                             DBConnection.DESC_FETCH_HISTORY_LIMIT,
                             classId,
                             objectId,
-                            new Timestamp(System.currentTimeMillis()));
+                            elements);
                     expectedElements = elements;
                 }
 
@@ -206,8 +205,8 @@ public final class HistoryServer extends Shutdown {
                         valid_from,
                         jsonData);
 
-                if(LOG.isDebugEnabled()){
-                    LOG.debug("history entry insertion result: " + result); // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("history entry insertion result: " + result);                                             // NOI18N
                 }
             } catch (final Exception e) {
                 LOG.error("could not create history entry: mo: " + mo + " || user: " + user + " || date: " + timestamp, // NOI18N
