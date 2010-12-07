@@ -36,6 +36,7 @@ import java.util.List;
 import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
 
 import de.cismet.tools.CurrentStackTrace;
+import java.util.Map;
 
 /**
  * DOCUMENT ME!
@@ -219,9 +220,19 @@ public final class PersistenceManager extends Shutdown {
      */
     private void createHistory(final MetaObject mo, final User user) {
         try {
-            if (mo.getMetaClass().getClassAttribute(ClassAttribute.HISTORY_ENABLED) != null) {
+            final ClassAttribute historyAttr = mo.getMetaClass().getClassAttribute(ClassAttribute.HISTORY_ENABLED);
+            if (historyAttr != null) {
+                final Map<String, String> options = historyAttr.getOptions();
+
+                final User userToUse;
+                if(options.get(ClassAttribute.HISTORY_OPTION_ANONYMOUS).equalsIgnoreCase(Boolean.TRUE.toString())){
+                    userToUse = null;
+                } else {
+                    userToUse = user;
+                }
+
                 // immediately returns
-                dbServer.getHistoryServer().enqueueEntry(mo, user, new Date());
+                dbServer.getHistoryServer().enqueueEntry(mo, userToUse, new Date());
             }
         } catch (final Exception e) {
             LOG.error("cannot enqueue mo for history creation", e); // NOI18N

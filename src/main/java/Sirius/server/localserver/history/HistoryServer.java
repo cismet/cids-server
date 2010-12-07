@@ -137,8 +137,10 @@ public final class HistoryServer extends Shutdown {
      * @throws  IllegalArgumentException  DOCUMENT ME!
      */
     public void enqueueEntry(final MetaObject mo, final User user, final Date timestamp) {
-        if ((mo == null) || (user == null) || (timestamp == null)) {
-            throw new IllegalArgumentException("no parameter must be null: mo: " + mo + " || user: " + user // NOI18N
+        if ((mo == null) || (timestamp == null)) {
+            throw new IllegalArgumentException("mo or timestamp must not be null: " // NOI18N
+                        + "mo: " + mo                // NOI18N
+                        + " || user: " + user        // NOI18N
                         + " || date: " + timestamp); // NOI18N
         }
 
@@ -185,13 +187,13 @@ public final class HistoryServer extends Shutdown {
         public void run() {
             try {
                 if (LOG.isDebugEnabled()) {
-                    LOG.error("create history entry: mo: " + mo + " || user: " + user + " || date: " + timestamp); // NOI18N
+                    LOG.debug("create history entry: mo: " + mo + " || user: " + user + " || date: " + timestamp); // NOI18N
                 }
 
                 final int classId = mo.getClassID();
                 final int objectId = mo.getId();
-                final int usrId = user.getId();
-                final int ugId = user.getUserGroup().getId();
+                final Integer usrId = (user == null) ? null : user.getId();
+                final Integer ugId = (user == null) ? null : user.getUserGroup().getId();
                 final Timestamp valid_from = new Timestamp(timestamp.getTime());
                 final String jsonData = mo.isPersistent() ? mo.getBean().toJSONString() : JSON_DELETED;
 

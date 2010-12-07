@@ -7,12 +7,9 @@
 ****************************************************/
 package Sirius.server.sql;
 
-import Sirius.server.property.ServerProperties;
-import de.cismet.tools.ScriptRunner;
 import Sirius.server.localserver.user.UserStoreTest;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import Sirius.server.property.ServerProperties;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -23,9 +20,17 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 
 import java.util.Properties;
+
+import de.cismet.tools.ScriptRunner;
 
 import static org.junit.Assert.*;
 
@@ -52,6 +57,8 @@ public class DBConnectionTest {
 
     /**
      * DOCUMENT ME!
+     *
+     * @throws  Throwable  DOCUMENT ME!
      */
     @BeforeClass
     public static void setUpClass() throws Throwable {
@@ -62,17 +69,23 @@ public class DBConnectionTest {
         p.put("log4j.appender.Remote.locationInfo", "true");
         p.put("log4j.rootLogger", "ALL,Remote");
         PropertyConfigurator.configure(p);
-        final ServerProperties props = new ServerProperties(UserStoreTest.class.getResourceAsStream(
-                    "/Sirius/server/localserver/object/runtime.properties"));  // NOI18N
+        final ServerProperties props = new ServerProperties(DBConnectionTest.class.getResourceAsStream(
+                    "/Sirius/server/localserver/object/runtime.properties")); // NOI18N
         final DBConnectionPool pool = new DBConnectionPool(props);
-        final ScriptRunner runner = new ScriptRunner(pool.getConnection().getConnection(), false, true);
-        final InputStream scriptStream = UserStoreTest.class.getResourceAsStream(
-                "/Sirius/server/localserver/user/configAttrTestData.sql");     // NOI18N
-        final BufferedReader scriptReader = new BufferedReader(new InputStreamReader(scriptStream));
+        final ScriptRunner runner = new ScriptRunner(pool.getConnection().getConnection(), false, false);
+        final InputStream configAttrTestData = DBConnectionTest.class.getResourceAsStream(
+                "/Sirius/server/localserver/user/configAttrTestData.sql");    // NOI18N
+        final InputStream historyServerTestData = DBConnectionTest.class.getResourceAsStream(
+                "/Sirius/server/localserver/history/HistoryServerTest.sql");  // NOI18N
+        final BufferedReader cfgAttrReader = new BufferedReader(new InputStreamReader(configAttrTestData));
+        final BufferedReader historyReader = new BufferedReader(new InputStreamReader(historyServerTestData));
+
         try {
-            runner.runScript(scriptReader);
+            runner.runScript(cfgAttrReader);
+            runner.runScript(historyReader);
         } finally {
-            scriptReader.close();
+            cfgAttrReader.close();
+            historyReader.close();
         }
     }
 
@@ -223,6 +236,81 @@ public class DBConnectionTest {
             }
         } finally {
             DBConnection.closeResultSets(set1);
+        }
+
+        try {
+            set1 = con.submitInternalQuery(DBConnection.DESC_FETCH_HISTORY, 1, 1);
+            if (set1.next() && set1.next() && set1.next()) {
+                if (set1.next()) {
+                    fail("too many result rows");
+                }
+            } else {
+                fail("too less result rows");
+            }
+        } finally {
+            DBConnection.closeResultSets(set1);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  Throwable  DOCUMENT ME!
+     */
+    @Test
+    public void testSubmitInternalUpdateOK() throws Throwable {
+        if (LOG.isInfoEnabled()) {
+            LOG.info(TEST + getCurrentMethodName());
+        }
+
+        final DBConnection con = new DBConnection(DB_CLASSIFIER);
+        int result = -1;
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
+        result = con.submitInternalUpdate(
+                DBConnection.DESC_INSERT_HISTORY_ENTRY,
+                1,
+                1,
+                1,
+                1,
+                now,
+                "testdata");
+        assertEquals("unexpected result state", 1, result);
+
+        PreparedStatement ps = con.getConnection().prepareStatement("select * from cs_history where valid_from = ?");
+        ResultSet rs = null;
+        try {
+            ps.setObject(1, now);
+            rs = ps.executeQuery();
+            assertTrue("no result found", rs.next());
+            assertFalse("too many results found", rs.next());
+        } finally {
+            DBConnection.closeResultSets(rs);
+            DBConnection.closeStatements(ps);
+        }
+
+        now = new Timestamp(System.currentTimeMillis());
+        result = con.submitInternalUpdate(
+                DBConnection.DESC_INSERT_HISTORY_ENTRY,
+                1,
+                1,
+                null,
+                null,
+                now,
+                "testdata");
+        assertEquals("unexpected result state", 1, result);
+
+        ps = con.getConnection()
+                    .prepareStatement(
+                            "select * from cs_history where valid_from = ? and ug_id is null and usr_id is null");
+        try {
+            ps.setObject(1, now);
+            rs = ps.executeQuery();
+            assertTrue("no result found", rs.next());
+            assertFalse("too many results found", rs.next());
+        } finally {
+            DBConnection.closeResultSets(rs);
+            DBConnection.closeStatements(ps);
         }
     }
 
