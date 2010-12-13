@@ -225,7 +225,7 @@ public final class PersistenceManager extends Shutdown {
                 final Map<String, String> options = historyAttr.getOptions();
 
                 final User userToUse;
-                if(options.get(ClassAttribute.HISTORY_OPTION_ANONYMOUS).equalsIgnoreCase(Boolean.TRUE.toString())){
+                if(Boolean.TRUE.toString().equalsIgnoreCase(options.get(ClassAttribute.HISTORY_OPTION_ANONYMOUS))){
                     userToUse = null;
                 } else {
                     userToUse = user;
