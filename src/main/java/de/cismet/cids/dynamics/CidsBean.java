@@ -35,6 +35,7 @@ import java.util.List;
 
 import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.MetaClassCacheService;
+import org.apache.commons.lang.StringEscapeUtils;
 
 /**
  * DOCUMENT ME!
@@ -634,7 +635,7 @@ public class CidsBean implements PropertyChangeListener {
                 }
                 sb.append('\n').append(einrueckung).append(']');
             } else {
-                sb.append('"').append(object).append('"');
+                sb.append('"').append(StringEscapeUtils.escapeJava(String.valueOf(object))).append('"');
             }
             if (i < propNames.length - 1) {
                 sb.append(',');
