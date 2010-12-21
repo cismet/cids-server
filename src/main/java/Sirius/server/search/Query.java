@@ -28,9 +28,6 @@ import java.util.*;
  */
 public class Query implements Mapable, java.io.Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     /** identifies this query in the system. */

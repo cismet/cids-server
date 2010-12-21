@@ -18,9 +18,6 @@ import Sirius.util.*;
  */
 public class Link implements java.io.Serializable, Groupable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     // protected int id;

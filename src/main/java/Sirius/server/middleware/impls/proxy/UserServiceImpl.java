@@ -189,6 +189,16 @@ public class UserServiceImpl {
                     .changePassword(user, oldPassword, newPassword);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     * @param   key   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     public String getConfigAttr(final User user, final String key) throws RemoteException {
         return ((Sirius.server.middleware.interfaces.domainserver.UserService)activeLocalServers.get(user.getDomain()))
                     .getConfigAttr(user, key);

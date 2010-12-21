@@ -15,9 +15,6 @@ import Sirius.util.*;
  */
 public class User implements java.io.Serializable, Mapable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     // /** die BenutzerID **/

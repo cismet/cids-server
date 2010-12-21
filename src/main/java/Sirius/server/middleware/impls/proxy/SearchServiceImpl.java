@@ -13,7 +13,6 @@
 package Sirius.server.middleware.impls.proxy;
 import Sirius.server.*;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
-
 import Sirius.server.middleware.types.*;
 import Sirius.server.naming.NameServer;
 import Sirius.server.newuser.*;
@@ -21,6 +20,7 @@ import Sirius.server.newuser.permission.Policy;
 import Sirius.server.search.*;
 
 import java.rmi.*;
+
 import java.sql.ResultSet;
 import java.sql.Statement;
 
@@ -387,12 +387,17 @@ public class SearchServiceImpl {
         return v;
     }
 
-
-    public Collection customServerSearch(final User user,CidsServerSearch serverSearch){
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user          DOCUMENT ME!
+     * @param   serverSearch  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) {
         serverSearch.setUser(user);
         serverSearch.setActiveLoaclServers(activeLocalServers);
         return serverSearch.performServerSearch();
     }
-
-
 }

@@ -21,7 +21,6 @@ public class MethodMap extends java.util.HashMap implements java.io.Serializable
 
     //~ Static fields/initializers ---------------------------------------------
 
-
     private static final transient Logger LOG = Logger.getLogger(MethodMap.class);
 
     //~ Constructors -----------------------------------------------------------

@@ -18,9 +18,6 @@ import java.io.*;
  */
 public class QueryData extends QueryInfo implements java.io.Serializable, Info {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     /** Suchergebnisdaten.* */

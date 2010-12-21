@@ -21,9 +21,6 @@ import javax.swing.table.*;
  */
 public class MonitorTableModel extends DefaultTableModel {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Constructors -----------------------------------------------------------
 
     /**

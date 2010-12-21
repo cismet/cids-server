@@ -18,9 +18,6 @@ import Sirius.server.newuser.permission.Policy;
 
 public class MetaClassNode extends Node implements Comparable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Constructors -----------------------------------------------------------
 
     /**

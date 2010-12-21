@@ -20,9 +20,6 @@ import Sirius.server.localserver.attribute.*;
  */
 public class AltstandortBetriebStringConverter extends ToStringConverter implements java.io.Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Constructors -----------------------------------------------------------
 
     /**

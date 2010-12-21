@@ -33,9 +33,6 @@ import java.util.TimeZone;
  */
 public class RMUser implements Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     private String userName;

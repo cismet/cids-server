@@ -655,7 +655,8 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
                 final String suffix = "...";
                 String string = as[i].toString();
                 if (string.length() >= maxLength) {
-                    string = string.substring(0, maxLength - suffix.length()) + suffix;
+                    string = string.substring(0, maxLength - suffix.length())
+                                + suffix;
                 }
 
                 ret += "<tr><td bgcolor="                         // NOI18N

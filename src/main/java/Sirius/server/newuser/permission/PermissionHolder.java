@@ -21,15 +21,14 @@ import de.cismet.tools.collections.MultiMap;
 
 /**
  * Bei der Intstanzierung eines PermissionHolders erlaubt dieser zunaechst jeglichen Zugriff (hasPermission ist immer
- * wahr) Sobald ein Recht für ein PermissionHolder Objekt gesetzt wird (addPermission), werden allen anderen
- * Schluesseln die Rechte entzogen (restricted = true).
+ * wahr) Sobald ein Recht für ein PermissionHolder Objekt gesetzt wird (addPermission), werden allen anderen Schluesseln
+ * die Rechte entzogen (restricted = true).
  *
  * @version  $Revision$, $Date$
  */
 public final class PermissionHolder implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
-
 
     private static final transient Logger LOG = Logger.getLogger(
             PermissionHolder.class);

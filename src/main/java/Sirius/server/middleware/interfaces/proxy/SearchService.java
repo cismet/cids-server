@@ -1,10 +1,10 @@
 /***************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- *
- *              ... and it just works.
- *
- ****************************************************/
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * SearchService.java
  *
@@ -28,6 +28,7 @@ import java.util.*;
 public interface SearchService extends Remote {
 
     //~ Methods ----------------------------------------------------------------
+
     // add single query root and leaf returns a query_id
     /**
      * enables user to register queries with a domain server.
@@ -163,5 +164,15 @@ public interface SearchService extends Remote {
      */
     SearchResult search(User user, String[] classIds, SearchOption[] searchOptions) throws RemoteException;
 
-    public Collection customServerSearch(final User user, CidsServerSearch serverSearch) throws RemoteException;
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user          DOCUMENT ME!
+     * @param   serverSearch  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    Collection customServerSearch(final User user, CidsServerSearch serverSearch) throws RemoteException;
 }

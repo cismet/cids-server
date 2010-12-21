@@ -17,9 +17,6 @@ import Sirius.server.newuser.permission.Policy;
 
 public class MetaNode extends Sirius.server.middleware.types.Node {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Constructors -----------------------------------------------------------
 
     /**

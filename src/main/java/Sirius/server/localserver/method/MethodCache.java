@@ -103,6 +103,7 @@ public final class MethodCache extends Shutdown {
     //~ Methods ----------------------------------------------------------------
 
     /**
+     * DOCUMENT ME!
      *
      * @param  conPool  DOCUMENT ME!
      */

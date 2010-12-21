@@ -32,9 +32,6 @@ import java.util.*;
  */
 public class SearchOption implements java.io.Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     protected HashSet classes;

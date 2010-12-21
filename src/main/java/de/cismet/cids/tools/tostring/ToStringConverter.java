@@ -23,9 +23,6 @@ import java.util.Iterator;
  */
 public class ToStringConverter implements Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Methods ----------------------------------------------------------------
 
     /**

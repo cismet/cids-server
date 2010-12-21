@@ -32,11 +32,11 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
 
 import de.cismet.tools.CurrentStackTrace;
-import java.util.Map;
 
 /**
  * DOCUMENT ME!
@@ -187,7 +187,7 @@ public final class PersistenceManager extends Shutdown {
                 createHistory(mo, user);
 
                 transactionHelper.commit();
-                
+
                 return result;
             } catch (final Throwable e) {
                 transactionHelper.rollback();
@@ -225,7 +225,7 @@ public final class PersistenceManager extends Shutdown {
                 final Map<String, String> options = historyAttr.getOptions();
 
                 final User userToUse;
-                if(Boolean.TRUE.toString().equalsIgnoreCase(options.get(ClassAttribute.HISTORY_OPTION_ANONYMOUS))){
+                if (Boolean.TRUE.toString().equalsIgnoreCase(options.get(ClassAttribute.HISTORY_OPTION_ANONYMOUS))) {
                     userToUse = null;
                 } else {
                     userToUse = user;
@@ -475,7 +475,7 @@ public final class PersistenceManager extends Shutdown {
                 stmt.setObject(i + 1, values.get(i), type);
             }
         }
-        
+
         return stmt;
     }
 

@@ -18,9 +18,6 @@ import java.io.Serializable;
  */
 public class UserGroup implements Serializable, Mapable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     protected int id;

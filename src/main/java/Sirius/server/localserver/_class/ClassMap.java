@@ -18,9 +18,6 @@ import java.util.List;
  */
 public class ClassMap extends HashMap {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -50,6 +47,8 @@ public class ClassMap extends HashMap {
 
     //~ Methods ----------------------------------------------------------------
 
+    //J-
+    // TODO: jalopy trouble
     /**
      * DOCUMENT ME!
      *
@@ -64,6 +63,7 @@ public class ClassMap extends HashMap {
             throw new Exception("Couldn't add class ID:" + key); // NOI18N
         }
     }
+    //J+
 
     /**
      * DOCUMENT ME!

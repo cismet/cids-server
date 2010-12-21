@@ -14,9 +14,6 @@ package Sirius.util.image;
  */
 public class IntMapsImage extends java.util.Hashtable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Constructors -----------------------------------------------------------
 
     /**

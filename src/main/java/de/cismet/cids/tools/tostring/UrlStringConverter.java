@@ -23,7 +23,6 @@ public class UrlStringConverter extends ToStringConverter implements Serializabl
 
     //~ Static fields/initializers ---------------------------------------------
 
-
     private static final transient Logger LOG = Logger.getLogger(UrlStringConverter.class);
 
     //~ Constructors -----------------------------------------------------------

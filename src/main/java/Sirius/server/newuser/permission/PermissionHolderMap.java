@@ -15,9 +15,6 @@ import Sirius.util.*;
  */
 public class PermissionHolderMap extends java.util.Hashtable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Constructors -----------------------------------------------------------
 
     /**

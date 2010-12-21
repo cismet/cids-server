@@ -26,7 +26,6 @@ public class SearchResult implements java.io.Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-
     private static final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(
             SearchResult.class);
 

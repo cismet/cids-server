@@ -28,7 +28,6 @@ public class Policy implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-
     private static final int PARANOID = 0;
     private static final int WIKI = 1;
 

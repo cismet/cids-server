@@ -20,9 +20,6 @@ import java.util.*;
  */
 public class StatementMap extends Hashtable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Constructors -----------------------------------------------------------
 
     /**

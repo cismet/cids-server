@@ -20,8 +20,6 @@ package Sirius.server.search.searchparameter;
  */
 public class DefaultSearchParameter implements SearchParameter, Comparable, java.io.Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
     //~ Instance fields --------------------------------------------------------
 
     /** Creates a new instance of DefaultSearchParameter. */

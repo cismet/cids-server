@@ -124,8 +124,8 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
     java.lang.Object getAttribute(java.lang.Object key);
 
     /**
-     * Method from Hell liefert ein Attribut �ber den Fieldname Es wird davon ausgegangen, dass nur ObjectAttributes
-     * im getAttributes() sind.
+     * Method from Hell liefert ein Attribut �ber den Fieldname Es wird davon ausgegangen, dass nur ObjectAttributes im
+     * getAttributes() sind.
      *
      * @param   fieldname  DOCUMENT ME!
      *

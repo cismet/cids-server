@@ -16,9 +16,6 @@ import java.io.Serializable;
  */
 public class Server implements Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     /** Name des Servers.* */

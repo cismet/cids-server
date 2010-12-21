@@ -33,9 +33,6 @@ import de.cismet.tools.collections.LongVector;
  */
 public class Class implements java.io.Serializable, Mapable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     /**

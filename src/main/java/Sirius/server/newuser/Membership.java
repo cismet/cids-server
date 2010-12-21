@@ -18,9 +18,6 @@ import java.io.*;
  */
 public class Membership implements Serializable, Mapable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     protected String login;

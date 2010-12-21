@@ -21,7 +21,6 @@ public class ServerListHash extends Hashtable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-
     // 'Elemente sind Vectoren von servern
 
     private static final transient Logger LOG = Logger.getLogger(ServerListHash.class);

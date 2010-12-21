@@ -28,9 +28,6 @@ import java.util.HashMap;
  */
 public class AllAttributesToStringConverter extends ToStringConverter implements Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Methods ----------------------------------------------------------------
 
     @Override

@@ -23,9 +23,6 @@ package Sirius.server.registry.rmplugin.exception;
  */
 public class UnableToSendMessageException extends Exception {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     private int totalSended = 0;

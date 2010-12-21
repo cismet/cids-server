@@ -28,7 +28,6 @@ public class TransactionHelper extends Shutdown {
 
     //~ Static fields/initializers ---------------------------------------------
 
-
     private static final transient Logger LOG = Logger.getLogger(TransactionHelper.class);
 
     //~ Instance fields --------------------------------------------------------

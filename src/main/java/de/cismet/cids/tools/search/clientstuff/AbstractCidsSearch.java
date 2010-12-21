@@ -1,26 +1,51 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.cids.tools.search.clientstuff;
 
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.search.CidsServerSearch;
 import Sirius.server.search.SearchOption;
+
 import java.util.Collection;
 import java.util.Map;
+
 import javax.swing.ImageIcon;
 
 /**
+ * DOCUMENT ME!
  *
- * @author stefan
+ * @author   stefan
+ * @version  $Revision$, $Date$
  */
 public abstract class AbstractCidsSearch implements CidsSearch {
 
-    public AbstractCidsSearch(String name, ImageIcon icon, CidsSearchStatementGenerator stmntGen) {
+    //~ Instance fields --------------------------------------------------------
+
+    private final String name;
+    private final ImageIcon icon;
+    private final CidsSearchStatementGenerator stmntGenerator;
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new AbstractCidsSearch object.
+     *
+     * @param  name      DOCUMENT ME!
+     * @param  icon      DOCUMENT ME!
+     * @param  stmntGen  DOCUMENT ME!
+     */
+    public AbstractCidsSearch(final String name, final ImageIcon icon, final CidsSearchStatementGenerator stmntGen) {
         this.stmntGenerator = stmntGen;
         this.name = name;
         this.icon = icon;
     }
-    private final String name;
-    private final ImageIcon icon;
-    private final CidsSearchStatementGenerator stmntGenerator;
+
+    //~ Methods ----------------------------------------------------------------
 
     @Override
     public String getName() {
@@ -31,8 +56,4 @@ public abstract class AbstractCidsSearch implements CidsSearch {
     public ImageIcon getIcon() {
         return this.icon;
     }
-
-   
-
-
 }

@@ -17,9 +17,6 @@ import Sirius.server.newuser.*;
  */
 public class NodeReferenceList implements java.io.Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     protected java.util.ArrayList<Node> locals;

@@ -54,7 +54,6 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
 
     //~ Static fields/initializers ---------------------------------------------
 
-
     private static final transient Logger LOG = Logger.getLogger(Registry.class);
 
     private static Registry instance;
@@ -1063,7 +1062,7 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
             // TODO: refactor server exit
             throw new ServerExit("Server ist regulär beendet worden"); // NOI18N
         } catch (final Exception e) {
-            final String message = "could not shutdown registry";       // NOI18N
+            final String message = "could not shutdown registry";      // NOI18N
             LOG.fatal(message, e);
             throw new ServerExitError(message, e);
         } finally {

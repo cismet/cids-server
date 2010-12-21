@@ -17,9 +17,6 @@ import java.util.Formatter;
  */
 public final class StringPatternFormater extends AbstractAttributeRepresentationFormater {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     private final String[] fieldNames;

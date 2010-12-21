@@ -50,7 +50,6 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
     //~ Static fields/initializers ---------------------------------------------
 
-
     private static final transient Logger LOG = Logger.getLogger(VirtualTree.class);
 
     //~ Instance fields --------------------------------------------------------

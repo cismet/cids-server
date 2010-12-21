@@ -19,9 +19,6 @@ import java.util.Vector;
  */
 public class AttributeVector extends Vector implements Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Constructors -----------------------------------------------------------
 
     /**

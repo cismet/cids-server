@@ -20,9 +20,6 @@ package Sirius.server.newuser.permission;
  */
 public class Permission implements java.io.Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     protected String key;

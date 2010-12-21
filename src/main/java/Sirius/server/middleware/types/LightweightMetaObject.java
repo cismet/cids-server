@@ -40,8 +40,7 @@ import de.cismet.cids.tools.fromstring.FromStringCreator;
  */
 public final class LightweightMetaObject implements MetaObject, Comparable<LightweightMetaObject> {
 
-    //~ Static fields/initializers ---------------------------------------------
-
+    //~ Methods ----------------------------------------------------------------
 
     // <editor-fold defaultstate="collapsed" desc="delegation-only methods">
     @Override

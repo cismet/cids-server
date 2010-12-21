@@ -19,9 +19,6 @@ import java.io.Serializable;
  */
 public class UrlBaseStringConverter extends ToStringConverter implements Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Constructors -----------------------------------------------------------
 
     /**

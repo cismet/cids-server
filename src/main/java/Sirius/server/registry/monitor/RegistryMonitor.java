@@ -40,9 +40,6 @@ import javax.swing.table.*;
  */
 public class RegistryMonitor extends JPanel implements Runnable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     /** Referenz auf den NameServer der Registry.* */

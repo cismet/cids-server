@@ -20,9 +20,6 @@ package Sirius.util.DBVersionChecker;
  */
 public class DBVersionException extends Throwable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Constructors -----------------------------------------------------------
 
     /**

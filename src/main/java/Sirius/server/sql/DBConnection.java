@@ -261,7 +261,7 @@ public final class DBConnection {
         final PreparedStatement ps = internalQueries.get(descriptor);
         for (int i = 0; i < parameters.length; ++i) {
             final Object toSet = parameters[i];
-            if(toSet == null){
+            if (toSet == null) {
                 ps.setNull(i + 1, ps.getParameterMetaData().getParameterType(i + 1));
             } else {
                 ps.setObject(i + 1, toSet);

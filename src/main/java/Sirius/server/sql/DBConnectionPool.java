@@ -28,7 +28,6 @@ public class DBConnectionPool extends Shutdown {
 
     //~ Static fields/initializers ---------------------------------------------
 
-
     private static final transient Logger LOG = Logger.getLogger(DBConnectionPool.class);
 
     //~ Instance fields --------------------------------------------------------

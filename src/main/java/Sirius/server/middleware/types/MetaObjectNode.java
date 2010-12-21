@@ -1,10 +1,10 @@
 /***************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- *
- *              ... and it just works.
- *
- ****************************************************/
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.server.middleware.types;
 
 import Sirius.server.newuser.permission.Policy;
@@ -19,13 +19,32 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 public class MetaObjectNode extends Node implements Comparable {
 
     //~ Static fields/initializers ---------------------------------------------
+
     private static final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(
             MetaObjectNode.class);
+
     //~ Instance fields --------------------------------------------------------
+
     protected int objectId;
     protected volatile MetaObject theObject;
 
     //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new MetaObjectNode object.
+     *
+     * @param  domain    DOCUMENT ME!
+     * @param  objectId  DOCUMENT ME!
+     * @param  classId   DOCUMENT ME!
+     */
+    public MetaObjectNode(
+            final String domain,
+            final int objectId,
+            final int classId) {
+        this(-1, null, null, domain, objectId, classId, true, Policy.createWIKIPolicy(), -1, null, true);
+    }
+
+//------------------------------------------------
     /**
      * -----------------------------------------------
      *
@@ -93,15 +112,8 @@ public class MetaObjectNode extends Node implements Comparable {
         this.classId = classId;
     }
 
-    public MetaObjectNode(
-            final String domain,
-            final int objectId,
-            final int classId) {
-        this(-1, null, null, domain, objectId, classId, true, Policy.createWIKIPolicy(), -1, null, true);
-    }
-
-//------------------------------------------------
     //~ Methods ----------------------------------------------------------------
+
 // public MetaObjectNode(int id,String localServerName,String name,String description,boolean isLeaf)
 // {
 // super(id,name,localServerName,description,isLeaf);
@@ -195,7 +207,7 @@ public class MetaObjectNode extends Node implements Comparable {
             return false;
         }
 
-        final MetaObjectNode o = (MetaObjectNode) other;
+        final MetaObjectNode o = (MetaObjectNode)other;
 
         return (id == o.id) && domain.equals(o.domain) && (objectId == o.objectId) && (classId == o.classId);
     }

@@ -20,9 +20,6 @@ import Sirius.util.*;
  */
 public class QueryIdentifier implements java.io.Serializable, Mapable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     /** Localserver where this query is hosted and will be executed. */

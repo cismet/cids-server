@@ -25,9 +25,6 @@ import java.sql.*;
  */
 public class DateFromString extends FromStringCreator implements java.io.Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Constructors -----------------------------------------------------------
 
     /**

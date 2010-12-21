@@ -20,9 +20,6 @@ import javax.swing.*;
  */
 public class ImageHashMap extends HashMap implements java.io.Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Constructors -----------------------------------------------------------
 
     /**

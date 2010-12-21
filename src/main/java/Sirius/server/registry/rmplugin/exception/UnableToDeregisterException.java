@@ -23,9 +23,6 @@ package Sirius.server.registry.rmplugin.exception;
  */
 public class UnableToDeregisterException extends Exception {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Constructors -----------------------------------------------------------
 
     /**

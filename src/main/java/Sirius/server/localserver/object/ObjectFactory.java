@@ -59,7 +59,6 @@ public final class ObjectFactory extends Shutdown {
 
     //~ Static fields/initializers ---------------------------------------------
 
-
     private static final transient Logger LOG = Logger.getLogger(ObjectFactory.class);
 
     //~ Instance fields --------------------------------------------------------

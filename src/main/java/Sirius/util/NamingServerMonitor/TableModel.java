@@ -27,8 +27,6 @@ import javax.swing.table.*;
  */
 public class TableModel extends DefaultTableModel {
 
-    //~ Static fields/initializers ---------------------------------------------
-
     //~ Constructors -----------------------------------------------------------
 
     /**

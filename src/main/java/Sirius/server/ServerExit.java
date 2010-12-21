@@ -20,9 +20,6 @@ package Sirius.server;
  */
 public class ServerExit extends java.lang.Throwable implements java.io.Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Constructors -----------------------------------------------------------
 
     /**

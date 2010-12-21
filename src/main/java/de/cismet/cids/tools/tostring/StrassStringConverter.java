@@ -22,9 +22,6 @@ import java.util.Collection;
  */
 public class StrassStringConverter extends ToStringConverter implements Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Constructors -----------------------------------------------------------
 
     /**

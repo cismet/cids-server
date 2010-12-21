@@ -1,10 +1,10 @@
 /***************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- *
- *              ... and it just works.
- *
- ****************************************************/
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -20,6 +20,7 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 
 import org.jdesktop.observablecollections.ObservableList;
 
@@ -35,7 +36,6 @@ import java.util.List;
 
 import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.MetaClassCacheService;
-import org.apache.commons.lang.StringEscapeUtils;
 
 /**
  * DOCUMENT ME!
@@ -46,6 +46,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 public class CidsBean implements PropertyChangeListener {
 
     //~ Instance fields --------------------------------------------------------
+
     protected PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     protected MetaObject metaObject = null;
     protected String backlinkFieldname;
@@ -53,6 +54,7 @@ public class CidsBean implements PropertyChangeListener {
     private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
 
     //~ Methods ----------------------------------------------------------------
+
     /**
      * DOCUMENT ME!
      *
@@ -139,7 +141,7 @@ public class CidsBean implements PropertyChangeListener {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final CidsBean other = (CidsBean) obj;
+        final CidsBean other = (CidsBean)obj;
         return metaObject.equals(other.metaObject);
     }
 
@@ -294,7 +296,7 @@ public class CidsBean implements PropertyChangeListener {
 //                    }
 //                }
 //            } else if (value instanceof CidsBean) {
-            final CidsBean cbv = (CidsBean) value;
+            final CidsBean cbv = (CidsBean)value;
             oa.setValue(cbv.getMetaObject());
             cbv.setBacklinkInformation(field, this);
             if (cbv.getMetaObject().getStatus() == MetaObject.TO_DELETE) {
@@ -348,14 +350,15 @@ public class CidsBean implements PropertyChangeListener {
         metaObject.setStatus(MetaObject.TO_DELETE);
         metaObject.setChanged(true);
         if (backlinkObject != null) {
-            final ObjectAttribute backlinkOA = backlinkObject.getMetaObject().getAttributeByFieldName(backlinkFieldname);
+            final ObjectAttribute backlinkOA = backlinkObject.getMetaObject()
+                        .getAttributeByFieldName(backlinkFieldname);
             walkUpAndSetChangedAndModified(backlinkOA);
 
             final Object o = PropertyUtils.getProperty(backlinkObject, backlinkFieldname);
             if (o instanceof CidsBean) {
                 PropertyUtils.setProperty(backlinkObject, backlinkFieldname, null);
             } else if (o instanceof ObservableList) {
-                ((ObservableList) o).remove(this);
+                ((ObservableList)o).remove(this);
             }
         }
     }
@@ -441,15 +444,15 @@ public class CidsBean implements PropertyChangeListener {
                 final Object o = list.get(i);
                 if (arrayfield != null) {
                     if (o instanceof CidsBean) {
-                        final CidsBean cb = (CidsBean) o;
+                        final CidsBean cb = (CidsBean)o;
                         cb.setBacklinkInformation(arrayfield, this);
                         final ObjectAttribute oa = this.getMetaObject().getAttributeByFieldName(arrayfield);
 
                         walkUpAndSetChangedAndModified(oa);
                         // ArrayElement anlegen
-                        final MetaClass zwischenTabellenKlasse = (MetaClass) (getMetaObject().getAllClasses()).get(
+                        final MetaClass zwischenTabellenKlasse = (MetaClass)(getMetaObject().getAllClasses()).get(
                                 getMetaObject().getDomain()
-                                + oa.getMai().getForeignKeyClassId());
+                                        + oa.getMai().getForeignKeyClassId());
                         final MetaObject arrayElement = zwischenTabellenKlasse.getEmptyInstance();
 
                         final ObjectAttribute[] arrayElementAttrs = arrayElement.getAttribs();
@@ -470,7 +473,7 @@ public class CidsBean implements PropertyChangeListener {
                         // Anlegen eines Dummy-Objektes
                         if (oa.getValue() == null) {
                             final Sirius.server.localserver.object.Object dummyO =
-                                    new Sirius.server.localserver.object.DefaultObject(
+                                new Sirius.server.localserver.object.DefaultObject(
                                     getMetaObject().getID(),
                                     oa.getMai().getForeignKeyClassId());
                             final MetaObject dummyMO = new DefaultMetaObject(dummyO, getMetaObject().getDomain());
@@ -482,15 +485,15 @@ public class CidsBean implements PropertyChangeListener {
                         }
 
                         // hinzufuegen eines Attributes, das auf das angelegte Arrayelement zeigt
-                        final MetaObject dummy = (MetaObject) oa.getValue();
+                        final MetaObject dummy = (MetaObject)oa.getValue();
                         dummy.setStatus(MetaObject.MODIFIED);
                         int counter = dummy.getAttribs().length;
                         // MAI des ArrayFeldes des Hauptobjektes
                         final MemberAttributeInfo mai = oa.getMai();
                         final ObjectAttribute dummyOA = new ObjectAttribute(
                                 mai.getId()
-                                + "."
-                                + ++counter,
+                                        + "."
+                                        + ++counter,
                                 mai,
                                 -1,
                                 arrayElement,
@@ -524,10 +527,11 @@ public class CidsBean implements PropertyChangeListener {
             final int index,
             final List oldElements) {
         for (final Object element : oldElements) {
-            final CidsBean cidsBean = (CidsBean) element;
-            final ObjectAttribute deepestReferencingAttribute = cidsBean.getMetaObject().getReferencingObjectAttribute();
+            final CidsBean cidsBean = (CidsBean)element;
+            final ObjectAttribute deepestReferencingAttribute = cidsBean.getMetaObject()
+                        .getReferencingObjectAttribute();
             if ((cidsBean.getMetaObject().getStatus() == MetaObject.TO_DELETE)
-                    || (cidsBean.getMetaObject().getStatus() == MetaObject.MODIFIED)) {
+                        || (cidsBean.getMetaObject().getStatus() == MetaObject.MODIFIED)) {
                 deepestReferencingAttribute.setChanged(true);
             } else if (cidsBean.getMetaObject().getStatus() == MetaObject.NEW) {
                 // wurde gerade erst angelegt, braucht nur entfernt zu werden
@@ -540,7 +544,7 @@ public class CidsBean implements PropertyChangeListener {
                 toDelete.getParentObject().removeAttribute(toDelete);
                 // toDelete.getKey();
             } else if ((arrayEntry.getStatus() != MetaObject.TEMPLATE)
-                    || (arrayEntry.getStatus() != MetaObject.TEMPLATE)) {
+                        || (arrayEntry.getStatus() != MetaObject.TEMPLATE)) {
                 arrayEntry.setStatus(MetaObject.TO_DELETE);
                 final ObjectAttribute referencingOA = arrayEntry.getReferencingObjectAttribute();
                 walkUpAndSetChangedAndModified(referencingOA);
@@ -596,39 +600,52 @@ public class CidsBean implements PropertyChangeListener {
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
             final PropertyDescriptor pd = new PropertyDescriptor("MOString", CidsBean.class); // NOI18N
-            return new PropertyDescriptor[]{pd};
+            return new PropertyDescriptor[] { pd };
         } catch (IntrospectionException e) {
             throw new Error(e.toString());
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public String toJSONString() {
         return beanToJSONStringHelper(this, 0);
     }
 
-    private String beanToJSONStringHelper(CidsBean bean, int depth) {
-        StringBuilder sb = new StringBuilder();
-        char[] einrueckung = new char[depth];
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   bean   DOCUMENT ME!
+     * @param   depth  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String beanToJSONStringHelper(final CidsBean bean, final int depth) {
+        final StringBuilder sb = new StringBuilder();
+        final char[] einrueckung = new char[depth];
         for (int i = 0; i < einrueckung.length; ++i) {
             einrueckung[i] = '\t';
         }
         sb.append(einrueckung).append('{').append('\n');
-        String[] propNames = bean.getPropertyNames();
+        final String[] propNames = bean.getPropertyNames();
         for (int i = 0; i < propNames.length; ++i) {
-            String attribute = propNames[i];
+            final String attribute = propNames[i];
             sb.append(einrueckung).append('\t').append('"').append(attribute).append("\": ");
-            Object object = bean.getProperty(attribute);
+            final Object object = bean.getProperty(attribute);
             if (object instanceof CidsBean) {
                 sb.append('\n');
-                sb.append(beanToJSONStringHelper((CidsBean) object, depth + 1));
+                sb.append(beanToJSONStringHelper((CidsBean)object, depth + 1));
                 sb.append('\n');
             } else if (object instanceof List) {
-                List<CidsBean> collection = (List<CidsBean>) object;
+                final List<CidsBean> collection = (List<CidsBean>)object;
                 sb.append('\n').append(einrueckung).append('[');
                 for (int j = 0; j < collection.size(); ++j) {
-                    CidsBean colBean = collection.get(j);
+                    final CidsBean colBean = collection.get(j);
                     sb.append(beanToJSONStringHelper(colBean, depth + 1));
-                    if (j < collection.size() - 1) {
+                    if (j < (collection.size() - 1)) {
                         sb.append(',');
                         sb.append('\n');
                     }
@@ -637,7 +654,7 @@ public class CidsBean implements PropertyChangeListener {
             } else {
                 sb.append('"').append(StringEscapeUtils.escapeJava(String.valueOf(object))).append('"');
             }
-            if (i < propNames.length - 1) {
+            if (i < (propNames.length - 1)) {
                 sb.append(',');
             }
             sb.append('\n');

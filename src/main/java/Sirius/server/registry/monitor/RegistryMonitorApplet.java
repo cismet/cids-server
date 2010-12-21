@@ -37,9 +37,6 @@ import javax.swing.table.*;
  */
 public class RegistryMonitorApplet extends JApplet {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     protected RegistryMonitor registryMonitor;

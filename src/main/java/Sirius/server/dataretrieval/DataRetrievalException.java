@@ -24,9 +24,6 @@ import java.sql.SQLException;
  */
 public class DataRetrievalException extends Exception {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Constructors -----------------------------------------------------------
 
     /**

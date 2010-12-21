@@ -21,9 +21,6 @@ import Sirius.server.localserver.attribute.*;
  */
 public class BoundingBoxStringConverter extends ToStringConverter implements java.io.Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());

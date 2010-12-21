@@ -19,9 +19,6 @@ import de.cismet.cids.tools.CustomToStringConverter;
  */
 public class UrlConverter extends CustomToStringConverter implements java.io.Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     @CidsAttribute("URL_BASE_ID.PROT_PREFIX") // NOI18N

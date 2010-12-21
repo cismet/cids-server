@@ -40,7 +40,6 @@ public class NamingServerMonitor extends JPanel implements Runnable, ActionListe
 
     //~ Static fields/initializers ---------------------------------------------
 
-
     public static String host;
 
     //~ Instance fields --------------------------------------------------------

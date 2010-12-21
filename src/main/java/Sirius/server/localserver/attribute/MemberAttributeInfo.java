@@ -17,9 +17,6 @@ import Sirius.util.Mapable;
  */
 public class MemberAttributeInfo implements Mapable, java.io.Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     // attribut id aus cs_attr

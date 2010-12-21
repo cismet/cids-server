@@ -32,9 +32,6 @@ import java.util.Map;
  */
 public class PolicyHolder extends Shutdown implements Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     private final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());

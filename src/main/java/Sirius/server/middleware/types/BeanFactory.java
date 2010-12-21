@@ -1,10 +1,10 @@
 /***************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- *
- *              ... and it just works.
- *
- ****************************************************/
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -59,15 +59,19 @@ import de.cismet.tools.gui.log4jquickconfig.Log4JQuickConfig;
 public class BeanFactory {
 
     //~ Static fields/initializers ---------------------------------------------
+
     private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(BeanFactory.class);
     public static final String CIDS_DYNAMICS_SUPERCLASS = /*CidsBean.class.toString();*/
-            "de.cismet.cids.dynamics.CidsBean";               // NOI18N
+        "de.cismet.cids.dynamics.CidsBean";               // NOI18N
     private static final BeanFactory instance = new BeanFactory();
+
     //~ Instance fields --------------------------------------------------------
-    final private HashMap<String, Class> javaclassCache = new HashMap<String, Class>();
+
+    private final HashMap<String, Class> javaclassCache = new HashMap<String, Class>();
     private MetaClassCacheService classCacheService;
 
     //~ Constructors -----------------------------------------------------------
+
     /**
      * Creates a new BeanFactory object.
      */
@@ -76,6 +80,7 @@ public class BeanFactory {
     }
 
     //~ Methods ----------------------------------------------------------------
+
     /**
      * DOCUMENT ME!
      *
@@ -115,11 +120,12 @@ public class BeanFactory {
             } else if (oa.referencesObject()) {
                 final Object value = oa.getValue();
                 if (value == null) {
-                    final MetaClass foreignClass = (MetaClass) classCacheService.getAllClasses(domain).get(domain + oa.getMai().getForeignKeyClassId());
+                    final MetaClass foreignClass = (MetaClass)classCacheService.getAllClasses(domain)
+                                .get(domain + oa.getMai().getForeignKeyClassId());
                     final MetaObject emptyInstance = foreignClass.getEmptyInstance();
                     emptyInstance.setStatus(Sirius.server.localserver.object.Object.TEMPLATE);
                 } else {
-                    final MetaObject subObject = (MetaObject) value;
+                    final MetaObject subObject = (MetaObject)value;
                     changeNullSubObjectsToTemplates(subObject.getBean());
                 }
             }
@@ -141,37 +147,38 @@ public class BeanFactory {
         if (mc != null) {
             final Class<?> javaClass = mc.getJavaClass();
             try {
-                final CidsBean bean = (CidsBean) javaClass.newInstance();
+                final CidsBean bean = (CidsBean)javaClass.newInstance();
                 final ObjectAttribute[] attribs = metaObject.getAttribs();
                 for (final ObjectAttribute a : attribs) {
                     final String field = a.getMai().getFieldName().toLowerCase();
                     Object value = a.getValue();
                     a.setParentObject(metaObject);
                     if (value instanceof MetaObject) {
-                        final MetaObject tmpMO = (MetaObject) value;
+                        final MetaObject tmpMO = (MetaObject)value;
                         if (tmpMO.isDummy()) {
                             // 1-n Beziehung (Array)
                             final List<CidsBean> arrayElements = new ArrayList();
-                            final ObservableList<CidsBean> observableArrayElements = ObservableCollections.observableList(
-                                    arrayElements);
+                            final ObservableList<CidsBean> observableArrayElements = ObservableCollections
+                                        .observableList(
+                                            arrayElements);
                             final ObjectAttribute[] arrayOAs = tmpMO.getAttribs();
                             for (final ObjectAttribute arrayElementOA : arrayOAs) {
                                 arrayElementOA.setParentObject(tmpMO);
-                                final MetaObject arrayElementMO = (MetaObject) arrayElementOA.getValue();
+                                final MetaObject arrayElementMO = (MetaObject)arrayElementOA.getValue();
                                 // In diesem MetaObject gibt es nun genau ein Attribut das als Value ein MetaObject hat
                                 final ObjectAttribute[] arrayElementAttribs = arrayElementMO.getAttribs();
                                 for (final ObjectAttribute targetArrayElement : arrayElementAttribs) {
                                     targetArrayElement.setParentObject(arrayElementMO);
                                     final Object targetArrayElementValObj = targetArrayElement.getValue();
                                     if (targetArrayElementValObj instanceof MetaObject) {
-                                        final MetaObject targetMO = (MetaObject) targetArrayElementValObj;
+                                        final MetaObject targetMO = (MetaObject)targetArrayElementValObj;
                                         final CidsBean cdBean = targetMO.getBean();
                                         if (cdBean != null) {
                                             cdBean.setBacklinkInformation(field, bean);
                                             observableArrayElements.add(cdBean);
                                         } else {
                                             log.warn(
-                                                    "getBean() delivered null -> could be a possible problem with rights/policy?"); // NOI18N
+                                                "getBean() delivered null -> could be a possible problem with rights/policy?"); // NOI18N
                                         }
                                         break;
                                     }
@@ -200,13 +207,13 @@ public class BeanFactory {
                 bean.addPropertyChangeListener(bean);
                 return bean;
             } catch (Exception e) {
-                log.fatal("Error in createBean metaclass:" + mc, e);  // NOI18N
+                log.fatal("Error in createBean metaclass:" + mc, e); // NOI18N
                 throw new Exception(
-                        "Error in getBean() (instanceof " // NOI18N
-                        + javaClass
-                        + ") of MetaObject:" // NOI18N
-                        + metaObject.getDebugString(),
-                        e);
+                    "Error in getBean() (instanceof "                // NOI18N
+                            + javaClass
+                            + ") of MetaObject:"                     // NOI18N
+                            + metaObject.getDebugString(),
+                    e);
             }
         } else {
             log.warn("getMetaClass() delivered null -> please check policy/permissions!"); // NOI18N
@@ -225,34 +232,34 @@ public class BeanFactory {
             final CidsBean bean,
             final String field) {
         toObserve.addObservableListListener(
-                new ObservableListListener() {
+            new ObservableListListener() {
 
-                    @Override
-                    public void listElementsAdded(final ObservableList list,
-                            final int index,
-                            final int length) {
-                        bean.listElementsAdded(field, list, index, length);
-                    }
+                @Override
+                public void listElementsAdded(final ObservableList list,
+                        final int index,
+                        final int length) {
+                    bean.listElementsAdded(field, list, index, length);
+                }
 
-                    @Override
-                    public void listElementsRemoved(final ObservableList list,
-                            final int index,
-                            final List oldElements) {
-                        bean.listElementsRemoved(field, list, index, oldElements);
-                    }
+                @Override
+                public void listElementsRemoved(final ObservableList list,
+                        final int index,
+                        final List oldElements) {
+                    bean.listElementsRemoved(field, list, index, oldElements);
+                }
 
-                    @Override
-                    public void listElementReplaced(final ObservableList list,
-                            final int index,
-                            final Object oldElement) {
-                        bean.listElementReplaced(field, list, index, oldElement);
-                    }
+                @Override
+                public void listElementReplaced(final ObservableList list,
+                        final int index,
+                        final Object oldElement) {
+                    bean.listElementReplaced(field, list, index, oldElement);
+                }
 
-                    @Override
-                    public void listElementPropertyChanged(final ObservableList list, final int index) {
-                        bean.listElementPropertyChanged(field, list, index);
-                    }
-                });
+                @Override
+                public void listElementPropertyChanged(final ObservableList list, final int index) {
+                    bean.listElementPropertyChanged(field, list, index);
+                }
+            });
     }
 
     /**
@@ -300,9 +307,9 @@ public class BeanFactory {
      * @throws  Exception  DOCUMENT ME!
      */
     private Class createJavaClass(final MetaClass metaClass) throws Exception {
-        Object o;
+        final Object o;
         final String classname = "de.cismet.cids.dynamics." // NOI18N
-                + createJavaClassnameOutOfTableName(metaClass.getTableName());
+                    + createJavaClassnameOutOfTableName(metaClass.getTableName());
         // String beaninfoClassname=classname+"BeanInfo";
         final ClassPool pool = ClassPool.getDefault();
         final ClassLoader cl = this.getClass().getClassLoader();
@@ -339,7 +346,7 @@ public class BeanFactory {
             String attributeJavaClassName = mai.getJavaclassname();
 
             if (mai.isArray()) {
-                attributeJavaClassName = "org.jdesktop.observablecollections.ObservableList";    // zu erstellen mit:
+                attributeJavaClassName = "org.jdesktop.observablecollections.ObservableList"; // zu erstellen mit:
                 // // NOI18N
                 // ObservableCollections.observableList(list)
             } else if (mai.isForeignKey()) {
@@ -363,8 +370,8 @@ public class BeanFactory {
         // FIXME: immutable collection instead of possible mutable (-> corrputable) array?
         final CtField propertyNamesStaticField = CtField.make(
                 "private String[] PROPERTY_NAMES = new String[]{" // NOI18N
-                + propertyNames
-                + "};", // NOI18N
+                        + propertyNames
+                        + "};",                                   // NOI18N
                 ctClass);
         final CtMethod propertyNamesGetter = CtNewMethod.getter("getPropertyNames", propertyNamesStaticField); // NOI18N
 //        CtMethod propertyNamesGetter = CtNewMethod.make(
@@ -420,11 +427,11 @@ public class BeanFactory {
         final CtMethod setter = CtNewMethod.setter(setterName, f);
 
         setter.insertAfter(
-                "propertyChangeSupport.firePropertyChange(\"" // NOI18N
-                + f.getName()
-                + "\", null, " // NOI18N
-                + f.getName()
-                + ");");                              // NOI18N
+            "propertyChangeSupport.firePropertyChange(\"" // NOI18N
+                    + f.getName()
+                    + "\", null, "                        // NOI18N
+                    + f.getName()
+                    + ");");                              // NOI18N
 
         ctClass.addMethod(getter);
         ctClass.addMethod(setter);
@@ -454,13 +461,13 @@ public class BeanFactory {
         final java.rmi.registry.Registry rmiRegistry = LocateRegistry.getRegistry(1099);
 
         // lookup des callservers
-        final Remote r = (Remote) Naming.lookup("rmi://localhost/callServer"); // NOI18N
+        final Remote r = (Remote)Naming.lookup("rmi://localhost/callServer"); // NOI18N
 
         // ich weiss, dass die server von callserver implementiert werden
-        final SearchService ss = (SearchService) r;
-        final CatalogueService cat = (CatalogueService) r;
-        final MetaService meta = (MetaService) r;
-        final UserService us = (UserService) r;
+        final SearchService ss = (SearchService)r;
+        final CatalogueService cat = (CatalogueService)r;
+        final MetaService meta = (MetaService)r;
+        final UserService us = (UserService)r;
 
         final User u = us.getUser(domain, "Demo", domain, "demo", "demo"); // NOI18N
 
@@ -543,7 +550,7 @@ public class BeanFactory {
         final CidsBean newSRAuto = CidsBean.constructNew(meta, u, domain, "aaauto"); // NOI18N
         newSRAuto.setProperty("marke", "VW Golf");                                   // NOI18N
         newSRAuto.setProperty("kennz", "MZG-SR-1");                                  // NOI18N
-        ((List) stefan.getProperty("autos")).add(newSRAuto);
+        ((List)stefan.getProperty("autos")).add(newSRAuto);
         if (log.isDebugEnabled()) {
             log.debug("Autos:" + stefan.getProperty("autos"));                       // NOI18N
         }

@@ -17,9 +17,6 @@ import java.util.Hashtable;
  */
 public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Constructors -----------------------------------------------------------
 
     /**

@@ -11,17 +11,18 @@ import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.permission.PermissionHolder;
+
 import Sirius.util.Mapable;
-import de.cismet.cids.tools.fromstring.FromStringCreator;
 
-
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import org.apache.log4j.Logger;
+
+import de.cismet.cids.tools.fromstring.FromStringCreator;
 
 /**
  * DefaultObject ist die ist die Eiheitliche Darstellung eines Tabelleneintrages in Sirius.
@@ -32,6 +33,7 @@ public class DefaultObject implements Object {
 
     //~ Static fields/initializers ---------------------------------------------
 
+    private static final transient Logger LOG = Logger.getLogger(DefaultObject.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -42,12 +44,10 @@ public class DefaultObject implements Object {
     /** indicates whether this object was constucted artificially eg array object. */
     protected boolean dummy = false;
     /** container for this objects attributes. */
-    protected LinkedHashMap attribHash;                      
+    protected LinkedHashMap attribHash;
     /** indicates wheter this object was loaded from a domainservers database. */
-    protected boolean persistent = true;                                      
+    protected boolean persistent = true;
     protected ObjectAttribute referencingObjectAttribute;
-
-    private static final transient Logger LOG = Logger.getLogger(DefaultObject.class);
     /** helper for generating an DefaultObject instance from a string. */
     private FromStringCreator objectCreator;
     private int status = NO_STATUS;
@@ -59,7 +59,7 @@ public class DefaultObject implements Object {
      *
      * @param  o  original
      */
-    public DefaultObject(final Sirius.server.localserver.object.Object o) { 
+    public DefaultObject(final Sirius.server.localserver.object.Object o) {
         this((o != null) ? o.getID() : -1, (o != null) ? o.getClassID() : -1);
         if (o != null) {
             if (o.getAttributes() != null) {
@@ -88,6 +88,8 @@ public class DefaultObject implements Object {
         // insertion order
         attribHash = new LinkedHashMap(10, 0.75f, false);
     }
+
+    //~ Methods ----------------------------------------------------------------
 
     /**
      * getter for classID.

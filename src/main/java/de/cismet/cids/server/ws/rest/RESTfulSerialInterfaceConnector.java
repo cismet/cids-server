@@ -7,8 +7,8 @@
 ****************************************************/
 package de.cismet.cids.server.ws.rest;
 
-import Sirius.server.middleware.types.HistoryObject;
 import Sirius.server.localserver.method.MethodMap;
+import Sirius.server.middleware.types.HistoryObject;
 import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.Link;
 import Sirius.server.middleware.types.MetaClass;
@@ -137,7 +137,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     public RESTfulSerialInterfaceConnector(final String rootResource,
             final Proxy proxy,
             final SSLConfig sslConfig) {
-        if (true) {//sslConfig == null) {
+        if (true) {                                                      // sslConfig == null) {
             LOG.warn("cannot initialise ssl because sslConfig is null"); // NOI18N
         } else {
             initSSL(sslConfig);
@@ -3003,11 +3003,11 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
             return getResponsePOST("getHistory", queryParams, HistoryObject[].class); // NOI18N
         } catch (final IOException ex) {
-            final String message = "could not convert params";                     // NOI18N
+            final String message = "could not convert params";                        // NOI18N
             LOG.error(message, ex);
             throw new RemoteException(message, ex);
         } catch (final ClassNotFoundException e) {
-            final String message = "could not create MetaObject[]";                // NOI18N
+            final String message = "could not create MetaObject[]";                   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }

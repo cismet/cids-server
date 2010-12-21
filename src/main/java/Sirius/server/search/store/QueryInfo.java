@@ -21,9 +21,6 @@ import java.util.*;
  */
 public class QueryInfo implements java.io.Serializable, Info {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     /** QueryID.* */

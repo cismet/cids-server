@@ -15,9 +15,6 @@ package Sirius.server.newuser;
 public class UserException extends Exception implements java.io.Serializable // java.rmi.ServerException
 {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     private boolean wrongUserName = false;
