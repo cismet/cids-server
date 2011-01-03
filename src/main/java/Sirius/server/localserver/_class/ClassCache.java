@@ -560,12 +560,14 @@ public class ClassCache extends Shutdown {
                 final int methodId = methodTable.getInt("method_id"); // NOI18N
 
                 if (c != null) {
-                    c.addMethodID(methodId);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("not adding method id to class as LongVector has been removed"); // NOI18N
+                    }
                 } else {
                     LOG.warn(
-                        "Eintrag in der Klassen/Methoden tabelle fehlerhaft Klasse" // NOI18N
+                        "Eintrag in der Klassen/Methoden tabelle fehlerhaft Klasse"                // NOI18N
                                 + classId
-                                + " Methode :"                                      // NOI18N
+                                + " Methode :"                                                     // NOI18N
                                 + methodId);
                 }
             }

@@ -23,8 +23,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 
-import de.cismet.tools.collections.LongVector;
-
 /**
  * Die Klasse Class fungiert zum einen als Mittel zur Klassifkation zum anderen enth\u00E4lt Sie Eigenschaften von
  * referenzierten Tabellen.
@@ -40,7 +38,7 @@ public class Class implements java.io.Serializable, Mapable {
      *
      * @see  Sirius.Class.ClassMap
      */
-    protected int id;
+    protected final int id;
     /** Name der Klasse wird bei der Visualisierung angzeigt. */
     protected String name;
     /** Enth\u00E4lt eine URL oder einen Klartext der die Klasse n\u00E4her beschreibt. */
@@ -59,8 +57,6 @@ public class Class implements java.io.Serializable, Mapable {
     protected String toString;
     /** indicates whether objects of this class are only links between an array and it's elements. */
     protected boolean arrayElementLink = false;
-//    /**Alle der Klasse zugeordneten "logischen" Methoden durch ihre ids repraesentiert*/
-    protected LongVector methodIDs;
     /** Alle Attribute der Klasse. */
     protected AttributeVector attribs;
     /**
@@ -147,8 +143,6 @@ public class Class implements java.io.Serializable, Mapable {
         attribs = new AttributeVector(5, 5);
 
         memberAttributeInfos = new LinkedHashMap();
-
-        methodIDs = new LongVector(5, 5);
 
         permissions = new PermissionHolder(policy);
 
@@ -308,41 +302,6 @@ public class Class implements java.io.Serializable, Mapable {
      */
     public final PermissionHolder getPermissions() {
         return permissions;
-    }
-
-    /**
-     * retrieves all ids of registered methods in a vector.
-     *
-     * @return  mothod ids in a vector
-     */
-    public final LongVector getMethods() {
-        return methodIDs;
-    }
-
-    /**
-     * adds a methd id to the member (container).
-     *
-     * @param  methodID  id of a method
-     */
-    public final void addMethodID(final int methodID) {
-        if (!methodIDs.contains(methodID)) {
-            methodIDs.add(methodID);
-        }
-    }
-
-    /**
-     * setter for methodIDS.
-     *
-     * @param   methodIDs  method ids in a vector
-     *
-     * @throws  Exception  java.lang.Exception error
-     */
-    public final void setMethodIDs(final LongVector methodIDs) throws Exception {
-        if (this.methodIDs.size() != 0) {
-            throw new Exception("LongVector methodIds of Class allready set use addMethodID instead"); // NOI18N
-        }
-
-        this.methodIDs = methodIDs;
     }
 
     /**

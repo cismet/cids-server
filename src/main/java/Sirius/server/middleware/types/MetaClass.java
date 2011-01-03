@@ -22,8 +22,6 @@ import de.cismet.cids.tools.tostring.ToStringConverter;
 
 import de.cismet.cids.utils.ClassloadingHelper;
 
-import de.cismet.tools.BlacklistClassloading;
-
 /**
  * Return Type of a RMI method.
  *
@@ -42,13 +40,15 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
     //~ Instance fields --------------------------------------------------------
 
     /** domain. */
-    protected String domain;
+    protected final String domain;
     private transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
     /** erzeugt eine String repr\u00E4entation eines Objketes der Klasse, kann in toString benutzt werden. */
     private transient ToStringConverter toStringConverter;
     private transient Class javaClass = null;
     private Boolean hasExtensionAttributes = null;
     // -------------------------------------------------------------------
+
+    private final String key;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -80,6 +80,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
         super.setRenderer(c.getRenderer());
 
         this.domain = domain;
+        this.key = id + "@" + domain;
         this.arrayElementLink = c.isArrayElementLink();
     }
 
@@ -114,15 +115,6 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
     }
 
     /**
-     * methods.
-     *
-     * @return  methods
-     */
-    public int[] getMethodArray() {
-        return methodIDs.convertToArray();
-    }
-
-    /**
      * getter for domain.
      *
      * @return  domain
@@ -138,7 +130,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
      */
     @Override
     public Object getKey() {
-        return id + "@" + domain; // NOI18N
+        return key;
     }
 
     /**
