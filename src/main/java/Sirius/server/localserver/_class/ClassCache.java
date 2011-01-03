@@ -189,8 +189,6 @@ public class ClassCache extends Shutdown {
 
         addAttributes(conPool);
 
-        addMethodIDs(conPool);
-
         addMemberInfos(conPool);
 
         addShutdown(new Shutdownable() {
@@ -540,42 +538,6 @@ public class ClassCache extends Shutdown {
         } catch (final Exception e) {
             ExceptionHandler.handle(e);
             LOG.error("<LS> ERROR :: addMemberinfos", e); // NOI18N
-        }
-    }
-
-    /**
-     * Only to be called by the constructor.
-     *
-     * @param  conPool  DOCUMENT ME!
-     */
-    private void addMethodIDs(final DBConnectionPool conPool) {
-        final DBConnection con = conPool.getConnection();
-        try {
-            final ResultSet methodTable = con.submitQuery("get_all_class_method_ids", new Object[0]); // NOI18N
-
-            while (methodTable.next()) {
-                final int classId = methodTable.getInt("class_id"); // NOI18N
-                final Sirius.server.localserver._class.Class c = classes.getClass(classId);
-
-                final int methodId = methodTable.getInt("method_id"); // NOI18N
-
-                if (c != null) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("not adding method id to class as LongVector has been removed"); // NOI18N
-                    }
-                } else {
-                    LOG.warn(
-                        "Eintrag in der Klassen/Methoden tabelle fehlerhaft Klasse"                // NOI18N
-                                + classId
-                                + " Methode :"                                                     // NOI18N
-                                + methodId);
-                }
-            }
-
-            methodTable.close();
-        } catch (java.lang.Exception e) {
-            ExceptionHandler.handle(e);
-            LOG.error("<LS> ERROR :: get_all_class_method_ids", e); // NOI18N
         }
     }
 
