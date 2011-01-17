@@ -7,9 +7,9 @@
 ****************************************************/
 package Sirius.server.localserver.object;
 
+import Sirius.server.AbstractShutdownable;
 import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
-import Sirius.server.Shutdownable;
 import Sirius.server.localserver._class.ClassCache;
 import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.localserver.attribute.ClassAttribute;
@@ -23,6 +23,7 @@ import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.permission.Permission;
 import Sirius.server.newuser.permission.PermissionHolder;
+import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DBConnectionPool;
 import Sirius.server.sql.QueryParametrizer;
 
@@ -33,17 +34,19 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 
 import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
 
@@ -81,17 +84,21 @@ public final class ObjectFactory extends Shutdown {
         this.conPool = conPool;
 
         try {
-            this.dbMeta = conPool.getConnection().getConnection().getMetaData();
+            this.dbMeta = conPool.getConnection().getMetaData();
             this.primaryKeys = new HashSet(50, 20);
             initPrimaryKeys();
         } catch (final Exception e) {
             LOG.error("failed to retrieve db meta data", e); // NOI18N
         }
 
-        addShutdown(new Shutdownable() {
+        addShutdown(new AbstractShutdownable() {
 
                 @Override
-                public void shutdown() throws ServerExitError {
+                protected void internalShutdown() throws ServerExitError {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("shutting down ObjectFactory"); // NOI18N
+                    }
+
                     primaryKeys.clear();
                 }
             });
@@ -108,10 +115,10 @@ public final class ObjectFactory extends Shutdown {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  Exception  DOCUMENT ME!
+     * @throws  SQLException  DOCUMENT ME!
      */
     public Sirius.server.localserver.object.Object getObject(final int objectId, final int classId, final UserGroup ug)
-            throws Exception {
+            throws SQLException {
         final Sirius.server.localserver.object.Object o = getObject(objectId, classId);
         if (o != null) {
             setAttributePermissions(o, ug);
@@ -184,7 +191,8 @@ public final class ObjectFactory extends Shutdown {
             findAllStmnt.append(field);
         }
 
-        findAllStmnt.append(" from " + c.getTableName()); // NOI18N
+        findAllStmnt.append(" from "); // NOI18N
+        findAllStmnt.append(c.getTableName());
 
         if (sortingColumnAttribute != null) {
             findAllStmnt.append(" order by ").append(sortingColumnAttribute.getValue()); // NOI18N
@@ -241,7 +249,7 @@ public final class ObjectFactory extends Shutdown {
     }
 
     /**
-     * ---!!!
+     * DOCUMENT ME!
      *
      * @param   c                     DOCUMENT ME!
      * @param   user                  DOCUMENT ME!
@@ -251,41 +259,46 @@ public final class ObjectFactory extends Shutdown {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  Exception  DOCUMENT ME!
+     * @throws  SQLException  DOCUMENT ME!
      */
     private LightweightMetaObject[] getLightweightMetaObjectsByQuery(
             final Sirius.server.localserver._class.Class c,
             final User user,
             final String query,
             final String[] representationFields,
-            final AbstractAttributeRepresentationFormater formater) throws Exception {
+            final AbstractAttributeRepresentationFormater formater) throws SQLException {
         final String primaryKeyField = c.getPrimaryKey();
         if (LOG.isDebugEnabled()) {
             LOG.debug("LightweightMO by Query: " + query); // NOI18N
         }
-        final Statement stmnt = conPool.getConnection().getConnection().createStatement();
-        final ResultSet rs = stmnt.executeQuery(query);
-        final Set<LightweightMetaObject> lwMoSet = new LinkedHashSet<LightweightMetaObject>();
-        while (rs.next()) {
-            final Map<String, java.lang.Object> attributeMap = new HashMap<String, java.lang.Object>();
-            // primary key must be returned by the query!
-            final int oID = rs.getInt(primaryKeyField);
-            attributeMap.put(primaryKeyField, oID);
-            final java.lang.Object[] repObjs = new java.lang.Object[representationFields.length];
-            for (int i = 0; i < repObjs.length; ++i) {
-                final String fld = representationFields[i];
-                final java.lang.Object retAttrVal = checkSerializabilityAndMakeSerializable(rs.getObject(fld));
-                attributeMap.put(fld.toLowerCase(), retAttrVal);
-                repObjs[i] = retAttrVal;
-            }
-            lwMoSet.add(new LightweightMetaObject(c.getID(), oID, user, attributeMap, formater));
-        }
+        Statement stmnt = null;
+        ResultSet rs = null;
+
         try {
-            stmnt.close();
-        } catch (Exception ex) {
-            LOG.warn(ex);
+            stmnt = conPool.getConnection().createStatement();
+            rs = stmnt.executeQuery(query);
+
+            final Set<LightweightMetaObject> lwMoSet = new LinkedHashSet<LightweightMetaObject>();
+            while (rs.next()) {
+                final Map<String, java.lang.Object> attributeMap = new HashMap<String, java.lang.Object>();
+                // primary key must be returned by the query!
+                final int oID = rs.getInt(primaryKeyField);
+                attributeMap.put(primaryKeyField, oID);
+                final java.lang.Object[] repObjs = new java.lang.Object[representationFields.length];
+                for (int i = 0; i < repObjs.length; ++i) {
+                    final String fld = representationFields[i];
+                    final java.lang.Object retAttrVal = checkSerializabilityAndMakeSerializable(rs.getObject(fld));
+                    attributeMap.put(fld.toLowerCase(), retAttrVal);
+                    repObjs[i] = retAttrVal;
+                }
+                lwMoSet.add(new LightweightMetaObject(c.getID(), oID, user, attributeMap, formater));
+            }
+
+            return lwMoSet.toArray(new LightweightMetaObject[lwMoSet.size()]);
+        } finally {
+            DBConnection.closeResultSets(rs);
+            DBConnection.closeStatements(stmnt);
         }
-        return lwMoSet.toArray(new LightweightMetaObject[lwMoSet.size()]);
     }
 
     /**
@@ -311,9 +324,10 @@ public final class ObjectFactory extends Shutdown {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  Exception  DOCUMENT ME!
+     * @throws  SQLException  DOCUMENT ME!
      */
-    public Sirius.server.localserver.object.Object getObject(final int objectId, final int classId) throws Exception {
+    public Sirius.server.localserver.object.Object getObject(final int objectId, final int classId)
+            throws SQLException {
         if (LOG != null) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
@@ -329,35 +343,39 @@ public final class ObjectFactory extends Shutdown {
 
         if (c == null) {
             return null;
-                // LOG.debug("Klasse f\u00FCr getObject"+c);
-                // LOG.debug("Objectid f\u00FCr getObject"+objectId);
-                // object id as singular parameter for the getInstanceStmnt of a class
         }
+
         final java.lang.Object[] param = new java.lang.Object[1];
         param[0] = new Integer(objectId);
 
         final String getObjectStmnt = QueryParametrizer.parametrize(c.getGetInstanceStmnt(), param);
 
-        final Connection con = conPool.getConnection().getConnection();
+        final Connection con = conPool.getConnection();
 
-        // update meta data
-        this.dbMeta = con.getMetaData();
+        Statement stmnt = null;
+        ResultSet rs = null;
+        try {
+            // update meta data
+            this.dbMeta = con.getMetaData();
 
-        final Statement stmnt = con.createStatement();
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("getObjectStatement ::" + getObjectStmnt); // NOI18N
-        }
+            stmnt = con.createStatement();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("getObjectStatement ::" + getObjectStmnt); // NOI18N
+            }
 
-        final ResultSet rs = stmnt.executeQuery(getObjectStmnt);
+            rs = stmnt.executeQuery(getObjectStmnt);
 
-        if (rs.next()) {
-            return createObject(objectId, rs, c);
-        } else {
-            LOG.error("<LS> ERROR kein match f\u00FCr " + getObjectStmnt); // NOI18N
-            return null;
+            if (rs.next()) {
+                return createObject(objectId, rs, c);
+            } else {
+                LOG.error("<LS> ERROR kein match f\u00FCr " + getObjectStmnt); // NOI18N
+                return null;
+            }
+        } finally {
+            DBConnection.closeResultSets(rs);
+            DBConnection.closeStatements(stmnt);
         }
     }
-    // creates an DefaultObject from  apositioned Resultset
 
     /**
      * DOCUMENT ME!
@@ -368,11 +386,11 @@ public final class ObjectFactory extends Shutdown {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  Exception  DOCUMENT ME!
+     * @throws  SQLException  DOCUMENT ME!
      */
     Sirius.server.localserver.object.Object createObject(final int objectId,
             final ResultSet rs,
-            final Sirius.server.localserver._class.Class c) throws Exception {
+            final Sirius.server.localserver._class.Class c) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("create Object entered for result" + rs + "object_id:: " + objectId + " class " + c.getID()); // NOI18N
             // construct object rump attributes have to be added yet
@@ -407,29 +425,7 @@ public final class ObjectFactory extends Shutdown {
             if (!mai.isExtensionAttribute()) {
                 if (!(mai.isForeignKey())) // simple attribute can be directly retrieved from the resultset
                 {
-                    // SQLObject fetched as is; from the field with fieldname
-                    // LOG.debug("simple attribute");
-                    // !!!!! umstellung auf PostgisGeometry
-// if(mai.getTypeId()==236|| mai.getTypeId()==268) // Polygon
-// {
-// attrValue=rs.getString(fieldName);
-//
-////                    if(LOG.isDebugEnabled())
-////                    {
-////                        java.lang.Class cc = null;
-////                        java.lang.DefaultObject o =rs.getObject(fieldName);
-////
-////                        if(o!=null)
-////                            cc = o.getClass();
-////
-////                       // LOG.debug("GEOTYPE :: "+cc);
-////                    }
-//
-//                }
-//                else
                     attrValue = rs.getObject(fieldName);
-
-                    // if(attrValue!=null)LOG.debug("Klasse des Attributs "+attrValue.getClass());
 
                     try {
                         if (attrValue != null) {
@@ -485,9 +481,6 @@ public final class ObjectFactory extends Shutdown {
                 {
                     if (mai.isArray())                // isForeignKey && isArray
                     {
-                        // create Array of Objects
-                        // LOG.debug("isArray");
-
                         final String referenceKey = rs.getString(fieldName);
 
                         if (referenceKey != null) {
@@ -583,11 +576,11 @@ public final class ObjectFactory extends Shutdown {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  Exception  DOCUMENT ME!
+     * @throws  SQLException  DOCUMENT ME!
      */
     public Sirius.server.localserver.object.Object getMetaObjectArray(final String referenceKey,
             final MemberAttributeInfo mai,
-            final int array_predicate) throws Exception {
+            final int array_predicate) throws SQLException {
         // construct artificial metaobject
 
         final Sirius.server.localserver._class.Class c = classCache.getClass(mai.getForeignKeyClassId());
@@ -597,50 +590,56 @@ public final class ObjectFactory extends Shutdown {
                 c.getID());
         result.setDummy(true);
 
-        final String getObjectStmnt = "Select * from " + c.getTableName() + " where "
-                    + mai.getArrayKeyFieldName() // NOI18N
-                    + " = "                      // NOI18N
+        final String getObjectStmnt = "Select * from " + c.getTableName() + " where " // NOI18N
+                    + mai.getArrayKeyFieldName()
+                    + " = "                                                           // NOI18N
                     + referenceKey;
 
-        final Connection con = conPool.getConnection().getConnection();
-
-        final Statement stmnt = con.createStatement();
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(getObjectStmnt);
-        }
-
-        final ResultSet rs = stmnt.executeQuery(getObjectStmnt);
-
-        // artificial id
-        int i = 0;
-        while (rs.next()) {
-            final int o_id = rs.getInt(c.getPrimaryKey());
-
-            final Sirius.server.localserver.object.Object element = createObject(o_id, rs, c);
-
-            if (element != null) {
-                final ObjectAttribute oa = new ObjectAttribute(
-                        mai.getId()
-                                + "." // NOI18N
-                                + i++,
-                        mai,
-                        o_id,
-                        element,
-                        c.getAttributePolicy());
-                oa.setOptional(mai.isOptional());
-                oa.setVisible(mai.isVisible());
-                element.setReferencingObjectAttribute(oa);
-                oa.setParentObject(result);
-                // bei gelegenheit raus da es im Konstruktor von MetaObject gesetzt wird
-                oa.setClassKey(mai.getForeignKeyClassId() + "@" + classCache.getProperties().getServerName());     // NOI18N
-                result.addAttribute(oa);
-            } else {
-                LOG.error(new ObjectAttribute(mai.getId() + "." + i++, mai, o_id, element, c.getAttributePolicy()) // NOI18N
-                            + " ommited as element was null");                                                     // NOI18N
+        Statement stmnt = null;
+        ResultSet rs = null;
+        try {
+            stmnt = conPool.getConnection().createStatement();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(getObjectStmnt);
             }
-        }
 
-        return result;
+            rs = stmnt.executeQuery(getObjectStmnt);
+
+            // artificial id
+            int i = 0;
+            while (rs.next()) {
+                final int o_id = rs.getInt(c.getPrimaryKey());
+
+                final Sirius.server.localserver.object.Object element = createObject(o_id, rs, c);
+
+                if (element != null) {
+                    final ObjectAttribute oa = new ObjectAttribute(
+                            mai.getId()
+                                    + "." // NOI18N
+                                    + i++,
+                            mai,
+                            o_id,
+                            element,
+                            c.getAttributePolicy());
+                    oa.setOptional(mai.isOptional());
+                    oa.setVisible(mai.isVisible());
+                    element.setReferencingObjectAttribute(oa);
+                    oa.setParentObject(result);
+                    // bei gelegenheit raus da es im Konstruktor von MetaObject gesetzt wird
+                    oa.setClassKey(mai.getForeignKeyClassId() + "@" + classCache.getProperties().getServerName()); // NOI18N
+                    result.addAttribute(oa);
+                } else {
+                    // TODO: expensive and should probably only be a warning
+                    LOG.error(new ObjectAttribute(mai.getId() + "." + i++, mai, o_id, element, c.getAttributePolicy()) // NOI18N
+                                + " ommited as element was null");                                               // NOI18N
+                }
+            }
+
+            return result;
+        } finally {
+            DBConnection.closeResultSets(rs);
+            DBConnection.closeStatements(stmnt);
+        }
     }
 
     /**
@@ -743,7 +742,7 @@ public final class ObjectFactory extends Shutdown {
             final String[] tableType = { "TABLE" }; // NOI18N
             final ResultSet rs = dbMeta.getTables(null, null, null, tableType);
 
-            final Vector tableNames = new Vector(20, 20);
+            final List tableNames = new ArrayList(20);
 
             // get all tablenames
             while (rs.next()) {
@@ -781,10 +780,12 @@ public final class ObjectFactory extends Shutdown {
      * @param   o   DOCUMENT ME!
      * @param   ug  DOCUMENT ME!
      *
-     * @throws  java.sql.SQLException  DOCUMENT ME!
+     * @throws  SQLException  DOCUMENT ME!
      */
     protected void setAttributePermissions(final Sirius.server.localserver.object.Object o, final UserGroup ug)
-            throws java.sql.SQLException {
+            throws SQLException {
+        Statement stmnt = null;
+        ResultSet rs = null;
         try {
             // check kann es Probleme bei nicht lokalen ugs geben?
             final String attribPerm =
@@ -793,11 +794,9 @@ public final class ObjectFactory extends Shutdown {
                         + ") and u.permission = p.id and ug_id = "                                                                                                                                  // NOI18N
                         + ug.getId();
 
-            final Connection con = conPool.getConnection().getConnection();
+            stmnt = conPool.getConnection().createStatement();
 
-            final Statement stmnt = con.createStatement();
-
-            final ResultSet rs = stmnt.executeQuery(attribPerm);
+            rs = stmnt.executeQuery(attribPerm);
 
             final HashMap attrs = o.getAttributes();
 
@@ -826,15 +825,6 @@ public final class ObjectFactory extends Shutdown {
                     continue;
                 }
 
-//                String policy = rs.getString("policy");
-//
-//                if (policy != null) {
-//                    policy = policy.trim();
-//                } else {
-//                    LOG.error(" keine policy   Attribut wird daher \u00FCbersprungen ::" + policy);
-//                    continue;
-//                }
-
                 // konstruktion des Keys abhaengig von attr.getKey :-(
                 final Attribute a = (Attribute)attrs.get(attrkey + "@" + o.getClassID()); // NOI18N
 
@@ -856,11 +846,12 @@ public final class ObjectFactory extends Shutdown {
                     p.addPermission(ug, new Permission(permId, permKey));
                 }
             }
-        } catch (java.sql.SQLException e) {
-            LOG.error("Error in setAttributePermissons", e); // NOI18N
+        } catch (final SQLException e) {
+            LOG.error("cannot create attribute permissions", e); // NOI18N
             throw e;
-        } catch (Exception e) {
-            LOG.error("Error in setAttributePermissons", e); // NOI18N
+        } finally {
+            DBConnection.closeResultSets(rs);
+            DBConnection.closeStatements(stmnt);
         }
     }
 }

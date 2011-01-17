@@ -29,54 +29,49 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.StringTokenizer;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import de.cismet.tools.Sorter;
 
 /**
- * Datenbankverbindung.<BR>
+ * DOCUMENT ME!
  *
  * @author   Sascha Schlobinski
- * @version  1.0 erstellt am 05.10.1999
- * @since    DOCUMENT ME!
+ * @author   mscholl
+ * @version  1.1 refactored on 2011/01/13
  */
 
-public final class DBConnection {
+public final class DBConnection implements DBBackend {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient Logger LOG = Logger.getLogger(DBConnection.class);
 
-    public static final String DESC_VERIFY_USER_PW = "verify_user_password";                                   // NOI18N
-    public static final String DESC_FETCH_DOMAIN_ID_FROM_DOMAIN_STRING = "fetch_domain_id_from_domain_string"; // NOI18N
-    public static final String DESC_FETCH_CONFIG_ATTR_KEY_ID = "fetch_config_attr_key_id";                     // NOI18N
-    public static final String DESC_FETCH_CONFIG_ATTR_USER_VALUE = "fetch_config_attr_user_value";             // NOI18N
-    public static final String DESC_FETCH_CONFIG_ATTR_UG_VALUE = "fetch_config_attr_ug_value";                 // NOI18N
-    public static final String DESC_FETCH_CONFIG_ATTR_DOMAIN_VALUE = "fetch_config_attr_domain_value";         // NOI18N
-    public static final String DESC_FETCH_HISTORY = "fetch_history";                                           // NOI18N
-    public static final String DESC_FETCH_HISTORY_LIMIT = "fetch_history_limit";                               // NOI18N
-    public static final String DESC_INSERT_HISTORY_ENTRY = "insert_history_entry";                             // NOI18N
-
     //~ Instance fields --------------------------------------------------------
 
     protected final DBClassifier dbc;
 
-    private Connection con;
-    private StatementCache cache;
+    private final transient ReentrantReadWriteLock rwLock;
+    // isClosed must be "protected" by the rwLock thus no reads or writes shall be done to the variable without
+    // acquiring an appropriate lock
+    private transient boolean isClosed;
+
+    private final Connection con;
+    private final StatementCache cache;
     private final Map<String, PreparedStatement> internalQueries;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * /////////////////////////////////////
+     * Creates a new DBConnection object.
      *
      * @param   dbc  DOCUMENT ME!
      *
-     * @throws  Throwable        DOCUMENT ME!
      * @throws  ServerExitError  DOCUMENT ME!
      */
-    protected DBConnection(final DBClassifier dbc) throws Throwable {
+    protected DBConnection(final DBClassifier dbc) throws ServerExitError {
         this.dbc = dbc;
-        internalQueries = new HashMap<String, PreparedStatement>(7, 0.8f);
+        internalQueries = new HashMap<String, PreparedStatement>(10, 0.8f);
 
         try {
             if (LOG.isDebugEnabled()) {
@@ -99,17 +94,20 @@ public final class DBConnection {
             }
 
             cache = new StatementCache(con);
-        } catch (java.lang.ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
             LOG.error("<LS> ERROR :: " + e.getMessage() + " Driver Not Found", e); // NOI18N
             throw new ServerExitError(" Driver Not Found", e);                     // NOI18N
-        } catch (java.sql.SQLException e) {
+        } catch (final SQLException e) {
             ExceptionHandler.handle(e);
             LOG.error("<LS> ERROR :: could not connect to " + dbc, e);             // NOI18N
             throw new ServerExitError(" could not connect to db", e);              // NOI18N
-        } catch (java.lang.Exception e) {
+        } catch (final Exception e) {
             LOG.error("<LS> ERROR :: " + e.getMessage(), e);                       // NOI18N
             throw new ServerExitError(e);
         }
+
+        isClosed = false;
+        rwLock = new ReentrantReadWriteLock(true);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -181,49 +179,72 @@ public final class DBConnection {
      *
      * @return  the {@link Connection} used by this <code>DBConnection</code>
      */
+    @Override
     public Connection getConnection() {
         return con;
     }
 
     /**
      * DOCUMENT ME!
-     *
-     * @param   descriptor  DOCUMENT ME!
-     * @param   parameters  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  SQLException              DOCUMENT ME!
-     * @throws  IllegalArgumentException  DOCUMENT ME!
      */
-    public ResultSet submitInternalQuery(final String descriptor, final Object... parameters) throws SQLException {
+    public void close() {
         try {
-            return prepareQuery(descriptor, parameters).executeQuery();
-        } catch (final MissingResourceException e) {
-            final String message = "invalid descriptor: " + descriptor; // NOI18N
-            LOG.error(message, e);
-            throw new IllegalArgumentException(message, e);
+            rwLock.writeLock().lock();
+            isClosed = true;
+
+            closeStatements(internalQueries.values().toArray(new PreparedStatement[internalQueries.size()]));
+            closeConnections(con);
+
+            internalQueries.clear();
+        } finally {
+            rwLock.writeLock().unlock();
         }
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   descriptor  DOCUMENT ME!
-     * @param   parameters  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  SQLException              DOCUMENT ME!
-     * @throws  IllegalArgumentException  DOCUMENT ME!
-     */
+    @Override
+    public ResultSet submitInternalQuery(final String descriptor, final Object... parameters) throws SQLException {
+        try {
+            rwLock.readLock().lock();
+            if (isClosed) {
+                final String message = "called operation on an already closed object: " + this; // NOI18N
+                LOG.error(message);
+                throw new SQLException(message, SQL_CODE_ALREADY_CLOSED);
+            }
+
+            // we don't close the statement here as it is cached for further usage
+            final PreparedStatement stmt = prepareQuery(descriptor, parameters);
+
+            // TODO: does't care if there is an open resultset, must be refactored
+            final ResultSet set = stmt.executeQuery();
+
+            return set;
+        } catch (final MissingResourceException e) {
+            final String message = "invalid descriptor: " + descriptor; // NOI18N
+            LOG.error(message, e);
+            throw new SQLException(message, SQL_CODE_INVALID_DESC, e);
+        } finally {
+            rwLock.readLock().unlock();
+        }
+    }
+
+    @Override
     public int submitInternalUpdate(final String descriptor, final Object... parameters) throws SQLException {
         try {
+            rwLock.readLock().lock();
+            if (isClosed) {
+                final String message = "called operation on an already closed object: " + this; // NOI18N
+                LOG.error(message);
+                throw new SQLException(message, SQL_CODE_ALREADY_CLOSED);
+            }
+
+            // we don't close the statement here as it is cached for further usage
             return prepareQuery(descriptor, parameters).executeUpdate();
         } catch (final MissingResourceException e) {
             final String message = "invalid descriptor: " + descriptor; // NOI18N
             LOG.error(message, e);
-            throw new IllegalArgumentException(message, e);
+            throw new SQLException(message, SQL_CODE_INVALID_DESC, e);
+        } finally {
+            rwLock.readLock().unlock();
         }
     }
 
@@ -235,13 +256,13 @@ public final class DBConnection {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  SQLException              DOCUMENT ME!
-     * @throws  IllegalArgumentException  DOCUMENT ME!
+     * @throws  SQLException  DOCUMENT ME!
      */
     private PreparedStatement prepareQuery(final String descriptor, final Object... parameters) throws SQLException {
-        if (!internalQueries.containsKey(descriptor)) {
+        if (!internalQueries.containsKey(descriptor) || internalQueries.get(descriptor).isClosed()) {
             final String stmt = NbBundle.getMessage(DBConnection.class, descriptor);
             final PreparedStatement ps = con.prepareStatement(stmt);
+            ps.setPoolable(true);
             if (parameters.length == ps.getParameterMetaData().getParameterCount()) {
                 internalQueries.put(descriptor, ps);
             } else {
@@ -254,7 +275,7 @@ public final class DBConnection {
                             + ", given param count: "                               // NOI18N
                             + parameters.length;
                 LOG.error(message);
-                throw new IllegalArgumentException(message);
+                throw new SQLException(message, SQL_CODE_INVALID_DESC);
             }
         }
 
@@ -271,48 +292,24 @@ public final class DBConnection {
         return ps;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   descriptor  DOCUMENT ME!
-     * @param   parameters  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public ResultSet submitQuery(final String descriptor, final java.lang.Object[] parameters) {
+    @Override
+    public ResultSet submitQuery(final String descriptor, final Object... parameters) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("submitQuery: " + descriptor); // NOI18N
         }
 
-        try {
-            String sqlStmnt = fetchStatement(descriptor);
-            sqlStmnt = QueryParametrizer.parametrize(sqlStmnt, parameters);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("info :: " + sqlStmnt); // NOI18N
-            }
-
-            return (con.createStatement()).executeQuery(sqlStmnt);
-        } catch (Exception e) {
-            LOG.error(" Error in SubmitQuery()", e); // NOI18N
-            ExceptionHandler.handle(e);
+        String sqlStmnt = fetchStatement(descriptor);
+        sqlStmnt = QueryParametrizer.parametrize(sqlStmnt, parameters);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("info :: " + sqlStmnt); // NOI18N
         }
 
-        return null;
+        // TODO: how to deal with the opened resources
+        return (con.createStatement()).executeQuery(sqlStmnt);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   sqlID       DOCUMENT ME!
-     * @param   parameters  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  java.sql.SQLException  DOCUMENT ME!
-     * @throws  Exception              DOCUMENT ME!
-     */
-    public ResultSet submitQuery(final int sqlID, final java.lang.Object[] parameters) throws java.sql.SQLException,
-        Exception {
+    @Override
+    public ResultSet submitQuery(final int sqlID, final Object... parameters) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("submitQuery: " + sqlID); // NOI18N
         }
@@ -322,29 +319,18 @@ public final class DBConnection {
             LOG.debug("Statement :" + sqlStmnt); // NOI18N
         }
 
-        try {
-            sqlStmnt = QueryParametrizer.parametrize(sqlStmnt, parameters);
-        } catch (Exception e) {
-            LOG.error(e);
-            throw e;
-        }
+        sqlStmnt = QueryParametrizer.parametrize(sqlStmnt, parameters);
+
         if (LOG.isDebugEnabled()) {
             LOG.debug("Statement :" + sqlStmnt); // NOI18N
         }
+
+        // TODO: how to deal with the opened resources
         return (con.createStatement()).executeQuery(sqlStmnt);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   q  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  java.sql.SQLException  DOCUMENT ME!
-     * @throws  Exception              DOCUMENT ME!
-     */
-    public ResultSet submitQuery(final Query q) throws java.sql.SQLException, Exception {
+    @Override
+    public ResultSet submitQuery(final Query q) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("submitQuery: " + q.getKey() + ", batch: " + q.isBatch()); // NOI18N
         }
@@ -358,23 +344,14 @@ public final class DBConnection {
         Sorter.quickSort(params);
 
         if (q.getQueryIdentifier().getName().equals("")) { // NOI18N
-            return submitQuery(q.getQueryIdentifier().getQueryId(), params);
+            return submitQuery(q.getQueryIdentifier().getQueryId(), (Object[])params);
         } else {
-            return submitQuery(q.getQueryIdentifier().getName(), params);
+            return submitQuery(q.getQueryIdentifier().getName(), (Object[])params);
         }
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   q  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  java.sql.SQLException  DOCUMENT ME!
-     * @throws  Exception              DOCUMENT ME!
-     */
-    public int submitUpdate(final Query q) throws java.sql.SQLException, Exception {
+    @Override
+    public int submitUpdate(final Query q) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("submitUpdate: " + q.getKey() + ", batch: " + q.isBatch()); // NOI18N
         }
@@ -392,69 +369,55 @@ public final class DBConnection {
             }
         } else {
             if (q.getQueryIdentifier().getName().equals("")) { // NOI18N
-                return submitUpdate(q.getQueryIdentifier().getQueryId(), params);
+                return submitUpdate(q.getQueryIdentifier().getQueryId(), (Object[])params);
             } else {
-                return submitUpdate(q.getQueryIdentifier().getName(), params);
+                return submitUpdate(q.getQueryIdentifier().getName(), (Object[])params);
             }
         }
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   descriptor  DOCUMENT ME!
-     * @param   parameters  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  java.sql.SQLException  DOCUMENT ME!
-     * @throws  Exception              DOCUMENT ME!
-     */
-    public int submitUpdate(final String descriptor, final java.lang.Object[] parameters) throws java.sql.SQLException,
-        Exception {
+    @Override
+    public int submitUpdate(final String descriptor, final Object... parameters) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("submitUpdate: " + descriptor); // NOI18N
         }
 
-        String sqlStmnt = fetchStatement(descriptor);
+        return internalSubmitUpdate(fetchStatement(descriptor), parameters);
+    }
 
-        try {
-            sqlStmnt = QueryParametrizer.parametrize(sqlStmnt, parameters);
-        } catch (Exception e) {
-            LOG.error(e);
-            throw e;
+    @Override
+    public int submitUpdate(final int sqlID, final Object... parameters) throws SQLException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("submitUpdate: " + sqlID); // NOI18N
         }
 
-        return (con.createStatement()).executeUpdate(sqlStmnt);
+        return internalSubmitUpdate(fetchStatement(sqlID), parameters);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   sqlID       DOCUMENT ME!
+     * @param   statement   DOCUMENT ME!
      * @param   parameters  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  java.sql.SQLException  DOCUMENT ME!
-     * @throws  Exception              DOCUMENT ME!
+     * @throws  SQLException  DOCUMENT ME!
      */
-    public int submitUpdate(final int sqlID, final java.lang.Object[] parameters) throws java.sql.SQLException,
-        Exception {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("submitUpdate: " + sqlID); // NOI18N
-        }
+    private int internalSubmitUpdate(final String statement, final Object... parameters) throws SQLException {
+        final String sqlStmnt = QueryParametrizer.parametrize(statement, parameters);
 
-        String sqlStmnt = fetchStatement(sqlID);
+        int result = 0;
 
+        Statement stmt = null;
         try {
-            sqlStmnt = QueryParametrizer.parametrize(sqlStmnt, parameters);
-        } catch (Exception e) {
-            LOG.error(e);
-            throw e;
+            stmt = con.createStatement();
+            result = stmt.executeUpdate(sqlStmnt);
+        } finally {
+            closeStatements(stmt);
         }
 
-        return (con.createStatement()).executeUpdate(sqlStmnt);
+        return result;
     }
 
     /**
@@ -464,10 +427,9 @@ public final class DBConnection {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  java.sql.SQLException  DOCUMENT ME!
-     * @throws  Exception              DOCUMENT ME!
+     * @throws  SQLException  DOCUMENT ME!
      */
-    public String fetchStatement(final String descriptor) throws java.sql.SQLException, Exception {
+    private String fetchStatement(final String descriptor) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("fetchStatement: " + descriptor); // NOI18N
         }
@@ -486,10 +448,9 @@ public final class DBConnection {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  java.sql.SQLException  DOCUMENT ME!
-     * @throws  Exception              DOCUMENT ME!
+     * @throws  SQLException  DOCUMENT ME!
      */
-    public String fetchStatement(final int sqlID) throws java.sql.SQLException, Exception {
+    private String fetchStatement(final int sqlID) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("fetchStatement: " + sqlID); // NOI18N
         }
@@ -517,10 +478,9 @@ public final class DBConnection {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  java.sql.SQLException  DOCUMENT ME!
-     * @throws  Exception              DOCUMENT ME!
+     * @throws  SQLException  DOCUMENT ME!
      */
-    public ResultSet executeQuery(final Query q) throws java.sql.SQLException, Exception {
+    public ResultSet executeQuery(final Query q) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("executeQuery: " + q.getKey() + ", batch: " + q.isBatch()); // NOI18N
         }
@@ -530,18 +490,16 @@ public final class DBConnection {
         } else {
             String sqlStmnt = q.getStatement();
 
-            try {
-                final Collection tmp = q.getParameterList();
-                final Comparable[] params = (Comparable[])tmp.toArray(new Comparable[tmp.size()]);
-                Sorter.quickSort(params);
-                sqlStmnt = QueryParametrizer.parametrize(sqlStmnt, params);
-            } catch (Exception e) {
-                LOG.error(e);
-                throw e;
-            }
+            final Collection tmp = q.getParameterList();
+            final Comparable[] params = (Comparable[])tmp.toArray(new Comparable[tmp.size()]);
+            Sorter.quickSort(params);
+            sqlStmnt = QueryParametrizer.parametrize(sqlStmnt, params);
+
             if (LOG.isDebugEnabled()) {
                 LOG.debug("INFO executeQuery :: " + sqlStmnt); // NOI18N
             }
+
+            // TODO: how to deal with the opened resources
             return (con.createStatement()).executeQuery(sqlStmnt);
         }
     }
@@ -554,23 +512,16 @@ public final class DBConnection {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  java.sql.SQLException  DOCUMENT ME!
-     * @throws  Exception              DOCUMENT ME!
+     * @throws  SQLException  DOCUMENT ME!
      */
-    public int submitUpdateBatch(final int qid, final java.lang.Object[] parameters) throws java.sql.SQLException,
-        Exception {
+    private int submitUpdateBatch(final int qid, final Object[] parameters) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("submitUpdateBatch: " + qid); // NOI18N
         }
 
         String updateBatch = fetchStatement(qid);
 
-        try {
-            updateBatch = QueryParametrizer.parametrize(updateBatch, parameters);
-        } catch (Exception e) {
-            LOG.error(e);
-            throw e;
-        }
+        updateBatch = QueryParametrizer.parametrize(updateBatch, parameters);
 
         final StringTokenizer tokenizer = new StringTokenizer(updateBatch, ";"); // NOI18N
 
@@ -582,8 +533,14 @@ public final class DBConnection {
 
         int rowsEffected = 0;
 
-        for (int i = 0; i < updates.length; i++) {
-            rowsEffected += (con.createStatement()).executeUpdate(updates[i]);
+        Statement stmt = null;
+        try {
+            stmt = con.createStatement();
+            for (int i = 0; i < updates.length; i++) {
+                rowsEffected += stmt.executeUpdate(updates[i]);
+            }
+        } finally {
+            closeStatements(stmt);
         }
 
         return rowsEffected;
@@ -597,23 +554,16 @@ public final class DBConnection {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  java.sql.SQLException  DOCUMENT ME!
-     * @throws  Exception              DOCUMENT ME!
+     * @throws  SQLException  DOCUMENT ME!
      */
-    public int submitUpdateBatch(final String queryname, final java.lang.Object[] parameters)
-            throws java.sql.SQLException, Exception {
+    private int submitUpdateBatch(final String queryname, final Object[] parameters) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("submitUpdateBatch: " + queryname); // NOI18N
         }
 
         String updateBatch = fetchStatement(queryname);
 
-        try {
-            updateBatch = QueryParametrizer.parametrize(updateBatch, parameters);
-        } catch (Exception e) {
-            LOG.error(e);
-            throw e;
-        }
+        updateBatch = QueryParametrizer.parametrize(updateBatch, parameters);
 
         final StringTokenizer tokenizer = new StringTokenizer(updateBatch, ";"); // NOI18N
 
@@ -625,17 +575,44 @@ public final class DBConnection {
 
         int rowsEffected = 0;
 
-        for (int i = 0; i < updates.length; i++) {
-            rowsEffected += (con.createStatement()).executeUpdate(updates[i]);
+        Statement stmt = null;
+        try {
+            stmt = con.createStatement();
+            for (int i = 0; i < updates.length; i++) {
+                rowsEffected += stmt.executeUpdate(updates[i]);
+            }
+        } finally {
+            closeStatements(stmt);
         }
 
         return rowsEffected;
     }
 
     /**
-     * DOCUMENT ME!
+     * Closes all given {@link Connection}s and logs a warning message if an error occurs while closing. <code>
+     * null</code> objects are ignored.
      *
-     * @param  sets  DOCUMENT ME!
+     * @param  cons  sets the statements to close
+     */
+    public static void closeConnections(final Connection... cons) {
+        if (cons != null) {
+            for (final Connection con : cons) {
+                try {
+                    if (con != null) {
+                        con.close();
+                    }
+                } catch (final SQLException e) {
+                    LOG.warn("could not close connection: " + con, e); // NOI18N
+                }
+            }
+        }
+    }
+
+    /**
+     * Closes all given {@link ResultSet}s and logs a warning message if an error occurs while closing. <code>
+     * null</code> objects are ignored.
+     *
+     * @param  sets  the statements to close
      */
     public static void closeResultSets(final ResultSet... sets) {
         if (sets != null) {
@@ -652,9 +629,10 @@ public final class DBConnection {
     }
 
     /**
-     * DOCUMENT ME!
+     * Closes all given {@link Statement}s and logs a warning message if an error occurs while closing. <code>
+     * null</code> objects are ignored.
      *
-     * @param  stmts  DOCUMENT ME!
+     * @param  stmts  the statements to close
      */
     public static void closeStatements(final Statement... stmts) {
         if (stmts != null) {
@@ -668,5 +646,62 @@ public final class DBConnection {
                 }
             }
         }
+    }
+
+    /**
+     * Calls to this operation will to nothing since retries are not supported.
+     *
+     * @param  noOfRetries  DOCUMENT ME!
+     */
+    @Override
+    public void setRetriesOnError(final int noOfRetries) {
+        // ignore
+    }
+
+    /**
+     * Always returns <code>0</code> as retries are not supported.
+     *
+     * @return  always <code>0</code>
+     */
+    @Override
+    public int getRetriesOnError() {
+        return 0;
+    }
+
+    /**
+     * Simply calls {@link #close()}.
+     *
+     * @throws  ServerExitError  never
+     */
+    @Override
+    public void shutdown() throws ServerExitError {
+        close();
+    }
+
+    /**
+     * Returns the current closed state of the connection.
+     *
+     * @return  true if the connection is closed, false otherwise
+     */
+    public boolean isClosed() {
+        try {
+            rwLock.readLock().lock();
+
+            return isClosed;
+        } finally {
+            rwLock.readLock().unlock();
+        }
+    }
+
+    /**
+     * Simply calls {@link #isClosed()}.
+     *
+     * @return  true if the connection is closed, false otherwise
+     *
+     * @see     #isClosed()
+     */
+    @Override
+    public boolean isDown() {
+        return isClosed();
     }
 }

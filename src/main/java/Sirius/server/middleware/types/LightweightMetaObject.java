@@ -24,7 +24,6 @@ import org.apache.log4j.Logger;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
@@ -196,12 +195,10 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param   anyAttribute  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
+     * @param  anyAttribute  DOCUMENT ME!
      */
     @Override
-    public void addAttribute(final ObjectAttribute anyAttribute) throws Exception {
+    public void addAttribute(final ObjectAttribute anyAttribute) {
         getRealMetaObject().addAttribute(anyAttribute);
     }
 
@@ -223,11 +220,9 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      * @param   ug  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
      */
     @Override
-    public Sirius.server.localserver.object.Object filter(final UserGroup ug) throws Exception {
+    public Sirius.server.localserver.object.Object filter(final UserGroup ug) {
         return getRealMetaObject().filter(ug);
     }
 

@@ -49,7 +49,7 @@ public class ObjectHierarchy {
      */
     public ObjectHierarchy(final DBConnectionPool conPool) throws Exception {
         this.conPool = conPool;
-        final Connection con = conPool.getConnection().getConnection();
+        final Connection con = conPool.getDBConnection().getConnection();
 
         final Statement stmnt = con.createStatement();
         // schl\u00FCssel , vatertabellen name , Atrributname

@@ -7,9 +7,9 @@
 ****************************************************/
 package Sirius.server.localserver.object;
 
+import Sirius.server.AbstractShutdownable;
 import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
-import Sirius.server.Shutdownable;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.sql.DBConnection;
 
@@ -47,26 +47,17 @@ public class TransactionHelper extends Shutdown {
         this.con = dbcon.getConnection();
         workBegun = false;
 
-        addShutdown(new Shutdownable() {
+        addShutdown(new AbstractShutdownable() {
 
                 @Override
-                public void shutdown() throws ServerExitError {
-                    try {
-                        con.close();
-                    } catch (final SQLException ex) {
-                        LOG.warn("could not close connection", ex);
+                protected void internalShutdown() throws ServerExitError {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("shutting down TransactionHelper"); // NOI18N
                     }
+
+                    DBConnection.closeConnections(con);
                 }
             });
-    }
-
-    /**
-     * prohibit usage of standard constructor.
-     *
-     * @throws  UnsupportedOperationException  DOCUMENT ME!
-     */
-    private TransactionHelper() {
-        throw new UnsupportedOperationException("don't use this!"); // NOI18N
     }
 
     //~ Methods ----------------------------------------------------------------

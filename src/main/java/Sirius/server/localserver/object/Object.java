@@ -55,16 +55,14 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
     /**
      * Fügt ein Attribut in die davor vorgesehenen AtrributVectoren ein.<BR>
      *
-     * @param   anyAttribute  Objektattribute
+     * @param  anyAttribute  Objektattribute
      *
-     * @throws  Exception  java.lang.Exception fehler beim hinzufügen
-     *
-     * @see     #longs
-     * @see     #dates
-     * @see     #doubles
-     * @see     #longs
+     * @see    #longs
+     * @see    #dates
+     * @see    #doubles
+     * @see    #longs
      */
-    void addAttribute(ObjectAttribute anyAttribute) throws Exception;
+    void addAttribute(ObjectAttribute anyAttribute);
 
     /**
      * UNUSED.
@@ -84,10 +82,8 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      * @param   ug  Benutzergruppe nach der gefiltert werden soll
      *
      * @return  eine fuer UG massgeschneiderte Version des Objekts
-     *
-     * @throws  Exception  java.lang.Exception Fehler
      */
-    Object filter(UserGroup ug) throws Exception;
+    Object filter(UserGroup ug);
 
     /**
      * creates an Instance of this Object from a string representation.

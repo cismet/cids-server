@@ -7,7 +7,6 @@
 ****************************************************/
 package Sirius.server.sql;
 
-import Sirius.server.localserver.user.UserStoreTest;
 import Sirius.server.property.ServerProperties;
 
 import org.apache.log4j.Logger;
@@ -24,11 +23,19 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import de.cismet.remotetesthelper.RemoteTestHelperService;
+
+import de.cismet.remotetesthelper.ws.rest.RemoteTestHelperClient;
 
 import de.cismet.tools.ScriptRunner;
 
@@ -44,21 +51,25 @@ public class DBConnectionTest {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final transient Logger LOG = Logger.getLogger(
-            DBConnectionTest.class);
-    private static final String TEST = "TEST ";             // NOI18N
+    private static final transient Logger LOG = Logger.getLogger(DBConnectionTest.class);
+    private static final String TEST = "TEST "; // NOI18N
+    private static final String TEST_DB_NAME = "dbconnection_test_db";
+    private static final RemoteTestHelperService service = new RemoteTestHelperClient();
     private static final DBClassifier DB_CLASSIFIER = new DBClassifier(
-            "jdbc:postgresql://kif:5432/cids_reference_db", // NOI18N
-            "postgres",                                     // NOI18N
-            "x",                                            // NOI18N
-            "org.postgresql.Driver");                       // NOI18N
+            "jdbc:postgresql://kif:5432/"
+                    + TEST_DB_NAME,             // NOI18N
+            "postgres",                         // NOI18N
+            "x",                                // NOI18N
+            "org.postgresql.Driver",            // NOI18N
+            5);
 
     //~ Methods ----------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      *
-     * @throws  Throwable  DOCUMENT ME!
+     * @throws  Throwable              DOCUMENT ME!
+     * @throws  IllegalStateException  DOCUMENT ME!
      */
     @BeforeClass
     public static void setUpClass() throws Throwable {
@@ -69,31 +80,50 @@ public class DBConnectionTest {
         p.put("log4j.appender.Remote.locationInfo", "true");
         p.put("log4j.rootLogger", "ALL,Remote");
         PropertyConfigurator.configure(p);
+
+        // drop first in case of cleanup has not been executed before
+        service.dropDatabase(TEST_DB_NAME);
+        if (!Boolean.valueOf(service.initCidsSystem(TEST_DB_NAME))) {
+            throw new IllegalStateException("cannot initilise test db");
+        }
+
         final ServerProperties props = new ServerProperties(DBConnectionTest.class.getResourceAsStream(
-                    "/Sirius/server/localserver/object/runtime.properties")); // NOI18N
+                    "/Sirius/server/sql/runtime.properties"));               // NOI18N
         final DBConnectionPool pool = new DBConnectionPool(props);
-        final ScriptRunner runner = new ScriptRunner(pool.getConnection().getConnection(), false, false);
+        final ScriptRunner runner = new ScriptRunner(pool.getConnection(), true, false);
+        final InputStream configAttrSchemaData = DBConnectionTest.class.getResourceAsStream(
+                "/Sirius/server/sql/cs_config_attr_schema.sql");             // NOI18N
         final InputStream configAttrTestData = DBConnectionTest.class.getResourceAsStream(
-                "/Sirius/server/localserver/user/configAttrTestData.sql");    // NOI18N
+                "/Sirius/server/localserver/user/configAttrTestData.sql");   // NOI18N
         final InputStream historyServerTestData = DBConnectionTest.class.getResourceAsStream(
-                "/Sirius/server/localserver/history/HistoryServerTest.sql");  // NOI18N
+                "/Sirius/server/localserver/history/HistoryServerTest.sql"); // NOI18N
+        final BufferedReader cfgAttrSchemaReader = new BufferedReader(new InputStreamReader(configAttrSchemaData));
         final BufferedReader cfgAttrReader = new BufferedReader(new InputStreamReader(configAttrTestData));
         final BufferedReader historyReader = new BufferedReader(new InputStreamReader(historyServerTestData));
 
         try {
+            runner.runScript(cfgAttrSchemaReader);
             runner.runScript(cfgAttrReader);
             runner.runScript(historyReader);
         } finally {
+            cfgAttrSchemaReader.close();
             cfgAttrReader.close();
             historyReader.close();
         }
+
+        pool.shutdown();
     }
 
     /**
      * DOCUMENT ME!
+     *
+     * @throws  IllegalStateException  DOCUMENT ME!
      */
     @AfterClass
     public static void tearDownClass() {
+        if (!Boolean.valueOf(service.dropDatabase(TEST_DB_NAME))) {
+            throw new IllegalStateException("could not drop test db");
+        }
     }
 
     /**
@@ -122,6 +152,7 @@ public class DBConnectionTest {
     /**
      * DOCUMENT ME!
      */
+    @Ignore
     @Test
     public void testCharToBool() {
         if (LOG.isInfoEnabled()) {
@@ -143,6 +174,7 @@ public class DBConnectionTest {
     /**
      * DOCUMENT ME!
      */
+    @Ignore
     @Test
     public void testStringToBool() {
         if (LOG.isInfoEnabled()) {
@@ -239,7 +271,13 @@ public class DBConnectionTest {
         }
 
         try {
-            set1 = con.submitInternalQuery(DBConnection.DESC_FETCH_HISTORY, 1, 1);
+            final Connection jdbccon = con.getConnection();
+            set1 = jdbccon.createStatement().executeQuery("select id from cs_class where name like 'test2'");
+            set1.next();
+            final int classId = set1.getInt(1);
+            DBConnection.closeResultSets(set1);
+
+            set1 = con.submitInternalQuery(DBConnection.DESC_FETCH_HISTORY, classId, 1);
             if (set1.next() && set1.next() && set1.next()) {
                 if (set1.next()) {
                     fail("too many result rows");
@@ -250,6 +288,56 @@ public class DBConnectionTest {
         } finally {
             DBConnection.closeResultSets(set1);
         }
+
+        con.close();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  Throwable              DOCUMENT ME!
+     * @throws  RuntimeException       DOCUMENT ME!
+     * @throws  IllegalStateException  DOCUMENT ME!
+     */
+    @Test
+    public void testSubmitInternalQueryStresstest() throws Throwable {
+        if (LOG.isInfoEnabled()) {
+            LOG.info(TEST + getCurrentMethodName());
+        }
+
+        final DBConnectionPool pool = new DBConnectionPool(DB_CLASSIFIER);
+
+        final ExecutorService executor = Executors.newCachedThreadPool();
+
+        for (int i = 0; i < 1000; ++i) {
+            executor.execute(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        ResultSet set1 = null;
+                        try {
+                            set1 = pool.submitInternalQuery(DBConnection.DESC_VERIFY_USER_PW, "admin", "cismet");
+                            if (set1.next()) {
+                                assertEquals("not exactly one user found", 1, set1.getInt(1));
+                            } else {
+                                fail("illegal resultset state");
+                            }
+                            LOG.debug("finished: " + Thread.currentThread());
+                        } catch (final Exception e) {
+                            LOG.error("could not execute", e);
+                            fail("could not execute: " + e);
+                        } finally {
+                            DBConnection.closeResultSets(set1);
+                        }
+                    }
+                });
+        }
+
+        executor.shutdown();
+        if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("could not terminate executor, tasks not finished yet");
+        }
+        pool.shutdown();
     }
 
     /**
@@ -257,6 +345,7 @@ public class DBConnectionTest {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
+    @Ignore
     @Test
     public void testSubmitInternalUpdateOK() throws Throwable {
         if (LOG.isInfoEnabled()) {
@@ -312,6 +401,8 @@ public class DBConnectionTest {
             DBConnection.closeResultSets(rs);
             DBConnection.closeStatements(ps);
         }
+
+        con.close();
     }
 
     /**
@@ -319,6 +410,7 @@ public class DBConnectionTest {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
+    @Ignore
     @Test(expected = IllegalArgumentException.class)
     public void testSubmitInternalQueryInvalidDescriptor() throws Throwable {
         if (LOG.isInfoEnabled()) {
@@ -330,6 +422,7 @@ public class DBConnectionTest {
             set1 = con.submitInternalQuery("x", "admin", "sb");
         } finally {
             DBConnection.closeResultSets(set1);
+            con.close();
         }
     }
 
@@ -338,6 +431,7 @@ public class DBConnectionTest {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
+    @Ignore
     @Test(expected = IllegalArgumentException.class)
     public void testSubmitInternalQueryTooManyParams() throws Throwable {
         if (LOG.isInfoEnabled()) {
@@ -353,6 +447,7 @@ public class DBConnectionTest {
                     "sb");
         } finally {
             DBConnection.closeResultSets(set1);
+            con.close();
         }
     }
 
@@ -361,6 +456,7 @@ public class DBConnectionTest {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
+    @Ignore
     @Test(expected = IllegalArgumentException.class)
     public void testSubmitInternalQueryTooLessParams() throws Throwable {
         if (LOG.isInfoEnabled()) {
@@ -374,6 +470,7 @@ public class DBConnectionTest {
                     "admin");
         } finally {
             DBConnection.closeResultSets(set1);
+            con.close();
         }
     }
 

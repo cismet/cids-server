@@ -5,20 +5,17 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * ServerExitError.java
- *
- * Created on 1. M\u00E4rz 2004, 14:46
- */
 package Sirius.server;
 
+import java.io.Serializable;
+
 /**
- * Will be thrown when a server process (registry,domainserver,proxy terminates.
+ * Will be thrown when a server reaches a non-recoverable state.
  *
  * @author   schlob
  * @version  $Revision$, $Date$
  */
-public class ServerExitError extends java.lang.Throwable implements java.io.Serializable {
+public class ServerExitError extends RuntimeException implements Serializable {
 
     //~ Constructors -----------------------------------------------------------
 

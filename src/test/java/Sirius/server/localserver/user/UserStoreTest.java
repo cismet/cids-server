@@ -7,7 +7,8 @@
 ****************************************************/
 package Sirius.server.localserver.user;
 
-import de.cismet.tools.ScriptRunner;
+import de.cismet.remotetesthelper.RemoteTestHelperService;
+import de.cismet.remotetesthelper.ws.rest.RemoteTestHelperClient;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
 import Sirius.server.property.ServerProperties;
@@ -29,6 +30,8 @@ import java.io.InputStreamReader;
 
 import java.util.Properties;
 
+import de.cismet.tools.ScriptRunner;
+
 import static org.junit.Assert.*;
 
 /**
@@ -44,6 +47,8 @@ public class UserStoreTest {
     private static final transient Logger LOG = Logger.getLogger(
             UserStoreTest.class);
     private static final String TEST = "TEST ";
+    private static final String TEST_DB_NAME = "user_store_test_db";
+    private static final RemoteTestHelperService service = new RemoteTestHelperClient();
 
     private static ServerProperties props;
     private static DBConnectionPool pool;
@@ -64,16 +69,26 @@ public class UserStoreTest {
         p.put("log4j.appender.Remote.locationInfo", "true");                   // NOI18N
         p.put("log4j.rootLogger", "ALL,Remote");                               // NOI18N
         PropertyConfigurator.configure(p);
+
+        if (!Boolean.valueOf(service.initCidsSystem(TEST_DB_NAME))) {
+            throw new IllegalStateException("cannot initilise test db");
+        }
+
         props = new ServerProperties(UserStoreTest.class.getResourceAsStream(
-                    "/Sirius/server/localserver/object/runtime.properties"));  // NOI18N
+                    "/Sirius/server/localserver/user/runtime.properties"));  // NOI18N
         pool = new DBConnectionPool(props);
-        final ScriptRunner runner = new ScriptRunner(pool.getConnection().getConnection(), false, true);
+        final ScriptRunner runner = new ScriptRunner(pool.getDBConnection().getConnection(), true, false);
+        final InputStream schemaStream = UserStoreTest.class.getResourceAsStream(
+                "/Sirius/server/sql/cs_config_attr_schema.sql");               // NOI18N
         final InputStream scriptStream = UserStoreTest.class.getResourceAsStream(
                 "/Sirius/server/localserver/user/configAttrTestData.sql");     // NOI18N
+        final BufferedReader schemaReader = new BufferedReader(new InputStreamReader(schemaStream));
         final BufferedReader scriptReader = new BufferedReader(new InputStreamReader(scriptStream));
         try {
+            runner.runScript(schemaReader);
             runner.runScript(scriptReader);
         } finally {
+            schemaReader.close();
             scriptReader.close();
         }
     }
@@ -86,6 +101,10 @@ public class UserStoreTest {
     @AfterClass
     public static void tearDownClass() throws Throwable {
         pool.shutdown();
+
+        if (!Boolean.valueOf(service.dropDatabase(TEST_DB_NAME))) {
+            throw new IllegalStateException("could not drop test db");
+        }
     }
 
     /**

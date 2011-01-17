@@ -71,10 +71,8 @@ public class ClassMap extends HashMap {
      * @param   key  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
      */
-    public Class getClass(final int key) throws Exception {
+    public Class getClass(final int key) {
         final Integer Key = new Integer(key); // map accepts objects only
         if (super.containsKey(Key)) {
             final java.lang.Object candidate = super.get(Key);

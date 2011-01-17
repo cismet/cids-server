@@ -25,7 +25,7 @@ import java.util.Set;
  * @author   martin.scholl@cismet.de
  * @version  $Revision$, $Date$
  */
-public abstract class Shutdown implements Shutdownable, Serializable {
+public abstract class Shutdown extends AbstractShutdownable implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -40,7 +40,6 @@ public abstract class Shutdown implements Shutdownable, Serializable {
     //~ Instance fields --------------------------------------------------------
 
     private final Map<Integer, Set<Shutdownable>> shutdowns;
-    private boolean down;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -49,7 +48,6 @@ public abstract class Shutdown implements Shutdownable, Serializable {
      */
     protected Shutdown() {
         shutdowns = new HashMap<Integer, Set<Shutdownable>>();
-        down = false;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -81,13 +79,7 @@ public abstract class Shutdown implements Shutdownable, Serializable {
     }
 
     @Override
-    public final synchronized void shutdown() throws ServerExitError {
-        if (down) {
-            return;
-        }
-
-        down = true;
-
+    protected void internalShutdown() throws ServerExitError {
         addShutdownableFields();
 
         final Integer[] priorities = shutdowns.keySet().toArray(new Integer[shutdowns.size()]);
@@ -95,20 +87,15 @@ public abstract class Shutdown implements Shutdownable, Serializable {
 
         for (final Integer priority : priorities) {
             for (final Shutdownable shutdownable : shutdowns.get(priority)) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("shutting down: " + shutdownable);
+                }
+
                 shutdownable.shutdown();
             }
         }
 
         shutdowns.clear();
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public final synchronized boolean isDown() {
-        return down;
     }
 
     /**
@@ -127,7 +114,7 @@ public abstract class Shutdown implements Shutdownable, Serializable {
      * @param  sd        DOCUMENT ME!
      */
     protected final synchronized void addShutdown(final int priority, final Shutdownable sd) {
-        if ((sd == null) || isDown() || sd.equals(this)) {
+        if ((sd == null) || sd.isDown() || sd.equals(this)) {
             return;
         }
 

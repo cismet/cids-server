@@ -805,7 +805,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public ArrayList<ArrayList> performCustomSearch(final String query) throws RemoteException {
         try {
-            final Statement s = getConnectionPool().getConnection().getConnection().createStatement();
+            final Statement s = getConnectionPool().getDBConnection().getConnection().createStatement();
             final ResultSet rs = s.executeQuery(query);
             final ArrayList<ArrayList> result = new ArrayList<ArrayList>();
             while (rs.next()) {
@@ -1125,7 +1125,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public HistoryObject[] getHistory(final int classId, final int objectId, final User user, final int elements)
             throws RemoteException {
         try {
-            return historyServer.getHistory(classId, objectId, user.getUserGroup(), elements);
+            return historyServer.getHistory(classId, objectId, user, elements);
         } catch (final HistoryException e) {
             final String message = "could not retrieve history: user: " + user + " || classid: " + classId // NOI18N
                         + "|| objectId: " + objectId + " || elements: " + elements;                        // NOI18N

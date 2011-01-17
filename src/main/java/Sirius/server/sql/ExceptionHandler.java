@@ -11,7 +11,10 @@
  * Created on 13. November 2003, 20:16
  */
 package Sirius.server.sql;
-import java.sql.*;
+
+import org.apache.log4j.Logger;
+
+import java.sql.SQLException;
 
 /**
  * DOCUMENT ME!
@@ -23,8 +26,7 @@ public abstract class ExceptionHandler {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(
-            ExceptionHandler.class);
+    private static final transient Logger LOG = Logger.getLogger(ExceptionHandler.class);
 
     //~ Methods ----------------------------------------------------------------
 
@@ -36,21 +38,19 @@ public abstract class ExceptionHandler {
      * @return  DOCUMENT ME!
      */
     public static Throwable handle(final Throwable t) {
-        String message = ""; // NOI18N
+        final StringBuilder sb = new StringBuilder();
 
         if (t instanceof SQLException) {
             final SQLException e = (SQLException)t;
 
             do {
-                message += (e.toString());
-                message += ("\nSQL-State: " + e.getSQLState());   // NOI18N
-                message += ("\nError-Code :" + e.getErrorCode()); // NOI18N
+                sb.append(e.toString());
+                sb.append("\nSQL-State: ").append(e.getSQLState());   // NOI18N
+                sb.append("\nError-Code :").append(e.getErrorCode()); // NOI18N
             } while (e.getNextException() != null);
         }
 
-        logger.error(message, t);
-
-        t.printStackTrace();
+        LOG.error(sb.toString(), t);
 
         return t;
     }

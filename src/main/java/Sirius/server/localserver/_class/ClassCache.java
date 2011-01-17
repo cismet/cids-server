@@ -7,9 +7,9 @@
 ****************************************************/
 package Sirius.server.localserver._class;
 
+import Sirius.server.AbstractShutdownable;
 import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
-import Sirius.server.Shutdownable;
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.newuser.UserGroup;
@@ -86,7 +86,7 @@ public class ClassCache extends Shutdown {
 
         classAttribs = new HashMap(200);
 
-        final DBConnection con = conPool.getConnection();
+        final DBConnection con = conPool.getDBConnection();
         try {
             final ResultSet classTable = con.submitQuery("get_all_classes", new Object[0]); // getAllClasses //NOI18N
 
@@ -191,10 +191,14 @@ public class ClassCache extends Shutdown {
 
         addMemberInfos(conPool);
 
-        addShutdown(new Shutdownable() {
+        addShutdown(new AbstractShutdownable() {
 
                 @Override
-                public void shutdown() throws ServerExitError {
+                protected void internalShutdown() throws ServerExitError {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("shutting down ClassCache"); // NOI18N
+                    }
+
                     classes.clear();
                     classesByTableName.clear();
                     classAttribs.clear();
@@ -220,10 +224,8 @@ public class ClassCache extends Shutdown {
      * @param   id  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
      */
-    public final Class getClass(final int id) throws Exception {
+    public final Class getClass(final int id) {
         return classes.getClass(id);
     }
 
@@ -256,10 +258,8 @@ public class ClassCache extends Shutdown {
      * @param   id  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
      */
-    public final Class getClass(final UserGroup ug, final int id) throws Exception {
+    public final Class getClass(final UserGroup ug, final int id) {
         final Class c = classes.getClass(id);
 
         if ((c != null) && c.getPermissions().hasPermission(ug.getKey(), PermissionHolder.READPERMISSION)) {
@@ -304,10 +304,8 @@ public class ClassCache extends Shutdown {
      * @param   ug  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
      */
-    public final List getAllClasses(final UserGroup ug) throws Exception {
+    public final List getAllClasses(final UserGroup ug) {
         final List all = getAllClasses();
         final List cs = new ArrayList(all.size());
 
@@ -327,7 +325,7 @@ public class ClassCache extends Shutdown {
      * @param  conPool  DOCUMENT ME!
      */
     private void addAttributes(final DBConnectionPool conPool) {
-        final DBConnection con = conPool.getConnection();
+        final DBConnection con = conPool.getDBConnection();
         try {
             final ResultSet attribTable = con.submitQuery("get_all_class_attributes", new Object[0]); // NOI18N
 
@@ -366,7 +364,7 @@ public class ClassCache extends Shutdown {
      * @param  conPool  DOCUMENT ME!
      */
     private void addMemberInfos(final DBConnectionPool conPool) {
-        final DBConnection con = conPool.getConnection();
+        final DBConnection con = conPool.getDBConnection();
 
         final HashMap<Integer, HashMap<String, String>> classfieldtypes =
             new HashMap<Integer, HashMap<String, String>>();
@@ -568,7 +566,7 @@ public class ClassCache extends Shutdown {
             separator = "\\"; // NOI18N
         }
 
-        final DBConnection con = conPool.getConnection();
+        final DBConnection con = conPool.getDBConnection();
         try {
             final ResultSet imgTable = con.submitQuery("get_all_images", new Object[0]); // NOI18N
 
@@ -590,7 +588,7 @@ public class ClassCache extends Shutdown {
      * @param  conPool  DOCUMENT ME!
      */
     private void addClassPermissions(final DBConnectionPool conPool) {
-        final DBConnection con = conPool.getConnection();
+        final DBConnection con = conPool.getDBConnection();
         try {
             final ResultSet permTable = con.submitQuery("get_all_class_permissions", new Object[0]); // NOI18N
 
@@ -610,8 +608,14 @@ public class ClassCache extends Shutdown {
                     LOG.debug("==permId set ======! " + permId); // NOI18N
                 }
 
-                classes.getClass(permTable.getInt("class_id")) // NOI18N
-                .getPermissions().addPermission(new UserGroup(ug_id, ug_name, lsHome), new Permission(permId, permKey));
+                final Class clazz = classes.getClass(permTable.getInt("class_id"));                    // NOI18N
+                if (clazz == null) {
+                    LOG.warn("illegal class_id in cs_ug_class_perm: " + permTable.getInt("class_id")); // NOI18N
+                } else {
+                    final UserGroup ug = new UserGroup(ug_id, ug_name, lsHome);
+                    final Permission perm = new Permission(permId, permKey);
+                    clazz.getPermissions().addPermission(ug, perm);
+                }
             }
 
             permTable.close();

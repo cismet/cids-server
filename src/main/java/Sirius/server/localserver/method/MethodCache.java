@@ -7,9 +7,9 @@
 ****************************************************/
 package Sirius.server.localserver.method;
 
+import Sirius.server.AbstractShutdownable;
 import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
-import Sirius.server.Shutdownable;
 import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.permission.PermissionHolder;
 import Sirius.server.property.ServerProperties;
@@ -55,7 +55,7 @@ public final class MethodCache extends Shutdown {
 
         methods = new MethodMap(50, 0.7f); // allocation of the hashtable
 
-        final DBConnection con = conPool.getConnection();
+        final DBConnection con = conPool.getDBConnection();
         try {
             final ResultSet methodTable = con.submitQuery("get_all_methods", new Object[0]); // NOI18N
 
@@ -86,10 +86,14 @@ public final class MethodCache extends Shutdown {
 
             addClassKeys(conPool);
 
-            addShutdown(new Shutdownable() {
+            addShutdown(new AbstractShutdownable() {
 
                     @Override
-                    public void shutdown() throws ServerExitError {
+                    protected void internalShutdown() throws ServerExitError {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("shutting down MethodCache"); // NOI18N
+                        }
+
                         methods.clear();
                         methodArray.clear();
                     }
@@ -109,7 +113,7 @@ public final class MethodCache extends Shutdown {
      */
     private void addMethodPermissions(final DBConnectionPool conPool) {
         try {
-            final DBConnection con = conPool.getConnection();
+            final DBConnection con = conPool.getDBConnection();
 
             final ResultSet permTable = con.submitQuery("get_all_method_permissions", new Object[0]); // NOI18N
 
@@ -189,7 +193,7 @@ public final class MethodCache extends Shutdown {
      */
     public void addClassKeys(final DBConnectionPool conPool) {
         try {
-            final DBConnection con = conPool.getConnection();
+            final DBConnection con = conPool.getDBConnection();
 
             final String sql =
                 "select c.id as c_id , m.plugin_id as p_id,m.method_id as m_id  from cs_class as c, cs_method as m, cs_method_class_assoc as assoc where c.id=assoc.class_id and m.id = assoc.method_id"; // NOI18N

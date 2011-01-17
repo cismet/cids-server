@@ -54,12 +54,10 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     /**
      * constructs a metaObject out of a (server) object. mainly adds the domain infromation
      *
-     * @param   o       "server" object
-     * @param   domain  domain
-     *
-     * @throws  Exception  java.lang.Exception error
+     * @param  o       "server" object
+     * @param  domain  domain
      */
-    public DefaultMetaObject(final Sirius.server.localserver.object.Object o, final String domain) throws Exception {
+    public DefaultMetaObject(final Sirius.server.localserver.object.Object o, final String domain) {
         // zum Testen einfach rekursives ersetzen
         super(o);
         this.domain = domain;

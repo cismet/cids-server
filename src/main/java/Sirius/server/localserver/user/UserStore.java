@@ -7,9 +7,9 @@
 ****************************************************/
 package Sirius.server.localserver.user;
 
+import Sirius.server.AbstractShutdownable;
 import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
-import Sirius.server.Shutdownable;
 import Sirius.server.newuser.Membership;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
@@ -69,10 +69,8 @@ public final class UserStore extends Shutdown {
         memberships = new Vector(100, 100);
         // membershipHash = new Hashtable(101);
 
-        final DBConnection con = conPool.getConnection();
-
         try {
-            final ResultSet userTable = con.submitQuery("get_all_users", new Object[0]); // NOI18N
+            final ResultSet userTable = conPool.submitQuery("get_all_users", new Object[0]); // NOI18N
 
             // --------------------load users--------------------------------------------------
 
@@ -98,7 +96,7 @@ public final class UserStore extends Shutdown {
 
             // --------------------load userGroups--------------------------------------------------
 
-            final ResultSet userGroupTable = con.submitQuery("get_all_usergroups", new Object[0]); // NOI18N
+            final ResultSet userGroupTable = conPool.submitQuery("get_all_usergroups", new Object[0]); // NOI18N
 
             while (userGroupTable.next()) {
                 try {
@@ -121,7 +119,7 @@ public final class UserStore extends Shutdown {
 
             // --------------------load memberships--------------------------------------------------
 
-            final ResultSet memberTable = con.submitQuery("get_all_memberships", new Object[0]); // NOI18N
+            final ResultSet memberTable = conPool.submitQuery("get_all_memberships", new Object[0]); // NOI18N
 
             while (memberTable.next()) {
                 try {
@@ -154,20 +152,20 @@ public final class UserStore extends Shutdown {
             // prepare statement for validate user (called very often) :-)
             final String valUser =
                 "select count(*) from cs_usr as u ,cs_ug as ug ,cs_ug_membership as m where u.id=m.usr_id and  ug.id = m.ug_id and trim(login_name) = ? and trim(ug.name) = ?"; // NOI18N
-            validateUser = con.getConnection().prepareStatement(valUser);
+            validateUser = conPool.getConnection().prepareStatement(valUser);
 
-            addShutdown(new Shutdownable() {
+            addShutdown(new AbstractShutdownable() {
 
                     @Override
-                    public void shutdown() throws ServerExitError {
+                    protected void internalShutdown() throws ServerExitError {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("shutting down UserStore"); // NOI18N
+                        }
+
                         users.clear();
                         userGroups.clear();
                         memberships.clear();
-                        try {
-                            validateUser.close();
-                        } catch (final SQLException ex) {
-                            LOG.warn("could not close validate user statement", ex); // NOI18N
-                        }
+                        DBConnection.closeStatements(validateUser);
                     }
                 });
         } catch (java.lang.Exception e) {
@@ -218,15 +216,13 @@ public final class UserStore extends Shutdown {
      */
     public boolean changePassword(final User user, final String oldPassword, final String newPassword)
             throws Exception {
-        final DBConnection con = conPool.getConnection();
-
         final java.lang.Object[] params = new java.lang.Object[3];
 
         params[0] = newPassword;
         params[1] = user.getName().toLowerCase();
         params[2] = oldPassword;
 
-        if (con.submitUpdate("change_user_password", params) > 0) { // NOI18N
+        if (conPool.submitUpdate("change_user_password", params) > 0) { // NOI18N
             return true;
         } else {
             return false;
@@ -257,11 +253,10 @@ public final class UserStore extends Shutdown {
      * @throws  SQLException  DOCUMENT ME!
      */
     public boolean validateUserPassword(final User user, final String password) throws SQLException {
-        final DBConnection con = conPool.getConnection();
         ResultSet result = null;
         try {
             // TODO: should username and password be trimmed?
-            result = con.submitInternalQuery(
+            result = conPool.submitInternalQuery(
                     DBConnection.DESC_VERIFY_USER_PW,
                     user.getName().trim().toLowerCase(),
                     password.trim().toLowerCase());
@@ -291,11 +286,10 @@ public final class UserStore extends Shutdown {
             return null;
         }
 
-        final DBConnection con = conPool.getConnection();
         ResultSet keyIdSet = null;
         int keyId = -1;
         try {
-            keyIdSet = con.submitInternalQuery(DBConnection.DESC_FETCH_CONFIG_ATTR_KEY_ID, key);
+            keyIdSet = conPool.submitInternalQuery(DBConnection.DESC_FETCH_CONFIG_ATTR_KEY_ID, key);
             if (keyIdSet.next()) {
                 keyId = keyIdSet.getInt(1);
             } else {
@@ -321,7 +315,7 @@ public final class UserStore extends Shutdown {
                 domain = "LOCAL"; // NOI18N
             }
 
-            domainIdSet = con.submitInternalQuery(DBConnection.DESC_FETCH_DOMAIN_ID_FROM_DOMAIN_STRING, domain);
+            domainIdSet = conPool.submitInternalQuery(DBConnection.DESC_FETCH_DOMAIN_ID_FROM_DOMAIN_STRING, domain);
 
             final int domainId;
             if (domainIdSet.next()) {
@@ -331,7 +325,7 @@ public final class UserStore extends Shutdown {
             }
 
             final String value;
-            userValueSet = con.submitInternalQuery(
+            userValueSet = conPool.submitInternalQuery(
                     DBConnection.DESC_FETCH_CONFIG_ATTR_USER_VALUE,
                     user.getId(),
                     user.getUserGroup().getId(),
@@ -340,7 +334,7 @@ public final class UserStore extends Shutdown {
             if (userValueSet.next()) {
                 value = userValueSet.getString(1);
             } else {
-                ugValueSet = con.submitInternalQuery(
+                ugValueSet = conPool.submitInternalQuery(
                         DBConnection.DESC_FETCH_CONFIG_ATTR_UG_VALUE,
                         user.getUserGroup().getId(),
                         domainId,
@@ -348,7 +342,7 @@ public final class UserStore extends Shutdown {
                 if (ugValueSet.next()) {
                     value = ugValueSet.getString(1);
                 } else {
-                    domainValueSet = con.submitInternalQuery(
+                    domainValueSet = conPool.submitInternalQuery(
                             DBConnection.DESC_FETCH_CONFIG_ATTR_DOMAIN_VALUE,
                             domainId,
                             keyId);

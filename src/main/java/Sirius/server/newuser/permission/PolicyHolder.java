@@ -11,11 +11,13 @@
  */
 package Sirius.server.newuser.permission;
 
+import Sirius.server.AbstractShutdownable;
 import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
-import Sirius.server.Shutdownable;
 import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DBConnectionPool;
+
+import org.apache.log4j.Logger;
 
 import java.io.Serializable;
 
@@ -32,9 +34,11 @@ import java.util.Map;
  */
 public class PolicyHolder extends Shutdown implements Serializable {
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
+    private static final transient Logger LOG = Logger.getLogger(PolicyHolder.class);
+
+    //~ Instance fields --------------------------------------------------------
 
     private Map<String, Map<Permission, Boolean>> policyHolder = new HashMap<String, Map<Permission, Boolean>>();
     private Map<Integer, String> idMapper = new HashMap<Integer, String>();
@@ -50,7 +54,7 @@ public class PolicyHolder extends Shutdown implements Serializable {
      * @throws  ServerExitError  DOCUMENT ME!
      */
     public PolicyHolder(final DBConnectionPool conPool) throws ServerExitError {
-        final DBConnection con = conPool.getConnection();
+        final DBConnection con = conPool.getDBConnection();
         try {
             final ResultSet serverPolicies = con.getConnection()
                         .createStatement()
@@ -69,7 +73,7 @@ public class PolicyHolder extends Shutdown implements Serializable {
                             + "cs_policy_rule.permission= cs_permission.id " // NOI18N
                             + "and cs_policy_rule.policy= cs_policy.id ");   // NOI18N
             if (serverPolicies == null) {
-                log.error(
+                LOG.error(
                     "<LS> ERROR :: Serverpolicies could not be loaded. Fatal Error. Program exits"); // NOI18N
                 throw new ServerExitError(
                     "Serverpolicies could not be loaded. Fatal Error. Program exits"); // NOI18N
@@ -91,12 +95,16 @@ public class PolicyHolder extends Shutdown implements Serializable {
                 idReverseMapper.put(policyName, policyId);
             }
 
-            log.info("Serverpolicies: " + policyHolder); // NOI18N
+            LOG.info("Serverpolicies: " + policyHolder); // NOI18N
 
-            addShutdown(new Shutdownable() {
+            addShutdown(new AbstractShutdownable() {
 
                     @Override
-                    public void shutdown() throws ServerExitError {
+                    protected void internalShutdown() throws ServerExitError {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("shutting down PolicyHolder"); // NOI18N
+                        }
+
                         policyHolder.clear();
                         idMapper.clear();
                         idReverseMapper.clear();
@@ -104,7 +112,7 @@ public class PolicyHolder extends Shutdown implements Serializable {
                 });
         } catch (Exception e) {
             // Safetyfirst
-            log.error("Error while analysing server policies", e);                 // NOI18N
+            LOG.error("Error while analysing server policies", e);                 // NOI18N
             throw new ServerExitError("Error while analysing server policies", e); // NOI18N
         }
     }

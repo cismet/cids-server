@@ -5,34 +5,40 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * StatementCache.java
- *
- * Created on 22. November 2003, 09:54
- */
 package Sirius.server.sql;
-import java.sql.*;
 
-import java.util.*;
+import org.apache.log4j.Logger;
 
-import de.cismet.tools.collections.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * DOCUMENT ME!
  *
  * @author   schlob
+ * @author   mscholl
  * @version  $Revision$, $Date$
  */
+
+// TODO: the cache should be a singleton or at least an instance that is not initialised for every connection that is
+// created, as query support may be discontinued in the near future, the refactoring may become redundant
 public class StatementCache {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final transient Logger LOG = Logger.getLogger(StatementCache.class);
 
     //~ Instance fields --------------------------------------------------------
 
     /** contains all cached objects. */
-    protected StatementMap statements;                                       // holds Statements referenced by their IDs
-    protected HashMap<java.lang.String, java.lang.Integer> nameAssociatesID; // holds ids of statements referenced by
-                                                                             // statement names
-
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
+    private Map<Integer, SystemStatement> statements; // holds Statements referenced by their IDs
+    private Map<String, Integer> nameAssociatesID;    // holds ids of statements referenced by statement names
 
     //~ Constructors -----------------------------------------------------------
 
@@ -42,100 +48,130 @@ public class StatementCache {
      * @param  con  DOCUMENT ME!
      */
     StatementCache(final Connection con) {
-        statements = new StatementMap(50);                               // allocation of the hashtable
-        nameAssociatesID = new HashMap();
-        if (logger.isDebugEnabled()) {
-            logger.debug("before load Queries");                         // NOI18N
+        statements = new HashMap<Integer, SystemStatement>(30);
+        nameAssociatesID = new HashMap<String, Integer>();
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("before load Queries");                            // NOI18N
         }
         try {
             final String queriesThere = "select count(*) from cs_query"; // NOI18N
 
-            final String queryStmnt = "SELECT * from cs_query"; // "SELECT * from cs_query q,cs_java_class c where
-                                                                // //NOI18N result = c.id";
+            final String queryStmnt = "SELECT * from cs_query"; // NOI18N
 
             final String paramStmnt = "SELECT * from cs_query_parameter"; // NOI18N
 
-            final ResultSet queryTest = (con.createStatement()).executeQuery(queriesThere);
-            int queryNo = 0;
+            Statement stmt = null;
+            ResultSet queryTest = null;
 
-            if (queryTest.next()) {
-                queryNo = queryTest.getInt(1);
+            int queryNo = 0;
+            try {
+                stmt = con.createStatement();
+                queryTest = stmt.executeQuery(queriesThere);
+                queryNo = 0;
+
+                if (queryTest.next()) {
+                    queryNo = queryTest.getInt(1);
+                }
+            } finally {
+                DBConnection.closeResultSets(queryTest);
+                DBConnection.closeStatements(stmt);
             }
 
             if (queryNo == 0) {
-                logger.error("<LS> ERROR :: no system statemnts in cs_query ");       // NOI18N
-                throw new Exception("<LS> ERROR :: no system statemnts in cs_query"); // NOI18N
+                final String message = "<LS> ERROR :: no system statemnts in cs_query"; // NOI18N
+                LOG.error(message);
+                throw new IllegalStateException(message);
             }
 
-            final ResultSet stmntTable = (con.createStatement()).executeQuery(queryStmnt);
+            stmt = null;
+            ResultSet stmntTable = null;
 
-            while (stmntTable.next())                             // add all objects to the hashtable
-            {
-                final SystemStatement tmp = new SystemStatement(
-                        stmntTable.getBoolean("is_root"),         // NOI18N
-                        stmntTable.getInt("id"),                  // NOI18N
-                        stmntTable.getString("name").trim(),      // NOI18N
-                        stmntTable.getBoolean("is_update"),       // NOI18N
-                        stmntTable.getBoolean("is_batch"),        // NOI18N
-                        stmntTable.getInt("result"),              // NOI18N
-                        stmntTable.getString("statement").trim(), // NOI18N
-                        stmntTable.getString("descr"));           // NOI18N
-                boolean conjunction = false;
-                tmp.setUnion(stmntTable.getBoolean("is_union"));  // NOI18N
-                try {
-                    // logger.debug("conjunction vom Typ "+stmntTable.getObject("conjunction").getClass());
+            try {
+                stmt = con.createStatement();
+                stmntTable = stmt.executeQuery(queryStmnt);
+                while (stmntTable.next())                             // add all objects to the hashtable
+                {
+                    final SystemStatement tmp = new SystemStatement(
+                            stmntTable.getBoolean("is_root"),         // NOI18N
+                            stmntTable.getInt("id"),                  // NOI18N
+                            stmntTable.getString("name").trim(),      // NOI18N
+                            stmntTable.getBoolean("is_update"),       // NOI18N
+                            stmntTable.getBoolean("is_batch"),        // NOI18N
+                            stmntTable.getInt("result"),              // NOI18N
+                            stmntTable.getString("statement").trim(), // NOI18N
+                            stmntTable.getString("descr"));           // NOI18N
+                    boolean conjunction = false;
+                    tmp.setUnion(stmntTable.getBoolean("is_union"));  // NOI18N
+                    try {
+                        // logger.debug("conjunction vom Typ "+stmntTable.getObject("conjunction").getClass());
 
-                    conjunction = stmntTable.getBoolean("conjunction");                                   // getBoolean buggy??//NOI18N
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("conjunction before the setting" + conjunction);                     // NOI18N
+                        conjunction = stmntTable.getBoolean("conjunction");                                // getBoolean buggy??//NOI18N
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("conjunction before the setting" + conjunction);                     // NOI18N
+                        }
+                        tmp.setConjunction(conjunction);
+                    } catch (final SQLException ex) {
+                        LOG.error("is_conjunction not supported! Please update your  query schema!!", ex); // NOI18N
+                        tmp.setConjunction(false);                                                         // standardverhalten
                     }
-                    tmp.setConjunction(conjunction);
-                } catch (SQLException ex) {
-                    logger.error("is_conjunction not supported! Please update your  query schema!!", ex); // NOI18N
-                    tmp.setConjunction(false);                                                            // standardverhalten
-                }
-                try {
-                    tmp.setSearch(stmntTable.getBoolean("is_search"));                                    // NOI18N
-                } catch (SQLException ex) {
-                    logger.error("is_search is not available -> update of the meta database", ex);        // NOI18N
-                }
+                    try {
+                        tmp.setSearch(stmntTable.getBoolean("is_search"));                                 // NOI18N
+                    } catch (final SQLException ex) {
+                        LOG.error("is_search is not available -> update of the meta database", ex);        // NOI18N
+                        tmp.setSearch(false);
+                    }
 
-                statements.add(tmp.getID(), tmp);
-                nameAssociatesID.put(tmp.getName(), tmp.getID());
-                if (logger.isDebugEnabled()) {
-                    logger.debug(
-                        "cached statement :"          // NOI18N
-                                + tmp.getName()
-                                + " changes ?"        // NOI18N
-                                + tmp.getStatement()
-                                + " conjuction ??"    // NOI18N
-                                + tmp.isConjunction()
-                                + "conjunctionresult" // NOI18N
-                                + conjunction);
+                    statements.put(tmp.getID(), tmp);
+                    nameAssociatesID.put(tmp.getName(), tmp.getID());
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(
+                            "cached statement :"          // NOI18N
+                                    + tmp.getName()
+                                    + " changes ?"        // NOI18N
+                                    + tmp.getStatement()
+                                    + " conjuction ??"    // NOI18N
+                                    + tmp.isConjunction()
+                                    + "conjunctionresult" // NOI18N
+                                    + conjunction);
+                    }
                 }
-            }                                         // end while
-            if (logger.isDebugEnabled()) {
-                logger.debug("statement hash elements #" + statements.size() + " elements" + statements); // NOI18N
+            } finally {
+                DBConnection.closeResultSets(stmntTable);
+                DBConnection.closeStatements(stmt);
+            }
+            // end while
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("statement hash elements #" + statements.size() + " elements" + statements); // NOI18N
             }
 
-            final ResultSet paramTable = (con.createStatement()).executeQuery(paramStmnt);
+            stmt = null;
+            ResultSet paramTable = null;
 
-            int query_id = 0;
+            try {
+                stmt = con.createStatement();
+                paramTable = stmt.executeQuery(paramStmnt);
 
-            while (paramTable.next()) {
-                SystemStatement s = null;
-                query_id = paramTable.getInt("query_id");         // NOI18N
-                s = statements.getStatement(query_id);
-                // xxx new Searchparameter
+                int query_id = 0;
+
+                while (paramTable.next()) {
+                    SystemStatement s = null;
+                    query_id = paramTable.getInt("query_id"); // NOI18N
+                    s = statements.get(query_id);
+                    // xxx new Searchparameter
+                }
+            } finally {
+                DBConnection.closeResultSets(paramTable);
+                DBConnection.closeStatements(stmt);
             }
-            if (logger.isDebugEnabled()) {
-                logger.debug("Queries loaded from the database"); // NOI18N
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Queries loaded from the database"); // NOI18N
             }
-        } catch (java.lang.Exception e) {
-            logger.error("Exception thile loading the query", e); // NOI18N
+        } catch (final Exception e) {
+            LOG.error("Exception thile loading the query", e); // NOI18N
             ExceptionHandler.handle(e);
         }
-    }                                                             // end of constructor
+    }
 
     //~ Methods ----------------------------------------------------------------
 
@@ -145,11 +181,9 @@ public class StatementCache {
      * @param   id  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
      */
-    protected SystemStatement getStatement(final int id) throws Exception {
-        return statements.getStatement(id);
+    protected SystemStatement getStatement(final int id) {
+        return statements.get(id);
     }
 
     /**
@@ -158,11 +192,9 @@ public class StatementCache {
      * @param   name  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
      */
-    public SystemStatement getStatement(final String name) throws Exception {
-        return statements.getStatement(nameAssociatesID.get(name));
+    public SystemStatement getStatement(final String name) {
+        return statements.get(nameAssociatesID.get(name));
     }
 
     /**
@@ -170,7 +202,7 @@ public class StatementCache {
      *
      * @return  DOCUMENT ME!
      */
-    public Collection values() {
+    public Collection<SystemStatement> values() {
         return statements.values();
     }
 
@@ -191,7 +223,7 @@ public class StatementCache {
      * @return  DOCUMENT ME!
      */
     public boolean containsStatement(final int id) {
-        return statements.containsIntKey(id);
+        return statements.containsKey(id);
     }
 
     /**

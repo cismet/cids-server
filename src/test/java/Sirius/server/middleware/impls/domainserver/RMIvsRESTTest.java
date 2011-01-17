@@ -67,7 +67,7 @@ public class RMIvsRESTTest {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    @BeforeClass
+    //@BeforeClass
     public static void setUpClass() throws Throwable {
         final Properties p = new Properties();
         p.put("log4j.appender.Remote", "org.apache.log4j.net.SocketAppender");
@@ -91,7 +91,7 @@ public class RMIvsRESTTest {
      *
      * @throws  Throwable  Exception DOCUMENT ME!
      */
-    @AfterClass
+    //@AfterClass
     public static void tearDownClass() throws Throwable {
         RESTfulService.down();
         try {

@@ -133,17 +133,15 @@ public class DefaultObject implements Object {
     /**
      * F\u00FCgt ein Attribut in die davor vorgesehenen AtrributVectoren ein.<BR>
      *
-     * @param   anyAttribute  Objektattribute
+     * @param  anyAttribute  Objektattribute
      *
-     * @throws  Exception  java.lang.Exception fehler beim hinzuf\u00FCgen
-     *
-     * @see     #longs
-     * @see     #dates
-     * @see     #doubles
-     * @see     #longs
+     * @see    #longs
+     * @see    #dates
+     * @see    #doubles
+     * @see    #longs
      */
     @Override
-    public void addAttribute(final ObjectAttribute anyAttribute) throws Exception {
+    public void addAttribute(final ObjectAttribute anyAttribute) {
         /*
          * if (anyAttribute instanceof ObjectAttribute ) { attribs.add((Attribute)anyAttribute); }// end if
          * AttributeOfClass else throw new java.lang.Exception(" no subtype of Attribute");
@@ -324,13 +322,10 @@ public class DefaultObject implements Object {
      * @param   ug  Benutzergruppe nach der gefiltert werden soll
      *
      * @return  eine fuer UG massgeschneiderte Version des Objekts
-     *
-     * @throws  Exception  java.lang.Exception Fehler
      */
     @Override
-    public Sirius.server.localserver.object.Object filter(final UserGroup ug) throws Exception {
-        final Sirius.server.localserver.object.DefaultObject tmp = new Sirius.server.localserver.object.DefaultObject(
-                this);
+    public Object filter(final UserGroup ug) {
+        final DefaultObject tmp = new DefaultObject(this);
 
         final LinkedHashMap view = new LinkedHashMap();
 

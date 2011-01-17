@@ -88,7 +88,7 @@ public class Seeker {
             throws Throwable {
         // enth\u00E4lt die Anzahl der updated datasets
         if (query.isUpdate()) {
-            return new SearchResult(new Integer(conPool.getConnection().submitUpdate(query)));
+            return new SearchResult(new Integer(conPool.getDBConnection().submitUpdate(query)));
                 // xxx performantere Bedingung einfallen lassen
         }
         if (query.getResultType() == SearchResult.NODE) {
@@ -115,10 +115,10 @@ public class Seeker {
             Vector obs = null;
             if (query.getStatement() == null) // with caching
             {
-                obs = (Vector)new DefaultResultHandler().handle(conPool.getConnection().submitQuery(query), query);
+                obs = (Vector)new DefaultResultHandler().handle(conPool.getDBConnection().submitQuery(query), query);
             } else                            // takes the queries statement
             {
-                obs = (Vector)new DefaultResultHandler().handle(conPool.getConnection().executeQuery(query), query);
+                obs = (Vector)new DefaultResultHandler().handle(conPool.getDBConnection().executeQuery(query), query);
             }
             final java.util.ArrayList<Node> nodes = new java.util.ArrayList<Node>(obs.size());
 
@@ -238,11 +238,13 @@ public class Seeker {
 
             if (query.getStatement() == null) // with caching
             {
-                objects = (Vector)new DefaultResultHandler().handle(conPool.getConnection().submitQuery(query), query);
+                objects = (Vector)new DefaultResultHandler().handle(conPool.getDBConnection().submitQuery(query),
+                        query);
             } else                            // takes the queries statement
             {
                 // query wird hier ausgefuehrt, resulat ist vector<object[]>
-                objects = (Vector)new DefaultResultHandler().handle(conPool.getConnection().executeQuery(query), query);
+                objects = (Vector)
+                    new DefaultResultHandler().handle(conPool.getDBConnection().executeQuery(query), query);
             }
             final Sirius.server.middleware.types.MetaObject[] metaObject =
                 new Sirius.server.middleware.types.MetaObject[objects.size()];
@@ -256,9 +258,10 @@ public class Seeker {
                 try {
                     classID = Integer.parseInt(object[0].toString());
                     objectID = Integer.parseInt(object[1].toString());
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     final Exception ex = new Exception(
-                            "The results of the Query do not possess the necessary structure. Results of the Query must be tuple (class_id, object_id)."); // NOI18N
+                            "The results of the Query do not possess the necessary structure. Results of the Query must be tuple (class_id, object_id).",
+                            e); // NOI18N
                     ex.setStackTrace(e.getStackTrace());
                     throw ex;
                 }
@@ -274,8 +277,9 @@ public class Seeker {
         } else // kein Knoten
         {
             // vorsicht
-            return new SearchResult(new StringResultHandler().handle(
-                        conPool.getConnection().submitQuery(query),
+            return new SearchResult(
+                    new StringResultHandler().handle(
+                        conPool.getDBConnection().submitQuery(query),
                         query));
         }
     }

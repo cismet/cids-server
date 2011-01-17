@@ -30,6 +30,8 @@ import Sirius.server.sql.DBConnectionPool;
 
 import org.apache.log4j.Logger;
 
+import java.sql.SQLException;
+
 import java.util.List;
 
 /**
@@ -114,7 +116,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
 
         userstore = new UserStore(connectionPool, properties);
 
-        historyServer = new HistoryServer(connectionPool, classes);
+        historyServer = new HistoryServer(this);
 
         objectPersistence = new PersistenceManager(this);
     }
@@ -127,10 +129,8 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      * @param   classID  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
-     *
-     * @throws  Throwable  DOCUMENT ME!
      */
-    public MetaClass getClass(final int classID) throws Throwable {
+    public MetaClass getClass(final int classID) {
         return new MetaClass(classes.getClass(classID), properties.getServerName());
     }
     /**
@@ -159,10 +159,8 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      * @param   classID  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
-     *
-     * @throws  Throwable  DOCUMENT ME!
      */
-    public MetaClass getClass(final UserGroup ug, final int classID) throws Throwable {
+    public MetaClass getClass(final UserGroup ug, final int classID) {
         final Sirius.server.localserver._class.Class c = classes.getClass(ug, classID);
         if (c != null) {
             return new MetaClass(c, properties.getServerName());
@@ -195,10 +193,8 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      * @param   ug  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
-     *
-     * @throws  Throwable  DOCUMENT ME!
      */
-    public MetaClass[] getClasses(final UserGroup ug) throws Throwable {
+    public MetaClass[] getClasses(final UserGroup ug) {
         final List tmpClasses = classes.getAllClasses(ug);
         MetaClass[] middleWareClasses = null;
 
@@ -270,9 +266,9 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  Throwable  DOCUMENT ME!
+     * @throws  SQLException  Throwable DOCUMENT ME!
      */
-    public MetaObject getObject(final String objectID, final UserGroup ug) throws Throwable {
+    public MetaObject getObject(final String objectID, final UserGroup ug) throws SQLException {
         final int oId;
         final int cId;
 
@@ -361,7 +357,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      * @return  DOCUMENT ME!
      */
     public DBConnection getActiveDBConnection() {
-        return connectionPool.getConnection();
+        return connectionPool.getDBConnection();
     }
 
     /**
@@ -373,7 +369,8 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
         return connectionPool;
     }
     /**
-     * public final Connection getTranslConnection(){return connectionPool.getConnection("transl").getConnection();}.
+     * public final Connection getTranslConnection(){return
+     * connectionPool.getDBConnection("transl").getDBConnection();}.
      *
      * @return  DOCUMENT ME!
      */

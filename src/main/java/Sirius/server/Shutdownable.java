@@ -18,9 +18,17 @@ public interface Shutdownable {
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * DOCUMENT ME!
+     * This method shall be used as a cleanup method if the runtime of the application is about to end. Do whatever
+     * cleanup is needed here.
      *
-     * @throws  ServerExitError  DOCUMENT ME!
+     * @throws  ServerExitError  if any error occurs during cleanup
      */
     void shutdown() throws ServerExitError;
+
+    /**
+     * Indicates whether shutdown has already been called or not.
+     *
+     * @return  true if shutdown was already called, false otherwise
+     */
+    boolean isDown();
 }

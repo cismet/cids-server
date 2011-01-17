@@ -29,15 +29,13 @@ public class QueryParametrizer {
      * @param   parameters  java.lang.Object[] parameters
      *
      * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  java.lang.Exception DOCUMENT ME!
      */
     // FIXME: The statement parameter is modified!
-    public static String parametrize(String statement, final Object[] parameters) throws Exception {
+    public static String parametrize(String statement, final Object[] parameters) {
         if (statement != null) {
             statement = statement.trim();
         } else {
-            LOG.error("Stmnt in parametrizer NUll"); // NOI18N
+            LOG.error("Stmnt in parametrizer NULL"); // NOI18N
         }
 
         // nothing to parametrize
