@@ -1893,11 +1893,11 @@ public final class RESTfulSerialInterface {
 
             return createResponse(callserver.customServerSearch(user, serverSearch));
         } catch (final IOException e) {
-            final String message = "could execute custom search"; // NOI18N
+            final String message = "could not execute custom search"; // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         } catch (final ClassNotFoundException e) {
-            final String message = "could execute custom search"; // NOI18N
+            final String message = "could not execute custom search"; // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
