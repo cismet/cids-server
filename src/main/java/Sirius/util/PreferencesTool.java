@@ -31,9 +31,9 @@ public class PreferencesTool {
     /** PathSepatrator. */
     private static final String PS = "/"; // NOI18N
 
-// private static Logger logger = Logger.getLogger(PreferencesTool.class);
-
     //~ Instance fields --------------------------------------------------------
+
+// private static Logger logger = Logger.getLogger(PreferencesTool.class);
 
     // NOI18N
 

@@ -39,9 +39,44 @@ import de.cismet.cids.tools.fromstring.FromStringCreator;
  */
 public final class LightweightMetaObject implements MetaObject, Comparable<LightweightMetaObject> {
 
+    //~ Instance fields --------------------------------------------------------
+
+    private transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
+    // use volantile variable to fix "double checked locking" problem!
+    private transient volatile MetaObject lazyMetaObject;
+    private transient MetaService metaService;
+    private final Map<String, Object> attributesMap;
+    private final int classID;
+    private final User user;
+    private int objectID;
+    private String representation;
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new LightweightMetaObject object.
+     *
+     * @param  classID        DOCUMENT ME!
+     * @param  objectID       DOCUMENT ME!
+     * @param  user           DOCUMENT ME!
+     * @param  attributesMap  DOCUMENT ME!
+     * @param  formater       DOCUMENT ME!
+     */
+    public LightweightMetaObject(final int classID,
+            final int objectID,
+            final User user,
+            final Map<String, Object> attributesMap,
+            final AbstractAttributeRepresentationFormater formater) {
+        this.classID = classID;
+        this.objectID = objectID;
+        this.user = user;
+        this.metaService = null;
+        this.attributesMap = Collections.unmodifiableMap(attributesMap);
+        setFormater(formater);
+    }
+
     //~ Methods ----------------------------------------------------------------
 
-    // <editor-fold defaultstate="collapsed" desc="delegation-only methods">
     @Override
     public Object accept(final TypeVisitor mov, final Object o) {
         return getRealMetaObject().accept(mov, o);
@@ -502,45 +537,6 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     public FromStringCreator getObjectCreator() {
         return getRealMetaObject().getObjectCreator();
     }
-// </editor-fold>
-
-    //~ Instance fields --------------------------------------------------------
-
-    private transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
-    // use volantile variable to fix "double checked locking" problem!
-    private transient volatile MetaObject lazyMetaObject;
-    private transient MetaService metaService;
-    private final Map<String, Object> attributesMap;
-    private final int classID;
-    private final User user;
-    private int objectID;
-    private String representation;
-
-    //~ Constructors -----------------------------------------------------------
-
-    /**
-     * Creates a new LightweightMetaObject object.
-     *
-     * @param  classID        DOCUMENT ME!
-     * @param  objectID       DOCUMENT ME!
-     * @param  user           DOCUMENT ME!
-     * @param  attributesMap  DOCUMENT ME!
-     * @param  formater       DOCUMENT ME!
-     */
-    public LightweightMetaObject(final int classID,
-            final int objectID,
-            final User user,
-            final Map<String, Object> attributesMap,
-            final AbstractAttributeRepresentationFormater formater) {
-        this.classID = classID;
-        this.objectID = objectID;
-        this.user = user;
-        this.metaService = null;
-        this.attributesMap = Collections.unmodifiableMap(attributesMap);
-        setFormater(formater);
-    }
-
-    //~ Methods ----------------------------------------------------------------
 
     /**
      * DOCUMENT ME!

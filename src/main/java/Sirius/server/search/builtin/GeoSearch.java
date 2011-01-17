@@ -105,7 +105,7 @@ public class GeoSearch extends CidsServerSearch {
                 final String classesInStatement = getClassesInSnippetsPerDomain().get((String)key);
                 final String sqlStatement = sql.replaceAll("<cidsClassesInStatement>", classesInStatement)
                             .replaceAll("<cidsSearchGeometryWKT>", cidsSearchGeometryWKT);
-                getLog().fatal(sqlStatement);
+                getLog().info("geosearch: " + sqlStatement);
                 final ArrayList<ArrayList> result = ms.performCustomSearch(sqlStatement);
                 for (final ArrayList al : result) {
                     final int cid = (Integer)al.get(0);

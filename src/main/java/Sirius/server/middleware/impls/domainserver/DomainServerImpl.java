@@ -815,7 +815,6 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 }
                 result.add(row);
             }
-            logger.fatal(result);
             return result;
         } catch (Exception e) {
             final String msg = "Error during sql statement: " + query;
