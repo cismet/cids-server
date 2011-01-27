@@ -71,7 +71,7 @@ import javax.ws.rs.core.UriBuilder;
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.ws.Converter;
 
-import de.cismet.security.Proxy;
+import de.cismet.netutil.Proxy;
 
 import static de.cismet.cids.server.ws.rest.RESTfulSerialInterface.*;
 

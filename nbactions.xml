@@ -19,6 +19,7 @@
             <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
         </goals>
         <properties>
+            <jalopy.skip>true</jalopy.skip>
             <exec.format.skip>true</exec.format.skip>
             <exec.classpathScope>runtime</exec.classpathScope>
             <exec.workingdir>${de.cismet.cids.server.workingDir}</exec.workingdir>
@@ -33,6 +34,7 @@
             <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
         </goals>
         <properties>
+            <jalopy.skip>true</jalopy.skip>
             <exec.format.skip>true</exec.format.skip>
             <exec.classpathScope>runtime</exec.classpathScope>
             <exec.workingdir>${de.cismet.cids.server.workingDir}</exec.workingdir>
