@@ -47,7 +47,8 @@ public class ClassloadingHelper {
         TO_STRING_CONVERTER("de.cismet.cids.custom.tostringconverter", "ToStringConverter", "tostringconverter"),
         EDITOR("de.cismet.cids.custom.objecteditors", "Editor", "editor"),
         ATTRIBUTE_EDITOR("de.cismet.cids.custom.objecteditors", "AttributeEditor", "attributeeditor"),
-        FEATURE_RENDERER("de.cismet.cids.custom.featurerenderer", "FeatureRenderer", "featurerenderer");
+        FEATURE_RENDERER("de.cismet.cids.custom.featurerenderer", "FeatureRenderer", "featurerenderer"),
+        ACTION_PROVIDER("de.cismet.cids.custom.objectactions", "ActionsProvider", "actionsprovider");
 
         //~ Instance fields ----------------------------------------------------
 
