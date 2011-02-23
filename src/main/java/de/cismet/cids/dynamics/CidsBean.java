@@ -51,6 +51,7 @@ public class CidsBean implements PropertyChangeListener {
     protected MetaObject metaObject = null;
     protected String backlinkFieldname;
     protected CidsBean backlinkObject;
+    protected boolean artificialChange;
     private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
 
     //~ Methods ----------------------------------------------------------------
@@ -661,5 +662,23 @@ public class CidsBean implements PropertyChangeListener {
         }
         sb.append(einrueckung).append("}");
         return sb.toString();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean hasArtificialChangeFlag() {
+        return artificialChange;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  artificialChange  DOCUMENT ME!
+     */
+    public void setArtificialChangeFlag(final boolean artificialChange) {
+        this.artificialChange = artificialChange;
     }
 }
