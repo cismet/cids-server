@@ -36,6 +36,10 @@ import java.util.List;
 
 import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.MetaClassCacheService;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
+
 
 /**
  * DOCUMENT ME!
@@ -680,5 +684,76 @@ public class CidsBean implements PropertyChangeListener {
      */
     public void setArtificialChangeFlag(final boolean artificialChange) {
         this.artificialChange = artificialChange;
+    }
+
+
+
+
+     /**
+     * DOCUMENT ME!
+     *
+     * @param   tableName          DOCUMENT ME!
+     * @param   initialProperties  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static CidsBean createNewCidsBeanFromTableName(final String domainName,final String tableName,
+            final Map<String, Object> initialProperties) throws Exception {
+        final CidsBean newBean = createNewCidsBeanFromTableName(domainName,tableName);
+        for (final Entry<String, Object> property : initialProperties.entrySet()) {
+            newBean.setProperty(property.getKey(), property.getValue());
+        }
+        return newBean;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   tableName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static CidsBean createNewCidsBeanFromTableName(final String domainName,final String tableName) throws Exception {
+        MetaClassCacheService classcache=Lookup.getDefault().lookup(MetaClassCacheService.class);
+        if (tableName != null) {
+            final MetaClass metaClass = classcache.getMetaClass(domainName, tableName);
+            if (metaClass != null) {
+                return metaClass.getEmptyInstance().getBean();
+            }
+        }
+        throw new Exception("Could not find MetaClass for table " + tableName);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   bean                DOCUMENT ME!
+     * @param   collectionProperty  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static List<CidsBean> getBeanCollectionFromProperty(final CidsBean bean, final String collectionProperty) {
+        if ((bean != null) && (collectionProperty != null)) {
+            final Object colObj = bean.getProperty(collectionProperty);
+            if (colObj instanceof Collection) {
+                return (List<CidsBean>)colObj;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   bean  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static boolean checkWritePermission(final User user,final CidsBean bean) {
+        return bean.getHasWritePermission(user);
     }
 }
