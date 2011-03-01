@@ -738,6 +738,28 @@ public class CidsBean implements PropertyChangeListener {
     /**
      * DOCUMENT ME!
      *
+     * @param   domainName  DOCUMENT ME!
+     * @param   tableName   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static MetaClass getMetaClassFromTableName(final String domainName, final String tableName)
+            throws Exception {
+        final MetaClassCacheService classcache = Lookup.getDefault().lookup(MetaClassCacheService.class);
+        if (tableName != null) {
+            final MetaClass mc = classcache.getMetaClass(domainName, tableName);
+            if (mc != null) {
+                return mc;
+            }
+        }
+        throw new Exception("Could not find MetaClass for table " + tableName);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   collectionProperty  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
