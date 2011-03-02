@@ -66,7 +66,6 @@ public final class PersistenceManager extends Shutdown {
                 + "SET attr_object_id = ? "                                          // NOI18N
                 + "WHERE class_id = ? AND object_id = ? AND attr_class_id = ?";      // NOI18N
     public static final String NULL = "NULL";                                        // NOI18N
-    private static final String DEBUG_REPLACE = "\\?";                               // NOI18N
 
     //~ Instance fields --------------------------------------------------------
 
@@ -169,10 +168,12 @@ public final class PersistenceManager extends Shutdown {
                 final String paramStmt = "DELETE FROM " + tableName + " WHERE " + pk + " = ?"; // NOI18N+
 
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("paramsql: " + paramStmt); // NOI18N
-                    LOG.debug(
-                        "debugSQL: "                     // NOI18N
-                                + paramStmt.replace(DEBUG_REPLACE, String.valueOf(mo.getPrimaryKey().getValue())));
+                    final StringBuilder logMessage = new StringBuilder("Parameterized SQL: ");
+                    logMessage.append(paramStmt);
+                    logMessage.append('\n');
+                    logMessage.append("Primary key: ");
+                    logMessage.append(String.valueOf(mo.getPrimaryKey().getValue()));
+                    LOG.debug(logMessage.toString());
                 }
 
                 stmt = transactionHelper.getConnection().prepareStatement(paramStmt);
@@ -362,7 +363,7 @@ public final class PersistenceManager extends Shutdown {
                     // delete MetaObject???
                     values.add(NULL);
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("valueSTring set to '" + NULL + "' as value of attribute was null"); // NOI18N
+                        LOG.debug("valueString set to '" + NULL + "' as value of attribute was null"); // NOI18N
                     }
                 } else if (value instanceof MetaObject) {
                     final MetaObject subObject = (MetaObject)value;
@@ -430,12 +431,19 @@ public final class PersistenceManager extends Shutdown {
                     values.add(Integer.valueOf(mo.getID()));
 
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("paramStmt: " + paramStmt); // NOI18N
-                        String debugSQL = paramStmt.toString();
+                        final StringBuilder logMessage = new StringBuilder("Parameterized SQL: ");
+                        logMessage.append(paramStmt);
+                        logMessage.append('\n');
+                        final int i = 1;
                         for (final java.lang.Object value : values) {
-                            debugSQL = debugSQL.replaceFirst(DEBUG_REPLACE, value.toString());
+                            if (i > 1) {
+                                logMessage.append("; ");
+                            }
+                            logMessage.append(i);
+                            logMessage.append(". parameter: ");
+                            logMessage.append(value.toString());
                         }
-                        LOG.debug("debugSQL: " + debugSQL);   // NOI18N
+                        LOG.debug(logMessage.toString());
                     }
 
                     stmt = transactionHelper.getConnection().prepareStatement(paramStmt.toString());
@@ -777,12 +785,19 @@ public final class PersistenceManager extends Shutdown {
 
                 stmt = transactionHelper.getConnection().prepareStatement(paramSql.toString());
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("paramSQL: " + paramSql); // NOI18N
-                    String debugSql = paramSql.toString();
+                    final StringBuilder logMessage = new StringBuilder("Parameterized SQL: ");
+                    logMessage.append(paramSql);
+                    logMessage.append('\n');
+                    final int i = 1;
                     for (final java.lang.Object value : values) {
-                        debugSql = debugSql.replaceFirst(DEBUG_REPLACE, value.toString());
+                        if (i > 1) {
+                            logMessage.append("; ");
+                        }
+                        logMessage.append(i);
+                        logMessage.append(". parameter: ");
+                        logMessage.append(value.toString());
                     }
-                    LOG.debug("debugSQL: " + debugSql); // NOI18N
+                    LOG.debug(logMessage.toString());
                 }
                 stmt = parameteriseStatement(stmt, values);
                 stmt.executeUpdate();
@@ -927,14 +942,18 @@ public final class PersistenceManager extends Shutdown {
                         psAttrMap.setInt(4, mai.getForeignKeyClassId());
                         psAttrMap.addBatch();
                         if (LOG.isDebugEnabled()) {
-                            // create debug statement
-                            final String debugStmt = UP_ATTR_MAPPING.replaceFirst(
-                                        DEBUG_REPLACE,
-                                        String.valueOf((value == null) ? -1 : value.getID()))
-                                        .replaceFirst(DEBUG_REPLACE, String.valueOf(mo.getClassID()))
-                                        .replaceFirst(DEBUG_REPLACE, String.valueOf(mo.getID()))
-                                        .replaceFirst(DEBUG_REPLACE, String.valueOf(mai.getForeignKeyClassId()));
-                            LOG.debug("added to batch: " + debugStmt); // NOI18N
+                            final StringBuilder logMessage = new StringBuilder("Parameterized SQL added to batch: ");
+                            logMessage.append(UP_ATTR_MAPPING);
+                            logMessage.append('\n');
+                            logMessage.append("attr_obj_id: ");
+                            logMessage.append(String.valueOf((value == null) ? -1 : value.getID()));
+                            logMessage.append("class_id: ");
+                            logMessage.append(String.valueOf(mo.getClassID()));
+                            logMessage.append("object_id: ");
+                            logMessage.append(String.valueOf(mo.getID()));
+                            logMessage.append("attr_class_id: ");
+                            logMessage.append(String.valueOf(mai.getForeignKeyClassId()));
+                            LOG.debug(logMessage.toString());
                         }
                     } else {
                         // lazily prepare the statement
@@ -948,14 +967,18 @@ public final class PersistenceManager extends Shutdown {
                         psAttrString.setInt(4, mai.getId());
                         psAttrString.addBatch();
                         if (LOG.isDebugEnabled()) {
-                            // create debug statement
-                            final String debugStmt = UP_ATTR_MAPPING.replaceFirst(
-                                        DEBUG_REPLACE,
-                                        String.valueOf(attr.getValue()))
-                                        .replaceFirst(DEBUG_REPLACE, String.valueOf(mo.getClassID()))
-                                        .replaceFirst(DEBUG_REPLACE, String.valueOf(mo.getID()))
-                                        .replaceFirst(DEBUG_REPLACE, String.valueOf(mai.getId()));
-                            LOG.debug("added to batch: " + debugStmt); // NOI18N
+                            final StringBuilder logMessage = new StringBuilder("Parameterized SQL added to batch: ");
+                            logMessage.append(UP_ATTR_MAPPING);
+                            logMessage.append('\n');
+                            logMessage.append("attr_obj_id: ");
+                            logMessage.append(String.valueOf(attr.getValue()));
+                            logMessage.append("class_id: ");
+                            logMessage.append(String.valueOf(mo.getClassID()));
+                            logMessage.append("object_id: ");
+                            logMessage.append(String.valueOf(mo.getID()));
+                            logMessage.append("attr_class_id: ");
+                            logMessage.append(String.valueOf(mai.getId()));
+                            LOG.debug(logMessage.toString());
                         }
                     }
                 }
