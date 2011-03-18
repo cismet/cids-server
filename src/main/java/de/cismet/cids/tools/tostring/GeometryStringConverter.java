@@ -74,7 +74,7 @@ public class GeometryStringConverter extends ToStringConverter implements java.i
                     }
                 }
 
-                return ((Geometry)attrObj).toText();
+                return "SRID=" + ((Geometry)attrObj).getSRID() + ";" + ((Geometry)attrObj).toText();
             } else if (attrObj instanceof Sirius.server.localserver.object.Object) {
                 if (logger != null) {
                     if (logger.isDebugEnabled()) {
