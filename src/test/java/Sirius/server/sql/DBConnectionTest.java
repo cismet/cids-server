@@ -8,6 +8,8 @@
 package Sirius.server.sql;
 
 import Sirius.server.property.ServerProperties;
+import Sirius.server.search.Query;
+import Sirius.server.search.SearchResult;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -296,7 +298,6 @@ public class DBConnectionTest {
      * DOCUMENT ME!
      *
      * @throws  Throwable              DOCUMENT ME!
-     * @throws  RuntimeException       DOCUMENT ME!
      * @throws  IllegalStateException  DOCUMENT ME!
      */
     @Test
@@ -322,7 +323,9 @@ public class DBConnectionTest {
                             } else {
                                 fail("illegal resultset state");
                             }
-                            LOG.debug("finished: " + Thread.currentThread());
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("finished: " + Thread.currentThread());
+                            }
                         } catch (final Exception e) {
                             LOG.error("could not execute", e);
                             fail("could not execute: " + e);
@@ -575,12 +578,47 @@ public class DBConnectionTest {
 
     /**
      * DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
      */
+    // TODO: enable and resolve this issue
     @Ignore
     @Test
-    public void testExecuteQuery() {
+    public void testExecuteQueryUpdateAdminPassword() throws Exception {
         if (LOG.isInfoEnabled()) {
             LOG.info("TEST " + getCurrentMethodName());
+        }
+
+        final DBConnection con = new DBConnection(DB_CLASSIFIER);
+        try {
+            con.executeQuery(new Query(
+                    new SystemStatement(
+                        true,
+                        -1,
+                        "",
+                        false,
+                        SearchResult.OBJECT,
+                        "update cs_usr set password = 'corrupted' where login_name ilike '%admin%'"),
+                    ""));
+        } catch (final Exception e) {
+            ResultSet set = null;
+            try {
+                set = con.executeQuery(new Query(
+                            new SystemStatement(
+                                true,
+                                -1,
+                                "",
+                                false,
+                                SearchResult.OBJECT,
+                                "select password from cs_usr where login_name ilike '%admin%'"),
+                            ""));
+                assertTrue(set.next());
+                assertFalse("password was corrupted", "corrupted".equals(set.getString(1)));
+            } finally {
+                DBConnection.closeResultSets(set);
+            }
+        } finally {
+            con.close();
         }
     }
 

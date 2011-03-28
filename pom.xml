@@ -50,11 +50,6 @@
             <version>3.9.0.GA</version>
         </dependency>
         <dependency>
-            <groupId>edtftp</groupId>
-            <artifactId>edtftp</artifactId>
-            <version>1.2.1</version>
-        </dependency>
-        <dependency>
             <groupId>de.cismet.custom</groupId>
             <artifactId>beansbinding</artifactId>
             <version>1.2.1</version>

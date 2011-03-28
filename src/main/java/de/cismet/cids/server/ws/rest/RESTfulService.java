@@ -90,8 +90,7 @@ public final class RESTfulService {
      */
     private Connector getConnector(final ServerProperties properties) throws ServerExitError {
         final Connector connector;
-        // we are still in test mode so we stay in debug mode
-        if (true) {                                                                   // (properties.isRestDebug()) {
+        if (properties.isRestDebug()) {
             LOG.warn("server REST interface is in debug mode, no security applied!"); // NOI18N
             connector = new SocketConnector();
         } else {

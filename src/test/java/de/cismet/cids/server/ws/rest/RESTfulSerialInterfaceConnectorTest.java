@@ -7,8 +7,6 @@
 ****************************************************/
 package de.cismet.cids.server.ws.rest;
 
-import de.cismet.remotetesthelper.RemoteTestHelperService;
-import de.cismet.remotetesthelper.ws.rest.RemoteTestHelperClient;
 import Sirius.server.ServerExit;
 import Sirius.server.ServerExitError;
 import Sirius.server.localserver.user.UserStoreTest;
@@ -57,6 +55,10 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.Vector;
 
+import de.cismet.remotetesthelper.RemoteTestHelperService;
+
+import de.cismet.remotetesthelper.ws.rest.RemoteTestHelperClient;
+
 import de.cismet.tools.ScriptRunner;
 
 import static org.junit.Assert.*;
@@ -73,7 +75,7 @@ public class RESTfulSerialInterfaceConnectorTest {
 
     private static final String ROOT_RESOURCE = "http://localhost:9987/callserver/binary/";                            // NOI18N
     private static final String SERVER_CONFIG = "src/test/resources/de/cismet/cids/server/ws/rest/runtime.properties"; // NOI18N
-    private static final String STARTMODE = "notsimple";                                                                  // NOI18N
+    private static final String STARTMODE = "notsimple";                                                               // NOI18N
 
     private static final String TEST_DB_NAME = "restful_serial_interface_connector_test_db";
     private static final RemoteTestHelperService service = new RemoteTestHelperClient();
@@ -100,7 +102,8 @@ public class RESTfulSerialInterfaceConnectorTest {
     /**
      * DOCUMENT ME!
      *
-     * @throws  Throwable  DOCUMENT ME!
+     * @throws  Throwable              DOCUMENT ME!
+     * @throws  IllegalStateException  DOCUMENT ME!
      */
     @BeforeClass
     public static void setUpClass() throws Throwable {
@@ -116,15 +119,15 @@ public class RESTfulSerialInterfaceConnectorTest {
             throw new IllegalStateException("cannot initialise test db");
         }
         final ServerProperties props = new ServerProperties(UserStoreTest.class.getResourceAsStream(
-                    "/de/cismet/cids/server/ws/rest/runtime.properties")); // NOI18N
+                    "/de/cismet/cids/server/ws/rest/runtime.properties"));   // NOI18N
         final DBConnectionPool pool = new DBConnectionPool(props);
         final ScriptRunner runner = new ScriptRunner(pool.getDBConnection().getConnection(), true, false);
         final InputStream scriptStream = RESTfulSerialInterfaceConnectorTest.class.getResourceAsStream(
-                "/Sirius/server/localserver/user/configAttrTestData.sql");    // NOI18N
+                "/Sirius/server/localserver/user/configAttrTestData.sql");   // NOI18N
         final InputStream historyServerTestData = RESTfulSerialInterfaceConnectorTest.class.getResourceAsStream(
-                "/Sirius/server/localserver/history/HistoryServerTest.sql");  // NOI18N
+                "/Sirius/server/localserver/history/HistoryServerTest.sql"); // NOI18N
         final InputStream testData = RESTfulSerialInterfaceConnectorTest.class.getResourceAsStream(
-                "/de/cismet/cids/server/ws/rest/testdata.sql");  // NOI18N
+                "/de/cismet/cids/server/ws/rest/testdata.sql");              // NOI18N
         final BufferedReader scriptReader = new BufferedReader(new InputStreamReader(scriptStream));
         final BufferedReader historyReader = new BufferedReader(new InputStreamReader(historyServerTestData));
         final BufferedReader testDataReader = new BufferedReader(new InputStreamReader(testData));
@@ -152,7 +155,8 @@ public class RESTfulSerialInterfaceConnectorTest {
     /**
      * DOCUMENT ME!
      *
-     * @throws  Throwable  Exception DOCUMENT ME!
+     * @throws  Throwable              DOCUMENT ME!
+     * @throws  IllegalStateException  DOCUMENT ME!
      */
     @AfterClass
     public static void tearDownClass() throws Throwable {
@@ -220,7 +224,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetUser() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -234,7 +238,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testChangePassword() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -255,7 +259,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetDomains() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -271,7 +275,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetUserGroupNames() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -288,7 +292,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetUserGroupNames_String_String() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -305,7 +309,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetDefaultIcons() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -322,7 +326,6 @@ public class RESTfulSerialInterfaceConnectorTest {
      * @throws  Exception  DOCUMENT ME!
      */
     @Test
-    
     public void testGetDefaultIcons_String() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
         final Image[] icons = connector.getDefaultIcons("LOCAL");
@@ -337,7 +340,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testSearch() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -352,7 +355,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetSearchOptions() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -367,7 +370,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetSearchOptionsByUser() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -383,7 +386,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testAddQueryParameterAllParam() throws Exception {
         final User user = connector.getUser("LOCAL", "Administratoren", "LOCAL", "admin", "cismet");
@@ -415,7 +418,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testAddQueryParameter() throws Exception {
         System.out.println("\nTEST : " + getCurrentMethodName());
@@ -437,7 +440,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testAddQuery() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -455,7 +458,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testAddQueryAllParam() throws Exception {
         System.out.println("\nTEST : " + getCurrentMethodName());
@@ -488,7 +491,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testDelete() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -504,7 +507,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetQuery() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -520,7 +523,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testStoreQuery() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -536,7 +539,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetLightweightMetaObjectsByQuery() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -560,7 +563,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetLightweightMetaObjectsByQueryWithRepPattern() throws Exception {
         System.out.println("\nTEST : " + getCurrentMethodName());
@@ -586,7 +589,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetAllLightweightMetaObjectsForClass() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -608,7 +611,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetAllLightweightMetaObjectsForClassRepPattern() throws Exception {
         System.out.println("\nTEST : " + getCurrentMethodName());
@@ -632,7 +635,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetClassTreeNodes_User() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -648,7 +651,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetClassTreeNodes_User_String() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -665,7 +668,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetClass() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -688,7 +691,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetClassByTableName() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -706,7 +709,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetClasses() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -723,7 +726,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetMetaObject() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -745,7 +748,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetMetaObject_User_Query() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -774,7 +777,52 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+    // TODO: enable and resolve test
+    @Ignore
+    @Test
+    public void testGetMetaObject_User_Query_CorruptAdminPassword() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final String domain = "LOCAL";
+        final User user = connector.getUser("LOCAL", "Gäste", "LOCAL", "gast", "cismet");
+
+        Query query = null;
+        try {
+            query = new Query(new SystemStatement(
+                        true,
+                        -1,
+                        "",
+                        false,
+                        SearchResult.OBJECT,
+                        "update cs_usr set password = 'corrupted' where login_name ilike '%admin%'"),
+                    domain);
+            connector.getMetaObject(user, query);
+        } catch (Exception e) {
+            // expected exception
+            Connection con = null;
+            ResultSet set = null;
+            try {
+                con = server.getConnectionPool().getConnection();
+                set = con.createStatement()
+                            .executeQuery("select password from cs_usr where login_name ilike '%admin%'");
+                assertTrue(set.next());
+
+                final String password = set.getString(1);
+                con.createStatement()
+                        .executeUpdate("update cs_usr set password = 'cismet' where login_name ilike '%admin%'");
+
+                assertFalse("password was corrupted", "corrupted".equals(password));
+            } finally {
+                DBConnection.closeResultSets(set);
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+
     @Test
     public void testGetMetaObject_User_String() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -801,7 +849,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testDeleteMetaObject() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -827,7 +875,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testUpdate() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -845,7 +893,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetMetaObjectNode_User_int_String() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -862,7 +910,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetMetaObjectNode_User_String() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -883,7 +931,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetMetaObjectNode_User_Query() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -907,7 +955,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetInstance() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -932,7 +980,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testAddNode() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -952,7 +1000,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testAddLink() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -974,7 +1022,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     // the underlying implementation has obviously never been used as it contains illegal sql
     @Test
     public void testDeleteLink() throws Exception {
@@ -997,7 +1045,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testDeleteNode() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -1016,7 +1064,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetQueryInfo_User() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -1032,7 +1080,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetQueryInfo_UserGroup() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -1049,7 +1097,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetChildren_Node_User() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -1070,7 +1118,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetRoots_User() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -1088,8 +1136,6 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-
-    
     @Test
     public void testGetRoots_User_String() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -1108,7 +1154,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testUpdateMetaObject() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -1136,7 +1182,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testInsertMetaObject() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -1164,7 +1210,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testGetConfigAttr() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
@@ -1183,7 +1229,7 @@ public class RESTfulSerialInterfaceConnectorTest {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    
+
     @Test
     public void testHasConfigAttr() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
