@@ -59,7 +59,7 @@ public class StaticSearchTools {
                 throw new IllegalArgumentException("ArrayList of MetaClasses must be from the same domain");
             }
         }
-        s = s.substring(0, s.length() - 2);
+        s = s.trim().substring(0, s.length() - 1);
         return "(" + s + ")";
     }
 }
