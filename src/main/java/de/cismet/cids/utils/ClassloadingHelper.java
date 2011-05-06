@@ -48,7 +48,8 @@ public class ClassloadingHelper {
         EDITOR("de.cismet.cids.custom.objecteditors", "Editor", "editor"),
         ATTRIBUTE_EDITOR("de.cismet.cids.custom.objecteditors", "AttributeEditor", "attributeeditor"),
         FEATURE_RENDERER("de.cismet.cids.custom.featurerenderer", "FeatureRenderer", "featurerenderer"),
-        ACTION_PROVIDER("de.cismet.cids.custom.objectactions", "ActionsProvider", "actionsprovider");
+        ACTION_PROVIDER("de.cismet.cids.custom.objectactions", "ActionsProvider", "actionsprovider"),
+        PERMISSION_PROVIDER("de.cismet.cids.custom.permissions", "PermissionProvider", "permissionprovider");
 
         //~ Instance fields ----------------------------------------------------
 

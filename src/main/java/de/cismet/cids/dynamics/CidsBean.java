@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 
 import org.jdesktop.observablecollections.ObservableList;
 
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import java.beans.IntrospectionException;
@@ -38,7 +39,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import de.cismet.cids.utils.CidsBeanPersistService;
+import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
+
+import de.cismet.tools.BlacklistClassloading;
 
 /**
  * DOCUMENT ME!
@@ -56,6 +60,7 @@ public class CidsBean implements PropertyChangeListener {
     protected CidsBean backlinkObject;
     protected boolean artificialChange;
     private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
+    private CustomBeanPermissionProvider customPermissionProvider;
 
     //~ Methods ----------------------------------------------------------------
 
@@ -98,6 +103,65 @@ public class CidsBean implements PropertyChangeListener {
      */
     public boolean getHasWritePermission(final User user) {
         return metaObject.getMetaClass().getPermissions().hasWritePermission(user.getUserGroup());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean hasObjectWritePermission(final User user) {
+        log.fatal("hasObjectWritePermission");
+        if (customPermissionProvider == null) {
+            try {
+                final Class cpp = ClassloadingHelper.getDynamicClass(getMetaObject().getMetaClass(),
+                        ClassloadingHelper.CLASS_TYPE.PERMISSION_PROVIDER);
+                log.fatal(cpp);
+                if (cpp == null) {
+                    return true;
+                }
+                customPermissionProvider = (CustomBeanPermissionProvider)cpp.getConstructor().newInstance();
+                customPermissionProvider.setCidsBean(this);
+            } catch (Exception ex) {
+                log.warn("error during creation of custom permission provider", ex);
+            }
+        }
+        if (customPermissionProvider != null) {
+            return customPermissionProvider.getCustomWritePermissionDecisionforUser(user);
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean hasObjectReadPermission(final User user) {
+        log.fatal("hasObjectReadPermission");
+        if (customPermissionProvider == null) {
+            try {
+                final Class cpp = ClassloadingHelper.getDynamicClass(getMetaObject().getMetaClass(),
+                        ClassloadingHelper.CLASS_TYPE.PERMISSION_PROVIDER);
+                if (cpp == null) {
+                    return true;
+                }
+                customPermissionProvider = (CustomBeanPermissionProvider)cpp.getConstructor().newInstance();
+                customPermissionProvider.setCidsBean(this);
+            } catch (Exception ex) {
+                log.warn("error during creation of custom permission provider", ex);
+            }
+        }
+        if (customPermissionProvider != null) {
+            return customPermissionProvider.getCustomReadPermissionDecisionforUser(user);
+        } else {
+            return true;
+        }
     }
 
     /**
@@ -783,6 +847,6 @@ public class CidsBean implements PropertyChangeListener {
      * @return  DOCUMENT ME!
      */
     public static boolean checkWritePermission(final User user, final CidsBean bean) {
-        return bean.getHasWritePermission(user);
+        return bean.getHasWritePermission(user) && bean.hasObjectWritePermission(user);
     }
 }

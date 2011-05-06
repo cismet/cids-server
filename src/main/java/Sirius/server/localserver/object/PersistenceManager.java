@@ -111,8 +111,10 @@ public final class PersistenceManager extends Shutdown {
                         + mo.isDummy());
         }
 
-        if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
-                        user.getUserGroup())) {
+        if (
+            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
+                        user.getUserGroup())
+                    && mo.getBean().hasObjectWritePermission(user)) {
             // start transaction
             try {
                 transactionHelper.beginWork();
@@ -322,8 +324,10 @@ public final class PersistenceManager extends Shutdown {
                         + " isDummy(ArrayContainer) :" // NOI18N
                         + mo.isDummy());               // NOI18N
         }
-        if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
-                        user.getUserGroup())) {
+        if (
+            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
+                        user.getUserGroup())
+                    && mo.getBean().hasObjectWritePermission(user)) {
             // if Array
             if (mo.isDummy()) {
                 updateArrayObjects(user, mo);
@@ -653,8 +657,10 @@ public final class PersistenceManager extends Shutdown {
                         + mo.isDummy());               // NOI18N
         }
 
-        if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
-                        user.getUserGroup())) {
+        if (
+            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
+                        user.getUserGroup())
+                    && mo.getBean().hasObjectWritePermission(user)) {
             // won't insert history here since we assume that the object to be inserted is new
 
             final StringBuffer paramSql = new StringBuffer("INSERT INTO "); // NOI18N
