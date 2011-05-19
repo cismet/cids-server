@@ -58,7 +58,7 @@ public class HistoryServerTest {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final String TEST_DB_NAME = "history_server_test_db";
-    private static final RemoteTestHelperService service = new RemoteTestHelperClient();
+    private static final RemoteTestHelperService SERVICE = new RemoteTestHelperClient();
 
     private static User user;
     private static ServerProperties properties;
@@ -93,7 +93,7 @@ public class HistoryServerTest {
         p.put("log4j.rootLogger", "ALL,Remote");
         org.apache.log4j.PropertyConfigurator.configure(p);
 
-        if (!Boolean.valueOf(service.initCidsSystem(TEST_DB_NAME))) {
+        if (!Boolean.valueOf(SERVICE.initCidsSystem(TEST_DB_NAME))) {
             throw new IllegalStateException("cannot initilise test db");
         }
 
@@ -110,7 +110,7 @@ public class HistoryServerTest {
      */
     @AfterClass
     public static void tearDownClass() throws Throwable {
-        if (!Boolean.valueOf(service.dropDatabase(TEST_DB_NAME))) {
+        if (!Boolean.valueOf(SERVICE.dropDatabase(TEST_DB_NAME))) {
             throw new IllegalStateException("could not drop test db");
         }
     }

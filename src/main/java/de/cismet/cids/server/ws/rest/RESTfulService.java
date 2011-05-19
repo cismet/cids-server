@@ -94,6 +94,10 @@ public final class RESTfulService {
             LOG.warn("server REST interface is in debug mode, no security applied!"); // NOI18N
             connector = new SocketConnector();
         } else {
+            if (LOG.isInfoEnabled()) {
+                LOG.info("server REST interface uses SSL connector");                 // NOI18N
+            }
+
             try {
                 final SslSocketConnector ssl = new SslSocketConnector();
                 ssl.setMaxIdleTime(30000);
@@ -111,7 +115,7 @@ public final class RESTfulService {
 
                 connector = ssl;
             } catch (final Exception e) {
-                final String message = "cannot initialise ssl connector"; // NOI18N
+                final String message = "cannot initialise SSL connector"; // NOI18N
                 LOG.error(message, e);
                 throw new ServerExitError(message, e);
             }
