@@ -311,7 +311,16 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final boolean isRestClientAuth() {
-        return Boolean.valueOf(getString("server.rest.keystore.client.auth")); // NOI18N
+        try {
+            return Boolean.valueOf(getString("server.rest.keystore.client.auth"));      // NOI18N
+        } catch (final MissingResourceException e) {
+            final String message = "server.rest.keystore.client.auth property not set"; // NOI18N
+            if (LOG.isInfoEnabled()) {
+                LOG.info(message, e);
+            }
+
+            return false;
+        }
     }
 
     /**
