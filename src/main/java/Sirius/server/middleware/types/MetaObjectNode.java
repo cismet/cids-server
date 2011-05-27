@@ -44,6 +44,22 @@ public class MetaObjectNode extends Node implements Comparable {
         this(-1, null, null, domain, objectId, classId, true, Policy.createWIKIPolicy(), -1, null, true);
     }
 
+    /**
+     * Creates a new MetaObjectNode object.
+     *
+     * @param  domain    DOCUMENT ME!
+     * @param  objectId  DOCUMENT ME!
+     * @param  classId   DOCUMENT ME!
+     * @param  name      DOCUMENT ME!
+     */
+    public MetaObjectNode(
+            final String domain,
+            final int objectId,
+            final int classId,
+            final String name) {
+        this(-1, name, null, domain, objectId, classId, true, Policy.createWIKIPolicy(), -1, null, true);
+    }
+
 //------------------------------------------------
     /**
      * -----------------------------------------------
