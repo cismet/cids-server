@@ -21,10 +21,10 @@ import Sirius.server.newuser.User;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.log4j.Logger;
 
 import org.jdesktop.observablecollections.ObservableList;
 
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import java.beans.IntrospectionException;
@@ -42,8 +42,6 @@ import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
 
-import de.cismet.tools.BlacklistClassloading;
-
 /**
  * DOCUMENT ME!
  *
@@ -52,6 +50,10 @@ import de.cismet.tools.BlacklistClassloading;
  */
 public class CidsBean implements PropertyChangeListener {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final transient Logger LOG = Logger.getLogger(CidsBean.class);
+
     //~ Instance fields --------------------------------------------------------
 
     protected PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -59,7 +61,6 @@ public class CidsBean implements PropertyChangeListener {
     protected String backlinkFieldname;
     protected CidsBean backlinkObject;
     protected boolean artificialChange;
-    private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
     private CustomBeanPermissionProvider customPermissionProvider;
 
     //~ Methods ----------------------------------------------------------------
@@ -82,6 +83,7 @@ public class CidsBean implements PropertyChangeListener {
             final String tableName) throws Exception {
         final MetaClass mc = meta.getClassByTableName(u, tableName, domain);
         final MetaObject mo = mc.getEmptyInstance();
+
         return mo.getBean();
     }
 
@@ -113,21 +115,33 @@ public class CidsBean implements PropertyChangeListener {
      * @return  DOCUMENT ME!
      */
     public boolean hasObjectWritePermission(final User user) {
-        log.fatal("hasObjectWritePermission");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("hasObjectWritePermission for user: " + user); // NOI18N
+        }
+
         if (customPermissionProvider == null) {
             try {
                 final Class cpp = ClassloadingHelper.getDynamicClass(getMetaObject().getMetaClass(),
                         ClassloadingHelper.CLASS_TYPE.PERMISSION_PROVIDER);
-                log.fatal(cpp);
+
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("custom write permission provider retrieval result: " + cpp); // NOI18N
+                }
+
                 if (cpp == null) {
                     return true;
                 }
+
                 customPermissionProvider = (CustomBeanPermissionProvider)cpp.getConstructor().newInstance();
                 customPermissionProvider.setCidsBean(this);
-            } catch (Exception ex) {
-                log.warn("error during creation of custom permission provider", ex);
+            } catch (final Exception ex) {
+                // FIXME: probably this behaviour is error prone since we allow write permission if there is a problem
+                // with the loading of the custom permission provider, which probably would say "NO" if it was loaded
+                // correctly
+                LOG.warn("error during creation of custom permission provider", ex); // NOI18N
             }
         }
+
         if (customPermissionProvider != null) {
             return customPermissionProvider.getCustomWritePermissionDecisionforUser(user);
         } else {
@@ -143,20 +157,33 @@ public class CidsBean implements PropertyChangeListener {
      * @return  DOCUMENT ME!
      */
     public boolean hasObjectReadPermission(final User user) {
-        log.fatal("hasObjectReadPermission");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("hasObjectReadPermission for user: " + user); // NOI18N
+        }
+
         if (customPermissionProvider == null) {
             try {
                 final Class cpp = ClassloadingHelper.getDynamicClass(getMetaObject().getMetaClass(),
                         ClassloadingHelper.CLASS_TYPE.PERMISSION_PROVIDER);
+
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("custom read permission provider retrieval result: " + cpp); // NOI18N
+                }
+
                 if (cpp == null) {
                     return true;
                 }
+
                 customPermissionProvider = (CustomBeanPermissionProvider)cpp.getConstructor().newInstance();
                 customPermissionProvider.setCidsBean(this);
             } catch (Exception ex) {
-                log.warn("error during creation of custom permission provider", ex);
+                // FIXME: probably this behaviour is error prone since we allow write permission if there is a problem
+                // with the loading of the custom permission provider, which probably would say "NO" if it was loaded
+                // correctly
+                LOG.warn("error during creation of custom permission provider", ex); // NOI18N
             }
         }
+
         if (customPermissionProvider != null) {
             return customPermissionProvider.getCustomReadPermissionDecisionforUser(user);
         } else {
@@ -190,7 +217,7 @@ public class CidsBean implements PropertyChangeListener {
     @Override
     public String toString() {
         final String ret = metaObject.toString();
-        // log.fatal("ToString von CIDSBEAN: "+ret);
+
         return ret;
     }
 
@@ -210,6 +237,7 @@ public class CidsBean implements PropertyChangeListener {
             return false;
         }
         final CidsBean other = (CidsBean)obj;
+
         return metaObject.equals(other.metaObject);
     }
 
@@ -221,6 +249,7 @@ public class CidsBean implements PropertyChangeListener {
     @Override
     public int hashCode() {
         final String s = metaObject.getID() + "." + metaObject.getMetaClass().getID() + "." + metaObject.getDomain(); // NOI18N
+
         return s.hashCode();
     }
 
@@ -247,9 +276,11 @@ public class CidsBean implements PropertyChangeListener {
     public CidsBean persist(final MetaService metaService, final User user, final String domain) throws Exception {
         if (metaObject.getStatus() == MetaObject.MODIFIED) {
             metaService.updateMetaObject(user, metaObject, domain);
+
             return metaService.getMetaObject(user, metaObject.getID(), metaObject.getClassID(), domain).getBean();
         } else if (metaObject.getStatus() == MetaObject.TO_DELETE) {
             metaService.deleteMetaObject(user, metaObject, domain);
+
             return null;
         } else if (metaObject.getStatus() == MetaObject.NEW) {
             final MetaObject mo = metaService.insertMetaObject(user, metaObject, domain);
@@ -257,6 +288,7 @@ public class CidsBean implements PropertyChangeListener {
                 return mo.getBean();
             }
         }
+
         return null;
     }
 
@@ -272,6 +304,7 @@ public class CidsBean implements PropertyChangeListener {
         if (persistService != null) {
             return persistService.persistCidsBean(this);
         }
+
         return null;
     }
 
@@ -352,33 +385,20 @@ public class CidsBean implements PropertyChangeListener {
         final Object oldValue = oa.getValue();
         final Object value = evt.getNewValue();
         if (oa.referencesObject() && (value instanceof CidsBean) && (value != null)) {
-//            if (value == null) {
-//                MetaObject oldMO = (MetaObject) oa.getValue();
-//
-//                if (oldMO != null) {
-//                    try {
-//                        oldMO.getBean().delete();
-//                    } catch (Exception ex) {
-//                        throw new IllegalArgumentException("Value for " + field + " cannot be deleted", ex);
-//                    }
-//                }
-//            } else if (value instanceof CidsBean) {
             final CidsBean cbv = (CidsBean)value;
             oa.setValue(cbv.getMetaObject());
             cbv.setBacklinkInformation(field, this);
             if (cbv.getMetaObject().getStatus() == MetaObject.TO_DELETE) {
                 cbv.getMetaObject().setStatus(MetaObject.MODIFIED);
             }
-//            }
-//        else {
-//                throw new IllegalArgumentException("Value for " + field + " must be a CidsBean");
-//            }
         } else {
             oa.setValue(value);
         }
-        if (log.isDebugEnabled()) {
-            log.debug("a property changed:" + metaObject.getDebugString()); // NOI18N
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("a property changed:" + metaObject.getDebugString()); // NOI18N
         }
+
         if (((oldValue == null) && (value != null)) || ((oldValue != null) && !oldValue.equals(value))) {
             oa.setChanged(true);
             metaObject.setStatus(MetaObject.MODIFIED);
@@ -386,7 +406,7 @@ public class CidsBean implements PropertyChangeListener {
             final ObjectAttribute referencingOA = metaObject.getReferencingObjectAttribute();
             walkUpAndSetChangedAndModified(referencingOA);
         } else {
-            log.info("set with the same value. no status change required (" + field + ":" + value + ")"); // NOI18N
+            LOG.info("set with the same value. no status change required (" + field + ":" + value + ")"); // NOI18N
         }
     }
 
@@ -465,7 +485,7 @@ public class CidsBean implements PropertyChangeListener {
             // TODO seems to call nonexisting properties on array classes?
             PropertyUtils.setProperty(this, name, value);
         } catch (Exception e) {
-            log.error("Fehler in setProperty:" + name + "\n", e);
+            LOG.error("Fehler in setProperty:" + name + "\n", e);
         }
     }
 
@@ -480,8 +500,9 @@ public class CidsBean implements PropertyChangeListener {
         try {
             return PropertyUtils.getProperty(this, name);
         } catch (Exception e) {
-            log.error("Fehler in getproperty:" + name, e); // NOI18N
+            LOG.error("Fehler in getproperty:" + name, e); // NOI18N
         }
+
         return null;
     }
 
@@ -576,7 +597,7 @@ public class CidsBean implements PropertyChangeListener {
                     throw new IllegalArgumentException("ObservableList is not registered as Array");        // NOI18N
                 }
             } catch (Exception e) {
-                log.error("Fehler in listElementsAdded", e);                                                // NOI18N
+                LOG.error("Fehler in listElementsAdded", e);                                                // NOI18N
             }
         }
     }
@@ -609,14 +630,12 @@ public class CidsBean implements PropertyChangeListener {
                 // wurde gerade erst angelegt, braucht nur entfernt zu werden
                 final ObjectAttribute toDelete = arrayEntry.getReferencingObjectAttribute();
                 toDelete.getParentObject().removeAttribute(toDelete);
-                // toDelete.getKey();
             } else if ((arrayEntry.getStatus() != MetaObject.TEMPLATE)
                         || (arrayEntry.getStatus() != MetaObject.TEMPLATE)) {
                 arrayEntry.setStatus(MetaObject.TO_DELETE);
                 final ObjectAttribute referencingOA = arrayEntry.getReferencingObjectAttribute();
                 walkUpAndSetChangedAndModified(referencingOA);
             }
-            // log.fatal(this.getMOString());
         }
         getMetaObject().setStatus(MetaObject.MODIFIED);
     }
@@ -667,6 +686,7 @@ public class CidsBean implements PropertyChangeListener {
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
             final PropertyDescriptor pd = new PropertyDescriptor("MOString", CidsBean.class); // NOI18N
+
             return new PropertyDescriptor[] { pd };
         } catch (IntrospectionException e) {
             throw new Error(e.toString());
@@ -678,6 +698,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @return  DOCUMENT ME!
      */
+    // FIXME: use a JSON API such as Jackson
     public String toJSONString() {
         return beanToJSONStringHelper(this, 0);
     }
@@ -690,6 +711,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @return  DOCUMENT ME!
      */
+    // FIXME: use a JSON API such as Jackson
     private String beanToJSONStringHelper(final CidsBean bean, final int depth) {
         final StringBuilder sb = new StringBuilder();
         final char[] einrueckung = new char[depth];
@@ -727,6 +749,7 @@ public class CidsBean implements PropertyChangeListener {
             sb.append('\n');
         }
         sb.append(einrueckung).append("}");
+
         return sb.toString();
     }
 
@@ -774,6 +797,7 @@ public class CidsBean implements PropertyChangeListener {
                 newBean.setProperty(property.getKey(), property.getValue());
             }
         }
+
         return newBean;
     }
 
@@ -835,6 +859,7 @@ public class CidsBean implements PropertyChangeListener {
                 return (List<CidsBean>)colObj;
             }
         }
+
         return null;
     }
 
