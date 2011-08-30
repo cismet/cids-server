@@ -114,7 +114,9 @@ public final class PersistenceManager extends Shutdown {
         if (
             dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
                         user.getUserGroup())
-                    && mo.getBean().hasObjectWritePermission(user)) {
+                    && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) {    // wenn mo ein dummy ist dann
+                                                                                           // existiert gar keine
+                                                                                           // sinnvolle bean
             // start transaction
             try {
                 transactionHelper.beginWork();
@@ -327,7 +329,9 @@ public final class PersistenceManager extends Shutdown {
         if (
             dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
                         user.getUserGroup())
-                    && mo.getBean().hasObjectWritePermission(user)) {
+                    && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
+                                                                                        // existiert gar keine sinnvolle
+                                                                                        // bean
             // if Array
             if (mo.isDummy()) {
                 updateArrayObjects(user, mo);
@@ -660,8 +664,11 @@ public final class PersistenceManager extends Shutdown {
         if (
             dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
                         user.getUserGroup())
-                    && mo.getBean().hasObjectWritePermission(user)) {
-            // won't insert history here since we assume that the object to be inserted is new
+                    && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
+                                                                                        // existiert gar keine sinnvolle
+                                                                                        // bean won't insert history
+                                                                                        // here since we assume that the
+                                                                                        // object to be inserted is new
 
             final StringBuffer paramSql = new StringBuffer("INSERT INTO "); // NOI18N
             // class of the new object
