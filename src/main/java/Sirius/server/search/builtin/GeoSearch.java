@@ -101,9 +101,15 @@ public class GeoSearch extends CidsServerSearch {
             for (final Object key : keyset) {
                 final MetaService ms = (MetaService)getActiveLoaclServers().get(key);
                 final String classesInStatement = getClassesInSnippetsPerDomain().get((String)key);
-                getLog().fatal("cidsClassesInStatement=" + classesInStatement);
-                getLog().fatal("cidsSearchGeometryWKT=" + cidsSearchGeometryWKT);
-                getLog().fatal("cidsSearchGeometrySRID=" + sridString);
+                if (getLog().isDebugEnabled()) {
+                    getLog().debug("cidsClassesInStatement=" + classesInStatement);
+                }
+                if (getLog().isDebugEnabled()) {
+                    getLog().debug("cidsSearchGeometryWKT=" + cidsSearchGeometryWKT);
+                }
+                if (getLog().isDebugEnabled()) {
+                    getLog().debug("cidsSearchGeometrySRID=" + sridString);
+                }
                 final String sqlStatement = sql.replaceAll("<cidsClassesInStatement>", classesInStatement)
                             .replaceAll("<cidsSearchGeometryWKT>", cidsSearchGeometryWKT)
                             .replaceAll("<cidsSearchGeometrySRID>", sridString);
