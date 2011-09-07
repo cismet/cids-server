@@ -7,12 +7,14 @@
 ****************************************************/
 package Sirius.server.middleware.types;
 
-import Sirius.server.newuser.permission.*;
+import Sirius.server.newuser.permission.PermissionHolder;
+import Sirius.server.newuser.permission.Policy;
 
-import Sirius.util.*;
+import Sirius.util.Groupable;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
-//import org.apache.commons.lang.builder.ToStringBuilder;
+
+import static de.cismet.tools.Equals.nullEqual;
 
 /**
  * Superclass of all NodeTypes used as RMI return value is not to be instaniated and therfore declared abstract if you
@@ -20,6 +22,8 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  *
  * @version  $Revision$, $Date$
  */
+// FIXME: why is this not comparable although the compareTo operation is implemented and subtypes such as MetaObjectNode
+// implement the comparable interface but don't implement the operation
 public abstract class Node implements java.io.Serializable, Groupable // Comparable
 {
 
@@ -28,9 +32,9 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
     /** id. */
     protected int id;
     /** domain. */
-    protected String domain;
+    protected final String domain;
     /**
-     * indicates wheter this node is a leaf (has no children) by default has children as this will cause the least
+     * indicates whether this node is a leaf (has no children) by default has children as this will cause the least
      * problems.
      */
     protected boolean leaf = false;
@@ -47,10 +51,9 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
     protected int iconFactory = -1;
     protected boolean derivePermissionsFromClass = false;
     protected String iconString = null;
+    protected String artificialId = null;
     /** container for permissions. */
     PermissionHolder permissions;
-
-    private final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -76,6 +79,39 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
             final int iconFactory,
             final String icon,
             final boolean derivePermissionsFromClass) {
+        this(id, name, domain, description, leaf, policy, iconFactory, icon, derivePermissionsFromClass, null);
+    }
+
+    /**
+     * Creates a new Node object.
+     *
+     * @param   id                          DOCUMENT ME!
+     * @param   name                        DOCUMENT ME!
+     * @param   domain                      DOCUMENT ME!
+     * @param   description                 DOCUMENT ME!
+     * @param   leaf                        DOCUMENT ME!
+     * @param   policy                      DOCUMENT ME!
+     * @param   iconFactory                 DOCUMENT ME!
+     * @param   icon                        DOCUMENT ME!
+     * @param   derivePermissionsFromClass  DOCUMENT ME!
+     * @param   artificalId                 DOCUMENT ME!
+     *
+     * @throws  IllegalArgumentException  DOCUMENT ME!
+     */
+    public Node(final int id,
+            final String name,
+            final String domain,
+            final String description,
+            final boolean leaf,
+            final Policy policy,
+            final int iconFactory,
+            final String icon,
+            final boolean derivePermissionsFromClass,
+            final String artificalId) {
+        if (domain == null) {
+            throw new IllegalArgumentException("domain must not be null"); // NOI18N
+        }
+
         this.id = id;
         this.domain = domain;
         this.name = name;
@@ -85,8 +121,8 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
         this.iconFactory = iconFactory;
         this.derivePermissionsFromClass = derivePermissionsFromClass;
         this.iconString = icon;
+        this.artificialId = artificalId;
     }
-//------------------------------------------------------------------------------------------
 
     //~ Methods ----------------------------------------------------------------
 
@@ -180,10 +216,6 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      */
     @Override
     public String toString() {
-//        System.out.println("toString : "+name);
-//        if(log != null) {
-//            log.fatal("toString : "+name);
-//        }
         return name;
     }
 
@@ -211,12 +243,6 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      * @param  name  New value of property name.
      */
     public void setName(final String name) {
-//        log.fatal("setName(" + name + ")", new Exception());
-//        if (log != null) {
-//            log.fatal("setName() to " + name);
-//        } else {
-//            System.out.println("getName() returns " + name);
-//        }
         this.name = name;
     }
 
@@ -228,7 +254,6 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      * @return  ordinal relation
      */
     public int compareTo(final Object o) {
-        // return ((Node)o).id-this.id;
         return this.name.compareTo(((Node)o).name);
     }
 
@@ -262,6 +287,37 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
     /**
      * DOCUMENT ME!
      *
+     * @param   other  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean deepEquals(final Object other) {
+        if (!(other instanceof Node)) {
+            return false;
+        }
+
+        if (this == other) {
+            return true;
+        }
+
+        final Node n = (Node)other;
+
+        return nullEqual(id, n.id)
+                    && nullEqual(name, n.name)
+                    && nullEqual(description, n.description)
+                    && nullEqual(classId, n.classId)
+                    && nullEqual(dynamicChildrenStatement, n.dynamicChildrenStatement)
+                    && nullEqual(sqlSort, n.sqlSort)
+                    && nullEqual(derivePermissionsFromClass, n.derivePermissionsFromClass)
+                    && nullEqual(iconFactory, n.iconFactory)
+                    && nullEqual(iconString, n.iconString)
+                    && nullEqual(domain, n.domain)
+                    && nullEqual(artificialId, n.artificialId);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      */
     public boolean isDynamic() {
@@ -273,6 +329,7 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      *
      * @param  dynamic  DOCUMENT ME!
      */
+    // FIXME: a node is dynamic if the getDynamicChildrenStatement operation does not return null
     public void setDynamic(final boolean dynamic) {
         this.dynamic = dynamic;
     }
@@ -383,5 +440,23 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      */
     public void setIconString(final String iconString) {
         this.iconString = iconString;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getArtificialId() {
+        return artificialId;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  artificialId  DOCUMENT ME!
+     */
+    public void setArtificialId(final String artificialId) {
+        this.artificialId = artificialId;
     }
 }

@@ -114,9 +114,9 @@ public final class PersistenceManager extends Shutdown {
         if (
             dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
                         user.getUserGroup())
-                    && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) {    // wenn mo ein dummy ist dann
-                                                                                           // existiert gar keine
-                                                                                           // sinnvolle bean
+                    && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
+                                                                                        // existiert gar keine
+                                                                                        // sinnvolle bean
             // start transaction
             try {
                 transactionHelper.beginWork();
