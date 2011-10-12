@@ -32,6 +32,7 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient Logger LOG = Logger.getLogger(DefaultMetaObject.class);
+    private static MetaClassCacheService classCacheService = null;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -86,9 +87,9 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
 
         this.setDummy(o.isDummy());
 
-        if (Lookup.getDefault().lookup(MetaClassCacheService.class) != null) {
-            this.setAllClasses();
-        }
+//        if (Lookup.getDefault().lookup(MetaClassCacheService.class) != null) {
+        this.setAllClasses();
+//        }
     }
     // bugfix
 
@@ -518,7 +519,9 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
             }
 
             try {
-                final MetaClassCacheService classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
+                if (classCacheService == null) {
+                    classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
+                }
                 if (classCacheService == null) {
                     LOG.warn("MetaClassCacheService not found via lookup"); // NOI18N
                 }
