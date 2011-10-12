@@ -11,6 +11,8 @@ import Sirius.server.newuser.permission.Policy;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import de.cismet.cids.dynamics.CidsBean;
+
 /**
  * DOCUMENT ME!
  *
@@ -29,6 +31,25 @@ public class MetaObjectNode extends Node implements Comparable {
     protected volatile MetaObject theObject;
 
     //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new MetaObjectNode object.
+     *
+     * @param  cidsBean  DOCUMENT ME!
+     */
+    public MetaObjectNode(final CidsBean cidsBean) {
+        this(
+            -1,
+            cidsBean.getMetaObject().getMetaClass().getDomain(),
+            cidsBean.getMetaObject(),
+            cidsBean.toString(),
+            null,
+            true,
+            Policy.createWIKIPolicy(),
+            -1,
+            null,
+            true);
+    }
 
     /**
      * Creates a new MetaObjectNode object.
