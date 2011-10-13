@@ -86,10 +86,6 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
         }
 
         this.setDummy(o.isDummy());
-
-//        if (Lookup.getDefault().lookup(MetaClassCacheService.class) != null) {
-        this.setAllClasses();
-//        }
     }
     // bugfix
 
@@ -524,8 +520,9 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
                 }
                 if (classCacheService == null) {
                     LOG.warn("MetaClassCacheService not found via lookup"); // NOI18N
+                } else {
+                    classes = classCacheService.getAllClasses(domain);
                 }
-                classes = classCacheService.getAllClasses(domain);
             } catch (Exception e) {
                 LOG.error("Error while setting classes.", e);               // NOI18N
             }
