@@ -341,11 +341,19 @@ public class BeanFactory {
             }
         }
         // FIXME: immutable collection instead of possible mutable (-> corrputable) array?
-        final CtField propertyNamesStaticField = CtField.make(
-                "private String[] PROPERTY_NAMES = new String[]{" // NOI18N
-                        + propertyNames
-                        + "};",                                   // NOI18N
-                ctClass);
+        // empty array initialiser causes compile error (new Object[] {})
+        final CtField propertyNamesStaticField;
+        if (propertyNames.length() == 0) {
+            propertyNamesStaticField = CtField.make(
+                    "private String[] PROPERTY_NAMES = new String[0];", // NOI18N
+                    ctClass);
+        } else {
+            propertyNamesStaticField = CtField.make(
+                    "private String[] PROPERTY_NAMES = new String[]{" // NOI18N
+                            + propertyNames
+                            + "};", // NOI18N
+                    ctClass);
+        }
         final CtMethod propertyNamesGetter = CtNewMethod.getter("getPropertyNames", propertyNamesStaticField); // NOI18N
         ctClass.addField(propertyNamesStaticField);
         ctClass.addMethod(propertyNamesGetter);
