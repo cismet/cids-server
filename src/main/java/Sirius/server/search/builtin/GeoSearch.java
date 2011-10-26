@@ -23,24 +23,16 @@
  */
 package Sirius.server.search.builtin;
 
-import Sirius.server.localserver.object.ObjectHierarchy;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
-import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.middleware.types.Node;
 import Sirius.server.search.CidsServerSearch;
-import Sirius.server.search.StaticSearchTools;
 
 import com.vividsolutions.jts.geom.Geometry;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-
-import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
-
-import de.cismet.tools.collections.MultiMap;
 
 /**
  * DOCUMENT ME!
@@ -73,9 +65,6 @@ public class GeoSearch extends CidsServerSearch {
         try {
             getLog().info("geosearch started");
 
-            final Collection<MetaClass> classes = getValidClasses();
-
-//          "select class_id,object_id,name from GEOSUCHE where class_id in <cidsClassesInStatement> and geo_field && GeometryFromText('SRID=-1;<cidsSearchGeometryWKT>') and intersects(geo_field,GeometryFromText('SRID=-1;<cidsSearchGeometryWKT>'))";
             final String sql = "WITH recursive derived_index(ocid,oid,acid,aid,depth) AS "
                         + "( "
                         + "SELECT class_id,object_id,cast (NULL AS int), cast (NULL AS int),0 "
@@ -98,6 +87,15 @@ public class GeoSearch extends CidsServerSearch {
             final String cidsSearchGeometryWKT = searchGeometry.toText();
             final String sridString = Integer.toString(searchGeometry.getSRID());
 
+            if ((cidsSearchGeometryWKT == null) || (cidsSearchGeometryWKT.trim().length() == 0)
+                        || (sridString == null)
+                        || (sridString.trim().length() == 0)) {
+                // TODO: Notify user?
+                getLog().error(
+                    "Search geometry or srid is not given. Can't perform a search without those information.");
+                return aln;
+            }
+
             for (final Object key : keyset) {
                 final MetaService ms = (MetaService)getActiveLoaclServers().get(key);
                 final String classesInStatement = getClassesInSnippetsPerDomain().get((String)key);
@@ -110,23 +108,32 @@ public class GeoSearch extends CidsServerSearch {
                 if (getLog().isDebugEnabled()) {
                     getLog().debug("cidsSearchGeometrySRID=" + sridString);
                 }
+
+                if ((classesInStatement == null) || (classesInStatement.trim().length() == 0)) {
+                    getLog().warn("There are no search classes defined for domain '" + key
+                                + "'. This domain will be skipped.");
+                    continue;
+                }
+
                 final String sqlStatement = sql.replaceAll("<cidsClassesInStatement>", classesInStatement)
                             .replaceAll("<cidsSearchGeometryWKT>", cidsSearchGeometryWKT)
                             .replaceAll("<cidsSearchGeometrySRID>", sridString);
+
                 getLog().info("geosearch: " + sqlStatement);
+
                 final ArrayList<ArrayList> result = ms.performCustomSearch(sqlStatement);
+
                 for (final ArrayList al : result) {
                     final int cid = (Integer)al.get(0);
                     final int oid = (Integer)al.get(1);
-                    final String name = null; // (String) al.get(2);
                     final MetaObjectNode mon = new MetaObjectNode((String)key, oid, cid);
                     aln.add(mon);
                 }
             }
-            return aln;
         } catch (Exception e) {
             getLog().error("Problem during GEOSEARCH", e);
-            return aln;
         }
+
+        return aln;
     }
 }
