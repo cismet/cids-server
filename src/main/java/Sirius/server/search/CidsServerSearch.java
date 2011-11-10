@@ -26,6 +26,8 @@ package Sirius.server.search;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.newuser.User;
 
+import org.apache.log4j.Logger;
+
 import java.io.Serializable;
 
 import java.util.ArrayList;
@@ -43,14 +45,15 @@ public abstract class CidsServerSearch implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
+    private static final transient Logger LOG = Logger.getLogger(CidsServerSearch.class);
+
     public static String ALL_DOMAINS = "##ALL_CIDS_DOMAINS##";
     public static String USER_DOMAIN = "##CIDS_USERDOMAIN##";
 
     //~ Instance fields --------------------------------------------------------
 
-    HashMap<String, ArrayList<MetaClass>> classesPerDomain = new HashMap<String, ArrayList<MetaClass>>();
+    private final HashMap<String, ArrayList<MetaClass>> classesPerDomain = new HashMap<String, ArrayList<MetaClass>>();
 
-    private transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
     private User user;
     private Hashtable activeLoaclServers;
     private HashMap<String, String> classesInSnippetsPerDomain = new HashMap<String, String>();
@@ -184,10 +187,7 @@ public abstract class CidsServerSearch implements Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    protected org.apache.log4j.Logger getLog() {
-        if (log == null) {
-            log = org.apache.log4j.Logger.getLogger(this.getClass());
-        }
-        return log;
+    protected Logger getLog() {
+        return LOG;
     }
 }
