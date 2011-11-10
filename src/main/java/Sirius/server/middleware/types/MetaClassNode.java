@@ -46,24 +46,61 @@ public class MetaClassNode extends Node implements Comparable {
             final String icon,
             final boolean derivePermissionsFromClass,
             final int classId) {
-        super(id, name, domain, description, isLeaf, policy, iconFactory, icon, derivePermissionsFromClass);
-        this.classId = classID;
+        this(
+            id,
+            domain,
+            classID,
+            name,
+            description,
+            isLeaf,
+            policy,
+            iconFactory,
+            icon,
+            derivePermissionsFromClass,
+            classId,
+            null);
     }
 
-//      public MetaClassNode(MetaClassNode node)
-//      {
-//              super(node);
-//              this.classId=node.getClassID();
-//
-//      }
+    /**
+     * Creates a new MetaClassNode object.
+     *
+     * @param  id                          DOCUMENT ME!
+     * @param  domain                      DOCUMENT ME!
+     * @param  classID                     DOCUMENT ME!
+     * @param  name                        DOCUMENT ME!
+     * @param  description                 DOCUMENT ME!
+     * @param  isLeaf                      DOCUMENT ME!
+     * @param  policy                      DOCUMENT ME!
+     * @param  iconFactory                 DOCUMENT ME!
+     * @param  icon                        DOCUMENT ME!
+     * @param  derivePermissionsFromClass  DOCUMENT ME!
+     * @param  classId                     DOCUMENT ME!
+     * @param  artificialId                DOCUMENT ME!
+     */
+    public MetaClassNode(final int id,
+            final String domain,
+            final int classID,
+            final String name,
+            final String description,
+            final boolean isLeaf,
+            final Policy policy,
+            final int iconFactory,
+            final String icon,
+            final boolean derivePermissionsFromClass,
+            final int classId,
+            final String artificialId) {
+        super(
+            id,
+            name,
+            domain,
+            description,
+            isLeaf,
+            policy,
+            iconFactory,
+            icon,
+            derivePermissionsFromClass,
+            artificialId);
 
-//      public MetaClassNode(Sirius.server.localserver.tree.node.ClassNode node,String domain) throws Exception
-//              {
-//                      super(node,domain);
-//                      this.classId=node.getClassID();
-//
-//      }
-
-//--------------------------------------
-
+        super.classId = classID;
+    }
 }

@@ -60,6 +60,7 @@ CREATE TABLE cs_config_attr_jt (
     dom_id INTEGER NOT NULL,
     key_id INTEGER NOT NULL,
     val_id INTEGER NOT NULL,
+  -- type is only for editing purposes, determines which editor is suited best
     type_id INTEGER,
     FOREIGN KEY (usr_id) REFERENCES cs_usr,
     FOREIGN KEY (ug_id) REFERENCES cs_ug,
@@ -67,6 +68,7 @@ CREATE TABLE cs_config_attr_jt (
     FOREIGN KEY (key_id) REFERENCES cs_config_attr_key,
     FOREIGN KEY (val_id) REFERENCES cs_config_attr_value,
     FOREIGN KEY (type_id) REFERENCES cs_config_attr_type,
+    -- NULL != NULL in this case so don't fully rely on that
     UNIQUE ( usr_id, ug_id, dom_id, key_id) );
 
 COMMIT;
