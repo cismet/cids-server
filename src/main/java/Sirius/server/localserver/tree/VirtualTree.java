@@ -21,6 +21,7 @@ import Sirius.server.newuser.permission.Permission;
 import Sirius.server.newuser.permission.Policy;
 import Sirius.server.newuser.permission.PolicyHolder;
 import Sirius.server.property.ServerProperties;
+import Sirius.server.sql.DBBackend;
 import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DBConnectionPool;
 
@@ -112,6 +113,17 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             throws SQLException {
         final int ug_id = idMap.getLocalUgId(ug);
 
+        boolean artificialIdSupported = false;
+        ResultSet set = null;
+        try {
+            set = conPool.submitInternalQuery(DBBackend.DESC_TABLE_HAS_COLUMN, "cs_cat_node", "artificial_id"); // NOI18N
+            artificialIdSupported = set.next();
+        } catch (final SQLException e) {
+            LOG.warn("cannot test for artificial id support, support disabled", e);                             // NOI18N
+        } finally {
+            DBConnection.closeResultSets(set);
+        }
+
         //J-
         final String localChildren =
                 "SELECT "                                                                                    // NOI18N
@@ -129,8 +141,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                     + "y.policy, "                                                                           // NOI18N
                     + "iconfactory, "                                                                        // NOI18N
                     + "icon, "                                                                               // NOI18N
-                    + "derive_permissions_from_class, "                                                      // NOI18N
-                    + "artificial_id "                                                                       // NOI18N
+                    + "derive_permissions_from_class"                                                        // NOI18N
+                    + (artificialIdSupported ? ", artificial_id " : " ")                                     // NOI18N
                 + "FROM "                                                                                    // NOI18N
                     + "("                                                                                    // NOI18N
                     + "SELECT "                                                                              // NOI18N
@@ -145,8 +157,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                         + "prot_prefix || server || path || object_name AS url, "                            // NOI18N
                         + "iconfactory, "                                                                    // NOI18N
                         + "icon, "                                                                           // NOI18N
-                        + "derive_permissions_from_class, "                                                  // NOI18N
-                        + "artificial_id "                                                                   // NOI18N
+                        + "derive_permissions_from_class"                                                    // NOI18N
+                            + (artificialIdSupported ? ", artificial_id " : " ")                             // NOI18N
                     + "FROM "                                                                                // NOI18N
                         + "cs_cat_node AS n "                                                                // NOI18N
                     + "LEFT OUTER JOIN url ON (n.descr = url.id) "                                           // NOI18N

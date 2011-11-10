@@ -39,6 +39,7 @@ public interface DBBackend extends Shutdownable {
     String DESC_FETCH_HISTORY_LIMIT = "fetch_history_limit";                               // NOI18N
     String DESC_INSERT_HISTORY_ENTRY = "insert_history_entry";                             // NOI18N
     String DESC_HAS_HISTORY = "has_history";                                               // NOI18N
+    String DESC_TABLE_HAS_COLUMN = "table_has_column";                                     // NOI18N
 
     //~ Methods ----------------------------------------------------------------
 
