@@ -33,6 +33,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyDescriptor;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -382,31 +383,35 @@ public class CidsBean implements PropertyChangeListener {
         final String field = evt.getPropertyName();
 
         final ObjectAttribute oa = metaObject.getAttributeByFieldName(field);
-        final Object oldValue = oa.getValue();
-        final Object value = evt.getNewValue();
-        if (oa.referencesObject() && (value instanceof CidsBean) && (value != null)) {
-            final CidsBean cbv = (CidsBean)value;
-            oa.setValue(cbv.getMetaObject());
-            cbv.setBacklinkInformation(field, this);
-            if (cbv.getMetaObject().getStatus() == MetaObject.TO_DELETE) {
-                cbv.getMetaObject().setStatus(MetaObject.MODIFIED);
+
+        // if oa is array we won't have to do anything because the listElement* operations take care of array elements
+        if (!oa.isArray()) {
+            final Object oldValue = oa.getValue();
+            final Object value = evt.getNewValue();
+            if (oa.referencesObject() && (value instanceof CidsBean) && (value != null)) {
+                final CidsBean cbv = (CidsBean)value;
+                oa.setValue(cbv.getMetaObject());
+                cbv.setBacklinkInformation(field, this);
+                if (cbv.getMetaObject().getStatus() == MetaObject.TO_DELETE) {
+                    cbv.getMetaObject().setStatus(MetaObject.MODIFIED);
+                }
+            } else {
+                oa.setValue(value);
             }
-        } else {
-            oa.setValue(value);
-        }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("a property changed:" + metaObject.getDebugString()); // NOI18N
-        }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("a property changed:" + metaObject.getDebugString()); // NOI18N
+            }
 
-        if (((oldValue == null) && (value != null)) || ((oldValue != null) && !oldValue.equals(value))) {
-            oa.setChanged(true);
-            metaObject.setStatus(MetaObject.MODIFIED);
+            if (((oldValue == null) && (value != null)) || ((oldValue != null) && !oldValue.equals(value))) {
+                oa.setChanged(true);
+                metaObject.setStatus(MetaObject.MODIFIED);
 
-            final ObjectAttribute referencingOA = metaObject.getReferencingObjectAttribute();
-            walkUpAndSetChangedAndModified(referencingOA);
-        } else {
-            LOG.info("set with the same value. no status change required (" + field + ":" + value + ")"); // NOI18N
+                final ObjectAttribute referencingOA = metaObject.getReferencingObjectAttribute();
+                walkUpAndSetChangedAndModified(referencingOA);
+            } else {
+                LOG.info("set with the same value. no status change required (" + field + ":" + value + ")"); // NOI18N
+            }
         }
     }
 
@@ -527,8 +532,11 @@ public class CidsBean implements PropertyChangeListener {
             final ObservableList list,
             final int index,
             final int length) {
+        final List<CidsBean> old = new ArrayList<CidsBean>(list);
+
         for (int i = index; i < (index + length); ++i) {
             try {
+                old.remove(i);
                 final Object o = list.get(i);
                 if (arrayfield != null) {
                     if (o instanceof CidsBean) {
@@ -596,10 +604,12 @@ public class CidsBean implements PropertyChangeListener {
                 } else {
                     throw new IllegalArgumentException("ObservableList is not registered as Array");        // NOI18N
                 }
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 LOG.error("Fehler in listElementsAdded", e);                                                // NOI18N
             }
         }
+
+        propertyChangeSupport.firePropertyChange(arrayfield, old, getBeanCollectionProperty(arrayfield));
     }
 
     /**
@@ -638,6 +648,10 @@ public class CidsBean implements PropertyChangeListener {
             }
         }
         getMetaObject().setStatus(MetaObject.MODIFIED);
+
+        final ArrayList<CidsBean> old = new ArrayList(list);
+        old.addAll(index, oldElements);
+        propertyChangeSupport.firePropertyChange(arrayfield, old, getBeanCollectionProperty(arrayfield));
     }
 
     /**
@@ -652,6 +666,9 @@ public class CidsBean implements PropertyChangeListener {
             final ObservableList list,
             final int index,
             final Object oldElement) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("listElementReplaced: " + this, new Exception());
+        }
     }
 
     /**
@@ -664,6 +681,9 @@ public class CidsBean implements PropertyChangeListener {
      * @param  index       the index of the element that changed
      */
     public void listElementPropertyChanged(final String arrayfield, final ObservableList list, final int index) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("listElementPropertyChanged: " + this, new Exception());
+        }
     }
 
     /**
