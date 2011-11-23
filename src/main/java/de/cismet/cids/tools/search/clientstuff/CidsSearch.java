@@ -41,4 +41,11 @@ public interface CidsSearch {
      * @return  DOCUMENT ME!
      */
     ImageIcon getIcon();
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    String getHint();
 }
