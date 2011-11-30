@@ -68,12 +68,12 @@ public class FullTextSearch extends CidsServerSearch {
             final String sql =
                 "select  distinct class_id,object_id,name,string_val  from TEXTSEARCH where lower(string_val) like lower('%<cidsSearchText>%') and class_id in <cidsClassesInStatement>";
             // Deppensuche sequentiell
-            final HashSet keyset = new HashSet(getActiveLoaclServers().keySet());
+            final HashSet keyset = new HashSet(getActiveLocalServers().keySet());
 
             final ArrayList<Node> aln = new ArrayList<Node>();
 
             for (final Object key : keyset) {
-                final MetaService ms = (MetaService)getActiveLoaclServers().get(key);
+                final MetaService ms = (MetaService)getActiveLocalServers().get(key);
                 final String classesInStatement = getClassesInSnippetsPerDomain().get((String)key);
                 final String sqlStatement = sql.replaceAll("<cidsClassesInStatement>", classesInStatement)
                             .replaceAll("<cidsSearchText>", searchText);

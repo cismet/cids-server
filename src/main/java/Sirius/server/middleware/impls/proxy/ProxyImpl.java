@@ -35,6 +35,7 @@ import Sirius.util.image.Image;
 
 import org.apache.log4j.Logger;
 
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -64,6 +65,8 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
 
     private static final transient Logger LOG = Logger.getLogger(ProxyImpl.class);
 
+    private static final transient Logger LOGINLOG = Logger.getLogger("de.cismet.cids.System");
+
     //~ Instance fields --------------------------------------------------------
 
     private final transient ServerProperties properties;
@@ -89,7 +92,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      */
     public ProxyImpl(final ServerProperties properties) throws RemoteException {
         super(properties.getServerPort());
-
+        LOGINLOG.info("SERVERSTART----");
         try {
             this.properties = properties;
 
@@ -599,6 +602,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             final String userLsName,
             final String userName,
             final String password) throws RemoteException, UserException {
+        LOGINLOG.fatal("Login: " + userName + "@" + userGroupName + "@" + userGroupLsName);
         return userService.getUser(
                 userLsName,
                 userGroupName,

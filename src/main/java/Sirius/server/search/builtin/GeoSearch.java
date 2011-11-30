@@ -78,12 +78,12 @@ public class GeoSearch extends CidsServerSearch {
                         + ") "
                         + "AND geo_field && GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>') AND intersects(geo_field,GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>')) "
                         + "UNION ALL "
-                        + "SELECT aam.class_id,aam.object_id, aam.attr_class_id, aam.attr_object_id,di.depth+1 FROM cs_all_attr_mapping aam,derived_index di WHERE aam.attr_class_id=di.ocid AND aam.attr_object_id=di.oid"
+                        + "SELECT aam.class_id,aam.object_id, aam.attr_class_id, aam.attr_object_id,di.depth+1 FROM cs_attr_object aam,derived_index di WHERE aam.attr_class_id=di.ocid AND aam.attr_object_id=di.oid"
                         + ") "
                         + "SELECT DISTINCT ocid,oid FROM derived_index WHERE ocid in <cidsClassesInStatement> LIMIT 1000 ";
 
             // Deppensuche sequentiell
-            final HashSet keyset = new HashSet(getActiveLoaclServers().keySet());
+            final HashSet keyset = new HashSet(getActiveLocalServers().keySet());
             final String cidsSearchGeometryWKT = searchGeometry.toText();
             final String sridString = Integer.toString(searchGeometry.getSRID());
 
@@ -97,7 +97,7 @@ public class GeoSearch extends CidsServerSearch {
             }
 
             for (final Object key : keyset) {
-                final MetaService ms = (MetaService)getActiveLoaclServers().get(key);
+                final MetaService ms = (MetaService)getActiveLocalServers().get(key);
                 final String classesInStatement = getClassesInSnippetsPerDomain().get((String)key);
                 if (getLog().isDebugEnabled()) {
                     getLog().debug("cidsClassesInStatement=" + classesInStatement);

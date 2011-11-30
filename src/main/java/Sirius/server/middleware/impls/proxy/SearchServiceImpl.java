@@ -397,7 +397,7 @@ public class SearchServiceImpl {
      */
     public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) {
         serverSearch.setUser(user);
-        serverSearch.setActiveLoaclServers(activeLocalServers);
+        serverSearch.setActiveLocalServers(activeLocalServers);
         return serverSearch.performServerSearch();
     }
 }
