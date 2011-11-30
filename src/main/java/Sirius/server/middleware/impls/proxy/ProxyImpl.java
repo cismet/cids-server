@@ -603,7 +603,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             final String userLsName,
             final String userName,
             final String password) throws RemoteException, UserException {
-        LOGINLOG.fatal("Login: " + userName + "@" + userGroupName + "@" + userGroupLsName);
+        LOGINLOG.info("Login: " + userName + "@" + userGroupName + "@" + userGroupLsName);
         return userService.getUser(
                 userLsName,
                 userGroupName,
