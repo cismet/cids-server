@@ -24,7 +24,6 @@
 package Sirius.server.search.builtin;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
-import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.middleware.types.Node;
 import Sirius.server.search.CidsServerSearch;
@@ -61,12 +60,14 @@ public class FullTextSearch extends CidsServerSearch {
     @Override
     public Collection performServerSearch() {
         try {
-            getLog().info("geosearch started");
+            getLog().info("FullTextSearch started");
 
-            final Collection<MetaClass> classes = getValidClasses();
-
-            final String sql =
-                "select  distinct class_id,object_id,name,string_val  from TEXTSEARCH where lower(string_val) like lower('%<cidsSearchText>%') and class_id in <cidsClassesInStatement>";
+            String sql =
+                "select distinct class_id,object_id,name,string_val from TEXTSEARCH where lower(string_val) like lower('%<cidsSearchText>%') and class_id in <cidsClassesInStatement>";
+            if (isCaseSensitive()) {
+                sql =
+                    "select distinct class_id,object_id,name,string_val from TEXTSEARCH where string_val like '%<cidsSearchText>%' and class_id in <cidsClassesInStatement>";
+            }
             // Deppensuche sequentiell
             final HashSet keyset = new HashSet(getActiveLoaclServers().keySet());
 
@@ -77,7 +78,9 @@ public class FullTextSearch extends CidsServerSearch {
                 final String classesInStatement = getClassesInSnippetsPerDomain().get((String)key);
                 final String sqlStatement = sql.replaceAll("<cidsClassesInStatement>", classesInStatement)
                             .replaceAll("<cidsSearchText>", searchText);
-                getLog().fatal(sqlStatement);
+                if (getLog().isDebugEnabled()) {
+                    getLog().debug(sqlStatement);
+                }
                 final ArrayList<ArrayList> result = ms.performCustomSearch(sqlStatement);
                 for (final ArrayList al : result) {
                     final int cid = (Integer)al.get(0);
