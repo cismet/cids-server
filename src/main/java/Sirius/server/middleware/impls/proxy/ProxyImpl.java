@@ -35,7 +35,6 @@ import Sirius.util.image.Image;
 
 import org.apache.log4j.Logger;
 
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -602,7 +601,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             final String userLsName,
             final String userName,
             final String password) throws RemoteException, UserException {
-        LOGINLOG.fatal("Login: " + userName + "@" + userGroupName + "@" + userGroupLsName);
+        LOGINLOG.info("Login: " + userName + "@" + userGroupName + "@" + userGroupLsName);
         return userService.getUser(
                 userLsName,
                 userGroupName,
