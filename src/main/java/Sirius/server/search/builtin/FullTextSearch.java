@@ -28,6 +28,8 @@ import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.middleware.types.Node;
 import Sirius.server.search.CidsServerSearch;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -42,17 +44,33 @@ public class FullTextSearch extends CidsServerSearch {
 
     //~ Instance fields --------------------------------------------------------
 
-    String searchText;
+    private String searchText;
+    private boolean caseSensitive;
+    private Geometry geometry;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new FullTextSearch object.
      *
-     * @param  searchText  DOCUMENT ME!
+     * @param  searchText     The text to search for.
+     * @param  caseSensitive  A flag indicating whether to make the search case sensitive or not.
      */
-    public FullTextSearch(final String searchText) {
+    public FullTextSearch(final String searchText, final boolean caseSensitive) {
+        this(searchText, caseSensitive, null);
+    }
+
+    /**
+     * Creates a new FullTextSearch object.
+     *
+     * @param  searchText     The text to search for.
+     * @param  caseSensitive  A flag indicating whether to make the search case sensitive or not.
+     * @param  geometry       The search will be restricted to the given geometry.
+     */
+    public FullTextSearch(final String searchText, final boolean caseSensitive, final Geometry geometry) {
         this.searchText = searchText;
+        this.caseSensitive = caseSensitive;
+        this.geometry = geometry;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -64,7 +82,7 @@ public class FullTextSearch extends CidsServerSearch {
 
             String sql =
                 "select distinct class_id,object_id,name,string_val from TEXTSEARCH where lower(string_val) like lower('%<cidsSearchText>%') and class_id in <cidsClassesInStatement>";
-            if (isCaseSensitive()) {
+            if (caseSensitive) {
                 sql =
                     "select distinct class_id,object_id,name,string_val from TEXTSEARCH where string_val like '%<cidsSearchText>%' and class_id in <cidsClassesInStatement>";
             }

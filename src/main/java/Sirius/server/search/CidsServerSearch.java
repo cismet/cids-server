@@ -58,7 +58,6 @@ public abstract class CidsServerSearch implements Serializable {
     private Hashtable activeLoaclServers;
     private HashMap<String, String> classesInSnippetsPerDomain = new HashMap<String, String>();
     private Collection<MetaClass> validClasses;
-    private boolean caseSensitive = false;
 
     //~ Methods ----------------------------------------------------------------
 
@@ -177,27 +176,11 @@ public abstract class CidsServerSearch implements Serializable {
     }
 
     /**
-     * Tells if this search should be executed case sensitive. You can't rely on this flag. If the search doesn't respect this flag, it tells nothing ;)
+     * Performs the specified search.
      *
-     * @return  A flag indicating if this search should be case sensitive.
-     */
-    public boolean isCaseSensitive() {
-        return caseSensitive;
-    }
-
-    /**
-     * Modify this search to be case sensitive. You can't rely on this flag. If the search doesn't respect this flag, it hasn't any effect.
+     * <p>Be aware that this method runs in server context and terefore has no access to the Navigator or cismap.</p>
      *
-     * @param  caseSensitive  A flag indicating if this search should be case sensitive.
-     */
-    public void setCaseSensitive(final boolean caseSensitive) {
-        this.caseSensitive = caseSensitive;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
+     * @return  The objects matching the specified search.
      */
     public abstract Collection performServerSearch();
 
