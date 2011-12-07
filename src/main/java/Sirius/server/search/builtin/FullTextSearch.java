@@ -111,7 +111,7 @@ public class FullTextSearch extends CidsServerSearch {
             }
             return aln;
         } catch (Exception e) {
-            getLog().fatal("Problem", e);
+            getLog().error("Problem", e);
             return null;
         }
     }
