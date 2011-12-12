@@ -30,6 +30,7 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
@@ -289,11 +290,12 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                     }
                 }
             }
+
+            clientConfig.getProperties().put(ClientConfig.PROPERTY_CONNECT_TIMEOUT, TIMEOUT);
             clientCache.put(path, ApacheHttpClient.create(clientConfig));
         }
 
         final Client c = clientCache.get(path);
-        c.setConnectTimeout(TIMEOUT);
         final UriBuilder uriBuilder = UriBuilder.fromPath(resource);
 
         // add all query params that are present
