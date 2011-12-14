@@ -25,6 +25,7 @@ import org.postgis.PGgeometry;
 
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -50,22 +51,22 @@ public final class PersistenceManager extends Shutdown {
 
     private static final transient Logger LOG = Logger.getLogger(PersistenceManager.class);
 
-    public static final String DEL_ATTR_STRING = "DELETE FROM cs_attr_string "       // NOI18N
-                + "WHERE class_id = ? AND object_id = ?";                            // NOI18N
-    public static final String DEL_ATTR_MAPPING = "DELETE FROM cs_all_attr_mapping " // NOI18N
-                + "WHERE class_id = ? AND object_id = ?";                            // NOI18N
-    public static final String INS_ATTR_STRING = "INSERT INTO cs_attr_string "       // NOI18N
-                + "(class_id, object_id, attr_id, string_val) VALUES (?, ?, ?, ?)";  // NOI18N
-    public static final String INS_ATTR_MAPPING = "INSERT INTO cs_all_attr_mapping " // NOI18N
-                + "(class_id, object_id, attr_class_id, attr_object_id) VALUES "     // NOI18N
-                + "(?, ?, ?, ?)";                                                    // NOI18N
-    public static final String UP_ATTR_STRING = "UPDATE cs_attr_string "             // NOI18N
-                + "SET string_val = ? "                                              // NOI18N
-                + "WHERE class_id = ? AND object_id = ? AND attr_id = ?";            // NOI18N
-    public static final String UP_ATTR_MAPPING = "UPDATE cs_all_attr_mapping "       // NOI18N
-                + "SET attr_object_id = ? "                                          // NOI18N
-                + "WHERE class_id = ? AND object_id = ? AND attr_class_id = ?";      // NOI18N
-    public static final String NULL = "NULL";                                        // NOI18N
+    public static final String DEL_ATTR_STRING = "DELETE FROM cs_attr_string "      // NOI18N
+                + "WHERE class_id = ? AND object_id = ?";                           // NOI18N
+    public static final String DEL_ATTR_MAPPING = "DELETE FROM cs_attr_object "     // NOI18N
+                + "WHERE class_id = ? AND object_id = ?";                           // NOI18N
+    public static final String INS_ATTR_STRING = "INSERT INTO cs_attr_string "      // NOI18N
+                + "(class_id, object_id, attr_id, string_val) VALUES (?, ?, ?, ?)"; // NOI18N
+    public static final String INS_ATTR_MAPPING = "INSERT INTO cs_attr_object "     // NOI18N
+                + "(class_id, object_id, attr_class_id, attr_object_id) VALUES "    // NOI18N
+                + "(?, ?, ?, ?)";                                                   // NOI18N
+    public static final String UP_ATTR_STRING = "UPDATE cs_attr_string "            // NOI18N
+                + "SET string_val = ? "                                             // NOI18N
+                + "WHERE class_id = ? AND object_id = ? AND attr_id = ?";           // NOI18N
+    public static final String UP_ATTR_MAPPING = "UPDATE cs_attr_object "           // NOI18N
+                + "SET attr_object_id = ? "                                         // NOI18N
+                + "WHERE class_id = ? AND object_id = ? AND attr_class_id = ?";     // NOI18N
+    public static final String NULL = "NULL";                                       // NOI18N
 
     //~ Instance fields --------------------------------------------------------
 
@@ -942,31 +943,67 @@ public final class PersistenceManager extends Shutdown {
                     // set the appropriate param values according to the field
                     // value
                     if (mai.isForeignKey()) {
-                        // lazily prepare the statement
-                        if (psAttrMap == null) {
-                            psAttrMap = transactionHelper.getConnection().prepareStatement(UP_ATTR_MAPPING);
-                        }
-                        // if field represents a foreign key the attribute value
-                        // is assumed to be a MetaObject
-                        final MetaObject value = (MetaObject)attr.getValue();
-                        psAttrMap.setInt(1, (value == null) ? -1 : value.getID());
-                        psAttrMap.setInt(2, mo.getClassID());
-                        psAttrMap.setInt(3, mo.getID());
-                        psAttrMap.setInt(4, mai.getForeignKeyClassId());
-                        psAttrMap.addBatch();
-                        if (LOG.isDebugEnabled()) {
-                            final StringBuilder logMessage = new StringBuilder("Parameterized SQL added to batch: ");
-                            logMessage.append(UP_ATTR_MAPPING);
-                            logMessage.append('\n');
-                            logMessage.append("attr_obj_id: ");
-                            logMessage.append(String.valueOf((value == null) ? -1 : value.getID()));
-                            logMessage.append("class_id: ");
-                            logMessage.append(String.valueOf(mo.getClassID()));
-                            logMessage.append("object_id: ");
-                            logMessage.append(String.valueOf(mo.getID()));
-                            logMessage.append("attr_class_id: ");
-                            logMessage.append(String.valueOf(mai.getForeignKeyClassId()));
-                            LOG.debug(logMessage.toString());
+                        if (mai.isArray()) {
+                            attr.getTypeId();
+                            String query = "SELECT table_name FROM cs_class where id = "
+                                        + attr.getMai().getForeignKeyClassId();
+                            final ResultSet rs = transactionHelper.getConnection()
+                                        .createStatement()
+                                        .executeQuery(query);
+
+                            if (rs.next()) {
+                                final String foreignTableName = rs.getString(1);
+                                query = "SELECT id as id FROM " + foreignTableName + " WHERE "
+                                            + mai.getArrayKeyFieldName()
+                                            + " =  " + String.valueOf(mo.getID());
+
+                                final ResultSet arrayList = transactionHelper.getConnection()
+                                            .createStatement()
+                                            .executeQuery(query);
+
+                                while (arrayList.next()) {
+                                    // lazily prepare the statement
+                                    if (psAttrMap == null) {
+                                        psAttrMap = transactionHelper.getConnection().prepareStatement(UP_ATTR_MAPPING);
+                                    }
+                                    psAttrMap.setInt(1, arrayList.getInt(1));
+                                    psAttrMap.setInt(2, mo.getClassID());
+                                    psAttrMap.setInt(3, mo.getID());
+                                    psAttrMap.setInt(4, mai.getForeignKeyClassId());
+                                    psAttrMap.addBatch();
+                                }
+
+                                arrayList.close();
+                            }
+                            rs.close();
+                        } else {
+                            // lazily prepare the statement
+                            if (psAttrMap == null) {
+                                psAttrMap = transactionHelper.getConnection().prepareStatement(UP_ATTR_MAPPING);
+                            }
+                            // if field represents a foreign key the attribute value
+                            // is assumed to be a MetaObject
+                            final MetaObject value = (MetaObject)attr.getValue();
+                            psAttrMap.setInt(1, (value == null) ? -1 : value.getID());
+                            psAttrMap.setInt(2, mo.getClassID());
+                            psAttrMap.setInt(3, mo.getID());
+                            psAttrMap.setInt(4, mai.getForeignKeyClassId());
+                            psAttrMap.addBatch();
+                            if (LOG.isDebugEnabled()) {
+                                final StringBuilder logMessage = new StringBuilder(
+                                        "Parameterized SQL added to batch: ");
+                                logMessage.append(UP_ATTR_MAPPING);
+                                logMessage.append('\n');
+                                logMessage.append("attr_obj_id: ");
+                                logMessage.append(String.valueOf((value == null) ? -1 : value.getID()));
+                                logMessage.append("class_id: ");
+                                logMessage.append(String.valueOf(mo.getClassID()));
+                                logMessage.append("object_id: ");
+                                logMessage.append(String.valueOf(mo.getID()));
+                                logMessage.append("attr_class_id: ");
+                                logMessage.append(String.valueOf(mai.getForeignKeyClassId()));
+                                LOG.debug(logMessage.toString());
+                            }
                         }
                     } else {
                         // lazily prepare the statement
@@ -1071,18 +1108,54 @@ public final class PersistenceManager extends Shutdown {
                     // set the appropriate param values according to the field
                     // value
                     if (mai.isForeignKey()) {
-                        // lazily prepare the statement
-                        if (psAttrMap == null) {
-                            psAttrMap = transactionHelper.getConnection().prepareStatement(INS_ATTR_MAPPING);
+                        if (mai.isArray()) {
+                            attr.getTypeId();
+                            String query = "SELECT table_name FROM cs_class where id = "
+                                        + attr.getMai().getForeignKeyClassId();
+                            final ResultSet rs = transactionHelper.getConnection()
+                                        .createStatement()
+                                        .executeQuery(query);
+
+                            if (rs.next()) {
+                                final String foreignTableName = rs.getString(1);
+                                query = "SELECT id as id FROM " + foreignTableName + " WHERE "
+                                            + mai.getArrayKeyFieldName()
+                                            + " =  " + String.valueOf(mo.getID());
+
+                                final ResultSet arrayList = transactionHelper.getConnection()
+                                            .createStatement()
+                                            .executeQuery(query);
+
+                                while (arrayList.next()) {
+                                    // lazily prepare the statement
+                                    if (psAttrMap == null) {
+                                        psAttrMap = transactionHelper.getConnection()
+                                                    .prepareStatement(INS_ATTR_MAPPING);
+                                    }
+                                    psAttrMap.setInt(1, mo.getClassID());
+                                    psAttrMap.setInt(2, mo.getID());
+                                    psAttrMap.setInt(3, mai.getForeignKeyClassId());
+                                    psAttrMap.setInt(4, arrayList.getInt(1));
+                                    psAttrMap.addBatch();
+                                }
+
+                                arrayList.close();
+                            }
+                            rs.close();
+                        } else {
+                            // lazily prepare the statement
+                            if (psAttrMap == null) {
+                                psAttrMap = transactionHelper.getConnection().prepareStatement(INS_ATTR_MAPPING);
+                            }
+                            psAttrMap.setInt(1, mo.getClassID());
+                            psAttrMap.setInt(2, mo.getID());
+                            psAttrMap.setInt(3, mai.getForeignKeyClassId());
+                            // if field represents a foreign key the attribute value
+                            // is assumed to be a MetaObject
+                            final MetaObject value = (MetaObject)attr.getValue();
+                            psAttrMap.setInt(4, (value == null) ? -1 : value.getID());
+                            psAttrMap.addBatch();
                         }
-                        psAttrMap.setInt(1, mo.getClassID());
-                        psAttrMap.setInt(2, mo.getID());
-                        psAttrMap.setInt(3, mai.getForeignKeyClassId());
-                        // if field represents a foreign key the attribute value
-                        // is assumed to be a MetaObject
-                        final MetaObject value = (MetaObject)attr.getValue();
-                        psAttrMap.setInt(4, (value == null) ? -1 : value.getID());
-                        psAttrMap.addBatch();
                     } else {
                         // lazily prepare the statement
                         if (psAttrString == null) {

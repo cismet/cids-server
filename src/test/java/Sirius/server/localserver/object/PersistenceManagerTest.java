@@ -54,7 +54,7 @@ public class PersistenceManagerTest {
 
     public static final String STMT_SEL_ATTR_STRING = "SELECT * FROM cs_attr_string "
                 + "WHERE class_id = ? and object_id = ?";
-    public static final String STMT_SEL_ATTR_MAP = "SELECT * FROM cs_all_attr_mapping "
+    public static final String STMT_SEL_ATTR_MAP = "SELECT * FROM cs_attr_object "
                 + "WHERE class_id = ? AND object_id = ?";
 
     private static final int DEFAULT_ID = 77777777;
