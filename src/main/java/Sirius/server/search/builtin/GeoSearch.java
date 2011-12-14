@@ -59,65 +59,75 @@ public class GeoSearch extends CidsServerSearch {
 
     //~ Methods ----------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   domainKey  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getGeoSearchSql(final Object domainKey) {
+        final String sql = "WITH recursive derived_index(ocid,oid,acid,aid,depth) AS "
+                    + "( "
+                    + "SELECT class_id,object_id,cast (NULL AS int), cast (NULL AS int),0 "
+                    + "FROM GEOSUCHE WHERE class_id IN"
+                    + "( "
+                    + "WITH recursive derived_child(father,child,depth) AS ( "
+                    + "SELECT father,father,0 FROM cs_class_hierarchy WHERE father in <cidsClassesInStatement> "
+                    + "UNION ALL "
+                    + "SELECT ch.father,ch.child,dc.depth+1  FROM derived_child dc,cs_class_hierarchy ch WHERE ch.father=dc.child) "
+                    + "SELECT DISTINCT father FROM derived_child LIMIT 100 "
+                    + ") "
+                    + "AND geo_field && GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>') AND intersects(geo_field,GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>')) "
+                    + "UNION ALL "
+                    + "SELECT aam.class_id,aam.object_id, aam.attr_class_id, aam.attr_object_id,di.depth+1 FROM cs_attr_object aam,derived_index di WHERE aam.attr_class_id=di.ocid AND aam.attr_object_id=di.oid"
+                    + ") "
+                    + "SELECT DISTINCT ocid,oid FROM derived_index WHERE ocid in <cidsClassesInStatement> LIMIT 1000 ";
+        final String cidsSearchGeometryWKT = searchGeometry.toText();
+        final String sridString = Integer.toString(searchGeometry.getSRID());
+        final String classesInStatement = getClassesInSnippetsPerDomain().get((String)domainKey);
+        if ((cidsSearchGeometryWKT == null) || (cidsSearchGeometryWKT.trim().length() == 0)
+                    || (sridString == null)
+                    || (sridString.trim().length() == 0)) {
+            // TODO: Notify user?
+            getLog().error(
+                "Search geometry or srid is not given. Can't perform a search without those information.");
+            return null;
+        }
+        if (getLog().isDebugEnabled()) {
+            getLog().debug("cidsClassesInStatement=" + classesInStatement);
+        }
+        if (getLog().isDebugEnabled()) {
+            getLog().debug("cidsSearchGeometryWKT=" + cidsSearchGeometryWKT);
+        }
+        if (getLog().isDebugEnabled()) {
+            getLog().debug("cidsSearchGeometrySRID=" + sridString);
+        }
+
+        if ((classesInStatement == null) || (classesInStatement.trim().length() == 0)) {
+            getLog().warn("There are no search classes defined for domain '" + domainKey
+                        + "'. This domain will be skipped.");
+            return null;
+        }
+
+        return sql.replaceAll("<cidsClassesInStatement>", classesInStatement)
+                    .replaceAll("<cidsSearchGeometryWKT>", cidsSearchGeometryWKT)
+                    .replaceAll("<cidsSearchGeometrySRID>", sridString);
+    }
+
     @Override
     public Collection performServerSearch() {
         final ArrayList<Node> aln = new ArrayList<Node>();
         try {
             getLog().info("geosearch started");
 
-            final String sql = "WITH recursive derived_index(ocid,oid,acid,aid,depth) AS "
-                        + "( "
-                        + "SELECT class_id,object_id,cast (NULL AS int), cast (NULL AS int),0 "
-                        + "FROM GEOSUCHE WHERE class_id IN"
-                        + "( "
-                        + "WITH recursive derived_child(father,child,depth) AS ( "
-                        + "SELECT father,father,0 FROM cs_class_hierarchy WHERE father in <cidsClassesInStatement> "
-                        + "UNION ALL "
-                        + "SELECT ch.father,ch.child,dc.depth+1  FROM derived_child dc,cs_class_hierarchy ch WHERE ch.father=dc.child) "
-                        + "SELECT DISTINCT father FROM derived_child LIMIT 100 "
-                        + ") "
-                        + "AND geo_field && GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>') AND intersects(geo_field,GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>')) "
-                        + "UNION ALL "
-                        + "SELECT aam.class_id,aam.object_id, aam.attr_class_id, aam.attr_object_id,di.depth+1 FROM cs_attr_object aam,derived_index di WHERE aam.attr_class_id=di.ocid AND aam.attr_object_id=di.oid"
-                        + ") "
-                        + "SELECT DISTINCT ocid,oid FROM derived_index WHERE ocid in <cidsClassesInStatement> LIMIT 1000 ";
-
             // Deppensuche sequentiell
             final HashSet keyset = new HashSet(getActiveLoaclServers().keySet());
-            final String cidsSearchGeometryWKT = searchGeometry.toText();
-            final String sridString = Integer.toString(searchGeometry.getSRID());
 
-            if ((cidsSearchGeometryWKT == null) || (cidsSearchGeometryWKT.trim().length() == 0)
-                        || (sridString == null)
-                        || (sridString.trim().length() == 0)) {
-                // TODO: Notify user?
-                getLog().error(
-                    "Search geometry or srid is not given. Can't perform a search without those information.");
-                return aln;
-            }
+            for (final Object domainKey : keyset) {
+                final MetaService ms = (MetaService)getActiveLoaclServers().get(domainKey);
 
-            for (final Object key : keyset) {
-                final MetaService ms = (MetaService)getActiveLoaclServers().get(key);
-                final String classesInStatement = getClassesInSnippetsPerDomain().get((String)key);
-                if (getLog().isDebugEnabled()) {
-                    getLog().debug("cidsClassesInStatement=" + classesInStatement);
-                }
-                if (getLog().isDebugEnabled()) {
-                    getLog().debug("cidsSearchGeometryWKT=" + cidsSearchGeometryWKT);
-                }
-                if (getLog().isDebugEnabled()) {
-                    getLog().debug("cidsSearchGeometrySRID=" + sridString);
-                }
-
-                if ((classesInStatement == null) || (classesInStatement.trim().length() == 0)) {
-                    getLog().warn("There are no search classes defined for domain '" + key
-                                + "'. This domain will be skipped.");
-                    continue;
-                }
-
-                final String sqlStatement = sql.replaceAll("<cidsClassesInStatement>", classesInStatement)
-                            .replaceAll("<cidsSearchGeometryWKT>", cidsSearchGeometryWKT)
-                            .replaceAll("<cidsSearchGeometrySRID>", sridString);
+                final String sqlStatement = getGeoSearchSql(domainKey);
 
                 getLog().info("geosearch: " + sqlStatement);
 
@@ -126,7 +136,7 @@ public class GeoSearch extends CidsServerSearch {
                 for (final ArrayList al : result) {
                     final int cid = (Integer)al.get(0);
                     final int oid = (Integer)al.get(1);
-                    final MetaObjectNode mon = new MetaObjectNode((String)key, oid, cid);
+                    final MetaObjectNode mon = new MetaObjectNode((String)domainKey, oid, cid);
                     aln.add(mon);
                 }
             }

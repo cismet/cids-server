@@ -176,6 +176,15 @@ public abstract class CidsServerSearch implements Serializable {
     }
 
     /**
+     * DOCUMENT ME!
+     *
+     * @param  classesInSnippetsPerDomain  DOCUMENT ME!
+     */
+    public void setClassesInSnippetsPerDomain(final HashMap<String, String> classesInSnippetsPerDomain) {
+        this.classesInSnippetsPerDomain = classesInSnippetsPerDomain;
+    }
+
+    /**
      * Performs the specified search.
      *
      * <p>Be aware that this method runs in server context and terefore has no access to the Navigator or cismap.</p>
