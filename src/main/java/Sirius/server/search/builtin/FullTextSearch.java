@@ -101,7 +101,7 @@ public class FullTextSearch extends CidsServerSearch {
                         + "                             father , "
                         + "                             0 "
                         + "                     FROM    cs_class_hierarchy "
-                        + "                     WHERE   father IN (<cidsClassesInStatement>) "
+                        + "                     WHERE   father IN <cidsClassesInStatement> "
                         + "                      "
                         + "                     UNION ALL "
                         + "                      "
@@ -130,7 +130,7 @@ public class FullTextSearch extends CidsServerSearch {
                         + ") "
                         + "SELECT * "
                         + "FROM   derived_index "
-                        + "WHERE  ocid IN (<cidsClassesInStatement>) LIMIT 1000) as x";
+                        + "WHERE  ocid IN <cidsClassesInStatement> LIMIT 1000) as x";
 
             final String geoMidFix = " ) as txt,(select distinct ocid,oid from (";
 
