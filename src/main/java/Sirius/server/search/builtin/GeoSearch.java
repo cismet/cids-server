@@ -70,7 +70,7 @@ public class GeoSearch extends CidsServerSearch {
         final String sql = "WITH recursive derived_index(ocid,oid,acid,aid,depth) AS "
                     + "( "
                     + "SELECT class_id,object_id,cast (NULL AS int), cast (NULL AS int),0 "
-                    + "FROM GEOSUCHE WHERE class_id IN"
+                    + "FROM GEOSUCHE2 WHERE class_id IN"
                     + "( "
                     + "WITH recursive derived_child(father,child,depth) AS ( "
                     + "SELECT father,father,0 FROM cs_class_hierarchy WHERE father in <cidsClassesInStatement> "
