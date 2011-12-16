@@ -128,16 +128,16 @@ public class GeoSearch extends CidsServerSearch {
                 final MetaService ms = (MetaService)getActiveLoaclServers().get(domainKey);
 
                 final String sqlStatement = getGeoSearchSql(domainKey);
+                if (sqlStatement != null) {
+                    getLog().info("geosearch: " + sqlStatement);
+                    final ArrayList<ArrayList> result = ms.performCustomSearch(sqlStatement);
 
-                getLog().info("geosearch: " + sqlStatement);
-
-                final ArrayList<ArrayList> result = ms.performCustomSearch(sqlStatement);
-
-                for (final ArrayList al : result) {
-                    final int cid = (Integer)al.get(0);
-                    final int oid = (Integer)al.get(1);
-                    final MetaObjectNode mon = new MetaObjectNode((String)domainKey, oid, cid);
-                    aln.add(mon);
+                    for (final ArrayList al : result) {
+                        final int cid = (Integer)al.get(0);
+                        final int oid = (Integer)al.get(1);
+                        final MetaObjectNode mon = new MetaObjectNode((String)domainKey, oid, cid);
+                        aln.add(mon);
+                    }
                 }
             }
         } catch (Exception e) {
