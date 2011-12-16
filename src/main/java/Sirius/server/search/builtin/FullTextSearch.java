@@ -149,25 +149,27 @@ public class FullTextSearch extends CidsServerSearch {
             for (final Object key : keyset) {
                 final MetaService ms = (MetaService)getActiveLoaclServers().get(key);
                 final String classesInStatement = getClassesInSnippetsPerDomain().get((String)key);
-                String sqlStatement = sql.replaceAll("<cidsClassesInStatement>", classesInStatement)
-                            .replaceAll("<cidsSearchText>", searchText);
+                if (classesInStatement != null) {
+                    String sqlStatement = sql.replaceAll("<cidsClassesInStatement>", classesInStatement)
+                                .replaceAll("<cidsSearchText>", searchText);
 
-                if (geometry != null) {
-                    final String geoSql = geoSearch.getGeoSearchSql(key);
-                    if (geoSql != null) {
-                        sqlStatement = geoPrefix + sqlStatement + geoMidFix + geoSql + geoPostfix;
+                    if (geometry != null) {
+                        final String geoSql = geoSearch.getGeoSearchSql(key);
+                        if (geoSql != null) {
+                            sqlStatement = geoPrefix + sqlStatement + geoMidFix + geoSql + geoPostfix;
+                        }
                     }
-                }
 
-                if (getLog().isDebugEnabled()) {
-                    getLog().debug(sqlStatement);
-                }
-                final ArrayList<ArrayList> result = ms.performCustomSearch(sqlStatement);
-                for (final ArrayList al : result) {
-                    final int cid = (Integer)al.get(0);
-                    final int oid = (Integer)al.get(1);
-                    final MetaObjectNode mon = new MetaObjectNode((String)key, oid, cid);
-                    aln.add(mon);
+                    if (getLog().isDebugEnabled()) {
+                        getLog().debug(sqlStatement);
+                    }
+                    final ArrayList<ArrayList> result = ms.performCustomSearch(sqlStatement);
+                    for (final ArrayList al : result) {
+                        final int cid = (Integer)al.get(0);
+                        final int oid = (Integer)al.get(1);
+                        final MetaObjectNode mon = new MetaObjectNode((String)key, oid, cid);
+                        aln.add(mon);
+                    }
                 }
             }
             return aln;
