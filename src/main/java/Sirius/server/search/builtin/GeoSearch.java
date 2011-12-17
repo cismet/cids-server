@@ -67,9 +67,9 @@ public class GeoSearch extends CidsServerSearch {
      * @return  DOCUMENT ME!
      */
     public String getGeoSearchSql(final Object domainKey) {
-        final String sql = "WITH recursive derived_index(ocid,oid,acid,aid,depth) AS "
+        final String sql = "WITH recursive derived_index(ocid,oid,stringrep,acid,aid,depth) AS "
                     + "( "
-                    + "SELECT class_id,object_id,cast (NULL AS int), cast (NULL AS int),0 "
+                    + "SELECT class_id,object_id,stringrep,cast (NULL AS int), cast (NULL AS int),0 "
                     + "FROM GEOSUCHE2 WHERE class_id IN"
                     + "( "
                     + "WITH recursive derived_child(father,child,depth) AS ( "
@@ -80,9 +80,9 @@ public class GeoSearch extends CidsServerSearch {
                     + ") "
                     + "AND geo_field && GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>') AND intersects(geo_field,GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>')) "
                     + "UNION ALL "
-                    + "SELECT aam.class_id,aam.object_id, aam.attr_class_id, aam.attr_object_id,di.depth+1 FROM cs_attr_object aam,derived_index di WHERE aam.attr_class_id=di.ocid AND aam.attr_object_id=di.oid"
+                    + "SELECT aam.class_id,aam.object_id,stringrep, aam.attr_class_id, aam.attr_object_id,di.depth+1 FROM cs_attr_object aam,derived_index di WHERE aam.attr_class_id=di.ocid AND aam.attr_object_id=di.oid"
                     + ") "
-                    + "SELECT DISTINCT ocid,oid FROM derived_index WHERE ocid in <cidsClassesInStatement> LIMIT 1000 ";
+                    + "SELECT DISTINCT ocid,oid,stringrep FROM derived_index WHERE ocid in <cidsClassesInStatement> LIMIT 1000 ";
         final String cidsSearchGeometryWKT = searchGeometry.toText();
         final String sridString = Integer.toString(searchGeometry.getSRID());
         final String classesInStatement = getClassesInSnippetsPerDomain().get((String)domainKey);
@@ -135,7 +135,13 @@ public class GeoSearch extends CidsServerSearch {
                     for (final ArrayList al : result) {
                         final int cid = (Integer)al.get(0);
                         final int oid = (Integer)al.get(1);
-                        final MetaObjectNode mon = new MetaObjectNode((String)domainKey, oid, cid);
+                        String name = null;
+                        try {
+                            name = (String)al.get(2);
+                        } catch (Exception e) {
+                        }
+
+                        final MetaObjectNode mon = new MetaObjectNode((String)domainKey, oid, cid, name);
                         aln.add(mon);
                     }
                 }
