@@ -76,7 +76,7 @@ public class GeoSearch extends CidsServerSearch {
                     + "SELECT father,father,0 FROM cs_class_hierarchy WHERE father in <cidsClassesInStatement> "
                     + "UNION ALL "
                     + "SELECT ch.father,ch.child,dc.depth+1  FROM derived_child dc,cs_class_hierarchy ch WHERE ch.father=dc.child) "
-                    + "SELECT DISTINCT father FROM derived_child LIMIT 100 "
+                    + "SELECT DISTINCT child FROM derived_child LIMIT 100 "
                     + ") "
                     + "AND geo_field && GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>') AND intersects(geo_field,GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>')) "
                     + "UNION ALL "

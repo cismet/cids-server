@@ -112,7 +112,7 @@ public class FullTextSearch extends CidsServerSearch {
                         + "                            cs_class_hierarchy ch "
                         + "                     WHERE  ch.father=dc.child "
                         + "                     ) "
-                        + "              SELECT DISTINCT father "
+                        + "              SELECT DISTINCT child "
                         + "              FROM            derived_child LIMIT 100 ) "
                         + "AND             string_val " + caseSensitiveI + "LIKE '%<cidsSearchText>%' "
                         + " "
