@@ -21,6 +21,8 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import org.apache.log4j.Logger;
 
+import org.openide.util.Lookup;
+
 import org.postgis.PGgeometry;
 
 import java.sql.ParameterMetaData;
@@ -30,8 +32,14 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+
+import de.cismet.cids.trigger.CidsTrigger;
+import de.cismet.cids.trigger.CidsTriggerKey;
+import de.cismet.cids.trigger.DBAwareCidsTrigger;
 
 import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
 
@@ -50,7 +58,6 @@ public final class PersistenceManager extends Shutdown {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient Logger LOG = Logger.getLogger(PersistenceManager.class);
-
     public static final String DEL_ATTR_STRING = "DELETE FROM cs_attr_string "      // NOI18N
                 + "WHERE class_id = ? AND object_id = ?";                           // NOI18N
     public static final String DEL_ATTR_MAPPING = "DELETE FROM cs_attr_object "     // NOI18N
@@ -73,6 +80,11 @@ public final class PersistenceManager extends Shutdown {
     private final transient DBServer dbServer;
     private final transient TransactionHelper transactionHelper;
     private final transient PersistenceHelper persistenceHelper;
+    private final Collection<? extends CidsTrigger> allTriggers;
+    private final Collection<CidsTrigger> generalTriggers = new ArrayList<CidsTrigger>();
+    private final Collection<CidsTrigger> crossDomainTrigger = new ArrayList<CidsTrigger>();
+    private final HashMap<CidsTriggerKey, Collection<CidsTrigger>> triggers =
+        new HashMap<CidsTriggerKey, Collection<CidsTrigger>>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -83,8 +95,25 @@ public final class PersistenceManager extends Shutdown {
      */
     public PersistenceManager(final DBServer dbServer) {
         this.dbServer = dbServer;
+
         transactionHelper = new TransactionHelper(dbServer.getActiveDBConnection(), dbServer.getSystemProperties());
         persistenceHelper = new PersistenceHelper(dbServer);
+        final Lookup.Result<CidsTrigger> result = Lookup.getDefault().lookupResult(CidsTrigger.class);
+        allTriggers = result.allInstances();
+        for (final CidsTrigger t : allTriggers) {
+            if (t instanceof DBAwareCidsTrigger) {
+                ((DBAwareCidsTrigger)t).setDbServer(dbServer);
+            }
+            if (triggers.containsKey(t.getTriggerKey())) {
+                final Collection<CidsTrigger> c = triggers.get(t.getTriggerKey());
+                assert (c != null);
+                c.add(t);
+            } else {
+                final Collection<CidsTrigger> c = new ArrayList<CidsTrigger>();
+                c.add(t);
+                triggers.put(t.getTriggerKey(), c);
+            }
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -116,8 +145,14 @@ public final class PersistenceManager extends Shutdown {
             dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
                         user.getUserGroup())
                     && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
-                                                                                        // existiert gar keine
-                                                                                        // sinnvolle bean
+
+            final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
+            for (final CidsTrigger ct : rightTriggers) {
+                ct.beforeDelete(mo.getBean(), user);
+            }
+
+            // existiert gar keine
+            // sinnvolle bean
             // start transaction
             try {
                 transactionHelper.beginWork();
@@ -139,9 +174,6 @@ public final class PersistenceManager extends Shutdown {
                 if (mo.isDummy()) {
                     return deleteSubObjects(user, mo);
                 }
-
-                // initialise object history if necessary
-                initHistory(mo, user);
 
                 final ObjectAttribute[] allAttributes = mo.getAttribs();
                 boolean deeper = false;
@@ -197,9 +229,11 @@ public final class PersistenceManager extends Shutdown {
                 // if the metaobject is deleted it is obviously not persistent anymore
                 mo.setPersistent(false);
 
-                createHistory(mo, user);
-
                 transactionHelper.commit();
+
+                for (final CidsTrigger ct : rightTriggers) {
+                    ct.afterDelete(mo.getBean(), user);
+                }
 
                 return result;
             } catch (final Exception e) {
@@ -231,35 +265,6 @@ public final class PersistenceManager extends Shutdown {
             }
             // TODO: shouldn't that return -1 or similar to indicate that nothing has been done?
             throw new SecurityException("not allowed to delete meta object"); // NOI18N
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  mo    DOCUMENT ME!
-     * @param  user  DOCUMENT ME!
-     */
-    private void createHistory(final MetaObject mo, final User user) {
-        try {
-            // immediately returns
-            dbServer.getHistoryServer().enqueueEntry(mo, user, new Date());
-        } catch (final Exception e) {
-            LOG.error("cannot enqueue mo for history creation", e); // NOI18N
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  mo    DOCUMENT ME!
-     * @param  user  DOCUMENT ME!
-     */
-    private void initHistory(final MetaObject mo, final User user) {
-        try {
-            dbServer.getHistoryServer().initHistory(mo, user, new Date());
-        } catch (final Exception e) {
-            LOG.error("cannot initialise history", e); // NOI18N
         }
     }
 
@@ -331,17 +336,19 @@ public final class PersistenceManager extends Shutdown {
             dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
                         user.getUserGroup())
                     && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
-                                                                                        // existiert gar keine sinnvolle
-                                                                                        // bean
+            // existiert gar keine sinnvolle
+            // bean
+
             // if Array
             if (mo.isDummy()) {
                 updateArrayObjects(user, mo);
                 return;
             }
 
-            // initialise object history if necessary
-            initHistory(mo, user);
-
+            final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
+            for (final CidsTrigger ct : rightTriggers) {
+                ct.beforeUpdate(mo.getBean(), user);
+            }
             // variables for sql statement
             final StringBuffer paramStmt = new StringBuffer("UPDATE "); // NOI18N
             String sep = "";                                            // NOI18N
@@ -463,8 +470,9 @@ public final class PersistenceManager extends Shutdown {
                      * since the meta-jdbc driver is obsolete the index must be refreshed by the server explicitly
                      */
                     updateIndex(mo);
-
-                    createHistory(mo, user);
+                    for (final CidsTrigger ct : rightTriggers) {
+                        ct.afterUpdate(mo.getBean(), user);
+                    }
 
                     transactionHelper.commit();
                 } catch (final Exception e) {
@@ -666,10 +674,15 @@ public final class PersistenceManager extends Shutdown {
             dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
                         user.getUserGroup())
                     && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
-                                                                                        // existiert gar keine sinnvolle
-                                                                                        // bean won't insert history
-                                                                                        // here since we assume that the
-                                                                                        // object to be inserted is new
+            // existiert gar keine sinnvolle
+            // bean won't insert history
+            // here since we assume that the
+            // object to be inserted is new
+
+            final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
+            for (final CidsTrigger ct : rightTriggers) {
+                ct.beforeInsert(mo.getBean(), user);
+            }
 
             final StringBuffer paramSql = new StringBuffer("INSERT INTO "); // NOI18N
             // class of the new object
@@ -821,8 +834,9 @@ public final class PersistenceManager extends Shutdown {
                  */
                 insertIndex(mo);
 
-                createHistory(mo, user);
-
+                for (final CidsTrigger ct : rightTriggers) {
+                    ct.afterInsert(mo.getBean(), user);
+                }
                 transactionHelper.commit();
             } catch (final SQLException e) {
                 final String message = "cannot insert metaobject"; // NOI18N
@@ -1204,5 +1218,43 @@ public final class PersistenceManager extends Shutdown {
         } finally {
             DBConnection.closeStatements(psAttrString, psAttrMap);
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   mo  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private Collection<CidsTrigger> getRightTriggers(final MetaObject mo) {
+        assert (mo != null);
+        final ArrayList<CidsTrigger> list = new ArrayList<CidsTrigger>();
+        final String domain = mo.getMetaClass().getDomain().toLowerCase();
+        final String table = mo.getMetaClass().getTableName().toLowerCase();
+
+        final Collection<CidsTrigger> listForAll = triggers.get(CidsTriggerKey.FORALL);
+        final Collection<CidsTrigger> listAllTablesInOneDomain = triggers.get(new CidsTriggerKey(
+                    domain,
+                    CidsTriggerKey.ALL));
+        final Collection<CidsTrigger> listOneTableInAllDomains = triggers.get(new CidsTriggerKey(
+                    CidsTriggerKey.ALL,
+                    table));
+        final Collection<CidsTrigger> listExplicitTableInDomain = triggers.get(new CidsTriggerKey(domain, table));
+
+        if (listForAll != null) {
+            list.addAll(triggers.get(CidsTriggerKey.FORALL));
+        }
+        if (listAllTablesInOneDomain != null) {
+            list.addAll(triggers.get(new CidsTriggerKey(domain, CidsTriggerKey.ALL)));
+        }
+        if (listOneTableInAllDomains != null) {
+            list.addAll(triggers.get(new CidsTriggerKey(CidsTriggerKey.ALL, table)));
+        }
+        if (listExplicitTableInDomain != null) {
+            list.addAll(triggers.get(new CidsTriggerKey(domain, table)));
+        }
+
+        return list;
     }
 }

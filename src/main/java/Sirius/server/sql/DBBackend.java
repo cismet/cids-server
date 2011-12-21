@@ -40,6 +40,9 @@ public interface DBBackend extends Shutdownable {
     String DESC_INSERT_HISTORY_ENTRY = "insert_history_entry";                             // NOI18N
     String DESC_HAS_HISTORY = "has_history";                                               // NOI18N
     String DESC_TABLE_HAS_COLUMN = "table_has_column";                                     // NOI18N
+    String DESC_DELETE_STRINGREPCACHEENTRY = "delete_stringrepcacheentry";                 // NOI18N
+    String DESC_INSERT_STRINGREPCACHEENTRY = "insert_stringrepcacheentry";                 // NOI18N
+    String DESC_UPDATE_STRINGREPCACHEENTRY = "update_stringrepcacheentry";                 // NOI18N
 
     //~ Methods ----------------------------------------------------------------
 
