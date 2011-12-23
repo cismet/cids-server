@@ -86,56 +86,56 @@ public class FullTextSearch extends CidsServerSearch {
 
             final String caseSensitiveI = (caseSensitive) ? "" : "I"; // Ein I vor LIKE macht die Suche case insensitive
 
-            final String geoPrefix = " select distinct * from ( ";
+            final String geoPrefix = "\n select distinct * from ( ";
 
-            final String sql = "select distinct ocid,oid from "
-                        + "(WITH recursive derived_index(ocid,oid,acid,aid,depth) AS "
-                        + "( SELECT class_id         , "
-                        + "        object_id         , "
-                        + "        class_id         , "
-                        + "        object_id         , "
-                        + "        0 "
-                        + "FROM    textsearch "
-                        + "WHERE   class_id IN ( WITH recursive derived_child(father,child,depth) AS "
-                        + "                     ( SELECT father, "
-                        + "                             father , "
-                        + "                             0 "
-                        + "                     FROM    cs_class_hierarchy "
-                        + "                     WHERE   father IN <cidsClassesInStatement> "
-                        + "                      "
-                        + "                     UNION ALL "
-                        + "                      "
-                        + "                     SELECT ch.father, "
-                        + "                            ch.child , "
-                        + "                            dc.depth+1 "
-                        + "                     FROM   derived_child dc, "
-                        + "                            cs_class_hierarchy ch "
-                        + "                     WHERE  ch.father=dc.child "
-                        + "                     ) "
-                        + "              SELECT DISTINCT child "
-                        + "              FROM            derived_child LIMIT 100000 ) "
-                        + "AND             string_val " + caseSensitiveI + "LIKE '%<cidsSearchText>%' "
-                        + " "
-                        + "UNION ALL "
-                        + " "
-                        + "SELECT aam.class_id      , "
-                        + "       aam.object_id     , "
-                        + "       aam.attr_class_id , "
-                        + "       aam.attr_object_id, "
-                        + "       di.depth+1 "
-                        + "FROM   cs_attr_object aam, "
-                        + "       derived_index di "
-                        + "WHERE  aam.class_id=di.acid "
-                        + "AND    aam.object_id=di.aid "
-                        + ") "
-                        + "SELECT * "
-                        + "FROM   derived_index "
-                        + "WHERE  ocid IN <cidsClassesInStatement> LIMIT 1000) as x";
+            final String sql = "select distinct ocid,oid,stringrep from "
+                        + "\n(WITH recursive derived_index(ocid,oid,acid,aid,depth) AS "
+                        + "\n( SELECT class_id         , "
+                        + "\n        object_id         , "
+                        + "\n        class_id         , "
+                        + "\n        object_id         , "
+                        + "\n        0 "
+                        + "\nFROM    textsearch "
+                        + "\nWHERE   class_id IN ( WITH recursive derived_child(father,child,depth) AS "
+                        + "\n                     ( SELECT father, "
+                        + "\n                             father , "
+                        + "\n                             0 "
+                        + "\n                     FROM    cs_class_hierarchy "
+                        + "\n                     WHERE   father IN <cidsClassesInStatement> "
+                        + "\n                      "
+                        + "\n                     UNION ALL "
+                        + "\n                      "
+                        + "\n                     SELECT ch.father, "
+                        + "\n                            ch.child , "
+                        + "\n                            dc.depth+1 "
+                        + "\n                     FROM   derived_child dc, "
+                        + "\n                            cs_class_hierarchy ch "
+                        + "\n                     WHERE  ch.father=dc.child "
+                        + "\n                     ) "
+                        + "\n              SELECT DISTINCT child "
+                        + "\n              FROM            derived_child LIMIT 100000 ) "
+                        + "\nAND             string_val " + caseSensitiveI + "LIKE '%<cidsSearchText>%' "
+                        + "\n "
+                        + "\nUNION ALL "
+                        + "\n "
+                        + "\nSELECT aam.class_id      , "
+                        + "\n       aam.object_id     , "
+                        + "\n       aam.attr_class_id , "
+                        + "\n       aam.attr_object_id, "
+                        + "\n       di.depth+1 "
+                        + "\nFROM   cs_attr_object aam, "
+                        + "\n       derived_index di "
+                        + "\nWHERE  aam.attr_class_id =di.ocid AND"
+                        + "\n       aam.attr_object_id=di.oid "
+                        + "\n) "
+                        + "\nSELECT ocid,oid,stringrep "
+                        + "\nFROM   derived_index left outer join cs_stringrepcache on ocid=class_id AND oid =object_id "
+                        + "\nWHERE  ocid IN <cidsClassesInStatement> LIMIT 10000000) as x";
 
-            final String geoMidFix = " ) as txt,(select distinct ocid,oid from (";
+            final String geoMidFix = "\n ) as txt,(select distinct ocid,oid,stringrep from (";
 
-            final String geoPostfix = " )as y ) as geo "
-                        + " where txt.ocid=geo.ocid and txt.oid=geo.oid";
+            final String geoPostfix = "\n )as y ) as geo "
+                        + "\n where txt.ocid=geo.ocid and txt.oid=geo.oid";
 
             // Deppensuche sequentiell
             final HashSet keyset = new HashSet(getActiveLoaclServers().keySet());
@@ -167,7 +167,12 @@ public class FullTextSearch extends CidsServerSearch {
                     for (final ArrayList al : result) {
                         final int cid = (Integer)al.get(0);
                         final int oid = (Integer)al.get(1);
-                        final MetaObjectNode mon = new MetaObjectNode((String)key, oid, cid);
+                        String name = null;
+                        try {
+                            name = (String)al.get(2);
+                        } catch (Exception e) {
+                        }
+                        final MetaObjectNode mon = new MetaObjectNode((String)key, oid, cid, name);
                         aln.add(mon);
                     }
                 }
