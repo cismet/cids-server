@@ -11,6 +11,8 @@ import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.middleware.types.MetaClass;
 
+import org.openide.util.Lookup;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -28,6 +30,15 @@ public class ClassloadingHelper {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(ClassloadingHelper.class);
+    private static final ArrayList<String> packagePrefixes = new ArrayList<String>();
+
+    static {
+        final Collection<? extends ClassLoadingPackagePrefixProvider> c = Lookup.getDefault()
+                    .lookupAll(ClassLoadingPackagePrefixProvider.class);
+        for (final ClassLoadingPackagePrefixProvider pp : c) {
+            packagePrefixes.add(pp.getClassLoadingPackagePrefix());
+        }
+    }
 
     //~ Enums ------------------------------------------------------------------
 
@@ -40,16 +51,16 @@ public class ClassloadingHelper {
 
         //~ Enum constants -----------------------------------------------------
 
-        ICON_FACTORY("de.cismet.cids.custom.treeicons", "IconFactory", "iconfactory"),
-        EXTENSION_FACTORY("de.cismet.cids.custom.extensionfactories", "ExtensionFactory", "extensionfactory"),
-        RENDERER("de.cismet.cids.custom.objectrenderer", "Renderer", "renderer"),
-        AGGREGATION_RENDERER("de.cismet.cids.custom.objectrenderer", "AggregationRenderer", "aggregationrenderer"),
-        TO_STRING_CONVERTER("de.cismet.cids.custom.tostringconverter", "ToStringConverter", "tostringconverter"),
-        EDITOR("de.cismet.cids.custom.objecteditors", "Editor", "editor"),
-        ATTRIBUTE_EDITOR("de.cismet.cids.custom.objecteditors", "AttributeEditor", "attributeeditor"),
-        FEATURE_RENDERER("de.cismet.cids.custom.featurerenderer", "FeatureRenderer", "featurerenderer"),
-        ACTION_PROVIDER("de.cismet.cids.custom.objectactions", "ActionsProvider", "actionsprovider"),
-        PERMISSION_PROVIDER("de.cismet.cids.custom.permissions", "PermissionProvider", "permissionprovider");
+        ICON_FACTORY("treeicons", "IconFactory", "iconfactory"),
+        EXTENSION_FACTORY("extensionfactories", "ExtensionFactory", "extensionfactory"),
+        RENDERER("objectrenderer", "Renderer", "renderer"),
+        AGGREGATION_RENDERER("objectrenderer", "AggregationRenderer", "aggregationrenderer"),
+        TO_STRING_CONVERTER("tostringconverter", "ToStringConverter", "tostringconverter"),
+        EDITOR("objecteditors", "Editor", "editor"),
+        ATTRIBUTE_EDITOR("objecteditors", "AttributeEditor", "attributeeditor"),
+        FEATURE_RENDERER("featurerenderer", "FeatureRenderer", "featurerenderer"),
+        ACTION_PROVIDER("objectactions", "ActionsProvider", "actionsprovider"),
+        PERMISSION_PROVIDER("permissions", "PermissionProvider", "permissionprovider");
 
         //~ Instance fields ----------------------------------------------------
 
@@ -107,14 +118,17 @@ public class ClassloadingHelper {
         if (overrideClassName != null) {
             result.add(overrideClassName);
         }
-        final StringBuilder plainClassNameBuilder = new StringBuilder(classType.packagePrefix);
-        plainClassNameBuilder.append(".").append(domain).append(".").append(tableName).append(".");
-        final StringBuilder camelCaseClassNameBuilder = new StringBuilder(plainClassNameBuilder);
-        plainClassNameBuilder.append(capitalize(fieldName)).append(classType.classNameSuffix);
-        camelCaseClassNameBuilder.append(camelize(fieldName)).append(classType.classNameSuffix);
-        //
-        result.add(plainClassNameBuilder.toString());
-        result.add(camelCaseClassNameBuilder.toString());
+
+        for (final String masterPrefix : packagePrefixes) {
+            final StringBuilder plainClassNameBuilder = new StringBuilder(masterPrefix + "." + classType.packagePrefix);
+            plainClassNameBuilder.append(".").append(domain).append(".").append(tableName).append(".");
+            final StringBuilder camelCaseClassNameBuilder = new StringBuilder(plainClassNameBuilder);
+            plainClassNameBuilder.append(capitalize(fieldName)).append(classType.classNameSuffix);
+            camelCaseClassNameBuilder.append(camelize(fieldName)).append(classType.classNameSuffix);
+            //
+            result.add(plainClassNameBuilder.toString());
+            result.add(camelCaseClassNameBuilder.toString());
+        }
         //
         final String configurationClassName = ((mai == null) ? getClassNameByConfiguration(metaClass, classType)
                                                              : getClassNameByConfiguration(mai, classType));
@@ -155,15 +169,18 @@ public class ClassloadingHelper {
             result.add(overrideClassName);
         }
         if (tableName.length() > 2) {
-            final StringBuilder plainClassNameBuilder = new StringBuilder(classType.packagePrefix);
-            plainClassNameBuilder.append(".").append(domain).append(".");
-            final StringBuilder camelCaseClassNameBuilder = new StringBuilder(plainClassNameBuilder);
-            //
-            plainClassNameBuilder.append(capitalize(tableName)).append(classType.classNameSuffix);
-            camelCaseClassNameBuilder.append(camelize(tableName)).append(classType.classNameSuffix);
-            //
-            result.add(plainClassNameBuilder.toString());
-            result.add(camelCaseClassNameBuilder.toString());
+            for (final String masterPrefix : packagePrefixes) {
+                final StringBuilder plainClassNameBuilder = new StringBuilder(masterPrefix + "."
+                                + classType.packagePrefix);
+                plainClassNameBuilder.append(".").append(domain).append(".");
+                final StringBuilder camelCaseClassNameBuilder = new StringBuilder(plainClassNameBuilder);
+                //
+                plainClassNameBuilder.append(capitalize(tableName)).append(classType.classNameSuffix);
+                camelCaseClassNameBuilder.append(camelize(tableName)).append(classType.classNameSuffix);
+                //
+                result.add(plainClassNameBuilder.toString());
+                result.add(camelCaseClassNameBuilder.toString());
+            }
             //
             final String configurationClassName = getClassNameByConfiguration(metaClass, classType);
             if (configurationClassName != null) {
