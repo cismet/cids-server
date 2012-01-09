@@ -35,7 +35,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import de.cismet.cids.server.CallServerService;
-import de.cismet.cids.server.ws.Converter;
+
+import de.cismet.tools.Converter;
 
 /**
  * DOCUMENT ME!

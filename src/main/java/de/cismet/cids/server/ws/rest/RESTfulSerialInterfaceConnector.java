@@ -63,10 +63,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import de.cismet.cids.server.CallServerService;
-import de.cismet.cids.server.ws.Converter;
 import de.cismet.cids.server.ws.SSLConfig;
 
 import de.cismet.netutil.Proxy;
+
+import de.cismet.tools.Converter;
 
 import static de.cismet.cids.server.ws.rest.RESTfulSerialInterface.*;
 
