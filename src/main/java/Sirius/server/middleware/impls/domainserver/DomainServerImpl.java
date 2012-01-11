@@ -189,7 +189,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             // initFrame();
         } catch (Throwable e) {
             logger.error(e, e);
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -207,7 +207,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (logger != null) {
                 logger.error("Error in getChildren()", e); // NOI18N
             }
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -225,7 +225,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 logger.error(e, e);
             }
             return new NodeReferenceList();
-                // throw new RemoteException(e.getMessage());
+                // throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -235,7 +235,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             return dbServer.getTree().addNode(node, parent, user);
         } catch (Throwable e) {
             logger.error(e, e);
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -247,7 +247,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (logger != null) {
                 logger.error(e, e);
             }
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -259,7 +259,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (logger != null) {
                 logger.error(e, e);
             }
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -271,7 +271,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (logger != null) {
                 logger.error(e, e);
             }
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -283,7 +283,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (logger != null) {
                 logger.error(e, e);
             }
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -299,7 +299,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (logger != null) {
                 logger.error(e, e);
             }
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -313,7 +313,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (logger != null) {
                 logger.error(e, e);
             }
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -327,7 +327,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (logger != null) {
                 logger.error(e, e);
             }
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -340,7 +340,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (logger != null) {
                 logger.error(e, e);
             }
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -361,7 +361,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (logger != null) {
                 logger.error(e, e);
             }
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -454,7 +454,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (logger != null) {
                 logger.error(e, e);
             }
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
     // retrieves Meta data objects with meta data matching query (Search)
@@ -488,7 +488,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (logger != null) {
                 logger.error(e.getMessage(), e);
             }
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -502,7 +502,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (logger != null) {
                 logger.error(e, e);
             }
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -519,7 +519,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (logger != null) {
                 logger.error(e, e);
             }
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -537,7 +537,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (logger != null) {
                 logger.error(e, e);
             }
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -553,7 +553,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (logger != null) {
                 logger.error(e, e);
             }
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -599,7 +599,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (logger != null) {
                 logger.error(e, e);
             }
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -798,7 +798,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             return seeker.search(query, classIds, user.getUserGroup(), 0);
         } catch (Throwable e) {
             logger.error(e, e);
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException(e.getMessage(), e);
         }
     }
 
