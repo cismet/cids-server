@@ -81,24 +81,6 @@
             <version>1.1</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>de.cismet.cids.navigator.plugin</groupId>
-            <artifactId>rm-plugin</artifactId>
-            <classifier>client</classifier>
-            <scope>runtime</scope>
-            <version>1.0-SNAPSHOT</version>
-            <exclusions>
-                <!-- 
-                    this exclusion has to be made because mvn doesn't maintain dependency information for "classified"
-                    jars and thus not excluding this would create a dependency cycle which is neither wanted nor 
-                    necessary
-                 -->
-                <exclusion>
-                    <groupId>de.cismet.cids.navigator</groupId>
-                    <artifactId>cids-navigator</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
     </dependencies>
 
     <build>
