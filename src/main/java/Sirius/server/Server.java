@@ -18,44 +18,18 @@ public class Server implements Serializable {
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Name des Servers.* */
-    protected String name;
-    /** IP des Servers.* */
-    protected String ip;
-    /** Port des Servers.* */
-    protected String port;
-    /** Servertyp.* */
-    protected int type;
-
-    protected String rmiPort;
+    /** Name des Servers. */
+    private final String name;
+    /** IP des Servers. */
+    private final String ip;
+    /** Port des Servers. */
+    private final String serverPort;
+    /** Servertyp. */
+    private final int type;
+    /** registry port. */
+    private final String rmiPort;
 
     //~ Constructors -----------------------------------------------------------
-
-    /**
-     * StandardKonstruktor, setzt name = default, ip = 127.0.0.1, port 1099.*
-     */
-    public Server() {
-        name = "default"; // NOI18N
-        ip = "127.0.0.1"; // NOI18N
-        rmiPort = "1099"; // NOI18N
-        port = "1099";    // NOI18N
-        type = ServerType.NOT_PREDEFINED;
-    }
-
-    /**
-     * Creates a new Server object.
-     *
-     * @param  name  DOCUMENT ME!
-     * @param  ip    DOCUMENT ME!
-     * @param  port  DOCUMENT ME!
-     */
-    public Server(final String name, final String ip, final String port) {
-        this.name = name;
-        this.ip = ip;
-        this.port = port;
-        this.rmiPort = "1099"; // NOI18N
-        this.type = ServerType.NOT_PREDEFINED;
-    }
 
     /**
      * Konstruktor.
@@ -63,15 +37,20 @@ public class Server implements Serializable {
      * @param  serverType  Kennzeichnet die Art des Servers. es soll einer der Konstanten
      *                     {@link #LOCALSERVER LOCALSERVER} oder {@link #CALLSERVER CALLSERVER} verwendet werden.
      * @param  name        Name mit dem der Server angesprochen wird
-     * @param  ip          IP.
-     * @param  rmiPort     port, Port auf dem die RMIRegistry laeuft und and der der Server angemeldet ist*
+     * @param  ip          the ip of the server and the registry
+     * @param  rmiPort     the port where the rmi registry is running
+     * @param  serverPort  the port where the server is exported
      */
-    public Server(final int serverType, final String name, final String ip, final String rmiPort) {
+    public Server(final int serverType,
+            final String name,
+            final String ip,
+            final String rmiPort,
+            final String serverPort) {
         this.type = serverType;
         this.name = name;
         this.ip = ip;
         this.rmiPort = rmiPort;
-        port = "1099"; // NOI18N
+        this.serverPort = serverPort;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -86,12 +65,20 @@ public class Server implements Serializable {
     @Override
     public boolean equals(final java.lang.Object obj) {
         final Server server = (Server)obj;
-        if (this.name.equals(server.name) /* && this.ip.equals(server.ip) && this.port.equals(server.port) */
-                    && (this.type == server.type)) {
+        if ((server != null) && this.name.equals(server.name) && (this.type == server.type)) {
             return true;
         } else {
             return false;
         }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = (97 * hash) + ((this.name != null) ? this.name.hashCode() : 0);
+        hash = (97 * hash) + this.type;
+
+        return hash;
     }
 
     /**
@@ -104,12 +91,12 @@ public class Server implements Serializable {
     }
 
     /**
-     * liefert die Adresse in Form von ip:port (133.77.100.100:5555).*
+     * liefert die Adresse in Form von ip:serverPort (133.77.100.100:5555).*
      *
      * @return  DOCUMENT ME!
      */
     public String getAddress() {
-        return (ip + ":" + port); // NOI18N
+        return (ip + ":" + serverPort); // NOI18N
     }
 
     /**
@@ -126,8 +113,8 @@ public class Server implements Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public String getPort() {
-        return port;
+    public String getServerPort() {
+        return serverPort;
     }
 
     /**
@@ -141,7 +128,7 @@ public class Server implements Serializable {
 
     @Override
     public String toString() {
-        return (type + ":" + name + ":" + ip + ":" + port); // NOI18N
+        return (type + ":" + name + ":" + ip + ":" + serverPort); // NOI18N
     }
 
     /**
@@ -168,6 +155,6 @@ public class Server implements Serializable {
      * @return  DOCUMENT ME!
      */
     public String getBindString() {
-        return type + "/" + name; // NOI18N
+        return "//" + ip + ":" + rmiPort + "/" + type + "/" + name; // NOI18N
     }
 }

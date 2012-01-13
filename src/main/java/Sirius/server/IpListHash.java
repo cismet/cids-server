@@ -125,7 +125,7 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
      * @throws  Exception  DOCUMENT ME!
      */
     public boolean contains(final Server server) throws Exception {
-        return contains(server.getType(), server.getName(), server.getIP(), server.getPort());
+        return contains(server.getType(), server.getName(), server.getIP(), server.getServerPort());
     }
 
     /**

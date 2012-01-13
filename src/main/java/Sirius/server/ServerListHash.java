@@ -91,7 +91,7 @@ public class ServerListHash extends Hashtable {
 
         if (s == null) // not found
         {
-            s = new Server(serverTyp, name, ip, port);
+            s = new Server(serverTyp, name, ip, port, port);
 
             if (containsKey(new Integer(serverTyp))) {
                 getServerList(serverTyp).add(s);

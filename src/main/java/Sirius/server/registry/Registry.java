@@ -65,6 +65,7 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
     private final transient UserManager um;
     private final transient ServerStatus status;
     private final transient RMRegistryServerImpl rmRegistryServer;
+    private final transient int rmiRegPort;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -83,10 +84,13 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
 
         // do the rmi-stuff
         startRMIServer(port);
+
+        // create and bind the remote messaging registry
         rmRegistryServer = new RMRegistryServerImpl();
         rmRegistryServer.startRMRegistryServer(port);
 
         status = new ServerStatus();
+        rmiRegPort = port;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -1042,7 +1046,7 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("unbinding userserver");                                       // NOI18N
                 }
-                Naming.unbind("userServer");                                                 // NOI18N
+                Naming.unbind("//localhost:" + rmiRegPort + "/userServer");                  // NOI18N
             } catch (final NotBoundException e) {
                 LOG.warn("userserver not available (anymore), probably already unbound", e); // NOI18N
             }
@@ -1052,7 +1056,7 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("unbinding nameserver");                                       // NOI18N
                 }
-                Naming.unbind("nameServer");                                                 // NOI18N
+                Naming.unbind("//localhost:" + rmiRegPort + "/nameServer");                  // NOI18N
             } catch (final NotBoundException e) {
                 LOG.warn("nameserver not available (anymore), probably already unbound", e); // NOI18N
             }

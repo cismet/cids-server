@@ -59,7 +59,7 @@ public class MonitorTableModel extends DefaultTableModel {
             final java.lang.Object[] columnVals = new java.lang.Object[3];
             columnVals[0] = servers[i].getName();
             columnVals[1] = servers[i].getIP();
-            columnVals[2] = servers[i].getPort();
+            columnVals[2] = servers[i].getServerPort();
             matrix[i] = columnVals;
         }
         return matrix;

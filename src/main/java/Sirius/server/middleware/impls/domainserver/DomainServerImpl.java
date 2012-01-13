@@ -107,8 +107,6 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     // for storing and loading prdefinded queries
     protected Store queryStore;
     protected QueryCache queryCache;
-    // this severs port
-    protected int myPort;
     // references to the Registry
     protected NameServer nameServer;
     protected UserServer userServer;
@@ -137,25 +135,12 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 PropertyConfigurator.configure(fileName);
             }
 
-            try {
-                this.myPort = properties.getServerPort();
-                serverInfo = new Server(
-                        ServerType.LOCALSERVER,
-                        properties.getServerName(),
-                        InetAddress.getLocalHost().getHostAddress(),
-                        properties.getRMIRegistryPort());
-            } catch (Throwable e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("<LS> ERROR ::  Key serverPort is Missing!"); // NOI18N
-                }
-
-                this.myPort = 8912;
-                serverInfo = new Server(
-                        ServerType.LOCALSERVER,
-                        properties.getServerName(),
-                        InetAddress.getLocalHost().getHostAddress(),
-                        properties.getRMIRegistryPort());
-            }
+            serverInfo = new Server(
+                    ServerType.LOCALSERVER,
+                    properties.getServerName(),
+                    InetAddress.getLocalHost().getHostAddress(),
+                    properties.getRMIRegistryPort(),
+                    String.valueOf(properties.getServerPort()));
 
             dbServer = new DBServer(properties);
 
@@ -840,7 +825,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
             for (int i = 0; i < registryIPs.length; i++) {
                 try {
-                    nameServer = (NameServer)Naming.lookup("rmi://" + registryIPs[i] + "/nameServer");
+                    nameServer = (NameServer)Naming.lookup("rmi://" + registryIPs[i] + ":" + rmiPort + "/nameServer");
                     userServer = (UserServer)nameServer; // (UserServer)
                     // Naming.lookup("rmi://"+registryIPs[i]+"/userServer");
 
@@ -911,7 +896,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
         for (int i = 0; i < registryIPs.length; i++) {
             try {
-                nameServer = (NameServer)Naming.lookup("rmi://" + registryIPs[i] + "/nameServer");
+                nameServer = (NameServer)Naming.lookup("rmi://" + registryIPs[i] + ":" + rmiPort + "/nameServer");
                 userServer = (UserServer)nameServer;
 
                 // User und UserGroups bei Registry abmelden

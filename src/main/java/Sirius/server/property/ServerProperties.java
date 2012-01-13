@@ -212,7 +212,16 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final int getServerPort() {
-        return Integer.valueOf(getString("serverPort"));
+        final String serverPort = getString("serverPort");
+        if (serverPort == null) {
+            if (LOG.isInfoEnabled()) {
+                LOG.info("server port not set, returning rmi registry port"); // NOI18N
+            }
+
+            return Integer.valueOf(getRMIRegistryPort());
+        } else {
+            return Integer.valueOf(serverPort);
+        }
     }
 
     /**
@@ -457,7 +466,16 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getRMIRegistryPort() {
-        return this.getString("rmiRegistryPort"); // NOI18N
+        final String rmiRegPort = getString("rmiRegistryPort");
+        if (rmiRegPort == null) {
+            if (LOG.isInfoEnabled()) {
+                LOG.info("rmi registry port not set, returning default value 1099");
+            }
+
+            return "1099";
+        } else {
+            return rmiRegPort;
+        }
     }
 
     /**
@@ -569,7 +587,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
             LOG.debug("<SRVProperties> get DefaultIcons from Path: " + getDefaultIconDir() + file.exists()); // NOI18N
         }
 
-        File[] images = new File[0];
+        File[] images = null;
         Image[] sImages = new Image[0];
 
         try {
@@ -578,13 +596,6 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
                     LOG.debug("<SRVProperties> valid Directory"); // NOI18N
                 }
 
-                /**
-                 * String[] inside = file.list();
-                 * System.out.println(inside.length);
-                 * for(int i=0; i<inside.length; i++)
-                 * System.out.println(inside[i]);**/
-
-                // System.out.println(file.listFiles());
                 images = file.listFiles();
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("<SRVProperties> found " + images.length + " icons"); // NOI18N

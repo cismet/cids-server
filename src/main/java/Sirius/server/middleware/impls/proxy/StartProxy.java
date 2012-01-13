@@ -259,7 +259,8 @@ public final class StartProxy {
                     ServerType.CALLSERVER,
                     properties.getServerName(),
                     InetAddress.getLocalHost().getHostAddress(),
-                    rmiPort);
+                    rmiPort,
+                    String.valueOf(properties.getServerPort()));
         } catch (final UnknownHostException e) {
             final String message = "SEVERE: could not find host address for localhost"; // NOI18N
             LOG.fatal(message, e);
@@ -317,7 +318,7 @@ public final class StartProxy {
     private ProxyImpl createAndBindProxy(final ServerProperties properties) throws ServerExitError {
         try {
             final ProxyImpl proxy = new ProxyImpl(properties);
-            Naming.bind("callServer", proxy); // NOI18N
+            Naming.bind("//" + siriusRegistryIP + ":" + serverInfo.getRMIPort() + "/callServer", proxy); // NOI18N
 
             return proxy;
         } catch (final RemoteException ex) {
@@ -402,15 +403,6 @@ public final class StartProxy {
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
-     */
-    public Server getServer() {
-        return serverInfo;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @throws  ServerExit       Throwable DOCUMENT ME!
      * @throws  ServerExitError  DOCUMENT ME!
      */
@@ -422,23 +414,23 @@ public final class StartProxy {
         try {
             if (callServer instanceof ProxyImpl) {
                 final ProxyImpl proxyimpl = (ProxyImpl)callServer;
-                proxyimpl.unregisterAsObserver(siriusRegistryIP);
+                proxyimpl.unregisterAsObserver(siriusRegistryIP + ":" + serverInfo.getServerPort()); // NOI18N
                 proxyimpl.getNameServer()
                         .unregisterServer(
-                            ServerType.CALLSERVER,
+                            serverInfo.getType(),
                             serverInfo.getName(),
                             serverInfo.getIP(),
-                            serverInfo.getRMIPort());
+                            serverInfo.getServerPort());
 
                 RESTfulService.down();
 
                 try {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("unbind callserver");                                          // NOI18N
+                        LOG.debug("unbind callserver");                                                     // NOI18N
                     }
-                    Naming.unbind("callServer");                                                 // NOI18N
+                    Naming.unbind("//" + siriusRegistryIP + ":" + serverInfo.getRMIPort() + "/callServer"); // NOI18N
                 } catch (final NotBoundException e) {
-                    LOG.warn("callserver not available (anymore), probably already unbound", e); // NOI18N
+                    LOG.warn("callserver not available (anymore), probably already unbound", e);            // NOI18N
                 }
             } else {
                 RESTfulService.down();
