@@ -212,15 +212,21 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final int getServerPort() {
-        final String serverPort = getString("serverPort");
-        if (serverPort == null) {
-            if (LOG.isInfoEnabled()) {
-                LOG.info("server port not set, returning rmi registry port"); // NOI18N
+        try {
+            final String serverPort = getString("serverPort");
+            if (serverPort == null) {
+                if (LOG.isInfoEnabled()) {
+                    LOG.info("server port not set, returning rmi registry port"); // NOI18N
+                }
+
+                return Integer.valueOf(getRMIRegistryPort());
+            } else {
+                return Integer.valueOf(serverPort);
             }
+        } catch (final Exception e) {
+            LOG.warn("error finding server port, returning rmi registry port", e); // NOI18N
 
             return Integer.valueOf(getRMIRegistryPort());
-        } else {
-            return Integer.valueOf(serverPort);
         }
     }
 
@@ -466,15 +472,21 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getRMIRegistryPort() {
-        final String rmiRegPort = getString("rmiRegistryPort");
-        if (rmiRegPort == null) {
-            if (LOG.isInfoEnabled()) {
-                LOG.info("rmi registry port not set, returning default value 1099");
+        try {
+            final String rmiRegPort = getString("rmiRegistryPort");
+            if (rmiRegPort == null) {
+                if (LOG.isInfoEnabled()) {
+                    LOG.info("rmi registry port not set, returning default value 1099"); // NOI18N
+                }
+
+                return "1099";
+            } else {
+                return rmiRegPort;
             }
+        } catch (final Exception e) {
+            LOG.warn("error finding rmi reg port, returning default value 1099", e); // NOI18N
 
             return "1099";
-        } else {
-            return rmiRegPort;
         }
     }
 
