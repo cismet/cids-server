@@ -64,7 +64,7 @@ public class LogTriggerTest extends AbstractCidsTrigger {
 
     @Override
     public CidsTriggerKey getTriggerKey() {
-        return CidsTriggerKey.FORALL;
+        return new CidsTriggerKey("wunda_blau", "thema_person");
     }
 
     /**
