@@ -650,6 +650,10 @@ public final class PersistenceManager extends Shutdown {
         }
 
         if (
+            //ksdjhfkjsdhfkjds    
+                
+                
+                
             dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
                         user.getUserGroup())
                     && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
