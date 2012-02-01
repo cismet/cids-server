@@ -114,6 +114,8 @@ public final class PersistenceManager extends Shutdown {
      * @throws  PersistenceException  Throwable DOCUMENT ME!
      */
     public int deleteMetaObject(final User user, final MetaObject mo) throws PersistenceException {
+        fixMissingMetaClass(mo);
+
         if (LOG.isDebugEnabled()) {
             LOG.debug(
                 "deleteMetaObject entered "            // NOI18N
@@ -259,6 +261,8 @@ public final class PersistenceManager extends Shutdown {
      * @throws  PersistenceException  Throwable DOCUMENT ME!
      */
     private int deleteSubObjects(final User user, final MetaObject mo) throws PersistenceException {
+        fixMissingMetaClass(mo);
+
         if (LOG.isDebugEnabled()) {
             LOG.debug("deleteMetaObject dummy entered discard object insert elements" + mo); // NOI18N
         }
@@ -301,6 +305,8 @@ public final class PersistenceManager extends Shutdown {
      * @throws  SecurityException      DOCUMENT ME!
      */
     public void updateMetaObject(final User user, final MetaObject mo) throws PersistenceException {
+        fixMissingMetaClass(mo);
+
         if (LOG.isDebugEnabled()) {
             LOG.debug(
                 "updateMetaObject entered "            // NOI18N
@@ -523,6 +529,8 @@ public final class PersistenceManager extends Shutdown {
      * @throws  PersistenceException  Throwable DOCUMENT ME!
      */
     private void updateArrayObjects(final User user, final MetaObject mo) throws PersistenceException {
+        fixMissingMetaClass(mo);
+
         if (LOG.isDebugEnabled()) {
             LOG.debug("updateArrayObjects called for: " + mo); // NOI18N
         }
@@ -637,6 +645,8 @@ public final class PersistenceManager extends Shutdown {
      * @throws  PersistenceException  Throwable DOCUMENT ME!
      */
     public int insertMetaObject(final User user, final MetaObject mo) throws PersistenceException {
+        fixMissingMetaClass(mo);
+
         if (LOG.isDebugEnabled()) {
             LOG.debug(
                 "insertMetaObject entered "            // NOI18N
@@ -649,18 +659,8 @@ public final class PersistenceManager extends Shutdown {
                         + mo.isDummy());               // NOI18N
         }
 
-        //
-
-        //
-
-        //
-
-        //
-
         if (
-            // ksdjhfkjsdhfkjds
-
-                    dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
+            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
                         user.getUserGroup())
                     && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
             // existiert gar keine sinnvolle
@@ -891,5 +891,16 @@ public final class PersistenceManager extends Shutdown {
         }
 
         return list;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  mo  DOCUMENT ME!
+     */
+    private void fixMissingMetaClass(final MetaObject mo) {
+        if (mo.getMetaClass() == null) {
+            mo.setMetaClass(new MetaClass(dbServer.getClassCache().getClass(mo.getClassID()), mo.getDomain()));
+        }
     }
 }
