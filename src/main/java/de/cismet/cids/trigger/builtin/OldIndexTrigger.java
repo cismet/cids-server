@@ -15,6 +15,7 @@ import Sirius.server.sql.DBConnection;
 
 import org.openide.util.lookup.ServiceProvider;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -148,6 +149,7 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
      * @throws  IllegalArgumentException  NullPointerException DOCUMENT ME!
      */
     private void insertIndex(final MetaObject mo) throws SQLException {
+        final Connection connection = getDbServer().getConnectionPool().getConnection();
         if (mo == null) {
             throw new IllegalArgumentException("MetaObject must not be null"); // NOI18N
         } else if (mo.isDummy()) {
@@ -180,10 +182,7 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
                             attr.getTypeId();
                             String query = "SELECT table_name FROM cs_class where id = "
                                         + attr.getMai().getForeignKeyClassId();
-                            final ResultSet rs = getDbServer().getActiveDBConnection()
-                                        .getConnection()
-                                        .createStatement()
-                                        .executeQuery(query);
+                            final ResultSet rs = connection.createStatement().executeQuery(query);
 
                             if (rs.next()) {
                                 final String foreignTableName = rs.getString(1);
@@ -191,16 +190,12 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
                                             + mai.getArrayKeyFieldName()
                                             + " =  " + String.valueOf(mo.getID());
 
-                                final ResultSet arrayList = getDbServer().getActiveDBConnection()
-                                            .getConnection()
-                                            .createStatement()
-                                            .executeQuery(query);
+                                final ResultSet arrayList = connection.createStatement().executeQuery(query);
 
                                 while (arrayList.next()) {
                                     // lazily prepare the statement
                                     if (psAttrMap == null) {
-                                        psAttrMap = getDbServer().getActiveDBConnection().getConnection()
-                                                    .prepareStatement(INS_ATTR_MAPPING);
+                                        psAttrMap = connection.prepareStatement(INS_ATTR_MAPPING);
                                     }
                                     psAttrMap.setInt(1, mo.getClassID());
                                     psAttrMap.setInt(2, mo.getID());
@@ -215,8 +210,7 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
                         } else {
                             // lazily prepare the statement
                             if (psAttrMap == null) {
-                                psAttrMap = getDbServer().getActiveDBConnection().getConnection()
-                                            .prepareStatement(INS_ATTR_MAPPING);
+                                psAttrMap = connection.prepareStatement(INS_ATTR_MAPPING);
                             }
                             psAttrMap.setInt(1, mo.getClassID());
                             psAttrMap.setInt(2, mo.getID());
@@ -230,8 +224,7 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
                     } else {
                         // lazily prepare the statement
                         if (psAttrString == null) {
-                            psAttrString = getDbServer().getActiveDBConnection().getConnection()
-                                        .prepareStatement(INS_ATTR_STRING);
+                            psAttrString = connection.prepareStatement(INS_ATTR_STRING);
                         }
                         psAttrString.setInt(1, mo.getClassID());
                         psAttrString.setInt(2, mo.getID());
@@ -288,6 +281,8 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
      * @throws  IllegalArgumentException  NullPointerException DOCUMENT ME!
      */
     private void updateIndex(final MetaObject mo) throws SQLException {
+        final Connection connection = getDbServer().getConnectionPool().getConnection();
+
         if (mo == null) {
             throw new IllegalArgumentException("MetaObject must not be null"); // NOI18N
         } else if (mo.isDummy()) {
@@ -312,10 +307,7 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
                             attr.getTypeId();
                             String query = "SELECT table_name FROM cs_class where id = "
                                         + attr.getMai().getForeignKeyClassId();
-                            final ResultSet rs = getDbServer().getActiveDBConnection()
-                                        .getConnection()
-                                        .createStatement()
-                                        .executeQuery(query);
+                            final ResultSet rs = connection.createStatement().executeQuery(query);
 
                             if (rs.next()) {
                                 final String foreignTableName = rs.getString(1);
@@ -323,16 +315,12 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
                                             + mai.getArrayKeyFieldName()
                                             + " =  " + String.valueOf(mo.getID());
 
-                                final ResultSet arrayList = getDbServer().getActiveDBConnection()
-                                            .getConnection()
-                                            .createStatement()
-                                            .executeQuery(query);
+                                final ResultSet arrayList = connection.createStatement().executeQuery(query);
 
                                 while (arrayList.next()) {
                                     // lazily prepare the statement
                                     if (psAttrMap == null) {
-                                        psAttrMap = getDbServer().getActiveDBConnection().getConnection()
-                                                    .prepareStatement(UP_ATTR_MAPPING);
+                                        psAttrMap = connection.prepareStatement(UP_ATTR_MAPPING);
                                     }
                                     psAttrMap.setInt(1, arrayList.getInt(1));
                                     psAttrMap.setInt(2, mo.getClassID());
@@ -347,8 +335,7 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
                         } else {
                             // lazily prepare the statement
                             if (psAttrMap == null) {
-                                psAttrMap = getDbServer().getActiveDBConnection().getConnection()
-                                            .prepareStatement(UP_ATTR_MAPPING);
+                                psAttrMap = connection.prepareStatement(UP_ATTR_MAPPING);
                             }
                             // if field represents a foreign key the attribute value
                             // is assumed to be a MetaObject
@@ -377,8 +364,7 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
                     } else {
                         // lazily prepare the statement
                         if (psAttrString == null) {
-                            psAttrString = getDbServer().getActiveDBConnection().getConnection()
-                                        .prepareStatement(UP_ATTR_STRING);
+                            psAttrString = connection.prepareStatement(UP_ATTR_STRING);
                         }
                         // interpret the fields value as a string
                         psAttrString.setString(1, (attr.getValue() == null) ? NULL : String.valueOf(attr.getValue()));
@@ -450,6 +436,8 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
      * @throws  IllegalArgumentException  NullPointerException DOCUMENT ME!
      */
     private void deleteIndex(final MetaObject mo) throws SQLException {
+        final Connection connection = getDbServer().getConnectionPool().getConnection();
+
         if (mo == null) {
             throw new IllegalArgumentException("MetaObject must not be null"); // NOI18N
         } else if (mo.isDummy()) {
@@ -465,8 +453,8 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
         PreparedStatement psAttrMap = null;
         try {
             // prepare the update statements
-            psAttrString = getDbServer().getActiveDBConnection().getConnection().prepareStatement(DEL_ATTR_STRING);
-            psAttrMap = getDbServer().getActiveDBConnection().getConnection().prepareStatement(DEL_ATTR_MAPPING);
+            psAttrString = connection.prepareStatement(DEL_ATTR_STRING);
+            psAttrMap = connection.prepareStatement(DEL_ATTR_MAPPING);
 
             // set the appropriate param values
             psAttrString.setInt(1, mo.getClassID());
