@@ -1,10 +1,12 @@
-/***************************************************
-*
-* cismet GmbH, Saarbruecken, Germany
-*
-*              ... and it just works.
-*
-****************************************************/
+/**
+ * *************************************************
+ *
+ * cismet GmbH, Saarbruecken, Germany
+ * 
+* ... and it just works.
+ * 
+***************************************************
+ */
 package Sirius.server.localserver.object;
 
 import Sirius.server.Shutdown;
@@ -48,20 +50,17 @@ import de.cismet.tools.CurrentStackTrace;
 /**
  * DOCUMENT ME!
  *
- * @author   sascha.schlobinski@cismet.de
- * @author   thorsten.hell@cismet.de
- * @author   martin.scholl@cismet.de
- * @version  $Revision$, $Date$
+ * @author sascha.schlobinski@cismet.de
+ * @author thorsten.hell@cismet.de
+ * @author martin.scholl@cismet.de
+ * @version $Revision$, $Date$
  */
 public final class PersistenceManager extends Shutdown {
 
     //~ Static fields/initializers ---------------------------------------------
-
     private static final transient Logger LOG = Logger.getLogger(PersistenceManager.class);
     public static final String NULL = "NULL"; // NOI18N
-
     //~ Instance fields --------------------------------------------------------
-
     private final transient DBServer dbServer;
     private final transient TransactionHelper transactionHelper;
     private final transient PersistenceHelper persistenceHelper;
@@ -69,14 +68,13 @@ public final class PersistenceManager extends Shutdown {
     private final Collection<CidsTrigger> generalTriggers = new ArrayList<CidsTrigger>();
     private final Collection<CidsTrigger> crossDomainTrigger = new ArrayList<CidsTrigger>();
     private final HashMap<CidsTriggerKey, Collection<CidsTrigger>> triggers =
-        new HashMap<CidsTriggerKey, Collection<CidsTrigger>>();
+            new HashMap<CidsTriggerKey, Collection<CidsTrigger>>();
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new PersistenceManager object.
      *
-     * @param  dbServer  DOCUMENT ME!
+     * @param dbServer DOCUMENT ME!
      */
     public PersistenceManager(final DBServer dbServer) {
         this.dbServer = dbServer;
@@ -87,7 +85,7 @@ public final class PersistenceManager extends Shutdown {
         allTriggers = result.allInstances();
         for (final CidsTrigger t : allTriggers) {
             if (t instanceof DBAwareCidsTrigger) {
-                ((DBAwareCidsTrigger)t).setDbServer(dbServer);
+                ((DBAwareCidsTrigger) t).setDbServer(dbServer);
             }
             if (triggers.containsKey(t.getTriggerKey())) {
                 final Collection<CidsTrigger> c = triggers.get(t.getTriggerKey());
@@ -102,36 +100,34 @@ public final class PersistenceManager extends Shutdown {
     }
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * loescht mo und alle Objekte die mo als Attribute hat.
      *
-     * @param   user  DOCUMENT ME!
-     * @param   mo    DOCUMENT ME!
+     * @param user DOCUMENT ME!
+     * @param mo DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      *
-     * @throws  PersistenceException  Throwable DOCUMENT ME!
+     * @throws PersistenceException Throwable DOCUMENT ME!
      */
     public int deleteMetaObject(final User user, final MetaObject mo) throws PersistenceException {
         fixMissingMetaClass(mo);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug(
-                "deleteMetaObject entered "            // NOI18N
-                        + mo
-                        + "status :"                   // NOI18N
-                        + mo.getStatus()
-                        + " of class:"                 // NOI18N
-                        + mo.getClassID()
-                        + " isDummy(ArrayContainer) :" // NOI18N
-                        + mo.isDummy());
+                    "deleteMetaObject entered " // NOI18N
+                    + mo
+                    + "status :" // NOI18N
+                    + mo.getStatus()
+                    + " of class:" // NOI18N
+                    + mo.getClassID()
+                    + " isDummy(ArrayContainer) :" // NOI18N
+                    + mo.isDummy());
         }
 
-        if (
-            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
-                        user.getUserGroup())
-                    && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
+        if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
+                user.getUserGroup())
+                && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
 
             final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
             for (final CidsTrigger ct : rightTriggers) {
@@ -211,12 +207,14 @@ public final class PersistenceManager extends Shutdown {
                 // if the metaobject is deleted it is obviously not persistent anymore
                 mo.setPersistent(false);
 
+
+
                 transactionHelper.commit();
+
 
                 for (final CidsTrigger ct : rightTriggers) {
                     ct.afterDelete(mo.getBean(), user);
                 }
-
                 return result;
             } catch (final Exception e) {
                 final String message = "cannot delete metaobject"; // NOI18N
@@ -237,13 +235,13 @@ public final class PersistenceManager extends Shutdown {
         } else {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
-                    "'"                                        // NOI18N
-                            + user
-                            + "' is not allowed to delete MO " // NOI18N
-                            + mo.getID()
-                            + "."                              // NOI18N
-                            + mo.getClassKey(),
-                    new CurrentStackTrace());
+                        "'" // NOI18N
+                        + user
+                        + "' is not allowed to delete MO " // NOI18N
+                        + mo.getID()
+                        + "." // NOI18N
+                        + mo.getClassKey(),
+                        new CurrentStackTrace());
             }
             // TODO: shouldn't that return -1 or similar to indicate that nothing has been done?
             throw new SecurityException("not allowed to delete meta object"); // NOI18N
@@ -253,12 +251,12 @@ public final class PersistenceManager extends Shutdown {
     /**
      * Deletes all subobjects of the given MO.
      *
-     * @param   user  DOCUMENT ME!
-     * @param   mo    DOCUMENT ME!
+     * @param user DOCUMENT ME!
+     * @param mo DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      *
-     * @throws  PersistenceException  Throwable DOCUMENT ME!
+     * @throws PersistenceException Throwable DOCUMENT ME!
      */
     private int deleteSubObjects(final User user, final MetaObject mo) throws PersistenceException {
         fixMissingMetaClass(mo);
@@ -276,7 +274,7 @@ public final class PersistenceManager extends Shutdown {
         for (int i = 0; i < oas.length; i++) {
             // delete all referenced Object / array elements
             if (oas[i].referencesObject()) {
-                final MetaObject metaObject = (MetaObject)oas[i].getValue();
+                final MetaObject metaObject = (MetaObject) oas[i].getValue();
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("try to delete :" + metaObject); // NOI18N
                 }
@@ -297,31 +295,30 @@ public final class PersistenceManager extends Shutdown {
     /**
      * Given metaobject and subobjects will be updated if changed.
      *
-     * @param   user  DOCUMENT ME!
-     * @param   mo    DOCUMENT ME!
+     * @param user DOCUMENT ME!
+     * @param mo DOCUMENT ME!
      *
-     * @throws  PersistenceException   Throwable DOCUMENT ME!
-     * @throws  IllegalStateException  Exception DOCUMENT ME!
-     * @throws  SecurityException      DOCUMENT ME!
+     * @throws PersistenceException Throwable DOCUMENT ME!
+     * @throws IllegalStateException Exception DOCUMENT ME!
+     * @throws SecurityException DOCUMENT ME!
      */
     public void updateMetaObject(final User user, final MetaObject mo) throws PersistenceException {
         fixMissingMetaClass(mo);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug(
-                "updateMetaObject entered "            // NOI18N
-                        + mo
-                        + "status :"                   // NOI18N
-                        + mo.getStatus()
-                        + " of class:"                 // NOI18N
-                        + mo.getClassID()
-                        + " isDummy(ArrayContainer) :" // NOI18N
-                        + mo.isDummy());               // NOI18N
+                    "updateMetaObject entered " // NOI18N
+                    + mo
+                    + "status :" // NOI18N
+                    + mo.getStatus()
+                    + " of class:" // NOI18N
+                    + mo.getClassID()
+                    + " isDummy(ArrayContainer) :" // NOI18N
+                    + mo.isDummy());               // NOI18N
         }
-        if (
-            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
-                        user.getUserGroup())
-                    && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
+        if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
+                user.getUserGroup())
+                && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
             // existiert gar keine sinnvolle
             // bean
 
@@ -368,7 +365,7 @@ public final class PersistenceManager extends Shutdown {
                         LOG.debug("valueString set to '" + NULL + "' as value of attribute was null"); // NOI18N
                     }
                 } else if (value instanceof MetaObject) {
-                    final MetaObject subObject = (MetaObject)value;
+                    final MetaObject subObject = (MetaObject) value;
                     // CUD for the subobject
                     switch (subObject.getStatus()) {
                         case MetaObject.NEW: {
@@ -398,19 +395,19 @@ public final class PersistenceManager extends Shutdown {
                             // should never occur
                             // TODO: consider to LOG fatal!
                             LOG.error(
-                                "error updating subobject '"   // NOI18N
-                                        + subObject
-                                        + "' of attribute "    // NOI18N
-                                        + mai.getFieldName()
-                                        + ": invalid status: " // NOI18N
-                                        + subObject.getStatus());
+                                    "error updating subobject '" // NOI18N
+                                    + subObject
+                                    + "' of attribute " // NOI18N
+                                    + mai.getFieldName()
+                                    + ": invalid status: " // NOI18N
+                                    + subObject.getStatus());
                             // TODO: throw illegalstateexception ?
                         }
                     }
                 } else {
                     // TODO: try to convert JTS GEOMETRY to PGgeometry directly
                     if (PersistenceHelper.GEOMETRY.isAssignableFrom(value.getClass())) {
-                        values.add(PostGisGeometryFactory.getPostGisCompliantDbString((Geometry)value));
+                        values.add(PostGisGeometryFactory.getPostGisCompliantDbString((Geometry) value));
                     } else {
                         values.add(value);
                     }
@@ -453,13 +450,15 @@ public final class PersistenceManager extends Shutdown {
                     stmt.executeUpdate();
 
                     /*
-                     * since the meta-jdbc driver is obsolete the index must be refreshed by the server explicitly
+                     * since the meta-jdbc driver is obsolete the index must be
+                     * refreshed by the server explicitly
                      */
+
+                    transactionHelper.commit();
+
                     for (final CidsTrigger ct : rightTriggers) {
                         ct.afterUpdate(mo.getBean(), user);
                     }
-
-                    transactionHelper.commit();
                 } catch (final Exception e) {
                     final String message = "cannot update metaobject"; // NOI18N
                     LOG.error(message, e);
@@ -480,13 +479,13 @@ public final class PersistenceManager extends Shutdown {
         } else {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
-                    "'"                                                // NOI18N
-                            + user
-                            + "' is not allowed to update MetaObject " // NOI18N
-                            + mo.getID()
-                            + "."                                      // NOI18N
-                            + mo.getClassKey(),
-                    new CurrentStackTrace());
+                        "'" // NOI18N
+                        + user
+                        + "' is not allowed to update MetaObject " // NOI18N
+                        + mo.getID()
+                        + "." // NOI18N
+                        + mo.getClassKey(),
+                        new CurrentStackTrace());
             }
             throw new SecurityException("not allowed to insert meta object"); // NOI18N
         }
@@ -495,12 +494,12 @@ public final class PersistenceManager extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   stmt    DOCUMENT ME!
-     * @param   values  DOCUMENT ME!
+     * @param stmt DOCUMENT ME!
+     * @param values DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      *
-     * @throws  SQLException  DOCUMENT ME!
+     * @throws SQLException DOCUMENT ME!
      */
     private PreparedStatement parameteriseStatement(final PreparedStatement stmt, final List values)
             throws SQLException {
@@ -523,10 +522,10 @@ public final class PersistenceManager extends Shutdown {
     /**
      * Processes all array elements.
      *
-     * @param   user  DOCUMENT ME!
-     * @param   mo    DOCUMENT ME!
+     * @param user DOCUMENT ME!
+     * @param mo DOCUMENT ME!
      *
-     * @throws  PersistenceException  Throwable DOCUMENT ME!
+     * @throws PersistenceException Throwable DOCUMENT ME!
      */
     private void updateArrayObjects(final User user, final MetaObject mo) throws PersistenceException {
         fixMissingMetaClass(mo);
@@ -539,7 +538,7 @@ public final class PersistenceManager extends Shutdown {
 
         for (int i = 0; i < oas.length; i++) {
             if (oas[i].referencesObject()) {
-                final MetaObject metaObject = (MetaObject)oas[i].getValue();
+                final MetaObject metaObject = (MetaObject) oas[i].getValue();
                 final int status = metaObject.getStatus();
 
                 switch (status) {
@@ -564,10 +563,10 @@ public final class PersistenceManager extends Shutdown {
                         // should never occur
                         // TODO: consider LOG fatal
                         LOG.error(
-                            "error for array element "
-                                    + metaObject
-                                    + " has invalid status ::"
-                                    + status); // NOI18N
+                                "error for array element "
+                                + metaObject
+                                + " has invalid status ::"
+                                + status); // NOI18N
                         // TODO: throw illegalstateexception?
                     }
                 }
@@ -583,10 +582,10 @@ public final class PersistenceManager extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   user   DOCUMENT ME!
-     * @param   dummy  DOCUMENT ME!
+     * @param user DOCUMENT ME!
+     * @param dummy DOCUMENT ME!
      *
-     * @throws  PersistenceException  Throwable DOCUMENT ME!
+     * @throws PersistenceException Throwable DOCUMENT ME!
      */
     private void insertMetaObjectArray(final User user, final MetaObject dummy) throws PersistenceException {
         final ObjectAttribute[] oas = dummy.getAttribs();
@@ -596,7 +595,7 @@ public final class PersistenceManager extends Shutdown {
                 LOG.debug("insertMO arrayelement " + i); // NOI18N
             }
 
-            final MetaObject arrayElement = (MetaObject)oas[i].getValue();
+            final MetaObject arrayElement = (MetaObject) oas[i].getValue();
 
             final int status = arrayElement.getStatus();
 
@@ -637,32 +636,31 @@ public final class PersistenceManager extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   user  DOCUMENT ME!
-     * @param   mo    DOCUMENT ME!
+     * @param user DOCUMENT ME!
+     * @param mo DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      *
-     * @throws  PersistenceException  Throwable DOCUMENT ME!
+     * @throws PersistenceException Throwable DOCUMENT ME!
      */
     public int insertMetaObject(final User user, final MetaObject mo) throws PersistenceException {
         fixMissingMetaClass(mo);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug(
-                "insertMetaObject entered "            // NOI18N
-                        + mo
-                        + "status :"                   // NOI18N
-                        + mo.getStatus()
-                        + " of class:"                 // NOI18N
-                        + mo.getClassID()
-                        + " isDummy(ArrayContainer) :" // NOI18N
-                        + mo.isDummy());               // NOI18N
+                    "insertMetaObject entered " // NOI18N
+                    + mo
+                    + "status :" // NOI18N
+                    + mo.getStatus()
+                    + " of class:" // NOI18N
+                    + mo.getClassID()
+                    + " isDummy(ArrayContainer) :" // NOI18N
+                    + mo.isDummy());               // NOI18N
         }
 
-        if (
-            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
-                        user.getUserGroup())
-                    && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
+        if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
+                user.getUserGroup())
+                && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
             // existiert gar keine sinnvolle
             // bean won't insert history
             // here since we assume that the
@@ -708,12 +706,12 @@ public final class PersistenceManager extends Shutdown {
                 final java.lang.Object value = mAttr[i].getValue();
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(
-                        "mAttr["                    // NOI18N
-                                + i
-                                + "].getName() of " // NOI18N
-                                + mo.getClassKey()
-                                + ": "              // NOI18N
-                                + mAttr[i].getName());
+                            "mAttr[" // NOI18N
+                            + i
+                            + "].getName() of " // NOI18N
+                            + mo.getClassKey()
+                            + ": " // NOI18N
+                            + mAttr[i].getName());
                 }
                 final MemberAttributeInfo mai = mAttr[i].getMai();
                 // if object does not have mai it cannot be inserted
@@ -731,13 +729,13 @@ public final class PersistenceManager extends Shutdown {
                     } else {
                         // TODO: try to convert JTS GEOMETRY to PGgeometry directly
                         if (PersistenceHelper.GEOMETRY.isAssignableFrom(value.getClass())) {
-                            values.add(PostGisGeometryFactory.getPostGisCompliantDbString((Geometry)value));
+                            values.add(PostGisGeometryFactory.getPostGisCompliantDbString((Geometry) value));
                         } else {
                             values.add(value);
                         }
                     }
                 } else if (!mAttr[i].isPrimaryKey()) { // references metaobject
-                    final MetaObject moAttr = (MetaObject)value;
+                    final MetaObject moAttr = (MetaObject) value;
                     try {
                         // recursion
                         if (value != null) {
@@ -818,10 +816,10 @@ public final class PersistenceManager extends Shutdown {
                 stmt = parameteriseStatement(stmt, values);
                 stmt.executeUpdate();
 
+                transactionHelper.commit();
                 for (final CidsTrigger ct : rightTriggers) {
                     ct.afterInsert(mo.getBean(), user);
                 }
-                transactionHelper.commit();
             } catch (final SQLException e) {
                 final String message = "cannot insert metaobject"; // NOI18N
                 LOG.error(message, e);
@@ -843,13 +841,13 @@ public final class PersistenceManager extends Shutdown {
         } else {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
-                    "'"                                        // NOI18N
-                            + user
-                            + "' is not allowed to insert MO " // NOI18N
-                            + mo.getID()
-                            + "."                              // NOI18N
-                            + mo.getClassKey(),                // NOI18N
-                    new CurrentStackTrace());
+                        "'" // NOI18N
+                        + user
+                        + "' is not allowed to insert MO " // NOI18N
+                        + mo.getID()
+                        + "." // NOI18N
+                        + mo.getClassKey(), // NOI18N
+                        new CurrentStackTrace());
             }
             throw new SecurityException("not allowed to insert meta object"); // NOI18N
         }
@@ -858,9 +856,9 @@ public final class PersistenceManager extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   mo  DOCUMENT ME!
+     * @param mo DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      */
     private Collection<CidsTrigger> getRightTriggers(final MetaObject mo) {
         assert (mo != null);
@@ -870,11 +868,11 @@ public final class PersistenceManager extends Shutdown {
 
         final Collection<CidsTrigger> listForAll = triggers.get(CidsTriggerKey.FORALL);
         final Collection<CidsTrigger> listAllTablesInOneDomain = triggers.get(new CidsTriggerKey(
-                    domain,
-                    CidsTriggerKey.ALL));
+                domain,
+                CidsTriggerKey.ALL));
         final Collection<CidsTrigger> listOneTableInAllDomains = triggers.get(new CidsTriggerKey(
-                    CidsTriggerKey.ALL,
-                    table));
+                CidsTriggerKey.ALL,
+                table));
         final Collection<CidsTrigger> listExplicitTableInDomain = triggers.get(new CidsTriggerKey(domain, table));
 
         if (listForAll != null) {
@@ -896,7 +894,7 @@ public final class PersistenceManager extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param  mo  DOCUMENT ME!
+     * @param mo DOCUMENT ME!
      */
     private void fixMissingMetaClass(final MetaObject mo) {
         if (mo.getMetaClass() == null) {
