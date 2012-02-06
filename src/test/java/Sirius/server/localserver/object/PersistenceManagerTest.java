@@ -188,6 +188,7 @@ public class PersistenceManagerTest {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
+    @Ignore
     @Test
     public void testInsertIndex_NoAttr() throws Throwable {
         System.out.println("TEST " + getCurrentMethodName());
@@ -206,6 +207,7 @@ public class PersistenceManagerTest {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
+    @Ignore
     @Test
     public void testInsertIndex_MO1StringAttr() throws Throwable {
         System.out.println("TEST " + getCurrentMethodName());
@@ -224,6 +226,7 @@ public class PersistenceManagerTest {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
+    @Ignore
     @Test
     public void testInsertIndex_MO2StringAttr() throws Throwable {
         System.out.println("TEST " + getCurrentMethodName());
@@ -244,6 +247,7 @@ public class PersistenceManagerTest {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
+    @Ignore
     @Test
     public void testInsertIndex_MO1ObjAttr() throws Throwable {
         System.out.println("TEST " + getCurrentMethodName());
@@ -262,6 +266,7 @@ public class PersistenceManagerTest {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
+    @Ignore
     @Test
     public void testInsertIndex_MO2ObjAttr() throws Throwable {
         System.out.println("TEST " + getCurrentMethodName());
@@ -280,6 +285,7 @@ public class PersistenceManagerTest {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
+    @Ignore
     @Test
     public void testInsertIndex_MO2StringAttr2ObjAttr() throws Throwable {
         System.out.println("TEST " + getCurrentMethodName());
@@ -300,6 +306,7 @@ public class PersistenceManagerTest {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
+    @Ignore
     @Test
     public void testUpdateIndex_MO2StringAttr() throws Throwable {
         System.out.println("TEST " + getCurrentMethodName());
@@ -331,6 +338,7 @@ public class PersistenceManagerTest {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
+    @Ignore
     @Test
     public void testUpdateIndex_MO2ObjAttr2ndChanged() throws Throwable {
         System.out.println("TEST " + getCurrentMethodName());
@@ -357,6 +365,7 @@ public class PersistenceManagerTest {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
+    @Ignore
     @Test
     public void testDeleteIndex_NoIndex() throws Throwable {
         System.out.println("TEST " + getCurrentMethodName());
@@ -373,6 +382,7 @@ public class PersistenceManagerTest {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
+    @Ignore
     @Test
     public void testDeleteIndex_ArbitraryIndexes() throws Throwable {
         System.out.println("TEST " + getCurrentMethodName());

@@ -385,7 +385,7 @@ public class CidsBean implements PropertyChangeListener {
         final ObjectAttribute oa = metaObject.getAttributeByFieldName(field);
 
         // if oa is array we won't have to do anything because the listElement* operations take care of array elements
-        if (!oa.isArray()) {
+        if (!oa.isArray() && !oa.isVirtualOneToManyAttribute()) {
             final Object oldValue = oa.getValue();
             final Object value = evt.getNewValue();
             if (oa.referencesObject() && (value instanceof CidsBean) && (value != null)) {
@@ -543,61 +543,79 @@ public class CidsBean implements PropertyChangeListener {
                         final CidsBean cb = (CidsBean)o;
                         cb.setBacklinkInformation(arrayfield, this);
                         final ObjectAttribute oa = this.getMetaObject().getAttributeByFieldName(arrayfield);
-
-                        walkUpAndSetChangedAndModified(oa);
-                        // ArrayElement anlegen
-                        final MetaClass zwischenTabellenKlasse = (MetaClass)(getMetaObject().getAllClasses()).get(
-                                getMetaObject().getDomain()
-                                        + oa.getMai().getForeignKeyClassId());
-                        final MetaObject arrayElement = zwischenTabellenKlasse.getEmptyInstance();
-
-                        final ObjectAttribute[] arrayElementAttrs = arrayElement.getAttribs();
-                        for (final ObjectAttribute arrayElementAttribute : arrayElementAttrs) {
-                            arrayElementAttribute.setParentObject(arrayElement);
-                            if (arrayElementAttribute.isPrimaryKey()) {
-                                arrayElementAttribute.setValue(-1);
-                            } else if (arrayElementAttribute.referencesObject()) {
-                                arrayElementAttribute.setValue(cb.getMetaObject());
-                                arrayElementAttribute.setChanged(true);
-                                cb.getMetaObject().setReferencingObjectAttribute(arrayElementAttribute);
-                            } else {
-                                arrayElementAttribute.setValue(getMetaObject().getID());
-                            }
-                        }
-
-                        // Wen noch kein Dummy-Objekt existiert (Wert ist noch null)
-                        // Anlegen eines Dummy-Objektes
-                        if (oa.getValue() == null) {
-                            final Sirius.server.localserver.object.Object dummyO =
-                                new Sirius.server.localserver.object.DefaultObject(
-                                    getMetaObject().getID(),
-                                    oa.getMai().getForeignKeyClassId());
-                            final MetaObject dummyMO = new DefaultMetaObject(dummyO, getMetaObject().getDomain());
-                            dummyMO.setReferencingObjectAttribute(oa);
-                            dummyMO.setDummy(true);
-                            dummyMO.setStatus(MetaObject.NEW);
-                            oa.setValue(dummyMO);
-                            oa.setChanged(true);
-                        }
-
-                        // hinzufuegen eines Attributes, das auf das angelegte Arrayelement zeigt
-                        final MetaObject dummy = (MetaObject)oa.getValue();
-                        dummy.setStatus(MetaObject.MODIFIED);
-                        int counter = dummy.getAttribs().length;
-                        // MAI des ArrayFeldes des Hauptobjektes
                         final MemberAttributeInfo mai = oa.getMai();
-                        final ObjectAttribute dummyOA = new ObjectAttribute(
-                                mai.getId()
-                                        + "."
-                                        + ++counter,
-                                mai,
-                                -1,
-                                arrayElement,
-                                zwischenTabellenKlasse.getAttributePolicy());
-                        dummyOA.setParentObject(dummy);
-                        dummyOA.setChanged(true);
-                        dummy.addAttribute(dummyOA);
-                        arrayElement.setReferencingObjectAttribute(dummyOA);
+                        walkUpAndSetChangedAndModified(oa);
+                        final MetaObject dummy = (MetaObject)oa.getValue();
+
+                        // 1:n Beziehung??
+                        if (oa.isVirtualOneToManyAttribute()) {
+                            final ObjectAttribute[] arrayElementAttrs = dummy.getAttribs();
+
+                            final ObjectAttribute entryToAddOA = new ObjectAttribute(
+                                    mai.getId()
+                                            + "."
+                                            + arrayElementAttrs.length,
+                                    mai,
+                                    -1,
+                                    cb.getMetaObject(),
+                                    cb.getMetaObject().getMetaClass().getAttributePolicy());
+                            entryToAddOA.setParentObject(dummy);
+                            entryToAddOA.setChanged(true);
+                            dummy.addAttribute(entryToAddOA);
+                            cb.getMetaObject().setReferencingObjectAttribute(entryToAddOA);
+                        } else { // n-m Beziehung
+                            // ArrayElement anlegen
+                            final MetaClass zwischenTabellenKlasse = (MetaClass)(getMetaObject().getAllClasses()).get(
+                                    getMetaObject().getDomain()
+                                            + oa.getMai().getForeignKeyClassId());
+                            final MetaObject arrayElement = zwischenTabellenKlasse.getEmptyInstance();
+
+                            final ObjectAttribute[] arrayElementAttrs = arrayElement.getAttribs();
+                            for (final ObjectAttribute arrayElementAttribute : arrayElementAttrs) {
+                                arrayElementAttribute.setParentObject(arrayElement);
+                                if (arrayElementAttribute.isPrimaryKey()) {
+                                    arrayElementAttribute.setValue(-1);
+                                } else if (arrayElementAttribute.referencesObject()) {
+                                    arrayElementAttribute.setValue(cb.getMetaObject());
+                                    arrayElementAttribute.setChanged(true);
+                                    cb.getMetaObject().setReferencingObjectAttribute(arrayElementAttribute);
+                                } else {
+                                    arrayElementAttribute.setValue(getMetaObject().getID());
+                                }
+                            }
+
+                            // Wen noch kein Dummy-Objekt existiert (Wert ist noch null)
+                            // Anlegen eines Dummy-Objektes
+                            if (oa.getValue() == null) {
+                                final Sirius.server.localserver.object.Object dummyO =
+                                    new Sirius.server.localserver.object.DefaultObject(
+                                        getMetaObject().getID(),
+                                        oa.getMai().getForeignKeyClassId());
+                                final MetaObject dummyMO = new DefaultMetaObject(dummyO, getMetaObject().getDomain());
+                                dummyMO.setReferencingObjectAttribute(oa);
+                                dummyMO.setDummy(true);
+                                dummyMO.setStatus(MetaObject.NEW);
+                                oa.setValue(dummyMO);
+                                oa.setChanged(true);
+                            }
+
+                            // hinzufuegen eines Attributes, das auf das angelegte Arrayelement zeigt
+
+                            dummy.setStatus(MetaObject.MODIFIED);
+                            int counter = dummy.getAttribs().length;
+                            final ObjectAttribute dummyOA = new ObjectAttribute(
+                                    mai.getId()
+                                            + "."
+                                            + ++counter,
+                                    mai,
+                                    -1,
+                                    arrayElement,
+                                    zwischenTabellenKlasse.getAttributePolicy());
+                            dummyOA.setParentObject(dummy);
+                            dummyOA.setChanged(true);
+                            dummy.addAttribute(dummyOA);
+                            arrayElement.setReferencingObjectAttribute(dummyOA);
+                        }
                     } else {
                         throw new IllegalArgumentException("Every element of an array must be a CidsBean"); // NOI18N
                     }
@@ -628,23 +646,38 @@ public class CidsBean implements PropertyChangeListener {
             final CidsBean cidsBean = (CidsBean)element;
             final ObjectAttribute deepestReferencingAttribute = cidsBean.getMetaObject()
                         .getReferencingObjectAttribute();
+            final ObjectAttribute oa = this.getMetaObject().getAttributeByFieldName(arrayfield);
+            final MetaObject dummy = (MetaObject)oa.getValue();
+            final boolean virtualOneToMany = oa.isVirtualOneToManyAttribute();
             if ((cidsBean.getMetaObject().getStatus() == MetaObject.TO_DELETE)
                         || (cidsBean.getMetaObject().getStatus() == MetaObject.MODIFIED)) {
-                deepestReferencingAttribute.setChanged(true);
+                if (virtualOneToMany) {
+                    oa.setChanged(true);
+                    cidsBean.getMetaObject().setStatus(MetaObject.TO_DELETE);
+                } else {
+                    deepestReferencingAttribute.setChanged(true);
+                }
             } else if (cidsBean.getMetaObject().getStatus() == MetaObject.NEW) {
                 // wurde gerade erst angelegt, braucht nur entfernt zu werden
-                deepestReferencingAttribute.setValue(null);
+                if (virtualOneToMany) {
+                    dummy.removeAttribute(deepestReferencingAttribute);
+                } else {
+                    deepestReferencingAttribute.setValue(null);
+                }
             }
-            final Sirius.server.localserver.object.Object arrayEntry = deepestReferencingAttribute.getParentObject();
-            if (arrayEntry.getStatus() == MetaObject.NEW) {
-                // wurde gerade erst angelegt, braucht nur entfernt zu werden
-                final ObjectAttribute toDelete = arrayEntry.getReferencingObjectAttribute();
-                toDelete.getParentObject().removeAttribute(toDelete);
-            } else if ((arrayEntry.getStatus() != MetaObject.TEMPLATE)
-                        || (arrayEntry.getStatus() != MetaObject.TEMPLATE)) {
-                arrayEntry.setStatus(MetaObject.TO_DELETE);
-                final ObjectAttribute referencingOA = arrayEntry.getReferencingObjectAttribute();
-                walkUpAndSetChangedAndModified(referencingOA);
+            if (!virtualOneToMany) {
+                final Sirius.server.localserver.object.Object arrayEntry =
+                    deepestReferencingAttribute.getParentObject();
+                if (arrayEntry.getStatus() == MetaObject.NEW) {
+                    // wurde gerade erst angelegt, braucht nur entfernt zu werden
+                    final ObjectAttribute toDelete = arrayEntry.getReferencingObjectAttribute();
+                    toDelete.getParentObject().removeAttribute(toDelete);
+                } else if ((arrayEntry.getStatus() != MetaObject.TEMPLATE)
+                            || (arrayEntry.getStatus() != MetaObject.TEMPLATE)) {
+                    arrayEntry.setStatus(MetaObject.TO_DELETE);
+                    final ObjectAttribute referencingOA = arrayEntry.getReferencingObjectAttribute();
+                    walkUpAndSetChangedAndModified(referencingOA);
+                }
             }
         }
         getMetaObject().setStatus(MetaObject.MODIFIED);

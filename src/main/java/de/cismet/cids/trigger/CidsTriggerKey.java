@@ -17,7 +17,7 @@ public class CidsTriggerKey {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    public static final String ALL = "CIDSTRIGGERKEYFORALLDOMAINSANDTABLES";
+    public static final String ALL = "ALLOFTHEM";
     public static final CidsTriggerKey FORALL = new CidsTriggerKey(ALL, ALL);
 
     //~ Instance fields --------------------------------------------------------
@@ -36,8 +36,8 @@ public class CidsTriggerKey {
     public CidsTriggerKey(final String domain, final String table) {
         assert (domain != null);
         assert (table != null);
-        this.domain = domain;
-        this.table = table;
+        this.domain = domain.toLowerCase();
+        this.table = table.toLowerCase();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -57,7 +57,7 @@ public class CidsTriggerKey {
      * @param  domain  DOCUMENT ME!
      */
     public void setDomain(final String domain) {
-        this.domain = domain;
+        this.domain = domain.toLowerCase();
     }
 
     /**
@@ -75,7 +75,7 @@ public class CidsTriggerKey {
      * @param  table  DOCUMENT ME!
      */
     public void setTable(final String table) {
-        this.table = table;
+        this.table = table.toLowerCase();
     }
 
     @Override
@@ -102,5 +102,10 @@ public class CidsTriggerKey {
         hash = (67 * hash) + ((this.domain != null) ? this.domain.hashCode() : 0);
         hash = (67 * hash) + ((this.table != null) ? this.table.hashCode() : 0);
         return hash;
+    }
+
+    @Override
+    public String toString() {
+        return "CidsTriggerKey{" + "domain=" + domain + ", table=" + table + '}';
     }
 }

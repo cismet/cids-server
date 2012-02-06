@@ -46,6 +46,7 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
     private String renderer;
     private String javaclassname = null;
     private boolean extensionAttribute = false;
+    private boolean virtual = false;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -519,5 +520,23 @@ public class MemberAttributeInfo implements Mapable, java.io.Serializable {
      */
     public void setExtensionAttribute(final boolean extensionAttribute) {
         this.extensionAttribute = extensionAttribute;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean isVirtual() {
+        return virtual;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  virtual  DOCUMENT ME!
+     */
+    public void setVirtual(final boolean virtual) {
+        this.virtual = virtual;
     }
 }

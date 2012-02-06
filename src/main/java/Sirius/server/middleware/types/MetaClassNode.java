@@ -9,6 +9,8 @@ package Sirius.server.middleware.types;
 
 import Sirius.server.newuser.permission.Policy;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 /**
  * ClassNode in this package reprents a class (in the sirius context) wrapped with navigational metainfo (Node) e.g. to
  * insert a class in the catalogue use an ClassNode This Type is to be used as return value of an RMI Method
@@ -102,5 +104,17 @@ public class MetaClassNode extends Node implements Comparable {
             artificialId);
 
         super.classId = classID;
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public int hashCode() {
+        final HashCodeBuilder hb = new HashCodeBuilder();
+
+        hb.append(id);
+        hb.append(domain);
+        hb.append(classId);
+        return hb.toHashCode();
     }
 }
