@@ -73,6 +73,7 @@ public class Class implements java.io.Serializable, Mapable {
     /** DOCUMENT ME! */
     protected String renderer;
     protected Policy attributePolicy;
+    protected boolean indexed;
 
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
 
@@ -101,8 +102,9 @@ public class Class implements java.io.Serializable, Mapable {
             final String primaryKey,
             final String toString,
             final PermissionHolder permissions,
-            final Policy attributePolicy) {
-        this(id, name, description, icon, objectIcon, tableName, primaryKey, toString, (Policy)null, attributePolicy);
+            final Policy attributePolicy, 
+            final boolean indexed) {
+        this(id, name, description, icon, objectIcon, tableName, primaryKey, toString, (Policy)null, attributePolicy,indexed);
         this.permissions = permissions;
     }
 
@@ -129,7 +131,8 @@ public class Class implements java.io.Serializable, Mapable {
             final String primaryKey,
             final String toString,
             final Policy policy,
-            final Policy attributePolicy) {
+            final Policy attributePolicy, 
+            final boolean indexed) {
         this.id = id;
 
         this.name = name;
@@ -159,6 +162,7 @@ public class Class implements java.io.Serializable, Mapable {
         this.getDefaultInstanceStmnt = "Select * from " + tableName + " where " + primaryKey // NOI18N
                     + " = (select min( "                                                     // NOI18N
                     + primaryKey + ") from " + tableName + ")";                              // NOI18N
+        this.indexed=indexed;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -555,4 +559,15 @@ public class Class implements java.io.Serializable, Mapable {
     public Policy getAttributePolicy() {
         return attributePolicy;
     }
+
+    public boolean isIndexed() {
+        return indexed;
+    }
+
+    public void setIndexed(boolean indexed) {
+        this.indexed = indexed;
+    }
+    
+    
+    
 }

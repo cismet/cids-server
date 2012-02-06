@@ -1,10 +1,12 @@
-/***************************************************
-*
-* cismet GmbH, Saarbruecken, Germany
-*
-*              ... and it just works.
-*
-****************************************************/
+/**
+ * *************************************************
+ *
+ * cismet GmbH, Saarbruecken, Germany
+ * 
+* ... and it just works.
+ * 
+***************************************************
+ */
 package Sirius.server.localserver._class;
 
 import Sirius.server.AbstractShutdownable;
@@ -38,38 +40,36 @@ import java.util.List;
 /**
  * DOCUMENT ME!
  *
- * @version  $Revision$, $Date$
+ * @version $Revision$, $Date$
  */
 public class ClassCache extends Shutdown {
 
     //~ Static fields/initializers ---------------------------------------------
-
     private static final transient Logger LOG = Logger.getLogger(ClassCache.class);
-
     //~ Instance fields --------------------------------------------------------
-
-    /** contains all cached objects. */
+    /**
+     * contains all cached objects.
+     */
     protected ClassMap classes;
     protected HashMap<String, Sirius.server.localserver._class.Class> classesByTableName;
     protected HashMap classAttribs;
     protected PolicyHolder policyHolder;
     /**
-     * conatains this local servers class and object icons load with the method loadIcons which is called in the
-     * constructor.
+     * conatains this local servers class and object icons load with the method
+     * loadIcons which is called in the constructor.
      */
     protected IntMapsImage icons = new IntMapsImage(20, 0.7f);
     protected ServerProperties properties;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * -----------------------------------
      *
-     * @param   conPool       DOCUMENT ME!
-     * @param   properties    DOCUMENT ME!
-     * @param   policyHolder  DOCUMENT ME!
+     * @param conPool DOCUMENT ME!
+     * @param properties DOCUMENT ME!
+     * @param policyHolder DOCUMENT ME!
      *
-     * @throws  Throwable  DOCUMENT ME!
+     * @throws Throwable DOCUMENT ME!
      */
     public ClassCache(final DBConnectionPool conPool,
             final ServerProperties properties,
@@ -92,9 +92,9 @@ public class ClassCache extends Shutdown {
 
             if (classTable == null) {
                 LOG.error(
-                    "<LS> ERROR :: Fatal Error: classes could not be loaded. Program exits"); // NOI18N
+                        "<LS> ERROR :: Fatal Error: classes could not be loaded. Program exits"); // NOI18N
                 throw new ServerExitError(
-                    "Fatal Error: classes could not be loaded. Program exits");               // NOI18N
+                        "Fatal Error: classes could not be loaded. Program exits");               // NOI18N
             }
 
             while (classTable.next()) // add all objects to the hashtable
@@ -129,6 +129,9 @@ public class ClassCache extends Shutdown {
                 final String toStringQualifier = classTable.getString("tostringqualifier"); // NOI18N
                 final String className = classTable.getString("name").trim();               // NOI18N
                 final Object policyTester = classTable.getObject("policy");                 // NOI18N
+                final boolean indexed = classTable.getBoolean("indexed");
+
+
                 Policy policy = null;
                 if (policyTester == null) {
                     policy = policyHolder.getServerPolicy(properties.getServerPolicy());
@@ -150,16 +153,17 @@ public class ClassCache extends Shutdown {
                 }
 
                 final Class tmp = new Class(
-                        classTable.getInt("id"),                               // NOI18N
+                        classTable.getInt("id"), // NOI18N
                         className,
-                        classTable.getString("descr"),                         // NOI18N
+                        classTable.getString("descr"), // NOI18N
                         class_i,
                         object_i,
-                        classTable.getString("table_name"),                    // NOI18N
-                        classTable.getString("primary_key_field"),             // NOI18N
+                        classTable.getString("table_name"), // NOI18N
+                        classTable.getString("primary_key_field"), // NOI18N
                         toStringQualifier,
                         policy,
-                        attributePolicy);
+                        attributePolicy,
+                        indexed);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("to string for Class :" + className + " :: " + toStringQualifier); // NOI18N
                 }
@@ -193,26 +197,25 @@ public class ClassCache extends Shutdown {
 
         addShutdown(new AbstractShutdownable() {
 
-                @Override
-                protected void internalShutdown() throws ServerExitError {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("shutting down ClassCache"); // NOI18N
-                    }
-
-                    classes.clear();
-                    classesByTableName.clear();
-                    classAttribs.clear();
-                    icons.clear();
+            @Override
+            protected void internalShutdown() throws ServerExitError {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("shutting down ClassCache"); // NOI18N
                 }
-            });
+
+                classes.clear();
+                classesByTableName.clear();
+                classAttribs.clear();
+                icons.clear();
+            }
+        });
     }
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      */
     public final int size() {
         return classes.size();
@@ -221,9 +224,9 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   id  DOCUMENT ME!
+     * @param id DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      */
     public final Class getClass(final int id) {
         return classes.getClass(id);
@@ -232,11 +235,11 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   tableName  DOCUMENT ME!
+     * @param tableName DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      *
-     * @throws  Exception  DOCUMENT ME!
+     * @throws Exception DOCUMENT ME!
      */
     public final Class getClassByTableName(final String tableName) throws Exception {
         return classesByTableName.get(tableName);
@@ -245,7 +248,7 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      */
     public final List getAllClasses() {
         return classes.getAll();
@@ -254,10 +257,10 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
-     * @param   id  DOCUMENT ME!
+     * @param ug DOCUMENT ME!
+     * @param id DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      */
     public final Class getClass(final UserGroup ug, final int id) {
         final Class c = classes.getClass(id);
@@ -272,12 +275,12 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug         DOCUMENT ME!
-     * @param   tableName  DOCUMENT ME!
+     * @param ug DOCUMENT ME!
+     * @param tableName DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      *
-     * @throws  Exception  DOCUMENT ME!
+     * @throws Exception DOCUMENT ME!
      */
     public final Class getClassNyTableName(final UserGroup ug, final String tableName) throws Exception {
         final Class c = getClassByTableName(tableName);
@@ -292,7 +295,7 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      */
     public HashMap getClassHashMap() {
         return classes;
@@ -301,16 +304,16 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param ug DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      */
     public final List getAllClasses(final UserGroup ug) {
         final List all = getAllClasses();
         final List cs = new ArrayList(all.size());
 
         for (int i = 0; i < all.size(); i++) {
-            final Class c = (Class)all.get(i);
+            final Class c = (Class) all.get(i);
             if (c.getPermissions().hasReadPermission(ug)) {
                 cs.add(c);
             }
@@ -322,7 +325,7 @@ public class ClassCache extends Shutdown {
     /**
      * Only to be called by the constructor.
      *
-     * @param  conPool  DOCUMENT ME!
+     * @param conPool DOCUMENT ME!
      */
     private void addAttributes(final DBConnectionPool conPool) {
         final DBConnection con = conPool.getDBConnection();
@@ -361,13 +364,13 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param  conPool  DOCUMENT ME!
+     * @param conPool DOCUMENT ME!
      */
     private void addMemberInfos(final DBConnectionPool conPool) {
         final DBConnection con = conPool.getDBConnection();
 
         final HashMap<Integer, HashMap<String, String>> classfieldtypes =
-            new HashMap<Integer, HashMap<String, String>>();
+                new HashMap<Integer, HashMap<String, String>>();
 
         final List<Sirius.server.localserver._class.Class> vc = getAllClasses();
 
@@ -515,7 +518,7 @@ public class ClassCache extends Shutdown {
 
                 mai.setJavaclassname(classfieldtypes.get(classId).get(fieldName.toLowerCase()));
                 if ((mai.getJavaclassname() != null)
-                            && mai.getJavaclassname().equals(org.postgis.PGgeometry.class.getName())) {
+                        && mai.getJavaclassname().equals(org.postgis.PGgeometry.class.getName())) {
                     mai.setJavaclassname(com.vividsolutions.jts.geom.Geometry.class.getName());
                 }
                 mai.setExtensionAttribute(extensionAttribute);
@@ -542,7 +545,7 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param  conPool  DOCUMENT ME!
+     * @param conPool DOCUMENT ME!
      */
     protected final void loadIcons(final DBConnectionPool conPool) {
         String iconDirectory;
@@ -553,16 +556,16 @@ public class ClassCache extends Shutdown {
             iconDirectory = properties.getIconDirectory();
         } catch (Exception e) {
             LOG.error(
-                "<LS> ERROR ::  Keyvalue ICONDIRECTORY in ConfigFile is missing\n<LS> ERROR ::  set ICONDIRECTORY to . ", // NOI18N
-                e);
+                    "<LS> ERROR ::  Keyvalue ICONDIRECTORY in ConfigFile is missing\n<LS> ERROR ::  set ICONDIRECTORY to . ", // NOI18N
+                    e);
             iconDirectory = "."; // NOI18N
         }
         try {
             separator = System.getProperty("file.separator"); // NOI18N
         } catch (Exception e) {
             LOG.error(
-                "<LS> ERROR ::  KeyValue SEPARATOR in ConfigFile is missing\n<LS> ERROR ::  set DEFAULTSEPARATOR = \\", // NOI18N
-                e);
+                    "<LS> ERROR ::  KeyValue SEPARATOR in ConfigFile is missing\n<LS> ERROR ::  set DEFAULTSEPARATOR = \\", // NOI18N
+                    e);
             separator = "\\"; // NOI18N
         }
 
@@ -585,7 +588,7 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param  conPool  DOCUMENT ME!
+     * @param conPool DOCUMENT ME!
      */
     private void addClassPermissions(final DBConnectionPool conPool) {
         final DBConnection con = conPool.getDBConnection();
@@ -628,7 +631,7 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      */
     public ServerProperties getProperties() {
         return properties;

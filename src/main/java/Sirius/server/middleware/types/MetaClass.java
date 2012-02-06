@@ -71,7 +71,8 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
             c.getPrimaryKey(),
             c.getToString(),
             c.getPermissions(),
-            c.getAttributePolicy());
+            c.getAttributePolicy(),
+            c.isIndexed());
         super.attribs = new AttributeVector(c.getAttributes());
         super.memberAttributeInfos = new LinkedHashMap(c.getMemberAttributeInfos());
         // Hell
