@@ -92,6 +92,7 @@ public class Class implements java.io.Serializable, Mapable {
      * @param  toString         class able to create a String representation of this class's objects
      * @param  permissions      permission container
      * @param  attributePolicy  DOCUMENT ME!
+     * @param  indexed          DOCUMENT ME!
      */
     public Class(final int id,
             final String name,
@@ -102,9 +103,20 @@ public class Class implements java.io.Serializable, Mapable {
             final String primaryKey,
             final String toString,
             final PermissionHolder permissions,
-            final Policy attributePolicy, 
+            final Policy attributePolicy,
             final boolean indexed) {
-        this(id, name, description, icon, objectIcon, tableName, primaryKey, toString, (Policy)null, attributePolicy,indexed);
+        this(
+            id,
+            name,
+            description,
+            icon,
+            objectIcon,
+            tableName,
+            primaryKey,
+            toString,
+            (Policy)null,
+            attributePolicy,
+            indexed);
         this.permissions = permissions;
     }
 
@@ -121,6 +133,7 @@ public class Class implements java.io.Serializable, Mapable {
      * @param  toString         class able to create a String representation of this class's objects
      * @param  policy           DOCUMENT ME!
      * @param  attributePolicy  DOCUMENT ME!
+     * @param  indexed          DOCUMENT ME!
      */
     public Class(final int id,
             final String name,
@@ -131,7 +144,7 @@ public class Class implements java.io.Serializable, Mapable {
             final String primaryKey,
             final String toString,
             final Policy policy,
-            final Policy attributePolicy, 
+            final Policy attributePolicy,
             final boolean indexed) {
         this.id = id;
 
@@ -162,7 +175,7 @@ public class Class implements java.io.Serializable, Mapable {
         this.getDefaultInstanceStmnt = "Select * from " + tableName + " where " + primaryKey // NOI18N
                     + " = (select min( "                                                     // NOI18N
                     + primaryKey + ") from " + tableName + ")";                              // NOI18N
-        this.indexed=indexed;
+        this.indexed = indexed;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -560,14 +573,21 @@ public class Class implements java.io.Serializable, Mapable {
         return attributePolicy;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public boolean isIndexed() {
         return indexed;
     }
 
-    public void setIndexed(boolean indexed) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  indexed  DOCUMENT ME!
+     */
+    public void setIndexed(final boolean indexed) {
         this.indexed = indexed;
     }
-    
-    
-    
 }
