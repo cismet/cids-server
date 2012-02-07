@@ -88,7 +88,21 @@ public class FullTextSearch extends CidsServerSearch {
 
             final String geoPrefix = "\n select distinct * from ( ";
 
-            final String sql = "select distinct ocid,oid,stringrep from "
+            final String sql = ""
+                        + "SELECT i.class_id ocid,i.object_id as oid, c.stringrep "
+                        + "FROM   cs_attr_string s, "
+                        + "       cs_attr_object_derived i "
+                        + "       LEFT OUTER JOIN cs_stringrepcache c "
+                        + "       ON     ( "
+                        + "                     c.class_id =i.class_id "
+                        + "              AND    c.object_id=i.object_id "
+                        + "              ) "
+                        + "WHERE  i.attr_class_id = s.class_id "
+                        + "AND    i.attr_object_id=s.object_id "
+                        + "AND    s.string_val " + caseSensitiveI + "like '%<cidsSearchText>%' "
+                        + "AND i.class_id IN <cidsClassesInStatement>";
+
+            final String altsql = "select distinct ocid,oid,stringrep from "
                         + "\n(WITH recursive derived_index(ocid,oid,acid,aid,depth) AS "
                         + "\n( SELECT class_id         , "
                         + "\n        object_id         , "
@@ -132,7 +146,7 @@ public class FullTextSearch extends CidsServerSearch {
                         + "\nFROM   derived_index left outer join cs_stringrepcache on ocid=class_id AND oid =object_id "
                         + "\nWHERE  ocid IN <cidsClassesInStatement> LIMIT 10000000) as x";
 
-            final String geoMidFix = "\n ) as txt,(select distinct ocid,oid,stringrep from (";
+            final String geoMidFix = "\n ) as txt,(select distinct class_id as ocid,object_id as oid,stringrep from (";
 
             final String geoPostfix = "\n )as y ) as geo "
                         + "\n where txt.ocid=geo.ocid and txt.oid=geo.oid";

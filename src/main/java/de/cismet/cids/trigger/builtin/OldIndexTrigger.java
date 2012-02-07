@@ -41,24 +41,62 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
             "severe.incidence");
     private static final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(
             OldIndexTrigger.class);
-    public static final String NULL = "NULL";                                       // NOI18N
+    public static final String NULL = "NULL";                                         // NOI18N
     private static final transient org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
             OldIndexTrigger.class);
-    public static final String DEL_ATTR_STRING = "DELETE FROM cs_attr_string "      // NOI18N
-                + "WHERE class_id = ? AND object_id = ?";                           // NOI18N
-    public static final String DEL_ATTR_MAPPING = "DELETE FROM cs_attr_object "     // NOI18N
-                + "WHERE class_id = ? AND object_id = ?";                           // NOI18N
-    public static final String INS_ATTR_STRING = "INSERT INTO cs_attr_string "      // NOI18N
-                + "(class_id, object_id, attr_id, string_val) VALUES (?, ?, ?, ?)"; // NOI18N
-    public static final String INS_ATTR_MAPPING = "INSERT INTO cs_attr_object "     // NOI18N
-                + "(class_id, object_id, attr_class_id, attr_object_id) VALUES "    // NOI18N
-                + "(?, ?, ?, ?)";                                                   // NOI18N
-    public static final String UP_ATTR_STRING = "UPDATE cs_attr_string "            // NOI18N
-                + "SET string_val = ? "                                             // NOI18N
-                + "WHERE class_id = ? AND object_id = ? AND attr_id = ?";           // NOI18N
-    public static final String UP_ATTR_MAPPING = "UPDATE cs_attr_object "           // NOI18N
-                + "SET attr_object_id = ? "                                         // NOI18N
-                + "WHERE class_id = ? AND object_id = ? AND attr_class_id = ?";     // NOI18N
+    public static final String DEL_ATTR_STRING = "DELETE FROM cs_attr_string "        // NOI18N
+                + "WHERE class_id = ? AND object_id = ?";                             // NOI18N
+    public static final String DEL_ATTR_MAPPING = "DELETE FROM cs_attr_object "       // NOI18N
+                + "WHERE class_id = ? AND object_id = ?";                             // NOI18N
+    public static final String INS_ATTR_STRING = "INSERT INTO cs_attr_string "        // NOI18N
+                + "(class_id, object_id, attr_id, string_val) VALUES (?, ?, ?, ?)";   // NOI18N
+    public static final String INS_ATTR_MAPPING = "INSERT INTO cs_attr_object "       // NOI18N
+                + "(class_id, object_id, attr_class_id, attr_object_id) VALUES "      // NOI18N
+                + "(?, ?, ?, ?)";                                                     // NOI18N
+    public static final String UP_ATTR_STRING = "UPDATE cs_attr_string "              // NOI18N
+                + "SET string_val = ? "                                               // NOI18N
+                + "WHERE class_id = ? AND object_id = ? AND attr_id = ?";             // NOI18N
+    public static final String UP_ATTR_MAPPING = "UPDATE cs_attr_object "             // NOI18N
+                + "SET attr_object_id = ? "                                           // NOI18N
+                + "WHERE class_id = ? AND object_id = ? AND attr_class_id = ?";       // NOI18N
+    public static final String DEL_ATTR_MAPPING_ARRAY = "DELETE from cs_attr_object " // NOI18N
+                + "WHERE class_id = ? AND object_id = ? AND attr_class_id = ?";       // NOI18N
+    public static final String DEL_DERIVE_ATTR_MAPPING =
+        "delete from cs_attr_object_derived where class_id=? and object_id =?";
+    public static final String INS_DERIVE_ATTR_MAPPING = "insert into cs_attr_object_derived "
+                + " WITH recursive derived_index(xocid,xoid,ocid,oid,acid,aid,depth) AS "
+                + "( SELECT class_id, "
+                + "        object_id, "
+                + "        class_id , "
+                + "        object_id, "
+                + "        class_id , "
+                + "        object_id, "
+                + "        0 "
+                + "FROM    cs_attr_object "
+                + "WHERE   class_id=? "
+                + "AND     object_id =? "
+                + " "
+                + "UNION ALL "
+                + " "
+                + "SELECT di.xocid          , "
+                + "       di.xoid           , "
+                + "       aam.class_id      , "
+                + "       aam.object_id     , "
+                + "       aam.attr_class_id , "
+                + "       aam.attr_object_id, "
+                + "       di.depth+1 "
+                + "FROM   cs_attr_object aam, "
+                + "       derived_index di "
+                + "WHERE  aam.class_id =di.acid "
+                + "AND    aam.object_id=di.aid "
+                + ") "
+                + "SELECT DISTINCT xocid, "
+                + "                xoid , "
+                + "                acid , "
+                + "                aid "
+                + "FROM            derived_index "
+                + "WHERE           depth>0 "
+                + "ORDER BY        1,2,3,4 limit 1000000000;";
 
     //~ Methods ----------------------------------------------------------------
 
@@ -69,7 +107,8 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
                 @Override
                 public void run() {
                     try {
-                        deleteIndex(cidsBean.getMetaObject());
+                        final Connection connection = getDbServer().getConnectionPool().getConnection();
+                        deleteIndex(connection, cidsBean.getMetaObject());
                     } catch (SQLException sQLException) {
                         log.error("Error during deleteIndex " + cidsBean.getMOString(), sQLException);
                         severeIncidence.error("Error during deleteIndex " + cidsBean.getMOString(), sQLException);
@@ -85,7 +124,8 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
                 @Override
                 public void run() {
                     try {
-                        insertIndex(cidsBean.getMetaObject());
+                        final Connection connection = getDbServer().getConnectionPool().getConnection();
+                        insertIndex(connection, cidsBean.getMetaObject());
                     } catch (SQLException sQLException) {
                         log.error("Error during insertIndex " + cidsBean.getMOString(), sQLException);
                         severeIncidence.error("Error during insertIndex " + cidsBean.getMOString(), sQLException);
@@ -101,7 +141,8 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
                 @Override
                 public void run() {
                     try {
-                        updateIndex(cidsBean.getMetaObject());
+                        final Connection connection = getDbServer().getConnectionPool().getConnection();
+                        updateIndex(connection, cidsBean.getMetaObject());
                     } catch (SQLException sQLException) {
                         log.error("Error during updateIndex " + cidsBean.getMOString(), sQLException);
                         severeIncidence.error("Error during updateIndex " + cidsBean.getMOString(), sQLException);
@@ -143,13 +184,13 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
      * mscholl: Inserts the index in cs_attr_string and cs_all_attr_mapping for the given metaobject. If the metaobject
      * does not contain a metaclass it is skipped.
      *
-     * @param   mo  the metaobject which will be newly created
+     * @param   connection  DOCUMENT ME!
+     * @param   mo          the metaobject which will be newly created
      *
      * @throws  SQLException              if an error occurs during index insertion
      * @throws  IllegalArgumentException  NullPointerException DOCUMENT ME!
      */
-    private void insertIndex(final MetaObject mo) throws SQLException {
-        final Connection connection = getDbServer().getConnectionPool().getConnection();
+    private void insertIndex(final Connection connection, final MetaObject mo) throws SQLException {
         if (mo == null) {
             throw new IllegalArgumentException("MetaObject must not be null"); // NOI18N
         } else if (mo.isDummy()) {
@@ -164,7 +205,7 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
         try {
             // we just want to make sure that there is no index present for the
             // given object
-            deleteIndex(mo);
+            deleteIndex(connection, mo);
         } catch (final SQLException e) {
             LOG.error("could not delete index before insert index", e); // NOI18N
             throw e;
@@ -256,6 +297,9 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
                     }
                     LOG.debug("cs_all_attr_mapping: inserted " + insertCount + " rows"); // NOI18N
                 }
+                if (mo.getMetaClass().isIndexed()) {
+                    updateDerivedIndex(connection, mo);
+                }
             }
         } catch (final SQLException e) {
             LOG.error(
@@ -275,14 +319,13 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
      * mscholl: Updates the index of cs_attr_string and cs_all_attr_mapping for the given metaobject. Update for a
      * certain attribute will only be done if the attribute is changed.
      *
-     * @param   mo  the metaobject which will be updated
+     * @param   connection  DOCUMENT ME!
+     * @param   mo          the metaobject which will be updated
      *
      * @throws  SQLException              if an error occurs during index update
      * @throws  IllegalArgumentException  NullPointerException DOCUMENT ME!
      */
-    private void updateIndex(final MetaObject mo) throws SQLException {
-        final Connection connection = getDbServer().getConnectionPool().getConnection();
-
+    private void updateIndex(final Connection connection, final MetaObject mo) throws SQLException {
         if (mo == null) {
             throw new IllegalArgumentException("MetaObject must not be null"); // NOI18N
         } else if (mo.isDummy()) {
@@ -296,6 +339,8 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
         }
         PreparedStatement psAttrString = null;
         PreparedStatement psAttrMap = null;
+        PreparedStatement psAttrMapArray = null;
+
         try {
             for (final ObjectAttribute attr : mo.getAttribs()) {
                 final MemberAttributeInfo mai = attr.getMai();
@@ -316,17 +361,25 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
                                             + " =  " + String.valueOf(mo.getID());
 
                                 final ResultSet arrayList = connection.createStatement().executeQuery(query);
+                                final PreparedStatement psAttrMapDelArray = connection.prepareStatement(
+                                        DEL_ATTR_MAPPING_ARRAY);
+
+                                psAttrMapDelArray.setInt(1, mo.getClassID());
+                                psAttrMapDelArray.setInt(2, mo.getID());
+                                psAttrMapDelArray.setInt(3, mai.getForeignKeyClassId());
+
+                                psAttrMapDelArray.executeUpdate();
 
                                 while (arrayList.next()) {
                                     // lazily prepare the statement
-                                    if (psAttrMap == null) {
-                                        psAttrMap = connection.prepareStatement(UP_ATTR_MAPPING);
+                                    if (psAttrMapArray == null) {
+                                        psAttrMapArray = connection.prepareStatement(INS_ATTR_MAPPING);
                                     }
-                                    psAttrMap.setInt(1, arrayList.getInt(1));
-                                    psAttrMap.setInt(2, mo.getClassID());
-                                    psAttrMap.setInt(3, mo.getID());
-                                    psAttrMap.setInt(4, mai.getForeignKeyClassId());
-                                    psAttrMap.addBatch();
+                                    psAttrMapArray.setInt(1, mo.getClassID());
+                                    psAttrMapArray.setInt(2, mo.getID());
+                                    psAttrMapArray.setInt(3, mai.getForeignKeyClassId());
+                                    psAttrMapArray.setInt(4, arrayList.getInt(1));
+                                    psAttrMapArray.addBatch();
                                 }
 
                                 arrayList.close();
@@ -345,6 +398,7 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
                             psAttrMap.setInt(3, mo.getID());
                             psAttrMap.setInt(4, mai.getForeignKeyClassId());
                             psAttrMap.addBatch();
+
                             if (LOG.isDebugEnabled()) {
                                 final StringBuilder logMessage = new StringBuilder(
                                         "Parameterized SQL added to batch: ");
@@ -398,7 +452,7 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
                     for (final int row : strRows) {
                         updateCount += row;
                     }
-                    LOG.debug("cs_attr_string: updated " + updateCount + " rows");      // NOI18N
+                    LOG.debug("cs_attr_string: updated " + updateCount + " rows");                  // NOI18N
                 }
             }
             if (psAttrMap != null) {
@@ -408,16 +462,29 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
                     for (final int row : mapRows) {
                         updateCount += row;
                     }
-                    LOG.debug("cs_all_attr_mapping: updated " + updateCount + " rows"); // NOI18N
+                    LOG.debug("cs_attr_object(complex objects): updated " + updateCount + " rows"); // NOI18N
                 }
+            }
+            if (psAttrMapArray != null) {
+                final int[] mapRows = psAttrMapArray.executeBatch();
+                if (LOG.isDebugEnabled()) {
+                    int updateCount = 0;
+                    for (final int row : mapRows) {
+                        updateCount += row;
+                    }
+                    LOG.debug("cs_attr_object(Array-Entries): updated " + updateCount + " rows");   // NOI18N
+                }
+            }
+            if (mo.getMetaClass().isIndexed()) {
+                updateDerivedIndex(connection, mo);
             }
         } catch (final SQLException e) {
             LOG.error(
-                "could not insert index for object '"                                   // NOI18N
+                "could not insert index for object '"                                               // NOI18N
                         + mo.getID()
-                        + "' of class '"                                                // NOI18N
+                        + "' of class '"                                                            // NOI18N
                         + mo.getClass()
-                        + "'",                                                          // NOI18N
+                        + "'",                                                                      // NOI18N
                 e);
             // TODO: consider to wrap exception
             throw e;
@@ -427,17 +494,40 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
     }
 
     /**
+     * DOCUMENT ME!
+     *
+     * @param   connection  DOCUMENT ME!
+     * @param   mo          DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    private void updateDerivedIndex(final Connection connection, final MetaObject mo) throws SQLException {
+        log.fatal("updateDerivedIndex");
+        final PreparedStatement psDeleteAttrMapDerive = connection.prepareStatement(DEL_DERIVE_ATTR_MAPPING);
+        final PreparedStatement psInsertAttrMapDerive = connection.prepareStatement(INS_DERIVE_ATTR_MAPPING);
+
+        psDeleteAttrMapDerive.setInt(1, mo.getClassID());
+        psDeleteAttrMapDerive.setInt(2, mo.getID());
+        psInsertAttrMapDerive.setInt(1, mo.getClassID());
+        psInsertAttrMapDerive.setInt(2, mo.getID());
+        final int del = psDeleteAttrMapDerive.executeUpdate();
+        final int ins = psInsertAttrMapDerive.executeUpdate();
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("cs_attr_object_derived: updated. deleted:" + del + ", inserted:" + ins); // NOI18N
+        }
+    }
+
+    /**
      * mscholl: Deletes the index from cs_attr_string and cs_all_attr_mapping for a given metaobject. If the metaobject
      * does not contain a metaclass it is skipped.
      *
-     * @param   mo  the metaobject which will be deleted
+     * @param   connection  DOCUMENT ME!
+     * @param   mo          the metaobject which will be deleted
      *
      * @throws  SQLException              if an error occurs during index deletion
      * @throws  IllegalArgumentException  NullPointerException DOCUMENT ME!
      */
-    private void deleteIndex(final MetaObject mo) throws SQLException {
-        final Connection connection = getDbServer().getConnectionPool().getConnection();
-
+    private void deleteIndex(final Connection connection, final MetaObject mo) throws SQLException {
         if (mo == null) {
             throw new IllegalArgumentException("MetaObject must not be null"); // NOI18N
         } else if (mo.isDummy()) {
@@ -451,31 +541,36 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
         }
         PreparedStatement psAttrString = null;
         PreparedStatement psAttrMap = null;
+        PreparedStatement psAttrDerive = null;
         try {
             // prepare the update statements
             psAttrString = connection.prepareStatement(DEL_ATTR_STRING);
             psAttrMap = connection.prepareStatement(DEL_ATTR_MAPPING);
-
+            psAttrDerive = connection.prepareStatement(DEL_DERIVE_ATTR_MAPPING);
             // set the appropriate param values
             psAttrString.setInt(1, mo.getClassID());
             psAttrString.setInt(2, mo.getID());
             psAttrMap.setInt(1, mo.getClassID());
             psAttrMap.setInt(2, mo.getID());
+            psAttrDerive.setInt(1, mo.getClassID());
+            psAttrDerive.setInt(2, mo.getID());
 
             // execute the deletion
             final int strRows = psAttrString.executeUpdate();
             final int mapRows = psAttrMap.executeUpdate();
+            final int mapDeriveRows = psAttrDerive.executeUpdate();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("cs_attr_string: deleted " + strRows + " rows");      // NOI18N
-                LOG.debug("cs_all_attr_mapping: deleted " + mapRows + " rows"); // NOI18N
+                LOG.debug("cs_attr_string: deleted " + strRows + " rows");                   // NOI18N
+                LOG.debug("cs_all_attr_mapping: deleted " + mapRows + " rows");              // NOI18N
+                LOG.debug("cs_all_attr_mapping_derive: deleted " + mapDeriveRows + " rows"); // NOI18N
             }
         } catch (final SQLException e) {
             LOG.error(
-                "could not delete index for object '"                           // NOI18N
+                "could not delete index for object '"                                        // NOI18N
                         + mo.getID()
-                        + "' of class '"                                        // NOI18N
+                        + "' of class '"                                                     // NOI18N
                         + mo.getClass()
-                        + "'",                                                  // NOI18N
+                        + "'",                                                               // NOI18N
                 e);
             // TODO: consider to wrap exception
             throw e;

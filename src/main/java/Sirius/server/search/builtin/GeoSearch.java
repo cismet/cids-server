@@ -84,8 +84,29 @@ public class GeoSearch extends CidsServerSearch {
 //                    + ") "
 //                    + "SELECT DISTINCT ocid,oid,stringrep FROM derived_index WHERE ocid in <cidsClassesInStatement> LIMIT 10000000 ";
 //
-//
         final String sql = ""
+                    + "SELECT DISTINCT i.class_id , "
+                    + "                i.object_id, "
+                    + "                s.stringrep "
+                    + "FROM            geom g, "
+                    + "                cs_attr_object_derived i "
+                    + "                LEFT OUTER JOIN cs_stringrepcache s "
+                    + "                ON              ( "
+                    + "                                                s.class_id =i.class_id "
+                    + "                                AND             s.object_id=i.object_id "
+                    + "                                ) "
+                    + "WHERE           i.attr_class_id = "
+                    + "                ( SELECT cs_class.id "
+                    + "                FROM    cs_class "
+                    + "                WHERE   cs_class.table_name::text = 'GEOM'::text "
+                    + "                ) "
+                    + "AND             i.attr_object_id = g.id "
+                    + "AND i.class_id IN <cidsClassesInStatement> "
+                    + "AND geo_field && GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>') "
+                    + "AND intersects(geo_field,GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>')) "
+                    + "ORDER BY        1,2,3";
+
+        final String sqlAlt = ""
                     + "\nWITH recursive derived_index(ocid,oid,acid,aid,depth) AS "
                     + "\n( SELECT class_id, "
                     + "\n        object_id, "
