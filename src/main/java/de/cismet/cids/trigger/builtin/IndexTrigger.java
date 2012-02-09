@@ -33,17 +33,17 @@ import de.cismet.cids.trigger.CidsTriggerKey;
  * @version  $Revision$, $Date$
  */
 @ServiceProvider(service = CidsTrigger.class)
-public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
+public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient org.apache.log4j.Logger severeIncidence = org.apache.log4j.Logger.getLogger(
             "severe.incidence");
     private static final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(
-            OldIndexTrigger.class);
+            IndexTrigger.class);
     public static final String NULL = "NULL";                                         // NOI18N
     private static final transient org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
-            OldIndexTrigger.class);
+            IndexTrigger.class);
     public static final String DEL_ATTR_STRING = "DELETE FROM cs_attr_string "        // NOI18N
                 + "WHERE class_id = ? AND object_id = ?";                             // NOI18N
     public static final String DEL_ATTR_MAPPING = "DELETE FROM cs_attr_object "       // NOI18N
@@ -502,7 +502,6 @@ public class OldIndexTrigger extends AbstractDBAwareCidsTrigger {
      * @throws  SQLException  DOCUMENT ME!
      */
     private void updateDerivedIndex(final Connection connection, final MetaObject mo) throws SQLException {
-        log.fatal("updateDerivedIndex");
         final PreparedStatement psDeleteAttrMapDerive = connection.prepareStatement(DEL_DERIVE_ATTR_MAPPING);
         final PreparedStatement psInsertAttrMapDerive = connection.prepareStatement(INS_DERIVE_ATTR_MAPPING);
 
