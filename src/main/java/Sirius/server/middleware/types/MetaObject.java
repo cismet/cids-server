@@ -44,16 +44,6 @@ public interface MetaObject extends Sirius.server.localserver.object.Object,
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * method fo rthe visitor pattern (resolves recursion).
-     *
-     * @param   mov  DOCUMENT ME!
-     * @param   o    DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    Object accept(TypeVisitor mov, Object o);
-
-    /**
      * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!

@@ -78,11 +78,6 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public Object accept(final TypeVisitor mov, final Object o) {
-        return getRealMetaObject().accept(mov, o);
-    }
-
-    @Override
     public HashMap getAllClasses() {
         return getRealMetaObject().getAllClasses();
     }
