@@ -47,7 +47,6 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
     private transient Class javaClass = null;
     private Boolean hasExtensionAttributes = null;
     // -------------------------------------------------------------------
-
     private final String key;
 
     //~ Constructors -----------------------------------------------------------
@@ -59,7 +58,9 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
      * @param  domain  domain
      */
     public MetaClass(final Sirius.server.localserver._class.Class c, final String domain) {
-        /*SystemProperties*/
+        /*
+         * SystemProperties
+         */
 
         super(
             c.getID(),
@@ -265,10 +266,13 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
      */
     public Class getJavaClass() {
         if (javaClass == null) {
-            try {
-                javaClass = BeanFactory.getInstance().getJavaClass(this);
-            } catch (Exception e) {
-                getLogger().error("Javaclass for " + this.getName() + " could not be created.", e); // NOI18N
+            javaClass = ClassloadingHelper.getDynamicClass(this, ClassloadingHelper.CLASS_TYPE.CUSTOM_BEAN);
+            if (javaClass == null) {
+                try {
+                    javaClass = BeanFactory.getInstance().getJavaClass(this);
+                } catch (Exception e) {
+                    getLogger().error("Javaclass for " + this.getName() + " could not be created.", e); // NOI18N
+                }
             }
         }
         return javaClass;

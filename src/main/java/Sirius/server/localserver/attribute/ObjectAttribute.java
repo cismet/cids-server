@@ -115,7 +115,8 @@ public class ObjectAttribute extends Attribute implements Mapable,
         initFromString(mai);
     }
 
-    
+    //~ Methods ----------------------------------------------------------------
+
     /**
      * Getter for property classID.
      *
