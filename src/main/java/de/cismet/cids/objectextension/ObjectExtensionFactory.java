@@ -23,6 +23,8 @@
  */
 package de.cismet.cids.objectextension;
 
+import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
+
 import de.cismet.cids.dynamics.CidsBean;
 
 /**
@@ -33,6 +35,10 @@ import de.cismet.cids.dynamics.CidsBean;
  */
 public abstract class ObjectExtensionFactory {
 
+    //~ Instance fields --------------------------------------------------------
+
+    protected DomainServerImpl domainServer = null;
+
     //~ Methods ----------------------------------------------------------------
 
     /**
@@ -41,4 +47,22 @@ public abstract class ObjectExtensionFactory {
      * @param  bean  DOCUMENT ME!
      */
     public abstract void extend(CidsBean bean);
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public DomainServerImpl getDomainServer() {
+        return domainServer;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  domainServer  DOCUMENT ME!
+     */
+    public void setDomainServer(final DomainServerImpl domainServer) {
+        this.domainServer = domainServer;
+    }
 }
