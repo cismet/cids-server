@@ -20,17 +20,22 @@ import Sirius.server.search.Query;
 import Sirius.server.search.SearchOption;
 import Sirius.server.search.store.QueryData;
 
+import com.sun.jersey.api.core.HttpRequestContext;
+
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
 import java.rmi.RemoteException;
 
+import javax.servlet.http.HttpServletRequest;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -507,6 +512,41 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   usrBytes     DOCUMENT ME!
+     * @param   queryBytes   DOCUMENT ME!
+     * @param   domainBytes  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @POST
+    @Path("/getMetaObjectByStringAndDomain")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response getMetaObjectByString(@FormParam(PARAM_USER) final String usrBytes,
+            @FormParam(PARAM_QUERY) final String queryBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+        try {
+            final User user = Converter.deserialiseFromString(usrBytes, User.class);
+            final String query = Converter.deserialiseFromString(queryBytes, String.class);
+            final String domain = Converter.deserialiseFromString(domainBytes, String.class);
+
+            return createResponse(callserver.getMetaObject(user, query, domain));
+        } catch (final IOException e) {
+            final String message = "could not get metaobject"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get metaobject"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   usrBytes    usr DOCUMENT ME!
      * @param   queryBytes  DOCUMENT ME!
      *
@@ -525,6 +565,41 @@ public final class RESTfulSerialInterface {
             final Query query = Converter.deserialiseFromString(queryBytes, Query.class);
 
             return createResponse(callserver.getMetaObject(user, query));
+        } catch (final IOException e) {
+            final String message = "could not get metaobject"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not get metaobject"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usrBytes     DOCUMENT ME!
+     * @param   queryBytes   DOCUMENT ME!
+     * @param   domainBytes  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @POST
+    @Path("/getMetaObjectByQueryAndDomain")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response getMetaObjectByQuery(@FormParam(PARAM_USER) final String usrBytes,
+            @FormParam(PARAM_QUERY) final String queryBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+        try {
+            final User user = Converter.deserialiseFromString(usrBytes, User.class);
+            final Query query = Converter.deserialiseFromString(queryBytes, Query.class);
+            final String domain = Converter.deserialiseFromString(domainBytes, String.class);
+
+            return createResponse(callserver.getMetaObject(user, query, domain));
         } catch (final IOException e) {
             final String message = "could not get metaobject"; // NOI18N
             LOG.error(message, e);
@@ -1715,6 +1790,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr            DOCUMENT ME!
      * @param   ugLsNameBytes  DOCUMENT ME!
      * @param   ugNameBytes    DOCUMENT ME!
      * @param   uLsNameBytes   DOCUMENT ME!
@@ -1730,7 +1806,8 @@ public final class RESTfulSerialInterface {
     @Path("/getUser")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getUserGET(@FormParam(PARAM_USERGROUP_LS_NAME) final String ugLsNameBytes,
+    public Response getUserGET(@Context final HttpServletRequest hsr,
+            @FormParam(PARAM_USERGROUP_LS_NAME) final String ugLsNameBytes,
             @FormParam(PARAM_USERGROUP_NAME) final String ugNameBytes,
             @FormParam(PARAM_USER_LS_NAME) final String uLsNameBytes,
             @FormParam(PARAM_USERNAME) final String unameBytes,

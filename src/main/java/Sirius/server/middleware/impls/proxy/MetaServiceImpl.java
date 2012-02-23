@@ -357,13 +357,25 @@ public class MetaServiceImpl implements MetaService {
      */
     @Override
     public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
+        return getMetaObject(usr, query, usr.getDomain());
+    }
+
+    @Override
+    public MetaObject[] getMetaObject(final User usr, final String query, final String domain) throws RemoteException {
         if (logger != null) {
             if (logger.isDebugEnabled()) {
-                logger.debug("<CS> getMetaObject for user" + usr + "queryString ::" + query); // NOI18N
+                logger.debug("<CS> getMetaObject for [user=" + usr + "|domain=" + domain + "|query=" + query + "]"); // NOI18N
             }
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(usr.getDomain()))
-                    .getMetaObject(usr, query);
+
+        final Sirius.server.middleware.interfaces.domainserver.MetaService metaService =
+            (Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain);
+
+        if (metaService == null) {
+            throw new RemoteException("no server registered for domain: " + domain); // NOI18N
+        }
+
+        return metaService.getMetaObject(usr, query);
     }
 
     /**
@@ -378,13 +390,25 @@ public class MetaServiceImpl implements MetaService {
      */
     @Override
     public MetaObject[] getMetaObject(final User usr, final Query query) throws RemoteException {
+        return getMetaObject(usr, query, usr.getDomain());
+    }
+
+    @Override
+    public MetaObject[] getMetaObject(final User usr, final Query query, final String domain) throws RemoteException {
         if (logger != null) {
             if (logger.isDebugEnabled()) {
-                logger.debug("<CS> getMetaObject for user" + usr + "query ::" + query); // NOI18N
+                logger.debug("<CS> getMetaObject for [user=" + usr + "|domain=" + domain + "|query=" + query + "]"); // NOI18N
             }
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(usr.getDomain()))
-                    .getMetaObject(usr, query);
+
+        final Sirius.server.middleware.interfaces.domainserver.MetaService metaService =
+            (Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain);
+
+        if (metaService == null) {
+            throw new RemoteException("no server registered for domain: " + domain); // NOI18N
+        }
+
+        return metaService.getMetaObject(usr, query);
     }
 
     /**

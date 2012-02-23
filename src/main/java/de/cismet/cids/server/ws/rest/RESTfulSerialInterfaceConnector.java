@@ -962,6 +962,48 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    public MetaObject[] getMetaObject(final User usr, final String query, final String domain) throws RemoteException {
+        try {
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
+
+            if (usr != null) {
+                queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
+            }
+            if (query != null) {
+                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
+            }
+            if (domain != null) {
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
+            }
+
+            try {
+                return getResponsePOST("getMetaObjectByStringAndDomain", queryParams, MetaObject[].class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
     /**
      * DOCUMENT ME!
      *
@@ -986,6 +1028,48 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
             try {
                 return getResponsePOST("getMetaObjectByQuery", queryParams, MetaObject[].class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
+    @Override
+    public MetaObject[] getMetaObject(final User usr, final Query query, final String domain) throws RemoteException {
+        try {
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
+
+            if (usr != null) {
+                queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
+            }
+            if (query != null) {
+                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
+            }
+            if (query != null) {
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
+            }
+
+            try {
+                return getResponsePOST("getMetaObjectByQueryAndDomain", queryParams, MetaObject[].class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
