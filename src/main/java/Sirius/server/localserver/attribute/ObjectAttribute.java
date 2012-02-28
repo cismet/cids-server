@@ -118,21 +118,6 @@ public class ObjectAttribute extends Attribute implements Mapable,
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Ein teil des Visitor-Konzeptes. Diese Fkt ruft die visitMA Fkt aus dem interface TypeVisitor auf.
-     *
-     * @param   mov  Implementation des TypeVisitor-Interfaces das beschreibt was in diesem Objekt gemacht werden soll
-     *               wenn diese Funktion aufgerufen wird.
-     * @param   o    ein Objekt f\u00FCr evt Parameter. H\u00E4ngt von Implementation des TypeVisitor-Interfaces ab, ob
-     *               und wie es benutzt wird.
-     *
-     * @return  das Ergebnis der Verarbeitung bei aufruf dieser Funktion. Es wird der Returnwert der visitMA(...) Fkt
-     *          aus dem Inteface TypeVisitor geliefert.
-     */
-    public Object accept(final TypeVisitor mov, final Object o) {
-        return mov.visitMA(this, o);
-    }
-
-    /**
      * Getter for property classID.
      *
      * @return  Value of property classID.
