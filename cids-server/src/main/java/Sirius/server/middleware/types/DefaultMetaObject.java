@@ -185,19 +185,6 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
         return null;
     }
 
-    /**
-     * method fo rthe visitor pattern (resolves recursion).
-     *
-     * @param   mov  DOCUMENT ME!
-     * @param   o    DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    @Override
-    public Object accept(final TypeVisitor mov, final Object o) {
-        return mov.visitMO(this, o);
-    }
-
     @Override
     public void setArrayKey2PrimaryKey() {
         final int primaryKey = getId();

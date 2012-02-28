@@ -60,7 +60,8 @@ public class ClassloadingHelper {
         ATTRIBUTE_EDITOR("objecteditors", "AttributeEditor", "attributeeditor"),
         FEATURE_RENDERER("featurerenderer", "FeatureRenderer", "featurerenderer"),
         ACTION_PROVIDER("objectactions", "ActionsProvider", "actionsprovider"),
-        PERMISSION_PROVIDER("permissions", "PermissionProvider", "permissionprovider");
+        PERMISSION_PROVIDER("permissions", "PermissionProvider", "permissionprovider"),
+        CUSTOM_BEAN("beans", "CustomBean", "custombean");
 
         //~ Instance fields ----------------------------------------------------
 
@@ -218,6 +219,9 @@ public class ClassloadingHelper {
             }
             case FEATURE_RENDERER: {
                 return getClassAttributeValue("FEATURE_RENDERER", metaClass);
+            }
+            case CUSTOM_BEAN: {
+                return getClassAttributeValue("CUSTOM_BEAN", metaClass);
             }
 //            case EXTENSION_FACTORY:
 //                break;

@@ -129,11 +129,13 @@ public class ClassCache extends Shutdown {
                 final String toStringQualifier = classTable.getString("tostringqualifier"); // NOI18N
                 final String className = classTable.getString("name").trim();               // NOI18N
                 final Object policyTester = classTable.getObject("policy");                 // NOI18N
+                final boolean indexed = classTable.getBoolean("indexed");
+
                 Policy policy = null;
                 if (policyTester == null) {
                     policy = policyHolder.getServerPolicy(properties.getServerPolicy());
                 } else {
-                    final int policyId = classTable.getInt("policy");                       // NOI18N
+                    final int policyId = classTable.getInt("policy"); // NOI18N
                     policy = policyHolder.getServerPolicy(policyId);
                 }
 
@@ -159,7 +161,8 @@ public class ClassCache extends Shutdown {
                         classTable.getString("primary_key_field"),             // NOI18N
                         toStringQualifier,
                         policy,
-                        attributePolicy);
+                        attributePolicy,
+                        indexed);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("to string for Class :" + className + " :: " + toStringQualifier); // NOI18N
                 }
