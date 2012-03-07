@@ -222,13 +222,16 @@ public class ClassloadingHelper {
                 }
             }
             case FEATURE_RENDERER: {
-                return getClassAttributeValue("FEATURE_RENDERER", metaClass);                   // NOI18N
+                return getClassAttributeValue("FEATURE_RENDERER", metaClass); // NOI18N
             }
             case CUSTOM_BEAN: {
-                return getClassAttributeValue("CUSTOM_BEAN", metaClass);                        // NOI18N
+                return getClassAttributeValue("CUSTOM_BEAN", metaClass);      // NOI18N
             }
             case ACTION_PROVIDER: {
-                return getClassAttributeValue("ACTION_PROVIDER", metaClass);                    // NOI18N
+                return getClassAttributeValue("ACTION_PROVIDER", metaClass);  // NOI18N
+            }
+            case ICON_FACTORY: {
+                return getClassAttributeValue("ICON_FACTORY", metaClass);     // NOI18N
             }
             default: {
                 return null;

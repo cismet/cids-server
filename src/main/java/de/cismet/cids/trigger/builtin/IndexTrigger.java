@@ -95,7 +95,6 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 + "                acid , "
                 + "                aid "
                 + "FROM            derived_index "
-           //     + "WHERE           depth>0 "
                 + "ORDER BY        1,2,3,4 limit 1000000000;";
 
     //~ Methods ----------------------------------------------------------------
