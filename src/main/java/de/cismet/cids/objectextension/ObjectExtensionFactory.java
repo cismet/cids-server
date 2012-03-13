@@ -24,6 +24,7 @@
 package de.cismet.cids.objectextension;
 
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
+import Sirius.server.newuser.User;
 
 import de.cismet.cids.dynamics.CidsBean;
 
@@ -38,7 +39,7 @@ public abstract class ObjectExtensionFactory {
     //~ Instance fields --------------------------------------------------------
 
     protected DomainServerImpl domainServer = null;
-
+    protected User user = null;
     //~ Methods ----------------------------------------------------------------
 
     /**
@@ -65,4 +66,16 @@ public abstract class ObjectExtensionFactory {
     public void setDomainServer(final DomainServerImpl domainServer) {
         this.domainServer = domainServer;
     }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+    
+    
+    
+    
 }
