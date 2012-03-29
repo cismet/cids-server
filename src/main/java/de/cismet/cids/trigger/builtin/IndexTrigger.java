@@ -141,7 +141,9 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 public void run() {
                     try {
                         final Connection connection = getDbServer().getConnectionPool().getConnection();
-                        updateIndex(connection, cidsBean.getMetaObject());
+                        deleteIndex(connection, cidsBean.getMetaObject());
+                        insertIndex(connection, cidsBean.getMetaObject());
+//                        updateIndex(connection, cidsBean.getMetaObject());
                     } catch (SQLException sQLException) {
                         log.error("Error during updateIndex " + cidsBean.getMOString(), sQLException);
                         severeIncidence.error("Error during updateIndex " + cidsBean.getMOString(), sQLException);
@@ -318,11 +320,16 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
      * mscholl: Updates the index of cs_attr_string and cs_all_attr_mapping for the given metaobject. Update for a
      * certain attribute will only be done if the attribute is changed.
      *
-     * @param   connection  DOCUMENT ME!
-     * @param   mo          the metaobject which will be updated
+     * @param       connection  DOCUMENT ME!
+     * @param       mo          the metaobject which will be updated
      *
-     * @throws  SQLException              if an error occurs during index update
-     * @throws  IllegalArgumentException  NullPointerException DOCUMENT ME!
+     * @throws      SQLException              if an error occurs during index update
+     * @throws      IllegalArgumentException  NullPointerException DOCUMENT ME!
+     *
+     * @deprecated  This method does not work properly. If you have a class with multiple subclasses of the same type
+     *              which are in the search index, the update command will modify all cs_attr_object entries of the same
+     *              type with the same update command, so that all entries have the value that was set by the last
+     *              update command.
      */
     private void updateIndex(final Connection connection, final MetaObject mo) throws SQLException {
         if (mo == null) {
