@@ -350,7 +350,7 @@ public final class PersistenceManager extends Shutdown {
             // iterate over all attributes
             for (int i = 0; i < mAttr.length; ++i) {
                 // if it is not changed, skip and proceed
-                if (!mAttr[i].isChanged()) {
+                if (!mAttr[i].isChanged() || mAttr[i].isVirtualOneToManyAttribute()) {
                     continue;
                 }
                 mai = mAttr[i].getMai();
