@@ -27,13 +27,11 @@ import org.postgis.PGgeometry;
 
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -350,7 +348,7 @@ public final class PersistenceManager extends Shutdown {
             // iterate over all attributes
             for (int i = 0; i < mAttr.length; ++i) {
                 // if it is not changed, skip and proceed
-                if (!mAttr[i].isChanged() || mAttr[i].isVirtualOneToManyAttribute()) {
+                if (!mAttr[i].isChanged()) {
                     continue;
                 }
                 mai = mAttr[i].getMai();
@@ -360,9 +358,10 @@ public final class PersistenceManager extends Shutdown {
                 // fieldname is now known, find value now
                 final java.lang.Object value = mAttr[i].getValue();
 
+                java.lang.Object valueToAdd = NULL;
                 if (value == null) {
                     // delete MetaObject???
-                    values.add(NULL);
+                    valueToAdd = NULL;
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("valueString set to '" + NULL + "' as value of attribute was null"); // NOI18N
                     }
@@ -374,23 +373,23 @@ public final class PersistenceManager extends Shutdown {
                             // set new key
                             final int key = insertMetaObject(user, subObject);
                             if (subObject.isDummy()) {
-                                values.add(mo.getID()); // set value to primary key
+                                valueToAdd = mo.getID(); // set value to primary key
                                 insertMetaObjectArray(user, subObject);
                             } else {
-                                values.add(key);
+                                valueToAdd = key;
                             }
                             break;
                         }
                         case MetaObject.TO_DELETE: {
                             deleteMetaObject(user, subObject);
-                            values.add(NULL);
+                            valueToAdd = NULL;
                             break;
                         }
                         case MetaObject.NO_STATUS:
                         // fall through because we define no status as modified status
                         case MetaObject.MODIFIED: {
                             updateMetaObject(user, subObject);
-                            values.add(subObject.getID());
+                            valueToAdd = subObject.getID();
                             break;
                         }
                         default: {
@@ -409,18 +408,21 @@ public final class PersistenceManager extends Shutdown {
                 } else {
                     // TODO: try to convert JTS GEOMETRY to PGgeometry directly
                     if (PersistenceHelper.GEOMETRY.isAssignableFrom(value.getClass())) {
-                        values.add(PostGisGeometryFactory.getPostGisCompliantDbString((Geometry)value));
+                        valueToAdd = PostGisGeometryFactory.getPostGisCompliantDbString((Geometry)value);
                     } else {
-                        values.add(value);
+                        valueToAdd = value;
                     }
                 }
-                // add update fieldname = ? and add value to valuelist
-                paramStmt.append(sep).append(mai.getFieldName()).append(" = ?"); // NOI18N
+                if (!mAttr[i].isVirtualOneToManyAttribute()) {
+                    values.add(valueToAdd);
 
-                ++updateCounter;
+                    // add update fieldname = ? and add value to valuelist
+                    paramStmt.append(sep).append(mai.getFieldName()).append(" = ?"); // NOI18N
+                    ++updateCounter;
 
-                // comma between 'fieldname = ?, ' set in first iteration
-                sep = ","; // NOI18N
+                    // comma between 'fieldname = ?, ' set in first iteration
+                    sep = ","; // NOI18N
+                }
             }
 
             if (updateCounter > 0) {
