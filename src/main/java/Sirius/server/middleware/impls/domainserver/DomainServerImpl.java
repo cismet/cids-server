@@ -377,6 +377,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                     if (extensionFactoryClass != null) {
                         final ObjectExtensionFactory ef = (ObjectExtensionFactory)extensionFactoryClass.newInstance();
                         ef.setDomainServer(this);
+                        ef.setUser(user);
                         try {
                             ef.extend(mo.getBean());
                         } catch (Exception e) {

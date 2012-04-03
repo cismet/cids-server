@@ -70,12 +70,18 @@ public class UpdateToStringCacheTrigger extends AbstractDBAwareCidsTrigger {
 
                     @Override
                     protected Integer doInBackground() throws Exception {
-                        return getDbServer().getActiveDBConnection()
-                                    .submitInternalUpdate(
-                                        DBConnection.DESC_INSERT_STRINGREPCACHEENTRY,
-                                        cidsBean.getMetaObject().getClassID(),
-                                        cidsBean.getMetaObject().getID(),
-                                        cidsBean.toString());
+                        final String name = cidsBean.toString();
+
+                        if ((name != null) && !name.equals("")) {
+                            return getDbServer().getActiveDBConnection()
+                                        .submitInternalUpdate(
+                                            DBConnection.DESC_INSERT_STRINGREPCACHEENTRY,
+                                            cidsBean.getMetaObject().getClassID(),
+                                            cidsBean.getMetaObject().getID(),
+                                            name);
+                        } else {
+                            return 0;
+                        }
                     }
 
                     @Override
@@ -102,12 +108,22 @@ public class UpdateToStringCacheTrigger extends AbstractDBAwareCidsTrigger {
                     @Override
                     protected Integer doInBackground() throws Exception {
                         try {
-                            return getDbServer().getActiveDBConnection()
+                            final String name = cidsBean.toString();
+                            if ((name == null) || name.equals("")) {
+                                getDbServer().getActiveDBConnection()
                                         .submitInternalUpdate(
-                                            DBConnection.DESC_UPDATE_STRINGREPCACHEENTRY,
+                                            DBConnection.DESC_DELETE_STRINGREPCACHEENTRY,
                                             cidsBean.getMetaObject().getClassID(),
-                                            cidsBean.getMetaObject().getID(),
-                                            cidsBean.toString());
+                                            cidsBean.getMetaObject().getID());
+                                return 0;
+                            } else {
+                                return getDbServer().getActiveDBConnection()
+                                            .submitInternalUpdate(
+                                                DBConnection.DESC_UPDATE_STRINGREPCACHEENTRY,
+                                                cidsBean.getMetaObject().getClassID(),
+                                                cidsBean.getMetaObject().getID(),
+                                                name);
+                            }
                         } catch (SQLException e) {
                             getDbServer().getActiveDBConnection()
                                     .submitInternalUpdate(

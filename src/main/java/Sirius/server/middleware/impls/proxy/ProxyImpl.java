@@ -433,6 +433,11 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
         return metaService.getMetaObject(usr, query);
     }
 
+    @Override
+    public MetaObject[] getMetaObject(final User usr, final String query, final String domain) throws RemoteException {
+        return metaService.getMetaObject(usr, query, domain);
+    }
+
     /**
      * DOCUMENT ME!
      *
@@ -446,6 +451,11 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     public MetaObject[] getMetaObject(final User usr, final Query query) throws RemoteException {
         return metaService.getMetaObject(usr, query);
+    }
+
+    @Override
+    public MetaObject[] getMetaObject(final User usr, final Query query, final String domain) throws RemoteException {
+        return metaService.getMetaObject(usr, query, domain);
     }
 
     /**
