@@ -772,6 +772,29 @@ public class RESTfulSerialInterfaceConnectorTest {
         }
     }
 
+    @Test
+    public void testGetMetaObject_User_Query_Domain() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("LOCAL", "Administratoren", "LOCAL", "admin", "cismet");
+        final String domain = "LOCAL";
+
+        final Connection con = server.getConnectionPool().getConnection();
+        final ResultSet set = con.createStatement().executeQuery("select id from cs_class where name like 'test1'");
+        set.next();
+        final int classId = set.getInt(1);
+
+        final String queryString = "select " + classId + " as class_id, 1 as object_id";
+        final Query query = new Query(new SystemStatement(true, -1, "", false, SearchResult.OBJECT, queryString),
+                domain);
+
+        final MetaObject[] result = connector.getMetaObject(user, query, domain);
+        assertNotNull(result);
+
+        for (final MetaObject mo : result) {
+            System.out.println("getMetaObject: " + mo);
+        }
+    }
+    
     /**
      * DOCUMENT ME!
      *
@@ -844,6 +867,27 @@ public class RESTfulSerialInterfaceConnectorTest {
         }
     }
 
+    @Test
+    public void testGetMetaObject_User_String_Domain() throws Exception {
+        System.out.println("\nTEST: " + getCurrentMethodName());
+        final User user = connector.getUser("LOCAL", "Administratoren", "LOCAL", "admin", "cismet");
+        final String domain = "LOCAL";
+
+        final Connection con = server.getConnectionPool().getConnection();
+        final ResultSet set = con.createStatement().executeQuery("select id from cs_class where name like 'test1'");
+        set.next();
+        final int classId = set.getInt(1);
+
+        final String queryString = "select " + classId + " as class_id, 1 as object_id";
+
+        final MetaObject[] result = connector.getMetaObject(user, queryString, domain);
+        assertNotNull(result);
+
+        for (final MetaObject mo : result) {
+            System.out.println("getMetaObject: " + mo);
+        }
+    }
+    
     /**
      * DOCUMENT ME!
      *

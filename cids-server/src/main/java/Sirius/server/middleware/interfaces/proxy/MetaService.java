@@ -88,6 +88,19 @@ public interface MetaService extends Remote {
      */
     MetaObject[] getMetaObject(User usr, String query) throws RemoteException;
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr     DOCUMENT ME!
+     * @param   query   DOCUMENT ME!
+     * @param   domain  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    MetaObject[] getMetaObject(User usr, String query, String domain) throws RemoteException;
+
     // retrieves Meta data objects with meta data matching query (Search)
 
     /**
@@ -101,6 +114,19 @@ public interface MetaService extends Remote {
      * @throws  RemoteException  server error (eg bad query)
      */
     MetaObject[] getMetaObject(User usr, Query query) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr     DOCUMENT ME!
+     * @param   query   DOCUMENT ME!
+     * @param   domain  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    MetaObject[] getMetaObject(User usr, Query query, String domain) throws RemoteException;
 
     /*-*-*-*-*-*-*-*-*-*-*-*-*-* MetaJDBC Zeugs *-*-*-*-*-*-*-*-*-*-*-*-*/
 

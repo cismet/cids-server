@@ -203,8 +203,6 @@ public class ClassloadingHelper {
      */
     public static String getClassNameByConfiguration(final MetaClass metaClass, final CLASS_TYPE classType) {
         switch (classType) {
-//            case ICON_FACTORY:
-//                break;
             case TO_STRING_CONVERTER: {
                 return metaClass.getToString();
             }
@@ -215,16 +213,26 @@ public class ClassloadingHelper {
                 return metaClass.getEditor();
             }
             case AGGREGATION_RENDERER: {
-                return metaClass.getRenderer();
+                final String caCfg = getClassAttributeValue("AGGREGATION_RENDERER", metaClass); // NOI18N
+                if (caCfg == null) {
+                    // for backwards-compatibility
+                    return metaClass.getRenderer();
+                } else {
+                    return caCfg;
+                }
             }
             case FEATURE_RENDERER: {
-                return getClassAttributeValue("FEATURE_RENDERER", metaClass);
+                return getClassAttributeValue("FEATURE_RENDERER", metaClass); // NOI18N
             }
             case CUSTOM_BEAN: {
-                return getClassAttributeValue("CUSTOM_BEAN", metaClass);
+                return getClassAttributeValue("CUSTOM_BEAN", metaClass);      // NOI18N
             }
-//            case EXTENSION_FACTORY:
-//                break;
+            case ACTION_PROVIDER: {
+                return getClassAttributeValue("ACTION_PROVIDER", metaClass);  // NOI18N
+            }
+            case ICON_FACTORY: {
+                return getClassAttributeValue("ICON_FACTORY", metaClass);     // NOI18N
+            }
             default: {
                 return null;
             }
