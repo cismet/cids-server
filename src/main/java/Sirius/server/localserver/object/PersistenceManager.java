@@ -547,6 +547,25 @@ public final class PersistenceManager extends Shutdown {
                 switch (status) {
                     case MetaObject.NEW: {
                         // arraykey need not to be process
+                        if (oas[i].isVirtualOneToManyAttribute()) {
+                            final int masterClassId = oas[i].getClassID();
+                            String backlinkMasterProperty = null;
+                            for (final ObjectAttribute oaBacklink : metaObject.getAttribs()) {
+                                if (oaBacklink.getMai().getForeignKeyClassId() == masterClassId) {
+                                    backlinkMasterProperty = oaBacklink.getName();
+                                    break;
+                                }
+                            }
+                            if (backlinkMasterProperty != null) {
+                                metaObject.getAttributeByFieldName(backlinkMasterProperty)
+                                        .setValue(oas[i].getParentObject());
+                            } else {
+                                LOG.error(
+                                    "Der Backlink konnte nicht gesetzt werden, da in der Masterklasse das Attribut "
+                                            + backlinkMasterProperty
+                                            + " nicht gefunden werden konnte.");
+                            }
+                        }
                         insertMetaObject(user, metaObject);
                         break;
                     }
