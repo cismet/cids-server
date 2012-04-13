@@ -725,7 +725,6 @@ public final class PersistenceManager extends Shutdown {
             String sep = ""; // NOI18N
             // iterate all attributes to create insert statement
             for (int i = 0; i < mAttr.length; i++) {
-                
                 // attribute value
                 final java.lang.Object value = mAttr[i].getValue();
                 if (LOG.isDebugEnabled()) {
@@ -743,12 +742,12 @@ public final class PersistenceManager extends Shutdown {
                             LOG.debug(mAttr[i] + "is virtual one to many attribute and has no values -> ignored");
                         }
                     } else {
-                        final MetaObject moAttr = (MetaObject) value;
+                        final MetaObject moAttr = (MetaObject)value;
                         insertMetaObjectArray(user, moAttr);
                     }
                     continue;
-                }                      
-                
+                }
+
                 final MemberAttributeInfo mai = mAttr[i].getMai();
                 // if object does not have mai it cannot be inserted
                 if (mai == null) {
