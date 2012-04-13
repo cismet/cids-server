@@ -206,7 +206,7 @@ public class BeanFactory {
                             value = tmpMOBean;
                             tmpMOBean.setBacklinkInformation(field, bean);
                         }
-                    } else if ((value == null) && a.isArray()) {
+                    } else if ((value == null) && (a.isArray() || a.isVirtualOneToManyAttribute())) {
                         // lege leeren Vector an, sonst wirds sp?ter zu kompliziert
                         final List<?> arrayElements = new ArrayList();
                         final ObservableList observableArrayElements = ObservableCollections.observableList(
