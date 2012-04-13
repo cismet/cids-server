@@ -536,11 +536,12 @@ public class CidsBean implements PropertyChangeListener {
 
         for (int i = index; i < (index + length); ++i) {
             try {
-                old.remove(i);
+                old.remove(i - (list.size() - old.size()));
                 final Object o = list.get(i);
                 if (arrayfield != null) {
                     if (o instanceof CidsBean) {
                         final CidsBean cb = (CidsBean)o;
+                        old.remove(cb);
                         cb.setBacklinkInformation(arrayfield, this);
                         final ObjectAttribute oa = this.getMetaObject().getAttributeByFieldName(arrayfield);
                         final MemberAttributeInfo mai = oa.getMai();
