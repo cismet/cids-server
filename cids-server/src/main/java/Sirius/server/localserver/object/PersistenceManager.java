@@ -607,9 +607,23 @@ public final class PersistenceManager extends Shutdown {
      * @param   user   DOCUMENT ME!
      * @param   dummy  DOCUMENT ME!
      *
-     * @throws  PersistenceException  Throwable DOCUMENT ME!
+     * @throws  PersistenceException  DOCUMENT ME!
      */
     private void insertMetaObjectArray(final User user, final MetaObject dummy) throws PersistenceException {
+        insertMetaObjectArray(user, dummy, -1);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user   DOCUMENT ME!
+     * @param   dummy  DOCUMENT ME!
+     * @param   fk     DOCUMENT ME!
+     *
+     * @throws  PersistenceException  Throwable DOCUMENT ME!
+     */
+    private void insertMetaObjectArray(final User user, final MetaObject dummy, final int fk)
+            throws PersistenceException {
         final ObjectAttribute[] oas = dummy.getAttribs();
 
         for (int i = 0; i < oas.length; i++) {
@@ -618,6 +632,7 @@ public final class PersistenceManager extends Shutdown {
             }
 
             final MetaObject arrayElement = (MetaObject)oas[i].getValue();
+//                oas[i].setParentObject(dummy.getReferencingObjectAttribute().getParentObject());
 
             final int status = arrayElement.getStatus();
 
@@ -625,8 +640,29 @@ public final class PersistenceManager extends Shutdown {
 
             switch (status) {
                 case MetaObject.NEW: {
+//                    if (oas[i].isVirtualOneToManyAttribute()) {
+//                        final int masterClassId = oas[i].getClassID();
+//                        String backlinkMasterProperty = null;
+//                        for (final ObjectAttribute oaBacklink : arrayElement.getAttribs()) {
+//                            if (oaBacklink.getMai().getForeignKeyClassId() == masterClassId) {
+//                                backlinkMasterProperty = oaBacklink.getName();
+//                                break;
+//                            }
+//                        }
+//                        if (backlinkMasterProperty != null) {
+//                            arrayElement.getAttributeByFieldName(backlinkMasterProperty)
+//                                    .setValue(oas[i].getParentObject().getReferencingObjectAttribute()
+//                                        .getParentObject());
+//                        } else {
+//                            LOG.error(
+//                                "Der Backlink konnte nicht gesetzt werden, da in der Masterklasse das Attribut "
+//                                        + backlinkMasterProperty
+//                                        + " nicht gefunden werden konnte.");
+//                        }
+//                    }
+
                     // neuer schluessel wird gesetzt
-                    insertMetaObject(user, arrayElement);
+                    insertMetaObject(user, arrayElement, fk);
 
                     break; // war auskommentiert HELL
                 }
@@ -663,9 +699,24 @@ public final class PersistenceManager extends Shutdown {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  PersistenceException  Throwable DOCUMENT ME!
+     * @throws  PersistenceException  DOCUMENT ME!
      */
     public int insertMetaObject(final User user, final MetaObject mo) throws PersistenceException {
+        return insertMetaObject(user, mo, -1);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     * @param   mo    DOCUMENT ME!
+     * @param   fk    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  PersistenceException  Throwable DOCUMENT ME!
+     */
+    public int insertMetaObject(final User user, final MetaObject mo, final int fk) throws PersistenceException {
         fixMissingMetaClass(mo);
 
         if (LOG.isDebugEnabled()) {
@@ -721,6 +772,8 @@ public final class PersistenceManager extends Shutdown {
             // initialis all array attributes with the value of the primary key
             mo.setArrayKey2PrimaryKey();
 
+            final ArrayList<MetaObject> virtual1toMChildren = new ArrayList<MetaObject>();
+
             final ArrayList values = new ArrayList(mAttr.length);
             String sep = ""; // NOI18N
             // iterate all attributes to create insert statement
@@ -743,7 +796,8 @@ public final class PersistenceManager extends Shutdown {
                         }
                     } else {
                         final MetaObject moAttr = (MetaObject)value;
-                        insertMetaObjectArray(user, moAttr);
+//                        insertMetaObjectArray(user, moAttr, rootPk);
+                        virtual1toMChildren.add(moAttr);
                     }
                     continue;
                 }
@@ -770,51 +824,60 @@ public final class PersistenceManager extends Shutdown {
                         }
                     }
                 } else if (!mAttr[i].isPrimaryKey()) { // references metaobject
+
                     final MetaObject moAttr = (MetaObject)value;
-                    try {
-                        // recursion
-                        if (value != null) {
-                            final int status = moAttr.getStatus();
-                            Integer objectID = moAttr.getID();
-                            switch (status) {
-                                case MetaObject.NEW: {
-                                    if (moAttr.isDummy()) {
-                                        objectID = mo.getID();
-                                        // jt ids still to be made
-                                        insertMetaObjectArray(user, moAttr);
-                                    } else {
-                                        objectID = insertMetaObject(user, moAttr);
+
+                    if (mAttr[i].getMai().getForeignKeyClassId()
+                                == mo.getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute()
+                                .getClassID()) {
+                        values.add(fk);
+                    } else {
+                        try {
+                            // recursion
+                            if (value != null) {
+                                final int status = moAttr.getStatus();
+                                Integer objectID = moAttr.getID();
+                                switch (status) {
+                                    case MetaObject.NEW: {
+                                        if (moAttr.isDummy()) {
+                                            objectID = mo.getID();
+                                            // jt ids still to be made
+                                            insertMetaObjectArray(user, moAttr);
+                                        } else {
+                                            objectID = insertMetaObject(user, moAttr);
+                                        }
+                                        break;
                                     }
-                                    break;
-                                }
-                                case MetaObject.TO_DELETE: {
-                                    objectID = null;
-                                    deleteMetaObject(user, moAttr);
-                                    break;
-                                }
-                                case MetaObject.MODIFIED:
-                                // NOP
-                                default: {
+                                    case MetaObject.TO_DELETE: {
+                                        objectID = null;
+                                        deleteMetaObject(user, moAttr);
+                                        break;
+                                    }
+                                    case MetaObject.MODIFIED:
                                     // NOP
+                                    default: {
+                                        // NOP
+                                    }
                                 }
-                            }
-                            // foreign key will be set
-                            if (status == MetaObject.TEMPLATE) {
-                                values.add(NULL);
+                                // foreign key will be set
+                                if (status == MetaObject.TEMPLATE) {
+                                    values.add(NULL);
+                                } else {
+                                    values.add(objectID);
+                                }
+                            } else if (mAttr[i].isArray()) {
+                                values.add(rootPk);
                             } else {
-                                values.add(objectID);
+                                values.add(NULL);
                             }
-                        } else if (mAttr[i].isArray()) {
-                            values.add(rootPk);
-                        } else {
-                            values.add(NULL);
+                        } catch (final Exception e) {
+                            final String error = "interrupted insertMO recursion moAttr::" + moAttr + " MAI" + mai; // NOI18N
+                            LOG.error(error, e);
+                            throw new PersistenceException(error, e);
                         }
-                    } catch (final Exception e) {
-                        final String error = "interrupted insertMO recursion moAttr::" + moAttr + " MAI" + mai; // NOI18N
-                        LOG.error(error, e);
-                        throw new PersistenceException(error, e);
                     }
                 }
+
                 // after the first iteration set the seperator to comma
                 sep = ", "; // NOI18N
             }
@@ -852,6 +915,11 @@ public final class PersistenceManager extends Shutdown {
                 stmt.executeUpdate();
 
                 transactionHelper.commit();
+
+                for (final MetaObject vChild : virtual1toMChildren) {
+                    insertMetaObjectArray(user, vChild, rootPk);
+                }
+
                 for (final CidsTrigger ct : rightTriggers) {
                     ct.afterInsert(mo.getBean(), user);
                 }
