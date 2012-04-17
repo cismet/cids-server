@@ -827,9 +827,10 @@ public final class PersistenceManager extends Shutdown {
 
                     final MetaObject moAttr = (MetaObject)value;
 
-                    if (mAttr[i].getMai().getForeignKeyClassId()
-                                == mo.getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute()
-                                .getClassID()) {
+                    if ((fk > -1)
+                                && (mAttr[i].getMai().getForeignKeyClassId()
+                                    == mo.getReferencingObjectAttribute().getParentObject()
+                                    .getReferencingObjectAttribute().getClassID())) {
                         values.add(fk);
                     } else {
                         try {
