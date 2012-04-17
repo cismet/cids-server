@@ -546,12 +546,28 @@ public class CidsBean implements PropertyChangeListener {
                         final ObjectAttribute oa = this.getMetaObject().getAttributeByFieldName(arrayfield);
                         final MemberAttributeInfo mai = oa.getMai();
                         walkUpAndSetChangedAndModified(oa);
-                        final MetaObject dummy = (MetaObject)oa.getValue();
+
+                        // Wenn noch kein Dummy-Objekt existiert (Wert ist noch null)
+                        // Anlegen eines Dummy-Objektes
+                        MetaObject dummy = (MetaObject)oa.getValue();
+                        if (dummy == null) {
+                            final Sirius.server.localserver.object.Object dummyO =
+                                new Sirius.server.localserver.object.DefaultObject(
+                                    getMetaObject().getID(),
+                                    oa.getMai().getForeignKeyClassId());
+                            dummy = new DefaultMetaObject(dummyO, getMetaObject().getDomain());
+                            dummy.setReferencingObjectAttribute(oa);
+                            dummy.setDummy(true);
+                            dummy.setStatus(MetaObject.NEW);
+                            oa.setValue(dummy);
+                            oa.setChanged(true);
+                        }
 
                         // 1:n Beziehung??
                         if (oa.isVirtualOneToManyAttribute()) {
                             final ObjectAttribute[] arrayElementAttrs = dummy.getAttribs();
 
+                            dummy.setStatus(MetaObject.MODIFIED);
                             final ObjectAttribute entryToAddOA = new ObjectAttribute(
                                     mai.getId()
                                             + "."
@@ -564,6 +580,9 @@ public class CidsBean implements PropertyChangeListener {
                             entryToAddOA.setChanged(true);
                             dummy.addAttribute(entryToAddOA);
                             cb.getMetaObject().setReferencingObjectAttribute(entryToAddOA);
+
+//                            entryToAddOA.setValue(getMetaObject());
+
                         } else { // n-m Beziehung
                             // ArrayElement anlegen
                             final MetaClass zwischenTabellenKlasse = (MetaClass)(getMetaObject().getAllClasses()).get(
@@ -585,20 +604,20 @@ public class CidsBean implements PropertyChangeListener {
                                 }
                             }
 
-                            // Wen noch kein Dummy-Objekt existiert (Wert ist noch null)
-                            // Anlegen eines Dummy-Objektes
-                            if (oa.getValue() == null) {
-                                final Sirius.server.localserver.object.Object dummyO =
-                                    new Sirius.server.localserver.object.DefaultObject(
-                                        getMetaObject().getID(),
-                                        oa.getMai().getForeignKeyClassId());
-                                final MetaObject dummyMO = new DefaultMetaObject(dummyO, getMetaObject().getDomain());
-                                dummyMO.setReferencingObjectAttribute(oa);
-                                dummyMO.setDummy(true);
-                                dummyMO.setStatus(MetaObject.NEW);
-                                oa.setValue(dummyMO);
-                                oa.setChanged(true);
-                            }
+//                            // Wen noch kein Dummy-Objekt existiert (Wert ist noch null)
+//                            // Anlegen eines Dummy-Objektes
+//                            if (oa.getValue() == null) {
+//                                final Sirius.server.localserver.object.Object dummyO =
+//                                    new Sirius.server.localserver.object.DefaultObject(
+//                                        getMetaObject().getID(),
+//                                        oa.getMai().getForeignKeyClassId());
+//                                final MetaObject dummyMO = new DefaultMetaObject(dummyO, getMetaObject().getDomain());
+//                                dummyMO.setReferencingObjectAttribute(oa);
+//                                dummyMO.setDummy(true);
+//                                dummyMO.setStatus(MetaObject.NEW);
+//                                oa.setValue(dummyMO);
+//                                oa.setChanged(true);
+//                            }
 
                             // hinzufuegen eines Attributes, das auf das angelegte Arrayelement zeigt
 
