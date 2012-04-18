@@ -13,6 +13,7 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.sql.DBConnection;
 
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 import java.sql.Connection;
@@ -101,7 +102,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void afterDelete(final CidsBean cidsBean, final User user) {
-        de.cismet.tools.CismetThreadPool.execute(new Runnable() {
+        de.cismet.tools.CismetThreadPool.executeSequentially(new Runnable() {
 
                 @Override
                 public void run() {
@@ -118,7 +119,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void afterInsert(final CidsBean cidsBean, final User user) {
-        de.cismet.tools.CismetThreadPool.execute(new Runnable() {
+        de.cismet.tools.CismetThreadPool.executeSequentially(new Runnable() {
 
                 @Override
                 public void run() {
@@ -135,7 +136,11 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void afterUpdate(final CidsBean cidsBean, final User user) {
-        de.cismet.tools.CismetThreadPool.execute(new Runnable() {
+        // The triggers, which update the index should be executed sequentially, because
+        // during the execution of the deleteMetaObject method, the updateMetaObject method can
+        // be executed and this leads to a race condition between the
+        // delete trigger and the update trigger
+        de.cismet.tools.CismetThreadPool.executeSequentially(new Runnable() {
 
                 @Override
                 public void run() {
