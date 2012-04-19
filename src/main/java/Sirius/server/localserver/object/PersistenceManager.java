@@ -27,13 +27,11 @@ import org.postgis.PGgeometry;
 
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -104,6 +102,90 @@ public final class PersistenceManager extends Shutdown {
     //~ Methods ----------------------------------------------------------------
 
     /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     * @param   mo    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  PersistenceException  DOCUMENT ME!
+     */
+    public int insertMetaObject(final User user, final MetaObject mo) throws PersistenceException {
+        try {
+            transactionHelper.beginWork();
+            final int rtn = insertMetaObjectWithoutTransaction(user, mo);
+            return rtn;
+        } catch (final Exception e) {
+            final String message = "cannot insert metaobject"; // NOI18N
+            LOG.error(message, e);
+            rollback();
+            throw new PersistenceException(message, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     * @param   mo    DOCUMENT ME!
+     *
+     * @throws  PersistenceException  DOCUMENT ME!
+     * @throws  SQLException          DOCUMENT ME!
+     */
+    public void updateMetaObject(final User user, final MetaObject mo) throws PersistenceException, SQLException {
+        try {
+            transactionHelper.beginWork();
+            updateMetaObjectWithoutTransaction(user, mo);
+        } catch (final Exception e) {
+            final String message = "cannot update metaobject"; // NOI18N
+            LOG.error(message, e);
+            rollback();
+            throw new PersistenceException(message, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     * @param   mo    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  PersistenceException  DOCUMENT ME!
+     */
+    public int deleteMetaObject(final User user, final MetaObject mo) throws PersistenceException {
+        try {
+            transactionHelper.beginWork();
+            final int rtn = deleteMetaObjectWithoutTransaction(user, mo);
+            transactionHelper.commit();
+
+            return rtn;
+        } catch (final Exception e) {
+            final String message = "cannot delete metaobject"; // NOI18N
+            LOG.error(message, e);
+            rollback();
+            throw new PersistenceException(message, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  PersistenceException  DOCUMENT ME!
+     */
+    private void rollback() throws PersistenceException {
+        try {
+            transactionHelper.rollback();
+        } catch (final SQLException ex) {
+            final String error = "cannot rollback transaction, this can cause inconsistent database state"; // NOI18N
+            LOG.error(error, ex);
+            throw new PersistenceException(error, ex);
+        }
+    }
+
+    /**
      * loescht mo und alle Objekte die mo als Attribute hat.
      *
      * @param   user  DOCUMENT ME!
@@ -112,8 +194,11 @@ public final class PersistenceManager extends Shutdown {
      * @return  DOCUMENT ME!
      *
      * @throws  PersistenceException  Throwable DOCUMENT ME!
+     * @throws  SQLException          DOCUMENT ME!
+     * @throws  SecurityException     DOCUMENT ME!
      */
-    public int deleteMetaObject(final User user, final MetaObject mo) throws PersistenceException {
+    private int deleteMetaObjectWithoutTransaction(final User user, final MetaObject mo) throws PersistenceException,
+        SQLException {
         fixMissingMetaClass(mo);
 
         if (LOG.isDebugEnabled()) {
@@ -138,17 +223,6 @@ public final class PersistenceManager extends Shutdown {
                 ct.beforeDelete(mo.getBean(), user);
             }
 
-            // existiert gar keine
-            // sinnvolle bean
-            // start transaction
-            try {
-                transactionHelper.beginWork();
-            } catch (final SQLException ex) {
-                final String message = "cannot start transaction"; // NOI18N
-                LOG.error(message, ex);
-                throw new PersistenceException(message, ex);
-            }
-
             PreparedStatement stmt = null;
             try {
                 // Mo was created artificially (array holder) so there is no object to delete
@@ -159,7 +233,7 @@ public final class PersistenceManager extends Shutdown {
                 }
 
                 if (mo.isDummy()) {
-                    return deleteSubObjects(user, mo);
+                    return deleteSubObjectsWithoutTransaction(user, mo);
                 }
 
                 final ObjectAttribute[] allAttributes = mo.getAttribs();
@@ -172,7 +246,7 @@ public final class PersistenceManager extends Shutdown {
                 }
 
                 if (deeper) {
-                    updateMetaObject(user, mo);
+                    updateMetaObjectWithoutTransaction(user, mo);
                 }
 
                 // intitialize UserGroup
@@ -206,30 +280,15 @@ public final class PersistenceManager extends Shutdown {
                 int result = stmt.executeUpdate();
 
                 // now delete all subObjects
-                result += deleteSubObjects(user, mo);
+                result += deleteSubObjectsWithoutTransaction(user, mo);
 
                 // if the metaobject is deleted it is obviously not persistent anymore
                 mo.setPersistent(false);
-
-                transactionHelper.commit();
 
                 for (final CidsTrigger ct : rightTriggers) {
                     ct.afterDelete(mo.getBean(), user);
                 }
                 return result;
-            } catch (final Exception e) {
-                final String message = "cannot delete metaobject"; // NOI18N
-                LOG.error(message, e);
-
-                try {
-                    transactionHelper.rollback();
-                } catch (final SQLException ex) {
-                    final String error = "cannot rollback transaction, this can cause inconsistent database state"; // NOI18N
-                    LOG.error(error, ex);
-                    throw new PersistenceException(error, e);
-                }
-
-                throw new PersistenceException(message, e);
             } finally {
                 DBConnection.closeStatements(stmt);
             }
@@ -258,8 +317,10 @@ public final class PersistenceManager extends Shutdown {
      * @return  DOCUMENT ME!
      *
      * @throws  PersistenceException  Throwable DOCUMENT ME!
+     * @throws  SQLException          DOCUMENT ME!
      */
-    private int deleteSubObjects(final User user, final MetaObject mo) throws PersistenceException {
+    private int deleteSubObjectsWithoutTransaction(final User user, final MetaObject mo) throws PersistenceException,
+        SQLException {
         fixMissingMetaClass(mo);
 
         if (LOG.isDebugEnabled()) {
@@ -281,7 +342,7 @@ public final class PersistenceManager extends Shutdown {
                 }
 
                 if ((metaObject != null) && (metaObject.getStatus() == MetaObject.TEMPLATE)) {
-                    count += deleteMetaObject(user, metaObject);
+                    count += deleteMetaObjectWithoutTransaction(user, metaObject);
                 }
             }
         }
@@ -300,10 +361,12 @@ public final class PersistenceManager extends Shutdown {
      * @param   mo    DOCUMENT ME!
      *
      * @throws  PersistenceException   Throwable DOCUMENT ME!
+     * @throws  SQLException           DOCUMENT ME!
      * @throws  IllegalStateException  Exception DOCUMENT ME!
      * @throws  SecurityException      DOCUMENT ME!
      */
-    public void updateMetaObject(final User user, final MetaObject mo) throws PersistenceException {
+    private void updateMetaObjectWithoutTransaction(final User user, final MetaObject mo) throws PersistenceException,
+        SQLException {
         fixMissingMetaClass(mo);
 
         if (LOG.isDebugEnabled()) {
@@ -326,7 +389,7 @@ public final class PersistenceManager extends Shutdown {
 
             // if Array
             if (mo.isDummy()) {
-                updateArrayObjects(user, mo);
+                updateArrayObjectsWithoutTransaction(user, mo);
                 return;
             }
 
@@ -372,24 +435,24 @@ public final class PersistenceManager extends Shutdown {
                     switch (subObject.getStatus()) {
                         case MetaObject.NEW: {
                             // set new key
-                            final int key = insertMetaObject(user, subObject);
+                            final int key = insertMetaObjectWithoutTransaction(user, subObject);
                             if (subObject.isDummy()) {
                                 values.add(mo.getID()); // set value to primary key
-                                insertMetaObjectArray(user, subObject);
+                                insertMetaObjectArrayWithoutTransaction(user, subObject);
                             } else {
                                 values.add(key);
                             }
                             break;
                         }
                         case MetaObject.TO_DELETE: {
-                            deleteMetaObject(user, subObject);
+                            deleteMetaObjectWithoutTransaction(user, subObject);
                             values.add(NULL);
                             break;
                         }
                         case MetaObject.NO_STATUS:
                         // fall through because we define no status as modified status
                         case MetaObject.MODIFIED: {
-                            updateMetaObject(user, subObject);
+                            updateMetaObjectWithoutTransaction(user, subObject);
                             values.add(subObject.getID());
                             break;
                         }
@@ -426,7 +489,6 @@ public final class PersistenceManager extends Shutdown {
             if (updateCounter > 0) {
                 PreparedStatement stmt = null;
                 try {
-                    transactionHelper.beginWork();
                     // statment done, just append the where clause using the object's primary key
                     paramStmt.append(" WHERE ").append(metaClass.getPrimaryKey()).append(" = ?"); // NOI18N
                     values.add(Integer.valueOf(mo.getID()));
@@ -460,19 +522,6 @@ public final class PersistenceManager extends Shutdown {
                     for (final CidsTrigger ct : rightTriggers) {
                         ct.afterUpdate(mo.getBean(), user);
                     }
-                } catch (final Exception e) {
-                    final String message = "cannot update metaobject"; // NOI18N
-                    LOG.error(message, e);
-
-                    try {
-                        transactionHelper.rollback();
-                    } catch (final SQLException ex) {
-                        final String error = "cannot rollback transaction, this can cause inconsistent database state"; // NOI18N
-                        LOG.error(error, ex);
-                        throw new PersistenceException(error, e);
-                    }
-
-                    throw new PersistenceException(message, e);
                 } finally {
                     DBConnection.closeStatements(stmt);
                 }
@@ -527,8 +576,10 @@ public final class PersistenceManager extends Shutdown {
      * @param   mo    DOCUMENT ME!
      *
      * @throws  PersistenceException  Throwable DOCUMENT ME!
+     * @throws  SQLException          DOCUMENT ME!
      */
-    private void updateArrayObjects(final User user, final MetaObject mo) throws PersistenceException {
+    private void updateArrayObjectsWithoutTransaction(final User user, final MetaObject mo) throws PersistenceException,
+        SQLException {
         fixMissingMetaClass(mo);
 
         if (LOG.isDebugEnabled()) {
@@ -545,18 +596,18 @@ public final class PersistenceManager extends Shutdown {
                 switch (status) {
                     case MetaObject.NEW: {
                         // arraykey need not to be process
-                        insertMetaObject(user, metaObject);
+                        insertMetaObjectWithoutTransaction(user, metaObject);
                         break;
                     }
 
                     case MetaObject.TO_DELETE: {
-                        deleteMetaObject(user, metaObject);
+                        deleteMetaObjectWithoutTransaction(user, metaObject);
                         break;
                     }
 
                     case MetaObject.NO_STATUS:
                     case MetaObject.MODIFIED: {
-                        updateMetaObject(user, metaObject);
+                        updateMetaObjectWithoutTransaction(user, metaObject);
                         break;
                     }
 
@@ -587,8 +638,10 @@ public final class PersistenceManager extends Shutdown {
      * @param   dummy  DOCUMENT ME!
      *
      * @throws  PersistenceException  Throwable DOCUMENT ME!
+     * @throws  SQLException          DOCUMENT ME!
      */
-    private void insertMetaObjectArray(final User user, final MetaObject dummy) throws PersistenceException {
+    private void insertMetaObjectArrayWithoutTransaction(final User user, final MetaObject dummy)
+            throws PersistenceException, SQLException {
         final ObjectAttribute[] oas = dummy.getAttribs();
 
         for (int i = 0; i < oas.length; i++) {
@@ -605,13 +658,13 @@ public final class PersistenceManager extends Shutdown {
             switch (status) {
                 case MetaObject.NEW: {
                     // neuer schluessel wird gesetzt
-                    insertMetaObject(user, arrayElement);
+                    insertMetaObjectWithoutTransaction(user, arrayElement);
 
                     break; // war auskommentiert HELL
                 }
 
                 case MetaObject.TO_DELETE: {
-                    deleteMetaObject(user, arrayElement);
+                    deleteMetaObjectWithoutTransaction(user, arrayElement);
 
                     break;
                 }
@@ -620,7 +673,7 @@ public final class PersistenceManager extends Shutdown {
                     break;
                 }
                 case MetaObject.MODIFIED: {
-                    updateMetaObject(user, arrayElement);
+                    updateMetaObjectWithoutTransaction(user, arrayElement);
                     break;
                 }
                 default: {
@@ -643,8 +696,10 @@ public final class PersistenceManager extends Shutdown {
      * @return  DOCUMENT ME!
      *
      * @throws  PersistenceException  Throwable DOCUMENT ME!
+     * @throws  SQLException          DOCUMENT ME!
      */
-    public int insertMetaObject(final User user, final MetaObject mo) throws PersistenceException {
+    private int insertMetaObjectWithoutTransaction(final User user, final MetaObject mo) throws PersistenceException,
+        SQLException {
         fixMissingMetaClass(mo);
 
         if (LOG.isDebugEnabled()) {
@@ -748,15 +803,15 @@ public final class PersistenceManager extends Shutdown {
                                     if (moAttr.isDummy()) {
                                         objectID = mo.getID();
                                         // jt ids still to be made
-                                        insertMetaObjectArray(user, moAttr);
+                                        insertMetaObjectArrayWithoutTransaction(user, moAttr);
                                     } else {
-                                        objectID = insertMetaObject(user, moAttr);
+                                        objectID = insertMetaObjectWithoutTransaction(user, moAttr);
                                     }
                                     break;
                                 }
                                 case MetaObject.TO_DELETE: {
                                     objectID = null;
-                                    deleteMetaObject(user, moAttr);
+                                    deleteMetaObjectWithoutTransaction(user, moAttr);
                                     break;
                                 }
                                 case MetaObject.MODIFIED:
@@ -797,8 +852,6 @@ public final class PersistenceManager extends Shutdown {
             // set params and execute stmt
             PreparedStatement stmt = null;
             try {
-                transactionHelper.beginWork();
-
                 stmt = transactionHelper.getConnection().prepareStatement(paramSql.toString());
                 if (LOG.isDebugEnabled()) {
                     final StringBuilder logMessage = new StringBuilder("Parameterized SQL: ");
@@ -822,19 +875,6 @@ public final class PersistenceManager extends Shutdown {
                 for (final CidsTrigger ct : rightTriggers) {
                     ct.afterInsert(mo.getBean(), user);
                 }
-            } catch (final SQLException e) {
-                final String message = "cannot insert metaobject"; // NOI18N
-                LOG.error(message, e);
-
-                try {
-                    transactionHelper.rollback();
-                } catch (final SQLException ex) {
-                    final String error = "cannot rollback transaction, this can cause inconsistent database state"; // NOI18N
-                    LOG.error(error, ex);
-                    throw new PersistenceException(error, e);
-                }
-
-                throw new PersistenceException(message, e);
             } finally {
                 DBConnection.closeStatements(stmt);
             }

@@ -40,6 +40,7 @@ public abstract class ObjectExtensionFactory {
 
     protected DomainServerImpl domainServer = null;
     protected User user = null;
+
     //~ Methods ----------------------------------------------------------------
 
     /**
@@ -67,15 +68,21 @@ public abstract class ObjectExtensionFactory {
         this.domainServer = domainServer;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public User getUser() {
         return user;
     }
 
-    public void setUser(User user) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  user  DOCUMENT ME!
+     */
+    public void setUser(final User user) {
         this.user = user;
     }
-    
-    
-    
-    
 }
