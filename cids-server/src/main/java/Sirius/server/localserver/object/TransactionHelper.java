@@ -124,6 +124,7 @@ public class TransactionHelper extends Shutdown {
         if (workBegun) {
             con.commit();
             con.setAutoCommit(true);
+            workBegun = false;
         }
     }
 }
