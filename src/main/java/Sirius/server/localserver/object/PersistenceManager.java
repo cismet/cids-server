@@ -232,10 +232,6 @@ public final class PersistenceManager extends Shutdown {
                     return 0;
                 }
 
-                if (mo.isDummy()) {
-                    return deleteSubObjectsWithoutTransaction(user, mo);
-                }
-
                 final ObjectAttribute[] allAttributes = mo.getAttribs();
                 boolean deeper = false;
                 for (final ObjectAttribute oa : allAttributes) {
@@ -279,8 +275,24 @@ public final class PersistenceManager extends Shutdown {
                 // execute deletion and retrieve number of affected objects
                 int result = stmt.executeUpdate();
 
-                // now delete all subObjects
-                result += deleteSubObjectsWithoutTransaction(user, mo);
+                // now delete all array entries
+                final Collection<MetaObject> arrays = new ArrayList<MetaObject>();
+                for (final ObjectAttribute oa : allAttributes) {
+                    // 1-n kinder löschen
+// if (oas[i].isVirtualOneToManyAttribute()) {
+// for (final ObjectAttribute oa : metaObject.getAttribs()) {
+// final MetaObject moChild = (MetaObject)oa.getValue();
+// deleteMetaObjectWithoutTransaction(user, moChild);
+// }
+// }
+
+                    final java.lang.Object value = oa.getValue();
+                    if ((value instanceof MetaObject) && oa.isArray()) {
+                        final MetaObject arrayMo = (MetaObject)value;
+                        arrays.add(arrayMo);
+                        result += deleteArrayEntries(user, arrayMo);
+                    }
+                }
 
                 // if the metaobject is deleted it is obviously not persistent anymore
                 mo.setPersistent(false);
@@ -309,57 +321,51 @@ public final class PersistenceManager extends Shutdown {
     }
 
     /**
-     * Deletes all subobjects of the given MO.
+     * Deletes all link-entries of the array dummy-object.
      *
-     * @param   user  DOCUMENT ME!
-     * @param   mo    DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   arrayMo  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  PersistenceException  Throwable DOCUMENT ME!
-     * @throws  SQLException          DOCUMENT ME!
+     * @throws  SQLException  DOCUMENT ME!
      */
-    private int deleteSubObjectsWithoutTransaction(final User user, final MetaObject mo) throws PersistenceException,
-        SQLException {
-        fixMissingMetaClass(mo);
+    private int deleteArrayEntries(final User user, final MetaObject arrayMo) throws SQLException {
+        fixMissingMetaClass(arrayMo);
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("deleteMetaObject dummy entered discard object insert elements" + mo); // NOI18N
+        if (!arrayMo.isDummy()) {
+            LOG.error("deleteArrayEntries on a metaobject that is not a dummy");
         }
 
         // initialize number of affected objects
-        int count = 0;
+        PreparedStatement stmt = null;
 
-        // retrieve number of array elements
-        final ObjectAttribute[] oas = mo.getAttribs();
+        try {
+            // intitialize UserGroup
+            UserGroup ug = null;
 
-        for (int i = 0; i < oas.length; i++) {
-            // delete all referenced Object / array elements
-            if (oas[i].referencesObject()) {
-                final MetaObject metaObject = (MetaObject)oas[i].getValue();
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("try to delete :" + metaObject); // NOI18N
-                }
-
-                if ((metaObject != null) && (metaObject.getStatus() == MetaObject.TEMPLATE)) {
-                    count += deleteMetaObjectWithoutTransaction(user, metaObject);
-                }
-
-                // 1-n kinder löschen
-                if (oas[i].isVirtualOneToManyAttribute()) {
-                    for (final ObjectAttribute oa : metaObject.getAttribs()) {
-                        final MetaObject moChild = (MetaObject)oa.getValue();
-                        deleteMetaObjectWithoutTransaction(user, moChild);
-                    }
-                }
+            // retrieve userGroup is user is not null
+            if (user != null) {
+                ug = user.getUserGroup();
             }
-        }
+            final Sirius.server.localserver._class.Class c = dbServer.getClass(ug, arrayMo.getClassID());
+            final String tableName = arrayMo.getMetaClass().getTableName();
+            final String arrayKeyFieldName = arrayMo.getReferencingObjectAttribute().getMai().getArrayKeyFieldName();
+            final String paramStmt = "DELETE FROM " + tableName + " WHERE " + arrayKeyFieldName + " = ?"; // NOI18N+
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("array elements deleted :: " + count); // NOI18N
-        }
+            stmt = transactionHelper.getConnection().prepareStatement(paramStmt);
+            stmt.setObject(1, arrayMo.getId());
+            // execute deletion and retrieve number of affected objects
+            final int result = stmt.executeUpdate();
 
-        return count;
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("array elements deleted :: " + result); // NOI18N
+            }
+
+            return result;
+        } finally {
+            DBConnection.closeStatements(stmt);
+        }
     }
 
     /**
