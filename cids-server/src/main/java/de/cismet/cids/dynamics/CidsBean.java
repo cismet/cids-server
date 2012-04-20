@@ -541,7 +541,6 @@ public class CidsBean implements PropertyChangeListener {
                 if (arrayfield != null) {
                     if (o instanceof CidsBean) {
                         final CidsBean cb = (CidsBean)o;
-                        old.remove(cb);
                         cb.setBacklinkInformation(arrayfield, this);
                         final ObjectAttribute oa = this.getMetaObject().getAttributeByFieldName(arrayfield);
                         final MemberAttributeInfo mai = oa.getMai();
