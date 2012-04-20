@@ -197,7 +197,7 @@ public final class PersistenceManager extends Shutdown {
                 stmt = transactionHelper.getConnection().prepareStatement(paramStmt);
                 stmt.setObject(1, mo.getPrimaryKey().getValue());
                 // execute deletion and retrieve number of affected objects
-                final int result = stmt.executeUpdate();
+                int result = stmt.executeUpdate();
 
                 // now delete all array entries
                 final Collection<MetaObject> arrays = new ArrayList<MetaObject>();
@@ -206,7 +206,7 @@ public final class PersistenceManager extends Shutdown {
                     if ((value instanceof MetaObject) && oa.isArray()) {
                         final MetaObject arrayMo = (MetaObject)value;
                         arrays.add(arrayMo);
-                        deleteArrayEntries(user, arrayMo);
+                        result += deleteArrayEntries(user, arrayMo);
                     }
                 }
 
