@@ -669,7 +669,8 @@ public class CidsBean implements PropertyChangeListener {
             final MetaObject dummy = (MetaObject)oa.getValue();
             final boolean virtualOneToMany = oa.isVirtualOneToManyAttribute();
             if ((cidsBean.getMetaObject().getStatus() == MetaObject.TO_DELETE)
-                        || (cidsBean.getMetaObject().getStatus() == MetaObject.MODIFIED)) {
+                        || ((cidsBean.getMetaObject().getStatus() == MetaObject.MODIFIED)
+                            || (cidsBean.getMetaObject().getStatus() == MetaObject.NO_STATUS))) {
                 if (virtualOneToMany) {
                     oa.setChanged(true);
                     cidsBean.getMetaObject().setStatus(MetaObject.TO_DELETE);
