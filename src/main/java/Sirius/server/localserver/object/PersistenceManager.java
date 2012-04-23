@@ -118,6 +118,8 @@ public final class PersistenceManager extends Shutdown {
         try {
             transactionHelper.beginWork();
             final int rtn = insertMetaObjectWithoutTransaction(user, mo);
+            transactionHelper.commit();
+
             return rtn;
         } catch (final Exception e) {
             final String message = "cannot insert metaobject"; // NOI18N
@@ -140,6 +142,7 @@ public final class PersistenceManager extends Shutdown {
         try {
             transactionHelper.beginWork();
             updateMetaObjectWithoutTransaction(user, mo);
+            transactionHelper.commit();
         } catch (final Exception e) {
             final String message = "cannot update metaobject"; // NOI18N
             LOG.error(message, e);
@@ -555,8 +558,6 @@ public final class PersistenceManager extends Shutdown {
                     /*
                      * since the meta-jdbc driver is obsolete the index must be refreshed by the server explicitly
                      */
-
-                    transactionHelper.commit();
 
                     for (final CidsTrigger ct : rightTriggers) {
                         ct.afterUpdate(mo.getBean(), user);
@@ -1008,7 +1009,6 @@ public final class PersistenceManager extends Shutdown {
                 stmt = parameteriseStatement(stmt, values);
                 stmt.executeUpdate();
 
-                transactionHelper.commit();
 
                 for (final MetaObject vChild : virtual1toMChildren) {
                     insertMetaObjectArrayWithoutTransaction(user, vChild, rootPk);
