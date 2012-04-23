@@ -9,6 +9,7 @@ package Sirius.server.localserver.object;
 
 import Sirius.server.Shutdown;
 import Sirius.server.localserver.DBServer;
+import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaClass;
@@ -24,6 +25,8 @@ import org.apache.log4j.Logger;
 import org.openide.util.Lookup;
 
 import org.postgis.PGgeometry;
+
+import sun.security.krb5.internal.KDCOptions;
 
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
@@ -276,21 +279,18 @@ public final class PersistenceManager extends Shutdown {
                 int result = stmt.executeUpdate();
 
                 // now delete all array entries
-                final Collection<MetaObject> arrays = new ArrayList<MetaObject>();
                 for (final ObjectAttribute oa : allAttributes) {
-                    // 1-n kinder löschen
-// if (oas[i].isVirtualOneToManyAttribute()) {
-// for (final ObjectAttribute oa : metaObject.getAttribs()) {
-// final MetaObject moChild = (MetaObject)oa.getValue();
-// deleteMetaObjectWithoutTransaction(user, moChild);
-// }
-// }
-
                     final java.lang.Object value = oa.getValue();
-                    if ((value instanceof MetaObject) && oa.isArray()) {
+                    if (value instanceof MetaObject) {
                         final MetaObject arrayMo = (MetaObject)value;
-                        arrays.add(arrayMo);
-                        result += deleteArrayEntries(user, arrayMo);
+                        // 1-n kinder löschen
+                        if (oa.isVirtualOneToManyAttribute()) {
+                            result += deleteOneToManyChildsWithoutTransaction(user, arrayMo);
+                        }
+                        // n-m kinder löschen
+                        if (oa.isArray()) {
+                            result += deleteArrayEntries(user, arrayMo);
+                        }
                     }
                 }
 
@@ -321,6 +321,35 @@ public final class PersistenceManager extends Shutdown {
     }
 
     /**
+     * DOCUMENT ME!
+     *
+     * @param   user     DOCUMENT ME!
+     * @param   arrayMo  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException          DOCUMENT ME!
+     * @throws  PersistenceException  DOCUMENT ME!
+     */
+    private int deleteOneToManyChildsWithoutTransaction(final User user, final MetaObject arrayMo) throws SQLException,
+        PersistenceException {
+        fixMissingMetaClass(arrayMo);
+
+        if (!arrayMo.isDummy()) {
+            LOG.error("deleteOneToManyEntries on a metaobject that is not a dummy");
+            // TODO maybe better throw an exception ?
+            return 0;
+        }
+
+        int result = 0;
+        for (final ObjectAttribute oa : arrayMo.getAttribs()) {
+            final MetaObject childMO = (MetaObject)oa.getValue();
+            result += deleteMetaObjectWithoutTransaction(user, childMO);
+        }
+        return result;
+    }
+
+    /**
      * Deletes all link-entries of the array dummy-object.
      *
      * @param   user     DOCUMENT ME!
@@ -341,14 +370,6 @@ public final class PersistenceManager extends Shutdown {
         PreparedStatement stmt = null;
 
         try {
-            // intitialize UserGroup
-            UserGroup ug = null;
-
-            // retrieve userGroup is user is not null
-            if (user != null) {
-                ug = user.getUserGroup();
-            }
-            final Sirius.server.localserver._class.Class c = dbServer.getClass(ug, arrayMo.getClassID());
             final String tableName = arrayMo.getMetaClass().getTableName();
             final String arrayKeyFieldName = arrayMo.getReferencingObjectAttribute().getMai().getArrayKeyFieldName();
             final String paramStmt = "DELETE FROM " + tableName + " WHERE " + arrayKeyFieldName + " = ?"; // NOI18N+
