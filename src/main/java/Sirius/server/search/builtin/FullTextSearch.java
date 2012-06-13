@@ -89,7 +89,7 @@ public class FullTextSearch extends CidsServerSearch {
             final String geoPrefix = "\n select distinct * from ( ";
 
             final String sql = ""
-                        + "SELECT i.class_id ocid,i.object_id as oid, c.stringrep "
+                        + "SELECT DISTINCT i.class_id ocid,i.object_id as oid, c.stringrep "
                         + "FROM   cs_attr_string s, "
                         + "       cs_attr_object_derived i "
                         + "       LEFT OUTER JOIN cs_stringrepcache c "
