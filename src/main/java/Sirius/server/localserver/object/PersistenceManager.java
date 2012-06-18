@@ -16,32 +16,25 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
 import Sirius.server.sql.DBConnection;
-
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.vividsolutions.jts.geom.Geometry;
-
-import org.apache.log4j.Logger;
-
-import org.openide.util.Lookup;
-
-import org.postgis.PGgeometry;
-
+import de.cismet.cids.trigger.CidsTrigger;
+import de.cismet.cids.trigger.CidsTriggerKey;
+import de.cismet.cids.trigger.DBAwareCidsTrigger;
+import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
+import de.cismet.tools.CurrentStackTrace;
+import java.beans.PropertyVetoException;
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-
-import de.cismet.cids.trigger.CidsTrigger;
-import de.cismet.cids.trigger.CidsTriggerKey;
-import de.cismet.cids.trigger.DBAwareCidsTrigger;
-
-import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
-
-import de.cismet.tools.CurrentStackTrace;
+import org.apache.log4j.Logger;
+import org.openide.util.Lookup;
+import org.postgis.PGgeometry;
 
 /**
  * DOCUMENT ME!
@@ -61,25 +54,27 @@ public final class PersistenceManager extends Shutdown {
     //~ Instance fields --------------------------------------------------------
 
     private final transient DBServer dbServer;
-    private final transient TransactionHelper transactionHelper;
     private final transient PersistenceHelper persistenceHelper;
     private final Collection<? extends CidsTrigger> allTriggers;
     private final Collection<CidsTrigger> generalTriggers = new ArrayList<CidsTrigger>();
     private final Collection<CidsTrigger> crossDomainTrigger = new ArrayList<CidsTrigger>();
     private final HashMap<CidsTriggerKey, Collection<CidsTrigger>> triggers =
         new HashMap<CidsTriggerKey, Collection<CidsTrigger>>();
+    private final transient ThreadLocal<TransactionHelper> local;
+    private final transient ComboPooledDataSource pool;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new PersistenceManager object.
      *
-     * @param  dbServer  DOCUMENT ME!
+     * @param   dbServer  DOCUMENT ME!
+     *
+     * @throws  IllegalStateException  DOCUMENT ME!
      */
     public PersistenceManager(final DBServer dbServer) {
         this.dbServer = dbServer;
 
-        transactionHelper = new TransactionHelper(dbServer.getActiveDBConnection(), dbServer.getSystemProperties());
         persistenceHelper = new PersistenceHelper(dbServer);
         final Lookup.Result<CidsTrigger> result = Lookup.getDefault().lookupResult(CidsTrigger.class);
         allTriggers = result.allInstances();
@@ -97,6 +92,30 @@ public final class PersistenceManager extends Shutdown {
                 triggers.put(t.getTriggerKey(), c);
             }
         }
+        try {
+            pool = new ComboPooledDataSource();
+            pool.setDriverClass(dbServer.getSystemProperties().getJDBCDriver());
+            pool.setJdbcUrl(dbServer.getSystemProperties().getDbConnectionString());
+            pool.setUser(dbServer.getSystemProperties().getDbUser());
+            pool.setPassword(dbServer.getSystemProperties().getDbPassword());
+
+            pool.setMinPoolSize(5);
+            pool.setAcquireIncrement(5);
+            pool.setMaxPoolSize(dbServer.getSystemProperties().getPoolSize());
+        } catch (PropertyVetoException ex) {
+            throw new IllegalStateException("pool could not be initialized", ex);
+        }
+        local = new ThreadLocal<TransactionHelper>() {
+
+                @Override
+                protected TransactionHelper initialValue() {
+                    try {
+                        return new TransactionHelper(pool.getConnection());
+                    } catch (final SQLException ex) {
+                        throw new IllegalStateException("transactionhelper could not be created", ex);
+                    }
+                }
+            };
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -113,6 +132,7 @@ public final class PersistenceManager extends Shutdown {
      */
     public int insertMetaObject(final User user, final MetaObject mo) throws PersistenceException {
         try {
+            final TransactionHelper transactionHelper = local.get();
             transactionHelper.beginWork();
             final int rtn = insertMetaObjectWithoutTransaction(user, mo);
             transactionHelper.commit();
@@ -123,6 +143,9 @@ public final class PersistenceManager extends Shutdown {
             LOG.error(message, e);
             rollback();
             throw new PersistenceException(message, e);
+        } finally {
+            local.get().close();
+            local.remove();
         }
     }
 
@@ -137,6 +160,7 @@ public final class PersistenceManager extends Shutdown {
      */
     public void updateMetaObject(final User user, final MetaObject mo) throws PersistenceException, SQLException {
         try {
+            final TransactionHelper transactionHelper = local.get();
             transactionHelper.beginWork();
             updateMetaObjectWithoutTransaction(user, mo);
             transactionHelper.commit();
@@ -145,6 +169,9 @@ public final class PersistenceManager extends Shutdown {
             LOG.error(message, e);
             rollback();
             throw new PersistenceException(message, e);
+        } finally {
+            local.get().close();
+            local.remove();
         }
     }
 
@@ -160,6 +187,7 @@ public final class PersistenceManager extends Shutdown {
      */
     public int deleteMetaObject(final User user, final MetaObject mo) throws PersistenceException {
         try {
+            final TransactionHelper transactionHelper = local.get();
             transactionHelper.beginWork();
             final int rtn = deleteMetaObjectWithoutTransaction(user, mo);
             transactionHelper.commit();
@@ -170,16 +198,20 @@ public final class PersistenceManager extends Shutdown {
             LOG.error(message, e);
             rollback();
             throw new PersistenceException(message, e);
+        } finally {
+            local.get().close();
+            local.remove();
         }
     }
 
     /**
-     * DOCUMENT ME!
+ * DOCUMENT ME!
      *
      * @throws  PersistenceException  DOCUMENT ME!
      */
     private void rollback() throws PersistenceException {
         try {
+            final TransactionHelper transactionHelper = local.get();
             transactionHelper.rollback();
         } catch (final SQLException ex) {
             final String error = "cannot rollback transaction, this can cause inconsistent database state"; // NOI18N
@@ -273,6 +305,7 @@ public final class PersistenceManager extends Shutdown {
                     LOG.debug(logMessage.toString());
                 }
 
+                final TransactionHelper transactionHelper = local.get();
                 stmt = transactionHelper.getConnection().prepareStatement(paramStmt);
                 stmt.setObject(1, mo.getPrimaryKey().getValue());
                 // execute deletion and retrieve number of affected objects
@@ -357,6 +390,7 @@ public final class PersistenceManager extends Shutdown {
                 LOG.debug(logMessage.toString());
             }
 
+            final TransactionHelper transactionHelper = local.get();
             stmt = transactionHelper.getConnection().prepareStatement(paramStmt);
             stmt.setObject(1, arrayMo.getId());
             // execute deletion and retrieve number of affected objects
@@ -527,6 +561,7 @@ public final class PersistenceManager extends Shutdown {
                         LOG.debug(logMessage.toString());
                     }
 
+                    final TransactionHelper transactionHelper = local.get();
                     stmt = transactionHelper.getConnection().prepareStatement(paramStmt.toString());
                     parameteriseStatement(stmt, values);
                     stmt.executeUpdate();
@@ -868,6 +903,7 @@ public final class PersistenceManager extends Shutdown {
             // set params and execute stmt
             PreparedStatement stmt = null;
             try {
+                final TransactionHelper transactionHelper = local.get();
                 stmt = transactionHelper.getConnection().prepareStatement(paramSql.toString());
                 if (LOG.isDebugEnabled()) {
                     final StringBuilder logMessage = new StringBuilder("Parameterized SQL: ");
