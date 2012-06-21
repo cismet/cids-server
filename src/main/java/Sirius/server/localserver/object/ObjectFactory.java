@@ -117,11 +117,11 @@ public final class ObjectFactory extends Shutdown {
      *
      * @throws  SQLException  DOCUMENT ME!
      */
-    public Sirius.server.localserver.object.Object getObject(final int objectId, final int classId, final UserGroup ug)
+    public Sirius.server.localserver.object.Object getObject(final int objectId, final int classId, final User u)
             throws SQLException {
         final Sirius.server.localserver.object.Object o = getObject(objectId, classId);
         if (o != null) {
-            setAttributePermissions(o, ug);
+            setAttributePermissions(o, u);
         }
         return o;
     }
@@ -927,7 +927,7 @@ public final class ObjectFactory extends Shutdown {
      *
      * @throws  SQLException  DOCUMENT ME!
      */
-    protected void setAttributePermissions(final Sirius.server.localserver.object.Object o, final UserGroup ug)
+    protected void setAttributePermissions(final Sirius.server.localserver.object.Object o, final User u)
             throws SQLException {
         Statement stmnt = null;
         ResultSet rs = null;
@@ -937,7 +937,7 @@ public final class ObjectFactory extends Shutdown {
                 "select p.id as pid,p.key as key, u.ug_id as ug_id, u.attr_id as attr_id from cs_ug_attr_perm as u, cs_permission as p  where attr_id in (select id  from cs_attr where class_id =" // NOI18N
                         + o.getClassID()
                         + ") and u.permission = p.id and ug_id = "                                                                                                                                  // NOI18N
-                        + ug.getId();
+                        + u.getUserGroup().getId(); //Not compatible with additive user permissions /HELL
 
             stmnt = conPool.getConnection().createStatement();
 
@@ -988,7 +988,7 @@ public final class ObjectFactory extends Shutdown {
                             new PermissionHolder(classCache.getClass(o.getClassID()).getAttributePolicy()));
                     }
 
-                    p.addPermission(ug, new Permission(permId, permKey));
+                    p.addPermission(u.getUserGroup(), new Permission(permId, permKey)); //Not compatible with additive permissions //HELL
                 }
             }
         } catch (final SQLException e) {

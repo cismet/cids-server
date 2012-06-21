@@ -9,7 +9,7 @@ package Sirius.server.localserver.object;
 
 import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.localserver.attribute.ObjectAttribute;
-import Sirius.server.newuser.UserGroup;
+import Sirius.server.newuser.User;
 
 import Sirius.util.Mapable;
 
@@ -83,7 +83,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @return  eine fuer UG massgeschneiderte Version des Objekts
      */
-    Object filter(UserGroup ug);
+    Object filter(User u);
 
     /**
      * creates an Instance of this Object from a string representation.

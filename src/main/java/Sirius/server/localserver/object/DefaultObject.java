@@ -9,8 +9,7 @@ package Sirius.server.localserver.object;
 
 import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.localserver.attribute.ObjectAttribute;
-import Sirius.server.newuser.UserGroup;
-import Sirius.server.newuser.permission.PermissionHolder;
+import Sirius.server.newuser.User;
 
 import Sirius.util.Mapable;
 
@@ -324,7 +323,7 @@ public class DefaultObject implements Object {
      * @return  eine fuer UG massgeschneiderte Version des Objekts
      */
     @Override
-    public Object filter(final UserGroup ug) {
+    public Object filter(final User u) {
         final DefaultObject tmp = new DefaultObject(this);
 
         final LinkedHashMap view = new LinkedHashMap();
@@ -335,7 +334,7 @@ public class DefaultObject implements Object {
 
         while (iter.hasNext()) {
             final Attribute a = (Attribute)iter.next();
-            if (a.getPermissions().hasPermission(ug.getKey(), PermissionHolder.READPERMISSION)) {
+            if (a.getPermissions().hasReadPermission(u)) {
                 view.put(a.getKey(), a);
             }
         }

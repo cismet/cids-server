@@ -109,9 +109,9 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      * @throws  SQLException  DOCUMENT ME!
      */
     @Override
-    public NodeReferenceList getChildren(final int nodeId, final UserGroup ug, final Policy parentPolicy)
+    public NodeReferenceList getChildren(final int nodeId, final User u, final Policy parentPolicy)
             throws SQLException {
-        final int ug_id = idMap.getLocalUgId(ug);
+        final int ug_id = idMap.getLocalUgId(u.getUserGroup()); // Bei kummulativen Rechten gibts hier noch anpassungsbedarf // HELL
 
         boolean artificialIdSupported = false;
         ResultSet set = null;
@@ -206,7 +206,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
             // add local children to result (nodes)
             final NodeReferenceList result = new NodeReferenceList(
-                    removeUnReadableNodes(nodesFromResult(rs, ug, parentPolicy), ug));
+                    removeUnReadableNodes(nodesFromResult(rs, u, parentPolicy), u));
 
             DBConnection.closeResultSets(rs);
 
@@ -233,14 +233,14 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      * @throws  SQLException  DOCUMENT ME!
      */
     @Override
-    public NodeReferenceList getChildren(final Node parentNode, final UserGroup ug) throws SQLException {
+    public NodeReferenceList getChildren(final Node parentNode, final User u) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("NodeReferenceList getChildren(Node node, UserGroup ug) "); // NOI18N
         }
         final String statement = parentNode.getDynamicChildrenStatement();
 
         if (statement == null) {
-            return this.getChildren(parentNode.getId(), ug, null);
+            return this.getChildren(parentNode.getId(), u, null);
         }
         if (LOG.isDebugEnabled()) {
             LOG.debug("getChildren called (dynamic children)\nstatement:" + statement); // NOI18N
@@ -254,7 +254,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
             rs = stmt.executeQuery(statement);
 
-            final List<Node> result = nodesFromResult(rs, ug);
+            final List<Node> result = nodesFromResult(rs, u);
 
             for (final Node n : result) {
                 if (!n.isDerivePermissionsFromClass()) {
@@ -269,7 +269,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                 n.setLeaf(n.getDynamicChildrenStatement() == null);
             }
 
-            return new NodeReferenceList(removeUnReadableNodes(result, ug));
+            return new NodeReferenceList(removeUnReadableNodes(result, u));
         } finally {
             DBConnection.closeResultSets(rs);
             DBConnection.closeStatements(stmt);
@@ -318,7 +318,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             isRoot = true;
             root = 'T';
         } else {
-            final Node parentNode = getNode(parent.getNodeId(), user.getUserGroup());
+            final Node parentNode = getNode(parent.getNodeId(), user);
             policy = parentNode.getPermissions().getPolicy().getDbID() + ""; // NOI18N
         }
         final int nodeId = getNextNodeID();
@@ -350,10 +350,10 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             inheritNodePermission(nodeId, parent.getNodeId());
 
             if (!isRoot) {
-                addLink(getNode(parent.getNodeId(), user.getUserGroup()), getNode(nodeId, user.getUserGroup()), user);
+                addLink(getNode(parent.getNodeId(), user), getNode(nodeId, user), user);
             }
 
-            final Node n = getNode(nodeId, user.getUserGroup());
+            final Node n = getNode(nodeId, user);
 
             return n;
         } finally {
@@ -556,8 +556,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      * @throws  SQLException  DOCUMENT ME!
      */
     @Override
-    public Node[] getClassTreeNodes(final UserGroup ug) throws SQLException {
-        final int ug_id = idMap.getLocalUgId(ug);
+    public Node[] getClassTreeNodes(final User u) throws SQLException {
+        final int ug_id = idMap.getLocalUgId(u.getUserGroup()); //Not compatible with additive permissions //HELL
 
         final String statement = "select  distinct "                                                                                                                                                                     // NOI18N
                     + "y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
@@ -581,14 +581,14 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
             rs = stmt.executeQuery(statement);
 
-            final List<Node> nodes = nodesFromResult(rs, ug);
+            final List<Node> nodes = nodesFromResult(rs, u);
 
             for (final Node n : nodes) {
                 n.setLeaf(nodeIsLeaf(n.getId()));
             }
 
             // TODO Remove classnodes if the class is not readable
-            return removeUnReadableNodes(nodes, ug);
+            return removeUnReadableNodes(nodes, u);
         } finally {
             DBConnection.closeResultSets(rs);
             DBConnection.closeStatements(stmt);
@@ -672,9 +672,9 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      * @throws  SQLException  DOCUMENT ME!
      */
     @Override
-    public Node[] getTopNodes(final UserGroup ug) throws SQLException {
-        LOG.info("get top nodes for UserGroup:" + ug.getName() + "@" + ug.getDomain()); // NOI18N
-        final int ug_id = idMap.getLocalUgId(ug);
+    public Node[] getTopNodes(final User u) throws SQLException {
+        LOG.info("get top nodes for User:" + u.getName() + "@" + u.getDomain()); // NOI18N
+        final int ug_id = idMap.getLocalUgId(u.getUserGroup());//not compatible with additive permissions //HELL
 
         final String statement = "select  distinct "                                                                                                                                                                     // NOI18N
                     + "y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
@@ -698,7 +698,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
             rs = stmt.executeQuery(statement);
 
-            return removeUnReadableNodes(nodesFromResult(rs, ug), ug);
+            return removeUnReadableNodes(nodesFromResult(rs, u), u);
 
             // Die Knoten die nicht angezeigt werden dürfen müssen noch rausgefiltert werden
         } finally {
@@ -715,13 +715,13 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      *
      * @return  DOCUMENT ME!
      */
-    private Node[] removeUnReadableNodes(final List<Node> n, final UserGroup ug) {
+    private Node[] removeUnReadableNodes(final List<Node> n, final User u) {
         final List<Node> v = new ArrayList<Node>();
         if (LOG.isInfoEnabled()) {
             LOG.info("removeUnReadableNodes " + n.size() + " Elements before"); // NOI18N
         }
         for (final Node node : n) {
-            if (node.getPermissions().hasReadPermission(ug)) {
+            if (node.getPermissions().hasReadPermission(u)) {
                 v.add(node);
             }
         }
@@ -742,9 +742,9 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      * @throws  SQLException  DOCUMENT ME!
      */
     @Override
-    public Node getNode(final int nodeId, final UserGroup ug) throws SQLException {
+    public Node getNode(final int nodeId, final User u) throws SQLException {
         // beschaffe lokale ug_id
-        final int ug_id = idMap.getLocalUgId(ug);
+        final int ug_id = idMap.getLocalUgId(u.getUserGroup());//Not compatible with additive permissions //HELL
 
         Statement stmt = null;
         ResultSet rs = null;
@@ -766,7 +766,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
             rs = stmt.executeQuery(statement);
 
-            final List<Node> nodes = nodesFromResult(rs, ug);
+            final List<Node> nodes = nodesFromResult(rs, u);
             if (nodes.isEmpty()) {
                 return null;
             } else {
@@ -818,8 +818,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      *
      * @throws  SQLException  Throwable DOCUMENT ME!
      */
-    private List<Node> nodesFromResult(final ResultSet nodeTable, final UserGroup ug) throws SQLException {
-        return nodesFromResult(nodeTable, ug, null);
+    private List<Node> nodesFromResult(final ResultSet nodeTable, final User u) throws SQLException {
+        return nodesFromResult(nodeTable, u, null);
     }
 
     /**
@@ -834,7 +834,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      * @throws  SQLException           Throwable DOCUMENT ME!
      * @throws  IllegalStateException  Exception DOCUMENT ME!
      */
-    private List<Node> nodesFromResult(final ResultSet nodeTable, final UserGroup ug, final Policy parentPolicy)
+    private List<Node> nodesFromResult(final ResultSet nodeTable, final User u, final Policy parentPolicy)
             throws SQLException {
         final List<Node> nodes = new ArrayList<Node>();
         final Map<String, Node> nodeHM = new HashMap<String, Node>();
@@ -987,7 +987,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                     // FIXME: doesn't
                     LOG.warn("getClass failed. cannot create objekt/classnode", e); // NOI18N
                 }
-                if ((metaclass != null) && metaclass.getPermissions().hasReadPermission(ug)) {
+                if ((metaclass != null) && metaclass.getPermissions().hasReadPermission(u)) {
                     if ((c == (byte)'O') || (c == (byte)'o')) {
                         tmp = new MetaObjectNode(
                                 id,
@@ -1054,7 +1054,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
                         if ((permId != null) && (permKey != null)) {
                             final Permission pp = new Permission(nodeTable.getInt("perm_id"), permKey); // NOI18N
-                            nodeHM.get(nodeKey).getPermissions().addPermission(ug, pp);
+                            nodeHM.get(nodeKey).getPermissions().addPermission(u, pp);
                             if (LOG.isDebugEnabled()) {
                                 LOG.debug(
                                     "Permission "                                                       // NOI18N
@@ -1062,7 +1062,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                                             + " added to node"                                          // NOI18N
                                             + tmp.getId()
                                             + " for ug "                                                // NOI18N
-                                            + ug.getKey().toString());
+                                            + u.getKey().toString());
                             }
                         }
                     } catch (final Exception t) {

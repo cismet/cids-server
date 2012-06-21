@@ -101,8 +101,8 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
      */
     public DefaultMetaObject(final Sirius.server.localserver.object.Object object,
             final String domain,
-            final UserGroup ug) throws Exception {
-        this(object.filter(ug), domain);
+            final User u) throws Exception {
+        this(object.filter(u), domain);
     }
     // --------------------------------------------------------------
 

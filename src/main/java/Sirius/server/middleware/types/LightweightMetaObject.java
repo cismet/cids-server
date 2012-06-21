@@ -36,7 +36,7 @@ import de.cismet.cids.tools.fromstring.FromStringCreator;
  *
  * @author   srichter
  * @version  $Revision$, $Date$
- */
+ */   
 public final class LightweightMetaObject implements MetaObject, Comparable<LightweightMetaObject> {
 
     //~ Instance fields --------------------------------------------------------
@@ -252,8 +252,8 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      * @return  DOCUMENT ME!
      */
     @Override
-    public Sirius.server.localserver.object.Object filter(final UserGroup ug) {
-        return getRealMetaObject().filter(ug);
+    public Sirius.server.localserver.object.Object filter(final User u) {
+        return getRealMetaObject().filter(u);
     }
 
     /**

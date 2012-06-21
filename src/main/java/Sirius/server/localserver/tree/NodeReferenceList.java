@@ -59,7 +59,7 @@ public class NodeReferenceList implements java.io.Serializable {
      * @param  children  DOCUMENT ME!
      * @param  ug        DOCUMENT ME!
      */
-    public NodeReferenceList(final AbstractTree tree, final java.util.ArrayList<Link> children, final UserGroup ug) {
+    public NodeReferenceList(final AbstractTree tree, final java.util.ArrayList<Link> children, final User u) {
         final int size = children.size();
         Link child = null;
 
@@ -73,7 +73,7 @@ public class NodeReferenceList implements java.io.Serializable {
                 if (child.isRemote()) {
                     remotes.add(child);
                 } else {
-                    final Node n = tree.getNode(child.getNodeId(), ug);
+                    final Node n = tree.getNode(child.getNodeId(), u);
 
                     // if null filtered (no permission)
                     if (n != null) {
@@ -99,12 +99,12 @@ public class NodeReferenceList implements java.io.Serializable {
      * @param  nodeIDs  DOCUMENT ME!
      * @param  ug       DOCUMENT ME!
      */
-    public NodeReferenceList(final AbstractTree tree, final java.util.Vector nodeIDs, final UserGroup ug) {
+    public NodeReferenceList(final AbstractTree tree, final java.util.Vector nodeIDs, final User u) {
         try {
             setLocals(new java.util.ArrayList<Node>(nodeIDs.size()));
 
             for (int i = 0; i < nodeIDs.size(); i++) {
-                final Node n = tree.getNode(((Integer)nodeIDs.get(i)).intValue(), ug);
+                final Node n = tree.getNode(((Integer)nodeIDs.get(i)).intValue(), u);
 
                 // if null filtered (no permission)
                 if (n != null) {

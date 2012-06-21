@@ -10,8 +10,8 @@ package Sirius.server.localserver.method;
 import Sirius.server.AbstractShutdownable;
 import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
+import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
-import Sirius.server.newuser.permission.PermissionHolder;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DBConnectionPool;
@@ -169,13 +169,13 @@ public final class MethodCache extends Shutdown {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public MethodMap getMethods(final UserGroup ug) throws Exception {
+    public MethodMap getMethods(final User u) throws Exception {
         final MethodMap view = new MethodMap(methodArray.size(), 0.7f);
 
         for (int i = 0; i < methodArray.size(); i++) {
             final Method m = (Method)methodArray.get(i);
 
-            if (m.getPermissions().hasPermission(ug.getKey(), PermissionHolder.READPERMISSION)) {
+            if (m.getPermissions().hasReadPermission(u)) {
                 // view.add(properties.getServerName(),m);
                 view.add((String)m.getKey(), m);
             }

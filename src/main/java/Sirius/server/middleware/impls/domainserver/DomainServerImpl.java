@@ -184,7 +184,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public NodeReferenceList getChildren(final Node node, final User user) throws RemoteException {
         try {
             if (userstore.validateUser(user)) {
-                return dbServer.getChildren(node, user.getUserGroup());
+                return dbServer.getChildren(node, user);
             }
 
             return new NodeReferenceList();                // no permission
@@ -201,7 +201,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public NodeReferenceList getRoots(final User user) throws RemoteException {
         try {
             if (userstore.validateUser(user)) {
-                return dbServer.getTops(user.getUserGroup());
+                return dbServer.getTops(user);
             }
 
             return new NodeReferenceList(); // no permission => empty list
@@ -263,7 +263,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public Node[] getNodes(final User user, final int[] ids) throws RemoteException {
         try {
-            return dbServer.getNodes(ids, user.getUserGroup());
+            return dbServer.getNodes(ids, user);
         } catch (Throwable e) {
             if (logger != null) {
                 logger.error(e, e);
@@ -276,7 +276,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public NodeReferenceList getClassTreeNodes(final User user) throws RemoteException {
         try {
             if (userstore.validateUser(user)) {
-                return dbServer.getClassTreeNodes(user.getUserGroup());
+                return dbServer.getClassTreeNodes(user);
             }
 
             return new NodeReferenceList(); // no permission empty list
@@ -291,7 +291,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public MetaClass[] getClasses(final User user) throws RemoteException {
         try { // if(userstore.validateUser(user))
-            return dbServer.getClasses(user.getUserGroup());
+            return dbServer.getClasses(user);
 
             // return new MetaClass[0];
         } catch (Throwable e) {
@@ -305,7 +305,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public MetaClass getClass(final User user, final int classID) throws RemoteException {
         try { // if(userstore.validateUser(user))
-            return dbServer.getClass(user.getUserGroup(), classID);
+            return dbServer.getClass(user, classID);
 
             // return null;
         } catch (Throwable e) {
@@ -319,7 +319,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public MetaClass getClassByTableName(final User user, final String tableName) throws RemoteException {
         try { // if(userstore.validateUser(user))
-            return dbServer.getClassByTableName(user.getUserGroup(), tableName);
+            return dbServer.getClassByTableName(user, tableName);
                 // return null;
         } catch (Throwable e) {
             if (logger != null) {
@@ -341,7 +341,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
      */
     public MetaObject[] getObjects(final User user, final String[] objectIDs) throws RemoteException {
         try {
-            return dbServer.getObjects(objectIDs, user.getUserGroup());
+            return dbServer.getObjects(objectIDs, user);
         } catch (Throwable e) {
             if (logger != null) {
                 logger.error(e, e);
@@ -362,9 +362,9 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
      */
     public MetaObject getObject(final User user, final String objectID) throws RemoteException {
         try {
-            final MetaObject mo = dbServer.getObject(objectID, user.getUserGroup());
+            final MetaObject mo = dbServer.getObject(objectID, user);
             if (mo != null) {
-                final MetaClass[] classes = dbServer.getClasses(user.getUserGroup());
+                final MetaClass[] classes = dbServer.getClasses(user);
 
                 mo.setAllClasses(getClassHashTable(classes, serverInfo.getName()));
 

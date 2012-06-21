@@ -22,6 +22,7 @@ import Sirius.server.middleware.types.DefaultMetaObject;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.Node;
+import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.permission.PolicyHolder;
 import Sirius.server.property.ServerProperties;
@@ -160,8 +161,8 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public MetaClass getClass(final UserGroup ug, final int classID) {
-        final Sirius.server.localserver._class.Class c = classes.getClass(ug, classID);
+    public MetaClass getClass(final User u, final int classID) {
+        final Sirius.server.localserver._class.Class c = classes.getClass(u, classID);
         if (c != null) {
             return new MetaClass(c, properties.getServerName());
         } else {
@@ -179,8 +180,8 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public MetaClass getClassByTableName(final UserGroup ug, final String tableName) throws Throwable {
-        final Sirius.server.localserver._class.Class c = classes.getClassNyTableName(ug, tableName);
+    public MetaClass getClassByTableName(final User u, final String tableName) throws Throwable {
+        final Sirius.server.localserver._class.Class c = classes.getClassNyTableName(u, tableName);
         if (c != null) {
             return new MetaClass(c, properties.getServerName());
         } else {
@@ -194,8 +195,8 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public MetaClass[] getClasses(final UserGroup ug) {
-        final List tmpClasses = classes.getAllClasses(ug);
+    public MetaClass[] getClasses(final User u) {
+        final List tmpClasses = classes.getAllClasses(u);
         MetaClass[] middleWareClasses = null;
 
         if (tmpClasses != null) {
@@ -228,8 +229,8 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public NodeReferenceList getChildren(final Node node, final UserGroup ug) throws Throwable {
-        return tree.getChildren(node, ug);
+    public NodeReferenceList getChildren(final Node node, final User u) throws Throwable {
+        return tree.getChildren(node, u);
     }
     /**
      * ----------------------------------------------------------------------------- public
@@ -243,8 +244,8 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public NodeReferenceList getTops(final UserGroup ug) throws Throwable {
-        return new NodeReferenceList(tree.getTopNodes(ug));
+    public NodeReferenceList getTops(final User u) throws Throwable {
+        return new NodeReferenceList(tree.getTopNodes(u));
     }
     /**
      * -------------------------------------------------------------------------
@@ -255,8 +256,8 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public NodeReferenceList getClassTreeNodes(final UserGroup ug) throws Throwable {
-        return new NodeReferenceList(tree.getClassTreeNodes(ug));
+    public NodeReferenceList getClassTreeNodes(final User u) throws Throwable {
+        return new NodeReferenceList(tree.getClassTreeNodes(u));
     }
     /**
      * ----------------------------------------------------------------------------
@@ -268,7 +269,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @throws  SQLException  Throwable DOCUMENT ME!
      */
-    public MetaObject getObject(final String objectID, final UserGroup ug) throws SQLException {
+    public MetaObject getObject(final String objectID, final User u) throws SQLException {
         final int oId;
         final int cId;
 
@@ -278,10 +279,10 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
 
         // An dieser Stelle wird die Referenz neu gesetzt. Deshalb funzt getParent() der ObjectAttributes nicht richtig
         // zusaetzlich erzeugt auch die filter Methode eine neue Adresse
-        final Sirius.server.localserver.object.Object o = objects.getObject(oId, cId, ug);
+        final Sirius.server.localserver.object.Object o = objects.getObject(oId, cId, u);
 
         if (o != null) {
-            final MetaObject mo = new DefaultMetaObject(o.filter(ug), properties.getServerName());
+            final MetaObject mo = new DefaultMetaObject(o.filter(u), properties.getServerName());
             // mo.setMetaClass(new MetaClass(classes.getClass(cId), properties.getServerName()));
 
             mo.setAllClasses(classes.getClassHashMap());
@@ -302,11 +303,11 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public MetaObject[] getObjects(final String[] objectIDs, final UserGroup ug) throws Throwable {
+    public MetaObject[] getObjects(final String[] objectIDs, final User u) throws Throwable {
         final MetaObject[] obs = new MetaObject[objectIDs.length];
 
         for (int i = 0; i < objectIDs.length; i++) {
-            obs[i] = getObject(objectIDs[i], ug);
+            obs[i] = getObject(objectIDs[i], u);
         }
 
         return obs;
@@ -327,11 +328,11 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public Sirius.server.middleware.types.Node[] getNodes(final int[] ids, final UserGroup ug) throws Throwable {
+    public Sirius.server.middleware.types.Node[] getNodes(final int[] ids, final User u) throws Throwable {
         final Sirius.server.middleware.types.Node[] n = new Sirius.server.middleware.types.Node[ids.length];
 
         for (int i = 0; i < ids.length; i++) {
-            n[i] = tree.getNode(ids[i], ug);
+            n[i] = tree.getNode(ids[i], u);
         }
 
         return n;
@@ -396,8 +397,8 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public MethodMap getMethods(final UserGroup ug) throws Throwable {
-        return methods.getMethods(ug);
+    public MethodMap getMethods(final User u) throws Throwable {
+        return methods.getMethods(u);
     }
 
     /**

@@ -221,7 +221,7 @@ public final class PersistenceManager extends Shutdown {
 
         if (
             dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
-                        user.getUserGroup())
+                        user)
                     && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
 
             final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
@@ -259,7 +259,7 @@ public final class PersistenceManager extends Shutdown {
                     ug = user.getUserGroup();
                 }
                 // retrieve the metaObject's class
-                final Sirius.server.localserver._class.Class c = dbServer.getClass(ug, mo.getClassID());
+                final Sirius.server.localserver._class.Class c = dbServer.getClass(user, mo.getClassID());
                 // get Tablename from class
                 final String tableName = c.getTableName();
                 // get primary Key from class
@@ -420,7 +420,7 @@ public final class PersistenceManager extends Shutdown {
         }
         if (
             dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
-                        user.getUserGroup())
+                        user)
                     && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
             // existiert gar keine sinnvolle
             // bean
@@ -829,7 +829,7 @@ public final class PersistenceManager extends Shutdown {
 
         if (
             dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
-                        user.getUserGroup())
+                        user)
                     && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
             // existiert gar keine sinnvolle
             // bean won't insert history
@@ -1008,7 +1008,6 @@ public final class PersistenceManager extends Shutdown {
                 }
                 stmt = parameteriseStatement(stmt, values);
                 stmt.executeUpdate();
-
 
                 for (final MetaObject vChild : virtual1toMChildren) {
                     insertMetaObjectArrayWithoutTransaction(user, vChild, rootPk);

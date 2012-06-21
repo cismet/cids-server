@@ -16,7 +16,6 @@
 package Sirius.server.localserver.tree;
 import Sirius.server.middleware.types.Node;
 import Sirius.server.newuser.User;
-import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.permission.Policy;
 
 import java.sql.SQLException;
@@ -119,7 +118,7 @@ public interface AbstractTree {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    NodeReferenceList getChildren(int nodeID, UserGroup ug, Policy parentPolicy) throws Throwable;
+    NodeReferenceList getChildren(int nodeID, User u, Policy parentPolicy) throws Throwable;
 
     /**
      * DOCUMENT ME!
@@ -131,7 +130,7 @@ public interface AbstractTree {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    NodeReferenceList getChildren(Node node, UserGroup ug) throws Throwable;
+    NodeReferenceList getChildren(Node node, User u) throws Throwable;
 
     /**
      * DOCUMENT ME!
@@ -142,7 +141,7 @@ public interface AbstractTree {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    Node[] getClassTreeNodes(UserGroup ug) throws Throwable;
+    Node[] getClassTreeNodes(User u) throws Throwable;
 
     /**
      * DOCUMENT ME!
@@ -174,7 +173,7 @@ public interface AbstractTree {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    Node[] getTopNodes(UserGroup ug) throws Throwable;
+    Node[] getTopNodes(User u) throws Throwable;
 
     /**
      * public java.util.ArrayList<Node> getObjectNodes(String objectID,UserGroup ug) throws Throwable;
@@ -186,7 +185,7 @@ public interface AbstractTree {
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    Node getNode(int nodeID, UserGroup ug) throws Throwable;
+    Node getNode(int nodeID, User u) throws Throwable;
 
     /**
      * DOCUMENT ME!
