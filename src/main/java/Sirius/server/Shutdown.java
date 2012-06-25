@@ -78,6 +78,39 @@ public abstract class Shutdown extends AbstractShutdownable implements Serializa
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   o  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static Shutdown createShutdown(final Object o) {
+        final Shutdown shutdown = new Shutdown() {
+            };
+
+        final Field[] fields = o.getClass().getDeclaredFields();
+        for (final Field field : fields) {
+            try {
+                field.setAccessible(true);
+                final Object fieldValue = field.get(o);
+                if (fieldValue instanceof Shutdownable) {
+                    final Shutdownable sd = (Shutdownable)fieldValue;
+                    if ((sd != null) && (shutdown.getPriority(sd) == null)) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("adding shutdownable field: " + sd); // NOI18N
+                        }
+                        shutdown.addShutdown(sd);
+                    }
+                }
+            } catch (final Exception ex) {
+                LOG.warn("shutdown probably incomplete: cannot add shutdownable field: " + field, ex); // NOI18N
+            }
+        }
+
+        return shutdown;
+    }
+
     @Override
     protected void internalShutdown() throws ServerExitError {
         addShutdownableFields();
@@ -88,10 +121,12 @@ public abstract class Shutdown extends AbstractShutdownable implements Serializa
         for (final Integer priority : priorities) {
             for (final Shutdownable shutdownable : shutdowns.get(priority)) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("shutting down: " + shutdownable);
+                    LOG.debug("shutting down: " + shutdownable); // NOI18N
                 }
 
-                shutdownable.shutdown();
+                if (!shutdownable.isDown()) {
+                    shutdownable.shutdown();
+                }
             }
         }
 

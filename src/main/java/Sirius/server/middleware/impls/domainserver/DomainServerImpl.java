@@ -11,6 +11,7 @@ import Sirius.server.Server;
 import Sirius.server.ServerExit;
 import Sirius.server.ServerExitError;
 import Sirius.server.ServerType;
+import Sirius.server.Shutdown;
 import Sirius.server.localserver.DBServer;
 import Sirius.server.localserver.history.HistoryException;
 import Sirius.server.localserver.history.HistoryServer;
@@ -891,6 +892,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         if (logger.isInfoEnabled()) {
             logger.info("shutting down domainserver impl: " + this); // NOI18N
         }
+
+        final Shutdown shutdown = Shutdown.createShutdown(this);
+        shutdown.shutdown();
+
         final String ip = serverInfo.getIP();
         final String lsName = properties.getServerName();
         final String[] registryIPs = properties.getRegistryIps();

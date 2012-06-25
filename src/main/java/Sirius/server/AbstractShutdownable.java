@@ -26,8 +26,10 @@ public abstract class AbstractShutdownable implements Shutdownable {
         if (down) {
             return;
         }
-        down = true;
+        
         internalShutdown();
+        
+        down = true;
     }
 
     /**
