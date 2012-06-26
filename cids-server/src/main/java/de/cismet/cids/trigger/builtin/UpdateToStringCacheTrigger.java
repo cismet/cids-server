@@ -120,9 +120,9 @@ public class UpdateToStringCacheTrigger extends AbstractDBAwareCidsTrigger {
                                 return getDbServer().getActiveDBConnection()
                                             .submitInternalUpdate(
                                                 DBConnection.DESC_UPDATE_STRINGREPCACHEENTRY,
+                                                name,
                                                 cidsBean.getMetaObject().getClassID(),
-                                                cidsBean.getMetaObject().getID(),
-                                                name);
+                                                cidsBean.getMetaObject().getID());
                             }
                         } catch (SQLException e) {
                             getDbServer().getActiveDBConnection()

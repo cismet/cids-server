@@ -12,6 +12,7 @@ import Sirius.server.ServerExit;
 import Sirius.server.ServerExitError;
 import Sirius.server.ServerStatus;
 import Sirius.server.ServerType;
+import Sirius.server.Shutdown;
 import Sirius.server.property.ServerProperties;
 
 import org.apache.log4j.Logger;
@@ -412,6 +413,9 @@ public final class StartProxy {
         }
 
         try {
+            final Shutdown shutdown = Shutdown.createShutdown(this);
+            shutdown.shutdown();
+
             if (callServer instanceof ProxyImpl) {
                 final ProxyImpl proxyimpl = (ProxyImpl)callServer;
                 proxyimpl.unregisterAsObserver(siriusRegistryIP + ":" + serverInfo.getServerPort()); // NOI18N

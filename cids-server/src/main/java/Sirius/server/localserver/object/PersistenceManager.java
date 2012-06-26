@@ -7,6 +7,8 @@
 ****************************************************/
 package Sirius.server.localserver.object;
 
+import Sirius.server.AbstractShutdownable;
+import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
 import Sirius.server.localserver.DBServer;
 import Sirius.server.localserver.attribute.ClassAttribute;
@@ -18,6 +20,9 @@ import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
 import Sirius.server.sql.DBConnection;
 
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.mchange.v2.c3p0.DataSources;
+
 import com.vividsolutions.jts.geom.Geometry;
 
 import org.apache.log4j.Logger;
@@ -26,7 +31,7 @@ import org.openide.util.Lookup;
 
 import org.postgis.PGgeometry;
 
-import sun.security.krb5.internal.KDCOptions;
+import java.beans.PropertyVetoException;
 
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
@@ -64,25 +69,27 @@ public final class PersistenceManager extends Shutdown {
     //~ Instance fields --------------------------------------------------------
 
     private final transient DBServer dbServer;
-    private final transient TransactionHelper transactionHelper;
     private final transient PersistenceHelper persistenceHelper;
     private final Collection<? extends CidsTrigger> allTriggers;
     private final Collection<CidsTrigger> generalTriggers = new ArrayList<CidsTrigger>();
     private final Collection<CidsTrigger> crossDomainTrigger = new ArrayList<CidsTrigger>();
     private final HashMap<CidsTriggerKey, Collection<CidsTrigger>> triggers =
         new HashMap<CidsTriggerKey, Collection<CidsTrigger>>();
+    private final transient ThreadLocal<TransactionHelper> local;
+    private final transient ComboPooledDataSource pool;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new PersistenceManager object.
      *
-     * @param  dbServer  DOCUMENT ME!
+     * @param   dbServer  DOCUMENT ME!
+     *
+     * @throws  IllegalStateException  DOCUMENT ME!
      */
     public PersistenceManager(final DBServer dbServer) {
         this.dbServer = dbServer;
 
-        transactionHelper = new TransactionHelper(dbServer.getActiveDBConnection(), dbServer.getSystemProperties());
         persistenceHelper = new PersistenceHelper(dbServer);
         final Lookup.Result<CidsTrigger> result = Lookup.getDefault().lookupResult(CidsTrigger.class);
         allTriggers = result.allInstances();
@@ -100,6 +107,44 @@ public final class PersistenceManager extends Shutdown {
                 triggers.put(t.getTriggerKey(), c);
             }
         }
+
+        try {
+            pool = new ComboPooledDataSource();
+            pool.setDriverClass(dbServer.getSystemProperties().getJDBCDriver());
+            pool.setJdbcUrl(dbServer.getSystemProperties().getDbConnectionString());
+            pool.setUser(dbServer.getSystemProperties().getDbUser());
+            pool.setPassword(dbServer.getSystemProperties().getDbPassword());
+
+            pool.setMinPoolSize(5);
+            pool.setAcquireIncrement(5);
+            pool.setMaxPoolSize(dbServer.getSystemProperties().getPoolSize());
+        } catch (PropertyVetoException ex) {
+            throw new IllegalStateException("pool could not be initialized", ex);
+        }
+
+        local = new ThreadLocal<TransactionHelper>() {
+
+                @Override
+                protected TransactionHelper initialValue() {
+                    try {
+                        return new TransactionHelper(pool.getConnection());
+                    } catch (final SQLException ex) {
+                        throw new IllegalStateException("transactionhelper could not be created", ex);
+                    }
+                }
+            };
+
+        addShutdown(new AbstractShutdownable() {
+
+                @Override
+                protected void internalShutdown() throws ServerExitError {
+                    try {
+                        DataSources.destroy(pool);
+                    } catch (final SQLException ex) {
+                        throw new ServerExitError("cannot bring down c3p0 pool cleanly", ex); // NOI18N
+                    }
+                }
+            });
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -116,6 +161,7 @@ public final class PersistenceManager extends Shutdown {
      */
     public int insertMetaObject(final User user, final MetaObject mo) throws PersistenceException {
         try {
+            final TransactionHelper transactionHelper = local.get();
             transactionHelper.beginWork();
             final int rtn = insertMetaObjectWithoutTransaction(user, mo);
             transactionHelper.commit();
@@ -126,6 +172,9 @@ public final class PersistenceManager extends Shutdown {
             LOG.error(message, e);
             rollback();
             throw new PersistenceException(message, e);
+        } finally {
+            local.get().close();
+            local.remove();
         }
     }
 
@@ -140,6 +189,7 @@ public final class PersistenceManager extends Shutdown {
      */
     public void updateMetaObject(final User user, final MetaObject mo) throws PersistenceException, SQLException {
         try {
+            final TransactionHelper transactionHelper = local.get();
             transactionHelper.beginWork();
             updateMetaObjectWithoutTransaction(user, mo);
             transactionHelper.commit();
@@ -148,6 +198,9 @@ public final class PersistenceManager extends Shutdown {
             LOG.error(message, e);
             rollback();
             throw new PersistenceException(message, e);
+        } finally {
+            local.get().close();
+            local.remove();
         }
     }
 
@@ -163,6 +216,7 @@ public final class PersistenceManager extends Shutdown {
      */
     public int deleteMetaObject(final User user, final MetaObject mo) throws PersistenceException {
         try {
+            final TransactionHelper transactionHelper = local.get();
             transactionHelper.beginWork();
             final int rtn = deleteMetaObjectWithoutTransaction(user, mo);
             transactionHelper.commit();
@@ -173,6 +227,9 @@ public final class PersistenceManager extends Shutdown {
             LOG.error(message, e);
             rollback();
             throw new PersistenceException(message, e);
+        } finally {
+            local.get().close();
+            local.remove();
         }
     }
 
@@ -183,6 +240,7 @@ public final class PersistenceManager extends Shutdown {
      */
     private void rollback() throws PersistenceException {
         try {
+            final TransactionHelper transactionHelper = local.get();
             transactionHelper.rollback();
         } catch (final SQLException ex) {
             final String error = "cannot rollback transaction, this can cause inconsistent database state"; // NOI18N
@@ -276,6 +334,7 @@ public final class PersistenceManager extends Shutdown {
                     LOG.debug(logMessage.toString());
                 }
 
+                final TransactionHelper transactionHelper = local.get();
                 stmt = transactionHelper.getConnection().prepareStatement(paramStmt);
                 stmt.setObject(1, mo.getPrimaryKey().getValue());
                 // execute deletion and retrieve number of affected objects
@@ -289,11 +348,11 @@ public final class PersistenceManager extends Shutdown {
                         // 1-n kinder löschen
                         if (oa.isVirtualOneToManyAttribute()) {
                             result += deleteOneToManyChildsWithoutTransaction(user, arrayMo);
-                        }
+                    }
                         // n-m kinder löschen
                         if (oa.isArray()) {
-                            result += deleteArrayEntries(user, arrayMo);
-                        }
+                            result += deleteArrayEntriesWithoutTransaction(user, arrayMo);
+                }
                     }
                 }
 
@@ -362,7 +421,7 @@ public final class PersistenceManager extends Shutdown {
      *
      * @throws  SQLException  DOCUMENT ME!
      */
-    private int deleteArrayEntries(final User user, final MetaObject arrayMo) throws SQLException {
+    private int deleteArrayEntriesWithoutTransaction(final User user, final MetaObject arrayMo) throws SQLException {
         fixMissingMetaClass(arrayMo);
 
         if (!arrayMo.isDummy()) {
@@ -377,6 +436,7 @@ public final class PersistenceManager extends Shutdown {
             final String arrayKeyFieldName = arrayMo.getReferencingObjectAttribute().getMai().getArrayKeyFieldName();
             final String paramStmt = "DELETE FROM " + tableName + " WHERE " + arrayKeyFieldName + " = ?"; // NOI18N+
 
+            final TransactionHelper transactionHelper = local.get();
             stmt = transactionHelper.getConnection().prepareStatement(paramStmt);
             stmt.setObject(1, arrayMo.getId());
             // execute deletion and retrieve number of affected objects
@@ -476,7 +536,7 @@ public final class PersistenceManager extends Shutdown {
                             // set new key
                             final int key = insertMetaObjectWithoutTransaction(user, subObject);
                             if (subObject.isDummy()) {
-                                valueToAdd = mo.getID(); // set value to primary key
+                                values.add(mo.getID()); // set value to primary key
                                 insertMetaObjectArrayWithoutTransaction(user, subObject);
                             } else {
                                 valueToAdd = key;
@@ -485,14 +545,14 @@ public final class PersistenceManager extends Shutdown {
                         }
                         case MetaObject.TO_DELETE: {
                             deleteMetaObjectWithoutTransaction(user, subObject);
-                            valueToAdd = NULL;
+                            values.add(NULL);
                             break;
                         }
                         case MetaObject.NO_STATUS:
                         // fall through because we define no status as modified status
                         case MetaObject.MODIFIED: {
                             updateMetaObjectWithoutTransaction(user, subObject);
-                            valueToAdd = subObject.getID();
+                            values.add(subObject.getID());
                             break;
                         }
                         default: {
@@ -551,6 +611,7 @@ public final class PersistenceManager extends Shutdown {
                         LOG.debug(logMessage.toString());
                     }
 
+                    final TransactionHelper transactionHelper = local.get();
                     stmt = transactionHelper.getConnection().prepareStatement(paramStmt.toString());
                     parameteriseStatement(stmt, values);
                     stmt.executeUpdate();
@@ -929,31 +990,31 @@ public final class PersistenceManager extends Shutdown {
                                     .getReferencingObjectAttribute().getClassID())) {
                         values.add(fk);
                     } else {
-                        try {
-                            // recursion
-                            if (value != null) {
-                                final int status = moAttr.getStatus();
-                                Integer objectID = moAttr.getID();
-                                switch (status) {
-                                    case MetaObject.NEW: {
-                                        if (moAttr.isDummy()) {
-                                            objectID = mo.getID();
-                                            // jt ids still to be made
-                                            insertMetaObjectArrayWithoutTransaction(user, moAttr);
-                                        } else {
-                                            objectID = insertMetaObjectWithoutTransaction(user, moAttr);
-                                        }
-                                        break;
+                    try {
+                        // recursion
+                        if (value != null) {
+                            final int status = moAttr.getStatus();
+                            Integer objectID = moAttr.getID();
+                            switch (status) {
+                                case MetaObject.NEW: {
+                                    if (moAttr.isDummy()) {
+                                        objectID = mo.getID();
+                                        // jt ids still to be made
+                                        insertMetaObjectArrayWithoutTransaction(user, moAttr);
+                                    } else {
+                                        objectID = insertMetaObjectWithoutTransaction(user, moAttr);
                                     }
-                                    case MetaObject.TO_DELETE: {
-                                        objectID = null;
-                                        deleteMetaObjectWithoutTransaction(user, moAttr);
-                                        break;
-                                    }
-                                    case MetaObject.MODIFIED:
+                                    break;
+                                }
+                                case MetaObject.TO_DELETE: {
+                                    objectID = null;
+                                    deleteMetaObjectWithoutTransaction(user, moAttr);
+                                    break;
+                                }
+                                case MetaObject.MODIFIED:
+                                // NOP
+                                default: {
                                     // NOP
-                                    default: {
-                                        // NOP
                                     }
                                 }
                                 // foreign key will be set
@@ -990,6 +1051,7 @@ public final class PersistenceManager extends Shutdown {
             // set params and execute stmt
             PreparedStatement stmt = null;
             try {
+                final TransactionHelper transactionHelper = local.get();
                 stmt = transactionHelper.getConnection().prepareStatement(paramSql.toString());
                 if (LOG.isDebugEnabled()) {
                     final StringBuilder logMessage = new StringBuilder("Parameterized SQL: ");
