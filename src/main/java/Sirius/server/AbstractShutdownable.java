@@ -26,7 +26,9 @@ public abstract class AbstractShutdownable implements Shutdownable {
         if (down) {
             return;
         }
+        // this not only indicates that it has been shut down but also that a shutdown is currently in progess
         down = true;
+
         internalShutdown();
     }
 

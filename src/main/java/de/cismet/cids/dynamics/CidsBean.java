@@ -26,6 +26,8 @@ import org.apache.log4j.Logger;
 import org.jdesktop.observablecollections.ObservableList;
 
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyChangeEvent;
@@ -64,6 +66,9 @@ public class CidsBean implements PropertyChangeListener {
     protected boolean artificialChange;
     private CustomBeanPermissionProvider customPermissionProvider;
 
+    private final transient Object lLock = new Object();
+    private transient volatile Lookup lookup;
+
     //~ Methods ----------------------------------------------------------------
 
     /**
@@ -86,6 +91,37 @@ public class CidsBean implements PropertyChangeListener {
         final MetaObject mo = mc.getEmptyInstance();
 
         return mo.getBean();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final Lookup getLookup() {
+        if (lookup == null) {
+            synchronized (lLock) {
+                if (lookup == null) {
+                    // NOTE: more mechanism (load by configuration, etc) may be desirable
+                    // NOTE: probably we need a more finer grained control on basis of looked up instances
+                    final Collection<? extends CidsBeanLookupInstance> cblis = Lookup.getDefault()
+                                .lookupAll(CidsBeanLookupInstance.class);
+                    final InstanceContent content = new InstanceContent();
+                    for (final CidsBeanLookupInstance cbli : cblis) {
+                        final Collection objects = cbli.getLookupInstances(this);
+                        if (objects != null) {
+                            for (final Object obj : objects) {
+                                content.add(obj);
+                            }
+                        }
+                    }
+
+                    lookup = new AbstractLookup(content);
+                }
+            }
+        }
+
+        return lookup;
     }
 
     /**

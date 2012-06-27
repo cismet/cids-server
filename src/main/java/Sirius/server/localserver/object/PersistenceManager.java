@@ -7,6 +7,8 @@
 ****************************************************/
 package Sirius.server.localserver.object;
 
+import Sirius.server.AbstractShutdownable;
+import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
 import Sirius.server.localserver.DBServer;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
@@ -18,6 +20,7 @@ import Sirius.server.newuser.UserGroup;
 import Sirius.server.sql.DBConnection;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.mchange.v2.c3p0.DataSources;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -103,6 +106,7 @@ public final class PersistenceManager extends Shutdown {
                 triggers.put(t.getTriggerKey(), c);
             }
         }
+
         try {
             pool = new ComboPooledDataSource();
             pool.setDriverClass(dbServer.getSystemProperties().getJDBCDriver());
@@ -116,6 +120,7 @@ public final class PersistenceManager extends Shutdown {
         } catch (PropertyVetoException ex) {
             throw new IllegalStateException("pool could not be initialized", ex);
         }
+
         local = new ThreadLocal<TransactionHelper>() {
 
                 @Override
@@ -127,6 +132,18 @@ public final class PersistenceManager extends Shutdown {
                     }
                 }
             };
+
+        addShutdown(new AbstractShutdownable() {
+
+                @Override
+                protected void internalShutdown() throws ServerExitError {
+                    try {
+                        DataSources.destroy(pool);
+                    } catch (final SQLException ex) {
+                        throw new ServerExitError("cannot bring down c3p0 pool cleanly", ex); // NOI18N
+                    }
+                }
+            });
     }
 
     //~ Methods ----------------------------------------------------------------

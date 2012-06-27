@@ -182,7 +182,7 @@ public class RESTfulSerialInterfaceConnectorTest {
         } catch (final ServerExitError e) {
             System.err.println("exit error");
         }
-
+        
         if (!Boolean.valueOf(service.dropDatabase(TEST_DB_NAME))) {
             throw new IllegalStateException("could not drop test db");
         }

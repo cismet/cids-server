@@ -11,6 +11,7 @@ import Sirius.server.Server;
 import Sirius.server.ServerExit;
 import Sirius.server.ServerExitError;
 import Sirius.server.ServerStatus;
+import Sirius.server.Shutdown;
 import Sirius.server.naming.NameServer;
 import Sirius.server.newuser.Membership;
 import Sirius.server.newuser.User;
@@ -1040,7 +1041,14 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
      * @throws  ServerExitError  DOCUMENT ME!
      */
     public void shutdown() throws ServerExit, ServerExitError {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("shutting down registry"); // NOI18N
+        }
+
         try {
+            final Shutdown shutdown = Shutdown.createShutdown(this);
+            shutdown.shutdown();
+
             // unbinding userserver
             try {
                 if (LOG.isDebugEnabled()) {
