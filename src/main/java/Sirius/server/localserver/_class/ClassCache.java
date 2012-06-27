@@ -258,7 +258,7 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u   DOCUMENT ME!
      * @param   id  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -276,7 +276,7 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug         DOCUMENT ME!
+     * @param   u          DOCUMENT ME!
      * @param   tableName  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -305,7 +305,7 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */

@@ -111,7 +111,7 @@ public final class ObjectFactory extends Shutdown {
      *
      * @param   objectId  DOCUMENT ME!
      * @param   classId   DOCUMENT ME!
-     * @param   ug        DOCUMENT ME!
+     * @param   u         DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -922,8 +922,8 @@ public final class ObjectFactory extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   o   DOCUMENT ME!
-     * @param   ug  DOCUMENT ME!
+     * @param   o  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @throws  SQLException  DOCUMENT ME!
      */
@@ -937,7 +937,7 @@ public final class ObjectFactory extends Shutdown {
                 "select p.id as pid,p.key as key, u.ug_id as ug_id, u.attr_id as attr_id from cs_ug_attr_perm as u, cs_permission as p  where attr_id in (select id  from cs_attr where class_id =" // NOI18N
                         + o.getClassID()
                         + ") and u.permission = p.id and ug_id = "                                                                                                                                  // NOI18N
-                        + u.getUserGroup().getId(); //Not compatible with additive user permissions /HELL
+                        + u.getUserGroup().getId();                                                                                                                                                 // Not compatible with additive user permissions /HELL
 
             stmnt = conPool.getConnection().createStatement();
 
@@ -988,11 +988,13 @@ public final class ObjectFactory extends Shutdown {
                             new PermissionHolder(classCache.getClass(o.getClassID()).getAttributePolicy()));
                     }
 
-                    p.addPermission(u.getUserGroup(), new Permission(permId, permKey)); //Not compatible with additive permissions //HELL
+                    p.addPermission(u.getUserGroup(), new Permission(permId, permKey));    // Not compatible with
+                                                                                           // additive permissions
+                                                                                           // //HELL
                 }
             }
         } catch (final SQLException e) {
-            LOG.error("cannot create attribute permissions", e); // NOI18N
+            LOG.error("cannot create attribute permissions", e);                           // NOI18N
             throw e;
         } finally {
             DBConnection.closeResultSets(rs);

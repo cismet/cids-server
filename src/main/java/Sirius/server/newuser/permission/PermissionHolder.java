@@ -131,7 +131,14 @@ public final class PermissionHolder implements Serializable {
             return false;
         }
     }
-    
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   u  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public boolean hasReadPermission(final User u) {
         return hasReadPermission(u.getUserGroup());
     }
@@ -139,13 +146,20 @@ public final class PermissionHolder implements Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
     public boolean hasWritePermission(final User u) {
         return hasWritePermission(u.getUserGroup());
     }
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   ug  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     private boolean hasWritePermission(final UserGroup ug) {
         try {
             return hasPermission(ug.getKey().toString(), WRITEPERMISSION);

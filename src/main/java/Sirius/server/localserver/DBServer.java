@@ -156,7 +156,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     /**
      * ---------------------------------------------------------------------------
      *
-     * @param   ug       DOCUMENT ME!
+     * @param   u        DOCUMENT ME!
      * @param   classID  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -173,7 +173,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug         DOCUMENT ME!
+     * @param   u          DOCUMENT ME!
      * @param   tableName  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -191,7 +191,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     /**
      * ---------------------------------------------------------------------------
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
@@ -223,7 +223,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      * getChildren(int nodeID,UserGroup ug) throws Throwable { return tree.getChildren(nodeID,ug); }.
      *
      * @param   node  DOCUMENT ME!
-     * @param   ug    DOCUMENT ME!
+     * @param   u     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -238,7 +238,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      * Sirius.server.middleware.types.NodeReferenceList(tree.getParents(nodeID,ug),this,ug).getNodes(); }
      * -------------------------------------------------------------------------
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -250,7 +250,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     /**
      * -------------------------------------------------------------------------
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -263,7 +263,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      * ----------------------------------------------------------------------------
      *
      * @param   objectID  DOCUMENT ME!
-     * @param   ug        DOCUMENT ME!
+     * @param   u         DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -297,7 +297,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      * DOCUMENT ME!
      *
      * @param   objectIDs  DOCUMENT ME!
-     * @param   ug         DOCUMENT ME!
+     * @param   u          DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -322,7 +322,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      * -----------------------------------------------------------------
      *
      * @param   ids  DOCUMENT ME!
-     * @param   ug   DOCUMENT ME!
+     * @param   u    DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -391,7 +391,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *

@@ -111,7 +111,7 @@ public interface AbstractTree {
      * DOCUMENT ME!
      *
      * @param   nodeID        DOCUMENT ME!
-     * @param   ug            DOCUMENT ME!
+     * @param   u             DOCUMENT ME!
      * @param   parentPolicy  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -124,7 +124,7 @@ public interface AbstractTree {
      * DOCUMENT ME!
      *
      * @param   node  DOCUMENT ME!
-     * @param   ug    DOCUMENT ME!
+     * @param   u     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -135,7 +135,7 @@ public interface AbstractTree {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -167,7 +167,7 @@ public interface AbstractTree {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -179,7 +179,7 @@ public interface AbstractTree {
      * public java.util.ArrayList<Node> getObjectNodes(String objectID,UserGroup ug) throws Throwable;
      *
      * @param   nodeID  DOCUMENT ME!
-     * @param   ug      DOCUMENT ME!
+     * @param   u       DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *

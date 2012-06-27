@@ -318,7 +318,7 @@ public class DefaultObject implements Object {
     /**
      * liefert eine fuer ug sichtbare Attributierung.
      *
-     * @param   ug  Benutzergruppe nach der gefiltert werden soll
+     * @param   u  Benutzergruppe nach der gefiltert werden soll
      *
      * @return  eine fuer UG massgeschneiderte Version des Objekts
      */

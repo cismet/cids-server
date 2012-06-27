@@ -95,7 +95,7 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
      *
      * @param   object  "server" object
      * @param   domain  domain
-     * @param   ug      user group
+     * @param   u       user group
      *
      * @throws  Exception  java.lang.Exception error
      */

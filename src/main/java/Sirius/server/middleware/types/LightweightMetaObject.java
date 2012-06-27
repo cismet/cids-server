@@ -36,7 +36,7 @@ import de.cismet.cids.tools.fromstring.FromStringCreator;
  *
  * @author   srichter
  * @version  $Revision$, $Date$
- */   
+ */
 public final class LightweightMetaObject implements MetaObject, Comparable<LightweightMetaObject> {
 
     //~ Instance fields --------------------------------------------------------
@@ -247,7 +247,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */

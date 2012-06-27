@@ -163,7 +163,7 @@ public final class MethodCache extends Shutdown {
     /**
      * ------------------------------------------------------------------------------------------
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *

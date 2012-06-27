@@ -79,7 +79,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
     /**
      * liefert eine fuer ug sichtbare Attributierung.
      *
-     * @param   ug  Benutzergruppe nach der gefiltert werden soll
+     * @param   u  Benutzergruppe nach der gefiltert werden soll
      *
      * @return  eine fuer UG massgeschneiderte Version des Objekts
      */

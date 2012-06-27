@@ -57,7 +57,7 @@ public class NodeReferenceList implements java.io.Serializable {
      *
      * @param  tree      DOCUMENT ME!
      * @param  children  DOCUMENT ME!
-     * @param  ug        DOCUMENT ME!
+     * @param  u         DOCUMENT ME!
      */
     public NodeReferenceList(final AbstractTree tree, final java.util.ArrayList<Link> children, final User u) {
         final int size = children.size();
@@ -97,7 +97,7 @@ public class NodeReferenceList implements java.io.Serializable {
      *
      * @param  tree     DOCUMENT ME!
      * @param  nodeIDs  DOCUMENT ME!
-     * @param  ug       DOCUMENT ME!
+     * @param  u        DOCUMENT ME!
      */
     public NodeReferenceList(final AbstractTree tree, final java.util.Vector nodeIDs, final User u) {
         try {

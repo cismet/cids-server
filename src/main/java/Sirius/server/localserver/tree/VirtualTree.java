@@ -101,7 +101,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      * DOCUMENT ME!
      *
      * @param   nodeId        DOCUMENT ME!
-     * @param   ug            DOCUMENT ME!
+     * @param   u             DOCUMENT ME!
      * @param   parentPolicy  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -111,7 +111,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     @Override
     public NodeReferenceList getChildren(final int nodeId, final User u, final Policy parentPolicy)
             throws SQLException {
-        final int ug_id = idMap.getLocalUgId(u.getUserGroup()); // Bei kummulativen Rechten gibts hier noch anpassungsbedarf // HELL
+        final int ug_id = idMap.getLocalUgId(u.getUserGroup()); // Bei kummulativen Rechten gibts hier noch
+                                                                // anpassungsbedarf // HELL
 
         boolean artificialIdSupported = false;
         ResultSet set = null;
@@ -226,7 +227,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      * DOCUMENT ME!
      *
      * @param   parentNode  DOCUMENT ME!
-     * @param   ug          DOCUMENT ME!
+     * @param   u           DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -549,7 +550,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -557,7 +558,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      */
     @Override
     public Node[] getClassTreeNodes(final User u) throws SQLException {
-        final int ug_id = idMap.getLocalUgId(u.getUserGroup()); //Not compatible with additive permissions //HELL
+        final int ug_id = idMap.getLocalUgId(u.getUserGroup()); // Not compatible with additive permissions //HELL
 
         final String statement = "select  distinct "                                                                                                                                                                     // NOI18N
                     + "y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
@@ -665,7 +666,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -674,7 +675,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     @Override
     public Node[] getTopNodes(final User u) throws SQLException {
         LOG.info("get top nodes for User:" + u.getName() + "@" + u.getDomain()); // NOI18N
-        final int ug_id = idMap.getLocalUgId(u.getUserGroup());//not compatible with additive permissions //HELL
+        final int ug_id = idMap.getLocalUgId(u.getUserGroup());                  // not compatible with additive
+                                                                                 // permissions //HELL
 
         final String statement = "select  distinct "                                                                                                                                                                     // NOI18N
                     + "y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
@@ -710,8 +712,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     /**
      * DOCUMENT ME!
      *
-     * @param   n   DOCUMENT ME!
-     * @param   ug  DOCUMENT ME!
+     * @param   n  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
@@ -735,7 +737,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      * DOCUMENT ME!
      *
      * @param   nodeId  DOCUMENT ME!
-     * @param   ug      DOCUMENT ME!
+     * @param   u       DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -744,7 +746,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     @Override
     public Node getNode(final int nodeId, final User u) throws SQLException {
         // beschaffe lokale ug_id
-        final int ug_id = idMap.getLocalUgId(u.getUserGroup());//Not compatible with additive permissions //HELL
+        final int ug_id = idMap.getLocalUgId(u.getUserGroup()); // Not compatible with additive permissions //HELL
 
         Statement stmt = null;
         ResultSet rs = null;
@@ -812,7 +814,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      * DOCUMENT ME!
      *
      * @param   nodeTable  DOCUMENT ME!
-     * @param   ug         DOCUMENT ME!
+     * @param   u          DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -826,7 +828,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      * DOCUMENT ME!
      *
      * @param   nodeTable     DOCUMENT ME!
-     * @param   ug            DOCUMENT ME!
+     * @param   u             DOCUMENT ME!
      * @param   parentPolicy  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
