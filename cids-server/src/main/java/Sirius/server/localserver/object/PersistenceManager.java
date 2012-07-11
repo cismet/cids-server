@@ -518,64 +518,67 @@ public final class PersistenceManager extends Shutdown {
                 if (mai == null) {
                     throw new IllegalStateException("MAI not found: " + mAttr[i].getName()); // NOI18N
                 }
-                if (!mAttr[i].isVirtualOneToManyAttribute()) {
-                    // fieldname is now known, find value now
-                    final java.lang.Object value = mAttr[i].getValue();
+                // fieldname is now known, find value now
+                final java.lang.Object value = mAttr[i].getValue();
 
-                    if (value == null) {
-                        // delete MetaObject???
-                        values.add(NULL);
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("valueString set to '" + NULL + "' as value of attribute was null"); // NOI18N
+                java.lang.Object valueToAdd = NULL;
+                if (value == null) {
+                    // delete MetaObject???
+                    valueToAdd = NULL;
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("valueString set to '" + NULL + "' as value of attribute was null"); // NOI18N
+                    }
+                } else if (value instanceof MetaObject) {
+                    final MetaObject subObject = (MetaObject)value;
+                    // CUD for the subobject
+                    switch (subObject.getStatus()) {
+                        case MetaObject.NEW: {
+                            // set new key
+                            final int key = insertMetaObjectWithoutTransaction(user, subObject);
+                            if (subObject.isDummy()) {
+                                valueToAdd = mo.getID(); // set value to primary key
+                                insertMetaObjectArrayWithoutTransaction(user, subObject);
+                            } else {
+                                valueToAdd = key;
+                            }
+                            break;
                         }
-                    } else if (value instanceof MetaObject) {
-                        final MetaObject subObject = (MetaObject)value;
-                        // CUD for the subobject
-                        switch (subObject.getStatus()) {
-                            case MetaObject.NEW: {
-                                // set new key
-                                final int key = insertMetaObjectWithoutTransaction(user, subObject);
-                                if (subObject.isDummy()) {
-                                    values.add(mo.getID()); // set value to primary key
-                                    insertMetaObjectArrayWithoutTransaction(user, subObject);
-                                } else {
-                                    values.add(key);
-                                }
-                                break;
-                            }
-                            case MetaObject.TO_DELETE: {
-                                deleteMetaObjectWithoutTransaction(user, subObject);
-                                values.add(NULL);
-                                break;
-                            }
-                            case MetaObject.NO_STATUS:
-                            // fall through because we define no status as modified status
-                            case MetaObject.MODIFIED: {
-                                updateMetaObjectWithoutTransaction(user, subObject);
-                                values.add(subObject.getID());
-                                break;
-                            }
-                            default: {
-                                // should never occur
-                                // TODO: consider to LOG fatal!
-                                LOG.error(
-                                    "error updating subobject '"   // NOI18N
-                                            + subObject
-                                            + "' of attribute "    // NOI18N
-                                            + mai.getFieldName()
-                                            + ": invalid status: " // NOI18N
-                                            + subObject.getStatus());
-                                // TODO: throw illegalstateexception ?
-                            }
+                        case MetaObject.TO_DELETE: {
+                            deleteMetaObjectWithoutTransaction(user, subObject);
+                            valueToAdd = NULL;
+                            break;
                         }
-                    } else {
-                        // TODO: try to convert JTS GEOMETRY to PGgeometry directly
-                        if (PersistenceHelper.GEOMETRY.isAssignableFrom(value.getClass())) {
-                            values.add(PostGisGeometryFactory.getPostGisCompliantDbString((Geometry)value));
-                        } else {
-                            values.add(value);
+                        case MetaObject.NO_STATUS:
+                        // fall through because we define no status as modified status
+                        case MetaObject.MODIFIED: {
+                            updateMetaObjectWithoutTransaction(user, subObject);
+                            valueToAdd = subObject.getID();
+
+                            break;
+                        }
+                        default: {
+                            // should never occur
+                            // TODO: consider to LOG fatal!
+                            LOG.error(
+                                "error updating subobject '"   // NOI18N
+                                        + subObject
+                                        + "' of attribute "    // NOI18N
+                                        + mai.getFieldName()
+                                        + ": invalid status: " // NOI18N
+                                        + subObject.getStatus());
+                            // TODO: throw illegalstateexception ?
                         }
                     }
+                } else {
+                    // TODO: try to convert JTS GEOMETRY to PGgeometry directly
+                    if (PersistenceHelper.GEOMETRY.isAssignableFrom(value.getClass())) {
+                        valueToAdd = PostGisGeometryFactory.getPostGisCompliantDbString((Geometry)value);
+                    } else {
+                        valueToAdd = value;
+                    }
+                }
+                if (!mAttr[i].isVirtualOneToManyAttribute()) {
+                    values.add(valueToAdd);
 
                     // add update fieldname = ? and add value to valuelist
                     paramStmt.append(sep).append(mai.getFieldName()).append(" = ?"); // NOI18N
