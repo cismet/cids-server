@@ -663,31 +663,23 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
 
     @Override
     public String getPropertyString() {
-        String ret = "";      // NOI18N
-        ret = "Properties:("  // NOI18N
-                    + classID
-                    + ","     // NOI18N
-                    + objectID
-                    + "):\n"; // NOI18N
+        final StringBuilder ret = new StringBuilder("");                                        // NOI18N
+        ret.append("Properties:(").append(classID).append(",").append(objectID).append("):\n"); // NOI18N
 
         final ObjectAttribute[] as = getAttribs();
         for (int i = 0; i < as.length; i++) {
             if (as[i].referencesObject() && (as[i].getValue() != null)) {
-                ret += as[i].getMai().getFieldName()
-                            + "-->"         // NOI18N
-                            + ((MetaObject)as[i].getValue()).getPropertyString();
+                ret.append(as[i].getMai().getFieldName()).append("-->") // NOI18N
+                .append(((MetaObject)as[i].getValue()).getPropertyString());
                 if (((MetaObject)as[i].getValue()).getStatus() == DefaultMetaObject.TO_DELETE) {
-                    ret += "**deleteted**"; // NOI18N
+                    ret.append("**deleteted**");                        // NOI18N
                 }
-                ret += "\n";                // NOI18N
+                ret.append("\n");                                       // NOI18N
             } else {
-                ret += as[i].getMai().getFieldName()
-                            + "="           // NOI18N
-                            + as[i].toString()
-                            + "\n";         // NOI18N
+                ret.append(as[i].getMai().getFieldName()).append("=").append(as[i].toString()).append("\n");
             }
         }
-        return ret;
+        return ret.toString();
     }
 
     @Override
