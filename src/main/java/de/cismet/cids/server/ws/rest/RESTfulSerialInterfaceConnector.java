@@ -3100,7 +3100,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     }
 
     @Override
-    public Object executeTask(final User user, final String taskname, final String domain) throws RemoteException {
+    public Object executeTask(final User user, final String taskname, final String json, final String domain)
+            throws RemoteException {
         try {
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
@@ -3109,6 +3110,9 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             }
             if (taskname != null) {
                 queryParams.add(PARAM_TASKNAME, Converter.serialiseToString(taskname));
+            }
+            if (taskname != null) {
+                queryParams.add(PARAM_JSON, Converter.serialiseToString(json));
             }
             if (domain != null) {
                 queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));

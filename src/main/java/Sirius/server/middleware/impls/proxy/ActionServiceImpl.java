@@ -20,12 +20,17 @@ import Sirius.server.newuser.User;
 import Sirius.server.search.QueryExecuter;
 
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 import java.io.*;
 
 import java.rmi.RemoteException;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
+
+import de.cismet.cids.server.actions.ServerAction;
 
 /**
  * DOCUMENT ME!
@@ -44,8 +49,7 @@ public class ActionServiceImpl implements ActionService {
     private Map activeLocalServers;
     private NameServer nameServer;
     private Server[] localServers;
-    // resolves Query tree
-    private QueryExecuter qex;
+    private HashMap<String, ServerAction> serverActionMap = new HashMap<String, ServerAction>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -61,21 +65,21 @@ public class ActionServiceImpl implements ActionService {
         this.activeLocalServers = activeLocalServers;
         this.nameServer = nameServer;
         this.localServers = nameServer.getServers(ServerType.LOCALSERVER);
-        qex = new QueryExecuter(activeLocalServers);
+
+        final Collection<? extends ServerAction> serverActions = Lookup.getDefault().lookupAll(ServerAction.class);
+        for (final ServerAction serverAction : serverActions) {
+            serverActionMap.put(serverAction.getTaskName(), serverAction);
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public Object executeTask(final User user, final String taskname, final String domain) {
-        try {
-            final File file = new File(taskname);
-            final FileInputStream fin = new FileInputStream(file);
-            final byte[] fileContent = new byte[(int)file.length()];
-            fin.read(fileContent);
-            return fileContent;
-        } catch (IOException ex) {
-            LOG.error(ex, ex);
+    public Object executeTask(final User user, final String taskname, final String json, final String domain) {
+        final ServerAction serverAction = serverActionMap.get(taskname);
+        if (serverAction != null) {
+            return serverAction.execute(json);
+        } else {
             return null;
         }
     }
