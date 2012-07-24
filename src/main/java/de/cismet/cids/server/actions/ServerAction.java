@@ -20,11 +20,12 @@ public interface ServerAction {
     /**
      * DOCUMENT ME!
      *
-     * @param   json  DOCUMENT ME!
+     * @param   body    json DOCUMENT ME!
+     * @param   params  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    Object execute(final String json);
+    Object execute(final Object body, final ServerActionParameter... params);
 
     /**
      * DOCUMENT ME!

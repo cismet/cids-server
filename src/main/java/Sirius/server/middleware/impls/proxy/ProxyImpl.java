@@ -52,6 +52,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import de.cismet.cids.server.CallServerService;
+import de.cismet.cids.server.actions.ServerActionParameter;
 
 /**
  * Benoetigte Keys fuer configFile: registryIps<br>
@@ -1121,7 +1122,11 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     }
 
     @Override
-    public Object executeTask(final User user, final String taskname, final String json, final String domain) {
-        return actionService.executeTask(user, taskname, json, domain);
+    public Object executeTask(final User user,
+            final String domain,
+            final String taskname,
+            final Object body,
+            final ServerActionParameter... params) {
+        return actionService.executeTask(user, domain, taskname, body, params);
     }
 }

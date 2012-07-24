@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.cismet.cids.server.actions.ServerAction;
+import de.cismet.cids.server.actions.ServerActionParameter;
 
 /**
  * DOCUMENT ME!
@@ -75,10 +76,14 @@ public class ActionServiceImpl implements ActionService {
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public Object executeTask(final User user, final String taskname, final String json, final String domain) {
+    public Object executeTask(final User user,
+            final String domain,
+            final String taskname,
+            final Object body,
+            final ServerActionParameter... params) {
         final ServerAction serverAction = serverActionMap.get(taskname);
         if (serverAction != null) {
-            return serverAction.execute(json);
+            return serverAction.execute(body, params);
         } else {
             return null;
         }
