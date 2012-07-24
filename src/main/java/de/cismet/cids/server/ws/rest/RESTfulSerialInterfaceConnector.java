@@ -64,6 +64,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import de.cismet.cids.server.CallServerService;
+import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.ws.SSLConfig;
 
 import de.cismet.netutil.Proxy;
@@ -3100,22 +3101,25 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     }
 
     @Override
-    public Object executeTask(final User user, final String taskname, final String json, final String domain)
-            throws RemoteException {
+    public Object executeTask(final User user,
+            final String domain,
+            final String taskname,
+            final Object body,
+            final ServerActionParameter... params) throws RemoteException {
         try {
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
                 queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
+            if (domain != null) {
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
+            }
             if (taskname != null) {
                 queryParams.add(PARAM_TASKNAME, Converter.serialiseToString(taskname));
             }
-            if (taskname != null) {
-                queryParams.add(PARAM_JSON, Converter.serialiseToString(json));
-            }
-            if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
+            if (body != null) {
+                queryParams.add(PARAM_BODY, Converter.serialiseToString(body));
             }
 
             try {

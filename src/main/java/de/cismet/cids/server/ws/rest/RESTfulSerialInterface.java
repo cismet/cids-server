@@ -20,22 +20,15 @@ import Sirius.server.search.Query;
 import Sirius.server.search.SearchOption;
 import Sirius.server.search.store.QueryData;
 
-import com.sun.jersey.api.core.HttpRequestContext;
-
 import org.apache.log4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
 
 import java.rmi.RemoteException;
 
 import javax.servlet.http.HttpServletRequest;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -101,7 +94,7 @@ public final class RESTfulSerialInterface {
     public static final String PARAM_CUSTOM_SERVER_SEARCH = "customServerSearch"; // NOI18N
     public static final String PARAM_ELEMENTS = "elements";                       // NOI18N
     public static final String PARAM_TASKNAME = "taskname";                       // NOI18N
-    public static final String PARAM_JSON = "json";                               // NOI18N
+    public static final String PARAM_BODY = "json";                               // NOI18N
 
     //~ Instance fields --------------------------------------------------------
 
@@ -2044,7 +2037,7 @@ public final class RESTfulSerialInterface {
      *
      * @param   userBytes      DOCUMENT ME!
      * @param   tasknameBytes  DOCUMENT ME!
-     * @param   jsonBytes      DOCUMENT ME!
+     * @param   bodyBytes      DOCUMENT ME!
      * @param   domainBytes    DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -2057,15 +2050,15 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response executeTask(@FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_TASKNAME) final String tasknameBytes,
-            @FormParam(PARAM_JSON) final String jsonBytes,
+            @FormParam(PARAM_BODY) final String bodyBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
             final String taskname = Converter.deserialiseFromString(tasknameBytes, String.class);
-            final String json = Converter.deserialiseFromString(jsonBytes, String.class);
+            final Object body = Converter.deserialiseFromString(bodyBytes, String.class);
             final String domain = Converter.deserialiseFromString(domainBytes, String.class);
 
-            return createResponse(callserver.executeTask(user, taskname, json, domain), null);
+            return createResponse(callserver.executeTask(user, domain, taskname, body), null);
         } catch (final IOException e) {
             final String message = "could not update metaobject"; // NOI18N
             LOG.error(message, e);

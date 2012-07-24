@@ -36,9 +36,9 @@ public class DownloadFileAction implements ServerAction {
     }
 
     @Override
-    public Object execute(final String json) {
+    public Object execute(final Object body, final ServerActionParameter... params) {
         try {
-            final File file = new File(json);
+            final File file = new File((String)body);
             final FileInputStream fin = new FileInputStream(file);
             final byte[] fileContent = new byte[(int)file.length()];
             fin.read(fileContent);
