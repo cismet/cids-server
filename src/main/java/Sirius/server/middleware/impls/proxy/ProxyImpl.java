@@ -35,6 +35,8 @@ import Sirius.util.image.Image;
 
 import org.apache.log4j.Logger;
 
+import java.io.File;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -79,6 +81,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     private final transient UserServiceImpl userService;
     private final transient QueryStoreImpl queryStore;
     private final transient SearchServiceImpl searchService;
+    private final transient ActionServiceImpl actionService;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -132,6 +135,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             userService = new UserServiceImpl(activeLocalServers, userServer);
             queryStore = new QueryStoreImpl(activeLocalServers, nameServer);
             searchService = new SearchServiceImpl(activeLocalServers, nameServer);
+            actionService = new ActionServiceImpl(activeLocalServers, nameServer);
         } catch (final RemoteException e) {
             final String message = "error during proxy startup"; // NOI18N
             LOG.error(message, e);
@@ -1114,5 +1118,10 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             final User user,
             final int elements) throws RemoteException {
         return metaService.getHistory(classId, objectId, domain, user, elements);
+    }
+
+    @Override
+    public Object executeTask(final User user, final String taskname, final String domain) {
+        return actionService.executeTask(user, taskname, domain);
     }
 }

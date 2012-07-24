@@ -24,6 +24,7 @@ import com.sun.jersey.api.core.HttpRequestContext;
 
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 
 import java.rmi.RemoteException;
@@ -99,6 +100,7 @@ public final class RESTfulSerialInterface {
     public static final String PARAM_KEY = "key";                                 // NOI18N
     public static final String PARAM_CUSTOM_SERVER_SEARCH = "customServerSearch"; // NOI18N
     public static final String PARAM_ELEMENTS = "elements";                       // NOI18N
+    public static final String PARAM_TASKNAME = "taskname";                       // NOI18N
 
     //~ Instance fields --------------------------------------------------------
 
@@ -126,6 +128,20 @@ public final class RESTfulSerialInterface {
      */
     private Response createResponse(final Object o) throws IOException {
         return Response.ok(Converter.serialiseToBase64(o)).build();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   o     DOCUMENT ME!
+     * @param   type  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  IOException  DOCUMENT ME!
+     */
+    private Response createResponse(final Object o, final String type) throws IOException {
+        return Response.ok(Converter.serialiseToBase64(o)).type(type).build();
     }
 
     /**
@@ -2017,6 +2033,41 @@ public final class RESTfulSerialInterface {
             throw new RemoteException(message, e);
         } catch (final ClassNotFoundException e) {
             final String message = "could not get history"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   userBytes      DOCUMENT ME!
+     * @param   tasknameBytes  DOCUMENT ME!
+     * @param   domainBytes    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @POST
+    @Path("/executeTask")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response executeTask(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_TASKNAME) final String tasknameBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+        try {
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final String taskname = Converter.deserialiseFromString(tasknameBytes, String.class);
+            final String domain = Converter.deserialiseFromString(domainBytes, String.class);
+
+            return createResponse(callserver.executeTask(user, taskname, domain), null);
+        } catch (final IOException e) {
+            final String message = "could not update metaobject"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not update metaobject"; // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
