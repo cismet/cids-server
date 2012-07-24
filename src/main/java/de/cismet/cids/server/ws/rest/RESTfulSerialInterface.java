@@ -2036,9 +2036,9 @@ public final class RESTfulSerialInterface {
      * DOCUMENT ME!
      *
      * @param   userBytes      DOCUMENT ME!
+     * @param   domainBytes    DOCUMENT ME!
      * @param   tasknameBytes  DOCUMENT ME!
      * @param   bodyBytes      DOCUMENT ME!
-     * @param   domainBytes    DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -2049,14 +2049,14 @@ public final class RESTfulSerialInterface {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response executeTask(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_DOMAIN) final String domainBytes,
             @FormParam(PARAM_TASKNAME) final String tasknameBytes,
-            @FormParam(PARAM_BODY) final String bodyBytes,
-            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+            @FormParam(PARAM_BODY) final String bodyBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final String domain = Converter.deserialiseFromString(domainBytes, String.class);
             final String taskname = Converter.deserialiseFromString(tasknameBytes, String.class);
             final Object body = Converter.deserialiseFromString(bodyBytes, String.class);
-            final String domain = Converter.deserialiseFromString(domainBytes, String.class);
 
             return createResponse(callserver.executeTask(user, domain, taskname, body), null);
         } catch (final IOException e) {
