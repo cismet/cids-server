@@ -160,10 +160,15 @@ public final class PersistenceManager extends Shutdown {
      */
     public int insertMetaObject(final User user, final MetaObject mo) throws PersistenceException {
         try {
+            final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
             final TransactionHelper transactionHelper = local.get();
             transactionHelper.beginWork();
             final int rtn = insertMetaObjectWithoutTransaction(user, mo);
             transactionHelper.commit();
+
+            for (final CidsTrigger ct : rightTriggers) {
+                ct.afterCommittedInsert(mo.getBean(), user);
+            }
 
             return rtn;
         } catch (final Exception e) {
@@ -188,10 +193,15 @@ public final class PersistenceManager extends Shutdown {
      */
     public void updateMetaObject(final User user, final MetaObject mo) throws PersistenceException, SQLException {
         try {
+            final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
             final TransactionHelper transactionHelper = local.get();
             transactionHelper.beginWork();
             updateMetaObjectWithoutTransaction(user, mo);
             transactionHelper.commit();
+
+            for (final CidsTrigger ct : rightTriggers) {
+                ct.afterCommittedInsert(mo.getBean(), user);
+            }
         } catch (final Exception e) {
             final String message = "cannot update metaobject"; // NOI18N
             LOG.error(message, e);
@@ -215,10 +225,15 @@ public final class PersistenceManager extends Shutdown {
      */
     public int deleteMetaObject(final User user, final MetaObject mo) throws PersistenceException {
         try {
+            final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
             final TransactionHelper transactionHelper = local.get();
             transactionHelper.beginWork();
             final int rtn = deleteMetaObjectWithoutTransaction(user, mo);
             transactionHelper.commit();
+
+            for (final CidsTrigger ct : rightTriggers) {
+                ct.afterCommittedInsert(mo.getBean(), user);
+            }
 
             return rtn;
         } catch (final Exception e) {
