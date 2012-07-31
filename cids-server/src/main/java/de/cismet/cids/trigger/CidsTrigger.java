@@ -66,6 +66,27 @@ public interface CidsTrigger extends Comparable<CidsTrigger> {
     /**
      * DOCUMENT ME!
      *
+     * @param  cidsBean  DOCUMENT ME!
+     * @param  user      DOCUMENT ME!
+     */
+    void afterCommittedInsert(CidsBean cidsBean, final User user);
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  cidsBean  DOCUMENT ME!
+     * @param  user      DOCUMENT ME!
+     */
+    void afterCommittedUpdate(CidsBean cidsBean, final User user);
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  cidsBean  DOCUMENT ME!
+     * @param  user      DOCUMENT ME!
+     */
+    void afterCommittedDelete(CidsBean cidsBean, final User user);
+    /**
+     * DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      */
     CidsTriggerKey getTriggerKey();

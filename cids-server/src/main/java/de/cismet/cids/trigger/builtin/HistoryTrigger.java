@@ -110,4 +110,16 @@ public class HistoryTrigger extends AbstractDBAwareCidsTrigger {
             log.error("cannot initialise history", e); // NOI18N
         }
     }
+
+    @Override
+    public void afterCommittedInsert(final CidsBean cidsBean, final User user) {
+    }
+
+    @Override
+    public void afterCommittedUpdate(final CidsBean cidsBean, final User user) {
+    }
+
+    @Override
+    public void afterCommittedDelete(final CidsBean cidsBean, final User user) {
+    }
 }

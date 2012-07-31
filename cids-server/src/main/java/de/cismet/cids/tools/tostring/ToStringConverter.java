@@ -10,6 +10,8 @@ package de.cismet.cids.tools.tostring;
 import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import java.io.Serializable;
 
 import java.util.Collection;
@@ -22,6 +24,10 @@ import java.util.Iterator;
  * @version  $Revision$, $Date$
  */
 public class ToStringConverter implements Serializable {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final String GEOMETRY_CLASS_NAME = "com.vividsolutions.jts.geom.Geometry";
 
     //~ Methods ----------------------------------------------------------------
 
@@ -65,7 +71,13 @@ public class ToStringConverter implements Serializable {
                 stringRepresentation.append(cur.getValue());
             }
         } else if (o instanceof Sirius.server.localserver.attribute.ObjectAttribute) {
-            stringRepresentation.append(((ObjectAttribute)o).getValue());
+            if (((Sirius.server.localserver.attribute.ObjectAttribute)o).getMai().getJavaclassname().equals(
+                            GEOMETRY_CLASS_NAME)) {
+                final Geometry geom = (Geometry)((ObjectAttribute)o).getValue();
+                stringRepresentation.append(geom.getGeometryType());
+            } else {
+                stringRepresentation.append(((ObjectAttribute)o).getValue());
+            }
         }
 
         return stringRepresentation.toString();

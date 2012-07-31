@@ -21,6 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import java.util.List;
+
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.trigger.AbstractDBAwareCidsTrigger;
@@ -583,5 +585,17 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
         } finally {
             DBConnection.closeStatements(psAttrString, psAttrMap);
         }
+    }
+
+    @Override
+    public void afterCommittedInsert(final CidsBean cidsBean, final User user) {
+    }
+
+    @Override
+    public void afterCommittedUpdate(final CidsBean cidsBean, final User user) {
+    }
+
+    @Override
+    public void afterCommittedDelete(final CidsBean cidsBean, final User user) {
     }
 }
