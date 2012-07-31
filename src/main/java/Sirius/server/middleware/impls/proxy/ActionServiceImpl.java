@@ -48,9 +48,6 @@ public class ActionServiceImpl implements ActionService {
     //~ Instance fields --------------------------------------------------------
 
     private Map activeLocalServers;
-    private NameServer nameServer;
-    private Server[] localServers;
-    private HashMap<String, ServerAction> serverActionMap = new HashMap<String, ServerAction>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -64,28 +61,17 @@ public class ActionServiceImpl implements ActionService {
      */
     public ActionServiceImpl(final Map activeLocalServers, final NameServer nameServer) throws RemoteException {
         this.activeLocalServers = activeLocalServers;
-        this.nameServer = nameServer;
-        this.localServers = nameServer.getServers(ServerType.LOCALSERVER);
-
-        final Collection<? extends ServerAction> serverActions = Lookup.getDefault().lookupAll(ServerAction.class);
-        for (final ServerAction serverAction : serverActions) {
-            serverActionMap.put(serverAction.getTaskName(), serverAction);
-        }
     }
 
     //~ Methods ----------------------------------------------------------------
 
     @Override
     public Object executeTask(final User user,
-            final String domain,
             final String taskname,
+            final String taskdomain,
             final Object body,
-            final ServerActionParameter... params) {
-        final ServerAction serverAction = serverActionMap.get(taskname);
-        if (serverAction != null) {
-            return serverAction.execute(body, params);
-        } else {
-            return null;
-        }
+            final ServerActionParameter... params) throws RemoteException {
+        return ((Sirius.server.middleware.interfaces.domainserver.ActionService)activeLocalServers.get(taskdomain))
+                    .executeTask(user, taskname, body, params);
     }
 }

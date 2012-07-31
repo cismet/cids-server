@@ -3104,8 +3104,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
     @Override
     public Object executeTask(final User user,
-            final String domain,
             final String taskname,
+            final String taskdomain,
             final Object body,
             final ServerActionParameter... params) throws RemoteException {
         try {
@@ -3114,18 +3114,23 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             if (user != null) {
                 queryParams.add(PARAM_USER, Converter.serialiseToString(user));
             }
-            if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
-            }
+
             if (taskname != null) {
                 queryParams.add(PARAM_TASKNAME, Converter.serialiseToString(taskname));
+            }
+            if (taskdomain != null) {
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(taskdomain));
             }
             if (body != null) {
                 queryParams.add(PARAM_BODY, Converter.serialiseToString(body));
             }
 
+            if (params != null) {
+                queryParams.add(PARAM_PARAMELIPSE, Converter.serialiseToString(params));
+            }
+
             try {
-                return getResponsePOST("executeTask", queryParams, File.class); // NOI18N
+                return getResponsePOST("executeTask", queryParams, Object.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);

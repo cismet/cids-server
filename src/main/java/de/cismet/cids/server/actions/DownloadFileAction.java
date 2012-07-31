@@ -37,12 +37,16 @@ public class DownloadFileAction implements ServerAction {
 
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
+        System.out.println("Ausführen von DownloadFileAction");
+        for (final ServerActionParameter sap : params) {
+            System.out.println(sap);
+        }
         try {
             final File file = new File((String)body);
             final FileInputStream fin = new FileInputStream(file);
             final byte[] fileContent = new byte[(int)file.length()];
             fin.read(fileContent);
-            return new String(fileContent);
+            return fileContent;
         } catch (IOException ex) {
             LOG.error(ex, ex);
             return null;
