@@ -1123,10 +1123,10 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
 
     @Override
     public Object executeTask(final User user,
-            final String domain,
             final String taskname,
+            final String taskdomain,
             final Object body,
-            final ServerActionParameter... params) {
-        return actionService.executeTask(user, domain, taskname, body, params);
+            final ServerActionParameter... params) throws RemoteException {
+        return actionService.executeTask(user, taskname, taskdomain, body, params);
     }
 }
