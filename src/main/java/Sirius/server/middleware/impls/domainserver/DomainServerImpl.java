@@ -93,6 +93,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
     private static final String EXTENSION_FACTORY_PREFIX = "de.cismet.cids.custom.extensionfactories."; // NOI18N
     private static transient DomainServerImpl instance;
+    public static final String SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX = "csa://";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -1137,24 +1138,31 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String taskname,
             final Object body,
             final ServerActionParameter... params) throws RemoteException {
-        final ServerAction serverAction = serverActionMap.get(taskname);
+        if (hasConfigAttr(user, SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX + taskname)) {
+            final ServerAction serverAction = serverActionMap.get(taskname);
 
-        // Hier noch Rechtecheck
+            if (serverAction instanceof MetaServiceStore) {
+                ((MetaServiceStore)serverAction).setMetaService(this);
+            }
+            if (serverAction instanceof CatalogueServiceStore) {
+                ((CatalogueServiceStore)serverAction).setCatalogueService(this);
+            }
+            if (serverAction instanceof UserServiceStore) {
+                ((UserServiceStore)serverAction).setUserService(this);
+            }
+            if (serverAction instanceof Sirius.server.middleware.interfaces.domainserver.UserStore) {
+                ((Sirius.server.middleware.interfaces.domainserver.UserStore)serverAction).setUser(user);
+            }
 
-        if (serverAction instanceof MetaServiceStore) {
-            ((MetaServiceStore)serverAction).setMetaService(this);
-        }
-        if (serverAction instanceof CatalogueServiceStore) {
-            ((CatalogueServiceStore)serverAction).setCatalogueService(this);
-        }
-        if (serverAction instanceof UserServiceStore) {
-            ((UserServiceStore)serverAction).setUserService(this);
-        }
-
-        if (serverAction != null) {
-            return serverAction.execute(body, params);
+            if (serverAction != null) {
+                return serverAction.execute(body, params);
+            } else {
+                return null;
+            }
         } else {
-            return null;
+            throw new RemoteException("The user " + user
+                        + "has no permission to execute this task. (Should have an action attribute like this: "
+                        + SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX + taskname);
         }
     }
 }
