@@ -32,5 +32,5 @@ public interface UserStore {
      *
      * @return  DOCUMENT ME!
      */
-    User setUser(User user);
+    void setUser(User user);
 }
