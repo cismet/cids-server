@@ -8,6 +8,8 @@
 package de.cismet.cids.server.actions;
 
 import Sirius.server.middleware.impls.proxy.ProxyImpl;
+import Sirius.server.middleware.interfaces.domainserver.MetaService;
+import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
 
 import org.apache.log4j.Logger;
 
@@ -22,11 +24,15 @@ import java.io.IOException;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = ServerAction.class)
-public class DownloadFileAction implements ServerAction {
+public class DownloadFileAction implements ServerAction, MetaServiceStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient Logger LOG = Logger.getLogger(ProxyImpl.class);
+
+    //~ Instance fields --------------------------------------------------------
+
+    MetaService ms;
 
     //~ Methods ----------------------------------------------------------------
 
@@ -51,5 +57,15 @@ public class DownloadFileAction implements ServerAction {
             LOG.error(ex, ex);
             return null;
         }
+    }
+
+    @Override
+    public MetaService getMetaService() {
+        return ms;
+    }
+
+    @Override
+    public void setMetaService(final MetaService service) {
+        ms = service;
     }
 }
