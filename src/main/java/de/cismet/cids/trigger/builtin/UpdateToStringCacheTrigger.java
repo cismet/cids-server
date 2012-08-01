@@ -191,4 +191,16 @@ public class UpdateToStringCacheTrigger extends AbstractDBAwareCidsTrigger {
         return (cidsBean.getMetaObject().getMetaClass().getClassAttribute(ClassAttribute.TO_STRING_CACHE_ENABLED)
                         != null);
     }
+
+    @Override
+    public void afterCommittedInsert(final CidsBean cidsBean, final User user) {
+    }
+
+    @Override
+    public void afterCommittedUpdate(final CidsBean cidsBean, final User user) {
+    }
+
+    @Override
+    public void afterCommittedDelete(final CidsBean cidsBean, final User user) {
+    }
 }
