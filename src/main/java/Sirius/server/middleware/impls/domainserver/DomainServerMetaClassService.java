@@ -39,7 +39,7 @@ public class DomainServerMetaClassService implements MetaClassCacheService {
         if (log.isDebugEnabled()) {
             log.debug("DomainServerMetaClassService inited"); // NOI18N
         }
-    }  
+    }
 
     //~ Methods ----------------------------------------------------------------
 
@@ -57,7 +57,4 @@ public class DomainServerMetaClassService implements MetaClassCacheService {
     public MetaClass getMetaClass(final String domain, final int classId) {
         return DomainServerClassCache.getInstance().getMetaClass(classId);
     }
-    
-    
-    
 }
