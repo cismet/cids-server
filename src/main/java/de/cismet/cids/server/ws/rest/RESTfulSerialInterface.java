@@ -2106,7 +2106,7 @@ public final class RESTfulSerialInterface {
             @HeaderParam("Authorization") final String authString,
             @PathParam("taskname") final String taskname,
             @PathParam("taskdomain") final String taskdomain,
-            final String body) throws RemoteException {
+            final Object body) throws RemoteException {
         try {
             if (authString == null) {
                 return Response.status(Response.Status.UNAUTHORIZED)

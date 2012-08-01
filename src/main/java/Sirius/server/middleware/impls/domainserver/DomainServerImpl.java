@@ -180,6 +180,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 serverActionMap.put(serverAction.getTaskName(), serverAction);
             }
 
+            DomainServerClassCache.getInstance().setAllClasses(getClassHashTable(dbServer.getClasses(), properties.getServerName()));
+            
             // initFrame();
         } catch (Throwable e) {
             logger.error(e, e);
