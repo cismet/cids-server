@@ -1,38 +1,50 @@
-/*
- * Copyright (C) 2012 cismet GmbH
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package Sirius.server.middleware.impls.domainserver;
 
 import Sirius.server.middleware.types.MetaClass;
-import de.cismet.cids.utils.MetaClassUtils;
+
 import java.util.HashMap;
 
+import de.cismet.cids.utils.MetaClassUtils;
+
 /**
+ * DOCUMENT ME!
  *
- * @author thorsten
+ * @author   thorsten
+ * @version  $Revision$, $Date$
  */
 public class DomainServerClassCache {
 
+    //~ Static fields/initializers ---------------------------------------------
+
     private static DomainServerClassCache instance;
+
+    //~ Instance fields --------------------------------------------------------
+
     private HashMap allClassesById = null;
     private HashMap allClassesByTableName = null;
 
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new DomainServerClassCache object.
+     */
     private DomainServerClassCache() {
     }
 
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public static DomainServerClassCache getInstance() {
         if (instance == null) {
             synchronized (DomainServerClassCache.class) {
@@ -44,21 +56,45 @@ public class DomainServerClassCache {
         return instance;
     }
 
-    public void setAllClasses(MetaClass[] classArray) {
-        this.allClassesById =MetaClassUtils.getClassHashtable(classArray, "local");
-        this.allClassesByTableName=MetaClassUtils.getClassByTableNameHashtable(classArray);
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  classArray  DOCUMENT ME!
+     * @param  domain      DOCUMENT ME!
+     */
+    public void setAllClasses(final MetaClass[] classArray, final String domain) {
+        this.allClassesById = MetaClassUtils.getClassHashtable(classArray, domain);
+        this.allClassesByTableName = MetaClassUtils.getClassByTableNameHashtable(classArray);
     }
 
-
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     HashMap getAllClasses() {
         return allClassesById;
     }
 
-    MetaClass getMetaClass(String tableName) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   tableName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    MetaClass getMetaClass(final String tableName) {
         return (MetaClass)allClassesByTableName.get(tableName);
     }
 
-    MetaClass getMetaClass(int classId) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   classId  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    MetaClass getMetaClass(final int classId) {
         return (MetaClass)allClassesById.get(classId);
     }
 }
