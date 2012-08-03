@@ -5,39 +5,49 @@
     <parent>
         <groupId>de.cismet.cids</groupId>
         <artifactId>cids-parent</artifactId>
-        <version>1.0.5</version>
+        <version>2.0-SNAPSHOT</version>
     </parent>
 
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>cids Server</name>
     <description>!!! description pending !!!</description>
 
+    <prerequisites>
+        <maven>3</maven>
+    </prerequisites>
+
     <scm>
-        <connection>scm:svn:svn+ssh://repositories/svn/repositories/central/de/cismet/cids/cids-server/trunk</connection>
-        <developerConnection>scm:svn:svn+ssh://repositories/svn/repositories/central/de/cismet/cids/cids-server/trunk</developerConnection>
-        <url>http://repositories:8082/central/browse/de/cismet/cids/cids-server/trunk</url>
+        <connection>https://github.com/cismet/cids-server.git</connection>
+        <developerConnection>scm:git:git@github.com:cismet/cids-server.git</developerConnection>
+        <url>https://github.com/cismet/cids-server</url>
     </scm>
+
+    <repositories>
+        <repository>
+            <id>cismet-repo</id>
+            <url>https://repo.cismet.de/repo</url>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>warn</checksumPolicy>
+                <updatePolicy>daily</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <checksumPolicy>warn</checksumPolicy>
+                <updatePolicy>interval:60</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
-            <groupId>postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>9.0-801.jdbc4</version>
-        </dependency>
-        <dependency>
             <groupId>de.cismet.commons</groupId>
             <artifactId>cismet-commons</artifactId>
-            <version>1.1-SNAPSHOT</version>
-        </dependency>
-        <!--ToDo use newest Version see issue0000892-->
-        <dependency>
-            <groupId>org.netbeans.api</groupId>
-            <artifactId>org-openide-util</artifactId>
-            <version>RELEASE68</version>
+            <version>2.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>commons-beanutils</groupId>
@@ -62,12 +72,12 @@
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-server</artifactId>
-            <version>1.9</version>
+            <version>1.9.1</version>
         </dependency>
         <dependency>
             <groupId>com.sun.jersey.contribs</groupId>
             <artifactId>jersey-apache-client</artifactId>
-            <version>1.9</version>
+            <version>1.9.1</version>
         </dependency>
         <dependency>
             <groupId>org.mortbay.jetty</groupId>
@@ -77,7 +87,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.8.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -85,6 +94,12 @@
             <artifactId>remote-test-helper-service</artifactId>
             <version>1.1</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.netbeans.api</groupId>
+                    <artifactId>org-openide-util</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.mchange</groupId>
@@ -96,26 +111,35 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>de.cismet.cids</groupId>
-                <artifactId>cids-maven-plugin</artifactId>
-                <version>1.5-SNAPSHOT</version>
-                <executions>
-                    <execution>
-                        <id>cids-maven-plugin-reset-refsystem</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>reset-refsystem</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${maven.test.skip}</skip>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12</version>
+                <configuration>
+                    <!-- 
+                        all those tests have to be excluded because they require a connection to a postgres db or the
+                        remote test helper service, respectively. as this service is only internally available we have
+                        to think of another method to test these things
+                     -->
+                    <excludes>
+                        <exclude>**/HistoryServerTest.class</exclude>
+                        <exclude>**/PersistenceManagerTest.class</exclude>
+                        <exclude>**/UserStoreTest.class</exclude>
+                        <exclude>**/DBConnectionTest.class</exclude>
+                        <exclude>**/RESTfulSerialInterfaceConnectorTest.class</exclude>
+                        <!-- this is only a pseudo-test for doing basic performance comparison -->
+                        <exclude>**/RMIvsRESTTest.class</exclude>
+                    </excludes>
+                </configuration>
+           </plugin>
+            <!-- 
+                rmic will most likely be not necessary any more and is thus
+                
+                DEPRECATED
+             -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>rmic-maven-plugin</artifactId>
-                <version>1.0</version>
+                <version>1.1</version>
                 <executions>
                     <execution>
                         <id>rmi-compilation</id>
@@ -131,32 +155,6 @@
         </plugins>
         <finalName>cidsServer</finalName>
     </build>
-
-    <profiles>
-        <profile>
-            <id>local-test</id>
-            <activation>
-                <!-- don't reset until the reset works properly again -->
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>de.cismet.cids</groupId>
-                        <artifactId>cids-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>cids-maven-plugin-reset-refsystem</id>
-                                <configuration>
-                                    <skip>true</skip>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
 
 
