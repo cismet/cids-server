@@ -38,6 +38,7 @@ public class UserServiceImpl {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient Logger LOG = Logger.getLogger(UserServiceImpl.class);
+    private static final String DOMAINSPLITTER = "@";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -200,7 +201,16 @@ public class UserServiceImpl {
      * @throws  RemoteException  DOCUMENT ME!
      */
     public String getConfigAttr(final User user, final String key) throws RemoteException {
-        return ((Sirius.server.middleware.interfaces.domainserver.UserService)activeLocalServers.get(user.getDomain()))
-                    .getConfigAttr(user, key);
+        final String domain;
+        final String realKey;
+        if (key.contains(DOMAINSPLITTER)) {
+            final String[] split = key.split(DOMAINSPLITTER);
+            domain = split[1];
+            realKey = split[0];
+        } else {
+            domain = user.getDomain();
+            realKey = key;
+        }
+        return ((Sirius.server.middleware.interfaces.domainserver.UserService)activeLocalServers.get(domain)).getConfigAttr(user, realKey);
     }
 }
