@@ -519,16 +519,16 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
             final String password) throws RemoteException, UserException {
         if (LOG.isDebugEnabled()) {
             LOG.debug(
-                "getUser called :: userGroupLocalServerName = " // NOI18N
-                        + userGroupLocalServerName
-                        + " :: userGroupName = "                // NOI18N
-                        + userGroupName
-                        + " :: userLocalServerName = "          // NOI18N
-                        + userLocalServerName
-                        + " :: username = "                     // NOI18N
-                        + userName
-                        + " :: password = "                     // NOI18N
-                        + password);
+                (("getUser called :: userGroupLocalServerName = " // NOI18N
+                                + userGroupLocalServerName
+                                + " :: userGroupName = "          // NOI18N
+                                + userGroupName
+                                + " :: userLocalServerName = "    // NOI18N
+                                + userLocalServerName
+                                + " :: username = "               // NOI18N
+                                + userName
+                                + " :: password = "               // NOI18N
+                                + password) == null) ? "null" : "*****"); // NOI18N
         }
 
         try {
@@ -536,26 +536,27 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
         } catch (final UserException e) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
-                    "userexception at getuser :: userGroupLocalServerName = " // NOI18N
-                            + userGroupLocalServerName
-                            + " :: userGroupName = "                          // NOI18N
-                            + userGroupName
-                            + " :: userLocalServerName = "                    // NOI18N
-                            + userLocalServerName
-                            + " :: username = "                               // NOI18N
-                            + userName
-                            + " :: password = "                               // NOI18N
-                            + password,
+                    (("userexception at getuser :: userGroupLocalServerName = " // NOI18N
+                                    + userGroupLocalServerName
+                                    + " :: userGroupName = "                    // NOI18N
+                                    + userGroupName
+                                    + " :: userLocalServerName = "              // NOI18N
+                                    + userLocalServerName
+                                    + " :: username = "                         // NOI18N
+                                    + userName
+                                    + " :: password = "                         // NOI18N
+                                    + password) == null) ? "null" : "*****",    // NOI18N
                     e);
             }
             throw e;
         } catch (final Exception e) {
-            final String message = "could not get user :: userGroupLocalServerName = " // NOI18N
-                        + userGroupLocalServerName                            // NOI18N
-                        + " :: userGroupName = " + userGroupName              // NOI18N
-                        + " :: userLocalServerName = " + userLocalServerName  // NOI18N
-                        + " :: username = " + userName                        // NOI18N
-                        + " :: password = " + password;                       // NOI18N
+            final String message =
+                (("could not get user :: userGroupLocalServerName = "           // NOI18N
+                                + userGroupLocalServerName                      // NOI18N
+                                + " :: userGroupName = " + userGroupName        // NOI18N
+                                + " :: userLocalServerName = " + userLocalServerName // NOI18N
+                                + " :: username = " + userName                  // NOI18N
+                                + " :: password = " + password) == null) ? "null" : "*****"; // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }

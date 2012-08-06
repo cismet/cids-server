@@ -63,7 +63,8 @@
                 <goal>install</goal>
             </goals>
             <properties>
-                <maven.test.skip>true</maven.test.skip>
+                <!-- tests reactivated because only fast tests are executed currently -->
+                <maven.test.skip>false</maven.test.skip>
             </properties>
         </action>
     <action>
@@ -73,7 +74,8 @@
                 <goal>install</goal>
             </goals>
             <properties>
-                <maven.test.skip>true</maven.test.skip>
+                <!-- tests reactivated because only fast tests are executed currently -->
+                <maven.test.skip>false</maven.test.skip>
             </properties>
         </action>
 </actions>
