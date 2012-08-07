@@ -7,15 +7,12 @@
 ****************************************************/
 package Sirius.server.sql;
 
-import java.util.*;
-
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-public class DBClassifier // implements java.lang.Comparable,Sirius.server.property.Createable
-{
+public class DBClassifier {
 
     //~ Instance fields --------------------------------------------------------
 
@@ -31,24 +28,22 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
 
     protected String sqlDialect;
 
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
-
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * ////////////////////////////////////////////////////////////////////
+     * Creates a new DBClassifier object.
      */
     public DBClassifier() {
         noOfConnections = 0;
-        url = "";                                                 // NOI18N
-        login = "";                                               // NOI18N
-        pwd = "";                                                 // NOI18N
-        driver = "org.postgresql.Driver";                         // NOI18N
-        setSqlDialect("org.hibernate.dialect.PostgreSQLDialect"); // NOI18N
+        url = "";                                               // NOI18N
+        login = "";                                             // NOI18N
+        pwd = "";                                               // NOI18N
+        driver = "org.postgresql.Driver";                       // NOI18N
+        sqlDialect = "org.hibernate.dialect.PostgreSQLDialect"; // NOI18N
     }
 
     /**
-     * ////////////////////////////////////////////////////////////////////
+     * Creates a new DBClassifier object.
      *
      * @param  url     DOCUMENT ME!
      * @param  login   DOCUMENT ME!
@@ -64,7 +59,7 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
     }
 
     /**
-     * ////////////////////////////////////////////////////////////////////
+     * Creates a new DBClassifier object.
      *
      * @param  url              DOCUMENT ME!
      * @param  login            DOCUMENT ME!
@@ -103,57 +98,13 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
 
     //~ Methods ----------------------------------------------------------------
 
-    ///////////////////////////////////////////////////////////////////////
-//
-//    public boolean equals(DBClassifier dbc)
-//    {
-//        if(dbc==this)
-//            return true;
-//
-//        else if(url.equals(dbc.url)&&login.equals(dbc.login)&&pwd.equals(dbc.pwd)&&driver.equals(dbc.driver))
-//            return true;
-//
-//        else
-//            return false;
-//
-//    }
-//
-
-    /////////////////////////////////////////////////////////////////////////
-
     @Override
     public String toString() {
-        return url + "|" + login + "|" + pwd + "|" + driver + "|" + noOfConnections; // NOI18N
+        return ((url + "|" + login + "|" + pwd) == null) ? "null" : ("*****" + "|" + driver + "|" + noOfConnections); // NOI18N
     }
 
     /**
-     * ///////////////////////////////////////////////////////////////////////// public java.lang.Object
-     * createObject(String constructorArgs,String delimiter) { String[] args =
-     * DBClassifier.tokenizeString(constructorArgs,delimiter); if(args.length == 7) { return new
-     * DBClassifier(args[0],args[1],args[2],args[3],args[4],new Boolean(args[5]).booleanValue(),new
-     * Integer(args[6]).intValue()); } else { logger.error("<LS> ERROR :: creatObject falsche Anzahl
-     * ConstructorParameter"); return null; } }
-     * /////////////////////////////////////////////////////////////////////////
-     *
-     * @param   s          DOCUMENT ME!
-     * @param   delimiter  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private static String[] tokenizeString(final String s, final String delimiter) {
-        final StringTokenizer tokenizer = new StringTokenizer(s, delimiter);
-        final String[] stringArray = new String[tokenizer.countTokens()];
-        int i = 0;
-
-        while (tokenizer.hasMoreTokens()) {
-            stringArray[i++] = tokenizer.nextToken();
-        }
-
-        return stringArray;
-    }
-
-    /**
-     * /////////////////////////////////////////////////////////////////////////
+     * DOCUMENT ME!
      *
      * @param  n  DOCUMENT ME!
      */
@@ -166,7 +117,7 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      *
      * @return  Value of property driver.
      */
-    public java.lang.String getDriver() {
+    public String getDriver() {
         return driver;
     }
 
@@ -175,7 +126,7 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      *
      * @param  driver  New value of property driver.
      */
-    public void setDriver(final java.lang.String driver) {
+    public void setDriver(final String driver) {
         this.driver = driver;
     }
 
@@ -184,7 +135,7 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      *
      * @return  Value of property login.
      */
-    public java.lang.String getLogin() {
+    public String getLogin() {
         return login;
     }
 
@@ -193,7 +144,7 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      *
      * @param  login  New value of property login.
      */
-    public void setLogin(final java.lang.String login) {
+    public void setLogin(final String login) {
         this.login = login;
     }
 
@@ -202,7 +153,7 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      *
      * @return  Value of property pwd.
      */
-    public java.lang.String getPwd() {
+    public String getPwd() {
         return pwd;
     }
 
@@ -211,7 +162,7 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      *
      * @param  pwd  New value of property pwd.
      */
-    public void setPwd(final java.lang.String pwd) {
+    public void setPwd(final String pwd) {
         this.pwd = pwd;
     }
 
@@ -220,7 +171,7 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      *
      * @return  Value of property url.
      */
-    public java.lang.String getUrl() {
+    public String getUrl() {
         return url;
     }
 
@@ -229,7 +180,7 @@ public class DBClassifier // implements java.lang.Comparable,Sirius.server.prope
      *
      * @param  url  New value of property url.
      */
-    public void setUrl(final java.lang.String url) {
+    public void setUrl(final String url) {
         this.url = url;
     }
 

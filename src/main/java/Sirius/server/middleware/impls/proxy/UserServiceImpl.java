@@ -85,11 +85,11 @@ public class UserServiceImpl {
         if (LOG.isDebugEnabled()) {
             LOG.debug("getUser calles for user::" + userName); // NOI18N
 
-            LOG.debug("userLsName:" + userLsName);           // NOI18N
-            LOG.debug("userName:" + userName);               // NOI18N
-            LOG.debug("userGroupLsName:" + userGroupLsName); // NOI18N
-            LOG.debug("userGroupName:" + userGroupName);     // NOI18N
-            LOG.debug("password:" + password);               // NOI18N
+            LOG.debug("userLsName:" + userLsName);                            // NOI18N
+            LOG.debug("userName:" + userName);                                // NOI18N
+            LOG.debug("userGroupLsName:" + userGroupLsName);                  // NOI18N
+            LOG.debug("userGroupName:" + userGroupName);                      // NOI18N
+            LOG.debug((("password:" + password) == null) ? "null" : "*****"); // NOI18N
         }
         final User u = userServer.getUser(userLsName, userGroupName, userGroupLsName, userName, password);
 
@@ -104,7 +104,7 @@ public class UserServiceImpl {
             } else {
                 throw new UserException(
                     "Login failed, home server of the user is not reachable :: "
-                            + password, // NOI18N
+                            + userName, // NOI18N
                     false,
                     false,
                     false,
@@ -116,7 +116,7 @@ public class UserServiceImpl {
             return u;
         }
 
-        throw new UserException("Login failed, Passwort wrong :: " + password, false, true, false, false); // NOI18N
+        throw new UserException("Login failed :: " + userName, false, true, false, false); // NOI18N
     }
 
     /**

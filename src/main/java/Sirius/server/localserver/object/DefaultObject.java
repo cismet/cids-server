@@ -106,7 +106,7 @@ public class DefaultObject implements Object {
     /**
      * getter for ID.
      *
-     * @return  eineutiger Schl\u00FCssel (innerhlab einer Klasse)
+     * @return  unique key (within class)
      *
      * @see     #objectID
      */
@@ -123,7 +123,7 @@ public class DefaultObject implements Object {
     /**
      * key of the form classId.objectID.
      *
-     * @return  eindeutiger Schl\u00FCssel innerhalb einer domain (i.d.R. objectID@classID)
+     * @return  unique key within a domain
      */
     @Override
     public java.lang.Object getKey() {
@@ -142,14 +142,10 @@ public class DefaultObject implements Object {
      */
     @Override
     public void addAttribute(final ObjectAttribute anyAttribute) {
-        /*
-         * if (anyAttribute instanceof ObjectAttribute ) { attribs.add((Attribute)anyAttribute); }// end if
-         * AttributeOfClass else throw new java.lang.Exception(" no subtype of Attribute");
-         */
         if (dummy)                                                           // in einem arrayLink Objekt m\u00FCssen
-                                                                             // alle Felder ausgef\u00FCllt sein egal
+                                                                             // alle Felder ausgefuellt sein egal
                                                                              // was gesetzt wurde
-                                                                             // (Unsinnsbeschr\u00E4nkung)
+                                                                             // (Unsinnsbeschraenkung)
         {
             anyAttribute.setOptional(false);
             if ((LOG != null) && LOG.isInfoEnabled()) {
@@ -194,9 +190,9 @@ public class DefaultObject implements Object {
      * retrieves an Attributed referenced by its key (name) Please note that this method retrieves the first attribute
      * that matchtes if one needs all attributes matching he should use getAttributeByname().
      *
-     * @param   key  Schl\u00FCssel (key) des gew\u00FCnschten Attributs
+     * @param   key  Schluessel (key) des gewuenschten Attributs
      *
-     * @return  das Attribut zu dem der Schl\u00FCssel passt
+     * @return  das Attribut zu dem der Schluessel passt
      */
     @Override
     public java.lang.Object getAttribute(final java.lang.Object key) {
@@ -211,12 +207,12 @@ public class DefaultObject implements Object {
     }
 
     /**
-     * beschafft eine Collection welche alle Attribute enth\u00E4lt deren Schl\u00FCssel dem parameter name entsprechen.
+     * beschafft eine Collection welche alle Attribute enthaelt deren Schluessel dem parameter name entsprechen.
      *
-     * @param   name       Name/Schl\u00FCssel des Attributes
+     * @param   name       Name/Schluessel des Attributes
      * @param   maxResult  DOCUMENT ME!
      *
-     * @return  Collection mit allen attributen gleichen schl\u00FCssels == name
+     * @return  Collection mit allen attributen gleichen schluessels == name
      */
     @Override
     public Collection<Attribute> getAttributeByName(final String name, int maxResult) {
@@ -255,11 +251,11 @@ public class DefaultObject implements Object {
     }
 
     /**
-     * beschafft eine Collection welche alle Attribute enth\u00E4lt deren Schl\u00FCssel dem parameter name entsprechen.
+     * beschafft eine Collection welche alle Attribute enthaelt deren Schluessel dem parameter name entsprechen.
      *
-     * @param   names  Name/Schl\u00FCssel des Attributes
+     * @param   names  Name/Schluessel des Attributes
      *
-     * @return  Collection mit allen attributen gleichen schl\u00FCssels == name
+     * @return  Collection mit allen attributen gleichen schluessels == name
      */
     @Override
     public Collection getAttributesByName(final Collection names) {
@@ -269,8 +265,6 @@ public class DefaultObject implements Object {
         while (iter.hasNext()) {
             Attribute a = null;
             a = (Attribute)iter.next();
-
-            // if(logger!=null)logger.debug(a.toString()+" attribute gefunden");
 
             if (names.contains(a.getName())) {
                 attribsByName.add(a);
@@ -292,9 +286,7 @@ public class DefaultObject implements Object {
         while (iter.hasNext()) {
             Attribute a = null;
             a = (Attribute)iter.next();
-            // if(logger!=null)logger.debug(a.toString()+" attribute gefunden");
             final java.lang.Object val = a.getValue();
-            // if(val!=null && val.getClass().equals(c))
             if ((val != null) && c.isAssignableFrom(val.getClass())) {
                 attribsByType.add(a);
             } else if ((val != null) && (val instanceof Sirius.server.localserver.object.Object)) {
@@ -413,9 +405,6 @@ public class DefaultObject implements Object {
      */
     @Override
     public java.lang.Object fromString(final String objectRepresentation, final java.lang.Object mo) throws Exception {
-        // if(objectCreator != null)
-        // return objectCreator.create(objectRepresentation);
-        // else
         return null;
     }
 
@@ -438,7 +427,6 @@ public class DefaultObject implements Object {
 
         for (int i = 0; i < as.length; i++) {
             as[i].setValuesNull();
-            // as[i].setValue(null);
         }
     }
 

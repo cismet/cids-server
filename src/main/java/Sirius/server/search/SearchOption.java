@@ -7,28 +7,19 @@
 ****************************************************/
 package Sirius.server.search;
 
-import Sirius.server.middleware.types.*;
-import Sirius.server.newuser.*;
-import Sirius.server.search.searchparameter.*;
-import Sirius.server.sql.*;
+import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.newuser.UserGroup;
+import Sirius.server.search.searchparameter.DefaultSearchParameter;
+import Sirius.server.search.searchparameter.SearchParameter;
 
-import java.sql.*;
-
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 
 /**
- * Short concise description. Additional verbose description.
+ * DOCUMENT ME!
  *
- * @param      descriptor  description.
- * @param      value       description.
- * @param      searchMask  description.
- *
- * @return     description.
- *
- * @exception  Exception  description.
- *
- * @version    $Revision$, $Date$
- * @see        package.class
+ * @version  $Revision$, $Date$
  */
 public class SearchOption implements java.io.Serializable {
 
@@ -41,8 +32,6 @@ public class SearchOption implements java.io.Serializable {
     // Dieser Suchoption zugeordnete Query
     protected Query query;
 
-    ///////////////////////////////////////////////////////////////////////////////////////////
-
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -51,15 +40,13 @@ public class SearchOption implements java.io.Serializable {
      * @param   query  descriptor description.
      *
      * @return  description.
-     *
-     * @see     package.class
      */
     public SearchOption(final Query query) {
         this(query, new HashSet(), new HashSet());
     }
 
     /**
-     * /////////////////////////////////////////////////////////////////////////////////////////
+     * Creates a new SearchOption object.
      *
      * @param  query       DOCUMENT ME!
      * @param  classes     DOCUMENT ME!
@@ -74,7 +61,7 @@ public class SearchOption implements java.io.Serializable {
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * /////////////////////////////////////////////////////////////////////////////////////////
+     * DOCUMENT ME!
      *
      * @param   classKey      DOCUMENT ME!
      * @param   userGroupKey  DOCUMENT ME!
@@ -90,7 +77,7 @@ public class SearchOption implements java.io.Serializable {
     }
 
     /**
-     * /////////////////////////////////////////////////////////////////////////////////////////
+     * DOCUMENT ME!
      *
      * @param   c    DOCUMENT ME!
      * @param   ugs  DOCUMENT ME!
@@ -106,7 +93,7 @@ public class SearchOption implements java.io.Serializable {
     }
 
     /**
-     * /////////////////////////////////////////////////////////////////////////////////////////
+     * DOCUMENT ME!
      *
      * @param   ug  DOCUMENT ME!
      *
@@ -136,7 +123,7 @@ public class SearchOption implements java.io.Serializable {
     }
 
     /**
-     * /////////////////////////////////////////////////////////////////////////////////////////
+     * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
@@ -145,15 +132,16 @@ public class SearchOption implements java.io.Serializable {
     }
 
     /**
-     * /////////////////////////////////////////////////////////////////////////////////////////
+     * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
     public final String getQueryId() {
         return this.getQuery().getQueryIdentifier().getKey().toString();
     }
+
     /**
-     * /////////////////////////////////////////////////////////////////////////////////////////
+     * DOCUMENT ME!
      *
      * @param  userGroupKey  DOCUMENT ME!
      */
@@ -162,15 +150,13 @@ public class SearchOption implements java.io.Serializable {
     }
 
     /**
-     * ////////////////////////////////////////////////////////////////////////////////////////
+     * DOCUMENT ME!
      *
      * @param  classKey  DOCUMENT ME!
      */
     public final void addClass(final String classKey) {
         classes.add(classKey);
     }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * DOCUMENT ME!
@@ -203,6 +189,4 @@ public class SearchOption implements java.io.Serializable {
     public Iterator getParameterNames() {
         return this.query.getParameterKeys();
     }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////
 }
