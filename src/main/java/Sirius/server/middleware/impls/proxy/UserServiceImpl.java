@@ -211,6 +211,7 @@ public class UserServiceImpl {
             domain = user.getDomain();
             realKey = key;
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.UserService)activeLocalServers.get(domain)).getConfigAttr(user, realKey);
+        return ((Sirius.server.middleware.interfaces.domainserver.UserService)activeLocalServers.get(domain))
+                    .getConfigAttr(user, realKey);
     }
 }
