@@ -5,18 +5,10 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * PrefsMgr.java
- *
- * Created on 23. September 2003, 12:41
- */
 package Sirius.util;
 
-import java.net.Socket;
-
-import java.util.prefs.*;
-//import org.apache.log4j.*;
-//import org.apache.log4j.net.SocketAppender;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 /**
  * Setzt preferences in die BackingStore.
@@ -33,11 +25,6 @@ public class PreferencesTool {
 
     //~ Instance fields --------------------------------------------------------
 
-// private static Logger logger = Logger.getLogger(PreferencesTool.class);
-
-    // NOI18N
-
-// private static Logger logger = Logger.getLogger(PreferencesTool.class);
     private String pathName;
     private boolean isSysNode = true;
 
@@ -47,7 +34,6 @@ public class PreferencesTool {
      * Creates a new instance of PreferencesTool.
      */
     public PreferencesTool() {
-//        BasicConfigurator.configure(new SocketAppender("localhost", 4445));
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -55,10 +41,10 @@ public class PreferencesTool {
     /**
      * DOCUMENT ME!
      *
-     * @param   key           Schl\u00FCsselname dessen Wert abgefragt werden soll. Name ohne Pfad.
-     * @param   defaultValue  wert der Geliefert werden soll wenn der Schl\u00FCssel nicht gefunden wird.
+     * @param   key           Schluesselname dessen Wert abgefragt werden soll. Name ohne Pfad.
+     * @param   defaultValue  wert der Geliefert werden soll wenn der Schluessel nicht gefunden wird.
      *
-     * @return  wert des Schl\u00FCssels oder defaultValue wenn keiner gefunden.
+     * @return  wert des Schluessels oder defaultValue wenn keiner gefunden.
      *
      * @throws  BackingStoreException  DOCUMENT ME!
      */
@@ -70,14 +56,12 @@ public class PreferencesTool {
      * Setzt den Knoten der zu verarbeiten ist. Die werte werden gesetzt ungeachtetdessen ob dieser knoter existiert
      * oder nicht.
      *
-     * @param     isSysNode  true: Knoten aus Systembaum, false: Knoten aus Userbaum.
-     * @param     pathName   DOCUMENT ME!
+     * @param   isSysNode  true: Knoten aus Systembaum, false: Knoten aus Userbaum.
+     * @param   pathName   Path zu dem Knoten.
      *
-     * @return    false wenn \u00FCbergebener Knoten nicht gefunden wurde.
+     * @return  false wenn \u00FCbergebener Knoten nicht gefunden wurde.
      *
-     * @throws    BackingStoreException  DOCUMENT ME!
-     *
-     * @pathName  Path zu dem Knoten.
+     * @throws  BackingStoreException  DOCUMENT ME!
      */
     public boolean setData(final boolean isSysNode, final String pathName) throws BackingStoreException {
         this.isSysNode = isSysNode;
@@ -87,7 +71,7 @@ public class PreferencesTool {
     }
 
     /**
-     * Setzt den Schl\u00FCssel und deren wert in die BackingStore.
+     * Setzt den Schluessel und deren wert in die BackingStore.
      *
      * @param   key    DOCUMENT ME!
      * @param   value  DOCUMENT ME!
@@ -99,10 +83,10 @@ public class PreferencesTool {
     }
 
     /**
-     * Setzt belibig viele beliebige Schl\u00FCssel und deren Werte.
+     * Setzt belibig viele beliebige Schluessel und deren Werte.
      *
-     * @param   keys    schl\u00FCsselnamen
-     * @param   values  Werte der Schl\u00FCssel.
+     * @param   keys    Schluesselnamen
+     * @param   values  Werte der Schluessel.
      *
      * @throws  BackingStoreException  wenn lengen der beiden Arrays ungleich
      */
@@ -110,15 +94,13 @@ public class PreferencesTool {
         setPreferences(isSysNode, pathName, keys, values);
     }
 
-    ////////////////////////////////////////////////////////////////////////////////
-    // Statischen Funktionen
     /**
-     * Setzt belibig viele beliebige Schl\u00FCssel und deren Werte.
+     * Setzt belibig viele beliebige Schluessel und deren Werte.
      *
      * @param   isSysNode  ob es sich bei diesem Knoten um einen System oder User Knoten handelt.
      * @param   pathName   pfad zu dem Knoten in den die Schl\u00FCsel gesetzt werden sollen.
-     * @param   keys       schl\u00FCsselnamen ohne pfadangaben.
-     * @param   values     Werte der Schl\u00FCssel.
+     * @param   keys       Schluesselnamen ohne pfadangaben.
+     * @param   values     Werte der Schluessel.
      *
      * @throws  BackingStoreException  wenn lengen der beiden Arrays ungleich
      */
@@ -183,10 +165,10 @@ public class PreferencesTool {
      * Laedt eine Einstellung aus dem Backing Store.
      *
      * @param   isSysNode     DOCUMENT ME!
-     * @param   qualifiedKey  vollqualifizierter name des Schl\u00FCssels.
-     * @param   defaultValue  wert der Geliefert werden soll wenn der Schl\u00FCssel nicht gefunden wird.
+     * @param   qualifiedKey  vollqualifizierter name des Schluessels.
+     * @param   defaultValue  wert der Geliefert werden soll wenn der Schluessel nicht gefunden wird.
      *
-     * @return  wert des Schl\u00FCssels oder defaultValue wenn keiner gefunden.
+     * @return  wert des Schluessels oder defaultValue wenn keiner gefunden.
      *
      * @throws  BackingStoreException  DOCUMENT ME!
      */
@@ -211,7 +193,7 @@ public class PreferencesTool {
 
     /**
      * Anzahl der Parameter muss ungerade sein. Erster parameter ist der Pfad zu dem Knoten in der BackingStore, dieser
-     * darf am Ende keinen Separator haben. Weiter folgen paarweise Name des Schl\u00FCssels und dessen Wert. Z.B.
+     * darf am Ende keinen Separator haben. Weiter folgen paarweise Name des Schluessels und dessen Wert. Z.B.
      * PreferencesTool {/RootNode/node, key1, wert1, key2, wert2}
      *
      * @param  args  DOCUMENT ME!

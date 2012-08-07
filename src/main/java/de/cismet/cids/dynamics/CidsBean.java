@@ -523,10 +523,12 @@ public class CidsBean implements PropertyChangeListener {
     /**
      * Notification that elements have been added to the list.
      *
-     * @param  arrayfield  DOCUMENT ME!
-     * @param  list        the {@code ObservableList} that has changed
-     * @param  index       the index the elements were added to
-     * @param  length      the number of elements that were added
+     * @param   arrayfield  DOCUMENT ME!
+     * @param   list        the {@code ObservableList} that has changed
+     * @param   index       the index the elements were added to
+     * @param   length      the number of elements that were added
+     *
+     * @throws  RuntimeException  DOCUMENT ME!
      */
     public void listElementsAdded(final String arrayfield,
             final ObservableList list,
@@ -642,7 +644,9 @@ public class CidsBean implements PropertyChangeListener {
                     throw new IllegalArgumentException("ObservableList is not registered as Array");        // NOI18N
                 }
             } catch (final Exception e) {
-                LOG.error("Fehler in listElementsAdded", e);                                                // NOI18N
+                final String msg = "Fehler in listElementsAdded";
+                LOG.error(msg, e);                                                                          // NOI18N
+                throw new RuntimeException(msg, e);
             }
         }
 
