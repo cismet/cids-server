@@ -274,8 +274,7 @@ public final class UserStore extends Shutdown {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  SQLException           DOCUMENT ME!
-     * @throws  IllegalStateException  DOCUMENT ME!
+     * @throws  SQLException  DOCUMENT ME!
      */
     public String getConfigAttr(final User user, final String key) throws SQLException {
         if ((user == null) || (key == null)) {
@@ -308,43 +307,37 @@ public final class UserStore extends Shutdown {
         ResultSet userValueSet = null;
         ResultSet ugValueSet = null;
         ResultSet domainValueSet = null;
-        ResultSet domainIdSet = null;
         try {
-            String domain = user.getUserGroup().getDomain();
-            if (properties.getServerName().equals(domain)) {
+            final String userName = user.getName();
+            final String userGroupName = user.getUserGroup().getName();
+            final String domain;
+            if (properties.getServerName().equals(user.getUserGroup().getDomain())) {
                 domain = "LOCAL"; // NOI18N
-            }
-
-            domainIdSet = conPool.submitInternalQuery(DBConnection.DESC_FETCH_DOMAIN_ID_FROM_DOMAIN_STRING, domain);
-
-            final int domainId;
-            if (domainIdSet.next()) {
-                domainId = domainIdSet.getInt(1);
             } else {
-                throw new IllegalStateException("domain of user not present"); // NOI18N
+                domain = user.getUserGroup().getDomain();
             }
 
             final String value;
             userValueSet = conPool.submitInternalQuery(
                     DBConnection.DESC_FETCH_CONFIG_ATTR_USER_VALUE,
-                    user.getId(),
-                    user.getUserGroup().getId(),
-                    domainId,
+                    userName,
+                    userGroupName,
+                    domain,
                     keyId);
             if (userValueSet.next()) {
                 value = userValueSet.getString(1);
             } else {
                 ugValueSet = conPool.submitInternalQuery(
                         DBConnection.DESC_FETCH_CONFIG_ATTR_UG_VALUE,
-                        user.getUserGroup().getId(),
-                        domainId,
+                        userGroupName,
+                        domain,
                         keyId);
                 if (ugValueSet.next()) {
                     value = ugValueSet.getString(1);
                 } else {
                     domainValueSet = conPool.submitInternalQuery(
                             DBConnection.DESC_FETCH_CONFIG_ATTR_DOMAIN_VALUE,
-                            domainId,
+                            domain,
                             keyId);
                     if (domainValueSet.next()) {
                         value = domainValueSet.getString(1);
@@ -356,7 +349,7 @@ public final class UserStore extends Shutdown {
 
             return value;
         } finally {
-            DBConnection.closeResultSets(userValueSet, ugValueSet, domainValueSet, domainIdSet);
+            DBConnection.closeResultSets(userValueSet, ugValueSet, domainValueSet);
         }
     }
 }
