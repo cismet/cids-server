@@ -28,9 +28,7 @@ public interface UserStore {
     /**
      * DOCUMENT ME!
      *
-     * @param   user  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
+     * @param  user  DOCUMENT ME!
      */
     void setUser(User user);
 }
