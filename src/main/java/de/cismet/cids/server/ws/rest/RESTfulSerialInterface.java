@@ -20,7 +20,7 @@ import Sirius.server.search.Query;
 import Sirius.server.search.SearchOption;
 import Sirius.server.search.store.QueryData;
 
-import com.sun.jersey.api.core.HttpRequestContext;
+import com.sun.jersey.core.util.Base64;
 
 import org.apache.log4j.Logger;
 
@@ -28,18 +28,19 @@ import java.io.IOException;
 
 import java.rmi.RemoteException;
 
+import java.util.Arrays;
+
 import javax.servlet.http.HttpServletRequest;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import de.cismet.cids.server.CallServerService;
+import de.cismet.cids.server.actions.ServerActionParameter;
 
 import de.cismet.tools.Converter;
 
@@ -99,6 +100,9 @@ public final class RESTfulSerialInterface {
     public static final String PARAM_KEY = "key";                                 // NOI18N
     public static final String PARAM_CUSTOM_SERVER_SEARCH = "customServerSearch"; // NOI18N
     public static final String PARAM_ELEMENTS = "elements";                       // NOI18N
+    public static final String PARAM_TASKNAME = "taskname";                       // NOI18N
+    public static final String PARAM_BODY = "json";                               // NOI18N
+    public static final String PARAM_PARAMELIPSE = "paramelipse";                 // NOI18N
 
     //~ Instance fields --------------------------------------------------------
 
@@ -126,6 +130,20 @@ public final class RESTfulSerialInterface {
      */
     private Response createResponse(final Object o) throws IOException {
         return Response.ok(Converter.serialiseToBase64(o)).build();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   o     DOCUMENT ME!
+     * @param   type  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  IOException  DOCUMENT ME!
+     */
+    private Response createResponse(final Object o, final String type) throws IOException {
+        return Response.ok(Converter.serialiseToBase64(o)).type(type).build();
     }
 
     /**
@@ -2020,5 +2038,143 @@ public final class RESTfulSerialInterface {
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   userBytes         DOCUMENT ME!
+     * @param   taskdomainBytes   DOCUMENT ME!
+     * @param   tasknameBytes     DOCUMENT ME!
+     * @param   bodyBytes         DOCUMENT ME!
+     * @param   paramelipseBytes  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @POST
+    @Path("/executeTask")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.WILDCARD)
+    public Response executeTask(@FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_DOMAIN) final String taskdomainBytes,
+            @FormParam(PARAM_TASKNAME) final String tasknameBytes,
+            @FormParam(PARAM_BODY) final String bodyBytes,
+            @FormParam(PARAM_PARAMELIPSE) final String paramelipseBytes) throws RemoteException {
+        try {
+            final User user = Converter.deserialiseFromString(userBytes, User.class);
+            final String taskdomain = Converter.deserialiseFromString(taskdomainBytes, String.class);
+            final String taskname = Converter.deserialiseFromString(tasknameBytes, String.class);
+            final Object body = Converter.deserialiseFromString(bodyBytes, String.class);
+            final ServerActionParameter[] params = Converter.deserialiseFromString(
+                    paramelipseBytes,
+                    ServerActionParameter[].class);
+
+            return createResponse(callserver.executeTask(user, taskname, taskdomain, body, params), null);
+        } catch (final IOException e) {
+            final String message = "could not update metaobject"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not update metaobject"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   uriInfo     DOCUMENT ME!
+     * @param   headers     DOCUMENT ME!
+     * @param   authString  DOCUMENT ME!
+     * @param   taskname    DOCUMENT ME!
+     * @param   taskdomain  DOCUMENT ME!
+     * @param   body        DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @POST
+    @Path("/executeTask/{taskname}@{taskdomain}")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.WILDCARD)
+    public Response executeTaskWithPost(@Context final UriInfo uriInfo,
+            @Context final HttpHeaders headers,
+            @HeaderParam("Authorization") final String authString,
+            @PathParam("taskname") final String taskname,
+            @PathParam("taskdomain") final String taskdomain,
+            final Object body) throws RemoteException {
+        try {
+            if (authString == null) {
+                return Response.status(Response.Status.UNAUTHORIZED)
+                            .header("WWW-Authenticate", "Basic realm=\"Please Authenticate with cids Credentials\"")
+                            .build();
+            }
+            final User u = getCidsUserFromBasicAuth(authString);
+            System.out.println(taskname + "@" + taskdomain);
+            final Object resp = callserver.executeTask(
+                    u,
+                    taskname,
+                    taskdomain,
+                    body,
+                    ServerActionParameter.fromMVMap(uriInfo.getQueryParameters()));
+
+            return Response.ok(resp).build();
+        } catch (Exception e) {
+            final String message = "could not testExecute Task"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   uriInfo     DOCUMENT ME!
+     * @param   headers     DOCUMENT ME!
+     * @param   authString  DOCUMENT ME!
+     * @param   taskname    DOCUMENT ME!
+     * @param   taskdomain  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @GET
+    @Path("/executeTask/{taskname}@{taskdomain}")
+    @Produces(MediaType.WILDCARD)
+    public Response executeTaskWithGet(@Context final UriInfo uriInfo,
+            @Context final HttpHeaders headers,
+            @HeaderParam("Authorization") final String authString,
+            @PathParam("taskname") final String taskname,
+            @PathParam("taskdomain") final String taskdomain) throws RemoteException {
+        return executeTaskWithPost(uriInfo, headers, authString, taskname, taskdomain, null);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   authString  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    private User getCidsUserFromBasicAuth(final String authString) throws Exception {
+        // Decode Base64
+        final String token = new String(Base64.decode(authString.substring(6)));
+        final String[] parts = token.split(":");
+        final String login = parts[0];
+        final String password = parts[1];
+        final String[] loginParts = login.split("@");
+        final String ugLsName = loginParts[2];
+        final String ugName = loginParts[1];
+        final String uLsName = ugLsName;
+        final String uname = loginParts[0];
+
+        return callserver.getUser(ugLsName, ugName, uLsName, uname, password);
     }
 }

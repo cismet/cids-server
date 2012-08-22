@@ -21,12 +21,7 @@ import Sirius.server.localserver.query.querystore.Store;
 import Sirius.server.localserver.tree.NodeReferenceList;
 import Sirius.server.localserver.user.UserStore;
 import Sirius.server.middleware.impls.proxy.StartProxy;
-import Sirius.server.middleware.interfaces.domainserver.CatalogueService;
-import Sirius.server.middleware.interfaces.domainserver.MetaService;
-import Sirius.server.middleware.interfaces.domainserver.QueryStore;
-import Sirius.server.middleware.interfaces.domainserver.SearchService;
-import Sirius.server.middleware.interfaces.domainserver.SystemService;
-import Sirius.server.middleware.interfaces.domainserver.UserService;
+import Sirius.server.middleware.interfaces.domainserver.*;
 import Sirius.server.middleware.types.DefaultMetaObject;
 import Sirius.server.middleware.types.HistoryObject;
 import Sirius.server.middleware.types.LightweightMetaObject;
@@ -50,6 +45,8 @@ import Sirius.server.sql.SystemStatement;
 
 import org.apache.log4j.PropertyConfigurator;
 
+import org.openide.util.Lookup;
+
 import java.io.File;
 
 import java.net.InetAddress;
@@ -65,6 +62,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.MissingResourceException;
 
@@ -72,6 +70,8 @@ import de.cismet.cids.objectextension.ObjectExtensionFactory;
 
 import de.cismet.cids.server.DefaultServerExceptionHandler;
 import de.cismet.cids.server.ServerSecurityManager;
+import de.cismet.cids.server.actions.ServerAction;
+import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.ws.rest.RESTfulService;
 
 import de.cismet.cids.utils.ClassloadingHelper;
@@ -86,12 +86,14 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     SystemService,
     UserService,
     QueryStore,
-    SearchService { // ActionListener
+    SearchService,
+    ActionService { // ActionListener
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final String EXTENSION_FACTORY_PREFIX = "de.cismet.cids.custom.extensionfactories."; // NOI18N
     private static transient DomainServerImpl instance;
+    public static final String SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX = "csa://";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -113,6 +115,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     protected UserServer userServer;
     // this severs info object
     protected Server serverInfo;
+    private HashMap<String, ServerAction> serverActionMap = new HashMap<String, ServerAction>();
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
 
     //~ Constructors -----------------------------------------------------------
@@ -171,6 +174,13 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             }
 
             historyServer = dbServer.getHistoryServer();
+
+            final Collection<? extends ServerAction> serverActions = Lookup.getDefault().lookupAll(ServerAction.class);
+            for (final ServerAction serverAction : serverActions) {
+                serverActionMap.put(serverAction.getTaskName(), serverAction);
+            }
+
+            DomainServerClassCache.getInstance().setAllClasses(dbServer.getClasses(), properties.getServerName());
 
             // initFrame();
         } catch (Throwable e) {
@@ -1122,6 +1132,39 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                         + "|| objectId: " + objectId + " || elements: " + elements;                        // NOI18N
             logger.error(message, e);
             throw new RemoteException(message, e);
+        }
+    }
+
+    @Override
+    public Object executeTask(final User user,
+            final String taskname,
+            final Object body,
+            final ServerActionParameter... params) throws RemoteException {
+        if (hasConfigAttr(user, SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX + taskname)) {
+            final ServerAction serverAction = serverActionMap.get(taskname);
+
+            if (serverAction instanceof MetaServiceStore) {
+                ((MetaServiceStore)serverAction).setMetaService(this);
+            }
+            if (serverAction instanceof CatalogueServiceStore) {
+                ((CatalogueServiceStore)serverAction).setCatalogueService(this);
+            }
+            if (serverAction instanceof UserServiceStore) {
+                ((UserServiceStore)serverAction).setUserService(this);
+            }
+            if (serverAction instanceof Sirius.server.middleware.interfaces.domainserver.UserStore) {
+                ((Sirius.server.middleware.interfaces.domainserver.UserStore)serverAction).setUser(user);
+            }
+
+            if (serverAction != null) {
+                return serverAction.execute(body, params);
+            } else {
+                return null;
+            }
+        } else {
+            throw new RemoteException("The user " + user
+                        + "has no permission to execute this task. (Should have an action attribute like this: "
+                        + SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX + taskname);
         }
     }
 }
