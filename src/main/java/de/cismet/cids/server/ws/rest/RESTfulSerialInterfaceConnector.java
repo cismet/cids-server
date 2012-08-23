@@ -39,6 +39,7 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 
 import java.rmi.RemoteException;
@@ -63,6 +64,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import de.cismet.cids.server.CallServerService;
+import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.ws.SSLConfig;
 
 import de.cismet.netutil.Proxy;
@@ -3095,6 +3097,60 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             throw new RemoteException(message, ex);
         } catch (final ClassNotFoundException e) {
             final String message = "could not create MetaObject[]";                   // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
+    @Override
+    public Object executeTask(final User user,
+            final String taskname,
+            final String taskdomain,
+            final Object body,
+            final ServerActionParameter... params) throws RemoteException {
+        try {
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
+
+            if (user != null) {
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+            }
+
+            if (taskname != null) {
+                queryParams.add(PARAM_TASKNAME, Converter.serialiseToString(taskname));
+            }
+            if (taskdomain != null) {
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(taskdomain));
+            }
+            if (body != null) {
+                queryParams.add(PARAM_BODY, Converter.serialiseToString(body));
+            }
+
+            if (params != null) {
+                queryParams.add(PARAM_PARAMELIPSE, Converter.serialiseToString(params));
+            }
+
+            try {
+                return getResponsePOST("executeTask", queryParams, Object.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
