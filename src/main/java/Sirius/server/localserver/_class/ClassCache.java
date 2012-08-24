@@ -524,6 +524,12 @@ public class ClassCache extends Shutdown {
                 mai.setExtensionAttribute(extensionAttribute);
                 if (mai.isExtensionAttribute()) {
                     mai.setJavaclassname(java.lang.Object.class.getCanonicalName());
+                    mai.setVirtual(true);
+                }
+
+                if (foreignKeyClassId < 0) {
+                    mai.setVirtual(true);
+                    mai.setJavaclassname(java.lang.Object.class.getCanonicalName());
                 }
 
                 final Sirius.server.localserver._class.Class c = classes.getClass(classId);

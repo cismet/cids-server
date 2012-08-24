@@ -149,43 +149,64 @@ public class BeanFactory {
                     if (value instanceof MetaObject) {
                         final MetaObject tmpMO = (MetaObject)value;
                         if (tmpMO.isDummy()) {
-                            // 1-n Beziehung (Array)
                             final List<CidsBean> arrayElements = new ArrayList();
                             final ObservableList<CidsBean> observableArrayElements = ObservableCollections
                                         .observableList(
                                             arrayElements);
                             final ObjectAttribute[] arrayOAs = tmpMO.getAttribs();
-                            for (final ObjectAttribute arrayElementOA : arrayOAs) {
-                                arrayElementOA.setParentObject(tmpMO);
-                                final MetaObject arrayElementMO = (MetaObject)arrayElementOA.getValue();
-                                // In diesem MetaObject gibt es nun genau ein Attribut das als Value ein MetaObject hat
-                                final ObjectAttribute[] arrayElementAttribs = arrayElementMO.getAttribs();
-                                for (final ObjectAttribute targetArrayElement : arrayElementAttribs) {
-                                    targetArrayElement.setParentObject(arrayElementMO);
-                                    final Object targetArrayElementValObj = targetArrayElement.getValue();
-                                    if (targetArrayElementValObj instanceof MetaObject) {
-                                        final MetaObject targetMO = (MetaObject)targetArrayElementValObj;
-                                        final CidsBean cdBean = targetMO.getBean();
-                                        if (cdBean != null) {
-                                            cdBean.setBacklinkInformation(field, bean);
-                                            observableArrayElements.add(cdBean);
-                                        } else {
-                                            LOG.warn(
-                                                "getBean() delivered null -> could be a possible problem with rights/policy?"); // NOI18N
-                                        }
-                                        break;
+
+                            // 1-n Beziehung (Array)
+                            if (a.getMai().isVirtual() && a.getMai().isForeignKey()
+                                        && (a.getMai().getForeignKeyClassId() < 0)) {
+                                for (final ObjectAttribute arrayElementOA : arrayOAs) {
+                                    arrayElementOA.setParentObject(tmpMO);
+                                    final MetaObject arrayElementMO = (MetaObject)arrayElementOA.getValue();
+                                    final CidsBean cdBean = arrayElementMO.getBean();
+                                    if (cdBean != null) {
+                                        cdBean.setBacklinkInformation(field, bean);
+                                        observableArrayElements.add(cdBean);
+                                    } else {
+                                        LOG.warn(
+                                            "getBean() delivered null -> could be a possible problem with rights/policy?"); // NOI18N
                                     }
                                 }
+                                value = observableArrayElements;
+                                addObservableListListener(observableArrayElements, bean, field);
+                            } else {
+                                // n-m Beziehung (Array)
+                                for (final ObjectAttribute arrayElementOA : arrayOAs) {
+                                    arrayElementOA.setParentObject(tmpMO);
+                                    final MetaObject arrayElementMO = (MetaObject)arrayElementOA.getValue();
+                                    // In diesem MetaObject gibt es nun genau ein Attribut das als Value ein
+                                    // MetaObject hat
+                                    final ObjectAttribute[] arrayElementAttribs = arrayElementMO.getAttribs();
+                                    for (final ObjectAttribute targetArrayElement : arrayElementAttribs) {
+                                        targetArrayElement.setParentObject(arrayElementMO);
+                                        final Object targetArrayElementValObj = targetArrayElement.getValue();
+                                        if (targetArrayElementValObj instanceof MetaObject) {
+                                            final MetaObject targetMO = (MetaObject)targetArrayElementValObj;
+                                            final CidsBean cdBean = targetMO.getBean();
+                                            if (cdBean != null) {
+                                                cdBean.setBacklinkInformation(field, bean);
+                                                observableArrayElements.add(cdBean);
+                                            } else {
+                                                LOG.warn(
+                                                    "getBean() delivered null -> could be a possible problem with rights/policy?"); // NOI18N
+                                            }
+                                            break;
+                                        }
+                                    }
+                                }
+                                value = observableArrayElements;
+                                addObservableListListener(observableArrayElements, bean, field);
                             }
-                            value = observableArrayElements;
-                            addObservableListListener(observableArrayElements, bean, field);
                         } else {
                             // 1-1 Beziehung
                             final CidsBean tmpMOBean = tmpMO.getBean();
                             value = tmpMOBean;
                             tmpMOBean.setBacklinkInformation(field, bean);
                         }
-                    } else if ((value == null) && a.isArray()) {
+                    } else if ((value == null) && (a.isArray() || a.isVirtualOneToManyAttribute())) {
                         // lege leeren Vector an, sonst wirds sp?ter zu kompliziert
                         final List<?> arrayElements = new ArrayList();
                         final ObservableList observableArrayElements = ObservableCollections.observableList(
@@ -320,7 +341,7 @@ public class BeanFactory {
             final String fieldname = mai.getFieldName().toLowerCase();
             String attributeJavaClassName = mai.getJavaclassname();
 
-            if (mai.isArray()) {
+            if (mai.isArray() || (mai.isVirtual() && (mai.getForeignKeyClassId() < 0))) {
                 attributeJavaClassName = "org.jdesktop.observablecollections.ObservableList"; // NOI18N
             } else if (mai.isForeignKey()) {
                 if (attributeJavaClassName.equals("org.postgis.PGgeometry")) {                // NOI18N

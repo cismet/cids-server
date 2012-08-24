@@ -11,6 +11,7 @@ import Sirius.server.AbstractShutdownable;
 import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
 import Sirius.server.localserver.DBServer;
+import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaClass;
@@ -355,13 +356,18 @@ public final class PersistenceManager extends Shutdown {
                 int result = stmt.executeUpdate();
 
                 // now delete all array entries
-                final Collection<MetaObject> arrays = new ArrayList<MetaObject>();
                 for (final ObjectAttribute oa : allAttributes) {
                     final java.lang.Object value = oa.getValue();
-                    if ((value instanceof MetaObject) && oa.isArray()) {
+                    if (value instanceof MetaObject) {
                         final MetaObject arrayMo = (MetaObject)value;
-                        arrays.add(arrayMo);
-                        result += deleteArrayEntriesWithoutTransaction(user, arrayMo);
+                        // 1-n kinder löschen
+                        if (oa.isVirtualOneToManyAttribute()) {
+                            result += deleteOneToManyChildsWithoutTransaction(user, arrayMo);
+                        }
+                        // n-m kinder löschen
+                        if (oa.isArray()) {
+                            result += deleteArrayEntriesWithoutTransaction(user, arrayMo);
+                        }
                     }
                 }
 
@@ -392,6 +398,35 @@ public final class PersistenceManager extends Shutdown {
     }
 
     /**
+     * DOCUMENT ME!
+     *
+     * @param   user     DOCUMENT ME!
+     * @param   arrayMo  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException          DOCUMENT ME!
+     * @throws  PersistenceException  DOCUMENT ME!
+     */
+    private int deleteOneToManyChildsWithoutTransaction(final User user, final MetaObject arrayMo) throws SQLException,
+        PersistenceException {
+        fixMissingMetaClass(arrayMo);
+
+        if (!arrayMo.isDummy()) {
+            LOG.error("deleteOneToManyEntries on a metaobject that is not a dummy");
+            // TODO maybe better throw an exception ?
+            return 0;
+        }
+
+        int result = 0;
+        for (final ObjectAttribute oa : arrayMo.getAttribs()) {
+            final MetaObject childMO = (MetaObject)oa.getValue();
+            result += deleteMetaObjectWithoutTransaction(user, childMO);
+        }
+        return result;
+    }
+
+    /**
      * Deletes all link-entries of the array dummy-object.
      *
      * @param   user     DOCUMENT ME!
@@ -412,26 +447,9 @@ public final class PersistenceManager extends Shutdown {
         PreparedStatement stmt = null;
 
         try {
-            // intitialize UserGroup
-            UserGroup ug = null;
-
-            // retrieve userGroup is user is not null
-            if (user != null) {
-                ug = user.getUserGroup();
-            }
-            final Sirius.server.localserver._class.Class c = dbServer.getClass(ug, arrayMo.getClassID());
             final String tableName = arrayMo.getMetaClass().getTableName();
             final String arrayKeyFieldName = arrayMo.getReferencingObjectAttribute().getMai().getArrayKeyFieldName();
             final String paramStmt = "DELETE FROM " + tableName + " WHERE " + arrayKeyFieldName + " = ?"; // NOI18N+
-
-            if (LOG.isDebugEnabled()) {
-                final StringBuilder logMessage = new StringBuilder("Parameterized SQL: ");
-                logMessage.append(paramStmt);
-                logMessage.append('\n');
-                logMessage.append("Primary key: ");
-                logMessage.append(String.valueOf(arrayMo.getId()));
-                LOG.debug(logMessage.toString());
-            }
 
             final TransactionHelper transactionHelper = local.get();
             stmt = transactionHelper.getConnection().prepareStatement(paramStmt);
@@ -518,9 +536,10 @@ public final class PersistenceManager extends Shutdown {
                 // fieldname is now known, find value now
                 final java.lang.Object value = mAttr[i].getValue();
 
+                java.lang.Object valueToAdd = NULL;
                 if (value == null) {
                     // delete MetaObject???
-                    values.add(NULL);
+                    valueToAdd = NULL;
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("valueString set to '" + NULL + "' as value of attribute was null"); // NOI18N
                     }
@@ -532,23 +551,24 @@ public final class PersistenceManager extends Shutdown {
                             // set new key
                             final int key = insertMetaObjectWithoutTransaction(user, subObject);
                             if (subObject.isDummy()) {
-                                values.add(mo.getID()); // set value to primary key
+                                valueToAdd = mo.getID(); // set value to primary key
                                 insertMetaObjectArrayWithoutTransaction(user, subObject);
                             } else {
-                                values.add(key);
+                                valueToAdd = key;
                             }
                             break;
                         }
                         case MetaObject.TO_DELETE: {
                             deleteMetaObjectWithoutTransaction(user, subObject);
-                            values.add(NULL);
+                            valueToAdd = NULL;
                             break;
                         }
                         case MetaObject.NO_STATUS:
                         // fall through because we define no status as modified status
                         case MetaObject.MODIFIED: {
                             updateMetaObjectWithoutTransaction(user, subObject);
-                            values.add(subObject.getID());
+                            valueToAdd = subObject.getID();
+
                             break;
                         }
                         default: {
@@ -567,18 +587,21 @@ public final class PersistenceManager extends Shutdown {
                 } else {
                     // TODO: try to convert JTS GEOMETRY to PGgeometry directly
                     if (PersistenceHelper.GEOMETRY.isAssignableFrom(value.getClass())) {
-                        values.add(PostGisGeometryFactory.getPostGisCompliantDbString((Geometry)value));
+                        valueToAdd = PostGisGeometryFactory.getPostGisCompliantDbString((Geometry)value);
                     } else {
-                        values.add(value);
+                        valueToAdd = value;
                     }
                 }
-                // add update fieldname = ? and add value to valuelist
-                paramStmt.append(sep).append(mai.getFieldName()).append(" = ?"); // NOI18N
+                if (!mAttr[i].isVirtualOneToManyAttribute()) {
+                    values.add(valueToAdd);
 
-                ++updateCounter;
+                    // add update fieldname = ? and add value to valuelist
+                    paramStmt.append(sep).append(mai.getFieldName()).append(" = ?"); // NOI18N
+                    ++updateCounter;
 
-                // comma between 'fieldname = ?, ' set in first iteration
-                sep = ","; // NOI18N
+                    // comma between 'fieldname = ?, ' set in first iteration
+                    sep = ","; // NOI18N
+                }
             }
 
             if (updateCounter > 0) {
@@ -690,6 +713,25 @@ public final class PersistenceManager extends Shutdown {
                 switch (status) {
                     case MetaObject.NEW: {
                         // arraykey need not to be process
+                        if (oas[i].isVirtualOneToManyAttribute()) {
+                            final int masterClassId = oas[i].getClassID();
+                            String backlinkMasterProperty = null;
+                            for (final ObjectAttribute oaBacklink : metaObject.getAttribs()) {
+                                if (oaBacklink.getMai().getForeignKeyClassId() == masterClassId) {
+                                    backlinkMasterProperty = oaBacklink.getName();
+                                    break;
+                                }
+                            }
+                            if (backlinkMasterProperty != null) {
+                                metaObject.getAttributeByFieldName(backlinkMasterProperty)
+                                        .setValue(oas[i].getParentObject());
+                            } else {
+                                LOG.error(
+                                    "Der Backlink konnte nicht gesetzt werden, da in der Masterklasse das Attribut "
+                                            + backlinkMasterProperty
+                                            + " nicht gefunden werden konnte.");
+                            }
+                        }
                         insertMetaObjectWithoutTransaction(user, metaObject);
                         break;
                     }
@@ -731,10 +773,25 @@ public final class PersistenceManager extends Shutdown {
      * @param   user   DOCUMENT ME!
      * @param   dummy  DOCUMENT ME!
      *
-     * @throws  PersistenceException  Throwable DOCUMENT ME!
+     * @throws  PersistenceException  DOCUMENT ME!
      * @throws  SQLException          DOCUMENT ME!
      */
     private void insertMetaObjectArrayWithoutTransaction(final User user, final MetaObject dummy)
+            throws PersistenceException, SQLException {
+        insertMetaObjectArrayWithoutTransaction(user, dummy, -1);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user   DOCUMENT ME!
+     * @param   dummy  DOCUMENT ME!
+     * @param   fk     DOCUMENT ME!
+     *
+     * @throws  PersistenceException  Throwable DOCUMENT ME!
+     * @throws  SQLException          DOCUMENT ME!
+     */
+    private void insertMetaObjectArrayWithoutTransaction(final User user, final MetaObject dummy, final int fk)
             throws PersistenceException, SQLException {
         final ObjectAttribute[] oas = dummy.getAttribs();
 
@@ -744,6 +801,7 @@ public final class PersistenceManager extends Shutdown {
             }
 
             final MetaObject arrayElement = (MetaObject)oas[i].getValue();
+//                oas[i].setParentObject(dummy.getReferencingObjectAttribute().getParentObject());
 
             final int status = arrayElement.getStatus();
 
@@ -751,8 +809,29 @@ public final class PersistenceManager extends Shutdown {
 
             switch (status) {
                 case MetaObject.NEW: {
+//                    if (oas[i].isVirtualOneToManyAttribute()) {
+//                        final int masterClassId = oas[i].getClassID();
+//                        String backlinkMasterProperty = null;
+//                        for (final ObjectAttribute oaBacklink : arrayElement.getAttribs()) {
+//                            if (oaBacklink.getMai().getForeignKeyClassId() == masterClassId) {
+//                                backlinkMasterProperty = oaBacklink.getName();
+//                                break;
+//                            }
+//                        }
+//                        if (backlinkMasterProperty != null) {
+//                            arrayElement.getAttributeByFieldName(backlinkMasterProperty)
+//                                    .setValue(oas[i].getParentObject().getReferencingObjectAttribute()
+//                                        .getParentObject());
+//                        } else {
+//                            LOG.error(
+//                                "Der Backlink konnte nicht gesetzt werden, da in der Masterklasse das Attribut "
+//                                        + backlinkMasterProperty
+//                                        + " nicht gefunden werden konnte.");
+//                        }
+//                    }
+
                     // neuer schluessel wird gesetzt
-                    insertMetaObjectWithoutTransaction(user, arrayElement);
+                    insertMetaObjectWithoutTransaction(user, arrayElement, fk);
 
                     break; // war auskommentiert HELL
                 }
@@ -789,11 +868,28 @@ public final class PersistenceManager extends Shutdown {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  PersistenceException  Throwable DOCUMENT ME!
+     * @throws  PersistenceException  DOCUMENT ME!
      * @throws  SQLException          DOCUMENT ME!
      */
     private int insertMetaObjectWithoutTransaction(final User user, final MetaObject mo) throws PersistenceException,
         SQLException {
+        return insertMetaObjectWithoutTransaction(user, mo, -1);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     * @param   mo    DOCUMENT ME!
+     * @param   fk    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  PersistenceException  Throwable DOCUMENT ME!
+     * @throws  SQLException          DOCUMENT ME!
+     */
+    private int insertMetaObjectWithoutTransaction(final User user, final MetaObject mo, final int fk)
+            throws PersistenceException, SQLException {
         fixMissingMetaClass(mo);
 
         if (LOG.isDebugEnabled()) {
@@ -849,6 +945,8 @@ public final class PersistenceManager extends Shutdown {
             // initialis all array attributes with the value of the primary key
             mo.setArrayKey2PrimaryKey();
 
+            final ArrayList<MetaObject> virtual1toMChildren = new ArrayList<MetaObject>();
+
             final ArrayList values = new ArrayList(mAttr.length);
             String sep = ""; // NOI18N
             // iterate all attributes to create insert statement
@@ -864,6 +962,19 @@ public final class PersistenceManager extends Shutdown {
                                 + ": "              // NOI18N
                                 + mAttr[i].getName());
                 }
+                if (mAttr[i].isVirtualOneToManyAttribute()) {
+                    if (value == null) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug(mAttr[i] + "is virtual one to many attribute and has no values -> ignored");
+                        }
+                    } else {
+                        final MetaObject moAttr = (MetaObject)value;
+//                        insertMetaObjectArray(user, moAttr, rootPk);
+                        virtual1toMChildren.add(moAttr);
+                    }
+                    continue;
+                }
+
                 final MemberAttributeInfo mai = mAttr[i].getMai();
                 // if object does not have mai it cannot be inserted
                 if (mai == null) {
@@ -886,51 +997,61 @@ public final class PersistenceManager extends Shutdown {
                         }
                     }
                 } else if (!mAttr[i].isPrimaryKey()) { // references metaobject
+
                     final MetaObject moAttr = (MetaObject)value;
-                    try {
-                        // recursion
-                        if (value != null) {
-                            final int status = moAttr.getStatus();
-                            Integer objectID = moAttr.getID();
-                            switch (status) {
-                                case MetaObject.NEW: {
-                                    if (moAttr.isDummy()) {
-                                        objectID = mo.getID();
-                                        // jt ids still to be made
-                                        insertMetaObjectArrayWithoutTransaction(user, moAttr);
-                                    } else {
-                                        objectID = insertMetaObjectWithoutTransaction(user, moAttr);
+
+                    if ((fk > -1)
+                                && (mAttr[i].getMai().getForeignKeyClassId()
+                                    == mo.getReferencingObjectAttribute().getParentObject()
+                                    .getReferencingObjectAttribute().getClassID())) {
+                        values.add(fk);
+                    } else {
+                        try {
+                            // recursion
+                            if (value != null) {
+                                final int status = moAttr.getStatus();
+                                Integer objectID = moAttr.getID();
+                                switch (status) {
+                                    case MetaObject.NEW: {
+                                        if (moAttr.isDummy()) {
+                                            objectID = mo.getID();
+                                            // jt ids still to be made
+                                            insertMetaObjectArrayWithoutTransaction(user, moAttr);
+                                        } else {
+                                            objectID = insertMetaObjectWithoutTransaction(user, moAttr);
+                                        }
+                                        break;
                                     }
-                                    break;
-                                }
-                                case MetaObject.TO_DELETE: {
-                                    objectID = null;
-                                    deleteMetaObjectWithoutTransaction(user, moAttr);
-                                    break;
-                                }
-                                case MetaObject.MODIFIED:
-                                // NOP
-                                default: {
+                                    case MetaObject.TO_DELETE: {
+                                        objectID = null;
+                                        deleteMetaObjectWithoutTransaction(user, moAttr);
+                                        break;
+                                    }
+                                    case MetaObject.MODIFIED:
                                     // NOP
+                                    default: {
+                                        // NOP
+                                    }
                                 }
-                            }
-                            // foreign key will be set
-                            if (status == MetaObject.TEMPLATE) {
-                                values.add(NULL);
+                                // foreign key will be set
+                                if (status == MetaObject.TEMPLATE) {
+                                    values.add(NULL);
+                                } else {
+                                    values.add(objectID);
+                                }
+                            } else if (mAttr[i].isArray()) {
+                                values.add(rootPk);
                             } else {
-                                values.add(objectID);
+                                values.add(NULL);
                             }
-                        } else if (mAttr[i].isArray()) {
-                            values.add(rootPk);
-                        } else {
-                            values.add(NULL);
+                        } catch (final Exception e) {
+                            final String error = "interrupted insertMO recursion moAttr::" + moAttr + " MAI" + mai; // NOI18N
+                            LOG.error(error, e);
+                            throw new PersistenceException(error, e);
                         }
-                    } catch (final Exception e) {
-                        final String error = "interrupted insertMO recursion moAttr::" + moAttr + " MAI" + mai; // NOI18N
-                        LOG.error(error, e);
-                        throw new PersistenceException(error, e);
                     }
                 }
+
                 // after the first iteration set the seperator to comma
                 sep = ", "; // NOI18N
             }
@@ -965,6 +1086,10 @@ public final class PersistenceManager extends Shutdown {
                 }
                 stmt = parameteriseStatement(stmt, values);
                 stmt.executeUpdate();
+
+                for (final MetaObject vChild : virtual1toMChildren) {
+                    insertMetaObjectArrayWithoutTransaction(user, vChild, rootPk);
+                }
 
                 for (final CidsTrigger ct : rightTriggers) {
                     ct.afterInsert(mo.getBean(), user);

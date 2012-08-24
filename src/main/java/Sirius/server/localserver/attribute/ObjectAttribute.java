@@ -349,4 +349,13 @@ public class ObjectAttribute extends Attribute implements Mapable,
     public void setParentObject(final Sirius.server.localserver.object.Object parentObject) {
         this.parentObject = parentObject;
     }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean isVirtualOneToManyAttribute() {
+        return (mai.isVirtual() && (mai.getForeignKeyClassId() < 0));
+    }
 }
