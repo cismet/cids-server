@@ -11,6 +11,7 @@
  * Created on 23. November 2003, 14:39
  */
 package Sirius.server.middleware.impls.proxy;
+
 import Sirius.server.*;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.*;
@@ -25,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 import java.util.*;
+
 /**
  * DOCUMENT ME!
  *
@@ -36,12 +38,9 @@ public class SearchServiceImpl {
     //~ Instance fields --------------------------------------------------------
 
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
-
     // resolves Query tree
     private QueryExecuter qex;
-
     private java.util.Hashtable activeLocalServers;
-
     private NameServer nameServer;
 
     //~ Constructors -----------------------------------------------------------
@@ -224,6 +223,7 @@ public class SearchServiceImpl {
             (Sirius.server.middleware.interfaces.domainserver.SearchService)activeLocalServers.get(domain);
         return s.addQueryParameter(queryId, typeId, paramkey, description, isQueryResult, queryPosition);
     }
+
     /**
      * position set in order of the addition.
      *
@@ -303,6 +303,7 @@ public class SearchServiceImpl {
 
         return v;
     }
+
     /**
      * fromer searchAdapted.
      *
@@ -394,10 +395,17 @@ public class SearchServiceImpl {
      * @param   serverSearch  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
      */
-    public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) {
+    public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) throws RemoteException {
         serverSearch.setUser(user);
         serverSearch.setActiveLoaclServers(activeLocalServers);
-        return serverSearch.performServerSearch();
+        try {
+            return serverSearch.performServerSearch();
+        } catch (Exception e) {
+            logger.error("Error in customSearch", e);
+            throw new RemoteException("Error in customSearch", e);
+        }
     }
 }

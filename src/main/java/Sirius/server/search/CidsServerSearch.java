@@ -190,8 +190,10 @@ public abstract class CidsServerSearch implements Serializable {
      * <p>Be aware that this method runs in server context and terefore has no access to the Navigator or cismap.</p>
      *
      * @return  The objects matching the specified search.
+     *
+     * @throws  Exception  DOCUMENT ME!
      */
-    public abstract Collection performServerSearch();
+    public abstract Collection performServerSearch() throws Exception;
 
     /**
      * DOCUMENT ME!
