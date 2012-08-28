@@ -191,7 +191,7 @@ public class GeoSearch extends CidsServerSearch {
     }
 
     @Override
-    public Collection performServerSearch() {
+    public Collection performServerSearch() throws Exception {
         final ArrayList<Node> aln = new ArrayList<Node>();
         try {
             getLog().info("geosearch started");
@@ -223,6 +223,7 @@ public class GeoSearch extends CidsServerSearch {
             }
         } catch (Exception e) {
             getLog().error("Problem during GEOSEARCH", e);
+            throw new Exception("Problem during GEOSEARCH", e);
         }
 
         return aln;
