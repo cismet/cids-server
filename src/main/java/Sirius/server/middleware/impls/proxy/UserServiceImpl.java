@@ -13,6 +13,7 @@
 package Sirius.server.middleware.impls.proxy;
 //import Sirius.middleware.interfaces.domainserver.*;
 
+import Sirius.server.middleware.interfaces.domainserver.UserService;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 import Sirius.server.newuser.UserGroup;
@@ -211,7 +212,11 @@ public class UserServiceImpl {
             domain = user.getDomain();
             realKey = key;
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.UserService)activeLocalServers.get(domain))
-                    .getConfigAttr(user, realKey);
+        final UserService userService = (UserService)activeLocalServers.get(domain);
+        if (userService != null) {
+            return userService.getConfigAttr(user, realKey);
+        } else {
+            return null;
+        }
     }
 }
