@@ -433,6 +433,73 @@ public class CidsBean implements PropertyChangeListener {
     }
 
     /**
+     * DOCUMENT ME!
+     *
+     * @param   referencingOA  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ArrayList<Boolean> walkUpAndGetChangedFlags(final ObjectAttribute referencingOA) {
+        ObjectAttribute walker = referencingOA;
+        final ArrayList<Boolean> changed = new ArrayList<Boolean>();
+        while (walker != null) {
+            changed.add(walker.isChanged());
+            final Sirius.server.localserver.object.Object parent = walker.getParentObject();
+            walker = parent.getReferencingObjectAttribute();
+        }
+        return changed;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  referencingOA  DOCUMENT ME!
+     * @param  changedFlags   DOCUMENT ME!
+     */
+    public static void walkUpAndSetChangedFlags(final ObjectAttribute referencingOA,
+            final ArrayList<Boolean> changedFlags) {
+        ObjectAttribute walker = referencingOA;
+        for (final Boolean changed : changedFlags) {
+            walker.setChanged(changed);
+            final Sirius.server.localserver.object.Object parent = walker.getParentObject();
+            walker = parent.getReferencingObjectAttribute();
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   referencingOA  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ArrayList<Integer> walkUpAndGetStati(final ObjectAttribute referencingOA) {
+        ObjectAttribute walker = referencingOA;
+        final ArrayList<Integer> stati = new ArrayList<Integer>();
+        while (walker != null) {
+            final Sirius.server.localserver.object.Object parent = walker.getParentObject();
+            stati.add(parent.getStatus());
+            walker = parent.getReferencingObjectAttribute();
+        }
+        return stati;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  referencingOA  DOCUMENT ME!
+     * @param  stati          DOCUMENT ME!
+     */
+    public static void walkUpAndSetStati(final ObjectAttribute referencingOA, final ArrayList<Integer> stati) {
+        ObjectAttribute walker = referencingOA;
+        for (final Integer status : stati) {
+            final Sirius.server.localserver.object.Object parent = walker.getParentObject();
+            parent.setStatus(status);
+            walker = parent.getReferencingObjectAttribute();
+        }
+    }
+
+    /**
      * call this method to delete the subobject and remove all the references it will not delete subobjects of the
      * object itself.
      *
