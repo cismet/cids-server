@@ -616,12 +616,11 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String[] representationFields,
             final String representationPattern) throws RemoteException {
         try {
-            return dbServer.getObjectFactory()
-                        .getAllLightweightMetaObjectsForClass(
-                            classId,
-                            user,
-                            representationFields,
-                            representationPattern);
+            return dbServer.getAllLightweightMetaObjectsForClass(
+                    classId,
+                    user,
+                    representationFields,
+                    representationPattern);
         } catch (Throwable ex) {
             throw new RemoteException("Error on getAllLightweightMetaObjectsForClass(...)", ex); // NOI18N
         }
@@ -632,11 +631,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final User user,
             final String[] representationFields) throws RemoteException {
         try {
-            return dbServer.getObjectFactory()
-                        .getAllLightweightMetaObjectsForClass(
-                            classId,
-                            user,
-                            representationFields);
+            return dbServer.getAllLightweightMetaObjectsForClass(
+                    classId,
+                    user,
+                    representationFields);
         } catch (Throwable ex) {
             throw new RemoteException("Error on getAllLightweightMetaObjectsForClass(...)", ex); // NOI18N
         }
@@ -649,13 +647,12 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String[] representationFields,
             final String representationPattern) throws RemoteException {
         try {
-            return dbServer.getObjectFactory()
-                        .getLightweightMetaObjectsByQuery(
-                            classId,
-                            user,
-                            query,
-                            representationFields,
-                            representationPattern);
+            return dbServer.getLightweightMetaObjectsByQuery(
+                    classId,
+                    user,
+                    query,
+                    representationFields,
+                    representationPattern);
         } catch (Throwable ex) {
             throw new RemoteException("Error on getLightweightMetaObjectsByQuery(...)", ex); // NOI18N
         }
@@ -667,8 +664,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String query,
             final String[] representationFields) throws RemoteException {
         try {
-            return dbServer.getObjectFactory()
-                        .getLightweightMetaObjectsByQuery(classId, user, query, representationFields);
+            return dbServer.getLightweightMetaObjectsByQuery(classId, user, query, representationFields);
         } catch (Throwable ex) {
             throw new RemoteException("Error on getLightweightMetaObjectsByQuery(...)", ex); // NOI18N
         }
