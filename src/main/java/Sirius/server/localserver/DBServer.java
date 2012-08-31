@@ -582,7 +582,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
                     attributeMap.put(fld.toLowerCase(), retAttrVal);
                     repObjs[i] = retAttrVal;
                 }
-                lwMoSet.add(new LightweightMetaObject(c.getID(), oID, user, attributeMap, formater));
+                lwMoSet.add(new LightweightMetaObject(c.getID(), oID, getDomain(), user, attributeMap, formater));
             }
 
             return lwMoSet.toArray(new LightweightMetaObject[lwMoSet.size()]);

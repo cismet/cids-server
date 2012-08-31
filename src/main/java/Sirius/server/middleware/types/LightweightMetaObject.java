@@ -59,6 +59,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      *
      * @param  classID        DOCUMENT ME!
      * @param  objectID       DOCUMENT ME!
+     * @param  domain         DOCUMENT ME!
      * @param  user           DOCUMENT ME!
      * @param  attributesMap  DOCUMENT ME!
      * @param  formater       DOCUMENT ME!
@@ -71,7 +72,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
             final AbstractAttributeRepresentationFormater formater) {
         this.classID = classID;
         this.objectID = objectID;
-        this.domain=domain;
+        this.domain = domain;
         this.user = user;
         this.metaService = null;
         this.attributesMap = Collections.unmodifiableMap(attributesMap);
