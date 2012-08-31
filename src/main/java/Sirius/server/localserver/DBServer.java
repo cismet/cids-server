@@ -252,7 +252,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     /**
      * -------------------------------------------------------------------------
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   ug  DOCUMENT ME!git status
      *
      * @return  DOCUMENT ME!
      *

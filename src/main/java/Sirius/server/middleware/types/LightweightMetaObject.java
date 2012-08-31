@@ -1,12 +1,10 @@
-/**
- * *************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- * 
-* ... and it just works.
- * 
-***************************************************
- */
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -23,6 +21,7 @@ import Sirius.util.Mapable;
 
 import org.apache.log4j.Logger;
 
+import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,17 +31,17 @@ import java.util.Set;
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.tools.fromstring.FromStringCreator;
-import java.util.AbstractMap;
 
 /**
  * DOCUMENT ME!
  *
- * @author srichter
- * @version $Revision$, $Date$
+ * @author   srichter
+ * @version  $Revision$, $Date$
  */
 public final class LightweightMetaObject implements MetaObject, Comparable<LightweightMetaObject> {
 
     //~ Instance fields --------------------------------------------------------
+
     private transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
     // use volantile variable to fix "double checked locking" problem!
     private transient volatile MetaObject lazyMetaObject;
@@ -55,15 +54,43 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     private String domain;
 
     //~ Constructors -----------------------------------------------------------
+
     /**
      * Creates a new LightweightMetaObject object.
      *
-     * @param classID DOCUMENT ME!
-     * @param objectID DOCUMENT ME!
-     * @param domain DOCUMENT ME!
-     * @param user DOCUMENT ME!
-     * @param attributesMap DOCUMENT ME!
-     * @param formater DOCUMENT ME!
+     * @param  classID   DOCUMENT ME!
+     * @param  objectID  DOCUMENT ME!
+     * @param  domain    DOCUMENT ME!
+     * @param  user      DOCUMENT ME!
+     */
+    public LightweightMetaObject(final int classID,
+            final int objectID,
+            final String domain,
+            final User user) {
+        this.classID = classID;
+        this.objectID = objectID;
+        this.domain = domain;
+        this.user = user;
+        this.attributesMap = new HashMap<String, Object>();
+        setFormater(new AbstractAttributeRepresentationFormater() {
+
+                @Override
+                public String getRepresentation() {
+                    final StringBuilder result = new StringBuilder();
+                    result.append("LWO:").append(classID).append("@").append(objectID).append("@").append(domain);
+                    return result.toString();
+                }
+            });
+    }
+    /**
+     * Creates a new LightweightMetaObject object.
+     *
+     * @param  classID        DOCUMENT ME!
+     * @param  objectID       DOCUMENT ME!
+     * @param  domain         DOCUMENT ME!
+     * @param  user           DOCUMENT ME!
+     * @param  attributesMap  DOCUMENT ME!
+     * @param  formater       DOCUMENT ME!
      */
     public LightweightMetaObject(final int classID,
             final int objectID,
@@ -80,36 +107,8 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
         setFormater(formater);
     }
 
-    /**
-     * Creates a new LightweightMetaObject object.
-     *
-     * @param classID DOCUMENT ME!
-     * @param objectID DOCUMENT ME!
-     * @param domain DOCUMENT ME!
-     * @param user DOCUMENT ME!
-     * @param attributesMap DOCUMENT ME!
-     * @param formater DOCUMENT ME!
-     */
-    public LightweightMetaObject(final int classID,
-            final int objectID,
-            final String domain,
-            final User user) {
-        this.classID = classID;
-        this.objectID = objectID;
-        this.domain = domain;
-        this.user = user;
-        this.attributesMap = new HashMap<String, Object>();
-        setFormater(new AbstractAttributeRepresentationFormater() {
-            @Override
-            public String getRepresentation() {
-                final StringBuilder result = new StringBuilder();
-                result.append("LWO:").append(classID).append("@").append(objectID).append("@").append(domain);
-                return result.toString();
-            }
-        });
-    }
-
     //~ Methods ----------------------------------------------------------------
+
     @Override
     public HashMap getAllClasses() {
         return getRealMetaObject().getAllClasses();
@@ -248,7 +247,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param objectAttributes DOCUMENT ME!
+     * @param  objectAttributes  DOCUMENT ME!
      */
     @Override
     public void addAllAttributes(final ObjectAttribute[] objectAttributes) {
@@ -258,7 +257,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param anyAttribute DOCUMENT ME!
+     * @param  anyAttribute  DOCUMENT ME!
      */
     @Override
     public void addAttribute(final ObjectAttribute anyAttribute) {
@@ -268,9 +267,9 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param m DOCUMENT ME!
+     * @param   m  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public Object constructKey(final Mapable m) {
@@ -280,9 +279,9 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param ug DOCUMENT ME!
+     * @param   ug  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public Sirius.server.localserver.object.Object filter(final UserGroup ug) {
@@ -292,12 +291,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param objectRepresentation DOCUMENT ME!
-     * @param mo DOCUMENT ME!
+     * @param   objectRepresentation  DOCUMENT ME!
+     * @param   mo                    DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      *
-     * @throws Exception DOCUMENT ME!
+     * @throws  Exception  DOCUMENT ME!
      */
     @Override
     public Object fromString(final String objectRepresentation, final Object mo) throws Exception {
@@ -307,7 +306,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public ObjectAttribute[] getAttribs() {
@@ -317,9 +316,9 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param key DOCUMENT ME!
+     * @param   key  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public Object getAttribute(final Object key) {
@@ -329,9 +328,9 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param fieldname DOCUMENT ME!
+     * @param   fieldname  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public ObjectAttribute getAttributeByFieldName(final String fieldname) {
@@ -341,10 +340,10 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param name DOCUMENT ME!
-     * @param maxResult DOCUMENT ME!
+     * @param   name       DOCUMENT ME!
+     * @param   maxResult  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public Collection<Attribute> getAttributeByName(final String name, final int maxResult) {
@@ -354,7 +353,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public HashMap getAttributes() {
@@ -364,9 +363,9 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param names DOCUMENT ME!
+     * @param   names  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public Collection getAttributesByName(final Collection names) {
@@ -376,10 +375,10 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param c DOCUMENT ME!
-     * @param recursionDepth DOCUMENT ME!
+     * @param   c               DOCUMENT ME!
+     * @param   recursionDepth  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public Collection getAttributesByType(final Class c, final int recursionDepth) {
@@ -389,9 +388,9 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param c DOCUMENT ME!
+     * @param   c  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public Collection getAttributesByType(final Class c) {
@@ -401,7 +400,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public Object getKey() {
@@ -411,7 +410,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public Attribute getPrimaryKey() {
@@ -421,7 +420,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public ObjectAttribute getReferencingObjectAttribute() {
@@ -431,7 +430,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public int getStatus() {
@@ -441,7 +440,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public String getStatusDebugString() {
@@ -451,9 +450,9 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param c DOCUMENT ME!
+     * @param   c  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public Collection getTraversedAttributesByType(final Class c) {
@@ -463,7 +462,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public boolean isDummy() {
@@ -473,7 +472,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public boolean isPersistent() {
@@ -483,7 +482,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public boolean isStringCreateable() {
@@ -493,7 +492,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param anyAttribute DOCUMENT ME!
+     * @param  anyAttribute  DOCUMENT ME!
      */
     @Override
     public void removeAttribute(final ObjectAttribute anyAttribute) {
@@ -503,7 +502,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param dummy DOCUMENT ME!
+     * @param  dummy  DOCUMENT ME!
      */
     @Override
     public void setDummy(final boolean dummy) {
@@ -513,7 +512,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param persistent DOCUMENT ME!
+     * @param  persistent  DOCUMENT ME!
      */
     @Override
     public void setPersistent(final boolean persistent) {
@@ -531,7 +530,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param referencingObjectAttribute DOCUMENT ME!
+     * @param  referencingObjectAttribute  DOCUMENT ME!
      */
     @Override
     public void setReferencingObjectAttribute(final ObjectAttribute referencingObjectAttribute) {
@@ -541,7 +540,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param status DOCUMENT ME!
+     * @param  status  DOCUMENT ME!
      */
     @Override
     public void setStatus(final int status) {
@@ -559,7 +558,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public FromStringCreator getObjectCreator() {
@@ -569,7 +568,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param formater DOCUMENT ME!
+     * @param  formater  DOCUMENT ME!
      */
     public void setFormater(final AbstractAttributeRepresentationFormater formater) {
         if (formater != null) {
@@ -583,9 +582,9 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param aName DOCUMENT ME!
+     * @param   aName  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     public Object getLWAttribute(final String aName) {
         return attributesMap.get(aName);
@@ -594,7 +593,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     public Set<String> getKnownAttributeNames() {
         return attributesMap.keySet();
@@ -603,17 +602,17 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      *
-     * @throws Exception DOCUMENT ME!
-     * @throws IllegalStateException DOCUMENT ME!
+     * @throws  Exception              DOCUMENT ME!
+     * @throws  IllegalStateException  DOCUMENT ME!
      */
     private MetaObject fetchRealMetaObject() throws Exception {
         if (metaService == null) {
             throw new IllegalStateException(
-                    "Can not retrieve MetaObject, as Metaservice for LightweightMetaObject \""
-                    + toString() // NOI18N
-                    + "\" is null!"); // NOI18N
+                "Can not retrieve MetaObject, as Metaservice for LightweightMetaObject \""
+                        + toString() // NOI18N
+                        + "\" is null!"); // NOI18N
         }
         return metaService.getMetaObject(getUser(), getObjectID(), getClassID(), getDomain());
     }
@@ -626,12 +625,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     @Override
     public boolean equals(final Object obj) {
         if (obj instanceof MetaObject) {
-            final MetaObject tmp = (MetaObject) obj;
+            final MetaObject tmp = (MetaObject)obj;
             // debug: if ((getClassID() == tmp.getClassID()) && (getID() == tmp.getID()) &&
             // getDomain().equals(tmp.getDomain()) != equals(obj)) { log.fatal("Different Equals: " + toString() + "\n
             // VS \n" + obj); }
             return (getClassID() == tmp.getClassID()) && (getObjectID() == tmp.getID())
-                    && getDomain().equals(tmp.getDomain());
+                        && getDomain().equals(tmp.getDomain());
         }
         return false;
     }
@@ -648,7 +647,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return the classID
+     * @return  the classID
      */
     @Override
     public int getClassID() {
@@ -658,7 +657,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return the objectID
+     * @return  the objectID
      */
     public int getObjectID() {
         return objectID;
@@ -667,7 +666,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return the user
+     * @return  the user
      */
     public User getUser() {
         return user;
@@ -676,9 +675,9 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param o DOCUMENT ME!
+     * @param   o  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public int compareTo(final LightweightMetaObject o) {
@@ -688,7 +687,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return the metaService
+     * @return  the metaService
      */
     public MetaService getMetaService() {
         return metaService;
@@ -697,7 +696,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param metaService the metaService to set
+     * @param  metaService  the metaService to set
      */
     public void setMetaService(final MetaService metaService) {
         this.metaService = metaService;
@@ -706,9 +705,9 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * Lazy loads for the real MetaObject if needed, the returns it.
      *
-     * @return the real MetaObject which the LWMetaObject is a proxy for.
+     * @return  the real MetaObject which the LWMetaObject is a proxy for.
      *
-     * @throws IllegalStateException DOCUMENT ME!
+     * @throws  IllegalStateException  DOCUMENT ME!
      */
     public MetaObject getRealMetaObject() {
         if (lazyMetaObject == null) {
@@ -726,7 +725,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param objectID DOCUMENT ME!
+     * @param  objectID  DOCUMENT ME!
      */
     @Override
     public void setID(final int objectID) {
@@ -737,7 +736,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     @Override
     public int getID() {

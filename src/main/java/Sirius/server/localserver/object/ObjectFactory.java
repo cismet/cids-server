@@ -345,7 +345,11 @@ public final class ObjectFactory extends Shutdown {
                                     final int o_id = rs.getInt(fieldName);
                                     // LOG.debug("attribute is object");
                                     try {
-                                        attrValue = getObject(o_id, mai.getForeignKeyClassId());
+                                        if (mai.getForeignKeyClassId() == 26) {
+                                            attrValue = new LightweightObject(26, o_id);
+                                        } else {
+                                            attrValue = getObject(o_id, mai.getForeignKeyClassId());
+                                        }
                                     } catch (Exception e) {
                                         LOG.error("getObject recursion interrupted for oid" + o_id + "  MAI " + mai, e); // NOI18N
                                         attrValue = null;

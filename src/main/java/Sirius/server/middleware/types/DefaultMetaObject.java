@@ -8,6 +8,7 @@
 package Sirius.server.middleware.types;
 
 import Sirius.server.localserver.attribute.*;
+import Sirius.server.localserver.object.LightweightObject;
 import Sirius.server.newuser.*;
 
 import org.apache.log4j.Logger;
@@ -77,8 +78,11 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
                     attr[i].getValue();
 
                 if (ob != null) {
-                    final MetaObject mo = new DefaultMetaObject(ob, domain);
-                    attr[i].setValue(mo);
+                    if (ob instanceof LightweightObject) {
+                        attr[i].setValue(new LightweightMetaObject(classID, objectID, domain, null));
+                    } else {
+                        attr[i].setValue(new DefaultMetaObject(ob, domain));
+                    }
                     // attr[i].setClassKey(ob.getClassID()+"@"+domain);
                 }
             }
