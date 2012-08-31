@@ -15,11 +15,14 @@ import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.interfaces.proxy.MetaService;
 import Sirius.server.newuser.User;
+import Sirius.server.newuser.UserContextProvider;
 import Sirius.server.newuser.UserGroup;
 
 import Sirius.util.Mapable;
 
 import org.apache.log4j.Logger;
+
+import org.openide.util.Lookup;
 
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -29,6 +32,9 @@ import java.util.Map;
 import java.util.Set;
 
 import de.cismet.cids.dynamics.CidsBean;
+
+import de.cismet.cids.server.CallServerService;
+import de.cismet.cids.server.CallServerServiceProvider;
 
 import de.cismet.cids.tools.fromstring.FromStringCreator;
 
@@ -48,7 +54,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     private transient MetaService metaService;
     private final Map<String, Object> attributesMap;
     private final int classID;
-    private final User user;
+    private User user;
     private int objectID;
     private String representation;
     private String domain;
@@ -82,6 +88,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
                 }
             });
     }
+
     /**
      * Creates a new LightweightMetaObject object.
      *
@@ -609,10 +616,26 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     private MetaObject fetchRealMetaObject() throws Exception {
         if (metaService == null) {
-            throw new IllegalStateException(
-                "Can not retrieve MetaObject, as Metaservice for LightweightMetaObject \""
-                        + toString() // NOI18N
-                        + "\" is null!"); // NOI18N
+            // try to get the metaservice over the lookup
+            final CallServerServiceProvider csProvider = Lookup.getDefault().lookup(CallServerServiceProvider.class);
+            metaService = csProvider.getCallServerService();
+            if (metaService == null) {
+                throw new IllegalStateException(
+                    "Can not retrieve MetaObject, as Metaservice for LightweightMetaObject \""
+                            + toString() // NOI18N
+                            + "\" is null!"); // NOI18N
+            }
+        }
+
+        if (user == null) {
+            final UserContextProvider usp = Lookup.getDefault().lookup(UserContextProvider.class);
+            user = usp.getUser();
+            if (user == null) {
+                throw new IllegalStateException(
+                    "Can not retrieve MetaObject, as User for LightweightMetaObject \""
+                            + toString() // NOI18N
+                            + "\" is null!"); // NOI18N
+            }
         }
         return metaService.getMetaObject(getUser(), getObjectID(), getClassID(), getDomain());
     }
