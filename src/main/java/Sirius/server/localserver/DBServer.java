@@ -134,7 +134,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      * @return  DOCUMENT ME!
      */
     public MetaClass getClass(final int classID) {
-        return new MetaClass(classes.getClass(classID), properties.getServerName());
+        return new MetaClass(classes.getClass(classID), getDomain());
     }
     /**
      * ---------------------------------------------------------------------------
@@ -150,7 +150,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
 
         for (int i = 0; i < tmpClasses.size(); i++) {
             middleWareClasses[i] = new MetaClass((Sirius.server.localserver._class.Class)tmpClasses.get(i),
-                    properties.getServerName());
+                    getDomain());
         }
 
         return middleWareClasses;
@@ -166,7 +166,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     public MetaClass getClass(final UserGroup ug, final int classID) {
         final Sirius.server.localserver._class.Class c = classes.getClass(ug, classID);
         if (c != null) {
-            return new MetaClass(c, properties.getServerName());
+            return new MetaClass(c, getDomain());
         } else {
             return null;
         }
@@ -185,7 +185,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     public MetaClass getClassByTableName(final UserGroup ug, final String tableName) throws Throwable {
         final Sirius.server.localserver._class.Class c = classes.getClassNyTableName(ug, tableName);
         if (c != null) {
-            return new MetaClass(c, properties.getServerName());
+            return new MetaClass(c, getDomain());
         } else {
             return null;
         }
@@ -206,7 +206,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
 
             for (int i = 0; i < tmpClasses.size(); i++) {
                 middleWareClasses[i] = new MetaClass((Sirius.server.localserver._class.Class)tmpClasses.get(i),
-                        properties.getServerName());
+                        getDomain());
             }
         }
 
@@ -284,8 +284,8 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
         final Sirius.server.localserver.object.Object o = objects.getObject(oId, cId, ug);
 
         if (o != null) {
-            final MetaObject mo = new DefaultMetaObject(o.filter(ug), properties.getServerName());
-            // mo.setMetaClass(new MetaClass(classes.getClass(cId), properties.getServerName()));
+            final MetaObject mo = new DefaultMetaObject(o.filter(ug), getDomain());
+            // mo.setMetaClass(new MetaClass(classes.getClass(cId), getDomain()));
 
             mo.setAllClasses(classes.getClassHashMap());
 
@@ -317,11 +317,10 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     /**
      * //bugfix public Node getNode(Node node, UserGroup ug) throws Throwable { if(node instanceof
      * Sirius.server.localserver.tree.node.ObjectNode) { Sirius.server.localserver.tree.node.ObjectNode newNode =
-     * (Sirius.server.localserver.tree.node.ObjectNode)node; return new MetaObjectNode(
-     * newNode,properties.getServerName()); } else if (node instanceof Sirius.server.localserver.tree.node.ClassNode)
-     * return new MetaClassNode((Sirius.server.localserver.tree.node.ClassNode)node,properties.getServerName()); return
-     * new MetaNode(node,properties.getServerName()); }
-     * -----------------------------------------------------------------
+     * (Sirius.server.localserver.tree.node.ObjectNode)node; return new MetaObjectNode( newNode,getDomain()); } else if
+     * (node instanceof Sirius.server.localserver.tree.node.ClassNode) return new
+     * MetaClassNode((Sirius.server.localserver.tree.node.ClassNode)node,getDomain()); return new
+     * MetaNode(node,getDomain()); } -----------------------------------------------------------------
      *
      * @param   ids  DOCUMENT ME!
      * @param   ug   DOCUMENT ME!
@@ -636,5 +635,14 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
         } else {
             return o.toString();
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getDomain() {
+        return properties.getServerName();
     }
 }
