@@ -50,6 +50,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     private final User user;
     private int objectID;
     private String representation;
+    private String domain;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -64,11 +65,13 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     public LightweightMetaObject(final int classID,
             final int objectID,
+            final String domain,
             final User user,
             final Map<String, Object> attributesMap,
             final AbstractAttributeRepresentationFormater formater) {
         this.classID = classID;
         this.objectID = objectID;
+        this.domain=domain;
         this.user = user;
         this.metaService = null;
         this.attributesMap = Collections.unmodifiableMap(attributesMap);
@@ -582,7 +585,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
                         + toString() // NOI18N
                         + "\" is null!"); // NOI18N
         }
-        return metaService.getMetaObject(getUser(), getObjectID(), getClassID(), getUser().getDomain());
+        return metaService.getMetaObject(getUser(), getObjectID(), getClassID(), getDomain());
     }
 
     @Override
@@ -718,11 +721,11 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
 
     @Override
     public String getDomain() {
-        return getUser().getDomain();
+        return domain;
     }
 
     @Override
     public String getClassKey() {
-        return classID + "@" + getUser().getDomain(); // NOI18N
+        return classID + "@" + getDomain(); // NOI18N
     }
 }
