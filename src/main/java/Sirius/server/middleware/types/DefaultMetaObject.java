@@ -79,7 +79,7 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
 
                 if (ob != null) {
                     if (ob instanceof LightweightObject) {
-                        attr[i].setValue(new LightweightMetaObject(classID, objectID, domain, null));
+                        attr[i].setValue(new LightweightMetaObject(ob.getClassID(), ob.getID(), domain, null));
                     } else {
                         attr[i].setValue(new DefaultMetaObject(ob, domain));
                     }
