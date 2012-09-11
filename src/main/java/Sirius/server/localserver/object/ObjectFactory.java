@@ -138,6 +138,23 @@ public final class ObjectFactory extends Shutdown {
      */
     public Sirius.server.localserver.object.Object getObject(final int objectId, final int classId)
             throws SQLException {
+        return getObject(objectId, classId, false);
+    }
+
+    /**
+     * ////////////////////////////////////////////////////////////////////////////////
+     *
+     * @param   objectId                 DOCUMENT ME!
+     * @param   classId                  DOCUMENT ME!
+     * @param   allowLightweightObjects  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    public Sirius.server.localserver.object.Object getObject(final int objectId,
+            final int classId,
+            final boolean allowLightweightObjects) throws SQLException {
         if (LOG != null) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
@@ -176,7 +193,7 @@ public final class ObjectFactory extends Shutdown {
             rs = stmnt.executeQuery(getObjectStmnt);
 
             if (rs.next()) {
-                return createObject(objectId, rs, c);
+                return createObject(objectId, rs, c, allowLightweightObjects);
             } else {
                 LOG.error("<LS> ERROR kein match f\u00FCr " + getObjectStmnt); // NOI18N
                 return null;
@@ -190,9 +207,10 @@ public final class ObjectFactory extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   objectId  DOCUMENT ME!
-     * @param   rs        DOCUMENT ME!
-     * @param   c         DOCUMENT ME!
+     * @param   objectId                 DOCUMENT ME!
+     * @param   rs                       DOCUMENT ME!
+     * @param   c                        DOCUMENT ME!
+     * @param   allowLightweightObjects  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -200,8 +218,9 @@ public final class ObjectFactory extends Shutdown {
      */
     Sirius.server.localserver.object.Object createObject(final int objectId,
             final ResultSet rs,
-            final Sirius.server.localserver._class.Class c) throws SQLException {
-        return createObject(objectId, rs, c, null);
+            final Sirius.server.localserver._class.Class c,
+            final boolean allowLightweightObjects) throws SQLException {
+        return createObject(objectId, rs, c, null, allowLightweightObjects);
     }
 
     /**
@@ -220,6 +239,27 @@ public final class ObjectFactory extends Shutdown {
             final ResultSet rs,
             final Sirius.server.localserver._class.Class c,
             final Sirius.server.localserver._class.Class backlinkClassToExclude) throws SQLException {
+        return createObject(objectId, rs, c, backlinkClassToExclude, false);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   objectId                 DOCUMENT ME!
+     * @param   rs                       DOCUMENT ME!
+     * @param   c                        DOCUMENT ME!
+     * @param   backlinkClassToExclude   DOCUMENT ME!
+     * @param   allowLightweightObjects  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    Sirius.server.localserver.object.Object createObject(final int objectId,
+            final ResultSet rs,
+            final Sirius.server.localserver._class.Class c,
+            final Sirius.server.localserver._class.Class backlinkClassToExclude,
+            final boolean allowLightweightObjects) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("create Object entered for result" + rs + "object_id:: " + objectId + " class " + c.getID()); // NOI18N
             // construct object rump attributes have to be added yet
@@ -345,10 +385,13 @@ public final class ObjectFactory extends Shutdown {
                                     final int o_id = rs.getInt(fieldName);
                                     // LOG.debug("attribute is object");
                                     try {
-                                        if (mai.getForeignKeyClassId() == 26) {
-                                            attrValue = new LightweightObject(26, o_id);
+                                        final Sirius.server.localserver._class.Class maiClass = classCache.getClass(
+                                                mai.getForeignKeyClassId());
+                                        final boolean cacheHintSet = maiClass.getClassAttribute("CACHEHINT") != null;
+                                        if (allowLightweightObjects && cacheHintSet) {
+                                            attrValue = new LightweightObject(o_id, mai.getForeignKeyClassId());
                                         } else {
-                                            attrValue = getObject(o_id, mai.getForeignKeyClassId());
+                                            attrValue = getObject(o_id, mai.getForeignKeyClassId(), true);
                                         }
                                     } catch (Exception e) {
                                         LOG.error("getObject recursion interrupted for oid" + o_id + "  MAI " + mai, e); // NOI18N
@@ -461,7 +504,7 @@ public final class ObjectFactory extends Shutdown {
             while (rs.next()) {
                 final int o_id = rs.getInt(c.getPrimaryKey());
 
-                final Sirius.server.localserver.object.Object element = createObject(o_id, rs, c);
+                final Sirius.server.localserver.object.Object element = createObject(o_id, rs, c, true);
 
                 if (element != null) {
                     final ObjectAttribute oa = new ObjectAttribute(
