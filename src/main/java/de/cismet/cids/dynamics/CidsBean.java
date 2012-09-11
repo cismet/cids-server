@@ -43,6 +43,8 @@ import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
 
+import de.cismet.tools.Equals;
+
 /**
  * DOCUMENT ME!
  *
@@ -388,22 +390,42 @@ public class CidsBean implements PropertyChangeListener {
         if (!oa.isArray() && !oa.isVirtualOneToManyAttribute()) {
             final Object oldValue = oa.getValue();
             final Object value = evt.getNewValue();
+            boolean realChanges = false;
             if (oa.referencesObject() && (value instanceof CidsBean) && (value != null)) {
                 final CidsBean cbv = (CidsBean)value;
+                realChanges = ((oldValue == null)
+                                || ((oldValue instanceof MetaObject)
+                                    && !((Sirius.server.middleware.types.MetaObject)oldValue).getBean().toJSONString()
+                                    .equals(
+                                        cbv.toJSONString())));
                 oa.setValue(cbv.getMetaObject());
                 cbv.setBacklinkInformation(field, this);
                 if (cbv.getMetaObject().getStatus() == MetaObject.TO_DELETE) {
                     cbv.getMetaObject().setStatus(MetaObject.MODIFIED);
                 }
             } else {
-                oa.setValue(value);
+                if (((oldValue != null) && !oldValue.equals(value)) || ((oldValue == null) && (value != null))) {
+                    oa.setValue(value);
+                    realChanges = true;
+                }
             }
 
             if (LOG.isDebugEnabled()) {
-                LOG.debug("a property changed:" + metaObject.getDebugString()); // NOI18N
+                if (realChanges) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("a property changed:" + metaObject.getDebugString()); // NOI18N
+                    }
+                } else {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(
+                            "a property changed, but the content of the object was not changed. seams to be a caching or normalization move.:"
+                                    + metaObject.getDebugString());                     // NOI18N
+                    }
+                }
             }
 
-            if (((oldValue == null) && (value != null)) || ((oldValue != null) && !oldValue.equals(value))) {
+            if (((oldValue == null) && (value != null))
+                        || ((oldValue != null) && realChanges)) {
                 oa.setChanged(true);
                 metaObject.setStatus(MetaObject.MODIFIED);
 
@@ -429,73 +451,6 @@ public class CidsBean implements PropertyChangeListener {
             // genutzt wird. Der andere Kram funktioniert aber, da die
             // gleichen ObjectAttributes genutzt werden.)
             referencingOA = parent.getReferencingObjectAttribute();
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   referencingOA  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public static ArrayList<Boolean> walkUpAndGetChangedFlags(final ObjectAttribute referencingOA) {
-        ObjectAttribute walker = referencingOA;
-        final ArrayList<Boolean> changed = new ArrayList<Boolean>();
-        while (walker != null) {
-            changed.add(walker.isChanged());
-            final Sirius.server.localserver.object.Object parent = walker.getParentObject();
-            walker = parent.getReferencingObjectAttribute();
-        }
-        return changed;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  referencingOA  DOCUMENT ME!
-     * @param  changedFlags   DOCUMENT ME!
-     */
-    public static void walkUpAndSetChangedFlags(final ObjectAttribute referencingOA,
-            final ArrayList<Boolean> changedFlags) {
-        ObjectAttribute walker = referencingOA;
-        for (final Boolean changed : changedFlags) {
-            walker.setChanged(changed);
-            final Sirius.server.localserver.object.Object parent = walker.getParentObject();
-            walker = parent.getReferencingObjectAttribute();
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   referencingOA  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public static ArrayList<Integer> walkUpAndGetStati(final ObjectAttribute referencingOA) {
-        ObjectAttribute walker = referencingOA;
-        final ArrayList<Integer> stati = new ArrayList<Integer>();
-        while (walker != null) {
-            final Sirius.server.localserver.object.Object parent = walker.getParentObject();
-            stati.add(parent.getStatus());
-            walker = parent.getReferencingObjectAttribute();
-        }
-        return stati;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  referencingOA  DOCUMENT ME!
-     * @param  stati          DOCUMENT ME!
-     */
-    public static void walkUpAndSetStati(final ObjectAttribute referencingOA, final ArrayList<Integer> stati) {
-        ObjectAttribute walker = referencingOA;
-        for (final Integer status : stati) {
-            final Sirius.server.localserver.object.Object parent = walker.getParentObject();
-            parent.setStatus(status);
-            walker = parent.getReferencingObjectAttribute();
         }
     }
 
