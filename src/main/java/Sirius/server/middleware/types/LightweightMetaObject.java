@@ -46,6 +46,10 @@ import de.cismet.cids.tools.fromstring.FromStringCreator;
  */
 public final class LightweightMetaObject implements MetaObject, Comparable<LightweightMetaObject> {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    static Map<String, MetaObject> cache = Collections.synchronizedMap(new HashMap<String, MetaObject>());
+
     //~ Instance fields --------------------------------------------------------
 
     private transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
@@ -203,12 +207,16 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
 
     @Override
     public void setAllClasses(final HashMap classes) {
-        getRealMetaObject().setAllClasses(classes);
+        if (alreadyFetched()) {
+            getRealMetaObject().setAllClasses(classes);
+        }
     }
 
     @Override
     public void setAllClasses() {
-        getRealMetaObject().setAllClasses();
+        if (alreadyFetched()) {
+            getRealMetaObject().setAllClasses();
+        }
     }
 
     @Override
@@ -609,35 +617,64 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
+     * @param   classID   DOCUMENT ME!
+     * @param   objectID  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getKeyForCache(final int classID, final int objectID) {
+        return new StringBuffer("").append(classID).append(",").append(objectID).toString();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      *
      * @throws  Exception              DOCUMENT ME!
      * @throws  IllegalStateException  DOCUMENT ME!
      */
     private MetaObject fetchRealMetaObject() throws Exception {
-        if (metaService == null) {
-            // try to get the metaservice over the lookup
-            final CallServerServiceProvider csProvider = Lookup.getDefault().lookup(CallServerServiceProvider.class);
-            metaService = csProvider.getCallServerService();
-            if (metaService == null) {
-                throw new IllegalStateException(
-                    "Can not retrieve MetaObject, as Metaservice for LightweightMetaObject \""
-                            + toString() // NOI18N
-                            + "\" is null!"); // NOI18N
-            }
-        }
+        // try the cache
 
-        if (user == null) {
-            final UserContextProvider usp = Lookup.getDefault().lookup(UserContextProvider.class);
-            user = usp.getUser();
-            if (user == null) {
-                throw new IllegalStateException(
-                    "Can not retrieve MetaObject, as User for LightweightMetaObject \""
-                            + toString() // NOI18N
-                            + "\" is null!"); // NOI18N
+        final MetaObject cacheHit = cache.get(getKeyForCache(classID, objectID));
+        if (cacheHit != null) {
+//            System.out.println("HIT!!");
+            return cacheHit;
+        } else {
+            if (metaService == null) {
+                // try to get the metaservice over the lookup
+                final CallServerServiceProvider csProvider = Lookup.getDefault()
+                            .lookup(CallServerServiceProvider.class);
+                if (csProvider != null) {
+                    metaService = csProvider.getCallServerService();
+                }
+                if (metaService == null) {
+                    throw new IllegalStateException(
+                        "Can not retrieve MetaObject, as Metaservice for LightweightMetaObject \""
+                                + toString() // NOI18N
+                                + "\" is null!"); // NOI18N
+                }
             }
+
+            if (user == null) {
+                final UserContextProvider usp = Lookup.getDefault().lookup(UserContextProvider.class);
+                if (usp != null) {
+                    user = usp.getUser();
+                }
+                if (user == null) {
+                    throw new IllegalStateException(
+                        "Can not retrieve MetaObject, as User for LightweightMetaObject \""
+                                + toString() // NOI18N
+                                + "\" is null!"); // NOI18N
+                }
+            }
+            System.out.println("Fetch real Object for " + this);
+
+            final MetaObject mo = metaService.getMetaObject(getUser(), getObjectID(), getClassID(), getDomain());
+            cache.put(getKeyForCache(classID, objectID), mo);
+            return mo;
         }
-        return metaService.getMetaObject(getUser(), getObjectID(), getClassID(), getDomain());
     }
 
     @Override
@@ -779,5 +816,14 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     @Override
     public String getClassKey() {
         return classID + "@" + getDomain(); // NOI18N
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean alreadyFetched() {
+        return lazyMetaObject != null;
     }
 }
