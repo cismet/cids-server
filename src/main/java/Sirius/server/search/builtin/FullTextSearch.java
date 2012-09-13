@@ -80,7 +80,7 @@ public class FullTextSearch extends CidsServerSearch {
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public Collection performServerSearch() throws Exception{
+    public Collection performServerSearch() throws Exception {
         try {
             getLog().info("FullTextSearch started");
 
@@ -194,7 +194,7 @@ public class FullTextSearch extends CidsServerSearch {
             return aln;
         } catch (Exception e) {
             getLog().error("Problem during Fulltextsearch", e);
-            throw new Exception("Problem during Fulltextsearch",e);
+            throw new Exception("Problem during Fulltextsearch", e);
         }
     }
 }
