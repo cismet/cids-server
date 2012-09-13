@@ -96,7 +96,7 @@ public final class UserStore extends Shutdown {
 
             // --------------------load userGroups--------------------------------------------------
 
-            final ResultSet userGroupTable = conPool.submitQuery("get_all_usergroups", new Object[0]); // NOI18N
+            final ResultSet userGroupTable = conPool.submitInternalQuery("get_all_usergroups", new Object[0]); // NOI18N
 
             while (userGroupTable.next()) {
                 try {
