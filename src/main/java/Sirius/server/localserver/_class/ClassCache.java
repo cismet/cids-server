@@ -396,7 +396,7 @@ public class ClassCache extends Shutdown {
                 s.close();
             }
 
-            final ResultSet rs = con.submitQuery("get_attribute_info", new Object[0]); // NOI18N
+            final ResultSet rs = con.submitInternalQuery("get_attribute_info", new Object[0]); // NOI18N
 
             MemberAttributeInfo mai = null;
 
