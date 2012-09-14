@@ -57,7 +57,7 @@ public final class MethodCache extends Shutdown {
 
         final DBConnection con = conPool.getDBConnection();
         try {
-            final ResultSet methodTable = con.submitQuery("get_all_methods", new Object[0]); // NOI18N
+            final ResultSet methodTable = con.submitInternalQuery("get_all_methods", new Object[0]); // NOI18N
 
             while (methodTable.next())                             // add all objects to the hashtable
             {
