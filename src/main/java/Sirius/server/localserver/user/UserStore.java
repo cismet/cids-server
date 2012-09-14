@@ -70,7 +70,7 @@ public final class UserStore extends Shutdown {
         // membershipHash = new Hashtable(101);
 
         try {
-            final ResultSet userTable = conPool.submitQuery("get_all_users", new Object[0]); // NOI18N
+            final ResultSet userTable = conPool.submitInternalQuery("get_all_users", new Object[0]); // NOI18N
 
             // --------------------load users--------------------------------------------------
 
