@@ -234,7 +234,7 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
         if (isDown()) {
             final String message = "called operation on an already shutdown object: " + this; // NOI18N
             LOG.error(message);
-            throw new SQLException(message, SQL_CODE_ALREADY_CLOSED);
+            throw new SQLException(message, DBConnection.SQL_CODE_ALREADY_CLOSED);
         }
 
         // TODO: refactor for easier understanding
@@ -269,7 +269,7 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
         if (isDown()) {
             final String message = "called operation on an already shutdown object: " + this; // NOI18N
             LOG.error(message);
-            throw new SQLException(message, SQL_CODE_ALREADY_CLOSED);
+            throw new SQLException(message, DBConnection.SQL_CODE_ALREADY_CLOSED);
         }
 
         // TODO: refactor for easier understanding
