@@ -599,7 +599,7 @@ public class ClassCache extends Shutdown {
     private void addClassPermissions(final DBConnectionPool conPool) {
         final DBConnection con = conPool.getDBConnection();
         try {
-            final ResultSet permTable = con.submitQuery("get_all_class_permissions", new Object[0]); // NOI18N
+            final ResultSet permTable = con.submitInternalQuery("get_all_class_permissions", new Object[0]); // NOI18N
 
             final String lsName = properties.getServerName();
 
