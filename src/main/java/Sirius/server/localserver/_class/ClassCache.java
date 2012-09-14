@@ -88,7 +88,7 @@ public class ClassCache extends Shutdown {
 
         final DBConnection con = conPool.getDBConnection();
         try {
-            final ResultSet classTable = con.submitQuery("get_all_classes", new Object[0]); // getAllClasses //NOI18N
+            final ResultSet classTable = con.submitInternalQuery("get_all_classes", new Object[0]); // getAllClasses //NOI18N
 
             if (classTable == null) {
                 LOG.error(
