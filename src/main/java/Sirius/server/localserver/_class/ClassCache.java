@@ -330,7 +330,7 @@ public class ClassCache extends Shutdown {
     private void addAttributes(final DBConnectionPool conPool) {
         final DBConnection con = conPool.getDBConnection();
         try {
-            final ResultSet attribTable = con.submitQuery("get_all_class_attributes", new Object[0]); // NOI18N
+            final ResultSet attribTable = con.submitInternalQuery("get_all_class_attributes", new Object[0]); // NOI18N
 
             int id = 0;
             int classID = 0;
