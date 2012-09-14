@@ -21,7 +21,6 @@ import Sirius.server.newuser.permission.Permission;
 import Sirius.server.newuser.permission.Policy;
 import Sirius.server.newuser.permission.PolicyHolder;
 import Sirius.server.property.ServerProperties;
-import Sirius.server.sql.DBBackend;
 import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DBConnectionPool;
 
@@ -116,10 +115,10 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         boolean artificialIdSupported = false;
         ResultSet set = null;
         try {
-            set = conPool.submitInternalQuery(DBBackend.DESC_TABLE_HAS_COLUMN, "cs_cat_node", "artificial_id"); // NOI18N
+            set = conPool.submitInternalQuery(DBConnection.DESC_TABLE_HAS_COLUMN, "cs_cat_node", "artificial_id"); // NOI18N
             artificialIdSupported = set.next();
         } catch (final SQLException e) {
-            LOG.warn("cannot test for artificial id support, support disabled", e);                             // NOI18N
+            LOG.warn("cannot test for artificial id support, support disabled", e);                                // NOI18N
         } finally {
             DBConnection.closeResultSets(set);
         }
