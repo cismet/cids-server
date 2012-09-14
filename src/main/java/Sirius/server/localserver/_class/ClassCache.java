@@ -577,7 +577,7 @@ public class ClassCache extends Shutdown {
 
         final DBConnection con = conPool.getDBConnection();
         try {
-            final ResultSet imgTable = con.submitQuery("get_all_images", new Object[0]); // NOI18N
+            final ResultSet imgTable = con.submitInternalQuery("get_all_images", new Object[0]); // NOI18N
 
             while (imgTable.next()) {
                 tmpImage = new Image(iconDirectory + separator + imgTable.getString("file_name").trim()); // NOI18N
