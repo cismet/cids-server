@@ -124,7 +124,7 @@ public final class UserStore extends Shutdown {
 
             // --------------------load memberships--------------------------------------------------
 
-            final ResultSet memberTable = conPool.submitQuery("get_all_memberships", new Object[0]); // NOI18N
+            final ResultSet memberTable = conPool.submitInternalQuery("get_all_memberships", new Object[0]); // NOI18N
 
             while (memberTable.next()) {
                 try {
