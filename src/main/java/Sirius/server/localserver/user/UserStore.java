@@ -96,14 +96,19 @@ public final class UserStore extends Shutdown {
 
             // --------------------load userGroups--------------------------------------------------
 
-            final ResultSet userGroupTable = conPool.submitQuery("get_all_usergroups", new Object[0]); // NOI18N
+            final ResultSet userGroupTable = conPool.submitInternalQuery("get_all_usergroups", new Object[0]); // NOI18N
 
             while (userGroupTable.next()) {
                 try {
+                    String domain = userGroupTable.getString("domain_name"); // NOI18N
+                    if ("LOCAL".equals(domain)) {                            // NOI18N
+                        domain = properties.getServerName();
+                    }
+
                     final UserGroup tmp = new UserGroup(
                             userGroupTable.getInt("id"),             // NOI18N
                             userGroupTable.getString("name").trim(), // NOI18N
-                            properties.getServerName(),
+                            domain,
                             userGroupTable.getString("descr"));      // NOI18N
                     userGroups.addElement(tmp);
                 } catch (Exception e) {
