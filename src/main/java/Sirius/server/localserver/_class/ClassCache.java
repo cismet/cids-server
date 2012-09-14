@@ -88,7 +88,7 @@ public class ClassCache extends Shutdown {
 
         final DBConnection con = conPool.getDBConnection();
         try {
-            final ResultSet classTable = con.submitInternalQuery("get_all_classes", new Object[0]); // getAllClasses //NOI18N
+            final ResultSet classTable = con.submitInternalQuery(DBConnection.DESC_GET_ALL_CLASSES, new Object[0]); // getAllClasses //NOI18N
 
             if (classTable == null) {
                 LOG.error(
@@ -330,7 +330,9 @@ public class ClassCache extends Shutdown {
     private void addAttributes(final DBConnectionPool conPool) {
         final DBConnection con = conPool.getDBConnection();
         try {
-            final ResultSet attribTable = con.submitInternalQuery("get_all_class_attributes", new Object[0]); // NOI18N
+            final ResultSet attribTable = con.submitInternalQuery(
+                    DBConnection.DESC_GET_ALL_CLASS_ATTRIBUTES,
+                    new Object[0]);
 
             int id = 0;
             int classID = 0;
@@ -396,7 +398,7 @@ public class ClassCache extends Shutdown {
                 s.close();
             }
 
-            final ResultSet rs = con.submitInternalQuery("get_attribute_info", new Object[0]); // NOI18N
+            final ResultSet rs = con.submitInternalQuery(DBConnection.DESC_GET_ATTRIBUTE_INFO, new Object[0]);
 
             MemberAttributeInfo mai = null;
 
@@ -577,7 +579,7 @@ public class ClassCache extends Shutdown {
 
         final DBConnection con = conPool.getDBConnection();
         try {
-            final ResultSet imgTable = con.submitInternalQuery("get_all_images", new Object[0]); // NOI18N
+            final ResultSet imgTable = con.submitInternalQuery(DBConnection.DESC_GET_ALL_IMAGES, new Object[0]);
 
             while (imgTable.next()) {
                 tmpImage = new Image(iconDirectory + separator + imgTable.getString("file_name").trim()); // NOI18N
@@ -599,7 +601,7 @@ public class ClassCache extends Shutdown {
     private void addClassPermissions(final DBConnectionPool conPool) {
         final DBConnection con = conPool.getDBConnection();
         try {
-            final ResultSet permTable = con.submitInternalQuery("get_all_class_permissions", new Object[0]); // NOI18N
+            final ResultSet permTable = con.submitInternalQuery(DBConnection.DESC_GET_ALL_CLASS_PERMS, new Object[0]);
 
             final String lsName = properties.getServerName();
 

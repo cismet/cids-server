@@ -70,7 +70,7 @@ public final class UserStore extends Shutdown {
         // membershipHash = new Hashtable(101);
 
         try {
-            final ResultSet userTable = conPool.submitInternalQuery("get_all_users", new Object[0]); // NOI18N
+            final ResultSet userTable = conPool.submitInternalQuery(DBConnection.DESC_GET_ALL_USERS, new Object[0]);
 
             // --------------------load users--------------------------------------------------
 
@@ -96,7 +96,9 @@ public final class UserStore extends Shutdown {
 
             // --------------------load userGroups--------------------------------------------------
 
-            final ResultSet userGroupTable = conPool.submitInternalQuery("get_all_usergroups", new Object[0]); // NOI18N
+            final ResultSet userGroupTable = conPool.submitInternalQuery(
+                    DBConnection.DESC_GET_ALL_USERGROUPS,
+                    new Object[0]);
 
             while (userGroupTable.next()) {
                 try {
@@ -124,7 +126,9 @@ public final class UserStore extends Shutdown {
 
             // --------------------load memberships--------------------------------------------------
 
-            final ResultSet memberTable = conPool.submitInternalQuery("get_all_memberships", new Object[0]); // NOI18N
+            final ResultSet memberTable = conPool.submitInternalQuery(
+                    DBConnection.DESC_GET_ALL_MEMBERSHIPS,
+                    new Object[0]);
 
             while (memberTable.next()) {
                 try {
@@ -227,7 +231,7 @@ public final class UserStore extends Shutdown {
         params[1] = user.getName().toLowerCase();
         params[2] = oldPassword;
 
-        if (conPool.submitInternalUpdate("change_user_password", params) > 0) { // NOI18N
+        if (conPool.submitInternalUpdate(DBConnection.DESC_CHANGE_USER_PASSWORD, params) > 0) {
             return true;
         } else {
             return false;

@@ -57,7 +57,7 @@ public final class MethodCache extends Shutdown {
 
         final DBConnection con = conPool.getDBConnection();
         try {
-            final ResultSet methodTable = con.submitInternalQuery("get_all_methods", new Object[0]); // NOI18N
+            final ResultSet methodTable = con.submitInternalQuery(DBConnection.DESC_GET_ALL_METHODS, new Object[0]);
 
             while (methodTable.next())                             // add all objects to the hashtable
             {
@@ -115,7 +115,7 @@ public final class MethodCache extends Shutdown {
         try {
             final DBConnection con = conPool.getDBConnection();
 
-            final ResultSet permTable = con.submitInternalQuery("get_all_method_permissions", new Object[0]); // NOI18N
+            final ResultSet permTable = con.submitInternalQuery(DBConnection.DESC_GET_ALL_METHOD_PERMS, new Object[0]);
 
             final String lsName = properties.getServerName();
 

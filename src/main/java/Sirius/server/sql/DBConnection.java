@@ -67,6 +67,18 @@ public final class DBConnection implements DBBackend {
     public static final String DESC_INSERT_STRINGREPCACHEENTRY = "insert_stringrepcacheentry";                 // NOI18N
     public static final String DESC_UPDATE_STRINGREPCACHEENTRY = "update_stringrepcacheentry";                 // NOI18N
 
+    public static final String DESC_GET_ALL_USERGROUPS = "get_all_usergroups";             // NOI18N
+    public static final String DESC_GET_ALL_CLASSES = "get_all_classes";                   // NOI18N
+    public static final String DESC_GET_ALL_CLASS_ATTRIBUTES = "get_all_class_attributes"; // NOI18N
+    public static final String DESC_GET_ALL_METHODS = "get_all_methods";                   // NOI18N
+    public static final String DESC_GET_ALL_IMAGES = "get_all_images";                     // NOI18N
+    public static final String DESC_GET_ALL_USERS = "get_all_users";                       // NOI18N
+    public static final String DESC_GET_ALL_MEMBERSHIPS = "get_all_memberships";           // NOI18N
+    public static final String DESC_CHANGE_USER_PASSWORD = "change_user_password";         // NOI18N
+    public static final String DESC_GET_ALL_CLASS_PERMS = "get_all_class_permissions";     // NOI18N
+    public static final String DESC_GET_ALL_METHOD_PERMS = "get_all_method_permissions";   // NOI18N
+    public static final String DESC_GET_ATTRIBUTE_INFO = "get_attribute_info";             // NOI18N
+
     //~ Instance fields --------------------------------------------------------
 
     protected final DBClassifier dbc;
