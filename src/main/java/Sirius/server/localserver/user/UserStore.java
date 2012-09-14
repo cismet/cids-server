@@ -227,7 +227,7 @@ public final class UserStore extends Shutdown {
         params[1] = user.getName().toLowerCase();
         params[2] = oldPassword;
 
-        if (conPool.submitUpdate("change_user_password", params) > 0) { // NOI18N
+        if (conPool.submitInternalUpdate("change_user_password", params) > 0) { // NOI18N
             return true;
         } else {
             return false;
