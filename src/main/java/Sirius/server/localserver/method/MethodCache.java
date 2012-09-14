@@ -115,7 +115,7 @@ public final class MethodCache extends Shutdown {
         try {
             final DBConnection con = conPool.getDBConnection();
 
-            final ResultSet permTable = con.submitQuery("get_all_method_permissions", new Object[0]); // NOI18N
+            final ResultSet permTable = con.submitInternalQuery("get_all_method_permissions", new Object[0]); // NOI18N
 
             final String lsName = properties.getServerName();
 
