@@ -11,6 +11,8 @@
  */
 package Sirius.server.middleware.types;
 
+import Sirius.server.newuser.User;
+
 import Sirius.util.Editable;
 import Sirius.util.Groupable;
 import Sirius.util.Renderable;
@@ -179,6 +181,15 @@ public interface MetaObject extends Sirius.server.localserver.object.Object,
      * @return  Value of property changed.
      */
     boolean isChanged();
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  true, iff the given user has write permission on the object
+     */
+    boolean hasObjectWritePermission(final User user);
 
     /**
      * DOCUMENT ME!

@@ -13,6 +13,7 @@ package Sirius.server.middleware.types;
 
 import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.localserver.attribute.ObjectAttribute;
+import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.proxy.MetaService;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserContextProvider;
@@ -24,7 +25,6 @@ import org.apache.log4j.Logger;
 
 import org.openide.util.Lookup;
 
-import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,7 +33,6 @@ import java.util.Set;
 
 import de.cismet.cids.dynamics.CidsBean;
 
-import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.CallServerServiceProvider;
 
 import de.cismet.cids.tools.fromstring.FromStringCreator;
@@ -477,11 +476,13 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return  false, because a LightweightMetaObject cannot be a dummy
      */
     @Override
     public boolean isDummy() {
-        return getRealMetaObject().isDummy();
+        // the isDummy method is invoked by the updateMetaObject method of the PersistenceManager
+        // and a check, if the object is a dummy or not, would be decrease performance of the update method
+        return false;
     }
 
     /**
@@ -516,12 +517,14 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
 
     /**
      * DOCUMENT ME!
-     *
-     * @param  dummy  DOCUMENT ME!
+     * 
+     * @param  dummy  true will be ignored, because a LightweightMetaObject cannot be a dummy
      */
     @Override
     public void setDummy(final boolean dummy) {
-        getRealMetaObject().setDummy(dummy);
+        if (dummy) {
+            log.error("A LightweightMetaObject is set to dummy, but this is not allowed and will be ignored.");
+        }
     }
 
     /**
@@ -648,7 +651,14 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
                             .lookup(CallServerServiceProvider.class);
                 if (csProvider != null) {
                     metaService = csProvider.getCallServerService();
+                } else {
+                    // this code should only be executed on the server side
+                    final MetaObject mo = DomainServerImpl.getServerInstance()
+                                .getMetaObject(getUser(), getObjectID(), getClassID());
+                    cache.put(getKeyForCache(classID, objectID), mo);
+                    return mo;
                 }
+
                 if (metaService == null) {
                     throw new IllegalStateException(
                         "Can not retrieve MetaObject, as Metaservice for LightweightMetaObject \""
@@ -825,5 +835,10 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     public boolean alreadyFetched() {
         return lazyMetaObject != null;
+    }
+
+    @Override
+    public boolean hasObjectWritePermission(final User user) {
+        return getRealMetaObject().hasObjectWritePermission(user);
     }
 }

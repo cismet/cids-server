@@ -18,9 +18,11 @@ import org.openide.util.Lookup;
 import java.util.*;
 
 import de.cismet.cids.dynamics.CidsBean;
+import de.cismet.cids.dynamics.CustomBeanPermissionProvider;
 
 import de.cismet.cids.tools.tostring.*;
 
+import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
 
 /**
@@ -242,7 +244,7 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
      */
     @Override
     public boolean isChanged() {
-        return changed;
+        return changed || (getStatus() == MODIFIED) || (getStatus() == NEW);
     }
 
     /**
@@ -538,6 +540,41 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
             }
         } else {
             // logger.warn("Classcache konnte nicht gesetzt werden.");
+        }
+    }
+
+    @Override
+    public boolean hasObjectWritePermission(final User user) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("hasObjectWritePermission for user: " + user); // NOI18N
+        }
+        CustomBeanPermissionProvider customPermissionProvider = null;
+
+        try {
+            final Class cpp = ClassloadingHelper.getDynamicClass(this.getMetaClass(),
+                    ClassloadingHelper.CLASS_TYPE.PERMISSION_PROVIDER);
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("custom write permission provider retrieval result: " + cpp); // NOI18N
+            }
+
+            if (cpp == null) {
+                return true;
+            }
+
+            customPermissionProvider = (CustomBeanPermissionProvider)cpp.getConstructor().newInstance();
+            customPermissionProvider.setCidsBean(this.getBean());
+        } catch (final Exception ex) {
+            // FIXME: probably this behaviour is error prone since we allow write permission if there is a problem
+            // with the loading of the custom permission provider, which probably would say "NO" if it was loaded
+            // correctly
+            LOG.warn("error during creation of custom permission provider", ex); // NOI18N
+        }
+
+        if (customPermissionProvider != null) {
+            return customPermissionProvider.getCustomWritePermissionDecisionforUser(user);
+        } else {
+            return true;
         }
     }
 
