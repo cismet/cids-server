@@ -13,13 +13,17 @@ package Sirius.server.middleware.types;
 
 import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.localserver.attribute.ObjectAttribute;
+import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.proxy.MetaService;
 import Sirius.server.newuser.User;
+import Sirius.server.newuser.UserContextProvider;
 import Sirius.server.newuser.UserGroup;
 
 import Sirius.util.Mapable;
 
 import org.apache.log4j.Logger;
+
+import org.openide.util.Lookup;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -28,6 +32,8 @@ import java.util.Map;
 import java.util.Set;
 
 import de.cismet.cids.dynamics.CidsBean;
+
+import de.cismet.cids.server.CallServerServiceProvider;
 
 import de.cismet.cids.tools.fromstring.FromStringCreator;
 
@@ -39,6 +45,10 @@ import de.cismet.cids.tools.fromstring.FromStringCreator;
  */
 public final class LightweightMetaObject implements MetaObject, Comparable<LightweightMetaObject> {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    static Map<String, MetaObject> cache = Collections.synchronizedMap(new HashMap<String, MetaObject>());
+
     //~ Instance fields --------------------------------------------------------
 
     private transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
@@ -47,28 +57,60 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     private transient MetaService metaService;
     private final Map<String, Object> attributesMap;
     private final int classID;
-    private final User user;
+    private User user;
     private int objectID;
     private String representation;
+    private String domain;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new LightweightMetaObject object.
      *
+     * @param  classID   DOCUMENT ME!
+     * @param  objectID  DOCUMENT ME!
+     * @param  domain    DOCUMENT ME!
+     * @param  user      DOCUMENT ME!
+     */
+    public LightweightMetaObject(final int classID,
+            final int objectID,
+            final String domain,
+            final User user) {
+        this.classID = classID;
+        this.objectID = objectID;
+        this.domain = domain;
+        this.user = user;
+        this.attributesMap = new HashMap<String, Object>();
+        setFormater(new AbstractAttributeRepresentationFormater() {
+
+                @Override
+                public String getRepresentation() {
+                    final StringBuilder result = new StringBuilder();
+                    result.append("LWO:").append(classID).append("@").append(objectID).append("@").append(domain);
+                    return result.toString();
+                }
+            });
+    }
+
+    /**
+     * Creates a new LightweightMetaObject object.
+     *
      * @param  classID        DOCUMENT ME!
      * @param  objectID       DOCUMENT ME!
+     * @param  domain         DOCUMENT ME!
      * @param  user           DOCUMENT ME!
      * @param  attributesMap  DOCUMENT ME!
      * @param  formater       DOCUMENT ME!
      */
     public LightweightMetaObject(final int classID,
             final int objectID,
+            final String domain,
             final User user,
             final Map<String, Object> attributesMap,
             final AbstractAttributeRepresentationFormater formater) {
         this.classID = classID;
         this.objectID = objectID;
+        this.domain = domain;
         this.user = user;
         this.metaService = null;
         this.attributesMap = Collections.unmodifiableMap(attributesMap);
@@ -164,12 +206,16 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
 
     @Override
     public void setAllClasses(final HashMap classes) {
-        getRealMetaObject().setAllClasses(classes);
+        if (alreadyFetched()) {
+            getRealMetaObject().setAllClasses(classes);
+        }
     }
 
     @Override
     public void setAllClasses() {
-        getRealMetaObject().setAllClasses();
+        if (alreadyFetched()) {
+            getRealMetaObject().setAllClasses();
+        }
     }
 
     @Override
@@ -430,11 +476,13 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return  false, because a LightweightMetaObject cannot be a dummy
      */
     @Override
     public boolean isDummy() {
-        return getRealMetaObject().isDummy();
+        // the isDummy method is invoked by the updateMetaObject method of the PersistenceManager
+        // and a check, if the object is a dummy or not, would be decrease performance of the update method
+        return false;
     }
 
     /**
@@ -469,12 +517,14 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
 
     /**
      * DOCUMENT ME!
-     *
-     * @param  dummy  DOCUMENT ME!
+     * 
+     * @param  dummy  true will be ignored, because a LightweightMetaObject cannot be a dummy
      */
     @Override
     public void setDummy(final boolean dummy) {
-        getRealMetaObject().setDummy(dummy);
+        if (dummy) {
+            log.error("A LightweightMetaObject is set to dummy, but this is not allowed and will be ignored.");
+        }
     }
 
     /**
@@ -570,19 +620,71 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
+     * @param   classID   DOCUMENT ME!
+     * @param   objectID  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getKeyForCache(final int classID, final int objectID) {
+        return new StringBuffer("").append(classID).append(",").append(objectID).toString();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      *
      * @throws  Exception              DOCUMENT ME!
      * @throws  IllegalStateException  DOCUMENT ME!
      */
     private MetaObject fetchRealMetaObject() throws Exception {
-        if (metaService == null) {
-            throw new IllegalStateException(
-                "Can not retrieve MetaObject, as Metaservice for LightweightMetaObject \""
-                        + toString() // NOI18N
-                        + "\" is null!"); // NOI18N
+        // try the cache
+
+        final MetaObject cacheHit = cache.get(getKeyForCache(classID, objectID));
+        if (cacheHit != null) {
+//            System.out.println("HIT!!");
+            return cacheHit;
+        } else {
+            if (metaService == null) {
+                // try to get the metaservice over the lookup
+                final CallServerServiceProvider csProvider = Lookup.getDefault()
+                            .lookup(CallServerServiceProvider.class);
+                if (csProvider != null) {
+                    metaService = csProvider.getCallServerService();
+                } else {
+                    // this code should only be executed on the server side
+                    final MetaObject mo = DomainServerImpl.getServerInstance()
+                                .getMetaObject(getUser(), getObjectID(), getClassID());
+                    cache.put(getKeyForCache(classID, objectID), mo);
+                    return mo;
+                }
+
+                if (metaService == null) {
+                    throw new IllegalStateException(
+                        "Can not retrieve MetaObject, as Metaservice for LightweightMetaObject \""
+                                + toString() // NOI18N
+                                + "\" is null!"); // NOI18N
+                }
+            }
+
+            if (user == null) {
+                final UserContextProvider usp = Lookup.getDefault().lookup(UserContextProvider.class);
+                if (usp != null) {
+                    user = usp.getUser();
+                }
+                if (user == null) {
+                    throw new IllegalStateException(
+                        "Can not retrieve MetaObject, as User for LightweightMetaObject \""
+                                + toString() // NOI18N
+                                + "\" is null!"); // NOI18N
+                }
+            }
+            System.out.println("Fetch real Object for " + this);
+
+            final MetaObject mo = metaService.getMetaObject(getUser(), getObjectID(), getClassID(), getDomain());
+            cache.put(getKeyForCache(classID, objectID), mo);
+            return mo;
         }
-        return metaService.getMetaObject(getUser(), getObjectID(), getClassID(), getUser().getDomain());
     }
 
     @Override
@@ -718,11 +820,25 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
 
     @Override
     public String getDomain() {
-        return getUser().getDomain();
+        return domain;
     }
 
     @Override
     public String getClassKey() {
-        return classID + "@" + getUser().getDomain(); // NOI18N
+        return classID + "@" + getDomain(); // NOI18N
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean alreadyFetched() {
+        return lazyMetaObject != null;
+    }
+
+    @Override
+    public boolean hasObjectWritePermission(final User user) {
+        return getRealMetaObject().hasObjectWritePermission(user);
     }
 }

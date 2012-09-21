@@ -116,37 +116,11 @@ public class CidsBean implements PropertyChangeListener {
      * @return  DOCUMENT ME!
      */
     public boolean hasObjectWritePermission(final User user) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("hasObjectWritePermission for user: " + user); // NOI18N
-        }
-
-        if (customPermissionProvider == null) {
-            try {
-                final Class cpp = ClassloadingHelper.getDynamicClass(getMetaObject().getMetaClass(),
-                        ClassloadingHelper.CLASS_TYPE.PERMISSION_PROVIDER);
-
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("custom write permission provider retrieval result: " + cpp); // NOI18N
-                }
-
-                if (cpp == null) {
-                    return true;
-                }
-
-                customPermissionProvider = (CustomBeanPermissionProvider)cpp.getConstructor().newInstance();
-                customPermissionProvider.setCidsBean(this);
-            } catch (final Exception ex) {
-                // FIXME: probably this behaviour is error prone since we allow write permission if there is a problem
-                // with the loading of the custom permission provider, which probably would say "NO" if it was loaded
-                // correctly
-                LOG.warn("error during creation of custom permission provider", ex); // NOI18N
-            }
-        }
-
-        if (customPermissionProvider != null) {
-            return customPermissionProvider.getCustomWritePermissionDecisionforUser(user);
+        if (metaObject != null) {
+            return metaObject.hasObjectWritePermission(user);
         } else {
-            return true;
+            LOG.error("meta object is null. The write permission cannot be determined.");
+            return false;
         }
     }
 
@@ -388,22 +362,42 @@ public class CidsBean implements PropertyChangeListener {
         if (!oa.isArray() && !oa.isVirtualOneToManyAttribute()) {
             final Object oldValue = oa.getValue();
             final Object value = evt.getNewValue();
+            boolean realChanges = false;
             if (oa.referencesObject() && (value instanceof CidsBean) && (value != null)) {
                 final CidsBean cbv = (CidsBean)value;
+                realChanges = ((oldValue == null)
+                                || ((oldValue instanceof MetaObject)
+                                    && !((Sirius.server.middleware.types.MetaObject)oldValue).getBean().toJSONString()
+                                    .equals(
+                                        cbv.toJSONString())));
                 oa.setValue(cbv.getMetaObject());
                 cbv.setBacklinkInformation(field, this);
                 if (cbv.getMetaObject().getStatus() == MetaObject.TO_DELETE) {
                     cbv.getMetaObject().setStatus(MetaObject.MODIFIED);
                 }
             } else {
-                oa.setValue(value);
+                if (((oldValue != null) && !oldValue.equals(value)) || ((oldValue == null) && (value != null))) {
+                    oa.setValue(value);
+                    realChanges = true;
+                }
             }
 
             if (LOG.isDebugEnabled()) {
-                LOG.debug("a property changed:" + metaObject.getDebugString()); // NOI18N
+                if (realChanges) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("a property changed:" + metaObject.getDebugString()); // NOI18N
+                    }
+                } else {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(
+                            "a property changed, but the content of the object was not changed. seams to be a caching or normalization move.:"
+                                    + metaObject.getDebugString());                     // NOI18N
+                    }
+                }
             }
 
-            if (((oldValue == null) && (value != null)) || ((oldValue != null) && !oldValue.equals(value))) {
+            if (((oldValue == null) && (value != null))
+                        || ((oldValue != null) && realChanges)) {
                 oa.setChanged(true);
                 metaObject.setStatus(MetaObject.MODIFIED);
 

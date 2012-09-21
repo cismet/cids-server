@@ -127,196 +127,6 @@ public final class ObjectFactory extends Shutdown {
     }
 
     /**
-     * ---!!!
-     *
-     * @param   classID                DOCUMENT ME!
-     * @param   user                   DOCUMENT ME!
-     * @param   representationFields   DOCUMENT ME!
-     * @param   representationPattern  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classID,
-            final User user,
-            final String[] representationFields,
-            final String representationPattern) throws Exception {
-        final Sirius.server.localserver._class.Class c = classCache.getClass(classID);
-        final String findAllStmnt = createFindAllQueryForClassID(c, representationFields);
-        return getLightweightMetaObjectsByQuery(
-                c,
-                user,
-                findAllStmnt.toString(),
-                representationFields,
-                new StringPatternFormater(representationPattern, representationFields));
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   classID               DOCUMENT ME!
-     * @param   user                  DOCUMENT ME!
-     * @param   representationFields  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classID,
-            final User user,
-            final String[] representationFields) throws Exception {
-        final Sirius.server.localserver._class.Class c = classCache.getClass(classID);
-        final String findAllStmnt = createFindAllQueryForClassID(c, representationFields);
-        return getLightweightMetaObjectsByQuery(c, user, findAllStmnt.toString(), representationFields, null);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   c                     DOCUMENT ME!
-     * @param   representationFields  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private String createFindAllQueryForClassID(final Sirius.server.localserver._class.Class c,
-            final String[] representationFields) {
-        final String primaryKeyField = c.getPrimaryKey();
-        final ClassAttribute sortingColumnAttribute = c.getClassAttribute("sortingColumn"); // NOI18N
-        final StringBuilder findAllStmnt = new StringBuilder("select " + primaryKeyField);  // NOI18N
-
-        for (int i = 0; i < representationFields.length; ++i) {
-            findAllStmnt.append(", "); // NOI18N
-            final String field = representationFields[i];
-            findAllStmnt.append(field);
-        }
-
-        findAllStmnt.append(" from "); // NOI18N
-        findAllStmnt.append(c.getTableName());
-
-        if (sortingColumnAttribute != null) {
-            findAllStmnt.append(" order by ").append(sortingColumnAttribute.getValue()); // NOI18N
-        }
-
-        return findAllStmnt.toString();
-    }
-
-    /**
-     * ---!!!
-     *
-     * @param   classId                DOCUMENT ME!
-     * @param   user                   DOCUMENT ME!
-     * @param   query                  DOCUMENT ME!
-     * @param   representationFields   DOCUMENT ME!
-     * @param   representationPattern  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
-            final User user,
-            final String query,
-            final String[] representationFields,
-            final String representationPattern) throws Exception {
-        final Sirius.server.localserver._class.Class c = classCache.getClass(classId);
-        return getLightweightMetaObjectsByQuery(
-                c,
-                user,
-                query,
-                representationFields,
-                new StringPatternFormater(representationPattern, representationFields));
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   classId               DOCUMENT ME!
-     * @param   user                  DOCUMENT ME!
-     * @param   query                 DOCUMENT ME!
-     * @param   representationFields  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
-            final User user,
-            final String query,
-            final String[] representationFields) throws Exception {
-        final Sirius.server.localserver._class.Class c = classCache.getClass(classId);
-        return getLightweightMetaObjectsByQuery(c, user, query, representationFields, null);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   c                     DOCUMENT ME!
-     * @param   user                  DOCUMENT ME!
-     * @param   query                 DOCUMENT ME!
-     * @param   representationFields  DOCUMENT ME!
-     * @param   formater              DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  SQLException  DOCUMENT ME!
-     */
-    private LightweightMetaObject[] getLightweightMetaObjectsByQuery(
-            final Sirius.server.localserver._class.Class c,
-            final User user,
-            final String query,
-            final String[] representationFields,
-            final AbstractAttributeRepresentationFormater formater) throws SQLException {
-        final String primaryKeyField = c.getPrimaryKey();
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("LightweightMO by Query: " + query); // NOI18N
-        }
-        Statement stmnt = null;
-        ResultSet rs = null;
-
-        try {
-            stmnt = conPool.getConnection().createStatement();
-            rs = stmnt.executeQuery(query);
-
-            final Set<LightweightMetaObject> lwMoSet = new LinkedHashSet<LightweightMetaObject>();
-            while (rs.next()) {
-                final Map<String, java.lang.Object> attributeMap = new HashMap<String, java.lang.Object>();
-                // primary key must be returned by the query!
-                final int oID = rs.getInt(primaryKeyField);
-                attributeMap.put(primaryKeyField, oID);
-                final java.lang.Object[] repObjs = new java.lang.Object[representationFields.length];
-                for (int i = 0; i < repObjs.length; ++i) {
-                    final String fld = representationFields[i];
-                    final java.lang.Object retAttrVal = checkSerializabilityAndMakeSerializable(rs.getObject(fld));
-                    attributeMap.put(fld.toLowerCase(), retAttrVal);
-                    repObjs[i] = retAttrVal;
-                }
-                lwMoSet.add(new LightweightMetaObject(c.getID(), oID, user, attributeMap, formater));
-            }
-
-            return lwMoSet.toArray(new LightweightMetaObject[lwMoSet.size()]);
-        } finally {
-            DBConnection.closeResultSets(rs);
-            DBConnection.closeStatements(stmnt);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   o  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private java.lang.Object checkSerializabilityAndMakeSerializable(final java.lang.Object o) {
-        if ((o == null) || (o instanceof Serializable)) {
-            return o;
-        } else {
-            return o.toString();
-        }
-    }
-
-    /**
      * ////////////////////////////////////////////////////////////////////////////////
      *
      * @param   objectId  DOCUMENT ME!
@@ -328,6 +138,23 @@ public final class ObjectFactory extends Shutdown {
      */
     public Sirius.server.localserver.object.Object getObject(final int objectId, final int classId)
             throws SQLException {
+        return getObject(objectId, classId, false);
+    }
+
+    /**
+     * ////////////////////////////////////////////////////////////////////////////////
+     *
+     * @param   objectId                 DOCUMENT ME!
+     * @param   classId                  DOCUMENT ME!
+     * @param   allowLightweightObjects  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    public Sirius.server.localserver.object.Object getObject(final int objectId,
+            final int classId,
+            final boolean allowLightweightObjects) throws SQLException {
         if (LOG != null) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
@@ -366,7 +193,7 @@ public final class ObjectFactory extends Shutdown {
             rs = stmnt.executeQuery(getObjectStmnt);
 
             if (rs.next()) {
-                return createObject(objectId, rs, c);
+                return createObject(objectId, rs, c, allowLightweightObjects);
             } else {
                 LOG.error("<LS> ERROR kein match f\u00FCr " + getObjectStmnt); // NOI18N
                 return null;
@@ -380,9 +207,10 @@ public final class ObjectFactory extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   objectId  DOCUMENT ME!
-     * @param   rs        DOCUMENT ME!
-     * @param   c         DOCUMENT ME!
+     * @param   objectId                 DOCUMENT ME!
+     * @param   rs                       DOCUMENT ME!
+     * @param   c                        DOCUMENT ME!
+     * @param   allowLightweightObjects  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -390,8 +218,9 @@ public final class ObjectFactory extends Shutdown {
      */
     Sirius.server.localserver.object.Object createObject(final int objectId,
             final ResultSet rs,
-            final Sirius.server.localserver._class.Class c) throws SQLException {
-        return createObject(objectId, rs, c, null);
+            final Sirius.server.localserver._class.Class c,
+            final boolean allowLightweightObjects) throws SQLException {
+        return createObject(objectId, rs, c, null, allowLightweightObjects);
     }
 
     /**
@@ -410,6 +239,27 @@ public final class ObjectFactory extends Shutdown {
             final ResultSet rs,
             final Sirius.server.localserver._class.Class c,
             final Sirius.server.localserver._class.Class backlinkClassToExclude) throws SQLException {
+        return createObject(objectId, rs, c, backlinkClassToExclude, false);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   objectId                 DOCUMENT ME!
+     * @param   rs                       DOCUMENT ME!
+     * @param   c                        DOCUMENT ME!
+     * @param   backlinkClassToExclude   DOCUMENT ME!
+     * @param   allowLightweightObjects  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    Sirius.server.localserver.object.Object createObject(final int objectId,
+            final ResultSet rs,
+            final Sirius.server.localserver._class.Class c,
+            final Sirius.server.localserver._class.Class backlinkClassToExclude,
+            final boolean allowLightweightObjects) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("create Object entered for result" + rs + "object_id:: " + objectId + " class " + c.getID()); // NOI18N
             // construct object rump attributes have to be added yet
@@ -535,7 +385,14 @@ public final class ObjectFactory extends Shutdown {
                                     final int o_id = rs.getInt(fieldName);
                                     // LOG.debug("attribute is object");
                                     try {
-                                        attrValue = getObject(o_id, mai.getForeignKeyClassId());
+                                        final Sirius.server.localserver._class.Class maiClass = classCache.getClass(
+                                                mai.getForeignKeyClassId());
+                                        final boolean cacheHintSet = maiClass.getClassAttribute("CACHEHINT") != null;
+                                        if (allowLightweightObjects && cacheHintSet) {
+                                            attrValue = new LightweightObject(o_id, mai.getForeignKeyClassId());
+                                        } else {
+                                            attrValue = getObject(o_id, mai.getForeignKeyClassId(), true);
+                                        }
                                     } catch (Exception e) {
                                         LOG.error("getObject recursion interrupted for oid" + o_id + "  MAI " + mai, e); // NOI18N
                                         attrValue = null;
@@ -647,7 +504,7 @@ public final class ObjectFactory extends Shutdown {
             while (rs.next()) {
                 final int o_id = rs.getInt(c.getPrimaryKey());
 
-                final Sirius.server.localserver.object.Object element = createObject(o_id, rs, c);
+                final Sirius.server.localserver.object.Object element = createObject(o_id, rs, c, true);
 
                 if (element != null) {
                     final ObjectAttribute oa = new ObjectAttribute(

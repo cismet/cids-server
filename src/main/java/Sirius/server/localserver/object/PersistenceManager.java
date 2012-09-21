@@ -11,9 +11,9 @@ import Sirius.server.AbstractShutdownable;
 import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
 import Sirius.server.localserver.DBServer;
-import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
+import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
@@ -193,24 +193,28 @@ public final class PersistenceManager extends Shutdown {
      * @throws  SQLException          DOCUMENT ME!
      */
     public void updateMetaObject(final User user, final MetaObject mo) throws PersistenceException, SQLException {
-        try {
-            final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
-            final TransactionHelper transactionHelper = local.get();
-            transactionHelper.beginWork();
-            updateMetaObjectWithoutTransaction(user, mo);
-            transactionHelper.commit();
+        if (!(mo instanceof LightweightMetaObject)) {
+            try {
+                final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
+                final TransactionHelper transactionHelper = local.get();
+                transactionHelper.beginWork();
+                updateMetaObjectWithoutTransaction(user, mo);
+                transactionHelper.commit();
 
-            for (final CidsTrigger ct : rightTriggers) {
-                ct.afterCommittedInsert(mo.getBean(), user);
+                for (final CidsTrigger ct : rightTriggers) {
+                    ct.afterCommittedInsert(mo.getBean(), user);
+                }
+            } catch (final Exception e) {
+                final String message = "cannot update metaobject"; // NOI18N
+                LOG.error(message, e);
+                rollback();
+                throw new PersistenceException(message, e);
+            } finally {
+                local.get().close();
+                local.remove();
             }
-        } catch (final Exception e) {
-            final String message = "cannot update metaobject"; // NOI18N
-            LOG.error(message, e);
-            rollback();
-            throw new PersistenceException(message, e);
-        } finally {
-            local.get().close();
-            local.remove();
+        } else {
+            LOG.info("The object that should be updated is a lightweight object. So the update is ignored.");
         }
     }
 
@@ -295,7 +299,7 @@ public final class PersistenceManager extends Shutdown {
         if (
             dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
                         user.getUserGroup())
-                    && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
+                    && (mo.isDummy() || mo.hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
 
             final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
             for (final CidsTrigger ct : rightTriggers) {
@@ -496,7 +500,7 @@ public final class PersistenceManager extends Shutdown {
         if (
             dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
                         user.getUserGroup())
-                    && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
+                    && (mo.isDummy() || mo.hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
             // existiert gar keine sinnvolle
             // bean
 
@@ -907,7 +911,7 @@ public final class PersistenceManager extends Shutdown {
         if (
             dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
                         user.getUserGroup())
-                    && (mo.isDummy() || mo.getBean().hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
+                    && (mo.isDummy() || mo.hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
             // existiert gar keine sinnvolle
             // bean won't insert history
             // here since we assume that the

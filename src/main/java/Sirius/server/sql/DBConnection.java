@@ -47,6 +47,38 @@ public final class DBConnection implements DBBackend {
 
     private static final transient Logger LOG = Logger.getLogger(DBConnection.class);
 
+    public static final String SQL_CODE_ALREADY_CLOSED = "FFFFF"; // NOI18N
+    public static final String SQL_CODE_INVALID_DESC = "FFFF01";  // NOI18N
+
+    // TODO: exchange simple descriptor string with small descriptor class that contains additional metadata regarding
+    // the query specific information
+    public static final String DESC_VERIFY_USER_PW = "verify_user_password";                                   // NOI18N
+    public static final String DESC_FETCH_DOMAIN_ID_FROM_DOMAIN_STRING = "fetch_domain_id_from_domain_string"; // NOI18N
+    public static final String DESC_FETCH_CONFIG_ATTR_KEY_ID = "fetch_config_attr_key_id";                     // NOI18N
+    public static final String DESC_FETCH_CONFIG_ATTR_USER_VALUE = "fetch_config_attr_user_value";             // NOI18N
+    public static final String DESC_FETCH_CONFIG_ATTR_UG_VALUE = "fetch_config_attr_ug_value";                 // NOI18N
+    public static final String DESC_FETCH_CONFIG_ATTR_DOMAIN_VALUE = "fetch_config_attr_domain_value";         // NOI18N
+    public static final String DESC_FETCH_HISTORY = "fetch_history";                                           // NOI18N
+    public static final String DESC_FETCH_HISTORY_LIMIT = "fetch_history_limit";                               // NOI18N
+    public static final String DESC_INSERT_HISTORY_ENTRY = "insert_history_entry";                             // NOI18N
+    public static final String DESC_HAS_HISTORY = "has_history";                                               // NOI18N
+    public static final String DESC_TABLE_HAS_COLUMN = "table_has_column";                                     // NOI18N
+    public static final String DESC_DELETE_STRINGREPCACHEENTRY = "delete_stringrepcacheentry";                 // NOI18N
+    public static final String DESC_INSERT_STRINGREPCACHEENTRY = "insert_stringrepcacheentry";                 // NOI18N
+    public static final String DESC_UPDATE_STRINGREPCACHEENTRY = "update_stringrepcacheentry";                 // NOI18N
+
+    public static final String DESC_GET_ALL_USERGROUPS = "get_all_usergroups";             // NOI18N
+    public static final String DESC_GET_ALL_CLASSES = "get_all_classes";                   // NOI18N
+    public static final String DESC_GET_ALL_CLASS_ATTRIBUTES = "get_all_class_attributes"; // NOI18N
+    public static final String DESC_GET_ALL_METHODS = "get_all_methods";                   // NOI18N
+    public static final String DESC_GET_ALL_IMAGES = "get_all_images";                     // NOI18N
+    public static final String DESC_GET_ALL_USERS = "get_all_users";                       // NOI18N
+    public static final String DESC_GET_ALL_MEMBERSHIPS = "get_all_memberships";           // NOI18N
+    public static final String DESC_CHANGE_USER_PASSWORD = "change_user_password";         // NOI18N
+    public static final String DESC_GET_ALL_CLASS_PERMS = "get_all_class_permissions";     // NOI18N
+    public static final String DESC_GET_ALL_METHOD_PERMS = "get_all_method_permissions";   // NOI18N
+    public static final String DESC_GET_ATTRIBUTE_INFO = "get_attribute_info";             // NOI18N
+
     //~ Instance fields --------------------------------------------------------
 
     protected final DBClassifier dbc;

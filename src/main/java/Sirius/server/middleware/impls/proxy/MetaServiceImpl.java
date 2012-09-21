@@ -539,7 +539,7 @@ public class MetaServiceImpl implements MetaService {
     @Override
     public int updateMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        if (logger != null) {
+        if ((logger != null) && !(metaObject instanceof LightweightMetaObject)) {
             if (logger.isDebugEnabled()) {
                 logger.debug(
                     "<CS>updateMetaObject  for user" // NOI18N

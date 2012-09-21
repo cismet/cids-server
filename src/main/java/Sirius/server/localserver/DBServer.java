@@ -9,6 +9,7 @@ package Sirius.server.localserver;
 
 import Sirius.server.Shutdown;
 import Sirius.server.localserver._class.ClassCache;
+import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.history.HistoryServer;
 import Sirius.server.localserver.method.MethodCache;
 import Sirius.server.localserver.method.MethodMap;
@@ -18,10 +19,8 @@ import Sirius.server.localserver.tree.AbstractTree;
 import Sirius.server.localserver.tree.NodeReferenceList;
 import Sirius.server.localserver.tree.VirtualTree;
 import Sirius.server.localserver.user.UserStore;
-import Sirius.server.middleware.types.DefaultMetaObject;
-import Sirius.server.middleware.types.MetaClass;
-import Sirius.server.middleware.types.MetaObject;
-import Sirius.server.middleware.types.Node;
+import Sirius.server.middleware.types.*;
+import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.permission.PolicyHolder;
 import Sirius.server.property.ServerProperties;
@@ -30,9 +29,13 @@ import Sirius.server.sql.DBConnectionPool;
 
 import org.apache.log4j.Logger;
 
-import java.sql.SQLException;
+import java.io.Serializable;
 
-import java.util.List;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import java.util.*;
 
 /**
  * DOCUMENT ME!
@@ -131,7 +134,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      * @return  DOCUMENT ME!
      */
     public MetaClass getClass(final int classID) {
-        return new MetaClass(classes.getClass(classID), properties.getServerName());
+        return new MetaClass(classes.getClass(classID), getDomain());
     }
     /**
      * ---------------------------------------------------------------------------
@@ -147,7 +150,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
 
         for (int i = 0; i < tmpClasses.size(); i++) {
             middleWareClasses[i] = new MetaClass((Sirius.server.localserver._class.Class)tmpClasses.get(i),
-                    properties.getServerName());
+                    getDomain());
         }
 
         return middleWareClasses;
@@ -163,7 +166,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     public MetaClass getClass(final UserGroup ug, final int classID) {
         final Sirius.server.localserver._class.Class c = classes.getClass(ug, classID);
         if (c != null) {
-            return new MetaClass(c, properties.getServerName());
+            return new MetaClass(c, getDomain());
         } else {
             return null;
         }
@@ -182,7 +185,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     public MetaClass getClassByTableName(final UserGroup ug, final String tableName) throws Throwable {
         final Sirius.server.localserver._class.Class c = classes.getClassNyTableName(ug, tableName);
         if (c != null) {
-            return new MetaClass(c, properties.getServerName());
+            return new MetaClass(c, getDomain());
         } else {
             return null;
         }
@@ -203,7 +206,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
 
             for (int i = 0; i < tmpClasses.size(); i++) {
                 middleWareClasses[i] = new MetaClass((Sirius.server.localserver._class.Class)tmpClasses.get(i),
-                        properties.getServerName());
+                        getDomain());
             }
         }
 
@@ -249,7 +252,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     /**
      * -------------------------------------------------------------------------
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   ug  DOCUMENT ME!git status
      *
      * @return  DOCUMENT ME!
      *
@@ -281,8 +284,8 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
         final Sirius.server.localserver.object.Object o = objects.getObject(oId, cId, ug);
 
         if (o != null) {
-            final MetaObject mo = new DefaultMetaObject(o.filter(ug), properties.getServerName());
-            // mo.setMetaClass(new MetaClass(classes.getClass(cId), properties.getServerName()));
+            final MetaObject mo = new DefaultMetaObject(o.filter(ug), getDomain());
+            // mo.setMetaClass(new MetaClass(classes.getClass(cId), getDomain()));
 
             mo.setAllClasses(classes.getClassHashMap());
 
@@ -314,11 +317,10 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     /**
      * //bugfix public Node getNode(Node node, UserGroup ug) throws Throwable { if(node instanceof
      * Sirius.server.localserver.tree.node.ObjectNode) { Sirius.server.localserver.tree.node.ObjectNode newNode =
-     * (Sirius.server.localserver.tree.node.ObjectNode)node; return new MetaObjectNode(
-     * newNode,properties.getServerName()); } else if (node instanceof Sirius.server.localserver.tree.node.ClassNode)
-     * return new MetaClassNode((Sirius.server.localserver.tree.node.ClassNode)node,properties.getServerName()); return
-     * new MetaNode(node,properties.getServerName()); }
-     * -----------------------------------------------------------------
+     * (Sirius.server.localserver.tree.node.ObjectNode)node; return new MetaObjectNode( newNode,getDomain()); } else if
+     * (node instanceof Sirius.server.localserver.tree.node.ClassNode) return new
+     * MetaClassNode((Sirius.server.localserver.tree.node.ClassNode)node,getDomain()); return new
+     * MetaNode(node,getDomain()); } -----------------------------------------------------------------
      *
      * @param   ids  DOCUMENT ME!
      * @param   ug   DOCUMENT ME!
@@ -443,5 +445,204 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      */
     public HistoryServer getHistoryServer() {
         return historyServer;
+    }
+
+    /**
+     * ---!!!
+     *
+     * @param   classID                DOCUMENT ME!
+     * @param   user                   DOCUMENT ME!
+     * @param   representationFields   DOCUMENT ME!
+     * @param   representationPattern  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classID,
+            final User user,
+            final String[] representationFields,
+            final String representationPattern) throws Exception {
+        final Sirius.server.localserver._class.Class c = classes.getClass(classID);
+        final String findAllStmnt = createFindAllQueryForClassID(c, representationFields);
+        return getLightweightMetaObjectsByQuery(
+                c,
+                user,
+                findAllStmnt.toString(),
+                representationFields,
+                new StringPatternFormater(representationPattern, representationFields));
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   classID               DOCUMENT ME!
+     * @param   user                  DOCUMENT ME!
+     * @param   representationFields  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classID,
+            final User user,
+            final String[] representationFields) throws Exception {
+        final Sirius.server.localserver._class.Class c = classes.getClass(classID);
+        final String findAllStmnt = createFindAllQueryForClassID(c, representationFields);
+        return getLightweightMetaObjectsByQuery(c, user, findAllStmnt.toString(), representationFields, null);
+    }
+
+    /**
+     * ---!!!
+     *
+     * @param   classId                DOCUMENT ME!
+     * @param   user                   DOCUMENT ME!
+     * @param   query                  DOCUMENT ME!
+     * @param   representationFields   DOCUMENT ME!
+     * @param   representationPattern  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
+            final User user,
+            final String query,
+            final String[] representationFields,
+            final String representationPattern) throws Exception {
+        final Sirius.server.localserver._class.Class c = classes.getClass(classId);
+        return getLightweightMetaObjectsByQuery(
+                c,
+                user,
+                query,
+                representationFields,
+                new StringPatternFormater(representationPattern, representationFields));
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   classId               DOCUMENT ME!
+     * @param   user                  DOCUMENT ME!
+     * @param   query                 DOCUMENT ME!
+     * @param   representationFields  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
+            final User user,
+            final String query,
+            final String[] representationFields) throws Exception {
+        final Sirius.server.localserver._class.Class c = classes.getClass(classId);
+        return getLightweightMetaObjectsByQuery(c, user, query, representationFields, null);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   c                     DOCUMENT ME!
+     * @param   user                  DOCUMENT ME!
+     * @param   query                 DOCUMENT ME!
+     * @param   representationFields  DOCUMENT ME!
+     * @param   formater              DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    private LightweightMetaObject[] getLightweightMetaObjectsByQuery(
+            final Sirius.server.localserver._class.Class c,
+            final User user,
+            final String query,
+            final String[] representationFields,
+            final AbstractAttributeRepresentationFormater formater) throws SQLException {
+        final String primaryKeyField = c.getPrimaryKey();
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("LightweightMO by Query: " + query); // NOI18N
+        }
+        Statement stmnt = null;
+        ResultSet rs = null;
+
+        try {
+            stmnt = this.getActiveDBConnection().getConnection().createStatement();
+            rs = stmnt.executeQuery(query);
+
+            final Set<LightweightMetaObject> lwMoSet = new LinkedHashSet<LightweightMetaObject>();
+            while (rs.next()) {
+                final Map<String, java.lang.Object> attributeMap = new HashMap<String, java.lang.Object>();
+                // primary key must be returned by the query!
+                final int oID = rs.getInt(primaryKeyField);
+                attributeMap.put(primaryKeyField, oID);
+                final java.lang.Object[] repObjs = new java.lang.Object[representationFields.length];
+                for (int i = 0; i < repObjs.length; ++i) {
+                    final String fld = representationFields[i];
+                    final java.lang.Object retAttrVal = checkSerializabilityAndMakeSerializable(rs.getObject(fld));
+                    attributeMap.put(fld.toLowerCase(), retAttrVal);
+                    repObjs[i] = retAttrVal;
+                }
+                lwMoSet.add(new LightweightMetaObject(c.getID(), oID, getDomain(), user, attributeMap, formater));
+            }
+
+            return lwMoSet.toArray(new LightweightMetaObject[lwMoSet.size()]);
+        } finally {
+            DBConnection.closeResultSets(rs);
+            DBConnection.closeStatements(stmnt);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   c                     DOCUMENT ME!
+     * @param   representationFields  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String createFindAllQueryForClassID(final Sirius.server.localserver._class.Class c,
+            final String[] representationFields) {
+        final String primaryKeyField = c.getPrimaryKey();
+        final ClassAttribute sortingColumnAttribute = c.getClassAttribute("sortingColumn"); // NOI18N
+        final StringBuilder findAllStmnt = new StringBuilder("select " + primaryKeyField);  // NOI18N
+
+        for (int i = 0; i < representationFields.length; ++i) {
+            findAllStmnt.append(", "); // NOI18N
+            final String field = representationFields[i];
+            findAllStmnt.append(field);
+        }
+
+        findAllStmnt.append(" from "); // NOI18N
+        findAllStmnt.append(c.getTableName());
+
+        if (sortingColumnAttribute != null) {
+            findAllStmnt.append(" order by ").append(sortingColumnAttribute.getValue()); // NOI18N
+        }
+
+        return findAllStmnt.toString();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   o  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private java.lang.Object checkSerializabilityAndMakeSerializable(final java.lang.Object o) {
+        if ((o == null) || (o instanceof Serializable)) {
+            return o;
+        } else {
+            return o.toString();
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getDomain() {
+        return properties.getServerName();
     }
 }
