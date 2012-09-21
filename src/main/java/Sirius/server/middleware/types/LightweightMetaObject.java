@@ -517,7 +517,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
 
     /**
      * DOCUMENT ME!
-     * 
+     *
      * @param  dummy  true will be ignored, because a LightweightMetaObject cannot be a dummy
      */
     @Override
