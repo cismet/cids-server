@@ -352,7 +352,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
      */
     public MetaObject[] getObjects(final User user, final String[] objectIDs) throws RemoteException {
         try {
-            return dbServer.getObjects(objectIDs, user.getUserGroup());
+            return dbServer.getObjects(objectIDs, user);
         } catch (Throwable e) {
             if (logger != null) {
                 logger.error(e, e);
@@ -373,7 +373,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
      */
     public MetaObject getObject(final User user, final String objectID) throws RemoteException {
         try {
-            final MetaObject mo = dbServer.getObject(objectID, user.getUserGroup());
+            final MetaObject mo = dbServer.getObject(objectID, user);
             if (mo != null) {
                 final MetaClass[] classes = dbServer.getClasses(user.getUserGroup());
 
