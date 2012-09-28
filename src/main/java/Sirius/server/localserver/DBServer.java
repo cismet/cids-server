@@ -265,13 +265,13 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      * ----------------------------------------------------------------------------
      *
      * @param   objectID  DOCUMENT ME!
-     * @param   ug        DOCUMENT ME!
+     * @param   usr       DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  SQLException  Throwable DOCUMENT ME!
      */
-    public MetaObject getObject(final String objectID, final UserGroup ug) throws SQLException {
+    public MetaObject getObject(final String objectID, final User usr) throws SQLException {
         final int oId;
         final int cId;
 
@@ -281,10 +281,10 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
 
         // An dieser Stelle wird die Referenz neu gesetzt. Deshalb funzt getParent() der ObjectAttributes nicht richtig
         // zusaetzlich erzeugt auch die filter Methode eine neue Adresse
-        final Sirius.server.localserver.object.Object o = objects.getObject(oId, cId, ug);
+        final Sirius.server.localserver.object.Object o = objects.getObject(oId, cId, usr);
 
         if (o != null) {
-            final MetaObject mo = new DefaultMetaObject(o.filter(ug), getDomain());
+            final MetaObject mo = new DefaultMetaObject(o.filter(usr.getUserGroup()), getDomain(), usr);
             // mo.setMetaClass(new MetaClass(classes.getClass(cId), getDomain()));
 
             mo.setAllClasses(classes.getClassHashMap());
@@ -299,17 +299,17 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      * DOCUMENT ME!
      *
      * @param   objectIDs  DOCUMENT ME!
-     * @param   ug         DOCUMENT ME!
+     * @param   usr        DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public MetaObject[] getObjects(final String[] objectIDs, final UserGroup ug) throws Throwable {
+    public MetaObject[] getObjects(final String[] objectIDs, final User usr) throws Throwable {
         final MetaObject[] obs = new MetaObject[objectIDs.length];
 
         for (int i = 0; i < objectIDs.length; i++) {
-            obs[i] = getObject(objectIDs[i], ug);
+            obs[i] = getObject(objectIDs[i], usr);
         }
 
         return obs;

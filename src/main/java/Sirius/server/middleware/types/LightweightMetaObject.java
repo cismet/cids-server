@@ -158,7 +158,11 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
 
     @Override
     public Logger getLogger() {
-        return getRealMetaObject().getLogger();
+        if (log == null) {
+            log = org.apache.log4j.Logger.getLogger(this.getClass());
+        }
+
+        return log;
     }
 
     @Override
@@ -525,7 +529,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     @Override
     public void setDummy(final boolean dummy) {
         if (dummy) {
-            log.error("A LightweightMetaObject is set to dummy, but this is not allowed and will be ignored.");
+            getLogger().error("A LightweightMetaObject is set to dummy, but this is not allowed and will be ignored.");
         }
     }
 
@@ -663,7 +667,6 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
                     // this code should only be executed on the server side
                     final MetaObject mo = DomainServerImpl.getServerInstance()
                                 .getMetaObject(getUser(), getObjectID(), getClassID());
-                    cache.put(getKeyForCache(domain, classID, objectID), new SoftReference<MetaObject>(mo));
                     return mo;
                 }
 
@@ -675,19 +678,9 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
                 }
             }
 
-            if (user == null) {
-                final UserContextProvider usp = Lookup.getDefault().lookup(UserContextProvider.class);
-                if (usp != null) {
-                    user = usp.getUser();
-                }
-                if (user == null) {
-                    throw new IllegalStateException(
-                        "Can not retrieve MetaObject, as User for LightweightMetaObject \""
-                                + toString() // NOI18N
-                                + "\" is null!"); // NOI18N
-                }
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug("Fetch real Object for " + this);
             }
-            System.out.println("Fetch real Object for " + this);
 
             final MetaObject mo = metaService.getMetaObject(getUser(), getObjectID(), getClassID(), getDomain());
             cache.put(getKeyForCache(domain, classID, objectID), new SoftReference<MetaObject>(mo));

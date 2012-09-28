@@ -111,17 +111,17 @@ public final class ObjectFactory extends Shutdown {
      *
      * @param   objectId  DOCUMENT ME!
      * @param   classId   DOCUMENT ME!
-     * @param   ug        DOCUMENT ME!
+     * @param   usr       DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  SQLException  DOCUMENT ME!
      */
-    public Sirius.server.localserver.object.Object getObject(final int objectId, final int classId, final UserGroup ug)
+    public Sirius.server.localserver.object.Object getObject(final int objectId, final int classId, final User usr)
             throws SQLException {
         final Sirius.server.localserver.object.Object o = getObject(objectId, classId);
         if (o != null) {
-            setAttributePermissions(o, ug);
+            setAttributePermissions(o, usr.getUserGroup());
         }
         return o;
     }

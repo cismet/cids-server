@@ -62,6 +62,17 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
      * @param  domain  domain
      */
     public DefaultMetaObject(final Sirius.server.localserver.object.Object o, final String domain) {
+        this(o, domain, (User)null);
+    }
+    // bugfix
+    /**
+     * constructs a metaObject out of a (server) object. mainly adds the domain infromation
+     *
+     * @param  o       "server" object
+     * @param  domain  domain
+     * @param  user    DOCUMENT ME!
+     */
+    public DefaultMetaObject(final Sirius.server.localserver.object.Object o, final String domain, final User user) {
         // zum Testen einfach rekursives ersetzen
         super(o);
         this.domain = domain;
@@ -81,9 +92,9 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
 
                 if (ob != null) {
                     if (ob instanceof LightweightObject) {
-                        attr[i].setValue(new LightweightMetaObject(ob.getClassID(), ob.getID(), domain, null));
+                        attr[i].setValue(new LightweightMetaObject(ob.getClassID(), ob.getID(), domain, user));
                     } else {
-                        attr[i].setValue(new DefaultMetaObject(ob, domain));
+                        attr[i].setValue(new DefaultMetaObject(ob, domain, user));
                     }
                     // attr[i].setClassKey(ob.getClassID()+"@"+domain);
                 }
@@ -93,7 +104,6 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
 
         this.setDummy(o.isDummy());
     }
-    // bugfix
 
     /**
      * constructs a metaObject out of a (server) object. mainly adds the domain infromation and filters attribute not
