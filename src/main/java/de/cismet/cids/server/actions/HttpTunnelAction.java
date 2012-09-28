@@ -83,7 +83,9 @@ public class HttpTunnelAction implements ServerAction {
                 throw new RuntimeException(
                     "try to tunnel a request that has a \"*_NO_TUNNEL\" method. This should not happen.");
             }
-            LOG.debug("tunneled Request for:" + url + "?" + request + " (end of url)");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("tunneled Request for:" + url + "?" + request + " (end of url)");
+            }
             final AccessHandler handler = new DefaultHTTPAccessHandler();
             final InputStream is = handler.doRequest(
                     url,
