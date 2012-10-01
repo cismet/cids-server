@@ -17,12 +17,12 @@ import javax.ws.rs.core.MultivaluedMap;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class ServerActionParameter implements Serializable {
+public class ServerActionParameter<T> implements Serializable {
 
     //~ Instance fields --------------------------------------------------------
 
     private final String key;
-    private final String value;
+    private final T value;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -32,7 +32,7 @@ public class ServerActionParameter implements Serializable {
      * @param  key    DOCUMENT ME!
      * @param  value  DOCUMENT ME!
      */
-    public ServerActionParameter(final String key, final String value) {
+    public ServerActionParameter(final String key, final T value) {
         this.key = key;
         this.value = value;
     }
@@ -53,7 +53,7 @@ public class ServerActionParameter implements Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public String getValue() {
+    public T getValue() {
         return value;
     }
 
@@ -74,7 +74,7 @@ public class ServerActionParameter implements Serializable {
         final ServerActionParameter[] ret = new ServerActionParameter[params.size()];
         for (final String key : params.keySet()) {
             for (final String value : params.get(key)) {
-                ret[i++] = new ServerActionParameter(key, value);
+                ret[i++] = new ServerActionParameter<String>(key, value);
             }
         }
         return ret;

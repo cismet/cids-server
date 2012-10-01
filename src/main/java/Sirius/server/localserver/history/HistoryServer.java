@@ -276,7 +276,7 @@ public final class HistoryServer extends Shutdown {
      */
     private MetaObject getMetaObject(final int classId, final int objectId, final User usr) throws HistoryException {
         try {
-            final MetaObject mo = server.getObject(objectId + "@" + classId, usr.getUserGroup());
+            final MetaObject mo = server.getObject(objectId + "@" + classId, usr);
             if (mo == null) {
                 throw new HistoryException("server did not provide metaobject: classId: " + classId // NOI18N
                             + " || objectId: " + objectId // NOI18N
