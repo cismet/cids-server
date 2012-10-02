@@ -7,6 +7,7 @@
 ****************************************************/
 package Sirius.server.newuser.permission;
 
+import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
 
 import Sirius.util.Mapable;
@@ -116,11 +117,12 @@ public final class PermissionHolder implements Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public boolean hasReadPermission(final UserGroup ug) {
+    public boolean hasReadPermission(final User u) {
+        final UserGroup ug = u.getUserGroup();
         try {
             return hasPermission(ug.getKey().toString(), READPERMISSION);
         } catch (final Exception e) {
@@ -134,11 +136,12 @@ public final class PermissionHolder implements Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public boolean hasWritePermission(final UserGroup ug) {
+    public boolean hasWritePermission(final User u) {
+        final UserGroup ug = u.getUserGroup();
         try {
             return hasPermission(ug.getKey().toString(), WRITEPERMISSION);
         } catch (final Exception e) {
