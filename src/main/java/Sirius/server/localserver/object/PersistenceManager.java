@@ -296,9 +296,8 @@ public final class PersistenceManager extends Shutdown {
                         + mo.isDummy());
         }
 
-        if (
-            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
-                        user.getUserGroup())
+        if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
+                        user)
                     && (mo.isDummy() || mo.hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
 
             final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
@@ -497,9 +496,8 @@ public final class PersistenceManager extends Shutdown {
                         + " isDummy(ArrayContainer) :" // NOI18N
                         + mo.isDummy());               // NOI18N
         }
-        if (
-            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
-                        user.getUserGroup())
+        if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
+                        user)
                     && (mo.isDummy() || mo.hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
             // existiert gar keine sinnvolle
             // bean
@@ -908,9 +906,8 @@ public final class PersistenceManager extends Shutdown {
                         + mo.isDummy());               // NOI18N
         }
 
-        if (
-            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
-                        user.getUserGroup())
+        if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
+                        user)
                     && (mo.isDummy() || mo.hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
             // existiert gar keine sinnvolle
             // bean won't insert history
