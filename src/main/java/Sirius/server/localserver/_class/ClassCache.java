@@ -258,15 +258,15 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u   DOCUMENT ME!
      * @param   id  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public final Class getClass(final UserGroup ug, final int id) {
+    public final Class getClass(final User u, final int id) {
         final Class c = classes.getClass(id);
 
-        if ((c != null) && c.getPermissions().hasPermission(ug.getKey(), PermissionHolder.READPERMISSION)) {
+        if ((c != null) && c.getPermissions().hasReadPermission(u)) {
             return c;
         }
 
@@ -276,17 +276,17 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug         DOCUMENT ME!
+     * @param   u          DOCUMENT ME!
      * @param   tableName  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public final Class getClassNyTableName(final UserGroup ug, final String tableName) throws Exception {
+    public final Class getClassNyTableName(final User u, final String tableName) throws Exception {
         final Class c = getClassByTableName(tableName);
 
-        if ((c != null) && c.getPermissions().hasPermission(ug.getKey(), PermissionHolder.READPERMISSION)) {
+        if ((c != null) && c.getPermissions().hasReadPermission(u)) {
             return c;
         }
 

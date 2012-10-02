@@ -77,14 +77,14 @@ public class Seeker {
      *
      * @param   query           DOCUMENT ME!
      * @param   classIds        DOCUMENT ME!
-     * @param   usr             ug DOCUMENT ME!
+     * @param   u               DOCUMENT ME!
      * @param   recursionLevel  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public SearchResult search(final Query query, final int[] classIds, final User usr, int recursionLevel)
+    public SearchResult search(final Query query, final int[] classIds, final User u, int recursionLevel)
             throws Throwable {
         // enth\u00E4lt die Anzahl der updated datasets
         if (query.isUpdate()) {
@@ -167,7 +167,7 @@ public class Seeker {
                                     new SystemStatement(true, -1, "", false, SearchResult.NODE, recursiveCall), // NOI18N
                                     domain),
                                 classIds,
-                                usr,
+                                u,
                                 recursionLevel++).getNodes());
                     }
                 }
@@ -219,12 +219,12 @@ public class Seeker {
 
                 final MetaObjectNode on = (MetaObjectNode)n[i];
 
-                if (on.getPermissions().hasPermission(usr.getUserGroup().getKey(), PermissionHolder.READPERMISSION)) // readPermission
+                if (on.getPermissions().hasReadPermission(u)) // readPermission
                 {
                     // objectzuordnung abgeschaltet
                     filtered.add(on);
                 } else {
-                    logger.info("UserGroup " + usr.getUserGroup() + " has no Read Permission for node " + on); // NOI18N
+                    logger.info("User  " + u + "has no Read Permission for node " + on); // NOI18N
                 }
             }
 

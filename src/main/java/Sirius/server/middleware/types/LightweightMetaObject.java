@@ -299,13 +299,13 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
     @Override
-    public Sirius.server.localserver.object.Object filter(final UserGroup ug) {
-        return getRealMetaObject().filter(ug);
+    public Sirius.server.localserver.object.Object filter(final User u) {
+        return getRealMetaObject().filter(u);
     }
 
     /**
