@@ -193,12 +193,12 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     /**
      * ---------------------------------------------------------------------------
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public MetaClass[] getClasses(final UserGroup ug) {
-        final List tmpClasses = classes.getAllClasses(ug);
+    public MetaClass[] getClasses(final User u) {
+        final List tmpClasses = classes.getAllClasses(u);
         MetaClass[] middleWareClasses = null;
 
         if (tmpClasses != null) {
@@ -225,14 +225,14 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      * getChildren(int nodeID,UserGroup ug) throws Throwable { return tree.getChildren(nodeID,ug); }.
      *
      * @param   node  DOCUMENT ME!
-     * @param   ug    DOCUMENT ME!
+     * @param   u     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public NodeReferenceList getChildren(final Node node, final UserGroup ug) throws Throwable {
-        return tree.getChildren(node, ug);
+    public NodeReferenceList getChildren(final Node node, final User u) throws Throwable {
+        return tree.getChildren(node, u);
     }
     /**
      * ----------------------------------------------------------------------------- public
@@ -240,26 +240,26 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      * Sirius.server.middleware.types.NodeReferenceList(tree.getParents(nodeID,ug),this,ug).getNodes(); }
      * -------------------------------------------------------------------------
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public NodeReferenceList getTops(final UserGroup ug) throws Throwable {
-        return new NodeReferenceList(tree.getTopNodes(ug));
+    public NodeReferenceList getTops(final User u) throws Throwable {
+        return new NodeReferenceList(tree.getTopNodes(u));
     }
     /**
      * -------------------------------------------------------------------------
      *
-     * @param   ug  DOCUMENT ME!git status
+     * @param   u  DOCUMENT ME!git status
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public NodeReferenceList getClassTreeNodes(final UserGroup ug) throws Throwable {
-        return new NodeReferenceList(tree.getClassTreeNodes(ug));
+    public NodeReferenceList getClassTreeNodes(final User u) throws Throwable {
+        return new NodeReferenceList(tree.getClassTreeNodes(u));
     }
     /**
      * ----------------------------------------------------------------------------
@@ -323,17 +323,17 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      * MetaNode(node,getDomain()); } -----------------------------------------------------------------
      *
      * @param   ids  DOCUMENT ME!
-     * @param   ug   DOCUMENT ME!
+     * @param   u    DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public Sirius.server.middleware.types.Node[] getNodes(final int[] ids, final UserGroup ug) throws Throwable {
+    public Sirius.server.middleware.types.Node[] getNodes(final int[] ids, final User u) throws Throwable {
         final Sirius.server.middleware.types.Node[] n = new Sirius.server.middleware.types.Node[ids.length];
 
         for (int i = 0; i < ids.length; i++) {
-            n[i] = tree.getNode(ids[i], ug);
+            n[i] = tree.getNode(ids[i], u);
         }
 
         return n;

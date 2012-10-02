@@ -12,6 +12,7 @@ import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
+import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.permission.Permission;
 import Sirius.server.newuser.permission.PermissionHolder;
@@ -304,17 +305,17 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public final List getAllClasses(final UserGroup ug) {
+    public final List getAllClasses(final User u) {
         final List all = getAllClasses();
         final List cs = new ArrayList(all.size());
 
         for (int i = 0; i < all.size(); i++) {
             final Class c = (Class)all.get(i);
-            if (c.getPermissions().hasReadPermission(ug)) {
+            if (c.getPermissions().hasReadPermission(u)) {
                 cs.add(c);
             }
         }
