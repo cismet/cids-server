@@ -316,7 +316,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public MetaClass getClass(final User user, final int classID) throws RemoteException {
         try { // if(userstore.validateUser(user))
-            return dbServer.getClass(user.getUserGroup(), classID);
+            return dbServer.getClass(user, classID);
 
             // return null;
         } catch (Throwable e) {
@@ -330,7 +330,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public MetaClass getClassByTableName(final User user, final String tableName) throws RemoteException {
         try { // if(userstore.validateUser(user))
-            return dbServer.getClassByTableName(user.getUserGroup(), tableName);
+            return dbServer.getClassByTableName(user, tableName);
                 // return null;
         } catch (Throwable e) {
             if (logger != null) {

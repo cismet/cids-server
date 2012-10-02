@@ -158,13 +158,13 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     /**
      * ---------------------------------------------------------------------------
      *
-     * @param   ug       DOCUMENT ME!
+     * @param   u        DOCUMENT ME!
      * @param   classID  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public MetaClass getClass(final UserGroup ug, final int classID) {
-        final Sirius.server.localserver._class.Class c = classes.getClass(ug, classID);
+    public MetaClass getClass(final User u, final int classID) {
+        final Sirius.server.localserver._class.Class c = classes.getClass(u, classID);
         if (c != null) {
             return new MetaClass(c, getDomain());
         } else {
@@ -175,15 +175,15 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug         DOCUMENT ME!
+     * @param   u          DOCUMENT ME!
      * @param   tableName  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public MetaClass getClassByTableName(final UserGroup ug, final String tableName) throws Throwable {
-        final Sirius.server.localserver._class.Class c = classes.getClassNyTableName(ug, tableName);
+    public MetaClass getClassByTableName(final User u, final String tableName) throws Throwable {
+        final Sirius.server.localserver._class.Class c = classes.getClassNyTableName(u, tableName);
         if (c != null) {
             return new MetaClass(c, getDomain());
         } else {
@@ -284,7 +284,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
         final Sirius.server.localserver.object.Object o = objects.getObject(oId, cId, usr);
 
         if (o != null) {
-            final MetaObject mo = new DefaultMetaObject(o.filter(usr.getUserGroup()), getDomain(), usr);
+            final MetaObject mo = new DefaultMetaObject(o.filter(usr), getDomain(), usr);
             // mo.setMetaClass(new MetaClass(classes.getClass(cId), getDomain()));
 
             mo.setAllClasses(classes.getClassHashMap());

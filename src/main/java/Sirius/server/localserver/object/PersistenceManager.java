@@ -335,7 +335,7 @@ public final class PersistenceManager extends Shutdown {
                     ug = user.getUserGroup();
                 }
                 // retrieve the metaObject's class
-                final Sirius.server.localserver._class.Class c = dbServer.getClass(ug, mo.getClassID());
+                final Sirius.server.localserver._class.Class c = dbServer.getClass(user, mo.getClassID());
                 // get Tablename from class
                 final String tableName = c.getTableName();
                 // get primary Key from class
