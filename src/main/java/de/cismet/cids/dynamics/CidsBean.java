@@ -106,7 +106,7 @@ public class CidsBean implements PropertyChangeListener {
      * @return  DOCUMENT ME!
      */
     public boolean getHasWritePermission(final User user) {
-        return metaObject.getMetaClass().getPermissions().hasWritePermission(user.getUserGroup());
+        return metaObject.getMetaClass().getPermissions().hasWritePermission(user);
     }
 
     /**

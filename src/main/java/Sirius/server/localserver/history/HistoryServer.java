@@ -165,7 +165,7 @@ public final class HistoryServer extends Shutdown {
             throw new HistoryException(message);
         }
 
-        if (!permHolder.hasReadPermission(usr.getUserGroup())) {
+        if (!permHolder.hasReadPermission(usr)) {
             final String message = "given user's usergroup has no read permission for class: " + clazz // NOI18N
                         + " || user: " + usr;                                                          // NOI18N
             LOG.warn(message);
@@ -282,7 +282,7 @@ public final class HistoryServer extends Shutdown {
                             + " || objectId: " + objectId // NOI18N
                             + " || usr: " + usr); // NOI18N
             }
-            final MetaClass[] allReadableMCs = server.getClasses(usr.getUserGroup());
+            final MetaClass[] allReadableMCs = server.getClasses(usr);
 
             assert allReadableMCs.length > 0 : "at least the metaclass of the metaobject must be readable"; // NOI18N
 

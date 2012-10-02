@@ -195,7 +195,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public NodeReferenceList getChildren(final Node node, final User user) throws RemoteException {
         try {
             if (userstore.validateUser(user)) {
-                return dbServer.getChildren(node, user.getUserGroup());
+                return dbServer.getChildren(node, user);
             }
 
             return new NodeReferenceList();                // no permission
@@ -212,7 +212,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public NodeReferenceList getRoots(final User user) throws RemoteException {
         try {
             if (userstore.validateUser(user)) {
-                return dbServer.getTops(user.getUserGroup());
+                return dbServer.getTops(user);
             }
 
             return new NodeReferenceList(); // no permission => empty list
@@ -274,7 +274,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public Node[] getNodes(final User user, final int[] ids) throws RemoteException {
         try {
-            return dbServer.getNodes(ids, user.getUserGroup());
+            return dbServer.getNodes(ids, user);
         } catch (Throwable e) {
             if (logger != null) {
                 logger.error(e, e);
@@ -287,7 +287,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public NodeReferenceList getClassTreeNodes(final User user) throws RemoteException {
         try {
             if (userstore.validateUser(user)) {
-                return dbServer.getClassTreeNodes(user.getUserGroup());
+                return dbServer.getClassTreeNodes(user);
             }
 
             return new NodeReferenceList(); // no permission empty list
@@ -302,7 +302,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public MetaClass[] getClasses(final User user) throws RemoteException {
         try { // if(userstore.validateUser(user))
-            return dbServer.getClasses(user.getUserGroup());
+            return dbServer.getClasses(user);
 
             // return new MetaClass[0];
         } catch (Throwable e) {
@@ -375,7 +375,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         try {
             final MetaObject mo = dbServer.getObject(objectID, user);
             if (mo != null) {
-                final MetaClass[] classes = dbServer.getClasses(user.getUserGroup());
+                final MetaClass[] classes = dbServer.getClasses(user);
 
                 mo.setAllClasses(getClassHashTable(classes, serverInfo.getName()));
 
