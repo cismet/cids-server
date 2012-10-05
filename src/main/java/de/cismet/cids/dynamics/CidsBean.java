@@ -484,7 +484,7 @@ public class CidsBean implements PropertyChangeListener {
             // TODO seems to call nonexisting properties on array classes?
             PropertyUtils.setProperty(this, name, value);
         } catch (Exception e) {
-            LOG.error("Fehler in setProperty:" + name + "\n", e);
+            LOG.warn("Error in setProperty:" + name + ". Result will be null. No exception is being thrown.", e); // NOI18N
         }
     }
 
@@ -499,7 +499,7 @@ public class CidsBean implements PropertyChangeListener {
         try {
             return PropertyUtils.getProperty(this, name);
         } catch (Exception e) {
-            LOG.error("Fehler in getproperty:" + name, e); // NOI18N
+            LOG.warn("Error in getproperty:" + name + ". Result will be null. No exception is being thrown.", e); // NOI18N
         }
 
         return null;
