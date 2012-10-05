@@ -77,14 +77,14 @@ public class Seeker {
      *
      * @param   query           DOCUMENT ME!
      * @param   classIds        DOCUMENT ME!
-     * @param   ug              DOCUMENT ME!
+     * @param   usr             ug DOCUMENT ME!
      * @param   recursionLevel  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public SearchResult search(final Query query, final int[] classIds, final UserGroup ug, int recursionLevel)
+    public SearchResult search(final Query query, final int[] classIds, final User usr, int recursionLevel)
             throws Throwable {
         // enth\u00E4lt die Anzahl der updated datasets
         if (query.isUpdate()) {
@@ -167,7 +167,7 @@ public class Seeker {
                                     new SystemStatement(true, -1, "", false, SearchResult.NODE, recursiveCall), // NOI18N
                                     domain),
                                 classIds,
-                                ug,
+                                usr,
                                 recursionLevel++).getNodes());
                     }
                 }
@@ -219,12 +219,12 @@ public class Seeker {
 
                 final MetaObjectNode on = (MetaObjectNode)n[i];
 
-                if (on.getPermissions().hasPermission(ug.getKey(), PermissionHolder.READPERMISSION)) // readPermission
+                if (on.getPermissions().hasPermission(usr.getUserGroup().getKey(), PermissionHolder.READPERMISSION)) // readPermission
                 {
                     // objectzuordnung abgeschaltet
                     filtered.add(on);
                 } else {
-                    logger.info("UserGroup " + ug + "has no Read Permission for node " + on); // NOI18N
+                    logger.info("UserGroup " + usr.getUserGroup() + " has no Read Permission for node " + on); // NOI18N
                 }
             }
 
@@ -268,7 +268,8 @@ public class Seeker {
 
                 metaObject[i] = new Sirius.server.middleware.types.DefaultMetaObject(
                         objectFactory.getObject(objectID, classID),
-                        domain);
+                        domain,
+                        usr);
                 metaObject[i].setAllClasses(classCache.getClassHashMap());
             }
 

@@ -56,7 +56,10 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * constructs a metaObject out of a (server) object. mainly adds the domain infromation
+     * constructs a metaObject out of a (server) object. mainly adds the domain infromation If the user object is known,
+     * the constructor
+     * {@link #DefaultMetaObject(Sirius.server.localserver.object.Object, java.lang.String, Sirius.server.newuser.User)}
+     * should be used in order to build possibly contained LightweightMetaObjects properly.
      *
      * @param  o       "server" object
      * @param  domain  domain
@@ -108,6 +111,8 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     /**
      * constructs a metaObject out of a (server) object. mainly adds the domain infromation and filters attribute not
      * allowed for a usergroup (ug)
+     * {@link #DefaultMetaObject(Sirius.server.localserver.object.Object, java.lang.String, Sirius.server.newuser.User)}
+     * should be used in order to build possibly contained LightweightMetaObjects properly.
      *
      * @param   object  "server" object
      * @param   domain  domain
