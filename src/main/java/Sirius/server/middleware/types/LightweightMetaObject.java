@@ -16,8 +16,6 @@ import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.proxy.MetaService;
 import Sirius.server.newuser.User;
-import Sirius.server.newuser.UserContextProvider;
-import Sirius.server.newuser.UserGroup;
 
 import Sirius.util.Mapable;
 
