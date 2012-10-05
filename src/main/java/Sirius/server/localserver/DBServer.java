@@ -392,14 +392,14 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Throwable  DOCUMENT ME!
      */
-    public MethodMap getMethods(final UserGroup ug) throws Throwable {
-        return methods.getMethods(ug);
+    public MethodMap getMethods(final User u) throws Throwable {
+        return methods.getMethods(u);
     }
 
     /**

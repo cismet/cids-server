@@ -14,9 +14,9 @@
  * and open the template in the editor.
  */
 package Sirius.server.localserver.tree;
+
 import Sirius.server.middleware.types.Node;
 import Sirius.server.newuser.User;
-import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.permission.Policy;
 
 import java.sql.SQLException;
