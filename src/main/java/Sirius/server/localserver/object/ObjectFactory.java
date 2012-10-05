@@ -29,6 +29,8 @@ import Sirius.server.sql.QueryParametrizer;
 
 import org.apache.log4j.Logger;
 
+import org.xhtmlrenderer.css.parser.property.PrimitivePropertyBuilders;
+
 import java.io.Serializable;
 
 import java.sql.Connection;
@@ -121,7 +123,7 @@ public final class ObjectFactory extends Shutdown {
             throws SQLException {
         final Sirius.server.localserver.object.Object o = getObject(objectId, classId);
         if (o != null) {
-            setAttributePermissions(o, usr.getUserGroup());
+            setAttributePermissions(o, usr);
         }
         return o;
     }
@@ -779,16 +781,17 @@ public final class ObjectFactory extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   o   DOCUMENT ME!
-     * @param   ug  DOCUMENT ME!
+     * @param   o  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @throws  SQLException  DOCUMENT ME!
      */
-    protected void setAttributePermissions(final Sirius.server.localserver.object.Object o, final UserGroup ug)
+    protected void setAttributePermissions(final Sirius.server.localserver.object.Object o, final User u)
             throws SQLException {
         Statement stmnt = null;
         ResultSet rs = null;
         try {
+            final UserGroup ug = u.getUserGroup();
             // check kann es Probleme bei nicht lokalen ugs geben?
             final String attribPerm =
                 "select p.id as pid,p.key as key, u.ug_id as ug_id, u.attr_id as attr_id from cs_ug_attr_perm as u, cs_permission as p  where attr_id in (select id  from cs_attr where class_id =" // NOI18N
