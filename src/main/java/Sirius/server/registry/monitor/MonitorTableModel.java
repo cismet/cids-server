@@ -77,15 +77,16 @@ public class MonitorTableModel extends DefaultTableModel {
         for (int i = 0; i < users.size(); i++) {
             final java.lang.Object[] columnVals = new java.lang.Object[6];
 
-        //TODO check for all userGroups
-        final UserGroup userGroup = user.getUserGroup();
-            
+            final User user = ((User)users.get(i));
+            // TODO check for all userGroups
+            final UserGroup userGroup = user.getUserGroup();
+
             columnVals[0] = new Integer(0); // new Integer(((User)users.get(i)).getID());
-            columnVals[1] = ((User)users.get(i)).getName();
-            columnVals[2] = ((User)users.get(i)).getDomain();
-            columnVals[3] = ((User)users.get(i)).getUserGroup();
-            columnVals[4] = new Boolean(((User)users.get(i)).isValid());
-            columnVals[5] = new Boolean(((User)users.get(i)).isAdmin());
+            columnVals[1] = user.getName();
+            columnVals[2] = user.getDomain();
+            columnVals[3] = userGroup;
+            columnVals[4] = new Boolean(user.isValid());
+            columnVals[5] = new Boolean(user.isAdmin());
             matrix[i] = columnVals;
         }
         return matrix;
