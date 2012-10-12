@@ -92,35 +92,35 @@ public class UserManager implements UserServer {
                 false,
                 false,
                 false);
-        } else                                 // es ist mindestens eine Membership eingetragen
-        {
-            final List l = (List)memberships.get(u.getRegistryKey());
-
-            for (int i = 0; i < l.size(); i++) {
-                final Membership m = (Membership)l.get(i);
-
-                if (m.getUgDomain().equalsIgnoreCase(userGroupDomain) && m.getUg().equalsIgnoreCase(userGroup)) {
-                    break;
-                }
-
-                if (i == (l.size() - 1))                    // last element and no break
-                {
-                    throw new UserException(
-                        "UserException :: no UserGroup :: " // NOI18N
-                                + userGroup
-                                + ", "                      // NOI18N
-                                + userGroupDomain,
-                        false,
-                        false,
-                        true,
-                        false);
-                }
-            }
+//        } else                                 // es ist mindestens eine Membership eingetragen
+//        {
+//            final List l = (List)memberships.get(u.getRegistryKey());
+//
+//            for (int i = 0; i < l.size(); i++) {
+//                final Membership m = (Membership)l.get(i);
+//
+//                if (m.getUgDomain().equalsIgnoreCase(userGroupDomain) && m.getUg().equalsIgnoreCase(userGroup)) {
+//                    break;
+//                }
+//
+//                if (i == (l.size() - 1))                    // last element and no break
+//                {
+//                    throw new UserException(
+//                        "UserException :: no UserGroup :: " // NOI18N
+//                                + userGroup
+//                                + ", "                      // NOI18N
+//                                + userGroupDomain,
+//                        false,
+//                        false,
+//                        true,
+//                        false);
+//                }
+//            }
         }
 
-        final UserGroup ug = (UserGroup)ugs.get(constructKey(userGroup, userGroupDomain));
-
-        u.setUserGroup(ug);
+//        final UserGroup ug = (UserGroup)ugs.get(constructKey(userGroup, userGroupDomain));
+//
+//        u.setUserGroup(ug);
 
         return u;
     }

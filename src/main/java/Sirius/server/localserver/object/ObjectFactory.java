@@ -781,23 +781,25 @@ public final class ObjectFactory extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   o  DOCUMENT ME!
-     * @param   u  DOCUMENT ME!
+     * @param   o     DOCUMENT ME!
+     * @param   user  DOCUMENT ME!
      *
      * @throws  SQLException  DOCUMENT ME!
      */
-    protected void setAttributePermissions(final Sirius.server.localserver.object.Object o, final User u)
+    protected void setAttributePermissions(final Sirius.server.localserver.object.Object o, final User user)
             throws SQLException {
         Statement stmnt = null;
         ResultSet rs = null;
         try {
-            final UserGroup ug = u.getUserGroup();
+            final UserGroup userGroup = user.getUserGroup();
+            LOG.fatal("check for all userGroups");
+            // TODO check for all userGroups
             // check kann es Probleme bei nicht lokalen ugs geben?
             final String attribPerm =
                 "select p.id as pid,p.key as key, u.ug_id as ug_id, u.attr_id as attr_id from cs_ug_attr_perm as u, cs_permission as p  where attr_id in (select id  from cs_attr where class_id =" // NOI18N
                         + o.getClassID()
                         + ") and u.permission = p.id and ug_id = "                                                                                                                                  // NOI18N
-                        + ug.getId();
+                        + userGroup.getId();
 
             stmnt = conPool.getConnection().createStatement();
 
@@ -848,7 +850,7 @@ public final class ObjectFactory extends Shutdown {
                             new PermissionHolder(classCache.getClass(o.getClassID()).getAttributePolicy()));
                     }
 
-                    p.addPermission(ug, new Permission(permId, permKey));
+                    p.addPermission(userGroup, new Permission(permId, permKey));
                 }
             }
         } catch (final SQLException e) {

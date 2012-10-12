@@ -100,7 +100,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      * DOCUMENT ME!
      *
      * @param   nodeId        DOCUMENT ME!
-     * @param   u             DOCUMENT ME!
+     * @param   user          DOCUMENT ME!
      * @param   parentPolicy  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -108,9 +108,12 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      * @throws  SQLException  DOCUMENT ME!
      */
     @Override
-    public NodeReferenceList getChildren(final int nodeId, final User u, final Policy parentPolicy)
+    public NodeReferenceList getChildren(final int nodeId, final User user, final Policy parentPolicy)
             throws SQLException {
-        final int ug_id = idMap.getLocalUgId(u.getUserGroup());
+        LOG.fatal("check for all userGroups");
+        // TODO check for all userGroups
+        final UserGroup userGroup = user.getUserGroup();
+        final int userGroupId = idMap.getLocalUgId(userGroup);
 
         boolean artificialIdSupported = false;
         ResultSet set = null;
@@ -164,7 +167,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                     + "LEFT OUTER JOIN url_base AS ub ON (url.url_base_id = ub.id) "                         // NOI18N
                     + ") AS y "                                                                              // NOI18N
                 + "LEFT OUTER JOIN cs_ug_cat_node_perm AS p ON (p.cat_node_id = y.id) "                      // NOI18N
-                + "LEFT OUTER JOIN cs_permission AS pp ON (p.permission = pp.id AND ug_id = " + ug_id + ") " // NOI18N
+                + "LEFT OUTER JOIN cs_permission AS pp ON (p.permission = pp.id AND ug_id = " + userGroupId + ") " // NOI18N
                 + "WHERE "                                                                                   // NOI18N
                     + "y.id IN (SELECT id_to FROM cs_cat_link WHERE id_from = " + nodeId + ") ";             // NOI18N
         //J+
@@ -205,7 +208,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
             // add local children to result (nodes)
             final NodeReferenceList result = new NodeReferenceList(
-                    removeUnReadableNodes(nodesFromResult(rs, u, parentPolicy), u));
+                    removeUnReadableNodes(nodesFromResult(rs, user, parentPolicy), user));
 
             DBConnection.closeResultSets(rs);
 
@@ -548,15 +551,18 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     /**
      * DOCUMENT ME!
      *
-     * @param   u  DOCUMENT ME!
+     * @param   user  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  SQLException  DOCUMENT ME!
      */
     @Override
-    public Node[] getClassTreeNodes(final User u) throws SQLException {
-        final int ug_id = idMap.getLocalUgId(u.getUserGroup());
+    public Node[] getClassTreeNodes(final User user) throws SQLException {
+        LOG.fatal("check for all userGroups");
+        // TODO check for all userGroups
+        final UserGroup userGroup = user.getUserGroup();
+        final int userGroupId = idMap.getLocalUgId(userGroup);
 
         final String statement = "select  distinct "                                                                                                                                                                     // NOI18N
                     + "y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
@@ -570,7 +576,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                     + "is_root=true and node_type='C' "                                                                                                                                                                  // NOI18N
                     + ") as y "                                                                                                                                                                                          // NOI18N
                     + "left outer join cs_ug_cat_node_perm as p on p.cat_node_id=y.id and ug_id="                                                                                                                        // NOI18N
-                    + ug_id
+                    + userGroupId
                     + " left outer join cs_permission as pp on p.permission=pp.id ";                                                                                                                                     // NOI18N
 
         Statement stmt = null;
@@ -580,14 +586,14 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
             rs = stmt.executeQuery(statement);
 
-            final List<Node> nodes = nodesFromResult(rs, u);
+            final List<Node> nodes = nodesFromResult(rs, user);
 
             for (final Node n : nodes) {
                 n.setLeaf(nodeIsLeaf(n.getId()));
             }
 
             // TODO Remove classnodes if the class is not readable
-            return removeUnReadableNodes(nodes, u);
+            return removeUnReadableNodes(nodes, user);
         } finally {
             DBConnection.closeResultSets(rs);
             DBConnection.closeStatements(stmt);
@@ -664,45 +670,52 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     /**
      * DOCUMENT ME!
      *
-     * @param   u  DOCUMENT ME!
+     * @param   user  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  SQLException  DOCUMENT ME!
      */
     @Override
-    public Node[] getTopNodes(final User u) throws SQLException {
-        LOG.info("get top nodes for UserGroup:" + u.getUserGroup().getName() + "@" + u.getDomain()); // NOI18N
-        final int ug_id = idMap.getLocalUgId(u.getUserGroup());
+    public Node[] getTopNodes(final User user) throws SQLException {
+        final UserGroup userGroup = user.getUserGroup();
+        if (userGroup != null) {
+            LOG.info("get top nodes for UserGroup:" + userGroup.getName() + "@" + user.getDomain()); // NOI18N
+            final int userGoupId = idMap.getLocalUgId(userGroup);
 
-        final String statement = "select  distinct "                                                                                                                                                                     // NOI18N
-                    + "y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
-                    + "("                                                                                                                                                                                                // NOI18N
-                    + "select "                                                                                                                                                                                          // NOI18N
-                    + "n.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name as url,iconfactory,icon,derive_permissions_from_class  "                   // NOI18N
-                    + "from "                                                                                                                                                                                            // NOI18N
-                    + "cs_cat_node as n left outer join url  on ( n.descr=url.id ) "                                                                                                                                     // NOI18N
-                    + "left outer join url_base as ub  on (url.url_base_id=ub.id)   "                                                                                                                                    // NOI18N
-                    + "where "                                                                                                                                                                                           // NOI18N
-                    + "is_root=true and node_type<>'C' "                                                                                                                                                                 // NOI18N
-                    + ") as y "                                                                                                                                                                                          // NOI18N
-                    + "left outer join cs_ug_cat_node_perm as p on p.cat_node_id=y.id and ug_id="                                                                                                                        // NOI18N
-                    + ug_id
-                    + " left outer join cs_permission as pp on p.permission=pp.id ";                                                                                                                                     // NOI18N
+            final String statement = "select  distinct "                                                                                                                                                                     // NOI18N
+                        + "y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
+                        + "("                                                                                                                                                                                                // NOI18N
+                        + "select "                                                                                                                                                                                          // NOI18N
+                        + "n.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name as url,iconfactory,icon,derive_permissions_from_class  "                   // NOI18N
+                        + "from "                                                                                                                                                                                            // NOI18N
+                        + "cs_cat_node as n left outer join url  on ( n.descr=url.id ) "                                                                                                                                     // NOI18N
+                        + "left outer join url_base as ub  on (url.url_base_id=ub.id)   "                                                                                                                                    // NOI18N
+                        + "where "                                                                                                                                                                                           // NOI18N
+                        + "is_root=true and node_type<>'C' "                                                                                                                                                                 // NOI18N
+                        + ") as y "                                                                                                                                                                                          // NOI18N
+                        + "left outer join cs_ug_cat_node_perm as p on p.cat_node_id=y.id and ug_id="                                                                                                                        // NOI18N
+                        + userGoupId
+                        + " left outer join cs_permission as pp on p.permission=pp.id ";                                                                                                                                     // NOI18N
 
-        Statement stmt = null;
-        ResultSet rs = null;
-        try {
-            stmt = conPool.getConnection().createStatement();
+            Statement stmt = null;
+            ResultSet rs = null;
+            try {
+                stmt = conPool.getConnection().createStatement();
 
-            rs = stmt.executeQuery(statement);
+                rs = stmt.executeQuery(statement);
 
-            return removeUnReadableNodes(nodesFromResult(rs, u), u);
+                return removeUnReadableNodes(nodesFromResult(rs, user), user);
 
-            // Die Knoten die nicht angezeigt werden dürfen müssen noch rausgefiltert werden
-        } finally {
-            DBConnection.closeResultSets(rs);
-            DBConnection.closeStatements(stmt);
+                // Die Knoten die nicht angezeigt werden dürfen müssen noch rausgefiltert werden
+            } finally {
+                DBConnection.closeResultSets(rs);
+                DBConnection.closeStatements(stmt);
+            }
+        } else {
+            LOG.fatal("check for all userGroups");
+            // TODO check for all userGroups
+            return null;
         }
     }
 
@@ -734,16 +747,19 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      * DOCUMENT ME!
      *
      * @param   nodeId  DOCUMENT ME!
-     * @param   u       DOCUMENT ME!
+     * @param   user    u DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  SQLException  DOCUMENT ME!
      */
     @Override
-    public Node getNode(final int nodeId, final User u) throws SQLException {
+    public Node getNode(final int nodeId, final User user) throws SQLException {
         // beschaffe lokale ug_id
-        final int ug_id = idMap.getLocalUgId(u.getUserGroup());
+        LOG.fatal("check for all userGroups");
+        // TODO check for all userGroups
+        final UserGroup userGroup = user.getUserGroup();
+        final int userGroupId = idMap.getLocalUgId(userGroup);
 
         Statement stmt = null;
         ResultSet rs = null;
@@ -757,7 +773,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                         + nodeId
                         + " ) as y "                                                                                                                                                                                                                                                 // NOI18N
                         + "left outer join cs_ug_cat_node_perm as p on p.cat_node_id=y.id and ug_id = "                                                                                                                                                                              // NOI18N
-                        + ug_id
+                        + userGroupId
                         + " "                                                                                                                                                                                                                                                        // NOI18N
                         + "left outer join cs_permission as pp on p.permission=pp.id";                                                                                                                                                                                               // NOI18N
 
@@ -765,7 +781,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
             rs = stmt.executeQuery(statement);
 
-            final List<Node> nodes = nodesFromResult(rs, u);
+            final List<Node> nodes = nodesFromResult(rs, user);
             if (nodes.isEmpty()) {
                 return null;
             } else {
@@ -825,7 +841,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      * DOCUMENT ME!
      *
      * @param   nodeTable     DOCUMENT ME!
-     * @param   u             DOCUMENT ME!
+     * @param   user          DOCUMENT ME!
      * @param   parentPolicy  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -833,7 +849,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      * @throws  SQLException           Throwable DOCUMENT ME!
      * @throws  IllegalStateException  Exception DOCUMENT ME!
      */
-    private List<Node> nodesFromResult(final ResultSet nodeTable, final User u, final Policy parentPolicy)
+    private List<Node> nodesFromResult(final ResultSet nodeTable, final User user, final Policy parentPolicy)
             throws SQLException {
         final List<Node> nodes = new ArrayList<Node>();
         final Map<String, Node> nodeHM = new HashMap<String, Node>();
@@ -986,7 +1002,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                     // FIXME: doesn't
                     LOG.warn("getClass failed. cannot create objekt/classnode", e); // NOI18N
                 }
-                if ((metaclass != null) && metaclass.getPermissions().hasReadPermission(u)) {
+                if ((metaclass != null) && metaclass.getPermissions().hasReadPermission(user)) {
                     if ((c == (byte)'O') || (c == (byte)'o')) {
                         tmp = new MetaObjectNode(
                                 id,
@@ -1053,25 +1069,28 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
                         if ((permId != null) && (permKey != null)) {
                             final Permission pp = new Permission(nodeTable.getInt("perm_id"), permKey); // NOI18N
-                            nodeHM.get(nodeKey).getPermissions().addPermission(u.getUserGroup(), pp);
+                            LOG.fatal("check for all userGroups");
+                            // TODO check for all userGroups
+                            final UserGroup userGroup = user.getUserGroup();
+                            nodeHM.get(nodeKey).getPermissions().addPermission(userGroup, pp);
                             if (LOG.isDebugEnabled()) {
                                 LOG.debug(
-                                    "Permission "                                                       // NOI18N
+                                    "Permission "              // NOI18N
                                             + pp.getKey()
-                                            + " added to node"                                          // NOI18N
+                                            + " added to node" // NOI18N
                                             + tmp.getId()
-                                            + " for ug "                                                // NOI18N
-                                            + u.getUserGroup().getKey().toString());
+                                            + " for ug "       // NOI18N
+                                            + userGroup.getKey().toString());
                             }
                         }
                     } catch (final Exception t) {
                         if (LOG.isInfoEnabled()) {
-                            LOG.info("could not set permissions for node::" + id, t);                   // NOI18N
+                            LOG.info("could not set permissions for node::" + id, t); // NOI18N
                         }
                     }
                 }
             }
-        }                                                                                               // end while
+        }                                                      // end while
 
         return nodes;
     }

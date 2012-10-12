@@ -86,13 +86,13 @@ public class UserServiceImpl {
         if (LOG.isDebugEnabled()) {
             LOG.debug("getUser calles for user::" + userName); // NOI18N
 
-            LOG.debug("userLsName:" + userLsName);                            // NOI18N
-            LOG.debug("userName:" + userName);                                // NOI18N
-            LOG.debug("userGroupLsName:" + userGroupLsName);                  // NOI18N
-            LOG.debug("userGroupName:" + userGroupName);                      // NOI18N
+            LOG.debug("userLsName:" + userLsName);           // NOI18N
+            LOG.debug("userName:" + userName);               // NOI18N
+            LOG.debug("userGroupLsName:" + userGroupLsName); // NOI18N
+//            LOG.debug("userGroupName:" + userGroupName);                      // NOI18N
             LOG.debug((("password:" + password) == null) ? "null" : "*****"); // NOI18N
         }
-        final User u = userServer.getUser(userLsName, userGroupName, userGroupLsName, userName, password);
+        final User u = userServer.getUser(userGroupLsName, userGroupName, userLsName, userName, password);
 
         boolean validated = false;
 

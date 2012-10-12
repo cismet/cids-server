@@ -117,38 +117,50 @@ public final class PermissionHolder implements Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @param   u  DOCUMENT ME!
+     * @param   user  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public boolean hasReadPermission(final User u) {
-        final UserGroup ug = u.getUserGroup();
-        try {
-            return hasPermission(ug.getKey().toString(), READPERMISSION);
-        } catch (final Exception e) {
-            LOG.error("error in hasReadPermission (ug = " // NOI18N
-                        + ug
-                        + "). Will return false.", e); // NOI18N
-            return false;
+    public boolean hasReadPermission(final User user) {
+        final UserGroup userGroup = user.getUserGroup();
+        if (userGroup != null) {
+            try {
+                return hasPermission(userGroup.getKey().toString(), READPERMISSION);
+            } catch (final Exception e) {
+                LOG.error("error in hasReadPermission (ug = " // NOI18N
+                            + userGroup
+                            + "). Will return false.", e); // NOI18N
+                return false;
+            }
+        } else {
+            LOG.fatal("check for all userGroups");
+            // TODO check for all userGroups
+            return true;
         }
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   u  DOCUMENT ME!
+     * @param   user  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public boolean hasWritePermission(final User u) {
-        final UserGroup ug = u.getUserGroup();
-        try {
-            return hasPermission(ug.getKey().toString(), WRITEPERMISSION);
-        } catch (final Exception e) {
-            LOG.error("Error in hasWritePermission (ug = " // NOI18N
-                        + ug
-                        + "). Will return false.", e); // NOI18N
-            return false;
+    public boolean hasWritePermission(final User user) {
+        final UserGroup userGroup = user.getUserGroup();
+        if (userGroup != null) {
+            try {
+                return hasPermission(userGroup.getKey().toString(), WRITEPERMISSION);
+            } catch (final Exception e) {
+                LOG.error("Error in hasWritePermission (ug = " // NOI18N
+                            + userGroup
+                            + "). Will return false.", e); // NOI18N
+                return false;
+            }
+        } else {
+            LOG.fatal("check for all userGroups");
+            // TODO check for all userGroups
+            return true;
         }
     }
 
