@@ -77,6 +77,9 @@ public class MonitorTableModel extends DefaultTableModel {
         for (int i = 0; i < users.size(); i++) {
             final java.lang.Object[] columnVals = new java.lang.Object[6];
 
+        //TODO check for all userGroups
+        final UserGroup userGroup = user.getUserGroup();
+            
             columnVals[0] = new Integer(0); // new Integer(((User)users.get(i)).getID());
             columnVals[1] = ((User)users.get(i)).getName();
             columnVals[2] = ((User)users.get(i)).getDomain();

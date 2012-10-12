@@ -17,6 +17,7 @@ import Sirius.server.middleware.types.HistoryObject;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
+import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.permission.PermissionHolder;
 import Sirius.server.sql.DBConnection;
 
@@ -448,7 +449,10 @@ public final class HistoryServer extends Shutdown {
                 final int classId = mo.getClassID();
                 final int objectId = mo.getId();
                 final Integer usrId = (user == null) ? null : user.getId();
-                final Integer ugId = (user == null) ? null : user.getUserGroup().getId();
+                LOG.fatal("check for all userGroups");
+                // TODO check for all userGroups
+                final UserGroup userGroup = user.getUserGroup();
+                final Integer ugId = (user == null) ? null : userGroup.getId();
                 final Timestamp valid_from = new Timestamp(timestamp.getTime());
                 final String jsonData = mo.isPersistent() ? mo.getBean().toJSONString() : JSON_DELETED;
 

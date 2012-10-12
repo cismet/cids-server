@@ -328,11 +328,13 @@ public final class PersistenceManager extends Shutdown {
                 }
 
                 // intitialize UserGroup
-                UserGroup ug = null;
+                UserGroup userGroup = null;
 
                 // retrieve userGroup is user is not null
                 if (user != null) {
-                    ug = user.getUserGroup();
+                    userGroup = user.getUserGroup();
+                    LOG.fatal("check for all userGroups");
+                    // TODO check for all userGroups
                 }
                 // retrieve the metaObject's class
                 final Sirius.server.localserver._class.Class c = dbServer.getClass(user, mo.getClassID());
