@@ -123,19 +123,25 @@ public final class PermissionHolder implements Serializable {
      */
     public boolean hasReadPermission(final User user) {
         final UserGroup userGroup = user.getUserGroup();
-        if (userGroup != null) {
-            try {
+        try {
+            if (userGroup != null) {
                 return hasPermission(userGroup.getKey().toString(), READPERMISSION);
-            } catch (final Exception e) {
-                LOG.error("error in hasReadPermission (ug = " // NOI18N
-                            + userGroup
-                            + "). Will return false.", e); // NOI18N
+            } else {
+                for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
+                    if (hasPermission(potentialUserGroup.getKey().toString(), READPERMISSION)) {
+                        LOG.fatal("BAM !!!");
+                        return true;
+                    } else {
+                        LOG.fatal("nitt !!!");
+                    }
+                }
                 return false;
             }
-        } else {
-            LOG.fatal("check for all userGroups");
-            // TODO check for all userGroups
-            return true;
+        } catch (final Exception e) {
+            LOG.error("error in hasReadPermission (ug = " // NOI18N
+                        + userGroup
+                        + "). Will return false.", e); // NOI18N
+            return false;
         }
     }
 
@@ -158,9 +164,12 @@ public final class PermissionHolder implements Serializable {
                 return false;
             }
         } else {
-            LOG.fatal("check for all userGroups");
-            // TODO check for all userGroups
-            return true;
+            for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
+                if (hasPermission(potentialUserGroup.getKey().toString(), WRITEPERMISSION)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

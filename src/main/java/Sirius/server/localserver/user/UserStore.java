@@ -313,57 +313,78 @@ public final class UserStore extends Shutdown {
 
         assert keyId > 0 : "invalid key id"; // NOI18N
 
+        final UserGroup userGroup = user.getUserGroup();
+        if (userGroup != null) {
+            return getConfigAttrForUserGroup(keyId, user, userGroup);
+        } else {
+            for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
+                final String configAttr = getConfigAttrForUserGroup(keyId, user, potentialUserGroup);
+                if (configAttr != null) {
+                    return configAttr;
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   keyId      DOCUMENT ME!
+     * @param   user       DOCUMENT ME!
+     * @param   userGroup  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    private String getConfigAttrForUserGroup(final int keyId, final User user, final UserGroup userGroup)
+            throws SQLException {
         ResultSet userValueSet = null;
         ResultSet ugValueSet = null;
         ResultSet domainValueSet = null;
-        try {
-            final UserGroup userGroup = user.getUserGroup();
-            final String userName = user.getName();
-            if (userGroup != null) {
-                final String userGroupName = userGroup.getName();
-                final String domain;
-                if (properties.getServerName().equals(userGroup.getDomain())) {
-                    domain = "LOCAL"; // NOI18N
-                } else {
-                    domain = userGroup.getDomain();
-                }
 
-                final String value;
-                userValueSet = conPool.submitInternalQuery(
-                        DBConnection.DESC_FETCH_CONFIG_ATTR_USER_VALUE,
-                        userName,
+        try {
+            final String userName = user.getName();
+            final String userGroupName = userGroup.getName();
+            final String domain;
+            if (properties.getServerName().equals(userGroup.getDomain())) {
+                domain = "LOCAL"; // NOI18N
+            } else {
+                domain = userGroup.getDomain();
+            }
+
+            final String value;
+            userValueSet = conPool.submitInternalQuery(
+                    DBConnection.DESC_FETCH_CONFIG_ATTR_USER_VALUE,
+                    userName,
+                    userGroupName,
+                    domain,
+                    keyId);
+            if (userValueSet.next()) {
+                value = userValueSet.getString(1);
+            } else {
+                ugValueSet = conPool.submitInternalQuery(
+                        DBConnection.DESC_FETCH_CONFIG_ATTR_UG_VALUE,
                         userGroupName,
                         domain,
                         keyId);
-                if (userValueSet.next()) {
-                    value = userValueSet.getString(1);
+                if (ugValueSet.next()) {
+                    value = ugValueSet.getString(1);
                 } else {
-                    ugValueSet = conPool.submitInternalQuery(
-                            DBConnection.DESC_FETCH_CONFIG_ATTR_UG_VALUE,
-                            userGroupName,
+                    domainValueSet = conPool.submitInternalQuery(
+                            DBConnection.DESC_FETCH_CONFIG_ATTR_DOMAIN_VALUE,
                             domain,
                             keyId);
-                    if (ugValueSet.next()) {
-                        value = ugValueSet.getString(1);
+                    if (domainValueSet.next()) {
+                        value = domainValueSet.getString(1);
                     } else {
-                        domainValueSet = conPool.submitInternalQuery(
-                                DBConnection.DESC_FETCH_CONFIG_ATTR_DOMAIN_VALUE,
-                                domain,
-                                keyId);
-                        if (domainValueSet.next()) {
-                            value = domainValueSet.getString(1);
-                        } else {
-                            value = null;
-                        }
+                        value = null;
                     }
                 }
-
-                return value;
-            } else {
-                LOG.fatal("check for all userGroups");
-                // TODO check for all userGroups
-                return null;
             }
+
+            return value;
         } finally {
             DBConnection.closeResultSets(userValueSet, ugValueSet, domainValueSet);
         }
