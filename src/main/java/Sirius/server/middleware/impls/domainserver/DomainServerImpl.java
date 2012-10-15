@@ -447,7 +447,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public MetaObject[] getMetaObject(final User usr, final Query query) throws RemoteException {
         try {
             // user spaeter erweitern
-            return seeker.search(query, new int[0], usr.getUserGroup(), 0).getObjects();
+            return seeker.search(query, new int[0], usr, 0).getObjects();
         } catch (Throwable e) {
             if (logger != null) {
                 logger.error(e, e);
@@ -592,7 +592,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public Node[] getMetaObjectNode(final User usr, final Query query) throws RemoteException {
         try {
             // user sp\u00E4ter erweitern
-            return seeker.search(query, new int[0], usr.getUserGroup(), 0).getNodes();
+            return seeker.search(query, new int[0], usr, 0).getNodes();
         } catch (Throwable e) {
             if (logger != null) {
                 logger.error(e, e);
@@ -789,7 +789,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public SearchResult search(final User user, final int[] classIds, final Query query) throws RemoteException {
         try {
             // user sp\u00E4ter erweitern
-            return seeker.search(query, classIds, user.getUserGroup(), 0);
+            return seeker.search(query, classIds, user, 0);
         } catch (Throwable e) {
             logger.error(e, e);
             throw new RemoteException(e.getMessage(), e);
