@@ -13,6 +13,8 @@ import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
@@ -92,35 +94,42 @@ public class UserManager implements UserServer {
                 false,
                 false,
                 false);
-//        } else                                 // es ist mindestens eine Membership eingetragen
-//        {
-//            final List l = (List)memberships.get(u.getRegistryKey());
-//
-//            for (int i = 0; i < l.size(); i++) {
-//                final Membership m = (Membership)l.get(i);
-//
-//                if (m.getUgDomain().equalsIgnoreCase(userGroupDomain) && m.getUg().equalsIgnoreCase(userGroup)) {
-//                    break;
-//                }
-//
-//                if (i == (l.size() - 1))                    // last element and no break
-//                {
-//                    throw new UserException(
-//                        "UserException :: no UserGroup :: " // NOI18N
-//                                + userGroup
-//                                + ", "                      // NOI18N
-//                                + userGroupDomain,
-//                        false,
-//                        false,
-//                        true,
-//                        false);
-//                }
-//            }
-        }
+        } else                                 // es ist mindestens eine Membership eingetragen
+        {
+            final List<Membership> l = (List)memberships.get(u.getRegistryKey());
+            if (userGroup != null) {
+                for (int i = 0; i < l.size(); i++) {
+                    final Membership m = (Membership)l.get(i);
 
-//        final UserGroup ug = (UserGroup)ugs.get(constructKey(userGroup, userGroupDomain));
-//
-//        u.setUserGroup(ug);
+                    if (m.getUgDomain().equalsIgnoreCase(userGroupDomain) && m.getUg().equalsIgnoreCase(userGroup)) {
+                        break;
+                    }
+
+                    if (i == (l.size() - 1))                    // last element and no break
+                    {
+                        throw new UserException(
+                            "UserException :: no UserGroup :: " // NOI18N
+                                    + userGroup
+                                    + ", "                      // NOI18N
+                                    + userGroupDomain,
+                            false,
+                            false,
+                            true,
+                            false);
+                    }
+                }
+                final UserGroup ug = (UserGroup)ugs.get(constructKey(userGroup, userGroupDomain));
+                u.setUserGroup(ug);
+            } else {
+                final Vector<String[]> ugInfos = getUserGroupNames(u);
+                final Collection<UserGroup> ugList = new ArrayList<UserGroup>(ugInfos.size());
+                for (final String[] ugInfo : ugInfos) {
+                    final UserGroup ug = (UserGroup)ugs.get(constructKey(ugInfo[0], ugInfo[1]));
+                    ugList.add(ug);
+                }
+                u.setPotentialUserGroups(ugList);
+            }
+        }
 
         return u;
     }

@@ -17,7 +17,6 @@ import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
-import Sirius.server.newuser.UserGroup;
 import Sirius.server.sql.DBConnection;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -327,15 +326,6 @@ public final class PersistenceManager extends Shutdown {
                     updateMetaObjectWithoutTransaction(user, mo);
                 }
 
-                // intitialize UserGroup
-                UserGroup userGroup = null;
-
-                // retrieve userGroup is user is not null
-                if (user != null) {
-                    userGroup = user.getUserGroup();
-                    LOG.fatal("check for all userGroups");
-                    // TODO check for all userGroups
-                }
                 // retrieve the metaObject's class
                 final Sirius.server.localserver._class.Class c = dbServer.getClass(user, mo.getClassID());
                 // get Tablename from class
