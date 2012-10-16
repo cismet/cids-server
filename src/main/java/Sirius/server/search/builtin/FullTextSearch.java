@@ -152,7 +152,7 @@ public class FullTextSearch extends CidsServerSearch {
                         + "\n where txt.ocid=geo.ocid and txt.oid=geo.oid";
 
             // Deppensuche sequentiell
-            final HashSet keyset = new HashSet(getActiveLoaclServers().keySet());
+            final HashSet keyset = new HashSet(getActiveLocalServers().keySet());
 
             final ArrayList<Node> aln = new ArrayList<Node>();
 
@@ -161,7 +161,7 @@ public class FullTextSearch extends CidsServerSearch {
             }
 
             for (final Object key : keyset) {
-                final MetaService ms = (MetaService)getActiveLoaclServers().get(key);
+                final MetaService ms = (MetaService)getActiveLocalServers().get(key);
                 final String classesInStatement = getClassesInSnippetsPerDomain().get((String)key);
                 if (classesInStatement != null) {
                     String sqlStatement = sql.replaceAll("<cidsClassesInStatement>", classesInStatement)

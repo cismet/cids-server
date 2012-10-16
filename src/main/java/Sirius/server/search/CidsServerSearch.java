@@ -55,7 +55,7 @@ public abstract class CidsServerSearch implements Serializable {
     private final HashMap<String, ArrayList<MetaClass>> classesPerDomain = new HashMap<String, ArrayList<MetaClass>>();
 
     private User user;
-    private Hashtable activeLoaclServers;
+    private Hashtable activeLocalServers;
     private HashMap<String, String> classesInSnippetsPerDomain = new HashMap<String, String>();
     private Collection<MetaClass> validClasses;
 
@@ -66,17 +66,17 @@ public abstract class CidsServerSearch implements Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public Hashtable getActiveLoaclServers() {
-        return activeLoaclServers;
+    public Hashtable getActiveLocalServers() {
+        return activeLocalServers;
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param  activeLoaclServers  DOCUMENT ME!
+     * @param  activeLocalServers  DOCUMENT ME!
      */
-    public void setActiveLoaclServers(final Hashtable activeLoaclServers) {
-        this.activeLoaclServers = activeLoaclServers;
+    public void setActiveLocalServers(final Hashtable activeLocalServers) {
+        this.activeLocalServers = activeLocalServers;
     }
 
     /**

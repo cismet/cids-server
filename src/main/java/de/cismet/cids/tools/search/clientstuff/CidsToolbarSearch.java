@@ -7,6 +7,8 @@
 ****************************************************/
 package de.cismet.cids.tools.search.clientstuff;
 
+import java.util.Collection;
+
 /**
  * DOCUMENT ME!
  *
@@ -22,5 +24,12 @@ public interface CidsToolbarSearch extends CidsSearch {
      *
      * @param  toolbarSearchString  DOCUMENT ME!
      */
-    void setSearchParameter(String toolbarSearchString);
+    void setSearchParameter(final String toolbarSearchString);
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  modifiers  DOCUMENT ME!
+     */
+    void applyModifiers(final Collection<? extends Modifier> modifiers);
 }
