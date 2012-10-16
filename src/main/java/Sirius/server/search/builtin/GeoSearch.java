@@ -197,10 +197,10 @@ public class GeoSearch extends CidsServerSearch {
             getLog().info("geosearch started");
 
             // Deppensuche sequentiell
-            final HashSet keyset = new HashSet(getActiveLoaclServers().keySet());
+            final HashSet keyset = new HashSet(getActiveLocalServers().keySet());
 
             for (final Object domainKey : keyset) {
-                final MetaService ms = (MetaService)getActiveLoaclServers().get(domainKey);
+                final MetaService ms = (MetaService)getActiveLocalServers().get(domainKey);
 
                 final String sqlStatement = getGeoSearchSql(domainKey);
                 if (sqlStatement != null) {

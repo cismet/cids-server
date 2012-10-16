@@ -400,7 +400,7 @@ public class SearchServiceImpl {
      */
     public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) throws RemoteException {
         serverSearch.setUser(user);
-        serverSearch.setActiveLoaclServers(activeLocalServers);
+        serverSearch.setActiveLocalServers(activeLocalServers);
         try {
             return serverSearch.performServerSearch();
         } catch (Exception e) {
