@@ -129,10 +129,7 @@ public final class PermissionHolder implements Serializable {
             } else {
                 for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
                     if (hasPermission(potentialUserGroup.getKey().toString(), READPERMISSION)) {
-                        LOG.fatal("BAM !!!");
                         return true;
-                    } else {
-                        LOG.fatal("nitt !!!");
                     }
                 }
                 return false;

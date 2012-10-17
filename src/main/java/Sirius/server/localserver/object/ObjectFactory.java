@@ -781,6 +781,44 @@ public final class ObjectFactory extends Shutdown {
     /**
      * DOCUMENT ME!
      *
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String implodedUserGroupIds(final User user) {
+        final UserGroup userGroup = user.getUserGroup();
+        final Collection<Integer> userGroupIds = new ArrayList<Integer>();
+        if (userGroup != null) {
+            LOG.info("get top nodes for UserGroup:" + userGroup.getName() + "@" + user.getDomain());               // NOI18N
+            userGroupIds.add(userGroup.getId());
+        } else {
+            LOG.info("get top nodes for UserGroups:");                                                             // NOI18N
+            for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
+                LOG.info("                            :" + potentialUserGroup.getName() + "@" + user.getDomain()); // NOI18N
+                userGroupIds.add(potentialUserGroup.getId());
+            }
+        }
+
+        final String implodedUserGroupIds;
+        if (userGroupIds.isEmpty()) {
+            implodedUserGroupIds = "";
+        } else {
+            final StringBuilder sb = new StringBuilder();
+            for (final int userGroupId : userGroupIds) {
+                if (sb.length() > 0) { // is the first item ?
+                    sb.append(", ");
+                }
+                sb.append(Integer.toString(userGroupId));
+            }
+            implodedUserGroupIds = sb.toString();
+        }
+
+        return implodedUserGroupIds;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   o     DOCUMENT ME!
      * @param   user  DOCUMENT ME!
      *
@@ -788,18 +826,18 @@ public final class ObjectFactory extends Shutdown {
      */
     protected void setAttributePermissions(final Sirius.server.localserver.object.Object o, final User user)
             throws SQLException {
+        final String implodedUserGroupIds = implodedUserGroupIds(user);
         Statement stmnt = null;
         ResultSet rs = null;
         try {
             final UserGroup userGroup = user.getUserGroup();
-            LOG.fatal("check for all userGroups");
-            // TODO check for all userGroups
             // check kann es Probleme bei nicht lokalen ugs geben?
             final String attribPerm =
-                "select p.id as pid,p.key as key, u.ug_id as ug_id, u.attr_id as attr_id from cs_ug_attr_perm as u, cs_permission as p  where attr_id in (select id  from cs_attr where class_id =" // NOI18N
+                "select p.id as pid,p.key as key, u.ug_id as ug_id, u.attr_id as attr_id from cs_ug_attr_perm as u, cs_permission as p  where attr_id in (select id  from cs_attr where class_id ="
                         + o.getClassID()
-                        + ") and u.permission = p.id and ug_id = "                                                                                                                                  // NOI18N
-                        + userGroup.getId();
+                        + ") and u.permission = p.id and ug_id IN ("
+                        + implodedUserGroupIds
+                        + ")";
 
             stmnt = conPool.getConnection().createStatement();
 
