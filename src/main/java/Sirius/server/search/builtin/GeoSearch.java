@@ -159,13 +159,12 @@ public class GeoSearch extends CidsServerSearch {
                     + "\nWHERE           ocid IN <cidsClassesInStatement>  LIMIT 10000000 ";
 
         final String intersectsStatement;
-        searchGeometry = searchGeometry.buffer(0);
         if (searchGeometry.getSRID() == 4326) {
             intersectsStatement =
-                "intersects(st_buffer(geo_field, 0.00000001),GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>'))";
+                "intersects(geo_field,GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>'))";
         } else {
             intersectsStatement =
-                "intersects(geo_field,GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>'))";
+                "intersects(st_buffer(geo_field, 0.0000001),st_buffer(GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>'), 0.0000001))";
         }
         final String cidsSearchGeometryWKT = searchGeometry.toText();
         final String sridString = Integer.toString(searchGeometry.getSRID());
