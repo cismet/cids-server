@@ -203,9 +203,9 @@ public class GeoSearch extends CidsServerSearch {
 
     @Override
     public Collection performServerSearch() throws Exception {
-        final ArrayList<Node> aln = new ArrayList<Node>();
         try {
-            getLog().info("geosearch started");
+        getLog().info("geosearch started");
+        final ArrayList<Node> aln = new ArrayList<Node>();
 
             // Deppensuche sequentiell
             final HashSet keyset = new HashSet(getActiveLoaclServers().keySet());
@@ -232,11 +232,11 @@ public class GeoSearch extends CidsServerSearch {
                     }
                 }
             }
+        return aln;
         } catch (Exception e) {
             getLog().error("Problem during GEOSEARCH", e);
             throw new Exception("Problem during GEOSEARCH", e);
         }
 
-        return aln;
     }
 }
