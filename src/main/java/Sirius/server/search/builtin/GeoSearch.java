@@ -103,7 +103,7 @@ public class GeoSearch extends CidsServerSearch {
                     + "AND             i.attr_object_id = g.id "
                     + "AND i.class_id IN <cidsClassesInStatement> "
                     + "AND geo_field && GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>') "
-                    + "AND intersects(geo_field,GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>')) "
+                    + "AND <intersectsStatement> "
                     + "ORDER BY        1,2,3";
 
         final String sqlAlt = ""
@@ -161,6 +161,14 @@ public class GeoSearch extends CidsServerSearch {
         final String cidsSearchGeometryWKT = searchGeometry.toText();
         final String sridString = Integer.toString(searchGeometry.getSRID());
         final String classesInStatement = getClassesInSnippetsPerDomain().get((String)domainKey);
+        final String intersectsStatement;
+        if (searchGeometry.getSRID() == 4326) {
+            intersectsStatement =
+                "intersects(st_buffer(geo_field, 0.00000001),GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>'))";
+        } else {
+            intersectsStatement =
+                "intersects(geo_field,GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>'))";
+        }
         if ((cidsSearchGeometryWKT == null) || (cidsSearchGeometryWKT.trim().length() == 0)
                     || (sridString == null)
                     || (sridString.trim().length() == 0)) {
@@ -178,23 +186,26 @@ public class GeoSearch extends CidsServerSearch {
         if (getLog().isDebugEnabled()) {
             getLog().debug("cidsSearchGeometrySRID=" + sridString);
         }
+        if (getLog().isDebugEnabled()) {
+            getLog().debug("intersectsStatement=" + intersectsStatement);
+        }
 
         if ((classesInStatement == null) || (classesInStatement.trim().length() == 0)) {
             getLog().warn("There are no search classes defined for domain '" + domainKey
                         + "'. This domain will be skipped.");
             return null;
         }
-
-        return sql.replaceAll("<cidsClassesInStatement>", classesInStatement)
+        return sql.replaceAll("<intersectsStatement>", intersectsStatement)
+                    .replaceAll("<cidsClassesInStatement>", classesInStatement)
                     .replaceAll("<cidsSearchGeometryWKT>", cidsSearchGeometryWKT)
                     .replaceAll("<cidsSearchGeometrySRID>", sridString);
     }
 
     @Override
     public Collection performServerSearch() throws Exception {
-        final ArrayList<Node> aln = new ArrayList<Node>();
         try {
             getLog().info("geosearch started");
+            final ArrayList<Node> aln = new ArrayList<Node>();
 
             // Deppensuche sequentiell
             final HashSet keyset = new HashSet(getActiveLoaclServers().keySet());
@@ -221,11 +232,10 @@ public class GeoSearch extends CidsServerSearch {
                     }
                 }
             }
+            return aln;
         } catch (Exception e) {
             getLog().error("Problem during GEOSEARCH", e);
             throw new Exception("Problem during GEOSEARCH", e);
         }
-
-        return aln;
     }
 }
