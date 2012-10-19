@@ -170,7 +170,7 @@ public class GeoSearch extends CidsServerSearch {
                     "intersects(st_buffer(geo_field, 0.000001),st_buffer(GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>'), 0.000001))";
             } else {                                                                                  // without buffer for searchGeometry
                 intersectsStatement =
-                    "intersects(st_buffer(geo_field, 0.000001),GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>'), 0.000001)";
+                    "intersects(st_buffer(geo_field, 0.000001),GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>'))";
             }
         }
         final String cidsSearchGeometryWKT = searchGeometry.toText();
