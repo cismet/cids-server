@@ -29,6 +29,8 @@ import Sirius.server.middleware.types.Node;
 import Sirius.server.search.CidsServerSearch;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Polygon;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -158,17 +160,22 @@ public class GeoSearch extends CidsServerSearch {
                     + "\n                                ) "
                     + "\nWHERE           ocid IN <cidsClassesInStatement>  LIMIT 10000000 ";
 
-        final String cidsSearchGeometryWKT = searchGeometry.toText();
-        final String sridString = Integer.toString(searchGeometry.getSRID());
-        final String classesInStatement = getClassesInSnippetsPerDomain().get((String)domainKey);
         final String intersectsStatement;
         if (searchGeometry.getSRID() == 4326) {
             intersectsStatement =
-                "intersects(st_buffer(geo_field, 0.00000001),GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>'))";
-        } else {
-            intersectsStatement =
                 "intersects(geo_field,GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>'))";
+        } else {
+            if ((searchGeometry instanceof Polygon) || (searchGeometry instanceof MultiPolygon)) {    // with buffer for searchGeometry
+                intersectsStatement =
+                    "intersects(st_buffer(geo_field, 0.000001),st_buffer(GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>'), 0.000001))";
+            } else {                                                                                  // without buffer for searchGeometry
+                intersectsStatement =
+                    "intersects(st_buffer(geo_field, 0.000001),GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>'))";
+            }
         }
+        final String cidsSearchGeometryWKT = searchGeometry.toText();
+        final String sridString = Integer.toString(searchGeometry.getSRID());
+        final String classesInStatement = getClassesInSnippetsPerDomain().get((String)domainKey);
         if ((cidsSearchGeometryWKT == null) || (cidsSearchGeometryWKT.trim().length() == 0)
                     || (sridString == null)
                     || (sridString.trim().length() == 0)) {
