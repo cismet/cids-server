@@ -5,34 +5,21 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- *  Copyright (C) 2010 thorsten
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-package Sirius.server.search.builtin;
+package de.cismet.cids.server.search.builtin;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.middleware.types.Node;
-import Sirius.server.search.CidsServerSearch;
 
 import com.vividsolutions.jts.geom.Geometry;
+
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+
+import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
 /**
  * DOCUMENT ME!
@@ -40,14 +27,19 @@ import java.util.HashSet;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class FullTextSearch extends CidsServerSearch {
+public class FullTextSearch extends AbstractCidsServerSearch {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** LOGGER. */
+    private static final transient Logger LOG = Logger.getLogger(FullTextSearch.class);
 
     //~ Instance fields --------------------------------------------------------
 
-    private String searchText;
-    private boolean caseSensitive;
-    private Geometry geometry;
-    private GeoSearch geoSearch;
+    private final String searchText;
+    private final boolean caseSensitive;
+    private final Geometry geometry;
+    private final GeoSearch geoSearch;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -72,7 +64,9 @@ public class FullTextSearch extends CidsServerSearch {
         this.searchText = searchText;
         this.caseSensitive = caseSensitive;
         this.geometry = geometry;
-        if (geometry != null) {
+        if (geometry == null) {
+            geoSearch = null;
+        } else {
             geoSearch = new GeoSearch(geometry);
         }
     }
@@ -82,7 +76,9 @@ public class FullTextSearch extends CidsServerSearch {
     @Override
     public Collection performServerSearch() throws Exception {
         try {
-            getLog().info("FullTextSearch started");
+            if (LOG.isInfoEnabled()) {
+                LOG.info("FullTextSearch started");
+            }
 
             final String caseSensitiveI = (caseSensitive) ? "" : "I"; // Ein I vor LIKE macht die Suche case insensitive
 
@@ -102,57 +98,13 @@ public class FullTextSearch extends CidsServerSearch {
                         + "AND    s.string_val " + caseSensitiveI + "like '%<cidsSearchText>%' "
                         + "AND i.class_id IN <cidsClassesInStatement>";
 
-            final String altsql = "select distinct ocid,oid,stringrep from "
-                        + "\n(WITH recursive derived_index(ocid,oid,acid,aid,depth) AS "
-                        + "\n( SELECT class_id         , "
-                        + "\n        object_id         , "
-                        + "\n        class_id         , "
-                        + "\n        object_id         , "
-                        + "\n        0 "
-                        + "\nFROM    textsearch "
-                        + "\nWHERE   class_id IN ( WITH recursive derived_child(father,child,depth) AS "
-                        + "\n                     ( SELECT father, "
-                        + "\n                             father , "
-                        + "\n                             0 "
-                        + "\n                     FROM    cs_class_hierarchy "
-                        + "\n                     WHERE   father IN <cidsClassesInStatement> "
-                        + "\n                      "
-                        + "\n                     UNION ALL "
-                        + "\n                      "
-                        + "\n                     SELECT ch.father, "
-                        + "\n                            ch.child , "
-                        + "\n                            dc.depth+1 "
-                        + "\n                     FROM   derived_child dc, "
-                        + "\n                            cs_class_hierarchy ch "
-                        + "\n                     WHERE  ch.father=dc.child "
-                        + "\n                     ) "
-                        + "\n              SELECT DISTINCT child "
-                        + "\n              FROM            derived_child LIMIT 100000 ) "
-                        + "\nAND             string_val " + caseSensitiveI + "LIKE '%<cidsSearchText>%' "
-                        + "\n "
-                        + "\nUNION ALL "
-                        + "\n "
-                        + "\nSELECT aam.class_id      , "
-                        + "\n       aam.object_id     , "
-                        + "\n       aam.attr_class_id , "
-                        + "\n       aam.attr_object_id, "
-                        + "\n       di.depth+1 "
-                        + "\nFROM   cs_attr_object aam, "
-                        + "\n       derived_index di "
-                        + "\nWHERE  aam.attr_class_id =di.ocid AND"
-                        + "\n       aam.attr_object_id=di.oid "
-                        + "\n) "
-                        + "\nSELECT ocid,oid,stringrep "
-                        + "\nFROM   derived_index left outer join cs_stringrepcache on ocid=class_id AND oid =object_id "
-                        + "\nWHERE  ocid IN <cidsClassesInStatement> LIMIT 10000000) as x";
-
             final String geoMidFix = "\n ) as txt,(select distinct class_id as ocid,object_id as oid,stringrep from (";
 
             final String geoPostfix = "\n )as y ) as geo "
                         + "\n where txt.ocid=geo.ocid and txt.oid=geo.oid";
 
             // Deppensuche sequentiell
-            final HashSet keyset = new HashSet(getActiveLoaclServers().keySet());
+            final HashSet keyset = new HashSet(getActiveLocalServers().keySet());
 
             final ArrayList<Node> aln = new ArrayList<Node>();
 
@@ -161,7 +113,7 @@ public class FullTextSearch extends CidsServerSearch {
             }
 
             for (final Object key : keyset) {
-                final MetaService ms = (MetaService)getActiveLoaclServers().get(key);
+                final MetaService ms = (MetaService)getActiveLocalServers().get(key);
                 final String classesInStatement = getClassesInSnippetsPerDomain().get((String)key);
                 if (classesInStatement != null) {
                     String sqlStatement = sql.replaceAll("<cidsClassesInStatement>", classesInStatement)
@@ -174,8 +126,8 @@ public class FullTextSearch extends CidsServerSearch {
                         }
                     }
 
-                    if (getLog().isDebugEnabled()) {
-                        getLog().debug(sqlStatement);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(sqlStatement);
                     }
                     final ArrayList<ArrayList> result = ms.performCustomSearch(sqlStatement);
                     for (final ArrayList al : result) {
@@ -184,17 +136,21 @@ public class FullTextSearch extends CidsServerSearch {
                         String name = null;
                         try {
                             name = (String)al.get(2);
-                        } catch (Exception e) {
+                        } catch (final Exception e) {
+                            if (LOG.isTraceEnabled()) {
+                                LOG.trace("no name present for metaobjectnode", e); // NOI18N
+                            }
                         }
                         final MetaObjectNode mon = new MetaObjectNode((String)key, oid, cid, name);
                         aln.add(mon);
                     }
                 }
             }
+
             return aln;
-        } catch (Exception e) {
-            getLog().error("Problem during Fulltextsearch", e);
-            throw new Exception("Problem during Fulltextsearch", e);
+        } catch (final Exception e) {
+            LOG.error("Problem during Fulltextsearch", e);           // NOI18N
+            throw new Exception("Problem during Fulltextsearch", e); // NOI18N
         }
     }
 }

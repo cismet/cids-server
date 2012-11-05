@@ -5,27 +5,28 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * SearchServiceImpl.java
- *
- * Created on 23. November 2003, 14:39
- */
 package Sirius.server.middleware.impls.proxy;
 
-import Sirius.server.*;
-import Sirius.server.middleware.interfaces.domainserver.MetaService;
-import Sirius.server.middleware.types.*;
+import Sirius.server.Server;
+import Sirius.server.ServerType;
+import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.naming.NameServer;
-import Sirius.server.newuser.*;
-import Sirius.server.newuser.permission.Policy;
-import Sirius.server.search.*;
+import Sirius.server.newuser.User;
+import Sirius.server.search.Query;
+import Sirius.server.search.QueryConfiguration;
+import Sirius.server.search.QueryExecuter;
+import Sirius.server.search.QueryPlaner;
+import Sirius.server.search.SearchResult;
 
-import java.rmi.*;
+import java.rmi.RemoteException;
 
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 
-import java.util.*;
+import de.cismet.cids.server.search.CidsServerSearch;
 
 /**
  * DOCUMENT ME!
@@ -321,7 +322,7 @@ public class SearchServiceImpl {
 
         final SearchResult v = new SearchResult(new MetaObjectNode[0]);
 
-        final QueryConfiguration[] qcs = (QueryConfiguration[])qList.toArray(new QueryConfiguration[qList.size()]);
+        final QueryConfiguration[] qcs = qList.toArray(new QueryConfiguration[qList.size()]);
 
         Query q = null;
 
@@ -360,28 +361,8 @@ public class SearchServiceImpl {
                 }
 
                 v.addAll(result);
-
-                // wenn union hole alle subqueries und f\u00FCge diese zu den ausgef\u00FChrten queries hinzu
-                // if(q.isUnionQuery()) { Query[] sqs = q.getSubQueries();
-                //
-                //
-                // for(int j =0;j<sqs.length;j++) { sqs[j].setParameters(params); logger.debug("Subquery"+sqs[j]);
-                // SearchResult s = null; try { if(qex.serviceAvailable(sqs[j].getQueryIdentifier().getDomain() )) s =
-                // (SearchResult) qex.executeQuery(user,qcs[i].getClassIds(),sqs[j]);
-                //
-                // if(s==null||(s.isEmpty()&&q.isConjunction()))// wenn server nicht da \u00FCberspringen continue;
-                //
-                // if(sqs[j].isConjunction()) {
-                //
-                // if(!v.retainerSet()) { if(v.getResult()!=null&&((HashSet)v.getResult()).size()>0)
-                // v.setRetainer(v.intersect((HashSet)s.getResult(),(HashSet)v.getResult()));// setze retainer mit
-                // suchergebnis else v.setRetainer((HashSet)s.getResult()); } else { if (!q.isConjunction())
-                // v.setRetainer( v.intersect(v.getRetainer(),(HashSet)s.getResult() )); // schnittmenge 2er retainer
-                // else { HashSet h = (HashSet)s.getResult(); h.addAll(v.getRetainer()); v.setRetainer(h);  } } }
-                // v.addAll(s); } catch(Exception e) { logger.error(e,e); }   } }
-
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             logger.error(e, e);
         }
 
@@ -400,7 +381,7 @@ public class SearchServiceImpl {
      */
     public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) throws RemoteException {
         serverSearch.setUser(user);
-        serverSearch.setActiveLoaclServers(activeLocalServers);
+        serverSearch.setActiveLocalServers(new HashMap(activeLocalServers));
         try {
             return serverSearch.performServerSearch();
         } catch (Exception e) {

@@ -17,7 +17,6 @@ import Sirius.server.middleware.types.Node;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 import Sirius.server.newuser.UserGroup;
-import Sirius.server.search.CidsServerSearch;
 import Sirius.server.search.Query;
 import Sirius.server.search.SearchOption;
 import Sirius.server.search.SearchResult;
@@ -39,7 +38,6 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
 
 import java.rmi.RemoteException;
@@ -65,6 +63,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.search.CidsServerSearch;
 import de.cismet.cids.server.ws.SSLConfig;
 
 import de.cismet.netutil.Proxy;
