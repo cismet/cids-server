@@ -5,40 +5,41 @@
 *              ... and it just works.
 *
 ****************************************************/
-package de.cismet.cids.tools.search.clientstuff;
+package de.cismet.cids.server.search.builtin;
 
-import javax.swing.ImageIcon;
+import com.vividsolutions.jts.geom.Geometry;
 
 import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
 
 /**
  * DOCUMENT ME!
  *
- * @author   stefan
+ * @author   martin.scholl@cismet.de
  * @version  $Revision$, $Date$
  */
-public interface CidsSearch {
+public interface GeoSearch extends MetaObjectNodeServerSearch {
 
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Collection<MetaClass> getPossibleResultClasses();
-     *
-     * @return  DOCUMENT ME!
-     */
-    MetaObjectNodeServerSearch getServerSearch();
-
-    /**
      * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    String getName();
+    Geometry getGeometry();
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  geometry  DOCUMENT ME!
+     */
+    void setGeometry(Geometry geometry);
 
     /**
      * DOCUMENT ME!
      *
+     * @param   domainKey  DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      */
-    ImageIcon getIcon();
+    String getSearchSql(String domainKey);
 }
