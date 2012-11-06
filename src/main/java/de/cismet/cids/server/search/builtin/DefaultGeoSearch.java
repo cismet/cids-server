@@ -14,6 +14,8 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import org.apache.log4j.Logger;
 
+import org.openide.util.lookup.ServiceProvider;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -27,6 +29,7 @@ import de.cismet.cids.server.search.SearchException;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
+@ServiceProvider(service = GeoSearch.class)
 public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSearch {
 
     //~ Static fields/initializers ---------------------------------------------
@@ -46,8 +49,8 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
     }
 
     @Override
-    public void setGeometry(final Geometry geom) {
-        this.geometry = geom;
+    public void setGeometry(final Geometry geometry) {
+        this.geometry = geometry;
     }
 
     @Override
@@ -133,7 +136,10 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
                         String name = null;
                         try {
                             name = (String)al.get(2);
-                        } catch (Exception e) {
+                        } catch (final Exception e) {
+                            if (LOG.isTraceEnabled()) {
+                                LOG.trace("no name present for metaobjectnode", e); // NOI18N
+                            }
                         }
 
                         final MetaObjectNode mon = new MetaObjectNode((String)domainKey, oid, cid, name);

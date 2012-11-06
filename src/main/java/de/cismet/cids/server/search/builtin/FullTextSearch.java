@@ -30,7 +30,7 @@ public interface FullTextSearch extends MetaObjectNodeServerSearch {
     /**
      * DOCUMENT ME!
      *
-     * @param  searchText  DOCUMENT ME!
+     * @param  searchText  The text to search for.
      */
     void setSearchText(String searchText);
 
@@ -43,7 +43,7 @@ public interface FullTextSearch extends MetaObjectNodeServerSearch {
     /**
      * DOCUMENT ME!
      *
-     * @param  caseSensitive  DOCUMENT ME!
+     * @param  caseSensitive  A flag indicating whether to make the search case sensitive or not.
      */
     void setCaseSensitive(boolean caseSensitive);
 
@@ -56,7 +56,7 @@ public interface FullTextSearch extends MetaObjectNodeServerSearch {
     /**
      * DOCUMENT ME!
      *
-     * @param  geom  DOCUMENT ME!
+     * @param  geometry  The search will be restricted to the given geometry.
      */
-    void setGeometry(Geometry geom);
+    void setGeometry(Geometry geometry);
 }

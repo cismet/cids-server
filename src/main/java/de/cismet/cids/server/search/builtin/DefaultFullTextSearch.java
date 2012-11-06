@@ -15,13 +15,13 @@ import com.vividsolutions.jts.geom.Geometry;
 import org.apache.log4j.Logger;
 
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
-import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
 /**
@@ -30,7 +30,8 @@ import de.cismet.cids.server.search.SearchException;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class DefaultFullTextSearch extends AbstractCidsServerSearch implements MetaObjectNodeServerSearch {
+@ServiceProvider(service = FullTextSearch.class)
+public class DefaultFullTextSearch extends AbstractCidsServerSearch implements FullTextSearch {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -39,33 +40,40 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements M
 
     //~ Instance fields --------------------------------------------------------
 
-    private final String searchText;
-    private final boolean caseSensitive;
-    private final Geometry geometry;
-    private final GeoSearch geoSearch;
+    private String searchText;
+    private boolean caseSensitive;
+    private Geometry geometry;
+    private GeoSearch geoSearch;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Methods ----------------------------------------------------------------
 
-    /**
-     * Creates a new DefaultFullTextSearch object.
-     *
-     * @param  searchText     The text to search for.
-     * @param  caseSensitive  A flag indicating whether to make the search case sensitive or not.
-     */
-    public DefaultFullTextSearch(final String searchText, final boolean caseSensitive) {
-        this(searchText, caseSensitive, null);
+    @Override
+    public String getSearchText() {
+        return searchText;
     }
 
-    /**
-     * Creates a new DefaultFullTextSearch object.
-     *
-     * @param  searchText     The text to search for.
-     * @param  caseSensitive  A flag indicating whether to make the search case sensitive or not.
-     * @param  geometry       The search will be restricted to the given geometry.
-     */
-    public DefaultFullTextSearch(final String searchText, final boolean caseSensitive, final Geometry geometry) {
+    @Override
+    public void setSearchText(final String searchText) {
         this.searchText = searchText;
+    }
+
+    @Override
+    public boolean isCaseSensitive() {
+        return caseSensitive;
+    }
+
+    @Override
+    public void setCaseSensitive(final boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
+    }
+
+    @Override
+    public Geometry getGeometry() {
+        return geometry;
+    }
+
+    @Override
+    public void setGeometry(final Geometry geometry) {
         this.geometry = geometry;
         if (geometry == null) {
             geoSearch = null;
@@ -75,8 +83,6 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements M
             geoSearch.setGeometry(geometry);
         }
     }
-
-    //~ Methods ----------------------------------------------------------------
 
     @Override
     public Collection<MetaObjectNode> performServerSearch() throws SearchException {

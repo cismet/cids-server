@@ -30,9 +30,9 @@ public interface GeoSearch extends MetaObjectNodeServerSearch {
     /**
      * DOCUMENT ME!
      *
-     * @param  geom  DOCUMENT ME!
+     * @param  geometry  DOCUMENT ME!
      */
-    void setGeometry(Geometry geom);
+    void setGeometry(Geometry geometry);
 
     /**
      * DOCUMENT ME!
