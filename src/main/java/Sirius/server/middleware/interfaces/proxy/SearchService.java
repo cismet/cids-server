@@ -5,19 +5,19 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * SearchService.java
- *
- * Created on 10. November 2003, 17:39
- */
 package Sirius.server.middleware.interfaces.proxy;
 
-import Sirius.server.newuser.*;
-import Sirius.server.search.*;
+import Sirius.server.newuser.User;
+import Sirius.server.search.SearchOption;
+import Sirius.server.search.SearchResult;
 
-import java.rmi.*;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+
+import de.cismet.cids.server.search.CidsServerSearch;
 
 /**
  * encapsulates query, search mechanisms.
