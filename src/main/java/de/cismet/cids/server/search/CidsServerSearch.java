@@ -67,9 +67,9 @@ public interface CidsServerSearch extends Serializable {
      *
      * @return  The objects matching the specified search.
      *
-     * @throws  Exception  DOCUMENT ME!
+     * @throws  SearchException  DOCUMENT ME!
      */
-    Collection performServerSearch() throws Exception;
+    Collection performServerSearch() throws SearchException;
 
     /**
      * DOCUMENT ME!
