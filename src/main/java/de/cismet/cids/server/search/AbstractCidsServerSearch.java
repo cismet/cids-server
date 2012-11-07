@@ -109,6 +109,7 @@ public abstract class AbstractCidsServerSearch implements CidsServerSearch {
      */
     @Override
     public void setValidClassesFromStrings(final Collection<String> classes) throws IllegalArgumentException {
+        classesInSnippetsPerDomain.clear();
         for (final String classString : classes) {
             final String[] sa = classString.split("@");
             if ((sa == null) || (sa.length != 2)) {
