@@ -16,6 +16,7 @@ import Sirius.util.Mapable;
 
 import org.apache.log4j.Logger;
 
+import java.util.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -142,22 +143,28 @@ public class DefaultObject implements Object {
      */
     @Override
     public void addAttribute(final ObjectAttribute anyAttribute) {
-        if (dummy)                                                           // in einem arrayLink Objekt m\u00FCssen
-                                                                             // alle Felder ausgefuellt sein egal
-                                                                             // was gesetzt wurde
-                                                                             // (Unsinnsbeschraenkung)
-        {
+        if (dummy) {
+            // in einem arrayLink Objekt m\u00FCssen
+            // alle Felder ausgefuellt sein egal
+            // was gesetzt wurde
+            // (Unsinnsbeschraenkung)
             anyAttribute.setOptional(false);
+
+            // die ids von objectattributes werden nur als key für den attrib hash benötigt
+            // deswegen wird die speicheradresse von anyAttributes genommen, falls id noch nicht gesetzt
+            // (wird kurz vorher erst erzeugt, kann deshalb kein Duplikat geben)
+            if (anyAttribute.getID() == null) {
+                anyAttribute.setId(new Integer(System.identityHashCode(anyAttribute)).toString());
+            }
             if ((LOG != null) && LOG.isInfoEnabled()) {
                 LOG.info(
-                    "optional set to false for attribute : "                 // NOI18N
+                    "optional set to false for attribute : " // NOI18N
                             + anyAttribute
                             + " because it belongs to a arrayLink (dummy)"); // NOI18N
             }
         }
-
         attribHash.put(anyAttribute.getKey(), anyAttribute);
-    } // end of addAttribute
+    }                                                        // end of addAttribute
 
     @Override
     public void removeAttribute(final ObjectAttribute anyAttribute) {
