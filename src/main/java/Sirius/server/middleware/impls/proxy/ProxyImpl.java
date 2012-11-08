@@ -24,7 +24,6 @@ import Sirius.server.newuser.UserServer;
 import Sirius.server.observ.RemoteObservable;
 import Sirius.server.observ.RemoteObserver;
 import Sirius.server.property.ServerProperties;
-import Sirius.server.search.CidsServerSearch;
 import Sirius.server.search.Query;
 import Sirius.server.search.SearchOption;
 import Sirius.server.search.SearchResult;
@@ -34,8 +33,6 @@ import Sirius.server.search.store.QueryData;
 import Sirius.util.image.Image;
 
 import org.apache.log4j.Logger;
-
-import java.io.File;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -53,6 +50,7 @@ import java.util.Vector;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.search.CidsServerSearch;
 
 /**
  * Benoetigte Keys fuer configFile: registryIps<br>

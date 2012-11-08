@@ -33,6 +33,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyDescriptor;
 
+import java.util.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -599,29 +600,12 @@ public class CidsBean implements PropertyChangeListener {
                                 }
                             }
 
-//                            // Wen noch kein Dummy-Objekt existiert (Wert ist noch null)
-//                            // Anlegen eines Dummy-Objektes
-//                            if (oa.getValue() == null) {
-//                                final Sirius.server.localserver.object.Object dummyO =
-//                                    new Sirius.server.localserver.object.DefaultObject(
-//                                        getMetaObject().getID(),
-//                                        oa.getMai().getForeignKeyClassId());
-//                                final MetaObject dummyMO = new DefaultMetaObject(dummyO, getMetaObject().getDomain());
-//                                dummyMO.setReferencingObjectAttribute(oa);
-//                                dummyMO.setDummy(true);
-//                                dummyMO.setStatus(MetaObject.NEW);
-//                                oa.setValue(dummyMO);
-//                                oa.setChanged(true);
-//                            }
-
                             // hinzufuegen eines Attributes, das auf das angelegte Arrayelement zeigt
-
                             dummy.setStatus(MetaObject.MODIFIED);
-                            int counter = dummy.getAttribs().length;
+                            final ObjectAttribute[] attribs = dummy.getAttribs();
+
                             final ObjectAttribute dummyOA = new ObjectAttribute(
-                                    mai.getId()
-                                            + "."
-                                            + ++counter,
+                                    null,
                                     mai,
                                     -1,
                                     arrayElement,

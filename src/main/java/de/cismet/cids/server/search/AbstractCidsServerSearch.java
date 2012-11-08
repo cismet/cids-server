@@ -5,59 +5,43 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- *  Copyright (C) 2010 thorsten
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-package Sirius.server.search;
+package de.cismet.cids.server.search;
 
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.newuser.User;
 
-import org.apache.log4j.Logger;
-
-import java.io.Serializable;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Hashtable;
+import java.util.Map;
 
 /**
- * DOCUMENT ME!
+ * Abstract class for the handling of {@link CidsServerSearch}es. For compatibility reasons this class extends the
+ * {@link Sirius.server.search.CidsServerSearch} class
  *
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public abstract class CidsServerSearch implements Serializable {
-
-    //~ Static fields/initializers ---------------------------------------------
-
-    private static final transient Logger LOG = Logger.getLogger(CidsServerSearch.class);
-
-    public static String ALL_DOMAINS = "##ALL_CIDS_DOMAINS##";
-    public static String USER_DOMAIN = "##CIDS_USERDOMAIN##";
+public abstract class AbstractCidsServerSearch implements CidsServerSearch {
 
     //~ Instance fields --------------------------------------------------------
 
-    private final HashMap<String, ArrayList<MetaClass>> classesPerDomain = new HashMap<String, ArrayList<MetaClass>>();
+    private final Map<String, Collection<MetaClass>> classesPerDomain;
 
     private User user;
-    private Hashtable activeLoaclServers;
-    private HashMap<String, String> classesInSnippetsPerDomain = new HashMap<String, String>();
+    private Map activeLocalServers;
+    private Map<String, String> classesInSnippetsPerDomain;
     private Collection<MetaClass> validClasses;
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new AbstractCidsServerSearch object.
+     */
+    public AbstractCidsServerSearch() {
+        classesPerDomain = new HashMap<String, Collection<MetaClass>>();
+        classesInSnippetsPerDomain = new HashMap<String, String>();
+    }
 
     //~ Methods ----------------------------------------------------------------
 
@@ -66,24 +50,7 @@ public abstract class CidsServerSearch implements Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public Hashtable getActiveLoaclServers() {
-        return activeLoaclServers;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  activeLoaclServers  DOCUMENT ME!
-     */
-    public void setActiveLoaclServers(final Hashtable activeLoaclServers) {
-        this.activeLoaclServers = activeLoaclServers;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
+    @Override
     public User getUser() {
         return user;
     }
@@ -93,6 +60,7 @@ public abstract class CidsServerSearch implements Serializable {
      *
      * @param  user  DOCUMENT ME!
      */
+    @Override
     public void setUser(final User user) {
         this.user = user;
     }
@@ -102,6 +70,7 @@ public abstract class CidsServerSearch implements Serializable {
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public Collection<MetaClass> getValidClasses() {
         return validClasses;
     }
@@ -111,6 +80,7 @@ public abstract class CidsServerSearch implements Serializable {
      *
      * @param  validClasses  DOCUMENT ME!
      */
+    @Override
     public void setValidClasses(final Collection<MetaClass> validClasses) {
         this.validClasses = validClasses;
         classesPerDomain.clear();
@@ -137,7 +107,9 @@ public abstract class CidsServerSearch implements Serializable {
      *
      * @throws  IllegalArgumentException  DOCUMENT ME!
      */
+    @Override
     public void setValidClassesFromStrings(final Collection<String> classes) throws IllegalArgumentException {
+        classesInSnippetsPerDomain.clear();
         for (final String classString : classes) {
             final String[] sa = classString.split("@");
             if ((sa == null) || (sa.length != 2)) {
@@ -162,7 +134,8 @@ public abstract class CidsServerSearch implements Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public HashMap<String, String> getClassesInSnippetsPerDomain() {
+    @Override
+    public Map<String, String> getClassesInSnippetsPerDomain() {
         return classesInSnippetsPerDomain;
     }
 
@@ -171,7 +144,8 @@ public abstract class CidsServerSearch implements Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public HashMap<String, ArrayList<MetaClass>> getClassesPerDomain() {
+    @Override
+    public Map<String, Collection<MetaClass>> getClassesPerDomain() {
         return classesPerDomain;
     }
 
@@ -180,27 +154,18 @@ public abstract class CidsServerSearch implements Serializable {
      *
      * @param  classesInSnippetsPerDomain  DOCUMENT ME!
      */
-    public void setClassesInSnippetsPerDomain(final HashMap<String, String> classesInSnippetsPerDomain) {
+    @Override
+    public void setClassesInSnippetsPerDomain(final Map<String, String> classesInSnippetsPerDomain) {
         this.classesInSnippetsPerDomain = classesInSnippetsPerDomain;
     }
 
-    /**
-     * Performs the specified search.
-     *
-     * <p>Be aware that this method runs in server context and terefore has no access to the Navigator or cismap.</p>
-     *
-     * @return  The objects matching the specified search.
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    public abstract Collection performServerSearch() throws Exception;
+    @Override
+    public Map getActiveLocalServers() {
+        return activeLocalServers;
+    }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    protected Logger getLog() {
-        return LOG;
+    @Override
+    public void setActiveLocalServers(final Map activeLocalServers) {
+        this.activeLocalServers = activeLocalServers;
     }
 }
