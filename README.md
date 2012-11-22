@@ -1,3 +1,5 @@
+Server components of the cids system.
+
 #cids README
 ![Figure 0](http://www.cismet.de/images/faq-images/fis_wasser1.png)
 
