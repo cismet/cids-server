@@ -14,7 +14,8 @@ import org.apache.log4j.Logger;
 import java.rmi.RemoteException;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
@@ -122,12 +123,24 @@ public class UserManager implements UserServer {
                 u.setUserGroup(ug);
             } else {
                 final Vector<String[]> ugInfos = getUserGroupNames(u);
-                final Collection<UserGroup> ugList = new ArrayList<UserGroup>(ugInfos.size());
+                final List<UserGroup> ugList = new ArrayList<UserGroup>(ugInfos.size());
                 for (final String[] ugInfo : ugInfos) {
                     final UserGroup ug = (UserGroup)ugs.get(constructKey(ugInfo[0], ugInfo[1]));
-                    ugList.add(ug);
+                    if (ug != null) {
+                        ugList.add(ug);
+                    }
                 }
+                Collections.sort(ugList, new Comparator<UserGroup>() {
+
+                        @Override
+                        public int compare(final UserGroup ug1, final UserGroup ug2) {
+                            final int prio1 = (ug1 == null) ? Integer.MAX_VALUE : ug1.getPrio();
+                            final int prio2 = (ug2 == null) ? Integer.MAX_VALUE : ug2.getPrio();
+                            return new Integer(prio1).compareTo(new Integer(prio2));
+                        }
+                    });
                 u.setPotentialUserGroups(ugList);
+                u.setUserGroup(null);
             }
         }
 

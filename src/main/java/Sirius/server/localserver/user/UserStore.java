@@ -43,7 +43,6 @@ public final class UserStore extends Shutdown {
     //~ Instance fields --------------------------------------------------------
 
     protected DBConnectionPool conPool;
-
     protected Vector users;
     protected Vector userGroups;
     // protected Hashtable userGroupHash;
@@ -111,7 +110,8 @@ public final class UserStore extends Shutdown {
                             userGroupTable.getInt("id"),             // NOI18N
                             userGroupTable.getString("name").trim(), // NOI18N
                             domain,
-                            userGroupTable.getString("descr"));      // NOI18N
+                            userGroupTable.getString("descr"),
+                            userGroupTable.getInt("prio"));          // NOI18N
                     userGroups.addElement(tmp);
                 } catch (Exception e) {
                     LOG.error(e);
@@ -245,7 +245,6 @@ public final class UserStore extends Shutdown {
      *
      * @return  DOCUMENT ME!
      */
-
     // FIXME: WHATS THE PURPOSE OF THIS IMPL???
     public boolean validateUser(final User user) {
         return true;
@@ -317,9 +316,25 @@ public final class UserStore extends Shutdown {
         if (userGroup != null) {
             return getConfigAttrForUserGroup(keyId, user, userGroup);
         } else {
+            final ResultSet exemptGroupValueSet = conPool.submitInternalQuery(
+                    DBConnection.DESC_FETCH_CONFIG_ATTR_EXEMPT_VALUE,
+                    user.getId(),
+                    keyId);
+            final int groupId;
+            if (exemptGroupValueSet.next()) {
+                groupId = exemptGroupValueSet.getInt(1);
+            } else {
+                groupId = -1;
+            }
+            LOG.fatal(user.getId() + ", " + keyId + ": " + groupId);
+
             for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
                 final String configAttr = getConfigAttrForUserGroup(keyId, user, potentialUserGroup);
-                if (configAttr != null) {
+                if (groupId < 0) {
+                    if (configAttr != null) {
+                        return configAttr;
+                    }
+                } else if (potentialUserGroup.getId() == groupId) {
                     return configAttr;
                 }
             }
