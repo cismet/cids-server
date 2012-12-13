@@ -122,22 +122,26 @@ public final class PermissionHolder implements Serializable {
      * @return  DOCUMENT ME!
      */
     public boolean hasReadPermission(final User user) {
-        final UserGroup userGroup = user.getUserGroup();
-        try {
-            if (userGroup != null) {
-                return hasPermission(userGroup.getKey().toString(), READPERMISSION);
-            } else {
-                for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
-                    if (hasPermission(potentialUserGroup.getKey().toString(), READPERMISSION)) {
-                        return true;
+        if (user != null) {
+            final UserGroup userGroup = user.getUserGroup();
+            try {
+                if (userGroup != null) {
+                    return hasPermission(userGroup.getKey().toString(), READPERMISSION);
+                } else {
+                    for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
+                        if (hasPermission(potentialUserGroup.getKey().toString(), READPERMISSION)) {
+                            return true;
+                        }
                     }
+                    return false;
                 }
+            } catch (final Exception e) {
+                LOG.error("error in hasReadPermission (ug = " // NOI18N
+                            + userGroup
+                            + "). Will return false.", e); // NOI18N
                 return false;
             }
-        } catch (final Exception e) {
-            LOG.error("error in hasReadPermission (ug = " // NOI18N
-                        + userGroup
-                        + "). Will return false.", e); // NOI18N
+        } else {
             return false;
         }
     }
@@ -150,22 +154,26 @@ public final class PermissionHolder implements Serializable {
      * @return  DOCUMENT ME!
      */
     public boolean hasWritePermission(final User user) {
-        final UserGroup userGroup = user.getUserGroup();
-        if (userGroup != null) {
-            try {
-                return hasPermission(userGroup.getKey().toString(), WRITEPERMISSION);
-            } catch (final Exception e) {
-                LOG.error("Error in hasWritePermission (ug = " // NOI18N
-                            + userGroup
-                            + "). Will return false.", e); // NOI18N
+        if (user != null) {
+            final UserGroup userGroup = user.getUserGroup();
+            if (userGroup != null) {
+                try {
+                    return hasPermission(userGroup.getKey().toString(), WRITEPERMISSION);
+                } catch (final Exception e) {
+                    LOG.error("Error in hasWritePermission (ug = " // NOI18N
+                                + userGroup
+                                + "). Will return false.", e); // NOI18N
+                    return false;
+                }
+            } else {
+                for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
+                    if (hasPermission(potentialUserGroup.getKey().toString(), WRITEPERMISSION)) {
+                        return true;
+                    }
+                }
                 return false;
             }
         } else {
-            for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
-                if (hasPermission(potentialUserGroup.getKey().toString(), WRITEPERMISSION)) {
-                    return true;
-                }
-            }
             return false;
         }
     }
