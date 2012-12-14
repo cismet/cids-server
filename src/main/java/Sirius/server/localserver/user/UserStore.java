@@ -326,7 +326,6 @@ public final class UserStore extends Shutdown {
             } else {
                 groupId = -1;
             }
-            LOG.fatal(user.getId() + ", " + keyId + ": " + groupId);
 
             for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
                 final String configAttr = getConfigAttrForUserGroup(keyId, user, potentialUserGroup);
