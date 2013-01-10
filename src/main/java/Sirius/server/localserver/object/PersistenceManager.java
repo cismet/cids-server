@@ -202,7 +202,7 @@ public final class PersistenceManager extends Shutdown {
                 transactionHelper.commit();
 
                 for (final CidsTrigger ct : rightTriggers) {
-                    ct.afterCommittedInsert(mo.getBean(), user);
+                    ct.afterCommittedUpdate(mo.getBean(), user);
                 }
             } catch (final Exception e) {
                 final String message = "cannot update metaobject"; // NOI18N
@@ -237,7 +237,7 @@ public final class PersistenceManager extends Shutdown {
             transactionHelper.commit();
 
             for (final CidsTrigger ct : rightTriggers) {
-                ct.afterCommittedInsert(mo.getBean(), user);
+                ct.afterCommittedDelete(mo.getBean(), user);
             }
 
             return rtn;
