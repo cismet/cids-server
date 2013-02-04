@@ -202,7 +202,7 @@ public final class PersistenceManager extends Shutdown {
                 transactionHelper.commit();
 
                 for (final CidsTrigger ct : rightTriggers) {
-                    ct.afterCommittedInsert(mo.getBean(), user);
+                    ct.afterCommittedUpdate(mo.getBean(), user);
                 }
             } catch (final Exception e) {
                 final String message = "cannot update metaobject"; // NOI18N
@@ -237,7 +237,7 @@ public final class PersistenceManager extends Shutdown {
             transactionHelper.commit();
 
             for (final CidsTrigger ct : rightTriggers) {
-                ct.afterCommittedInsert(mo.getBean(), user);
+                ct.afterCommittedDelete(mo.getBean(), user);
             }
 
             return rtn;
@@ -536,6 +536,14 @@ public final class PersistenceManager extends Shutdown {
                 mai = mAttr[i].getMai();
                 if (mai == null) {
                     throw new IllegalStateException("MAI not found: " + mAttr[i].getName()); // NOI18N
+                }
+                if (mai.isExtensionAttribute()) {
+                    // extension attributes should be ignored
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(mAttr[i] + "is an extension attribute -> ignored");
+                    }
+
+                    continue;
                 }
                 // fieldname is now known, find value now
                 final java.lang.Object value = mAttr[i].getValue();
@@ -985,6 +993,16 @@ public final class PersistenceManager extends Shutdown {
                     final String message = ("MAI not found: " + mAttr[i].getName()); // NOI18N
                     throw new IllegalStateException(message);
                 }
+
+                if (mai.isExtensionAttribute()) {
+                    // extension attributes should be ignored
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(mAttr[i] + "is an extension attribute -> ignored");
+                    }
+
+                    continue;
+                }
+
                 // add fieldname of this attribute to statement
                 paramSql.append(sep).append(mai.getFieldName());
                 if (!mAttr[i].referencesObject()) // does not reference object, so it does not have key
