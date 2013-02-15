@@ -23,6 +23,8 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+
 import org.jdesktop.observablecollections.ObservableList;
 
 import org.openide.util.Lookup;
@@ -43,7 +45,6 @@ import java.util.Map.Entry;
 import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  * DOCUMENT ME!
@@ -102,6 +103,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @return  DOCUMENT ME!
      */
+    @JsonIgnore
     public MetaObject getMetaObject() {
         return metaObject;
     }
@@ -206,7 +208,7 @@ public class CidsBean implements PropertyChangeListener {
     @JsonIgnore
     public void setMOString(final String moString) {
     }
-    
+
     /**
      * DOCUMENT ME!
      *

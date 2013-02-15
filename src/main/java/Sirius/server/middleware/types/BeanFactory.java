@@ -21,6 +21,10 @@ import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.LoaderClassPath;
 
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.annotation.Annotation;
+import javassist.bytecode.annotation.BooleanMemberValue;
+
 import org.apache.log4j.Logger;
 
 import org.jdesktop.observablecollections.ObservableCollections;
@@ -41,9 +45,6 @@ import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.utils.MetaClassCacheService;
 
 import de.cismet.tools.CurrentStackTrace;
-import javassist.bytecode.AnnotationsAttribute;
-import javassist.bytecode.annotation.Annotation;
-import javassist.bytecode.annotation.BooleanMemberValue;
 
 /**
  * DOCUMENT ME!
@@ -344,7 +345,6 @@ public class BeanFactory {
             final String fieldname = mai.getFieldName().toLowerCase();
             String attributeJavaClassName = mai.getJavaclassname();
 
-
             if (mai.isArray() || (mai.isVirtual() && (mai.getForeignKeyClassId() < 0))) {
                 attributeJavaClassName = "org.jdesktop.observablecollections.ObservableList"; // NOI18N
             } else if (mai.isForeignKey()) {
@@ -504,7 +504,7 @@ public class BeanFactory {
 
         ctClass.addMethod(getter);
         ctClass.addMethod(setter);
-        
+
         // Idee falls man oldValue benoetigt: erzeuge den setter wie oben jedoch mit einem anderen Namen (z.b::
         // stealthySetVorname) und setze den modifier auf private oder protected in dieser methode wird NICHT der
         // propertyChangesupport aufgerufen in einer zus?tzlichen Methoden setVorname die komplett impl. wird kann man
