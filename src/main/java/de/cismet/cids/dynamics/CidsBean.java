@@ -43,6 +43,7 @@ import java.util.Map.Entry;
 import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  * DOCUMENT ME!
@@ -54,15 +55,22 @@ public class CidsBean implements PropertyChangeListener {
 
     //~ Static fields/initializers ---------------------------------------------
 
+    @JsonIgnore
     private static final transient Logger LOG = Logger.getLogger(CidsBean.class);
 
     //~ Instance fields --------------------------------------------------------
 
+    @JsonIgnore
     protected PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    @JsonIgnore
     protected MetaObject metaObject = null;
+    @JsonIgnore
     protected String backlinkFieldname;
+    @JsonIgnore
     protected CidsBean backlinkObject;
+    @JsonIgnore
     protected boolean artificialChange;
+    @JsonIgnore
     private CustomBeanPermissionProvider customPermissionProvider;
 
     //~ Methods ----------------------------------------------------------------
@@ -105,6 +113,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @return  DOCUMENT ME!
      */
+    @JsonIgnore
     public boolean getHasWritePermission(final User user) {
         return metaObject.getMetaClass().getPermissions().hasWritePermission(user.getUserGroup());
     }
@@ -116,6 +125,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @return  DOCUMENT ME!
      */
+    @JsonIgnore
     public boolean hasObjectWritePermission(final User user) {
         if (metaObject != null) {
             return metaObject.hasObjectWritePermission(user);
@@ -132,6 +142,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @return  DOCUMENT ME!
      */
+    @JsonIgnore
     public boolean hasObjectReadPermission(final User user) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("hasObjectReadPermission for user: " + user); // NOI18N
@@ -172,6 +183,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @param  metaObject  DOCUMENT ME!
      */
+    @JsonIgnore
     public void setMetaObject(final MetaObject metaObject) {
         this.metaObject = metaObject;
     }
@@ -181,10 +193,20 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @return  DOCUMENT ME!
      */
+    @JsonIgnore
     public String getMOString() {
         return metaObject.getDebugString();
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  moString  DOCUMENT ME!
+     */
+    @JsonIgnore
+    public void setMOString(final String moString) {
+    }
+    
     /**
      * DOCUMENT ME!
      *
@@ -316,6 +338,7 @@ public class CidsBean implements PropertyChangeListener {
      * @param  fieldname     DOCUMENT ME!
      * @param  parentObject  DOCUMENT ME!
      */
+    @JsonIgnore
     public void setBacklinkInformation(final String fieldname, final CidsBean parentObject) {
         backlinkFieldname = fieldname;
         backlinkObject = parentObject;
@@ -344,6 +367,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @return  DOCUMENT ME!
      */
+    @JsonIgnore
     public PropertyChangeListener[] getPropertyChangeListeners() {
         return propertyChangeSupport.getPropertyChangeListeners();
     }
@@ -480,6 +504,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @throws  Exception  java.lang.Exception
      */
+    @JsonIgnore
     public void setProperty(final String name, final Object value) throws Exception {
         try {
             // TODO seems to call nonexisting properties on array classes?
@@ -496,6 +521,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @return  DOCUMENT ME!
      */
+    @JsonIgnore
     public Object getProperty(final String name) {
         try {
             return PropertyUtils.getProperty(this, name);
@@ -726,6 +752,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @return  DOCUMENT ME!
      */
+    @JsonIgnore
     public String[] getPropertyNames() {
         // to be overridden by the dynamic class
         return null;
@@ -738,6 +765,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @throws  Error  DOCUMENT ME!
      */
+    @JsonIgnore
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
             final PropertyDescriptor pd = new PropertyDescriptor("MOString", CidsBean.class); // NOI18N
@@ -813,6 +841,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @return  DOCUMENT ME!
      */
+    @JsonIgnore
     public boolean hasArtificialChangeFlag() {
         return artificialChange;
     }
@@ -822,6 +851,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @param  artificialChange  DOCUMENT ME!
      */
+    @JsonIgnore
     public void setArtificialChangeFlag(final boolean artificialChange) {
         this.artificialChange = artificialChange;
     }
@@ -888,6 +918,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @throws  Exception  DOCUMENT ME!
      */
+    @JsonIgnore
     public static MetaClass getMetaClassFromTableName(final String domainName, final String tableName)
             throws Exception {
         final MetaClassCacheService classcache = Lookup.getDefault().lookup(MetaClassCacheService.class);
@@ -907,6 +938,7 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @return  DOCUMENT ME!
      */
+    @JsonIgnore
     public List<CidsBean> getBeanCollectionProperty(final String collectionProperty) {
         if (collectionProperty != null) {
             final Object colObj = getProperty(collectionProperty);

@@ -41,6 +41,9 @@ import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.utils.MetaClassCacheService;
 
 import de.cismet.tools.CurrentStackTrace;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.annotation.Annotation;
+import javassist.bytecode.annotation.BooleanMemberValue;
 
 /**
  * DOCUMENT ME!
@@ -341,6 +344,7 @@ public class BeanFactory {
             final String fieldname = mai.getFieldName().toLowerCase();
             String attributeJavaClassName = mai.getJavaclassname();
 
+
             if (mai.isArray() || (mai.isVirtual() && (mai.getForeignKeyClassId() < 0))) {
                 attributeJavaClassName = "org.jdesktop.observablecollections.ObservableList"; // NOI18N
             } else if (mai.isForeignKey()) {
@@ -352,13 +356,27 @@ public class BeanFactory {
             }
 
             try {
-                addPropertyToCtClass(pool, ctClass, Class.forName(attributeJavaClassName), fieldname);
+                addPropertyToCtClass(
+                    pool,
+                    ctClass,
+                    Class.forName(attributeJavaClassName),
+                    fieldname);
                 if (propertyNames.length() > 0) {
                     propertyNames.append(", ");                            // NOI18N
                 }
                 propertyNames.append("\"").append(fieldname).append("\""); // NOI18N
+
+//                final AnnotationsAttribute annAt = new AnnotationsAttribute(ctClass.getClassFile().getConstPool(),
+//                        AnnotationsAttribute.visibleTag);
+//                final Annotation an = new Annotation("JsonTypeName", ctClass.getClassFile().getConstPool());
+//                an.addMemberValue(
+//                    "class",
+//                    new ClassMemberValue(realJavaClassName, ctClass.getClassFile().getConstPool()));
+//                annAt.addAnnotation(an);
+//
+//                ctClass.getClassFile().addAttribute(annAt);
             } catch (final Exception e) {
-                LOG.warn("Could not add " + fieldname, e);                 // NOI18N
+                LOG.warn("Could not add " + fieldname, e); // NOI18N
             }
         }
         // FIXME: immutable collection instead of possible mutable (-> corrputable) array?
@@ -402,6 +420,42 @@ public class BeanFactory {
             final Class propertyType,
             final String propertyName) throws Exception {
         final CtField f = new CtField(pool.get(propertyType.getCanonicalName()), propertyName, ctClass);
+
+//        if (realJavaClassName != null) {
+//            System.out.println("add identifier name: " + propertyName + "data type: " + propertyType.getName());
+//
+////            final AnnotationsAttribute annAt = new AnnotationsAttribute(ctClass.getClassFile().getConstPool(),
+////                    AnnotationsAttribute.visibleTag);
+////            final CtClass c = ClassPool.getDefault().get("com.fasterxml.jackson.annotation.JsonTypeName");
+////            final Annotation an = new Annotation(ctClass.getClassFile().getConstPool(), c);
+////            an.addMemberValue("value", new StringMemberValue(realJavaClassName, ctClass.getClassFile().getConstPool()));
+////            annAt.addAnnotation(an);
+////            f.getFieldInfo().addAttribute(annAt);
+//
+//            final AnnotationsAttribute annAt = new AnnotationsAttribute(ctClass.getClassFile().getConstPool(),
+//                    AnnotationsAttribute.visibleTag);
+//            final CtClass c = ClassPool.getDefault().get("com.fasterxml.jackson.annotation.JsonTypeInfo");
+//            final Annotation an = new Annotation(ctClass.getClassFile().getConstPool(), c);
+////            final CtClass as = ClassPool.getDefault().get("com.fasterxml.jackson.annotation.JsonTypeInfo$As");
+////            ctClass.getClassFile().getConstPool().addClassInfo(as);
+//            final EnumMemberValue emv = new EnumMemberValue(ctClass.getClassFile().getConstPool());
+//            emv.setType("com.fasterxml.jackson.annotation.JsonTypeInfo$As");
+//            emv.setValue("PROPERTY");
+//            ctClass.getClassFile().getConstPool().addUtf8Info(propertyName);
+//            final EnumMemberValue emvUse = new EnumMemberValue(ctClass.getClassFile().getConstPool());
+//            emv.setType("com.fasterxml.jackson.annotation.JsonTypeInfo$Id");
+//            emv.setValue("CLASS");
+//
+//            an.addMemberValue("use", emvUse);
+////            an.addMemberValue("use", new ClassMemberValue(realJavaClassName, ctClass.getClassFile().getConstPool()));
+//            an.addMemberValue("include", emv);
+//            an.addMemberValue("property", new StringMemberValue(propertyName, ctClass.getClassFile().getConstPool()));
+//            annAt.addAnnotation(an);
+//            f.getFieldInfo().addAttribute(annAt);
+//
+//            System.out.println("annotations " + f.getAnnotations().length);
+//        }
+
         ctClass.addField(f);
 
         final String fieldname = f.getName();
@@ -413,7 +467,22 @@ public class BeanFactory {
             // Hier wird ein zusaetzlicher "getter" angelegt
             getterPrefix = "is"; // NOI18N
             final CtMethod additionalGetter = CtNewMethod.getter(getterPrefix + postfix, f);
+
+            // Add ignore annotation for jackson. Jackson cannot handle 2 getter methods for the same property
+            final AnnotationsAttribute annAttr = new AnnotationsAttribute(ctClass.getClassFile().getConstPool(),
+                    AnnotationsAttribute.visibleTag);
+            final CtClass c = ClassPool.getDefault().get("com.fasterxml.jackson.annotation.JsonIgnore");
+            final Annotation ann = new Annotation(ctClass.getClassFile().getConstPool(), c);
+            ann.addMemberValue("value", new BooleanMemberValue(true, ctClass.getClassFile().getConstPool()));
+            annAttr.addAnnotation(ann);
+            additionalGetter.getMethodInfo().addAttribute(annAttr);
+
             ctClass.addMethod(additionalGetter);
+//            final Object[] a = additionalGetter.getAnnotations();
+//            System.out.println("a: " + a.length);
+//            for (final Object tmp : a) {
+//                System.out.println("ai " + a.getClass().toString());
+//            }
 
             // leider reicht dieser "getter" nicht. beans binding braucht auch bei einem Boolean ein "getter" der mit
             // get anfaengt
@@ -435,7 +504,7 @@ public class BeanFactory {
 
         ctClass.addMethod(getter);
         ctClass.addMethod(setter);
-
+        
         // Idee falls man oldValue benoetigt: erzeuge den setter wie oben jedoch mit einem anderen Namen (z.b::
         // stealthySetVorname) und setze den modifier auf private oder protected in dieser methode wird NICHT der
         // propertyChangesupport aufgerufen in einer zus?tzlichen Methoden setVorname die komplett impl. wird kann man
