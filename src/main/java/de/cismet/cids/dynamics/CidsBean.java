@@ -813,17 +813,6 @@ public class CidsBean implements PropertyChangeListener {
             } else if (object instanceof List) {
                 final List<CidsBean> collection = (List<CidsBean>)object;
 
-//                Collections.sort(collection, new Comparator<CidsBean>() {
-//
-//                        @Override
-//                        public int compare(final CidsBean o1, final CidsBean o2) {
-//                            try {
-//                                return o1.getPrimaryKeyValue().compareTo(o2.getPrimaryKeyValue());
-//                            } catch (Exception e) {
-//                                return 0;
-//                            }
-//                        }
-//                    });
                 sb.append('\n').append(einrueckung).append('[');
                 for (int j = 0; j < collection.size(); ++j) {
                     final CidsBean colBean = collection.get(j);
