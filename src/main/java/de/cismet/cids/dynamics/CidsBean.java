@@ -20,11 +20,14 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.io.WKTReader;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
+import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import org.jdesktop.observablecollections.ObservableList;
@@ -39,6 +42,8 @@ import java.beans.PropertyDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -46,6 +51,8 @@ import java.util.Map.Entry;
 import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
+
+import de.cismet.tools.BlacklistClassloading;
 
 /**
  * DOCUMENT ME!
@@ -58,6 +65,7 @@ public class CidsBean implements PropertyChangeListener {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient Logger LOG = Logger.getLogger(CidsBean.class);
+    static ObjectMapper mapper = new ObjectMapper();
 
     //~ Instance fields --------------------------------------------------------
 
@@ -74,7 +82,6 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @return  DOCUMENT ME!
      */
-    ObjectMapper mapper = new ObjectMapper();
     private CustomBeanPermissionProvider customPermissionProvider;
 
     //~ Methods ----------------------------------------------------------------
@@ -485,6 +492,49 @@ public class CidsBean implements PropertyChangeListener {
     }
 
     /**
+     * DOCUMENT ME!
+     *
+     * @param   fieldname  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RuntimeException  DOCUMENT ME!
+     */
+    public CidsBean getEmptyBeanFromArrayAttribute(final String fieldname) {
+        final MetaClassCacheService classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
+        if (classCacheService != null) {
+            final ObjectAttribute oa = getMetaObject().getAttributeByFieldName(fieldname);
+            // abs weil im 1:n Fall eine negative class-id im foreign-key-field steht
+            final MetaClass firstMC = classCacheService.getMetaClass(
+                    getMetaObject().getDomain(),
+                    Math.abs(oa.getMai().getForeignKeyClassId()));
+            if (oa.isVirtualOneToManyAttribute()) {
+                final CidsBean newOne = firstMC.getEmptyInstance().getBean();
+                return newOne;
+            } else if (oa.isArray()) {
+                final HashMap hm = firstMC.getMemberAttributeInfos();
+                final Iterator it = hm.values().iterator();
+                while (it.hasNext()) {
+                    final Object tmp = it.next();
+                    if (tmp instanceof MemberAttributeInfo) {
+                        if (((MemberAttributeInfo)tmp).isForeignKey()) {
+                            final int classId = ((MemberAttributeInfo)tmp).getForeignKeyClassId();
+                            final MetaClass targetClass = classCacheService.getMetaClass(firstMC.getDomain(), classId);
+                            final CidsBean newOne = targetClass.getEmptyInstance().getBean();
+                            return newOne;
+                        }
+                    }
+                }
+                throw new RuntimeException("Missconfigured Array-Class"); // NOI18N
+            } else {
+                throw new RuntimeException("Must be an Array-Attribute"); // NOI18N
+            }
+        } else {
+            throw new RuntimeException("Could not lookup MetaClassCacheService"); // NOI18N
+        }
+    }
+
+    /**
      * Convenience Method. Wraps <code>PropertyUtils.setProperty(this, name, value);</code>
      *
      * @param   name   DOCUMENT ME!
@@ -875,7 +925,7 @@ public class CidsBean implements PropertyChangeListener {
             try {
                 return mapper.writeValueAsString(o);
             } catch (Exception e) {
-                e.printStackTrace();
+                LOG.error("Error in JSON conversion. (" + o.getClass() + ":" + o + ")", e);
                 return null;
             }
         }
@@ -927,6 +977,93 @@ public class CidsBean implements PropertyChangeListener {
         }
 
         return newBean;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   json  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception         DOCUMENT ME!
+     * @throws  RuntimeException  DOCUMENT ME!
+     */
+    public static CidsBean createNewCidsBeanFromJSON(final String json) throws Exception {
+        final JsonNode jn = mapper.readValue(json, JsonNode.class);
+        if ((jn == null) || !jn.isObject()) {
+            throw new RuntimeException("Error in JSON format"); // NOI18N
+        }
+        final String[] parts = jn.get("cidsObjectKey").toString().split("/");
+        final String classKey = parts[1];
+        final String[] classKeyParts = classKey.split("@");
+        final String tablename = classKeyParts[0];
+        final String domain = classKeyParts[1];
+        final String pk = parts[2];
+        final CidsBean b = CidsBean.createNewCidsBeanFromTableName(domain, tablename);
+        fill(b, null, jn);
+        return b;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   bean   DOCUMENT ME!
+     * @param   field  DOCUMENT ME!
+     * @param   n      DOCUMENT ME!
+     *
+     * @throws  Exception         DOCUMENT ME!
+     * @throws  RuntimeException  DOCUMENT ME!
+     */
+    private static void fill(final CidsBean bean, final String field, final JsonNode n) throws Exception {
+        if ((field != null) && field.equalsIgnoreCase("cidsObjectKey")) {
+            return;
+        }
+        if (n.isValueNode()) {
+            if (!n.isNull()) {
+                final Class c = BlacklistClassloading.forName(bean.getMetaObject().getAttributeByFieldName(field)
+                                .getMai().getJavaclassname());
+                if (!c.equals(Geometry.class)) {
+                    try {
+                        bean.setProperty(field, mapper.readValue(n, c));
+                    } catch (Exception e) {
+                        LOG.error("problem bei " + field + "(" + c + ")", e);
+                    }
+                } else {
+                    try {
+                        bean.setProperty(field, new WKTReader(new GeometryFactory()).read(n.getTextValue()));
+                    } catch (Exception e) {
+                        LOG.error("problem bei " + field + "(" + c + "). wert:" + n.getTextValue(), e);
+                    }
+                }
+            }
+        } else if (n.isArray()) {
+            final Iterator<JsonNode> nodelist = n.getElements();
+            final List<CidsBean> array = bean.getBeanCollectionProperty(field);
+            if (nodelist.hasNext()) {
+                while (nodelist.hasNext()) {
+                    final CidsBean arrayBean = bean.getEmptyBeanFromArrayAttribute(field);
+                    array.add(arrayBean);
+                    final JsonNode listNode = nodelist.next();
+                    fill(arrayBean, null, listNode);
+                }
+            }
+        } else if (n.isObject()) {
+            final Iterator<Map.Entry<String, JsonNode>> ifn = n.getFields();
+            while (ifn.hasNext()) {
+                final Map.Entry<String, JsonNode> nextNode = ifn.next();
+                if (!nextNode.getKey().equalsIgnoreCase("cidsObjectKey")) {
+                    if (nextNode.getValue().isObject()) {
+                        bean.fillEmptyFieldWithEmptySubInstance(nextNode.getKey());
+                        fill((CidsBean)bean.getProperty(nextNode.getKey()), nextNode.getKey(), nextNode.getValue());
+                    } else {
+                        fill(bean, nextNode.getKey(), nextNode.getValue());
+                    }
+                }
+            }
+        } else {
+            throw new RuntimeException("unmanaged case. that is a bad thing ;-) node:" + n);
+        }
     }
 
     /**
