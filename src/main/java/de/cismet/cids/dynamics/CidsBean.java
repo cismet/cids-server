@@ -747,6 +747,27 @@ public class CidsBean implements PropertyChangeListener {
      * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
+     */
+    public String getPrimaryKeyFieldname() {
+        if (pkFieldName == null) {
+            pkFieldName = getMetaObject().getMetaClass().getPrimaryKey();
+        }
+        return pkFieldName;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Integer getPrimaryKeyValue() {
+        return (Integer)getProperty(getPrimaryKeyFieldname().toLowerCase());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      *
      * @throws  Error  DOCUMENT ME!
      */
