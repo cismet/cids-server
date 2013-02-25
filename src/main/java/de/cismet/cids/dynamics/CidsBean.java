@@ -66,6 +66,8 @@ public class CidsBean implements PropertyChangeListener {
 
     private static final transient Logger LOG = Logger.getLogger(CidsBean.class);
     static ObjectMapper mapper = new ObjectMapper();
+    public static final String CIDS_OBJECT_KEY_IDENTIFIER = "cidsObjectKey";
+    private static boolean INTRA_OBJECT_CACHE_ENABLED = true;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -75,6 +77,7 @@ public class CidsBean implements PropertyChangeListener {
     protected CidsBean backlinkObject;
     protected boolean artificialChange;
     String pkFieldName = null;
+    private HashMap<String, CidsBean> intraObjectCache = new HashMap<String, CidsBean>();
     /**
      * DOCUMENT ME!
      *
@@ -838,19 +841,45 @@ public class CidsBean implements PropertyChangeListener {
      */
     // FIXME: use a JSON API such as Jackson
     public String toJSONString() {
-        return beanToJSONStringHelper(this, 0);
+        return beanToJSONStringHelper(this, 0, INTRA_OBJECT_CACHE_ENABLED);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   bean   DOCUMENT ME!
-     * @param   depth  DOCUMENT ME!
+     * @param   intraObjectCacheEnabled  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String toJSONString(final boolean intraObjectCacheEnabled) {
+        return beanToJSONStringHelper(this, 0, intraObjectCacheEnabled);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getCidsObjectKey() {
+        return new StringBuffer("/").append(getMetaObject().getMetaClass().getTableName())
+                    .append('@')
+                    .append(getMetaObject().getMetaClass().getDomain())
+                    .append('/')
+                    .append(getPrimaryKeyValue())
+                    .toString();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   bean                     DOCUMENT ME!
+     * @param   depth                    DOCUMENT ME!
+     * @param   intraObjectCacheEnabled  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
     // FIXME: use a JSON API such as Jackson
-    private String beanToJSONStringHelper(final CidsBean bean, final int depth) {
+    private String beanToJSONStringHelper(final CidsBean bean, final int depth, final boolean intraObjectCacheEnabled) {
         final StringBuilder sb = new StringBuilder();
         final char[] einrueckung = new char[depth];
         for (int i = 0; i < einrueckung.length; ++i) {
@@ -862,48 +891,47 @@ public class CidsBean implements PropertyChangeListener {
                 .append('\t')
                 .append('"')
                 .append("cidsObjectKey")
-                .append("\": \"/")
-                .append(bean.getMetaObject().getMetaClass().getTableName())
-                .append('@')
-                .append(bean.getMetaObject().getMetaClass().getDomain())
-                .append('/')
-                .append(bean.getProperty(bean.getMetaObject().getMetaClass().getPrimaryKey().toLowerCase()))
+                .append("\": \"")
+                .append(bean.getCidsObjectKey())
                 .append('\"');
-        if (propNames.length > 0) {
-            sb.append(',');
-        }
-        sb.append('\n');
-        for (int i = 0; i < propNames.length; ++i) {
-            final String attribute = propNames[i];
-            sb.append(einrueckung).append('\t').append('"').append(attribute).append("\": ");
-            final Object object = bean.getProperty(attribute);
-            if (object instanceof CidsBean) {
-                sb.append('\n');
-                sb.append(beanToJSONStringHelper((CidsBean)object, depth + 1));
-                sb.append('\n');
-            } else if (object instanceof List) {
-                final List<CidsBean> collection = (List<CidsBean>)object;
 
-                sb.append('\n').append(einrueckung).append('[');
-                for (int j = 0; j < collection.size(); ++j) {
-                    final CidsBean colBean = collection.get(j);
-                    sb.append(beanToJSONStringHelper(colBean, depth + 1));
-                    if (j < (collection.size() - 1)) {
-                        sb.append(',');
-                        sb.append('\n');
-                    }
-                }
-                sb.append('\n').append(einrueckung).append(']');
-            } else {
-                sb.append(atomicDatatypeToJsonSerializer(object));
-            }
-            if (i < (propNames.length - 1)) {
+        if (!intraObjectCacheEnabled || !intraObjectCache.containsKey(bean.getCidsObjectKey())) {
+            if (propNames.length > 0) {
                 sb.append(',');
             }
             sb.append('\n');
+            intraObjectCache.put(bean.getCidsObjectKey(), bean);
+            for (int i = 0; i < propNames.length; ++i) {
+                final String attribute = propNames[i];
+                sb.append(einrueckung).append('\t').append('"').append(attribute).append("\": ");
+                final Object object = bean.getProperty(attribute);
+                if (object instanceof CidsBean) {
+                    sb.append('\n');
+                    sb.append(beanToJSONStringHelper((CidsBean)object, depth + 1, intraObjectCacheEnabled));
+                    sb.append('\n');
+                } else if (object instanceof List) {
+                    final List<CidsBean> collection = (List<CidsBean>)object;
+
+                    sb.append('\n').append(einrueckung).append('[');
+                    for (int j = 0; j < collection.size(); ++j) {
+                        final CidsBean colBean = collection.get(j);
+                        sb.append(beanToJSONStringHelper(colBean, depth + 1, intraObjectCacheEnabled));
+                        if (j < (collection.size() - 1)) {
+                            sb.append(',');
+                            sb.append('\n');
+                        }
+                    }
+                    sb.append('\n').append(einrueckung).append(']');
+                } else {
+                    sb.append(atomicDatatypeToJsonSerializer(object));
+                }
+                if (i < (propNames.length - 1)) {
+                    sb.append(',');
+                }
+                sb.append('\n');
+            }
         }
         sb.append(einrueckung).append("}");
-
         return sb.toString();
     }
 
@@ -1016,7 +1044,7 @@ public class CidsBean implements PropertyChangeListener {
      * @throws  RuntimeException  DOCUMENT ME!
      */
     private static void fill(final CidsBean bean, final String field, final JsonNode n) throws Exception {
-        if ((field != null) && field.equalsIgnoreCase("cidsObjectKey")) {
+        if ((field != null) && field.equalsIgnoreCase(CIDS_OBJECT_KEY_IDENTIFIER)) {
             return;
         }
         if (n.isValueNode()) {
@@ -1042,20 +1070,43 @@ public class CidsBean implements PropertyChangeListener {
             final List<CidsBean> array = bean.getBeanCollectionProperty(field);
             if (nodelist.hasNext()) {
                 while (nodelist.hasNext()) {
-                    final CidsBean arrayBean = bean.getEmptyBeanFromArrayAttribute(field);
-                    array.add(arrayBean);
                     final JsonNode listNode = nodelist.next();
-                    fill(arrayBean, null, listNode);
+                    final String cidsObjectKey = listNode.get(CIDS_OBJECT_KEY_IDENTIFIER).toString();
+                    if (INTRA_OBJECT_CACHE_ENABLED
+                                && bean.intraObjectCache.containsKey(cidsObjectKey)) {
+                        array.add(bean.intraObjectCache.get(cidsObjectKey));
+                    } else {
+                        final CidsBean arrayBean = bean.getEmptyBeanFromArrayAttribute(field);
+                        arrayBean.intraObjectCache = bean.intraObjectCache;
+                        array.add(arrayBean);
+                        fill(arrayBean, null, listNode);
+                        bean.intraObjectCache.put(cidsObjectKey, arrayBean);
+                    }
                 }
             }
         } else if (n.isObject()) {
             final Iterator<Map.Entry<String, JsonNode>> ifn = n.getFields();
             while (ifn.hasNext()) {
                 final Map.Entry<String, JsonNode> nextNode = ifn.next();
-                if (!nextNode.getKey().equalsIgnoreCase("cidsObjectKey")) {
+                if (!nextNode.getKey().equalsIgnoreCase(CIDS_OBJECT_KEY_IDENTIFIER)) {
                     if (nextNode.getValue().isObject()) {
-                        bean.fillEmptyFieldWithEmptySubInstance(nextNode.getKey());
-                        fill((CidsBean)bean.getProperty(nextNode.getKey()), nextNode.getKey(), nextNode.getValue());
+                        if (nextNode.getValue().isObject()) {
+                            final String cidsObjectKey = nextNode.getValue().get(CIDS_OBJECT_KEY_IDENTIFIER).toString();
+                            if (INTRA_OBJECT_CACHE_ENABLED
+                                        && bean.intraObjectCache.containsKey(cidsObjectKey)) {
+                                bean.setProperty(nextNode.getKey(), bean.intraObjectCache.get(cidsObjectKey));
+                            } else {
+                                bean.fillEmptyFieldWithEmptySubInstance(nextNode.getKey());
+                                ((CidsBean)bean.getProperty(nextNode.getKey())).intraObjectCache =
+                                    bean.intraObjectCache;
+                                fill((CidsBean)bean.getProperty(nextNode.getKey()),
+                                    nextNode.getKey(),
+                                    nextNode.getValue());
+                                bean.intraObjectCache.put(
+                                    cidsObjectKey,
+                                    ((CidsBean)bean.getProperty(nextNode.getKey())));
+                            }
+                        }
                     } else {
                         fill(bean, nextNode.getKey(), nextNode.getValue());
                     }
