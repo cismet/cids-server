@@ -39,9 +39,9 @@ public class ClassloadingHelper {
     //~ Static fields/initializers ---------------------------------------------
 
     /** A property file that may contain configurations concerning classloading. */
-    public static final String CL_PROPERTIES = "classloading.properties";        // NOI18N
+    public static final String CL_PROPERTIES = "classloading.properties";       // NOI18N
     /** The property which can be used to specify alternative classloading domains, value is expected to be csv. */
-    public static final String CL_PROP_ALT_DOMAINS = "classloading.alternativeDomains";                          // NOI18N
+    public static final String CL_PROP_ALT_DOMAINS = "classloading.alternativeDomains";                         // NOI18N
 
     private static final transient Logger LOG;
     private static final List<String> PACKAGE_PREFIXES;
