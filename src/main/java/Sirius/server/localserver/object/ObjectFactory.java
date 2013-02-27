@@ -155,6 +155,25 @@ public final class ObjectFactory extends Shutdown {
     public Sirius.server.localserver.object.Object getObject(final int objectId,
             final int classId,
             final boolean allowLightweightObjects) throws SQLException {
+        return getObject(objectId, classId, allowLightweightObjects, null);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   objectId                  DOCUMENT ME!
+     * @param   classId                   DOCUMENT ME!
+     * @param   allowLightweightObjects   DOCUMENT ME!
+     * @param   backlinkClassesToExclude  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    private Sirius.server.localserver.object.Object getObject(final int objectId,
+            final int classId,
+            final boolean allowLightweightObjects,
+            final ArrayList<Sirius.server.localserver._class.Class> backlinkClassesToExclude) throws SQLException {
         if (LOG != null) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
@@ -193,7 +212,7 @@ public final class ObjectFactory extends Shutdown {
             rs = stmnt.executeQuery(getObjectStmnt);
 
             if (rs.next()) {
-                return createObject(objectId, rs, c, allowLightweightObjects);
+                return createObject(objectId, rs, c, allowLightweightObjects, backlinkClassesToExclude);
             } else {
                 LOG.error("<LS> ERROR kein match f\u00FCr " + getObjectStmnt); // NOI18N
                 return null;
@@ -220,7 +239,26 @@ public final class ObjectFactory extends Shutdown {
             final ResultSet rs,
             final Sirius.server.localserver._class.Class c,
             final boolean allowLightweightObjects) throws SQLException {
-        return createObject(objectId, rs, c, null, allowLightweightObjects);
+        return createObject(objectId, rs, c, allowLightweightObjects, null);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   objectId                  DOCUMENT ME!
+     * @param   rs                        DOCUMENT ME!
+     * @param   c                         DOCUMENT ME!
+     * @param   backlinkClassesToExclude  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    Sirius.server.localserver.object.Object createObject(final int objectId,
+            final ResultSet rs,
+            final Sirius.server.localserver._class.Class c,
+            final ArrayList<Sirius.server.localserver._class.Class> backlinkClassesToExclude) throws SQLException {
+        return createObject(objectId, rs, c, false, backlinkClassesToExclude);
     }
 
     /**
@@ -239,17 +277,24 @@ public final class ObjectFactory extends Shutdown {
             final ResultSet rs,
             final Sirius.server.localserver._class.Class c,
             final Sirius.server.localserver._class.Class backlinkClassToExclude) throws SQLException {
-        return createObject(objectId, rs, c, backlinkClassToExclude, false);
+        if (backlinkClassToExclude != null) {
+            final ArrayList<Sirius.server.localserver._class.Class> classes =
+                new ArrayList<Sirius.server.localserver._class.Class>();
+            classes.add(backlinkClassToExclude);
+            return createObject(objectId, rs, c, false, classes);
+        } else {
+            return createObject(objectId, rs, c, false, null);
+        }
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   objectId                 DOCUMENT ME!
-     * @param   rs                       DOCUMENT ME!
-     * @param   c                        DOCUMENT ME!
-     * @param   backlinkClassToExclude   DOCUMENT ME!
-     * @param   allowLightweightObjects  DOCUMENT ME!
+     * @param   objectId                  DOCUMENT ME!
+     * @param   rs                        DOCUMENT ME!
+     * @param   c                         DOCUMENT ME!
+     * @param   allowLightweightObjects   DOCUMENT ME!
+     * @param   backlinkClassesToExclude  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -258,13 +303,13 @@ public final class ObjectFactory extends Shutdown {
     Sirius.server.localserver.object.Object createObject(final int objectId,
             final ResultSet rs,
             final Sirius.server.localserver._class.Class c,
-            final Sirius.server.localserver._class.Class backlinkClassToExclude,
-            final boolean allowLightweightObjects) throws SQLException {
+            final boolean allowLightweightObjects,
+            final ArrayList<Sirius.server.localserver._class.Class> backlinkClassesToExclude) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("create Object entered for result" + rs + "object_id:: " + objectId + " class " + c.getID()); // NOI18N
             // construct object rump attributes have to be added yet
         }
-
+        LOG.fatal(backlinkClassesToExclude);
         final Sirius.server.localserver.object.Object result = new Sirius.server.localserver.object.DefaultObject(
                 objectId,
                 c.getID() /*
@@ -287,8 +332,9 @@ public final class ObjectFactory extends Shutdown {
         while (iter.hasNext()) {
             // retrieve attribute description
             final MemberAttributeInfo mai = (MemberAttributeInfo)iter.next();
-            if (!((backlinkClassToExclude != null) && mai.isForeignKey()
-                            && (mai.getForeignKeyClassId() == backlinkClassToExclude.getID()))) {
+//            if (!((backlinkClassToExclude != null) && mai.isForeignKey()
+//                    && (mai.getForeignKeyClassId() == backlinkClassToExclude.getID()))) {
+            if (furtherInspectionNecessary(mai, backlinkClassesToExclude)) {
                 // retrive name of the column of this attribute
                 fieldName = mai.getFieldName();
 
@@ -361,8 +407,7 @@ public final class ObjectFactory extends Shutdown {
                                 attrValue = null;
                             }
                         } else {
-                            if ((backlinkClassToExclude != null)
-                                        && (backlinkClassToExclude.getID() == mai.getForeignKeyClassId())) {
+                            if (!furtherInspectionNecessary(mai, backlinkClassesToExclude)) {
                                 if (LOG.isDebugEnabled()) {
                                     LOG.debug("skip " + mai.getFieldName()
                                                 + " because it's the backlink of a one to many relationship");
@@ -391,7 +436,11 @@ public final class ObjectFactory extends Shutdown {
                                         if (allowLightweightObjects && cacheHintSet) {
                                             attrValue = new LightweightObject(o_id, mai.getForeignKeyClassId());
                                         } else {
-                                            attrValue = getObject(o_id, mai.getForeignKeyClassId(), true);
+                                            attrValue = getObject(
+                                                    o_id,
+                                                    mai.getForeignKeyClassId(),
+                                                    true,
+                                                    backlinkClassesToExclude);
                                         }
                                     } catch (Exception e) {
                                         LOG.error("getObject recursion interrupted for oid" + o_id + "  MAI " + mai, e); // NOI18N
@@ -407,7 +456,7 @@ public final class ObjectFactory extends Shutdown {
                     } else if (mai.getForeignKeyClassId() < 0) {
                         // 1:n Beziehung
 
-                        attrValue = getMetaObjectArrayForOneToMany(fieldName, mai, objectId);
+                        attrValue = getMetaObjectArrayForOneToMany(fieldName, mai, objectId, backlinkClassesToExclude);
                     }
                 }
 
@@ -459,6 +508,31 @@ public final class ObjectFactory extends Shutdown {
         }
 
         return result;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   mai                       DOCUMENT ME!
+     * @param   backlinkClassesToExclude  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private boolean furtherInspectionNecessary(final MemberAttributeInfo mai,
+            final ArrayList<Sirius.server.localserver._class.Class> backlinkClassesToExclude) {
+        if (mai.isForeignKey()) {
+            if (backlinkClassesToExclude == null) {
+                return true;
+            }
+            for (final Sirius.server.localserver._class.Class testClass : backlinkClassesToExclude) {
+                if (mai.getForeignKeyClassId() == testClass.getID()) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -539,9 +613,10 @@ public final class ObjectFactory extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   referenceKey     DOCUMENT ME!
-     * @param   mai              DOCUMENT ME!
-     * @param   array_predicate  DOCUMENT ME!
+     * @param   referenceKey              DOCUMENT ME!
+     * @param   mai                       DOCUMENT ME!
+     * @param   array_predicate           DOCUMENT ME!
+     * @param   backlinkClassesToExclude  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -549,7 +624,8 @@ public final class ObjectFactory extends Shutdown {
      */
     public Sirius.server.localserver.object.Object getMetaObjectArrayForOneToMany(final String referenceKey,
             final MemberAttributeInfo mai,
-            final int array_predicate) throws SQLException {
+            final int array_predicate,
+            final ArrayList<Sirius.server.localserver._class.Class> backlinkClassesToExclude) throws SQLException {
         // construct artificial metaobject
         // array_predicate is the parent object id
 
@@ -596,16 +672,24 @@ public final class ObjectFactory extends Shutdown {
 
             rs = stmnt.executeQuery(getObjectStmnt);
 
+            final ArrayList<Sirius.server.localserver._class.Class> backlinkClassesToExcludeSafe;
+            if (backlinkClassesToExclude != null) {
+                backlinkClassesToExcludeSafe = backlinkClassesToExclude;
+            } else {
+                backlinkClassesToExcludeSafe = new ArrayList<Sirius.server.localserver._class.Class>();
+            }
             // artificial id
             int i = 0;
             while (rs.next()) {
                 final int o_id = rs.getInt(detailClass.getPrimaryKey());
-
+                final ArrayList<Sirius.server.localserver._class.Class> backlinkClassesToExcludeInner =
+                    new ArrayList<Sirius.server.localserver._class.Class>(backlinkClassesToExcludeSafe);
+                backlinkClassesToExcludeInner.add(masterClass);
                 final Sirius.server.localserver.object.Object element = createObject(
                         o_id,
                         rs,
                         detailClass,
-                        masterClass);
+                        backlinkClassesToExcludeInner);
 
                 if (element != null) {
                     final ObjectAttribute oa = new ObjectAttribute(
