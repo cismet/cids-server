@@ -25,6 +25,8 @@ import java.util.Properties;
 
 import de.cismet.commons.ref.PurgingCache;
 
+import de.cismet.commons.utils.StringUtils;
+
 import de.cismet.tools.BlacklistClassloading;
 import de.cismet.tools.Calculator;
 
@@ -239,7 +241,7 @@ public class ClassloadingHelper {
     public static List<String> getClassNames(final MetaClass metaClass, final CLASS_TYPE classType) {
         final List<String> result = new ArrayList<String>();
 
-        final String domain = metaClass.getDomain().toLowerCase();
+        final String domain = metaClass.getDomain();
 
         result.addAll(getClassNames(metaClass, classType, domain));
 
@@ -257,15 +259,18 @@ public class ClassloadingHelper {
      *
      * @param   metaClass  DOCUMENT ME!
      * @param   classType  DOCUMENT ME!
-     * @param   domain     DOCUMENT ME!
+     * @param   forDomain  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
     public static List<String> getClassNames(final MetaClass metaClass,
             final CLASS_TYPE classType,
-            final String domain) {
+            final String forDomain) {
         final List<String> result = new ArrayList<String>();
         final String tableName = metaClass.getTableName().toLowerCase();
+
+        final String domain = StringUtils.toPackage(forDomain);
+
         final String overrideClassName = System.getProperty(domain + "." + tableName + "." // NOI18N
                         + classType.overrideProperty);
 
