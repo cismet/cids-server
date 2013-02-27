@@ -332,9 +332,8 @@ public final class ObjectFactory extends Shutdown {
         while (iter.hasNext()) {
             // retrieve attribute description
             final MemberAttributeInfo mai = (MemberAttributeInfo)iter.next();
-//            if (!((backlinkClassToExclude != null) && mai.isForeignKey()
-//                    && (mai.getForeignKeyClassId() == backlinkClassToExclude.getID()))) {
-            if (furtherInspectionNecessary(mai, backlinkClassesToExclude)) {
+            if (!((backlinkClassesToExclude != null) && mai.isForeignKey()
+                            && (!furtherInspectionNecessary(mai, backlinkClassesToExclude)))) {
                 // retrive name of the column of this attribute
                 fieldName = mai.getFieldName();
 
