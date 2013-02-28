@@ -23,11 +23,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import de.cismet.commons.classloading.BlacklistClassloading;
+
 import de.cismet.commons.ref.PurgingCache;
 
 import de.cismet.commons.utils.StringUtils;
 
-import de.cismet.commons.classloading.BlacklistClassloading;
 import de.cismet.tools.Calculator;
 
 /**
@@ -42,12 +43,29 @@ public class ClassloadingHelper {
 
     /** A property file that may contain configurations concerning classloading. */
     public static final String CL_PROPERTIES = "classloading.properties";       // NOI18N
-    /** The property which can be used to specify alternative classloading domains, value is expected to be csv. */
-    public static final String CL_PROP_ALT_DOMAINS = "classloading.alternativeDomains";                         // NOI18N
+    /**
+     * The property which can be used to specify alternative classloading domains, stringValue is expected to be csv.
+     */
+    public static final String CL_PROP_ALT_DOMAINS = "classloading.alternativeDomains"; // NOI18N
+    /**
+     * The property which can be used to specify the desired order during candidate class name build. Valid values are:
+     * <br/>
+     * <br/>
+     *
+     * <ul>
+     *   <li><i>default</i> (classtype only) )</li>
+     *   <li><i>classtype</i> (classtype first only, <b>default</b>)</li>
+     *   <li><i>domain</i> (domain first only)</li>
+     *   <li><i>both-classtype</i> (both, classtype first)</li>
+     *   <li><i>both-domain</i> (both, domain first)</li>
+     * </ul>
+     */
+    public static final String CL_PROP_DOM_CTYPE_ORDER = "classloading.domainClassTypeOrder"; // NOI18N
 
     private static final transient Logger LOG;
     private static final List<String> PACKAGE_PREFIXES;
     private static final transient PurgingCache<String, List<String>> ALT_DOMAIN_CACHE;
+    private static final transient PurgingCache<String, DOM_CTYPE_ORDER> DOM_CTYPE_ORDER_CACHE;
 
     static {
         LOG = Logger.getLogger(ClassloadingHelper.class);
@@ -60,6 +78,9 @@ public class ClassloadingHelper {
             PACKAGE_PREFIXES.add(pp.getClassLoadingPackagePrefix());
         }
 
+        // NOTE: we don't cache the properties needed to fill the cache as they are only needed at cache buildup and
+        // thus we don't want to waste the memory for the whole application and use some extra IO at startup instead
+
         ALT_DOMAIN_CACHE = new PurgingCache<String, List<String>>(new Calculator<String, List<String>>() {
 
                     @Override
@@ -67,57 +88,146 @@ public class ClassloadingHelper {
                         final List<String> altDomains = new ArrayList<String>(0);
 
                         for (final String prefix : PACKAGE_PREFIXES) {
-                            final StringBuilder candBuilder = new StringBuilder("/"); // NOI18N
-                            candBuilder.append(prefix.replaceAll("\\.", "/"));        // NOI18N
-                            if ('/' != candBuilder.charAt(candBuilder.length() - 1)) {
-                                candBuilder.append('/');
-                            }
-                            candBuilder.append(domain).append('/').append(CL_PROPERTIES);
+                            final String altDomainsCSV = getProperty(CL_PROP_ALT_DOMAINS, prefix, domain);
 
-                            final String candidate = candBuilder.toString();
+                            if (altDomainsCSV != null) {
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug(
+                                        "found alternative domain list: [domain=" // NOI18N
+                                                + domain
+                                                + "|altDomains="                  // NOI18N
+                                                + altDomainsCSV
+                                                + "]");                           // NOI18N
+                                }
 
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("trying to read classloading.properties from candidate: " + candidate); // NOI18N
-                            }
-
-                            final InputStream is = ClassloadingHelper.class.getResourceAsStream(candidate);
-                            if (is != null) {
-                                final Properties clProperties = new Properties();
-                                try {
-                                    clProperties.load(is);
-
-                                    final String altDomainsCSV = clProperties.getProperty(CL_PROP_ALT_DOMAINS);
-
-                                    if (altDomainsCSV != null) {
-                                        if (LOG.isDebugEnabled()) {
-                                            LOG.debug(
-                                                "found alternative domain list: [domain=" // NOI18N
-                                                        + domain
-                                                        + "|altDomains="                  // NOI18N
-                                                        + altDomainsCSV
-                                                        + "]");                           // NOI18N
-                                        }
-
-                                        final String[] altDomainSplit = altDomainsCSV.split(",");                      // NOI18N
-                                        for (final String altDomain : altDomainSplit) {
-                                            final String domCandidate = altDomain.trim();
-                                            if (!domCandidate.isEmpty()) {
-                                                altDomains.add(domCandidate);
-                                            }
-                                        }
+                                final String[] altDomainSplit = altDomainsCSV.split(","); // NOI18N
+                                for (final String altDomain : altDomainSplit) {
+                                    final String domCandidate = altDomain.trim();
+                                    if (!domCandidate.isEmpty()) {
+                                        altDomains.add(domCandidate);
                                     }
-                                } catch (final IOException ex) {
-                                    LOG.warn("cannot load class loading properties from candidate: " + candidate, ex); // NOI18N
                                 }
                             }
                         }
 
                         return altDomains;
                     }
-                }, 0, 0);
+                },
+                0,
+                0);
+
+        DOM_CTYPE_ORDER_CACHE = new PurgingCache<String, DOM_CTYPE_ORDER>(new Calculator<String, DOM_CTYPE_ORDER>() {
+
+                    @Override
+                    public DOM_CTYPE_ORDER calculate(final String domain) throws Exception {
+                        for (final String prefix : PACKAGE_PREFIXES) {
+                            final String orderProp = getProperty(CL_PROP_DOM_CTYPE_ORDER, prefix, domain);
+
+                            if (orderProp != null) {
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug(
+                                        "found order directive: [domain=" // NOI18N
+                                                + domain
+                                                + "|order="               // NOI18N
+                                                + orderProp
+                                                + "]");                   // NOI18N
+                                }
+
+                                try {
+                                    // first come, first serve
+                                    return DOM_CTYPE_ORDER.getEnumValue(orderProp);
+                                } catch (final IllegalArgumentException e) {
+                                    if (LOG.isInfoEnabled()) {
+                                        LOG.info(
+                                            "ignoring illegal value of '"                          // NOI18N
+                                                    + CL_PROP_DOM_CTYPE_ORDER
+                                                    + "' property for domain and prefix: [domain=" // NOI18N
+                                                    + domain
+                                                    + "|prefix="                                   // NOI18N
+                                                    + prefix
+                                                    + "]",                                         // NOI18N
+                                            e);
+                                    }
+                                }
+                            }
+                        }
+
+                        // no valid hit, use default
+                        return DOM_CTYPE_ORDER.DEFAULT;
+                    }
+                },
+                0,
+                0);
     }
 
     //~ Enums ------------------------------------------------------------------
+
+    /**
+     * Allowed domain classtype order directives.
+     *
+     * @version  1.0
+     */
+    public enum DOM_CTYPE_ORDER {
+
+        //~ Enum constants -----------------------------------------------------
+
+        DEFAULT("default"),               // NOI18N
+        CLASSTYPE("classtype"),           // NOI18N
+        DOMAIN("domain"),                 // NOI18N
+        BOTH_CLASSTYPE("both-classtype"), // NOI18N
+        BOTH_DOMAIN("both-domain");       // NOI18N
+
+        //~ Instance fields ----------------------------------------------------
+
+        final String stringValue;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new DOM_CTYPE_ORDER object.
+         *
+         * @param  stringValue  DOCUMENT ME!
+         */
+        private DOM_CTYPE_ORDER(final String stringValue) {
+            this.stringValue = stringValue;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param   stringValue  DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         *
+         * @throws  IllegalArgumentException  DOCUMENT ME!
+         */
+        public static DOM_CTYPE_ORDER getEnumValue(final String stringValue) {
+            if (DEFAULT.stringValue.equals(stringValue)) {
+                return DEFAULT;
+            } else if (CLASSTYPE.stringValue.equals(stringValue)) {
+                return CLASSTYPE;
+            } else if (DOMAIN.stringValue.equals(stringValue)) {
+                return DOMAIN;
+            } else if (BOTH_CLASSTYPE.stringValue.equals(stringValue)) {
+                return BOTH_CLASSTYPE;
+            } else if (BOTH_DOMAIN.stringValue.equals(stringValue)) {
+                return BOTH_DOMAIN;
+            } else {
+                throw new IllegalArgumentException("provided unknown string value, returning null: " + stringValue); // NOI18N
+            }
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        public String getStringValue() {
+            return stringValue;
+        }
+    }
 
     /**
      * DOCUMENT ME!
@@ -174,6 +284,80 @@ public class ClassloadingHelper {
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * Reads a property from a property file. Uses {@link #buildPropertyCandidate(java.lang.String, java.lang.String)}
+     * to build the property candidate name and tries to load the properties from there using
+     * {@link #loadProperties(java.lang.String) }.
+     *
+     * @param   propertyName  the name of the property to read
+     * @param   prefix        the prefix to use to build the candidate name
+     * @param   domain        the name to use to build the candidate name
+     *
+     * @return  the value of the property or <code>null</code> if there is an error or the properties are non-existent
+     */
+    private static String getProperty(final String propertyName, final String prefix, final String domain) {
+        final String candidate = buildPropertyCandidate(prefix, domain);
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("trying to read classloading.properties from candidate: " + candidate); // NOI18N
+        }
+
+        try {
+            final Properties clProperties = loadProperties(candidate);
+
+            if (clProperties != null) {
+                return clProperties.getProperty(propertyName);
+            }
+        } catch (final IOException ex) {
+            LOG.warn("cannot load class loading properties from candidate: " + candidate, ex); // NOI18N
+        }
+
+        return null;
+    }
+
+    /**
+     * Loads properties from the specified resource path.
+     *
+     * @param   propertyResource  the resource path to load the properties from
+     *
+     * @return  the loaded properties of <code>null</code> if the resource was not present
+     *
+     * @throws  IOException  if an error occurs while loading the properties
+     */
+    private static Properties loadProperties(final String propertyResource) throws IOException {
+        final Properties clProperties;
+        final InputStream is = ClassloadingHelper.class.getResourceAsStream(propertyResource);
+
+        if (is == null) {
+            clProperties = null;
+        } else {
+            clProperties = new Properties();
+            clProperties.load(is);
+        }
+
+        return clProperties;
+    }
+
+    /**
+     * Creates a property name candidate for {@link #CL_PROPERTIES} using the given prefix and domain.
+     *
+     * @param   prefix  package prefix, usually one of {@link #PACKAGE_PREFIXES}
+     * @param   domain  the domain name
+     *
+     * @return  a cl properties candidate name, e.g. <code>
+     *          /de/cismet/cids/custom/mydomain/classloading.properties</code>
+     */
+    private static String buildPropertyCandidate(final String prefix, final String domain) {
+        final StringBuilder candBuilder = new StringBuilder("/"); // NOI18N
+        candBuilder.append(prefix.replaceAll("\\.", "/"));        // NOI18N
+        if ('/' != candBuilder.charAt(candBuilder.length() - 1)) {
+            candBuilder.append('/');
+        }
+        candBuilder.append(domain).append('/').append(CL_PROPERTIES);
+
+        return candBuilder.toString();
+    }
 
     /**
      * DOCUMENT ME!
