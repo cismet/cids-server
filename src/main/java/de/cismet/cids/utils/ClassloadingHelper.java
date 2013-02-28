@@ -27,7 +27,7 @@ import de.cismet.commons.ref.PurgingCache;
 
 import de.cismet.commons.utils.StringUtils;
 
-import de.cismet.tools.BlacklistClassloading;
+import de.cismet.commons.classloading.BlacklistClassloading;
 import de.cismet.tools.Calculator;
 
 /**
