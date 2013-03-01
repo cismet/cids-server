@@ -332,6 +332,31 @@ public class ClassloadingHelperTest {
                 "de.cismet.cids.custom.objectrenderer.null_.MyClassRenderer"));
         res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
         assertEquals(exp, res);
+        
+        mc = new MetaClass(new Sirius.server.localserver._class.Class(
+                    -1,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    null,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    (Policy)null,
+                    null,
+                    false),
+                "Test-7");
+        exp = new ArrayList<String>(Arrays.asList(
+                "de.cismet.cids.utils.clht.objectrenderer.test7.My_classRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.test7.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.test7.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.test7.MyClassRenderer",
+                "de.cismet.cids.utils.clht.objectrenderer.null_.My_classRenderer",
+                "de.cismet.cids.utils.clht.objectrenderer.null_.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.null_.My_classRenderer",
+                "de.cismet.cids.custom.objectrenderer.null_.MyClassRenderer"));
+        res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
+        assertEquals(exp, res);
     }
     
     @Test

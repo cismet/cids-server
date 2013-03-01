@@ -473,7 +473,7 @@ public class ClassloadingHelper {
 
         result.addAll(getClassNames(metaClass, classType, domain));
 
-        final List<String> altDomains = ALT_DOMAIN_CACHE.get(domain);
+        final List<String> altDomains = ALT_DOMAIN_CACHE.get(StringUtils.toPackage(domain));
 
         for (final String altDomain : altDomains) {
             result.addAll(getClassNames(metaClass, classType, altDomain));
