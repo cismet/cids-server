@@ -447,6 +447,7 @@ public class ClassloadingHelper {
      *
      * @return  DOCUMENT ME!
      */
+    @SuppressWarnings("fallthrough")
     public static List<String> getClassNames(final MetaClass metaClass,
             final CLASS_TYPE classType,
             final String forDomain) {
@@ -464,16 +465,64 @@ public class ClassloadingHelper {
 
         if (tableName.length() > 2) {
             for (final String masterPrefix : PACKAGE_PREFIXES) {
-                final StringBuilder plainClassNameBuilder = new StringBuilder(masterPrefix + "." // NOI18N
-                                + classType.packagePrefix);
-                plainClassNameBuilder.append(".").append(domain).append("."); // NOI18N
-                final StringBuilder camelCaseClassNameBuilder = new StringBuilder(plainClassNameBuilder);
-                //
-                plainClassNameBuilder.append(capitalize(tableName)).append(classType.classNameSuffix);
-                camelCaseClassNameBuilder.append(camelize(tableName)).append(classType.classNameSuffix);
-                //
-                result.add(plainClassNameBuilder.toString());
-                result.add(camelCaseClassNameBuilder.toString());
+                switch (DOM_CTYPE_ORDER_CACHE.get(domain)) {
+                    case DOMAIN: {
+                        result.addAll(buildCandidateNames(
+                                masterPrefix,
+                                domain,
+                                tableName,
+                                classType,
+                                DOM_CTYPE_ORDER.DOMAIN));
+
+                        break;
+                    }
+                    case BOTH_CLASSTYPE: {
+                        result.addAll(buildCandidateNames(
+                                masterPrefix,
+                                domain,
+                                tableName,
+                                classType,
+                                DOM_CTYPE_ORDER.CLASSTYPE));
+                        result.addAll(buildCandidateNames(
+                                masterPrefix,
+                                domain,
+                                tableName,
+                                classType,
+                                DOM_CTYPE_ORDER.DOMAIN));
+
+                        break;
+                    }
+                    case BOTH_DOMAIN: {
+                        result.addAll(buildCandidateNames(
+                                masterPrefix,
+                                domain,
+                                tableName,
+                                classType,
+                                DOM_CTYPE_ORDER.DOMAIN));
+                        result.addAll(buildCandidateNames(
+                                masterPrefix,
+                                domain,
+                                tableName,
+                                classType,
+                                DOM_CTYPE_ORDER.CLASSTYPE));
+
+                        break;
+                    }
+                    case CLASSTYPE: {
+                    } // fall-through, classtype is default
+                    case DEFAULT: {
+                    } // fall-through
+                    default: {
+                        result.addAll(buildCandidateNames(
+                                masterPrefix,
+                                domain,
+                                tableName,
+                                classType,
+                                DOM_CTYPE_ORDER.CLASSTYPE));
+
+                        break;
+                    }
+                }
             }
             // FIXME: mscholl: convention over configuration but this means that convention has precedence
             final String configurationClassName = getClassNameByConfiguration(metaClass, classType);
@@ -483,6 +532,63 @@ public class ClassloadingHelper {
         } else {
             LOG.error("Invalid table name: " + tableName); // NOI18N
         }
+
+        return result;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   masterPrefix  DOCUMENT ME!
+     * @param   domain        DOCUMENT ME!
+     * @param   tableName     DOCUMENT ME!
+     * @param   classType     DOCUMENT ME!
+     * @param   order         DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  IllegalArgumentException  DOCUMENT ME!
+     */
+    @SuppressWarnings("fallthrough")
+    private static List<String> buildCandidateNames(final String masterPrefix,
+            final String domain,
+            final String tableName,
+            final CLASS_TYPE classType,
+            final DOM_CTYPE_ORDER order) {
+        final List<String> result = new ArrayList<String>(2);
+        final StringBuilder plainClassNameBuilder = new StringBuilder(masterPrefix);
+        plainClassNameBuilder.append('.');
+
+        switch (order) {
+            case DOMAIN: {
+                plainClassNameBuilder.append(domain);
+                plainClassNameBuilder.append('.');
+                plainClassNameBuilder.append(classType.packagePrefix);
+
+                break;
+            }
+            case CLASSTYPE: {
+            } // fall-through, classtype is default
+            case DEFAULT: {
+                plainClassNameBuilder.append(classType.packagePrefix);
+                plainClassNameBuilder.append('.');
+                plainClassNameBuilder.append(domain);
+
+                break;
+            }
+            default: {
+                throw new IllegalArgumentException("domain-classtype order directive not supported: " + order); // NOI18N
+            }
+        }
+
+        plainClassNameBuilder.append('.');
+        final StringBuilder camelCaseClassNameBuilder = new StringBuilder(plainClassNameBuilder);
+
+        plainClassNameBuilder.append(capitalize(tableName)).append(classType.classNameSuffix);
+        camelCaseClassNameBuilder.append(camelize(tableName)).append(classType.classNameSuffix);
+
+        result.add(plainClassNameBuilder.toString());
+        result.add(camelCaseClassNameBuilder.toString());
 
         return result;
     }

@@ -495,10 +495,10 @@ public class ClassloadingHelperTest {
         List<String> exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.testorderbothclasstype.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.testorderbothclasstype.MyClassRenderer",
-                "de.cismet.cids.custom.objectrenderer.testorderbothclasstype.My_classRenderer", 
-                "de.cismet.cids.custom.objectrenderer.testorderbothclasstype.MyClassRenderer",
                 "de.cismet.cids.utils.clht.testorderbothclasstype.objectrenderer.My_classRenderer", 
                 "de.cismet.cids.utils.clht.testorderbothclasstype.objectrenderer.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.testorderbothclasstype.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.testorderbothclasstype.MyClassRenderer",
                 "de.cismet.cids.custom.testorderbothclasstype.objectrenderer.My_classRenderer", 
                 "de.cismet.cids.custom.testorderbothclasstype.objectrenderer.MyClassRenderer"));
         List<String> res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
@@ -523,14 +523,14 @@ public class ClassloadingHelperTest {
                     false),
                 "testorderbothdomain");
         List<String> exp = new ArrayList<String>(Arrays.asList(
-                "de.cismet.cids.utils.clht.objectrenderer.testorderbothdomain.My_classRenderer", 
-                "de.cismet.cids.utils.clht.objectrenderer.testorderbothdomain.MyClassRenderer",
-                "de.cismet.cids.custom.objectrenderer.testorderbothdomain.My_classRenderer", 
-                "de.cismet.cids.custom.objectrenderer.testorderbothdomain.MyClassRenderer",
                 "de.cismet.cids.utils.clht.testorderbothdomain.objectrenderer.My_classRenderer", 
                 "de.cismet.cids.utils.clht.testorderbothdomain.objectrenderer.MyClassRenderer",
+                "de.cismet.cids.utils.clht.objectrenderer.testorderbothdomain.My_classRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.testorderbothdomain.MyClassRenderer",
                 "de.cismet.cids.custom.testorderbothdomain.objectrenderer.My_classRenderer", 
-                "de.cismet.cids.custom.testorderbothdomain.objectrenderer.MyClassRenderer"));
+                "de.cismet.cids.custom.testorderbothdomain.objectrenderer.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.testorderbothdomain.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.testorderbothdomain.MyClassRenderer"));
         List<String> res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
         assertEquals(exp, res);
     }
