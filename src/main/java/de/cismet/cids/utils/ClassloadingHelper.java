@@ -23,11 +23,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import de.cismet.commons.classloading.BlacklistClassloading;
+
 import de.cismet.commons.ref.PurgingCache;
 
 import de.cismet.commons.utils.StringUtils;
 
-import de.cismet.commons.classloading.BlacklistClassloading;
 import de.cismet.tools.Calculator;
 
 /**
@@ -241,7 +242,7 @@ public class ClassloadingHelper {
     public static List<String> getClassNames(final MetaClass metaClass, final CLASS_TYPE classType) {
         final List<String> result = new ArrayList<String>();
 
-        final String domain = metaClass.getDomain();
+        final String domain = metaClass.getDomain().toLowerCase();
 
         result.addAll(getClassNames(metaClass, classType, domain));
 
