@@ -455,8 +455,9 @@ public class ClassloadingHelper {
     /**
      * Produces candidate class names for a given {@link MetaClass} and {@link CLASS_TYPE}. It first produces candidate
      * class names from the domain of the <code>MetaClass</code> using
-     * {@link #getClassNames(Sirius.server.middleware.types.MetaClass, de.cismet.cids.utils.ClassloadingHelper.CLASS_TYPE, java.lang.String)}.
-     * After that it iterates through the alternative domains defined by {@link #CL_PROP_ALT_DOMAINS} (if any).
+     * {@link #getClassNames(Sirius.server.middleware.types.MetaClass, de.cismet.cids.utils.ClassloadingHelper.CLASS_TYPE, java.lang.String, de.cismet.cids.utils.ClassloadingHelper.DOM_CTYPE_ORDER) }
+     * with the order defined by {@link #CL_PROP_DOM_CTYPE_ORDER}. After that it iterates through the alternative
+     * domains defined by {@link #CL_PROP_ALT_DOMAINS} (if any).
      *
      * @param   metaClass  the <code>MetaClass</code> to create candidate class names for
      * @param   classType  the <code>CLASS_TYPE</code> to create candidate class names for
@@ -464,34 +465,37 @@ public class ClassloadingHelper {
      * @return  a list of candidate class names
      *
      * @see     #getClassNames(Sirius.server.middleware.types.MetaClass,de.cismet.cids.utils.ClassloadingHelper.CLASS_TYPE,
-     *          java.lang.String)
+     *          java.lang.String, de.cismet.cids.utils.ClassloadingHelper.DOM_CTYPE_ORDER)
      */
     public static List<String> getClassNames(final MetaClass metaClass, final CLASS_TYPE classType) {
         final List<String> result = new ArrayList<String>();
 
-        final String domain = metaClass.getDomain().toLowerCase();
+        final String mcDomain = metaClass.getDomain().toLowerCase();
+        final String domain = StringUtils.toPackage(mcDomain);
 
-        result.addAll(getClassNames(metaClass, classType, domain));
+        final DOM_CTYPE_ORDER order = DOM_CTYPE_ORDER_CACHE.get(domain);
 
-        final List<String> altDomains = ALT_DOMAIN_CACHE.get(StringUtils.toPackage(domain));
+        result.addAll(getClassNames(metaClass, classType, domain, order));
+
+        final List<String> altDomains = ALT_DOMAIN_CACHE.get(domain);
 
         for (final String altDomain : altDomains) {
-            result.addAll(getClassNames(metaClass, classType, altDomain));
+            result.addAll(getClassNames(metaClass, classType, altDomain, order));
         }
 
         return result;
     }
 
     /**
-     * Produces candidate names for a given <code>MetaClass</code>, <code>CLASS_TYPE</code> and domain. The procedure to
-     * create candidate names is the following:<br/>
+     * Produces candidate names for a given <code>MetaClass</code>, <code>CLASS_TYPE</code>, domain and order. The
+     * procedure to create candidate names is the following:<br/>
      * <br/>
      *
      * <ol>
      *   <li>Use name specified by a {@link System#getProperty(java.lang.String)}</li>
      *   <li>Iterate through the available package prefixes and create candidate names using
      *     {@link #buildCandidateNames(java.lang.String, java.lang.String, java.lang.String, de.cismet.cids.utils.ClassloadingHelper.CLASS_TYPE, de.cismet.cids.utils.ClassloadingHelper.DOM_CTYPE_ORDER) }
-     *     and with the order specified by {@link #CL_PROP_DOM_CTYPE_ORDER} for the given domain</li>
+     *   </li>
      *   <li>Use
      *     {@link #getClassNameByConfiguration(Sirius.server.middleware.types.MetaClass, de.cismet.cids.utils.ClassloadingHelper.CLASS_TYPE)}
      *   </li>
@@ -509,17 +513,18 @@ public class ClassloadingHelper {
      * @param   metaClass  the <code>MetaClass</code> to create candidate class names for
      * @param   classType  the <code>CLASS_TYPE</code> to create candidate class names for
      * @param   forDomain  the domain to create candidate class names for
+     * @param   order      the order that shall be applied
      *
      * @return  a list of candidate class names
      *
      * @see     ClassLoadingPackagePrefixProvider
      * @see     StringUtils#toPackage(java.lang.String)
-     * @see     DOM_CTYPE_ORDER
      */
     @SuppressWarnings("fallthrough")
     public static List<String> getClassNames(final MetaClass metaClass,
             final CLASS_TYPE classType,
-            final String forDomain) {
+            final String forDomain,
+            final DOM_CTYPE_ORDER order) {
         final List<String> result = new ArrayList<String>();
         final String tableName = metaClass.getTableName().toLowerCase();
 
@@ -534,7 +539,7 @@ public class ClassloadingHelper {
 
         if (tableName.length() > 2) {
             for (final String masterPrefix : PACKAGE_PREFIXES) {
-                switch (DOM_CTYPE_ORDER_CACHE.get(domain)) {
+                switch (order) {
                     case DOMAIN: {
                         result.addAll(buildCandidateNames(
                                 masterPrefix,
