@@ -425,7 +425,7 @@ public class ClassloadingHelper {
     public static List<String> getClassNames(final MetaClass metaClass, final CLASS_TYPE classType) {
         final List<String> result = new ArrayList<String>();
 
-        final String domain = metaClass.getDomain();
+        final String domain = metaClass.getDomain().toLowerCase();
 
         result.addAll(getClassNames(metaClass, classType, domain));
 

@@ -162,7 +162,57 @@ public class ClassloadingHelperTest {
                     (Policy)null,
                     null,
                     false),
+                "TEST2");
+        exp = new ArrayList<String>(Arrays.asList(
+                "de.cismet.cids.utils.clht.objectrenderer.test2.My_classRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.test2.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.test2.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.test2.MyClassRenderer"));
+        res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
+        assertEquals(exp, res);
+        
+        mc = new MetaClass(new Sirius.server.localserver._class.Class(
+                    -1,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    null,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    (Policy)null,
+                    null,
+                    false),
                 "test3");
+        exp = new ArrayList<String>(Arrays.asList(
+                "de.cismet.cids.utils.clht.objectrenderer.test3.My_classRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.test3.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.test3.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.test3.MyClassRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.altDom1.My_classRenderer",
+                "de.cismet.cids.utils.clht.objectrenderer.altDom1.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.altDom1.My_classRenderer",
+                "de.cismet.cids.custom.objectrenderer.altDom1.MyClassRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.altDom2.My_classRenderer",
+                "de.cismet.cids.utils.clht.objectrenderer.altDom2.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.altDom2.My_classRenderer",
+                "de.cismet.cids.custom.objectrenderer.altDom2.MyClassRenderer"));
+        res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
+        assertEquals(exp, res);
+        
+        mc = new MetaClass(new Sirius.server.localserver._class.Class(
+                    -1,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    null,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    (Policy)null,
+                    null,
+                    false),
+                "TEST3");
         exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.test3.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.test3.MyClassRenderer",
