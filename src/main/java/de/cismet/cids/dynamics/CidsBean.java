@@ -19,16 +19,30 @@ import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.WKTReader;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
-
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import org.jdesktop.observablecollections.ObservableList;
 
@@ -40,6 +54,11 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyDescriptor;
 
+import java.io.File;
+import java.io.IOException;
+
+import java.math.BigDecimal;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,11 +67,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import de.cismet.cids.json.IntraObjectCacheJsonGenerator;
+
 import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
 
 import de.cismet.tools.BlacklistClassloading;
+
+import static com.fasterxml.jackson.core.JsonToken.VALUE_FALSE;
+import static com.fasterxml.jackson.core.JsonToken.VALUE_NULL;
+import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_FLOAT;
+import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_INT;
+import static com.fasterxml.jackson.core.JsonToken.VALUE_TRUE;
+
+import static de.cismet.cids.dynamics.CidsBean.CIDS_OBJECT_KEY_IDENTIFIER;
+import static de.cismet.cids.dynamics.CidsBean.mapper;
 
 /**
  * DOCUMENT ME!
@@ -60,6 +90,8 @@ import de.cismet.tools.BlacklistClassloading;
  * @author   hell
  * @version  $Revision$, $Date$
  */
+@JsonSerialize(using = CidsBeanJsonSerializer.class)
+@JsonDeserialize(using = CidsBeanJsonDeserializer.class)
 public class CidsBean implements PropertyChangeListener {
 
     //~ Static fields/initializers ---------------------------------------------
@@ -67,7 +99,18 @@ public class CidsBean implements PropertyChangeListener {
     private static final transient Logger LOG = Logger.getLogger(CidsBean.class);
     static ObjectMapper mapper = new ObjectMapper();
     public static final String CIDS_OBJECT_KEY_IDENTIFIER = "cidsObjectKey";
-    private static boolean INTRA_OBJECT_CACHE_ENABLED = true;
+    static boolean INTRA_OBJECT_CACHE_ENABLED = true;
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   bean   DOCUMENT ME!
+     * @param   field  DOCUMENT ME!
+     * @param   n      DOCUMENT ME!
+     *
+     * @throws  Exception         DOCUMENT ME!
+     * @throws  RuntimeException  DOCUMENT ME!
+     */
+    static JsonFactory fac = new JsonFactory();
 
     //~ Instance fields --------------------------------------------------------
 
@@ -77,7 +120,7 @@ public class CidsBean implements PropertyChangeListener {
     protected CidsBean backlinkObject;
     protected boolean artificialChange;
     String pkFieldName = null;
-    private HashMap<String, CidsBean> intraObjectCache = new HashMap<String, CidsBean>();
+    HashMap<String, CidsBean> intraObjectCache = new HashMap<String, CidsBean>();
     /**
      * DOCUMENT ME!
      *
@@ -841,7 +884,17 @@ public class CidsBean implements PropertyChangeListener {
      */
     // FIXME: use a JSON API such as Jackson
     public String toJSONString() {
-        return beanToJSONStringHelper(this, 0, INTRA_OBJECT_CACHE_ENABLED);
+        try {
+            // return beanToJSONStringHelper(this, 0, INTRA_OBJECT_CACHE_ENABLED);
+            mapper.enable(SerializationFeature.INDENT_OUTPUT); // FIXME just do this once
+
+            this.intraObjectCache.clear();
+            return mapper.writeValueAsString(this);
+        } catch (Exception ex) {
+            LOG.error("Error in Json Output", ex);
+            return "{\"error\":\"Error during Json Production\",\"exception\":\"" + ex
+                        + "\",\"details\":\"see the log\"}";
+        }
     }
 
     /**
@@ -890,7 +943,7 @@ public class CidsBean implements PropertyChangeListener {
         sb.append(einrueckung)
                 .append('\t')
                 .append('"')
-                .append("cidsObjectKey")
+                .append(CIDS_OBJECT_KEY_IDENTIFIER)
                 .append("\": \"")
                 .append(bean.getCidsObjectKey())
                 .append('\"');
@@ -908,7 +961,6 @@ public class CidsBean implements PropertyChangeListener {
                 if (object instanceof CidsBean) {
                     sb.append('\n');
                     sb.append(beanToJSONStringHelper((CidsBean)object, depth + 1, intraObjectCacheEnabled));
-                    sb.append('\n');
                 } else if (object instanceof List) {
                     final List<CidsBean> collection = (List<CidsBean>)object;
 
@@ -930,6 +982,8 @@ public class CidsBean implements PropertyChangeListener {
                 }
                 sb.append('\n');
             }
+        } else {
+            sb.append('\n');
         }
         sb.append(einrueckung).append("}");
         return sb.toString();
@@ -1022,7 +1076,7 @@ public class CidsBean implements PropertyChangeListener {
         if ((jn == null) || !jn.isObject()) {
             throw new RuntimeException("Error in JSON format"); // NOI18N
         }
-        final String[] parts = jn.get("cidsObjectKey").toString().split("/");
+        final String[] parts = jn.get(CIDS_OBJECT_KEY_IDENTIFIER).toString().split("/");
         final String classKey = parts[1];
         final String[] classKeyParts = classKey.split("@");
         final String tablename = classKeyParts[0];
@@ -1053,20 +1107,20 @@ public class CidsBean implements PropertyChangeListener {
                                 .getMai().getJavaclassname());
                 if (!c.equals(Geometry.class)) {
                     try {
-                        bean.setProperty(field, mapper.readValue(n, c));
+                        bean.setProperty(field, mapper.readValue(n.binaryValue(), c));
                     } catch (Exception e) {
                         LOG.error("problem bei " + field + "(" + c + ")", e);
                     }
                 } else {
                     try {
-                        bean.setProperty(field, new WKTReader(new GeometryFactory()).read(n.getTextValue()));
+                        bean.setProperty(field, new WKTReader(new GeometryFactory()).read(n.asText()));
                     } catch (Exception e) {
-                        LOG.error("problem bei " + field + "(" + c + "). wert:" + n.getTextValue(), e);
+                        LOG.error("problem bei " + field + "(" + c + "). wert:" + n.asText(), e);
                     }
                 }
             }
         } else if (n.isArray()) {
-            final Iterator<JsonNode> nodelist = n.getElements();
+            final Iterator<JsonNode> nodelist = n.elements();
             final List<CidsBean> array = bean.getBeanCollectionProperty(field);
             if (nodelist.hasNext()) {
                 while (nodelist.hasNext()) {
@@ -1085,7 +1139,7 @@ public class CidsBean implements PropertyChangeListener {
                 }
             }
         } else if (n.isObject()) {
-            final Iterator<Map.Entry<String, JsonNode>> ifn = n.getFields();
+            final Iterator<Map.Entry<String, JsonNode>> ifn = n.fields();
             while (ifn.hasNext()) {
                 final Map.Entry<String, JsonNode> nextNode = ifn.next();
                 if (!nextNode.getKey().equalsIgnoreCase(CIDS_OBJECT_KEY_IDENTIFIER)) {
@@ -1189,5 +1243,250 @@ public class CidsBean implements PropertyChangeListener {
      */
     public static boolean checkWritePermission(final User user, final CidsBean bean) {
         return bean.getHasWritePermission(user) && bean.hasObjectWritePermission(user);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   args  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static void main(final String[] args) throws Exception {
+        final String s = FileUtils.readFileToString(new File("/Users/thorsten/tmp/jsontest/test.json"));
+        final ObjectMapper mapper = new ObjectMapper();
+        long start = System.currentTimeMillis();
+        final CidsBean bb = mapper.readValue(s, CidsBean.class);
+        long dur = System.currentTimeMillis() - start;
+        System.out.println("dur deserialize " + dur);
+        start = System.currentTimeMillis();
+        final String again = bb.toJSONString();
+        dur = System.currentTimeMillis() - start;
+        System.out.println("dur serialize " + dur);
+        FileUtils.writeStringToFile(new File("/Users/thorsten/tmp/jsontest/crosstest.json"), again);
+    }
+    
+}
+
+/**
+ * DOCUMENT ME!
+ *
+ * @version  $Revision$, $Date$
+ */
+class CidsBeanJsonSerializer extends StdSerializer<CidsBean> {
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new CidsAttributeJsonSerializer object.
+     */
+    public CidsBeanJsonSerializer() {
+        super(CidsBean.class);
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public void serialize(final CidsBean cb, final JsonGenerator _jg, final SerializerProvider sp) throws IOException,
+        JsonGenerationException {
+        System.out.println("++" + Integer.toHexString(System.identityHashCode(sp)));
+
+        IntraObjectCacheJsonGenerator jg;
+        if (_jg instanceof IntraObjectCacheJsonGenerator) {
+            jg = (IntraObjectCacheJsonGenerator)_jg;
+        } else {
+            jg = new IntraObjectCacheJsonGenerator(_jg);
+        }
+
+        jg.writeStartObject();
+        jg.writeStringField(CidsBean.CIDS_OBJECT_KEY_IDENTIFIER, cb.getCidsObjectKey());
+        if (!CidsBean.INTRA_OBJECT_CACHE_ENABLED || !jg.containsKey(cb.getCidsObjectKey())) {
+            final String[] propNames = cb.getPropertyNames();
+            if (CidsBean.INTRA_OBJECT_CACHE_ENABLED) {
+//                System.out.println("add to cache:" + cb.getCidsObjectKey());
+                jg.put(cb.getCidsObjectKey(), cb);
+            }
+            for (int i = 0; i < propNames.length; ++i) {
+                final String attribute = propNames[i];
+                final Object object = cb.getProperty(attribute);
+                if (object instanceof CidsBean) {
+                    jg.writeObjectField(attribute, object);
+                } else if (object instanceof List) {
+                    final List<CidsBean> collection = (List<CidsBean>)object;
+                    jg.writeArrayFieldStart(attribute);
+                    for (int j = 0; j < collection.size(); ++j) {
+                        final CidsBean colBean = collection.get(j);
+                        jg.writeObject(colBean);
+                    }
+                    jg.writeEndArray();
+                } else {
+                    if (object == null) {
+                        jg.writeNullField(attribute);
+                    } else if (object instanceof Geometry) {
+                        jg.writeStringField(attribute, StringEscapeUtils.escapeJava(String.valueOf(object)));
+                    } else if (object instanceof BigDecimal) {
+                        jg.writeNumberField(attribute, (BigDecimal)object);
+                    } else if (object instanceof Double) {
+                        jg.writeNumberField(attribute, (Double)object);
+                    } else if (object instanceof Float) {
+                        jg.writeNumberField(attribute, (Float)object);
+                    } else if (object instanceof Integer) {
+                        jg.writeNumberField(attribute, (Integer)object);
+                    } else if (object instanceof Long) {
+                        jg.writeNumberField(attribute, (Long)object);
+                    } else if (object instanceof Boolean) {
+                        jg.writeBooleanField(attribute, (Boolean)object);
+                    } else if (object instanceof String) {
+                        jg.writeStringField(attribute, String.valueOf(object));
+                    } else {
+                        jg.writeObjectField(attribute, object);
+                    }
+                }
+            }
+        } else {
+//            System.out.println("cache hit:" + cb.getCidsObjectKey());
+        }
+        jg.writeEndObject();
+    }
+}
+
+/**
+ * DOCUMENT ME!
+ *
+ * @version  $Revision$, $Date$
+ */
+class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new CidsBeanJsonDeserializer object.
+     */
+    public CidsBeanJsonDeserializer() {
+        super(CidsBean.class);
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public CidsBean deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
+        JsonProcessingException {
+        final JsonToken token = null;
+        boolean keySet = false;
+        CidsBean cb = null;
+        String key = "???";
+//        System.out.println("++" + Integer.toHexString(System.identityHashCode(jp)));
+
+        try {
+            while (jp.nextValue() != JsonToken.END_OBJECT) {
+                final String fieldName = jp.getCurrentName();
+                if (!keySet && fieldName.equals(CIDS_OBJECT_KEY_IDENTIFIER)) {
+                    key = jp.getText();
+                    final String[] parts = key.split("/");
+                    final String classKey = parts[1];
+                    final String[] classKeyParts = classKey.split("@");
+                    final String tablename = classKeyParts[0];
+                    final String domain = classKeyParts[1];
+                    final String pk = parts[2];
+                    keySet = true;
+                    cb = CidsBean.createNewCidsBeanFromTableName(domain, tablename);
+                } else {
+                    if (cb == null) {
+                        throw new RuntimeException("Json-Object has to start with a " + CIDS_OBJECT_KEY_IDENTIFIER); // NOI18N
+                    }
+                    switch (jp.getCurrentToken()) {
+                        case START_ARRAY: {
+                            while (jp.nextValue() != JsonToken.END_ARRAY) {
+                                final CidsBean arrayObject = mapper.readValue(jp, CidsBean.class);
+                                cb.addCollectionElement(fieldName, arrayObject);
+                            }
+                            break;
+                        }
+
+                        case START_OBJECT: {
+                            final CidsBean subObject = mapper.readValue(jp, CidsBean.class);
+                            cb.setProperty(fieldName, subObject);
+                            break;
+                        }
+
+                        case VALUE_NUMBER_FLOAT:
+                        case VALUE_NUMBER_INT: {
+                            final Class numberClass = BlacklistClassloading.forName(cb.getMetaObject()
+                                            .getAttributeByFieldName(
+                                                fieldName).getMai().getJavaclassname());
+                            if (numberClass.equals(Integer.class)) {
+                                final int i = jp.getIntValue();
+                                cb.setProperty(fieldName, i);
+                            } else if (numberClass.equals(Long.class)) {
+                                final long l = jp.getLongValue();
+                                cb.setProperty(fieldName, l);
+                            } else if (numberClass.equals(Float.class)) {
+                                final float f = jp.getFloatValue();
+                                cb.setProperty(fieldName, f);
+                            }
+                            if (numberClass.equals(Double.class)) {
+                                final double d = jp.getDoubleValue();
+                                cb.setProperty(fieldName, d);
+                            }
+
+                            break;
+                        }
+
+                        case VALUE_NULL: {
+                            cb.setProperty(fieldName, null);
+                            break;
+                        }
+
+                        case VALUE_TRUE: {
+                            cb.setProperty(fieldName, true);
+                            break;
+                        }
+
+                        case VALUE_FALSE: {
+                            cb.setProperty(fieldName, false);
+                            break;
+                        }
+
+                        case VALUE_STRING: {
+                            final Class attrClass = BlacklistClassloading.forName(cb.getMetaObject()
+                                            .getAttributeByFieldName(
+                                                fieldName).getMai().getJavaclassname());
+                            if (attrClass.equals(String.class)) {
+                                final String s = jp.getText();
+                                cb.setProperty(fieldName, s);
+                            } else if (attrClass.equals(Geometry.class)) {
+                                try {
+                                    final String s = jp.getText();
+                                    cb.setProperty(fieldName, new WKTReader(new GeometryFactory()).read(s));
+                                } catch (Exception e) {
+                                    throw new RuntimeException("problem bei " + fieldName + "(" + attrClass + "). wert:"
+                                                + jp.getText(),
+                                        e);
+                                }
+                            } else {
+                                try {
+                                    cb.setProperty(fieldName, mapper.readValue(jp, attrClass));
+                                } catch (Exception e) {
+                                    throw new RuntimeException("problem bei " + fieldName + "(" + attrClass + ")", e);
+                                }
+                            }
+
+                            break;
+                        }
+                        case VALUE_EMBEDDED_OBJECT: {
+                            throw new UnsupportedOperationException("Not supported yet.");
+                        }
+
+                        default: {
+                            throw new RuntimeException("unhandled case. This is a bad thing"); // NOI18N
+                        }
+                    }
+                }
+            }
+
+            return cb;
+        } catch (Exception ex) {
+            throw new RuntimeException("Error during creation of new CidsBean key=" + key, ex); // NOI18N
+        }
     }
 }
