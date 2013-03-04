@@ -98,8 +98,12 @@ public class ClassloadingHelper {
 
     private static final transient Logger LOG;
     private static final List<String> PACKAGE_PREFIXES;
+    // domain to alternative domains
     private static final transient PurgingCache<String, List<String>> ALT_DOMAIN_CACHE;
+    // domain to order directive
     private static final transient PurgingCache<String, DOM_CTYPE_ORDER> DOM_CTYPE_ORDER_CACHE;
+    // MC_CT_Struct to class
+    private static final transient PurgingCache<MC_CT_Struct, Class<?>> CLASS_CACHE;
 
     static {
         LOG = Logger.getLogger(ClassloadingHelper.class);
@@ -192,6 +196,23 @@ public class ClassloadingHelper {
                 },
                 0,
                 0);
+
+        CLASS_CACHE = new PurgingCache<MC_CT_Struct, Class<?>>(new Calculator<MC_CT_Struct, Class<?>>() {
+
+                    @Override
+                    public Class<?> calculate(final MC_CT_Struct input) throws Exception {
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace("calculating class for key: " + input.toString()); // NOI18N
+                        }
+
+                        final List<String> classNames = getClassNames(input.metaClass, input.classType);
+
+                        return loadClassFromCandidates(classNames);
+                    }
+                },
+                (60 * 60 * 1000),
+                (20 * 60 * 1000),
+                true);
     }
 
     //~ Enums ------------------------------------------------------------------
@@ -890,10 +911,67 @@ public class ClassloadingHelper {
      *
      * @return  a fully initialsed <code>Class</code> of requested type or <code>null</code> if no class of the given
      *          type for the given <code>MetaClass</code> could be found
+     *
+     * @throws  IllegalArgumentException  if metaClass or classType is <code>null</code>
      */
     public static Class<?> getDynamicClass(final MetaClass metaClass, final CLASS_TYPE classType) {
-        final List<String> classNames = getClassNames(metaClass, classType);
+        if ((metaClass == null) || (classType == null)) {
+            throw new IllegalArgumentException("neither metaClass nor classType may be null: [metaClass=" // NOI18N
+                        + metaClass
+                        + "|classType=" + classType + "]");                // NOI18N
+        }
 
-        return loadClassFromCandidates(classNames);
+        final MC_CT_Struct key = new MC_CT_Struct();
+        key.metaClass = metaClass;
+        key.classType = classType;
+
+        return CLASS_CACHE.get(key);
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * For use with {@link #CLASS_CACHE} only!
+     *
+     * @version  1.0
+     */
+    private static final class MC_CT_Struct {
+
+        //~ Instance fields ----------------------------------------------------
+
+        private MetaClass metaClass;
+        private CLASS_TYPE classType;
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public boolean equals(final Object obj) {
+            if (obj == this) {
+                return true;
+            } else if (obj instanceof MC_CT_Struct) {
+                final MC_CT_Struct mcct = (MC_CT_Struct)obj;
+
+                // this class is for strict internal use only, omitting null checks
+
+                return this.metaClass.getKey().equals(mcct.metaClass.getKey()) || classType.equals(mcct.classType);
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            // this class is for strict internal use only, omitting null checks
+            hash = (47 * hash) + this.metaClass.getKey().hashCode();
+            hash = (47 * hash) + this.classType.hashCode();
+
+            return hash;
+        }
+
+        @Override
+        public String toString() {
+            return metaClass.getKey() + "@" + classType; // NOI18N
+        }
     }
 }
