@@ -40,7 +40,6 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.WKTReader;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
@@ -54,10 +53,11 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyDescriptor;
 
-import java.io.File;
 import java.io.IOException;
 
 import java.math.BigDecimal;
+
+import java.sql.Timestamp;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,6 +68,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import de.cismet.cids.json.IntraObjectCacheJsonGenerator;
+import de.cismet.cids.json.IntraObjectCacheJsonParser;
 
 import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.ClassloadingHelper;
@@ -1244,28 +1245,6 @@ public class CidsBean implements PropertyChangeListener {
     public static boolean checkWritePermission(final User user, final CidsBean bean) {
         return bean.getHasWritePermission(user) && bean.hasObjectWritePermission(user);
     }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   args  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    public static void main(final String[] args) throws Exception {
-        final String s = FileUtils.readFileToString(new File("/Users/thorsten/tmp/jsontest/test.json"));
-        final ObjectMapper mapper = new ObjectMapper();
-        long start = System.currentTimeMillis();
-        final CidsBean bb = mapper.readValue(s, CidsBean.class);
-        long dur = System.currentTimeMillis() - start;
-        System.out.println("dur deserialize " + dur);
-        start = System.currentTimeMillis();
-        final String again = bb.toJSONString();
-        dur = System.currentTimeMillis() - start;
-        System.out.println("dur serialize " + dur);
-        FileUtils.writeStringToFile(new File("/Users/thorsten/tmp/jsontest/crosstest.json"), again);
-    }
-    
 }
 
 /**
@@ -1289,8 +1268,6 @@ class CidsBeanJsonSerializer extends StdSerializer<CidsBean> {
     @Override
     public void serialize(final CidsBean cb, final JsonGenerator _jg, final SerializerProvider sp) throws IOException,
         JsonGenerationException {
-        System.out.println("++" + Integer.toHexString(System.identityHashCode(sp)));
-
         IntraObjectCacheJsonGenerator jg;
         if (_jg instanceof IntraObjectCacheJsonGenerator) {
             jg = (IntraObjectCacheJsonGenerator)_jg;
@@ -1369,124 +1346,160 @@ class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public CidsBean deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
+    public CidsBean deserialize(final JsonParser _jp, final DeserializationContext dc) throws IOException,
         JsonProcessingException {
-        final JsonToken token = null;
+        boolean cacheHit = false;
         boolean keySet = false;
         CidsBean cb = null;
         String key = "???";
-//        System.out.println("++" + Integer.toHexString(System.identityHashCode(jp)));
+        IntraObjectCacheJsonParser jp = null;
+        if (_jp instanceof IntraObjectCacheJsonParser) {
+            jp = (IntraObjectCacheJsonParser)_jp;
+        } else {
+            jp = new IntraObjectCacheJsonParser(_jp);
+        }
 
         try {
             while (jp.nextValue() != JsonToken.END_OBJECT) {
                 final String fieldName = jp.getCurrentName();
-                if (!keySet && fieldName.equals(CIDS_OBJECT_KEY_IDENTIFIER)) {
-                    key = jp.getText();
-                    final String[] parts = key.split("/");
-                    final String classKey = parts[1];
-                    final String[] classKeyParts = classKey.split("@");
-                    final String tablename = classKeyParts[0];
-                    final String domain = classKeyParts[1];
-                    final String pk = parts[2];
-                    keySet = true;
-                    cb = CidsBean.createNewCidsBeanFromTableName(domain, tablename);
-                } else {
-                    if (cb == null) {
-                        throw new RuntimeException("Json-Object has to start with a " + CIDS_OBJECT_KEY_IDENTIFIER); // NOI18N
-                    }
-                    switch (jp.getCurrentToken()) {
-                        case START_ARRAY: {
-                            while (jp.nextValue() != JsonToken.END_ARRAY) {
-                                final CidsBean arrayObject = mapper.readValue(jp, CidsBean.class);
-                                cb.addCollectionElement(fieldName, arrayObject);
+                if (!cacheHit) {
+                    if (!keySet && fieldName.equals(CIDS_OBJECT_KEY_IDENTIFIER)) {
+                        key = jp.getText();
+                        final String[] parts = key.split("/");
+                        final String classKey = parts[1];
+                        final String[] classKeyParts = classKey.split("@");
+                        final String tablename = classKeyParts[0];
+                        final String domain = classKeyParts[1];
+                        final String pk = parts[2];
+                        keySet = true;
+                        if (CidsBean.INTRA_OBJECT_CACHE_ENABLED && jp.containsKey(key)) {
+                            cb = jp.get(key);
+                            cacheHit = true;
+                        } else {
+                            cb = CidsBean.createNewCidsBeanFromTableName(domain, tablename);
+                            if (CidsBean.INTRA_OBJECT_CACHE_ENABLED) {
+                                jp.put(key, cb);
                             }
-                            break;
                         }
-
-                        case START_OBJECT: {
-                            final CidsBean subObject = mapper.readValue(jp, CidsBean.class);
-                            cb.setProperty(fieldName, subObject);
-                            break;
+                    } else {
+                        if (cb == null) {
+                            throw new RuntimeException("Json-Object has to start with a " + CIDS_OBJECT_KEY_IDENTIFIER); // NOI18N
                         }
-
-                        case VALUE_NUMBER_FLOAT:
-                        case VALUE_NUMBER_INT: {
-                            final Class numberClass = BlacklistClassloading.forName(cb.getMetaObject()
-                                            .getAttributeByFieldName(
-                                                fieldName).getMai().getJavaclassname());
-                            if (numberClass.equals(Integer.class)) {
-                                final int i = jp.getIntValue();
-                                cb.setProperty(fieldName, i);
-                            } else if (numberClass.equals(Long.class)) {
-                                final long l = jp.getLongValue();
-                                cb.setProperty(fieldName, l);
-                            } else if (numberClass.equals(Float.class)) {
-                                final float f = jp.getFloatValue();
-                                cb.setProperty(fieldName, f);
-                            }
-                            if (numberClass.equals(Double.class)) {
-                                final double d = jp.getDoubleValue();
-                                cb.setProperty(fieldName, d);
+                        switch (jp.getCurrentToken()) {
+                            case START_ARRAY: {
+                                while (jp.nextValue() != JsonToken.END_ARRAY) {
+                                    final CidsBean arrayObject = jp.readValueAs(CidsBean.class);
+                                    if (CidsBean.INTRA_OBJECT_CACHE_ENABLED) {
+                                        jp.put(arrayObject.getCidsObjectKey(), arrayObject);
+                                    }
+                                    cb.addCollectionElement(fieldName, arrayObject);
+                                }
+                                break;
                             }
 
-                            break;
-                        }
+                            case START_OBJECT: {
+                                final CidsBean subObject = jp.readValueAs(CidsBean.class);
+                                if (CidsBean.INTRA_OBJECT_CACHE_ENABLED) {
+                                    jp.put(subObject.getCidsObjectKey(), subObject);
+                                }
+                                cb.setProperty(fieldName, subObject);
+                                break;
+                            }
 
-                        case VALUE_NULL: {
-                            cb.setProperty(fieldName, null);
-                            break;
-                        }
-
-                        case VALUE_TRUE: {
-                            cb.setProperty(fieldName, true);
-                            break;
-                        }
-
-                        case VALUE_FALSE: {
-                            cb.setProperty(fieldName, false);
-                            break;
-                        }
-
-                        case VALUE_STRING: {
-                            final Class attrClass = BlacklistClassloading.forName(cb.getMetaObject()
-                                            .getAttributeByFieldName(
-                                                fieldName).getMai().getJavaclassname());
-                            if (attrClass.equals(String.class)) {
-                                final String s = jp.getText();
-                                cb.setProperty(fieldName, s);
-                            } else if (attrClass.equals(Geometry.class)) {
+                            case VALUE_NUMBER_FLOAT:
+                            case VALUE_NUMBER_INT: {
                                 try {
-                                    final String s = jp.getText();
-                                    cb.setProperty(fieldName, new WKTReader(new GeometryFactory()).read(s));
-                                } catch (Exception e) {
-                                    throw new RuntimeException("problem bei " + fieldName + "(" + attrClass + "). wert:"
+                                    final Class numberClass = BlacklistClassloading.forName(cb.getMetaObject()
+                                                    .getAttributeByFieldName(
+                                                        fieldName).getMai().getJavaclassname());
+                                    if (numberClass.equals(Integer.class)) {
+                                        final int i = jp.getIntValue();
+                                        cb.setProperty(fieldName, i);
+                                    } else if (numberClass.equals(Long.class)) {
+                                        final long l = jp.getLongValue();
+                                        cb.setProperty(fieldName, l);
+                                    } else if (numberClass.equals(Float.class)) {
+                                        final float f = jp.getFloatValue();
+                                        cb.setProperty(fieldName, f);
+                                    } else if (numberClass.equals(Double.class)) {
+                                        final double d = jp.getDoubleValue();
+                                        cb.setProperty(fieldName, d);
+                                    } else if (numberClass.equals(java.sql.Timestamp.class)) {
+                                        final Timestamp ts = new Timestamp(jp.getLongValue());
+                                        cb.setProperty(fieldName, ts);
+                                    } else if (numberClass.equals(BigDecimal.class)) {
+                                        final BigDecimal bd = new BigDecimal(jp.getText());
+                                        cb.setProperty(fieldName, bd);
+                                    } else {
+                                        throw new RuntimeException("no handler available for " + numberClass);
+                                    }
+                                } catch (Exception ex) {
+                                    throw new RuntimeException("problem during processing of " + fieldName + ". value:"
                                                 + jp.getText(),
-                                        e);
+                                        ex);
                                 }
-                            } else {
-                                try {
-                                    cb.setProperty(fieldName, mapper.readValue(jp, attrClass));
-                                } catch (Exception e) {
-                                    throw new RuntimeException("problem bei " + fieldName + "(" + attrClass + ")", e);
-                                }
+                                break;
                             }
 
-                            break;
-                        }
-                        case VALUE_EMBEDDED_OBJECT: {
-                            throw new UnsupportedOperationException("Not supported yet.");
-                        }
+                            case VALUE_NULL: {
+                                cb.setProperty(fieldName, null);
+                                break;
+                            }
 
-                        default: {
-                            throw new RuntimeException("unhandled case. This is a bad thing"); // NOI18N
+                            case VALUE_TRUE: {
+                                cb.setProperty(fieldName, true);
+                                break;
+                            }
+
+                            case VALUE_FALSE: {
+                                cb.setProperty(fieldName, false);
+                                break;
+                            }
+
+                            case VALUE_STRING: {
+                                final Class attrClass = BlacklistClassloading.forName(cb.getMetaObject()
+                                                .getAttributeByFieldName(
+                                                    fieldName).getMai().getJavaclassname());
+                                if (attrClass.equals(String.class)) {
+                                    final String s = jp.getText();
+                                    cb.setProperty(fieldName, s);
+                                } else if (attrClass.equals(Geometry.class)) {
+                                    try {
+                                        final String s = jp.getText();
+                                        cb.setProperty(fieldName, new WKTReader(new GeometryFactory()).read(s));
+                                    } catch (Exception e) {
+                                        throw new RuntimeException("problem during processing of " + fieldName + "("
+                                                    + attrClass + "). value:"
+                                                    + jp.getText(),
+                                            e);
+                                    }
+                                } else {
+                                    try {
+                                        cb.setProperty(fieldName, mapper.readValue(jp, attrClass));
+                                    } catch (Exception e) {
+                                        throw new RuntimeException("problem bei " + fieldName + "(" + attrClass + ")",
+                                            e);
+                                    }
+                                }
+
+                                break;
+                            }
+                            case VALUE_EMBEDDED_OBJECT: {
+                                throw new UnsupportedOperationException("Not supported yet.");
+                            }
+
+                            default: {
+                                throw new RuntimeException("unhandled case. This is a bad thing"); // NOI18N
+                            }
                         }
                     }
                 }
             }
-
+            cb.getMetaObject().setID(cb.getPrimaryKeyValue());
+            cb.getMetaObject().setStatus(MetaObject.NO_STATUS);
             return cb;
         } catch (Exception ex) {
-            throw new RuntimeException("Error during creation of new CidsBean key=" + key, ex); // NOI18N
+            throw new RuntimeException("Error during creation of new CidsBean key=" + key, ex);    // NOI18N
         }
     }
 }
