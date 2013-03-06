@@ -536,6 +536,11 @@ public class DefaultObject implements Object {
     }
 
     @Override
+    public void forceStatus(final int status) {
+        this.status = status;
+    }
+
+    @Override
     public String getStatusDebugString() {
         return getStatusDebugString(getStatus());
     }
