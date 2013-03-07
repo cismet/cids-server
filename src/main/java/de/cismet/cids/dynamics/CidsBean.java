@@ -1389,7 +1389,7 @@ class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                             cb = jp.get(key);
                             cacheHit = true;
                         } else {
-                            cb = CidsBean.createNewCidsBeanFromTableName(domain, tablename);
+                            cb = CidsBean.createNewCidsBeanFromTableName(domain, tablename);                             // test
                         }
                     } else {
                         if (cb == null) {
@@ -1410,12 +1410,14 @@ class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                                 final ObjectAttribute oa = cb.getMetaObject().getAttributeByFieldName(fieldName);
                                 oa.setChanged(false);
                                 final MetaObject dummy = (MetaObject)oa.getValue();
+                                dummy.setChanged(false);
+                                dummy.forceStatus(MetaObject.NO_STATUS);
                                 if (dummy != null) {
                                     dummy.setStatus(MetaObject.NO_STATUS);
                                     final ObjectAttribute[] entries = dummy.getAttribs();
                                     for (final ObjectAttribute entry : entries) {
                                         entry.setChanged(false);
-                                        ((MetaObject)entry.getValue()).setStatus(MetaObject.NO_STATUS);
+                                        ((MetaObject)entry.getValue()).forceStatus(MetaObject.NO_STATUS);
                                         ((MetaObject)entry.getValue()).setChanged(false);
                                     }
                                 }
