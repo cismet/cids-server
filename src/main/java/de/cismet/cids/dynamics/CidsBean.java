@@ -74,7 +74,7 @@ import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
 
-import de.cismet.tools.BlacklistClassloading;
+import de.cismet.commons.classloading.BlacklistClassloading;
 
 import static com.fasterxml.jackson.core.JsonToken.VALUE_FALSE;
 import static com.fasterxml.jackson.core.JsonToken.VALUE_NULL;
