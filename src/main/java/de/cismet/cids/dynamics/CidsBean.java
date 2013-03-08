@@ -1330,12 +1330,9 @@ class CidsBeanJsonSerializer extends StdSerializer<CidsBean> {
                 }
             }
             if (CidsBean.INTRA_OBJECT_CACHE_ENABLED) {
-//                System.out.println("add to cache:" + cb.getCidsObjectKey());
                 jg.put(cb.getCidsObjectKey(), cb);
             }
-        } else {
-//            System.out.println("cache hit:" + cb.getCidsObjectKey());
-        }
+        } 
         jg.writeEndObject();
     }
 }
