@@ -915,7 +915,7 @@ public final class PersistenceManager extends Shutdown {
                         + " isDummy(ArrayContainer) :" // NOI18N
                         + mo.isDummy());               // NOI18N
         }
-
+        mo.forceStatus(MetaObject.NO_STATUS);
         if (
             dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
                         user.getUserGroup())
@@ -1050,7 +1050,8 @@ public final class PersistenceManager extends Shutdown {
                                         break;
                                     }
                                     case MetaObject.MODIFIED:
-                                    // NOP
+                                        updateMetaObject(user, moAttr);
+                                        break;
                                     default: {
                                         // NOP
                                     }
