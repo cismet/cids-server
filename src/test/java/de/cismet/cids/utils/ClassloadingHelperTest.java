@@ -101,7 +101,7 @@ public class ClassloadingHelperTest {
      * DOCUMENT ME!
      */
     @Test
-    public void testGetClassNames_MetaClass_ClassloadingHelperCLASS_TYPE() {
+    public void testGetClassNames_MetaClass_ClassloadingHelperCLASS_TYPE_AltDomains() {
         System.out.println("TEST " + getCurrentMethodName());
         
         MetaClass mc = new MetaClass(new Sirius.server.localserver._class.Class(
@@ -331,6 +331,368 @@ public class ClassloadingHelperTest {
                 "de.cismet.cids.custom.objectrenderer.null_.My_classRenderer",
                 "de.cismet.cids.custom.objectrenderer.null_.MyClassRenderer"));
         res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
+        assertEquals(exp, res);
+        
+        mc = new MetaClass(new Sirius.server.localserver._class.Class(
+                    -1,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    null,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    (Policy)null,
+                    null,
+                    false),
+                "Test-7");
+        exp = new ArrayList<String>(Arrays.asList(
+                "de.cismet.cids.utils.clht.objectrenderer.test7.My_classRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.test7.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.test7.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.test7.MyClassRenderer",
+                "de.cismet.cids.utils.clht.objectrenderer.null_.My_classRenderer",
+                "de.cismet.cids.utils.clht.objectrenderer.null_.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.null_.My_classRenderer",
+                "de.cismet.cids.custom.objectrenderer.null_.MyClassRenderer"));
+        res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
+        assertEquals(exp, res);
+    }
+    
+    @Test
+    public void testGetClassNames_MetaClass_ClassloadingHelperCLASS_TYPE_OrderDefault() {
+        System.out.println("TEST " + getCurrentMethodName());
+        
+        MetaClass mc = new MetaClass(new Sirius.server.localserver._class.Class(
+                    -1,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    null,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    (Policy)null,
+                    null,
+                    false),
+                "testorderdefault_default");
+        List<String> exp = new ArrayList<String>(Arrays.asList(
+                "de.cismet.cids.utils.clht.objectrenderer.testorderdefault_default.My_classRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.testorderdefault_default.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.testorderdefault_default.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.testorderdefault_default.MyClassRenderer"));
+        List<String> res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
+        assertEquals(exp, res);
+        
+        mc = new MetaClass(new Sirius.server.localserver._class.Class(
+                    -1,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    null,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    (Policy)null,
+                    null,
+                    false),
+                "testorderdefault_foo");
+        exp = new ArrayList<String>(Arrays.asList(
+                "de.cismet.cids.utils.clht.objectrenderer.testorderdefault_foo.My_classRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.testorderdefault_foo.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.testorderdefault_foo.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.testorderdefault_foo.MyClassRenderer"));
+        res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
+        assertEquals(exp, res);
+        
+        mc = new MetaClass(new Sirius.server.localserver._class.Class(
+                    -1,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    null,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    (Policy)null,
+                    null,
+                    false),
+                "testorderdefault_empty");
+        exp = new ArrayList<String>(Arrays.asList(
+                "de.cismet.cids.utils.clht.objectrenderer.testorderdefault_empty.My_classRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.testorderdefault_empty.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.testorderdefault_empty.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.testorderdefault_empty.MyClassRenderer"));
+        res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
+        assertEquals(exp, res);
+        
+        mc = new MetaClass(new Sirius.server.localserver._class.Class(
+                    -1,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    null,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    (Policy)null,
+                    null,
+                    false),
+                "testorderdefault_nokey");
+        exp = new ArrayList<String>(Arrays.asList(
+                "de.cismet.cids.utils.clht.objectrenderer.testorderdefault_nokey.My_classRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.testorderdefault_nokey.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.testorderdefault_nokey.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.testorderdefault_nokey.MyClassRenderer"));
+        res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
+        assertEquals(exp, res);
+    }
+    
+    @Test
+    public void testGetClassNames_MetaClass_ClassloadingHelperCLASS_TYPE_OrderClasstype() {
+        System.out.println("TEST " + getCurrentMethodName());
+        
+        MetaClass mc = new MetaClass(new Sirius.server.localserver._class.Class(
+                    -1,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    null,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    (Policy)null,
+                    null,
+                    false),
+                "testorderclasstype");
+        List<String> exp = new ArrayList<String>(Arrays.asList(
+                "de.cismet.cids.utils.clht.objectrenderer.testorderclasstype.My_classRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.testorderclasstype.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.testorderclasstype.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.testorderclasstype.MyClassRenderer"));
+        List<String> res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
+        assertEquals(exp, res);
+    }
+    
+    @Test
+    public void testGetClassNames_MetaClass_ClassloadingHelperCLASS_TYPE_OrderClasstypeAltDomain() {
+        System.out.println("TEST " + getCurrentMethodName());
+        
+        MetaClass mc = new MetaClass(new Sirius.server.localserver._class.Class(
+                    -1,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    null,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    (Policy)null,
+                    null,
+                    false),
+                "testorderclasstypealtdomain");
+        List<String> exp = new ArrayList<String>(Arrays.asList(
+                "de.cismet.cids.utils.clht.objectrenderer.testorderclasstypealtdomain.My_classRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.testorderclasstypealtdomain.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.testorderclasstypealtdomain.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.testorderclasstypealtdomain.MyClassRenderer",
+                "de.cismet.cids.utils.clht.objectrenderer.altdomain.My_classRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.altdomain.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.altdomain.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.altdomain.MyClassRenderer"));
+        List<String> res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
+        assertEquals(exp, res);
+    }
+    
+    @Test
+    public void testGetClassNames_MetaClass_ClassloadingHelperCLASS_TYPE_OrderDomain() {
+        System.out.println("TEST " + getCurrentMethodName());
+        
+        MetaClass mc = new MetaClass(new Sirius.server.localserver._class.Class(
+                    -1,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    null,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    (Policy)null,
+                    null,
+                    false),
+                "testorderdomain");
+        List<String> exp = new ArrayList<String>(Arrays.asList(
+                "de.cismet.cids.utils.clht.testorderdomain.objectrenderer.My_classRenderer", 
+                "de.cismet.cids.utils.clht.testorderdomain.objectrenderer.MyClassRenderer",
+                "de.cismet.cids.custom.testorderdomain.objectrenderer.My_classRenderer", 
+                "de.cismet.cids.custom.testorderdomain.objectrenderer.MyClassRenderer"));
+        List<String> res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
+        assertEquals(exp, res);
+    }
+    
+    @Test
+    public void testGetClassNames_MetaClass_ClassloadingHelperCLASS_TYPE_OrderDomainAltDomain() {
+        System.out.println("TEST " + getCurrentMethodName());
+        
+        MetaClass mc = new MetaClass(new Sirius.server.localserver._class.Class(
+                    -1,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    null,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    (Policy)null,
+                    null,
+                    false),
+                "testorderdomainaltdomain");
+        List<String> exp = new ArrayList<String>(Arrays.asList(
+                "de.cismet.cids.utils.clht.testorderdomainaltdomain.objectrenderer.My_classRenderer", 
+                "de.cismet.cids.utils.clht.testorderdomainaltdomain.objectrenderer.MyClassRenderer",
+                "de.cismet.cids.custom.testorderdomainaltdomain.objectrenderer.My_classRenderer", 
+                "de.cismet.cids.custom.testorderdomainaltdomain.objectrenderer.MyClassRenderer",
+                "de.cismet.cids.utils.clht.altdomain.objectrenderer.My_classRenderer", 
+                "de.cismet.cids.utils.clht.altdomain.objectrenderer.MyClassRenderer",
+                "de.cismet.cids.custom.altdomain.objectrenderer.My_classRenderer", 
+                "de.cismet.cids.custom.altdomain.objectrenderer.MyClassRenderer"));
+        List<String> res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
+        assertEquals(exp, res);
+    }
+    
+    @Test
+    public void testGetClassNames_MetaClass_ClassloadingHelperCLASS_TYPE_OrderBothClasstype() {
+        System.out.println("TEST " + getCurrentMethodName());
+        
+        MetaClass mc = new MetaClass(new Sirius.server.localserver._class.Class(
+                    -1,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    null,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    (Policy)null,
+                    null,
+                    false),
+                "testorderbothclasstype");
+        List<String> exp = new ArrayList<String>(Arrays.asList(
+                "de.cismet.cids.utils.clht.objectrenderer.testorderbothclasstype.My_classRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.testorderbothclasstype.MyClassRenderer",
+                "de.cismet.cids.utils.clht.testorderbothclasstype.objectrenderer.My_classRenderer", 
+                "de.cismet.cids.utils.clht.testorderbothclasstype.objectrenderer.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.testorderbothclasstype.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.testorderbothclasstype.MyClassRenderer",
+                "de.cismet.cids.custom.testorderbothclasstype.objectrenderer.My_classRenderer", 
+                "de.cismet.cids.custom.testorderbothclasstype.objectrenderer.MyClassRenderer"));
+        List<String> res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
+        assertEquals(exp, res);
+    }
+    
+    @Test
+    public void testGetClassNames_MetaClass_ClassloadingHelperCLASS_TYPE_OrderBothClasstypeAltDomain() {
+        System.out.println("TEST " + getCurrentMethodName());
+        
+        MetaClass mc = new MetaClass(new Sirius.server.localserver._class.Class(
+                    -1,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    null,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    (Policy)null,
+                    null,
+                    false),
+                "testorderbothclasstypealtdomain");
+        List<String> exp = new ArrayList<String>(Arrays.asList(
+                "de.cismet.cids.utils.clht.objectrenderer.testorderbothclasstypealtdomain.My_classRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.testorderbothclasstypealtdomain.MyClassRenderer",
+                "de.cismet.cids.utils.clht.testorderbothclasstypealtdomain.objectrenderer.My_classRenderer", 
+                "de.cismet.cids.utils.clht.testorderbothclasstypealtdomain.objectrenderer.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.testorderbothclasstypealtdomain.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.testorderbothclasstypealtdomain.MyClassRenderer",
+                "de.cismet.cids.custom.testorderbothclasstypealtdomain.objectrenderer.My_classRenderer", 
+                "de.cismet.cids.custom.testorderbothclasstypealtdomain.objectrenderer.MyClassRenderer",
+                "de.cismet.cids.utils.clht.objectrenderer.altdomain.My_classRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.altdomain.MyClassRenderer",
+                "de.cismet.cids.utils.clht.altdomain.objectrenderer.My_classRenderer", 
+                "de.cismet.cids.utils.clht.altdomain.objectrenderer.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.altdomain.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.altdomain.MyClassRenderer",
+                "de.cismet.cids.custom.altdomain.objectrenderer.My_classRenderer", 
+                "de.cismet.cids.custom.altdomain.objectrenderer.MyClassRenderer"));
+        List<String> res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
+        assertEquals(exp, res);
+    }
+    
+    @Test
+    public void testGetClassNames_MetaClass_ClassloadingHelperCLASS_TYPE_OrderBothDomain() {
+        System.out.println("TEST " + getCurrentMethodName());
+        
+        MetaClass mc = new MetaClass(new Sirius.server.localserver._class.Class(
+                    -1,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    null,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    (Policy)null,
+                    null,
+                    false),
+                "testorderbothdomain");
+        List<String> exp = new ArrayList<String>(Arrays.asList(
+                "de.cismet.cids.utils.clht.testorderbothdomain.objectrenderer.My_classRenderer", 
+                "de.cismet.cids.utils.clht.testorderbothdomain.objectrenderer.MyClassRenderer",
+                "de.cismet.cids.utils.clht.objectrenderer.testorderbothdomain.My_classRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.testorderbothdomain.MyClassRenderer",
+                "de.cismet.cids.custom.testorderbothdomain.objectrenderer.My_classRenderer", 
+                "de.cismet.cids.custom.testorderbothdomain.objectrenderer.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.testorderbothdomain.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.testorderbothdomain.MyClassRenderer"));
+        List<String> res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
+        assertEquals(exp, res);
+    }
+    
+    @Test
+    public void testGetClassNames_MetaClass_ClassloadingHelperCLASS_TYPE_OrderBothDomainAltDomain() {
+        System.out.println("TEST " + getCurrentMethodName());
+        
+        MetaClass mc = new MetaClass(new Sirius.server.localserver._class.Class(
+                    -1,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    null,
+                    "MY_CLASS",
+                    null,
+                    null,
+                    (Policy)null,
+                    null,
+                    false),
+                "testorderbothdomainaltdomain");
+        List<String> exp = new ArrayList<String>(Arrays.asList(
+                "de.cismet.cids.utils.clht.testorderbothdomainaltdomain.objectrenderer.My_classRenderer", 
+                "de.cismet.cids.utils.clht.testorderbothdomainaltdomain.objectrenderer.MyClassRenderer",
+                "de.cismet.cids.utils.clht.objectrenderer.testorderbothdomainaltdomain.My_classRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.testorderbothdomainaltdomain.MyClassRenderer",
+                "de.cismet.cids.custom.testorderbothdomainaltdomain.objectrenderer.My_classRenderer", 
+                "de.cismet.cids.custom.testorderbothdomainaltdomain.objectrenderer.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.testorderbothdomainaltdomain.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.testorderbothdomainaltdomain.MyClassRenderer",
+                "de.cismet.cids.utils.clht.altdomain.objectrenderer.My_classRenderer", 
+                "de.cismet.cids.utils.clht.altdomain.objectrenderer.MyClassRenderer",
+                "de.cismet.cids.utils.clht.objectrenderer.altdomain.My_classRenderer", 
+                "de.cismet.cids.utils.clht.objectrenderer.altdomain.MyClassRenderer",
+                "de.cismet.cids.custom.altdomain.objectrenderer.My_classRenderer", 
+                "de.cismet.cids.custom.altdomain.objectrenderer.MyClassRenderer",
+                "de.cismet.cids.custom.objectrenderer.altdomain.My_classRenderer", 
+                "de.cismet.cids.custom.objectrenderer.altdomain.MyClassRenderer"));
+        List<String> res = ClassloadingHelper.getClassNames(mc, CLASS_TYPE.RENDERER);
         assertEquals(exp, res);
     }
     

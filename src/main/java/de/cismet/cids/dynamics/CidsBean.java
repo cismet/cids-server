@@ -19,9 +19,13 @@ import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
+
+import org.codehaus.jackson.map.ObjectMapper;
 
 import org.jdesktop.observablecollections.ObservableList;
 
@@ -33,7 +37,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyDescriptor;
 
-import java.util.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -63,6 +66,15 @@ public class CidsBean implements PropertyChangeListener {
     protected String backlinkFieldname;
     protected CidsBean backlinkObject;
     protected boolean artificialChange;
+    String pkFieldName = null;
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   o  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    ObjectMapper mapper = new ObjectMapper();
     private CustomBeanPermissionProvider customPermissionProvider;
 
     //~ Methods ----------------------------------------------------------------
@@ -735,6 +747,27 @@ public class CidsBean implements PropertyChangeListener {
      * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
+     */
+    public String getPrimaryKeyFieldname() {
+        if (pkFieldName == null) {
+            pkFieldName = getMetaObject().getMetaClass().getPrimaryKey();
+        }
+        return pkFieldName;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Integer getPrimaryKeyValue() {
+        return (Integer)getProperty(getPrimaryKeyFieldname().toLowerCase());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      *
      * @throws  Error  DOCUMENT ME!
      */
@@ -775,6 +808,21 @@ public class CidsBean implements PropertyChangeListener {
         }
         sb.append(einrueckung).append('{').append('\n');
         final String[] propNames = bean.getPropertyNames();
+        sb.append(einrueckung)
+                .append('\t')
+                .append('"')
+                .append("cidsObjectKey")
+                .append("\": \"/")
+                .append(bean.getMetaObject().getMetaClass().getTableName())
+                .append('@')
+                .append(bean.getMetaObject().getMetaClass().getDomain())
+                .append('/')
+                .append(bean.getProperty(bean.getMetaObject().getMetaClass().getPrimaryKey().toLowerCase()))
+                .append('\"');
+        if (propNames.length > 0) {
+            sb.append(',');
+        }
+        sb.append('\n');
         for (int i = 0; i < propNames.length; ++i) {
             final String attribute = propNames[i];
             sb.append(einrueckung).append('\t').append('"').append(attribute).append("\": ");
@@ -785,6 +833,7 @@ public class CidsBean implements PropertyChangeListener {
                 sb.append('\n');
             } else if (object instanceof List) {
                 final List<CidsBean> collection = (List<CidsBean>)object;
+
                 sb.append('\n').append(einrueckung).append('[');
                 for (int j = 0; j < collection.size(); ++j) {
                     final CidsBean colBean = collection.get(j);
@@ -796,7 +845,7 @@ public class CidsBean implements PropertyChangeListener {
                 }
                 sb.append('\n').append(einrueckung).append(']');
             } else {
-                sb.append('"').append(StringEscapeUtils.escapeJava(String.valueOf(object))).append('"');
+                sb.append(atomicDatatypeToJsonSerializer(object));
             }
             if (i < (propNames.length - 1)) {
                 sb.append(',');
@@ -806,6 +855,30 @@ public class CidsBean implements PropertyChangeListener {
         sb.append(einrueckung).append("}");
 
         return sb.toString();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   o  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String atomicDatatypeToJsonSerializer(final Object o) {
+        if (o == null) {
+            return "null";
+        } else if (o instanceof Geometry) {
+            return new StringBuffer("\"").append(StringEscapeUtils.escapeJava(String.valueOf(o)))
+                        .append("\"")
+                        .toString();
+        } else {
+            try {
+                return mapper.writeValueAsString(o);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
     }
 
     /**
