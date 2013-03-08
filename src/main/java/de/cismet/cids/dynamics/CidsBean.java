@@ -983,8 +983,7 @@ public class CidsBean implements PropertyChangeListener {
      * @throws  Exception  DOCUMENT ME!
      */
     public static CidsBean createNewCidsBeanFromJSON(final String json) throws Exception {
-        final ObjectMapper om = new ObjectMapper();
-        final CidsBean jsonBean = om.readValue(json, CidsBean.class);
+        final CidsBean jsonBean = mapper.readValue(json, CidsBean.class);
         return jsonBean;
     }
 
@@ -1210,9 +1209,9 @@ class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                                 final ObjectAttribute oa = cb.getMetaObject().getAttributeByFieldName(fieldName);
                                 oa.setChanged(false);
                                 final MetaObject dummy = (MetaObject)oa.getValue();
-                                dummy.setChanged(false);
-                                dummy.forceStatus(MetaObject.NO_STATUS);
                                 if (dummy != null) {
+                                    dummy.setChanged(false);
+                                    dummy.forceStatus(MetaObject.NO_STATUS);
                                     dummy.setStatus(MetaObject.NO_STATUS);
                                     final ObjectAttribute[] entries = dummy.getAttribs();
                                     for (final ObjectAttribute entry : entries) {
