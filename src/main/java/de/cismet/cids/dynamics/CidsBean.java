@@ -896,10 +896,8 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @return  DOCUMENT ME!
      */
-    // FIXME: use a JSON API such as Jackson
-    public String toJSONString() {
+     public String toJSONString() {
         try {
-            // return beanToJSONStringHelper(this, 0, INTRA_OBJECT_CACHE_ENABLED);
             mapper.enable(SerializationFeature.INDENT_OUTPUT); // FIXME just do this once
 
             this.intraObjectCache.clear();
@@ -911,18 +909,7 @@ public class CidsBean implements PropertyChangeListener {
         }
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   intraObjectCacheEnabled  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public String toJSONString(final boolean intraObjectCacheEnabled) {
-        return beanToJSONStringHelper(this, 0, intraObjectCacheEnabled);
-    }
-
-    /**
+   /**
      * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -936,74 +923,7 @@ public class CidsBean implements PropertyChangeListener {
                     .toString();
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   bean                     DOCUMENT ME!
-     * @param   depth                    DOCUMENT ME!
-     * @param   intraObjectCacheEnabled  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    // FIXME: use a JSON API such as Jackson
-    private String beanToJSONStringHelper(final CidsBean bean, final int depth, final boolean intraObjectCacheEnabled) {
-        final StringBuilder sb = new StringBuilder();
-        final char[] einrueckung = new char[depth];
-        for (int i = 0; i < einrueckung.length; ++i) {
-            einrueckung[i] = '\t';
-        }
-        sb.append(einrueckung).append('{').append('\n');
-        final String[] propNames = bean.getPropertyNames();
-        sb.append(einrueckung)
-                .append('\t')
-                .append('"')
-                .append(CIDS_OBJECT_KEY_IDENTIFIER)
-                .append("\": \"")
-                .append(bean.getCidsObjectKey())
-                .append('\"');
-
-        if (!intraObjectCacheEnabled || !intraObjectCache.containsKey(bean.getCidsObjectKey())) {
-            if (propNames.length > 0) {
-                sb.append(',');
-            }
-            sb.append('\n');
-            intraObjectCache.put(bean.getCidsObjectKey(), bean);
-            for (int i = 0; i < propNames.length; ++i) {
-                final String attribute = propNames[i];
-                sb.append(einrueckung).append('\t').append('"').append(attribute).append("\": ");
-                final Object object = bean.getProperty(attribute);
-                if (object instanceof CidsBean) {
-                    sb.append('\n');
-                    sb.append(beanToJSONStringHelper((CidsBean)object, depth + 1, intraObjectCacheEnabled));
-                } else if (object instanceof List) {
-                    final List<CidsBean> collection = (List<CidsBean>)object;
-
-                    sb.append('\n').append(einrueckung).append('[');
-                    for (int j = 0; j < collection.size(); ++j) {
-                        final CidsBean colBean = collection.get(j);
-                        sb.append(beanToJSONStringHelper(colBean, depth + 1, intraObjectCacheEnabled));
-                        if (j < (collection.size() - 1)) {
-                            sb.append(',');
-                            sb.append('\n');
-                        }
-                    }
-                    sb.append('\n').append(einrueckung).append(']');
-                } else {
-                    sb.append(atomicDatatypeToJsonSerializer(object));
-                }
-                if (i < (propNames.length - 1)) {
-                    sb.append(',');
-                }
-                sb.append('\n');
-            }
-        } else {
-            sb.append('\n');
-        }
-        sb.append(einrueckung).append("}");
-        return sb.toString();
-    }
-
-    /**
+   /**
      * DOCUMENT ME!
      *
      * @param   o  DOCUMENT ME!
