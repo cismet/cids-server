@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -45,6 +46,7 @@ import org.apache.log4j.Logger;
 
 import org.jdesktop.observablecollections.ObservableList;
 
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import java.beans.IntrospectionException;
@@ -914,6 +916,22 @@ public class CidsBean implements PropertyChangeListener {
     /**
      * DOCUMENT ME!
      *
+     * @param   beans  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static String toJSONString(final Collection<CidsBean> beans) {
+        try {
+            return mapper.writeValueAsString(beans);
+        } catch (Exception ex) {
+            LOG.error("Error in serialization of Cidsbeans Array");
+            return null;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      */
     public String getCidsObjectKey() {
@@ -985,6 +1003,20 @@ public class CidsBean implements PropertyChangeListener {
     public static CidsBean createNewCidsBeanFromJSON(final String json) throws Exception {
         final CidsBean jsonBean = mapper.readValue(json, CidsBean.class);
         return jsonBean;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   json  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static Collection<CidsBean> createNewCidsBeansFromJSONCollection(final String json) throws Exception {
+        final Collection<CidsBean> jsonBeans = mapper.readValue(json, Collection.class);
+        return jsonBeans;
     }
 
     /**
