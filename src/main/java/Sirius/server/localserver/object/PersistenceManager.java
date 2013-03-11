@@ -636,7 +636,7 @@ public final class PersistenceManager extends Shutdown {
                             logMessage.append(". parameter: ");
                             logMessage.append(value.toString());
                         }
-                        LOG.debug(logMessage.toString());
+                        LOG.debug(logMessage.toString(), new Exception());
                     }
 
                     final TransactionHelper transactionHelper = local.get();
@@ -1049,9 +1049,10 @@ public final class PersistenceManager extends Shutdown {
                                         deleteMetaObjectWithoutTransaction(user, moAttr);
                                         break;
                                     }
-                                    case MetaObject.MODIFIED:
-                                        updateMetaObject(user, moAttr);
+                                    case MetaObject.MODIFIED: {
+                                        updateMetaObjectWithoutTransaction(user, moAttr);
                                         break;
+                                    }
                                     default: {
                                         // NOP
                                     }
@@ -1105,7 +1106,7 @@ public final class PersistenceManager extends Shutdown {
                         logMessage.append(". parameter: ");
                         logMessage.append(value.toString());
                     }
-                    LOG.debug(logMessage.toString());
+                    LOG.debug(logMessage.toString(), new Exception());
                 }
                 stmt = parameteriseStatement(stmt, values);
                 stmt.executeUpdate();
