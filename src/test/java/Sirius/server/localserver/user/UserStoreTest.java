@@ -7,8 +7,8 @@
 ****************************************************/
 package Sirius.server.localserver.user;
 
-import de.cismet.remotetesthelper.RemoteTestHelperService;
-import de.cismet.remotetesthelper.ws.rest.RemoteTestHelperClient;
+//import de.cismet.remotetesthelper.RemoteTestHelperService;
+//import de.cismet.remotetesthelper.ws.rest.RemoteTestHelperClient;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
 import Sirius.server.property.ServerProperties;
@@ -48,7 +48,7 @@ public class UserStoreTest {
             UserStoreTest.class);
     private static final String TEST = "TEST ";
     private static final String TEST_DB_NAME = "user_store_test_db";
-    private static final RemoteTestHelperService service = new RemoteTestHelperClient();
+//    private static final RemoteTestHelperService service = new RemoteTestHelperClient();
 
     private static ServerProperties props;
     private static DBConnectionPool pool;
@@ -70,9 +70,9 @@ public class UserStoreTest {
         p.put("log4j.rootLogger", "ALL,Remote");                               // NOI18N
         PropertyConfigurator.configure(p);
 
-        if (!Boolean.valueOf(service.initCidsSystem(TEST_DB_NAME))) {
-            throw new IllegalStateException("cannot initilise test db");
-        }
+//        if (!Boolean.valueOf(service.initCidsSystem(TEST_DB_NAME))) {
+//            throw new IllegalStateException("cannot initilise test db");
+//        }
 
         props = new ServerProperties(UserStoreTest.class.getResourceAsStream(
                     "/Sirius/server/localserver/user/runtime.properties"));  // NOI18N
@@ -102,9 +102,9 @@ public class UserStoreTest {
     public static void tearDownClass() throws Throwable {
         pool.shutdown();
 
-        if (!Boolean.valueOf(service.dropDatabase(TEST_DB_NAME))) {
-            throw new IllegalStateException("could not drop test db");
-        }
+//        if (!Boolean.valueOf(service.dropDatabase(TEST_DB_NAME))) {
+//            throw new IllegalStateException("could not drop test db");
+//        }
     }
 
     /**

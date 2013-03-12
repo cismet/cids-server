@@ -55,9 +55,9 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.Vector;
 
-import de.cismet.remotetesthelper.RemoteTestHelperService;
+//import de.cismet.remotetesthelper.RemoteTestHelperService;
 
-import de.cismet.remotetesthelper.ws.rest.RemoteTestHelperClient;
+//import de.cismet.remotetesthelper.ws.rest.RemoteTestHelperClient;
 
 import de.cismet.tools.ScriptRunner;
 
@@ -78,7 +78,7 @@ public class RESTfulSerialInterfaceConnectorTest {
     private static final String STARTMODE = "notsimple";                                                               // NOI18N
 
     private static final String TEST_DB_NAME = "restful_serial_interface_connector_test_db";
-    private static final RemoteTestHelperService service = new RemoteTestHelperClient();
+//    private static final RemoteTestHelperService service = new RemoteTestHelperClient();
 
     private static RESTfulSerialInterfaceConnector connector;
     private static Registry registry;
@@ -115,9 +115,9 @@ public class RESTfulSerialInterfaceConnectorTest {
         p.put("log4j.rootLogger", "ALL,Remote");
         org.apache.log4j.PropertyConfigurator.configure(p);
 
-        if (!Boolean.valueOf(service.initCidsSystem(TEST_DB_NAME))) {
-            throw new IllegalStateException("cannot initialise test db");
-        }
+//        if (!Boolean.valueOf(service.initCidsSystem(TEST_DB_NAME))) {
+//            throw new IllegalStateException("cannot initialise test db");
+//        }
         final ServerProperties props = new ServerProperties(UserStoreTest.class.getResourceAsStream(
                     "/de/cismet/cids/server/ws/rest/runtime.properties"));   // NOI18N
         final DBConnectionPool pool = new DBConnectionPool(props);
@@ -183,9 +183,9 @@ public class RESTfulSerialInterfaceConnectorTest {
             System.err.println("exit error");
         }
         
-        if (!Boolean.valueOf(service.dropDatabase(TEST_DB_NAME))) {
-            throw new IllegalStateException("could not drop test db");
-        }
+//        if (!Boolean.valueOf(service.dropDatabase(TEST_DB_NAME))) {
+//            throw new IllegalStateException("could not drop test db");
+//        }
     }
 
     /**

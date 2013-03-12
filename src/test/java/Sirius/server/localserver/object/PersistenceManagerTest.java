@@ -7,8 +7,8 @@
 ****************************************************/
 package Sirius.server.localserver.object;
 
-import de.cismet.remotetesthelper.RemoteTestHelperService;
-import de.cismet.remotetesthelper.ws.rest.RemoteTestHelperClient;
+//import de.cismet.remotetesthelper.RemoteTestHelperService;
+//import de.cismet.remotetesthelper.ws.rest.RemoteTestHelperClient;
 import Sirius.server.localserver.DBServer;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
@@ -62,7 +62,7 @@ public class PersistenceManagerTest {
     private static final int DEFAULT_OBJECT_ID = 99999999;
     private static final String TEST_DB_NAME = "persistence_manager_test_db";
 
-    private static final RemoteTestHelperService service = new RemoteTestHelperClient();
+//    private static final RemoteTestHelperService service = new RemoteTestHelperClient();
 
     private static DBServer server;
 
@@ -83,9 +83,9 @@ public class PersistenceManagerTest {
         p.put("log4j.rootLogger", "ALL,Remote");
         org.apache.log4j.PropertyConfigurator.configure(p);
 
-        if (!Boolean.valueOf(service.initCidsSystem(TEST_DB_NAME))) {
-            throw new IllegalStateException("cannot initilise test db");
-        }
+//        if (!Boolean.valueOf(service.initCidsSystem(TEST_DB_NAME))) {
+//            throw new IllegalStateException("cannot initilise test db");
+//        }
 
         final InputStream is = PersistenceManagerTest.class.getResourceAsStream("runtime.properties");
         server = new DBServer(new ServerProperties(is));
@@ -100,9 +100,9 @@ public class PersistenceManagerTest {
     public static void tearDownClass() throws Throwable {
         server.shutdown();
         
-        if (!Boolean.valueOf(service.dropDatabase(TEST_DB_NAME))) {
-            throw new IllegalStateException("could not drop test db");
-        }
+//        if (!Boolean.valueOf(service.dropDatabase(TEST_DB_NAME))) {
+//            throw new IllegalStateException("could not drop test db");
+//        }
     }
 
     /**
