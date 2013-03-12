@@ -575,7 +575,10 @@ public final class PersistenceManager extends Shutdown {
                             valueToAdd = NULL;
                             break;
                         }
-                        case MetaObject.NO_STATUS:
+                        case MetaObject.NO_STATUS: {
+                            valueToAdd = subObject.getID();
+                            break;
+                        }
                         // fall through because we define no status as modified status
                         case MetaObject.MODIFIED: {
                             updateMetaObjectWithoutTransaction(user, subObject);
@@ -753,7 +756,9 @@ public final class PersistenceManager extends Shutdown {
                         break;
                     }
 
-                    case MetaObject.NO_STATUS:
+                    case MetaObject.NO_STATUS: {
+                        break;
+                    }
                     case MetaObject.MODIFIED: {
                         updateMetaObjectWithoutTransaction(user, metaObject);
                         break;
