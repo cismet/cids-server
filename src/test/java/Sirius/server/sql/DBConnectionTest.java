@@ -35,9 +35,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import de.cismet.remotetesthelper.RemoteTestHelperService;
+//import de.cismet.remotetesthelper.RemoteTestHelperService;
 
-import de.cismet.remotetesthelper.ws.rest.RemoteTestHelperClient;
+//import de.cismet.remotetesthelper.ws.rest.RemoteTestHelperClient;
 
 import de.cismet.tools.ScriptRunner;
 
@@ -56,7 +56,7 @@ public class DBConnectionTest {
     private static final transient Logger LOG = Logger.getLogger(DBConnectionTest.class);
     private static final String TEST = "TEST "; // NOI18N
     private static final String TEST_DB_NAME = "dbconnection_test_db";
-    private static final RemoteTestHelperService service = new RemoteTestHelperClient();
+//    private static final RemoteTestHelperService service = new RemoteTestHelperClient();
     private static final DBClassifier DB_CLASSIFIER = new DBClassifier(
             "jdbc:postgresql://kif:5432/"
                     + TEST_DB_NAME,             // NOI18N
@@ -84,10 +84,10 @@ public class DBConnectionTest {
         PropertyConfigurator.configure(p);
 
         // drop first in case of cleanup has not been executed before
-        service.dropDatabase(TEST_DB_NAME);
-        if (!Boolean.valueOf(service.initCidsSystem(TEST_DB_NAME))) {
-            throw new IllegalStateException("cannot initilise test db");
-        }
+//        service.dropDatabase(TEST_DB_NAME);
+//        if (!Boolean.valueOf(service.initCidsSystem(TEST_DB_NAME))) {
+//            throw new IllegalStateException("cannot initilise test db");
+//        }
 
         final ServerProperties props = new ServerProperties(DBConnectionTest.class.getResourceAsStream(
                     "/Sirius/server/sql/runtime.properties"));               // NOI18N
@@ -123,9 +123,9 @@ public class DBConnectionTest {
      */
     @AfterClass
     public static void tearDownClass() {
-        if (!Boolean.valueOf(service.dropDatabase(TEST_DB_NAME))) {
-            throw new IllegalStateException("could not drop test db");
-        }
+//        if (!Boolean.valueOf(service.dropDatabase(TEST_DB_NAME))) {
+//            throw new IllegalStateException("could not drop test db");
+//        }
     }
 
     /**
