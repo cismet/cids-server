@@ -575,7 +575,10 @@ public final class PersistenceManager extends Shutdown {
                             valueToAdd = NULL;
                             break;
                         }
-                        case MetaObject.NO_STATUS:
+                        case MetaObject.NO_STATUS: {
+                            valueToAdd = subObject.getID();
+                            break;
+                        }
                         // fall through because we define no status as modified status
                         case MetaObject.MODIFIED: {
                             updateMetaObjectWithoutTransaction(user, subObject);
@@ -636,7 +639,7 @@ public final class PersistenceManager extends Shutdown {
                             logMessage.append(". parameter: ");
                             logMessage.append(value.toString());
                         }
-                        LOG.debug(logMessage.toString());
+                        LOG.debug(logMessage.toString(), new Exception());
                     }
 
                     final TransactionHelper transactionHelper = local.get();
@@ -753,7 +756,9 @@ public final class PersistenceManager extends Shutdown {
                         break;
                     }
 
-                    case MetaObject.NO_STATUS:
+                    case MetaObject.NO_STATUS: {
+                        break;
+                    }
                     case MetaObject.MODIFIED: {
                         updateMetaObjectWithoutTransaction(user, metaObject);
                         break;
@@ -915,7 +920,7 @@ public final class PersistenceManager extends Shutdown {
                         + " isDummy(ArrayContainer) :" // NOI18N
                         + mo.isDummy());               // NOI18N
         }
-
+        mo.forceStatus(MetaObject.NO_STATUS);
         if (
             dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
                         user.getUserGroup())
@@ -1049,8 +1054,10 @@ public final class PersistenceManager extends Shutdown {
                                         deleteMetaObjectWithoutTransaction(user, moAttr);
                                         break;
                                     }
-                                    case MetaObject.MODIFIED:
-                                    // NOP
+                                    case MetaObject.MODIFIED: {
+                                        updateMetaObjectWithoutTransaction(user, moAttr);
+                                        break;
+                                    }
                                     default: {
                                         // NOP
                                     }
@@ -1104,7 +1111,7 @@ public final class PersistenceManager extends Shutdown {
                         logMessage.append(". parameter: ");
                         logMessage.append(value.toString());
                     }
-                    LOG.debug(logMessage.toString());
+                    LOG.debug(logMessage.toString(), new Exception());
                 }
                 stmt = parameteriseStatement(stmt, values);
                 stmt.executeUpdate();

@@ -19,6 +19,7 @@
             <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
         </goals>
         <properties>
+            <maven.test.skip>true</maven.test.skip>
             <jalopy.skip>true</jalopy.skip>
             <exec.format.skip>true</exec.format.skip>
             <exec.classpathScope>runtime</exec.classpathScope>
@@ -50,6 +51,7 @@
             <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
         </goals>
         <properties>
+            <jalopy.skip>true</jalopy.skip>
             <exec.format.skip>true</exec.format.skip>
             <exec.args>${profiler.args} -classpath %classpath Sirius.server.middleware.impls.domainserver.DomainServerImpl runtime.properties</exec.args>
             <exec.workingdir>${de.cismet.cids.server.workingDir}</exec.workingdir>
@@ -58,24 +60,25 @@
         </properties>
     </action>
     <action>
-            <actionName>build</actionName>
-            <goals>
-                <goal>install</goal>
-            </goals>
-            <properties>
-                <!-- tests reactivated because only fast tests are executed currently -->
-                <maven.test.skip>false</maven.test.skip>
-            </properties>
-        </action>
+        <actionName>build</actionName>
+        <goals>
+            <goal>install</goal>
+        </goals>
+        <properties>
+            <!-- tests reactivated because only fast tests are executed currently -->
+            <maven.test.skip>true</maven.test.skip>
+            <jalopy.skip>true</jalopy.skip>
+        </properties>
+    </action>
     <action>
-            <actionName>rebuild</actionName>
-            <goals>
-                <goal>clean</goal>
-                <goal>install</goal>
-            </goals>
-            <properties>
-                <!-- tests reactivated because only fast tests are executed currently -->
-                <maven.test.skip>false</maven.test.skip>
-            </properties>
-        </action>
+        <actionName>rebuild</actionName>
+        <goals>
+            <goal>clean</goal>
+            <goal>install</goal>
+        </goals>
+        <properties>
+            <!-- tests reactivated because only fast tests are executed currently -->
+            <maven.test.skip>false</maven.test.skip>
+        </properties>
+    </action>
 </actions>
