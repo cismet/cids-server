@@ -9,16 +9,18 @@ package Sirius.server.localserver.object;
 
 import Sirius.server.sql.DBConnectionPool;
 
-import Sirius.util.collections.MultiMap;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Generiert die Objekthierarchie f\u00FCr alle !!!!indizierten!!!! Strukturen
@@ -30,12 +32,13 @@ public class ObjectHierarchy {
 
     //~ Instance fields --------------------------------------------------------
 
-    // getFatherstmnt hierarchy
-    protected MultiMap fatherStmnts = new MultiMap();
-    protected MultiMap arrayFatherStmnts = new MultiMap();
-    // liefert classId referenziert von classIds
-    protected MultiMap classIdHierarchy = new MultiMap();
     protected DBConnectionPool conPool;
+
+    // getFatherstmnt hierarchy
+    private final Map<Integer, Set<String>> fatherStmnts = new HashMap<Integer, Set<String>>();
+    private final Map<Integer, Set<String>> arrayFatherStmnts = new HashMap<Integer, Set<String>>();
+    // liefert classId referenziert von classIds
+    private final Map<Integer, Set<Integer>> classIdHierarchy = new HashMap<Integer, Set<Integer>>();
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
 
     //~ Constructors -----------------------------------------------------------
@@ -73,10 +76,17 @@ public class ObjectHierarchy {
                 logger.debug(" get Father key :: " + key + " value :: " + value); // NOI18N
             }
             if (!isArray) {
-                fatherStmnts.put(key, value);
+                if (!fatherStmnts.containsKey(key)) {
+                    fatherStmnts.put(key, Collections.synchronizedSet(new LinkedHashSet<String>()));
+                }
+                fatherStmnts.get(key).add(value);
             }
 
-            classIdHierarchy.put(new Integer(father), key);
+            final Integer cKey = new Integer(father);
+            if (!classIdHierarchy.containsKey(cKey)) {
+                classIdHierarchy.put(cKey, Collections.synchronizedSet(new LinkedHashSet<Integer>()));
+            }
+            classIdHierarchy.get(cKey).add(key);
         }
 
         // init array stmns notwendig da array merkmal nicht der primary key ist
@@ -105,8 +115,15 @@ public class ObjectHierarchy {
                 logger.debug(" get Array Father key :: " + key + " value :: " + value);                    // NOI18N
             }
 
-            arrayFatherStmnts.put(key, value);
-            classIdHierarchy.put(new Integer(father), key);
+            if (!arrayFatherStmnts.containsKey(key)) {
+                arrayFatherStmnts.put(key, Collections.synchronizedSet(new LinkedHashSet<String>()));
+            }
+            arrayFatherStmnts.get(key).add(value);
+            final Integer cKey = new Integer(father);
+            if (!classIdHierarchy.containsKey(cKey)) {
+                classIdHierarchy.put(cKey, Collections.synchronizedSet(new LinkedHashSet<Integer>()));
+            }
+            classIdHierarchy.get(cKey).add(key);
         }
     }
 
@@ -147,7 +164,7 @@ public class ObjectHierarchy {
 
         if (fatherStmnts.containsKey(new Integer(classId))) {
             // Liste
-            final Collection statements = (LinkedList)fatherStmnts.get(new Integer(classId));
+            final Collection statements = fatherStmnts.get(new Integer(classId));
 
             if (statements == null) {
                 return result;
@@ -177,7 +194,7 @@ public class ObjectHierarchy {
 
         if (classIdHierarchy.containsKey(new Integer(parentClassId))) {
             // Liste
-            final Collection ids = (LinkedList)classIdHierarchy.get(new Integer(parentClassId));
+            final Collection ids = classIdHierarchy.get(new Integer(parentClassId));
 
             final Iterator iter = ids.iterator();
 
@@ -242,7 +259,7 @@ public class ObjectHierarchy {
 
         if (arrayFatherStmnts.containsKey(new Integer(classId))) {
             // Liste
-            final Collection statements = (LinkedList)arrayFatherStmnts.get(new Integer(classId));
+            final Collection statements = arrayFatherStmnts.get(new Integer(classId));
 
             if (statements == null) {
                 return result;

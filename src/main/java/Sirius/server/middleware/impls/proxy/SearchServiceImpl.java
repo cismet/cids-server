@@ -345,7 +345,6 @@ public class SearchServiceImpl {
                     logger.debug("classids fro query" + q + " are" + deb); // NOI18N
                 }
 
-                final HashMap params = q.getParameters();
                 if (logger.isDebugEnabled()) {
                     logger.debug("Parameter ::" + q + " isconjunction??" + q.isConjunction()); // NOI18N
                 }

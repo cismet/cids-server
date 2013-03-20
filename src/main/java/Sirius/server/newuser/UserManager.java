@@ -7,14 +7,16 @@
 ****************************************************/
 package Sirius.server.newuser;
 
-import Sirius.util.collections.MultiMap;
-
 import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -35,7 +37,7 @@ public class UserManager implements UserServer {
 
     protected Hashtable ugs;
 
-    protected MultiMap memberships;
+    private final Map<Object, List<Membership>> memberships;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -45,7 +47,7 @@ public class UserManager implements UserServer {
     public UserManager() {
         this.users = new Hashtable();
         this.ugs = new Hashtable();
-        this.memberships = new MultiMap();
+        this.memberships = new HashMap<Object, List<Membership>>();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -223,8 +225,19 @@ public class UserManager implements UserServer {
         if (LOG.isDebugEnabled()) {
             LOG.debug("register Membership " + membership); // NOI18N
         }
-        memberships.put(membership.getUserKey(), membership);
-        return true;                                        // unsinn
+
+        final Object userKey = membership.getUserKey();
+        List<Membership> userMemberships = memberships.get(userKey);
+        if (userMemberships == null) {
+            userMemberships = Collections.synchronizedList(new ArrayList<Membership>());
+            memberships.put(userKey, userMemberships);
+        }
+
+        if (!userMemberships.contains(membership)) {
+            userMemberships.add(membership);
+        }
+
+        return true; // unsinn
     }
 
     @Override

@@ -576,7 +576,7 @@ public final class PersistenceManager extends Shutdown {
                             break;
                         }
                         case MetaObject.NO_STATUS: {
-                            if (subObject.isDummy()){
+                            if (subObject.isDummy()) {
                                 updateMetaObjectWithoutTransaction(user, subObject);
                             }
                             valueToAdd = subObject.getID();

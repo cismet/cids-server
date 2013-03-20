@@ -12,14 +12,21 @@
  */
 package Sirius.server.search;
 
-import Sirius.server.search.searchparameter.*;
-import Sirius.server.sql.*;
+import Sirius.server.search.searchparameter.SearchParameter;
+import Sirius.server.sql.SystemStatement;
 
-import Sirius.util.*;
-import Sirius.util.collections.MultiMap;
-import Sirius.util.collections.SyncLinkedList;
+import Sirius.util.Mapable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+
 /**
  * DOCUMENT ME!
  *
@@ -43,9 +50,6 @@ public class Query implements Mapable, java.io.Serializable {
     /** contains all subqueries. */
     protected Vector subQueries = new Vector(2);
 
-    /** parameters for this level of the query. */
-    protected Sirius.util.collections.MultiMap parameters = new MultiMap();
-
     protected boolean isRoot;
 
     protected boolean isUpdate;
@@ -57,6 +61,9 @@ public class Query implements Mapable, java.io.Serializable {
     protected String statement = null;
 
     protected boolean isBatch;
+
+    /** parameters for this level of the query. */
+    private Map<Object, List<SearchParameter>> parameters;
 
     // logging
     // transient
@@ -117,7 +124,7 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @return  Value of property parameters.
      */
-    public MultiMap getParameters() {
+    public Map<Object, List<SearchParameter>> getParameters() {
         return parameters;
     }
 
@@ -135,19 +142,10 @@ public class Query implements Mapable, java.io.Serializable {
         final Iterator iter = c.iterator();
 
         while (iter.hasNext()) {
-            l.addAll((SyncLinkedList)iter.next());
+            l.addAll((Collection)iter.next());
         }
 
         return l;
-    }
-
-    /**
-     * Setter for property parameters.
-     *
-     * @param  parameters  New value of property parameters.
-     */
-    public void setParameters(final Map parameters) {
-        this.parameters.putAll(parameters);
     }
 
     /**
@@ -204,12 +202,12 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public Object getParameter(final Object key) {
+    public List getParameter(final Object key) {
         if ((parameters != null) && parameters.containsKey(key)) {
-            return parameters.get(key);
+            return (List)parameters.get(key);
         } else {
             for (int i = 0; i < subQueries.size(); i++) {
-                final Object value = ((Query)subQueries.get(i)).getParameter(key);
+                final List value = ((Query)subQueries.get(i)).getParameter(key);
 
                 if (value != null) {
                     return value;
@@ -217,7 +215,7 @@ public class Query implements Mapable, java.io.Serializable {
             }
         }
 
-        return new SyncLinkedList();
+        return Collections.synchronizedList(new ArrayList(0));
     }
 
     /**
@@ -229,7 +227,7 @@ public class Query implements Mapable, java.io.Serializable {
      */
     public void setParameter(final SearchParameter parameter) throws Exception {
         // xxx
-        final SyncLinkedList params = (SyncLinkedList)getParameter(parameter.getKey());
+        final List params = (List)getParameter(parameter.getKey());
 
         final Iterator iter = params.iterator();
         while (iter.hasNext()) {
@@ -253,7 +251,7 @@ public class Query implements Mapable, java.io.Serializable {
      */
     public void setParameter(final Object key, final Object value) throws Exception {
         // xxx
-        final SyncLinkedList params = (SyncLinkedList)getParameter(key);
+        final List params = (List)getParameter(key);
 
         final Iterator iter = params.iterator();
         while (iter.hasNext()) {
@@ -275,7 +273,16 @@ public class Query implements Mapable, java.io.Serializable {
      * @throws  Exception  DOCUMENT ME!
      */
     public void addParameter(final SearchParameter parameter) throws Exception {
-        parameters.put(parameter.getKey(), parameter);
+        final Object key = parameter.getKey();
+        List<SearchParameter> params = parameters.get(key);
+        if (params == null) {
+            params = Collections.synchronizedList(new ArrayList<SearchParameter>());
+            parameters.put(key, params);
+        }
+
+        if (!params.contains(parameter)) {
+            params.add(parameter);
+        }
     }
 
     /**
@@ -305,18 +312,10 @@ public class Query implements Mapable, java.io.Serializable {
         if (k != null) {
             keys.addAll(k);
         }
-
-        // da nur union nicht notwendig
-// for(int i =0 ;i< subQueries.size();i++)
-// {
-// ((Query)subQueries.get(i)).getParameterKeys(keys);
-//
-//
-// }
-
     }
+
     /**
-     * ////////////////////////////////////////////////// All necessary parameters set.
+     * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
@@ -357,7 +356,7 @@ public class Query implements Mapable, java.io.Serializable {
     }
 
     /**
-     * /////////////////////////////////////////////////////////////////////////////////
+     * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
@@ -433,7 +432,7 @@ public class Query implements Mapable, java.io.Serializable {
      *
      * @param  parameters  New value of property parameters.
      */
-    public void setParameters(final MultiMap parameters) {
+    public void setParameters(final Map<Object, List<SearchParameter>> parameters) {
         this.parameters = parameters;
     }
 
@@ -475,14 +474,7 @@ public class Query implements Mapable, java.io.Serializable {
     }
 
     /**
-     * public String[] getPersistenceStatement(String sqlstatement) { String[] persistenceStatements = new
-     * String[parameters.size()+1]; persistenceStatements[0] = "insert into cs_query values
-     * ("+qid.queryId+","+qid.name+","+qid.description+","+sqlstatement+","+resultType+","+isUpdate+","+isRoot+","+isUnionQuery+");\n";
-     * Iterator iter = parameters.values().iterator(); while(iter.hasNext()) { SearchParameter ref=null;
-     * ref=(SearchParameter)getParameter(iter.next()); // type_id int type=0; //param_key String key =
-     * ref.getKey().toString(); //descr String description =ref.getDescription(); //is_query_result boolean
-     * isQueryResult = ref.isQueryResult(); //query_position int position = ref.getQueryPosition(); } String
-     * paramterStmnt = "insert into cs_query_parameter values(?+","+);"; return persistenceStatements; }.
+     * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */

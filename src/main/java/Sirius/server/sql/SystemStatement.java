@@ -5,17 +5,15 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * SystemStatement.java
- *
- * Created on 21. November 2003, 18:19
- */
 package Sirius.server.sql;
-import Sirius.server.search.searchparameter.*;
 
-import Sirius.util.collections.MultiMap;
+import Sirius.server.search.searchparameter.SearchParameter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 /**
  * DOCUMENT ME!
  *
@@ -27,8 +25,7 @@ public class SystemStatement {
     //~ Instance fields --------------------------------------------------------
 
     /** parameters for this level of the query. */
-    protected MultiMap parameters;
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
+    private final Map<Object, List<SearchParameter>> parameters;
 
     private boolean root;
     private int id;
@@ -37,7 +34,6 @@ public class SystemStatement {
     private boolean isBatch;
     private boolean isUnion;
 
-    //
     private String statement;
 
     private int result;
@@ -51,7 +47,7 @@ public class SystemStatement {
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * -----------------------------------------------------------------------------------
+     * Creates a new SystemStatement object.
      *
      * @param  root       DOCUMENT ME!
      * @param  id         DOCUMENT ME!
@@ -72,13 +68,13 @@ public class SystemStatement {
         this.isUpdate = isUpdate;
         this.statement = statement;
         this.result = result;
-        this.parameters = new MultiMap();
+        this.parameters = new HashMap<Object, List<SearchParameter>>();
         this.isBatch = false;
         this.conjunction = false;
     }
 
     /**
-     * -----------------------------------------------------------------------------------
+     * Creates a new SystemStatement object.
      *
      * @param  root         DOCUMENT ME!
      * @param  id           DOCUMENT ME!
@@ -101,8 +97,6 @@ public class SystemStatement {
         this.description = description;
         this.isBatch = isBatch;
     }
-
-    // -------------------------------------------------------------------------------------
 
     //~ Methods ----------------------------------------------------------------
 
@@ -138,7 +132,7 @@ public class SystemStatement {
      *
      * @return  DOCUMENT ME!
      */
-    public MultiMap getParameters() {
+    public Map<Object, List<SearchParameter>> getParameters() {
         return parameters;
     }
 
@@ -151,15 +145,22 @@ public class SystemStatement {
         return statement;
     }
 
-    // public boolean toBePrepared(){return toBePrepared;}
-
     /**
      * DOCUMENT ME!
      *
      * @param  p  DOCUMENT ME!
      */
     public void addParameter(final SearchParameter p) {
-        parameters.put(p.getKey(), p);
+        final Object key = p.getKey();
+        List<SearchParameter> params = parameters.get(key);
+        if (params == null) {
+            params = Collections.synchronizedList(new ArrayList<SearchParameter>());
+            parameters.put(key, params);
+        }
+
+        if (!params.contains(p)) {
+            params.add(p);
+        }
     }
 
     /**
@@ -259,9 +260,7 @@ public class SystemStatement {
      * @param  conjunction  DOCUMENT ME!
      */
     public void setConjunction(final boolean conjunction) {
-        // logger.debug("vor dem setzen setConj gerufen neu ="+conjunction  );
         this.conjunction = conjunction;
-        // logger.debug(" nach dem setzensetConj gerufen neu ="+conjunction );
     }
 
     /**
@@ -281,4 +280,4 @@ public class SystemStatement {
     public void setSearch(final boolean search) {
         this.search = search;
     }
-} // end of class SystemStatement
+}
