@@ -15,9 +15,13 @@ import org.apache.log4j.Logger;
 
 import java.io.Serializable;
 
-import de.cismet.tools.CurrentStackTrace;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import de.cismet.tools.collections.MultiMap;
+import de.cismet.commons.utils.StackUtils;
 
 /**
  * Bei der Intstanzierung eines PermissionHolders erlaubt dieser zunaechst jeglichen Zugriff (hasPermission ist immer
@@ -30,8 +34,7 @@ public final class PermissionHolder implements Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final transient Logger LOG = Logger.getLogger(
-            PermissionHolder.class);
+    private static final transient Logger LOG = Logger.getLogger(PermissionHolder.class);
 
     public static final int READ = 0;
     public static final int WRITE = 1;
@@ -41,7 +44,7 @@ public final class PermissionHolder implements Serializable {
     //~ Instance fields --------------------------------------------------------
 
     /** usergroup maps visible yes/no. */
-    private final MultiMap permissions;
+    private final Map<String, LinkedHashSet<Permission>> permissions;
     private Policy policy;
 
     //~ Constructors -----------------------------------------------------------
@@ -53,14 +56,14 @@ public final class PermissionHolder implements Serializable {
      */
     public PermissionHolder(final Policy policy) {
         this.policy = policy;
-        permissions = new MultiMap();
+        permissions = new HashMap<String, LinkedHashSet<Permission>>();
     }
 
     /**
      * Creates a new PermissionHolder object.
      */
     private PermissionHolder() {
-        permissions = new MultiMap();
+        this(null);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -71,7 +74,7 @@ public final class PermissionHolder implements Serializable {
      * @param  m  DOCUMENT ME!
      */
     public void addPermission(final Mapable m) {
-        permissions.put(m.getKey().toString(), READPERMISSION);
+        addPermission(m.getKey(), READPERMISSION);
     }
 
     /**
@@ -80,7 +83,12 @@ public final class PermissionHolder implements Serializable {
      * @param  perms  DOCUMENT ME!
      */
     public void addPermissions(final PermissionHolder perms) {
-        this.permissions.putAll(perms.permissions);
+        for (final Entry<String, LinkedHashSet<Permission>> entry : perms.permissions.entrySet()) {
+            final String key = entry.getKey();
+            for (final Permission perm : entry.getValue()) {
+                addPermission(key, perm);
+            }
+        }
     }
 
     /**
@@ -90,7 +98,7 @@ public final class PermissionHolder implements Serializable {
      * @param  perm  DOCUMENT ME!
      */
     public void addPermission(final UserGroup ug, final Permission perm) {
-        addPermission(ug.getKey().toString(), perm);
+        addPermission(ug.getKey(), perm);
     }
 
     /**
@@ -100,17 +108,22 @@ public final class PermissionHolder implements Serializable {
      * @param  perm  DOCUMENT ME!
      */
     public void addPermission(final Mapable m, final Permission perm) {
-        addPermission(m.getKey().toString(), perm);
+        addPermission(m.getKey(), perm);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param  key   DOCUMENT ME!
-     * @param  perm  DOCUMENT ME!
+     * @param  keyObj  DOCUMENT ME!
+     * @param  perm    DOCUMENT ME!
      */
-    public void addPermission(final Object key, final Permission perm) {
-        permissions.put(key.toString(), perm);
+    public void addPermission(final Object keyObj, final Permission perm) {
+        final String key = keyObj.toString();
+        if (!permissions.containsKey(key)) {
+            permissions.put(key, new LinkedHashSet<Permission>());
+        }
+
+        permissions.get(key).add(perm);
     }
 
     /**
@@ -122,11 +135,10 @@ public final class PermissionHolder implements Serializable {
      */
     public boolean hasReadPermission(final UserGroup ug) {
         try {
-            return hasPermission(ug.getKey().toString(), READPERMISSION);
+            return hasPermission(ug.getKey(), READPERMISSION);
         } catch (final Exception e) {
-            LOG.error("error in hasReadPermission (ug = " // NOI18N
-                        + ug
-                        + "). Will return false.", e); // NOI18N
+            LOG.error("error in hasReadPermission (ug = " + ug + "). Will return false.", e); // NOI18N
+
             return false;
         }
     }
@@ -140,11 +152,10 @@ public final class PermissionHolder implements Serializable {
      */
     public boolean hasWritePermission(final UserGroup ug) {
         try {
-            return hasPermission(ug.getKey().toString(), WRITEPERMISSION);
+            return hasPermission(ug.getKey(), WRITEPERMISSION);
         } catch (final Exception e) {
-            LOG.error("Error in hasWritePermission (ug = " // NOI18N
-                        + ug
-                        + "). Will return false.", e); // NOI18N
+            LOG.error("Error in hasWritePermission (ug = " + ug + "). Will return false.", e); // NOI18N
+
             return false;
         }
     }
@@ -163,9 +174,10 @@ public final class PermissionHolder implements Serializable {
                 "No Policy was set. Set PARANOID Policy. "           // NOI18N
                         + "Attention. This could lead to something " // NOI18N
                         + "that you not want.",                      // NOI18N
-                new CurrentStackTrace());
+                StackUtils.getDebuggingThrowable());
             setPolicy(Policy.createParanoidPolicy());
         }
+
         if (containsPermission(key, perm)) {
             return !getPolicy().getDecisionIfNoEntryIsFound(perm);
         } else {
@@ -200,6 +212,8 @@ public final class PermissionHolder implements Serializable {
      * @return  DOCUMENT ME!
      */
     private boolean containsPermission(final Object key, final Permission perm) {
-        return permissions.contains(key, perm);
+        final Collection c = permissions.get(key.toString());
+
+        return (c == null) ? false : c.contains(perm);
     }
 }
