@@ -107,3 +107,9 @@ JPresso is a powerful ETL-Tool (Extraction, Transformation and Load Tool) for th
 Figure 11: JPresso
 
 An application, based on cids components and tools described in this document, already fulfils most of the technical requirements of a generic geospatial infrastructure, open source components, web-based technologies, user-friendly graphical interfaces, security and access control mechanisms, and scalability. It represents a sound basis for the implementation core functionalities of complex geospatial informations systems like resource discovery, sharing and publishing of information and automation of tasks. 
+
+
+License
+=======
+
+cids-server is distributed under [LGPLv3](https://github.com/cismet/cids-server/blob/dev/LICENSE)
