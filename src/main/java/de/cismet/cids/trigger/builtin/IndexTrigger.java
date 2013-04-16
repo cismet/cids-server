@@ -171,6 +171,8 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void beforeDelete(final CidsBean cidsBean, final User user) {
+        //The object is deleted from the database after afterDelete trigger, so the 
+        //dependencies must be determined in the beforeDelete trigger.
         try {
             final Connection connection = getDbServer().getConnectionPool().getConnection();
             final List<CidsBeanInfo> beanInfo = getDependentBeans(connection, cidsBean.getMetaObject());
@@ -187,6 +189,8 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void beforeUpdate(final CidsBean cidsBean, final User user) {
+        //In the afterUpdate trigger, the object possibly references to other objects than now, so
+        //the dependend objects must be also determined in the beforeUpdate trigger
         try {
             final Connection connection = getDbServer().getConnectionPool().getConnection();
             final List<CidsBeanInfo> beanInfo = getDependentBeans(connection, cidsBean.getMetaObject());
@@ -215,12 +219,12 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     }
 
     /**
-     * DOCUMENT ME!
+     * Determines all cids beans, the given meta object references to within an one to many relation.
      *
-     * @param   connection  DOCUMENT ME!
-     * @param   mo          DOCUMENT ME!
+     * @param   connection  The connection to the database
+     * @param   mo          the meta object to check
      *
-     * @return  all master
+     * @return  all master objects of the given meta object
      *
      * @throws  SQLException              DOCUMENT ME!
      * @throws  IllegalArgumentException  DOCUMENT ME!
@@ -228,6 +232,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     private List<CidsBeanInfo> getDependentBeans(final Connection connection, final MetaObject mo)
             throws SQLException {
         final List<CidsBeanInfo> dependentBeans = new ArrayList<CidsBeanInfo>();
+        
         if (mo == null) {
             throw new IllegalArgumentException("MetaObject must not be null"); // NOI18N
         } else if (mo.isDummy()) {
@@ -631,34 +636,23 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     }
 
     /**
-     * DOCUMENT ME!
+     * Updates the table cs_attr_object_derived
      *
-     * @param   connection  DOCUMENT ME!
-     * @param   mo          DOCUMENT ME!
+     * @param   connection  the connection to the database
+     * @param   mo          the object that should be updated
      *
      * @throws  SQLException  DOCUMENT ME!
      */
     private void updateDerivedIndex(final Connection connection, final MetaObject mo) throws SQLException {
-        final PreparedStatement psDeleteAttrMapDerive = connection.prepareStatement(DEL_DERIVE_ATTR_MAPPING);
-        final PreparedStatement psInsertAttrMapDerive = connection.prepareStatement(INS_DERIVE_ATTR_MAPPING);
-
-        psDeleteAttrMapDerive.setInt(1, mo.getClassID());
-        psDeleteAttrMapDerive.setInt(2, mo.getID());
-        psInsertAttrMapDerive.setInt(1, mo.getClassID());
-        psInsertAttrMapDerive.setInt(2, mo.getID());
-        final int del = psDeleteAttrMapDerive.executeUpdate();
-        final int ins = psInsertAttrMapDerive.executeUpdate();
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("cs_attr_object_derived: updated. deleted:" + del + ", inserted:" + ins); // NOI18N
-        }
+        updateDerivedIndex(connection, mo.getClassID(), mo.getID());
     }
 
     /**
-     * DOCUMENT ME!
+     * Updates the table cs_attr_object_derived
      *
-     * @param   connection  DOCUMENT ME!
-     * @param   classId     mo DOCUMENT ME!
-     * @param   objectId    DOCUMENT ME!
+     * @param   connection  the connection to the database
+     * @param   classId     the class id of the oject that should be updated
+     * @param   objectId    the object id of the oject that should be updated
      *
      * @throws  SQLException  DOCUMENT ME!
      */
@@ -765,6 +759,8 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 @Override
                 public void run() {
                     try {
+                        // Some times, the master object is not updates, but only the detail objects.
+                        // In this case, the index of the master object should be also updated.
                         final Connection connection = getDbServer().getConnectionPool().getConnection();
                         deleteIndex(connection, cidsBean.getMetaObject());
                         insertIndex(connection, cidsBean.getMetaObject());
@@ -783,9 +779,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param  user  DOCUMENT ME!
+     * Updates the index of the master objects (master in an one to many relation)
      */
     private void updateAllDependentBeans() {
         final List<CidsBeanInfo> beansToUpdateTmp = new ArrayList<CidsBeanInfo>(beansToUpdate);
