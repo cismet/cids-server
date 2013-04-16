@@ -105,6 +105,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     //~ Instance fields --------------------------------------------------------
 
+    private List<CidsBean> beansToCheck = new ArrayList<CidsBean>();
     private List<CidsBeanInfo> beansToUpdate = new ArrayList<CidsBeanInfo>();
 
     //~ Methods ----------------------------------------------------------------
@@ -128,6 +129,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void afterInsert(final CidsBean cidsBean, final User user) {
+        beansToCheck.add(cidsBean);
         de.cismet.tools.CismetThreadPool.executeSequentially(new Runnable() {
 
                 @Override
@@ -135,11 +137,6 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     try {
                         final Connection connection = getDbServer().getConnectionPool().getConnection();
                         insertIndex(connection, cidsBean.getMetaObject());
-                        final List<CidsBeanInfo> beanInfo = getDependentBeans(
-                                connection,
-                                cidsBean.getMetaObject(),
-                                user);
-                        addAll(beansToUpdate, beanInfo);
                     } catch (SQLException sQLException) {
                         log.error("Error during insertIndex " + cidsBean.getMOString(), sQLException);
                         severeIncidence.error("Error during insertIndex " + cidsBean.getMOString(), sQLException);
@@ -150,6 +147,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void afterUpdate(final CidsBean cidsBean, final User user) {
+        beansToCheck.add(cidsBean);
         // The triggers, which update the index should be executed sequentially, because
         // during the execution of the deleteMetaObject method, the updateMetaObject method can
         // be executed and this leads to a race condition between the
@@ -162,11 +160,6 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                         final Connection connection = getDbServer().getConnectionPool().getConnection();
                         deleteIndex(connection, cidsBean.getMetaObject());
                         insertIndex(connection, cidsBean.getMetaObject());
-                        final List<CidsBeanInfo> beanInfo = getDependentBeans(
-                                connection,
-                                cidsBean.getMetaObject(),
-                                user);
-                        addAll(beansToUpdate, beanInfo);
 //                        updateIndex(connection, cidsBean.getMetaObject());
                     } catch (SQLException sQLException) {
                         log.error("Error during updateIndex " + cidsBean.getMOString(), sQLException);
@@ -180,7 +173,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     public void beforeDelete(final CidsBean cidsBean, final User user) {
         try {
             final Connection connection = getDbServer().getConnectionPool().getConnection();
-            final List<CidsBeanInfo> beanInfo = getDependentBeans(connection, cidsBean.getMetaObject(), user);
+            final List<CidsBeanInfo> beanInfo = getDependentBeans(connection, cidsBean.getMetaObject());
             addAll(beansToUpdate, beanInfo);
         } catch (SQLException sQLException) {
             log.error("Error during beforeDelete " + cidsBean.getMOString(), sQLException);
@@ -194,6 +187,14 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void beforeUpdate(final CidsBean cidsBean, final User user) {
+        try {
+            final Connection connection = getDbServer().getConnectionPool().getConnection();
+            final List<CidsBeanInfo> beanInfo = getDependentBeans(connection, cidsBean.getMetaObject());
+            addAll(beansToUpdate, beanInfo);
+        } catch (SQLException sQLException) {
+            log.error("Error during beforeDelete " + cidsBean.getMOString(), sQLException);
+            severeIncidence.error("Error during beforeDelete " + cidsBean.getMOString(), sQLException);
+        }
     }
 
     @Override
@@ -218,14 +219,13 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
      *
      * @param   connection  DOCUMENT ME!
      * @param   mo          DOCUMENT ME!
-     * @param   usr         DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return  all master
      *
      * @throws  SQLException              DOCUMENT ME!
      * @throws  IllegalArgumentException  DOCUMENT ME!
      */
-    private List<CidsBeanInfo> getDependentBeans(final Connection connection, final MetaObject mo, final User usr)
+    private List<CidsBeanInfo> getDependentBeans(final Connection connection, final MetaObject mo)
             throws SQLException {
         final List<CidsBeanInfo> dependentBeans = new ArrayList<CidsBeanInfo>();
         if (mo == null) {
@@ -241,7 +241,6 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
         final String query = "SELECT class_id FROM cs_attr WHERE foreign_key_references_to = "
                     + ((-1) * mo.getClassID());
         final ResultSet masterClasses = connection.createStatement().executeQuery(query);
-        final MetaObject bean = null;
 
         while (masterClasses.next()) {
             final int classId = masterClasses.getInt(1);
@@ -756,7 +755,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     }
                 }
             });
-        updateAllDependentBeans(user);
+        updateAllDependentBeans();
     }
 
     @Override
@@ -775,12 +774,12 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     }
                 }
             });
-        updateAllDependentBeans(user);
+        updateAllDependentBeans();
     }
 
     @Override
     public void afterCommittedDelete(final CidsBean cidsBean, final User user) {
-        updateAllDependentBeans(user);
+        updateAllDependentBeans();
     }
 
     /**
@@ -788,9 +787,11 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
      *
      * @param  user  DOCUMENT ME!
      */
-    private void updateAllDependentBeans(final User user) {
-        final List<CidsBeanInfo> beans = new ArrayList<CidsBeanInfo>(beansToUpdate);
+    private void updateAllDependentBeans() {
+        final List<CidsBeanInfo> beansToUpdateTmp = new ArrayList<CidsBeanInfo>(beansToUpdate);
+        final List<CidsBean> beansToCheckTmp = new ArrayList<CidsBean>(beansToCheck);
         beansToUpdate.clear();
+        beansToCheck.clear();
 
         de.cismet.tools.CismetThreadPool.executeSequentially(new Runnable() {
 
@@ -798,7 +799,14 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 public void run() {
                     try {
                         final Connection connection = getDbServer().getConnectionPool().getConnection();
-                        for (final CidsBeanInfo beanInfo : beans) {
+                        for (final CidsBean bean : beansToCheckTmp) {
+                            final List<CidsBeanInfo> beanInfo = getDependentBeans(
+                                    connection,
+                                    bean.getMetaObject());
+                            addAll(beansToUpdateTmp, beanInfo);
+                        }
+
+                        for (final CidsBeanInfo beanInfo : beansToUpdateTmp) {
                             connection.createStatement()
                                     .execute(
                                         "select reindexpure("
@@ -817,10 +825,10 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     }
 
     /**
-     * DOCUMENT ME!
+     * add all elements from to list toAdd to the list base, if they are not already contained in the list base.
      *
-     * @param  base   DOCUMENT ME!
-     * @param  toAdd  DOCUMENT ME!
+     * @param  base   the list to fill
+     * @param  toAdd  the elements to add
      */
     private void addAll(final List<CidsBeanInfo> base, final List<CidsBeanInfo> toAdd) {
         for (final CidsBeanInfo tmp : toAdd) {
@@ -833,7 +841,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     //~ Inner Classes ----------------------------------------------------------
 
     /**
-     * DOCUMENT ME!
+     * Contains all information, which are required to identify a cids bean.
      *
      * @version  $Revision$, $Date$
      */
