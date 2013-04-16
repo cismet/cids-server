@@ -13,6 +13,8 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.sql.DBConnection;
 
+import org.apache.commons.beanutils.BeanAccessLanguageException;
+
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -21,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.cismet.cids.dynamics.CidsBean;
@@ -28,8 +31,6 @@ import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.trigger.AbstractDBAwareCidsTrigger;
 import de.cismet.cids.trigger.CidsTrigger;
 import de.cismet.cids.trigger.CidsTriggerKey;
-import java.util.ArrayList;
-import org.apache.commons.beanutils.BeanAccessLanguageException;
 
 /**
  * DOCUMENT ME!
@@ -101,6 +102,9 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 + "                aid "
                 + "FROM            derived_index "
                 + "ORDER BY        1,2,3,4 limit 1000000000;";
+
+    //~ Instance fields --------------------------------------------------------
+
     private List<CidsBeanInfo> beansToUpdate = new ArrayList<CidsBeanInfo>();
 
     //~ Methods ----------------------------------------------------------------
@@ -131,7 +135,10 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     try {
                         final Connection connection = getDbServer().getConnectionPool().getConnection();
                         insertIndex(connection, cidsBean.getMetaObject());
-                        List<CidsBeanInfo> beanInfo = getDependentBeans(connection, cidsBean.getMetaObject(), user);
+                        final List<CidsBeanInfo> beanInfo = getDependentBeans(
+                                connection,
+                                cidsBean.getMetaObject(),
+                                user);
                         addAll(beansToUpdate, beanInfo);
                     } catch (SQLException sQLException) {
                         log.error("Error during insertIndex " + cidsBean.getMOString(), sQLException);
@@ -155,7 +162,10 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                         final Connection connection = getDbServer().getConnectionPool().getConnection();
                         deleteIndex(connection, cidsBean.getMetaObject());
                         insertIndex(connection, cidsBean.getMetaObject());
-                        List<CidsBeanInfo> beanInfo = getDependentBeans(connection, cidsBean.getMetaObject(), user);
+                        final List<CidsBeanInfo> beanInfo = getDependentBeans(
+                                connection,
+                                cidsBean.getMetaObject(),
+                                user);
                         addAll(beansToUpdate, beanInfo);
 //                        updateIndex(connection, cidsBean.getMetaObject());
                     } catch (SQLException sQLException) {
@@ -170,7 +180,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     public void beforeDelete(final CidsBean cidsBean, final User user) {
         try {
             final Connection connection = getDbServer().getConnectionPool().getConnection();
-            List<CidsBeanInfo> beanInfo = getDependentBeans(connection, cidsBean.getMetaObject(), user);
+            final List<CidsBeanInfo> beanInfo = getDependentBeans(connection, cidsBean.getMetaObject(), user);
             addAll(beansToUpdate, beanInfo);
         } catch (SQLException sQLException) {
             log.error("Error during beforeDelete " + cidsBean.getMOString(), sQLException);
@@ -203,9 +213,21 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
         return -1;
     }
 
-    
-    private List<CidsBeanInfo> getDependentBeans(final Connection connection, final MetaObject mo, User usr) throws SQLException {
-        List<CidsBeanInfo> dependentBeans = new ArrayList<CidsBeanInfo>();
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   connection  DOCUMENT ME!
+     * @param   mo          DOCUMENT ME!
+     * @param   usr         DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException              DOCUMENT ME!
+     * @throws  IllegalArgumentException  DOCUMENT ME!
+     */
+    private List<CidsBeanInfo> getDependentBeans(final Connection connection, final MetaObject mo, final User usr)
+            throws SQLException {
+        final List<CidsBeanInfo> dependentBeans = new ArrayList<CidsBeanInfo>();
         if (mo == null) {
             throw new IllegalArgumentException("MetaObject must not be null"); // NOI18N
         } else if (mo.isDummy()) {
@@ -214,41 +236,43 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 LOG.debug("insert index for dummy won't be done"); // NOI18N
             }
             return dependentBeans;
-        } 
-        
-        String query = "SELECT class_id FROM cs_attr WHERE foreign_key_references_to = " 
-                + ((-1) * mo.getClassID());
+        }
+
+        final String query = "SELECT class_id FROM cs_attr WHERE foreign_key_references_to = "
+                    + ((-1) * mo.getClassID());
         final ResultSet masterClasses = connection.createStatement().executeQuery(query);
-        MetaObject bean = null;
+        final MetaObject bean = null;
 
         while (masterClasses.next()) {
-            int classId = masterClasses.getInt(1);
-            
-            String fieldQuery = "select field_name from cs_attr where class_id = " + mo.getClassID() + " and foreign_key_references_to = " + classId;
-            ResultSet field = connection.createStatement().executeQuery(fieldQuery);
-            
+            final int classId = masterClasses.getInt(1);
+
+            final String fieldQuery = "select field_name from cs_attr where class_id = " + mo.getClassID()
+                        + " and foreign_key_references_to = " + classId;
+            final ResultSet field = connection.createStatement().executeQuery(fieldQuery);
+
             if (field.next()) {
-                String fieldName = field.getString(1);
-                String idQuery = "select " + fieldName + " from " + mo.getMetaClass().getTableName() + " where id = " + mo.getID();
-                ResultSet oid = connection.createStatement().executeQuery(idQuery);
-                
+                final String fieldName = field.getString(1);
+                final String idQuery = "select " + fieldName + " from " + mo.getMetaClass().getTableName()
+                            + " where id = " + mo.getID();
+                final ResultSet oid = connection.createStatement().executeQuery(idQuery);
+
                 if (oid.next()) {
-                    int id = oid.getInt(1);
-                    CidsBeanInfo beanInfo = new CidsBeanInfo();
+                    final int id = oid.getInt(1);
+                    final CidsBeanInfo beanInfo = new CidsBeanInfo();
                     beanInfo.setObjectId(id);
                     beanInfo.setClassId(classId);
                     dependentBeans.add(beanInfo);
                 }
-                
+
                 oid.close();
             }
-            
+
             field.close();
         }
         masterClasses.close();
         return dependentBeans;
     }
-    
+
     /**
      * mscholl: Inserts the index in cs_attr_string and cs_all_attr_mapping for the given metaobject. If the metaobject
      * does not contain a metaclass it is skipped.
@@ -289,13 +313,14 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     // value
                     if (mai.isForeignKey()) {
                         if (mai.getForeignKeyClassId() < 0) {
-                            String backreferenceQuery = "SELECT field_name FROM cs_attr WHERE class_id = " 
-                                    + Math.abs(mai.getForeignKeyClassId()) + " AND foreign_key_references_to = " 
-                                    + mai.getClassId() + " LIMIT 1"; 
-                            final ResultSet backreferenceRs = connection.createStatement().executeQuery(backreferenceQuery);
-                            
-                            if ( backreferenceRs.next()) {
-                                String backreferenceField = backreferenceRs.getString(1);
+                            final String backreferenceQuery = "SELECT field_name FROM cs_attr WHERE class_id = "
+                                        + Math.abs(mai.getForeignKeyClassId()) + " AND foreign_key_references_to = "
+                                        + mai.getClassId() + " LIMIT 1";
+                            final ResultSet backreferenceRs = connection.createStatement()
+                                        .executeQuery(backreferenceQuery);
+
+                            if (backreferenceRs.next()) {
+                                final String backreferenceField = backreferenceRs.getString(1);
                                 backreferenceRs.close();
                                 String query = "SELECT table_name FROM cs_class where id = "
                                             + Math.abs(attr.getMai().getForeignKeyClassId());
@@ -316,7 +341,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                                         }
                                         psAttrMap.setInt(1, mo.getClassID());
                                         psAttrMap.setInt(2, mo.getID());
-                                        psAttrMap.setInt(3, Math.abs( mai.getForeignKeyClassId() ));
+                                        psAttrMap.setInt(3, Math.abs(mai.getForeignKeyClassId()));
                                         psAttrMap.setInt(4, arrayList.getInt(1));
                                         psAttrMap.addBatch();
                                     }
@@ -628,16 +653,18 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
             LOG.debug("cs_attr_object_derived: updated. deleted:" + del + ", inserted:" + ins); // NOI18N
         }
     }
-    
+
     /**
      * DOCUMENT ME!
      *
      * @param   connection  DOCUMENT ME!
-     * @param   mo          DOCUMENT ME!
+     * @param   classId     mo DOCUMENT ME!
+     * @param   objectId    DOCUMENT ME!
      *
      * @throws  SQLException  DOCUMENT ME!
      */
-    private void updateDerivedIndex(final Connection connection, final int classId, int objectId) throws SQLException {
+    private void updateDerivedIndex(final Connection connection, final int classId, final int objectId)
+            throws SQLException {
         final PreparedStatement psDeleteAttrMapDerive = connection.prepareStatement(DEL_DERIVE_ATTR_MAPPING);
         final PreparedStatement psInsertAttrMapDerive = connection.prepareStatement(INS_DERIVE_ATTR_MAPPING);
 
@@ -729,7 +756,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     }
                 }
             });
-            updateAllDependentBeans(user);
+        updateAllDependentBeans(user);
     }
 
     @Override
@@ -747,7 +774,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                         severeIncidence.error("Error during updateIndex " + cidsBean.getMOString(), sQLException);
                     }
                 }
-            });        
+            });
         updateAllDependentBeans(user);
     }
 
@@ -755,19 +782,30 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     public void afterCommittedDelete(final CidsBean cidsBean, final User user) {
         updateAllDependentBeans(user);
     }
-    
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  user  DOCUMENT ME!
+     */
     private void updateAllDependentBeans(final User user) {
         final List<CidsBeanInfo> beans = new ArrayList<CidsBeanInfo>(beansToUpdate);
         beansToUpdate.clear();
-        
+
         de.cismet.tools.CismetThreadPool.executeSequentially(new Runnable() {
 
                 @Override
                 public void run() {
                     try {
                         final Connection connection = getDbServer().getConnectionPool().getConnection();
-                        for (CidsBeanInfo beanInfo : beans) {
-                            connection.createStatement().execute("select reindexpure(" + beanInfo.getClassId() + "," + beanInfo.getObjectId() + ");");
+                        for (final CidsBeanInfo beanInfo : beans) {
+                            connection.createStatement()
+                                    .execute(
+                                        "select reindexpure("
+                                        + beanInfo.getClassId()
+                                        + ","
+                                        + beanInfo.getObjectId()
+                                        + ");");
                             updateDerivedIndex(connection, beanInfo.getClassId(), beanInfo.getObjectId());
                         }
                     } catch (SQLException sQLException) {
@@ -777,51 +815,77 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 }
             });
     }
-    
-    private void addAll(List<CidsBeanInfo> base, List<CidsBeanInfo> toAdd) {
-        for (CidsBeanInfo tmp : toAdd) {
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  base   DOCUMENT ME!
+     * @param  toAdd  DOCUMENT ME!
+     */
+    private void addAll(final List<CidsBeanInfo> base, final List<CidsBeanInfo> toAdd) {
+        for (final CidsBeanInfo tmp : toAdd) {
             if (!base.contains(tmp)) {
                 base.add(tmp);
             }
         }
     }
-    
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
     private class CidsBeanInfo {
+
+        //~ Instance fields ----------------------------------------------------
+
         private int objectId;
         private int classId;
 
+        //~ Methods ------------------------------------------------------------
+
         /**
-         * @return the objectId
+         * DOCUMENT ME!
+         *
+         * @return  the objectId
          */
         public int getObjectId() {
             return objectId;
         }
 
         /**
-         * @param objectId the objectId to set
+         * DOCUMENT ME!
+         *
+         * @param  objectId  the objectId to set
          */
-        public void setObjectId(int objectId) {
+        public void setObjectId(final int objectId) {
             this.objectId = objectId;
         }
 
         /**
-         * @return the classId
+         * DOCUMENT ME!
+         *
+         * @return  the classId
          */
         public int getClassId() {
             return classId;
         }
 
         /**
-         * @param classId the classId to set
+         * DOCUMENT ME!
+         *
+         * @param  classId  the classId to set
          */
-        public void setClassId(int classId) {
+        public void setClassId(final int classId) {
             this.classId = classId;
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(final Object obj) {
             if (obj instanceof CidsBeanInfo) {
-                return ((CidsBeanInfo)obj).classId == this.classId && ((CidsBeanInfo)obj).objectId == this.objectId;
+                return (((CidsBeanInfo)obj).classId == this.classId) && (((CidsBeanInfo)obj).objectId == this.objectId);
             } else {
                 return false;
             }
@@ -830,8 +894,8 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 37 * hash + this.objectId;
-            hash = 37 * hash + this.classId;
+            hash = (37 * hash) + this.objectId;
+            hash = (37 * hash) + this.classId;
             return hash;
         }
     }
