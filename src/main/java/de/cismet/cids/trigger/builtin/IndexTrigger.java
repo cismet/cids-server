@@ -19,6 +19,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -107,6 +108,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     private List<CidsBean> beansToCheck = new ArrayList<CidsBean>();
     private List<CidsBeanInfo> beansToUpdate = new ArrayList<CidsBeanInfo>();
+    private Connection con = null;
 
     //~ Methods ----------------------------------------------------------------
 
@@ -117,7 +119,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 @Override
                 public void run() {
                     try {
-                        final Connection connection = getDbServer().getConnectionPool().getConnection();
+                        final Connection connection = getConnection();
                         deleteIndex(connection, cidsBean.getMetaObject());
                     } catch (SQLException sQLException) {
                         log.error("Error during deleteIndex " + cidsBean.getMOString(), sQLException);
@@ -135,7 +137,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 @Override
                 public void run() {
                     try {
-                        final Connection connection = getDbServer().getConnectionPool().getConnection();
+                        final Connection connection = getConnection();
                         insertIndex(connection, cidsBean.getMetaObject());
                     } catch (SQLException sQLException) {
                         log.error("Error during insertIndex " + cidsBean.getMOString(), sQLException);
@@ -157,7 +159,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 @Override
                 public void run() {
                     try {
-                        final Connection connection = getDbServer().getConnectionPool().getConnection();
+                        final Connection connection = getConnection();
                         deleteIndex(connection, cidsBean.getMetaObject());
                         insertIndex(connection, cidsBean.getMetaObject());
 //                        updateIndex(connection, cidsBean.getMetaObject());
@@ -171,10 +173,10 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void beforeDelete(final CidsBean cidsBean, final User user) {
-        //The object is deleted from the database after afterDelete trigger, so the 
-        //dependencies must be determined in the beforeDelete trigger.
+        // The object is deleted from the database after afterDelete trigger, so the
+        // dependencies must be determined in the beforeDelete trigger.
         try {
-            final Connection connection = getDbServer().getConnectionPool().getConnection();
+            final Connection connection = getConnection();
             final List<CidsBeanInfo> beanInfo = getDependentBeans(connection, cidsBean.getMetaObject());
             addAll(beansToUpdate, beanInfo);
         } catch (SQLException sQLException) {
@@ -189,10 +191,10 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void beforeUpdate(final CidsBean cidsBean, final User user) {
-        //In the afterUpdate trigger, the object possibly references to other objects than now, so
-        //the dependend objects must be also determined in the beforeUpdate trigger
+        // In the afterUpdate trigger, the object possibly references to other objects than now, so
+        // the dependend objects must be also determined in the beforeUpdate trigger
         try {
-            final Connection connection = getDbServer().getConnectionPool().getConnection();
+            final Connection connection = getConnection();
             final List<CidsBeanInfo> beanInfo = getDependentBeans(connection, cidsBean.getMetaObject());
             addAll(beansToUpdate, beanInfo);
         } catch (SQLException sQLException) {
@@ -229,10 +231,9 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
      * @throws  SQLException              DOCUMENT ME!
      * @throws  IllegalArgumentException  DOCUMENT ME!
      */
-    private List<CidsBeanInfo> getDependentBeans(final Connection connection, final MetaObject mo)
-            throws SQLException {
+    private List<CidsBeanInfo> getDependentBeans(final Connection connection, final MetaObject mo) throws SQLException {
         final List<CidsBeanInfo> dependentBeans = new ArrayList<CidsBeanInfo>();
-        
+
         if (mo == null) {
             throw new IllegalArgumentException("MetaObject must not be null"); // NOI18N
         } else if (mo.isDummy()) {
@@ -636,7 +637,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     }
 
     /**
-     * Updates the table cs_attr_object_derived
+     * Updates the table cs_attr_object_derived.
      *
      * @param   connection  the connection to the database
      * @param   mo          the object that should be updated
@@ -648,7 +649,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     }
 
     /**
-     * Updates the table cs_attr_object_derived
+     * Updates the table cs_attr_object_derived.
      *
      * @param   connection  the connection to the database
      * @param   classId     the class id of the oject that should be updated
@@ -741,7 +742,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 @Override
                 public void run() {
                     try {
-                        final Connection connection = getDbServer().getConnectionPool().getConnection();
+                        final Connection connection = getConnection();
                         insertIndex(connection, cidsBean.getMetaObject());
                     } catch (SQLException sQLException) {
                         log.error("Error during insertIndex " + cidsBean.getMOString(), sQLException);
@@ -761,7 +762,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     try {
                         // Some times, the master object is not updates, but only the detail objects.
                         // In this case, the index of the master object should be also updated.
-                        final Connection connection = getDbServer().getConnectionPool().getConnection();
+                        final Connection connection = getConnection();
                         deleteIndex(connection, cidsBean.getMetaObject());
                         insertIndex(connection, cidsBean.getMetaObject());
                     } catch (SQLException sQLException) {
@@ -779,7 +780,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     }
 
     /**
-     * Updates the index of the master objects (master in an one to many relation)
+     * Updates the index of the master objects (master in an one to many relation).
      */
     private void updateAllDependentBeans() {
         final List<CidsBeanInfo> beansToUpdateTmp = new ArrayList<CidsBeanInfo>(beansToUpdate);
@@ -792,7 +793,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 @Override
                 public void run() {
                     try {
-                        final Connection connection = getDbServer().getConnectionPool().getConnection();
+                        final Connection connection = getConnection();
                         for (final CidsBean bean : beansToCheckTmp) {
                             final List<CidsBeanInfo> beanInfo = getDependentBeans(
                                     connection,
@@ -813,9 +814,44 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     } catch (SQLException sQLException) {
                         log.error("Error during updateAllDependentBeans ", sQLException);
                         severeIncidence.error("Error during updateAllDependentBeans ", sQLException);
+                    } finally {
+                        releaseConnection();
                     }
                 }
             });
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    private synchronized Connection getConnection() throws SQLException {
+        if (con == null || con .isClosed()) {
+            if (con != null && con.isClosed()) {
+                getDbServer().getConnectionPool().releaseDbConnection(con);
+            }
+            
+            con = getDbServer().getConnectionPool().getConnection(true);
+        }
+
+        return con;
+    }
+    
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    private synchronized void releaseConnection() {
+        if (con != null) {
+            getDbServer().getConnectionPool().releaseDbConnection(con);
+            con = null;
+        }
     }
 
     /**
