@@ -18,8 +18,8 @@ import org.apache.log4j.Logger;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -142,9 +142,11 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
     public DBConnection getDBConnection() {
         return getDBConnection(false);
     }
-    
+
     /**
      * DOCUMENT ME!
+     *
+     * @param       longTerm  DOCUMENT ME!
      *
      * @return      DOCUMENT ME!
      *
@@ -152,11 +154,11 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
      *              Use a DBBackend instead. This method is subject to be refactored to private access.
      */
     @Deprecated
-    public DBConnection getDBConnection(boolean longTerm) {
+    public DBConnection getDBConnection(final boolean longTerm) {
         // ring
         DBConnection c = null;
         int attemps = 0;
-        
+
         synchronized (cons) {
             do {
                 final DBConnection old = cons.removeLast();
@@ -165,7 +167,7 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
                 if (old.isClosed()) {
                     c = new DBConnection(dbClassifier);
                 } else {
-                    if (attemps > cons.size() || !longTermConnectionList.contains(old)) {
+                    if ((attemps > cons.size()) || !longTermConnectionList.contains(old)) {
                         c = old;
                     } else {
                         cons.addFirst(old);
@@ -176,18 +178,23 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
             if (longTerm) {
                 longTermConnectionList.add(c);
             }
-            
+
             cons.addFirst(c);
         }
 
         return c;
     }
-    
-    public void releaseDbConnection(Connection connection) {
-        synchronized (cons) {
-            DBConnection dbConnection  = null;
 
-            for (DBConnection tmp : longTermConnectionList) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  connection  DOCUMENT ME!
+     */
+    public void releaseDbConnection(final Connection connection) {
+        synchronized (cons) {
+            DBConnection dbConnection = null;
+
+            for (final DBConnection tmp : longTermConnectionList) {
                 if (tmp.getConnection().equals(connection)) {
                     dbConnection = tmp;
                     break;
@@ -199,7 +206,7 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
             }
         }
     }
-    
+
     /**
      * DOCUMENT ME!
      */
@@ -229,7 +236,17 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
         return retriesOnError;
     }
 
-    public Connection getConnection(boolean longTerm) throws SQLException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   longTerm  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException     DOCUMENT ME!
+     * @throws  ServerExitError  DOCUMENT ME!
+     */
+    public Connection getConnection(final boolean longTerm) throws SQLException {
         Connection con = null;
         final int retryCount = 0;
 
@@ -255,8 +272,8 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
     @Override
     public Connection getConnection() throws SQLException {
         return getConnection(false);
-    }    
-    
+    }
+
     /**
      * Tries to find a connection that can execute the statement described by the given descriptor. The condition is
      * that the statement must not have a ResultSet open. This implementation cycles through the available connections

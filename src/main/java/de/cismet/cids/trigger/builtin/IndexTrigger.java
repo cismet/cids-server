@@ -829,23 +829,19 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
      * @throws  SQLException  DOCUMENT ME!
      */
     private synchronized Connection getConnection() throws SQLException {
-        if (con == null || con .isClosed()) {
-            if (con != null && con.isClosed()) {
+        if ((con == null) || con.isClosed()) {
+            if ((con != null) && con.isClosed()) {
                 getDbServer().getConnectionPool().releaseDbConnection(con);
             }
-            
+
             con = getDbServer().getConnectionPool().getConnection(true);
         }
 
         return con;
     }
-    
+
     /**
      * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  SQLException  DOCUMENT ME!
      */
     private synchronized void releaseConnection() {
         if (con != null) {
