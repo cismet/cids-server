@@ -307,6 +307,13 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
     void setStatus(int status);
 
     /**
+     * DOCUMENT ME!
+     *
+     * @param  status  DOCUMENT ME!
+     */
+    void forceStatus(int status);
+
+    /**
      * initializes all attributes with NULL.
      */
     void setValuesNull();

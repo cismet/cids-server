@@ -9,6 +9,10 @@ package Sirius.server.middleware.impls.proxy;
 
 import Sirius.server.Server;
 import Sirius.server.ServerType;
+import Sirius.server.localserver.attribute.ClassAttribute;
+import Sirius.server.middleware.interfaces.domainserver.MetaService;
+import Sirius.server.middleware.interfaces.domainserver.UserService;
+import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.naming.NameServer;
 import Sirius.server.newuser.User;
@@ -383,10 +387,92 @@ public class SearchServiceImpl {
         serverSearch.setUser(user);
         serverSearch.setActiveLocalServers(new HashMap(activeLocalServers));
         try {
-            return serverSearch.performServerSearch();
+            final Collection searchResults = serverSearch.performServerSearch();
+            addDynamicChildren(user, searchResults);
+            return searchResults;
         } catch (Exception e) {
             logger.error("Error in customSearch", e);
             throw new RemoteException("Error in customSearch", e);
+        }
+    }
+
+    /**
+     * Adds the dynamic children to the search results, if there are any assigned. Dynamic children will only be
+     * assigned to MetaObjectNode objects
+     *
+     * @param  user           the user
+     * @param  searchResults  the collection with the results of the search
+     */
+    private void addDynamicChildren(final User user, final Collection searchResults) {
+        // caches the dynamic children due to performance reasons
+        final HashMap<String, String> dynChildCache = new HashMap<String, String>();
+
+        for (final Object tmp : searchResults) {
+            if (tmp instanceof MetaObjectNode) {
+                final MetaObjectNode node = (MetaObjectNode)tmp;
+                final String key = node.getDomain() + ";" + node.getClassId();
+
+                if (dynChildCache.containsKey(key)) {
+                    // the dynamic children is contained in the cache
+                    String dynamicChildrenStatement = dynChildCache.get(key);
+
+                    if (dynamicChildrenStatement != null) {
+                        // replace the object id wildcard with the object id. This wildcard can be used within the
+                        // dynamic children sql statements
+                        dynamicChildrenStatement = dynamicChildrenStatement.replace((CharSequence)"<object_id>",
+                                (CharSequence)String.valueOf(node.getObjectId()));
+                        node.setDynamicChildrenStatement(dynamicChildrenStatement);
+                        node.setDynamic(true);
+                        node.setLeaf(node.getDynamicChildrenStatement() == null);
+                    }
+                } else {
+                    try {
+                        // the dynamic children is not contained in the cache
+                        final MetaClass cl = ((MetaService)activeLocalServers.get(node.getDomain())).getClass(
+                                user,
+                                node.getClassId());
+                        ClassAttribute dynChild = cl.getClassAttribute("searchHit_dynamicChildren");
+                        final ClassAttribute attribute = cl.getClassAttribute("searchHit_dynamicChildrenAttribute");
+                        boolean hasAttribute = false;
+                        String value = null;
+
+                        if (attribute != null) {
+                            value = ((UserService)activeLocalServers.get(node.getDomain())).getConfigAttr(
+                                    user,
+                                    (String)attribute.getValue());
+
+                            if (value != null) {
+                                hasAttribute = true;
+                            }
+                        }
+
+                        if (hasAttribute) {
+                            final ClassAttribute otherDynChild = cl.getClassAttribute(value);
+
+                            if (otherDynChild != null) {
+                                dynChild = otherDynChild;
+                            }
+                        }
+
+                        if ((dynChild != null) && ((attribute == null) || hasAttribute)) {
+                            String sqlText = (String)dynChild.getValue();
+                            dynChildCache.put(key, sqlText);
+
+                            // replace the object id wildcard with the object id. This wildcard can be used within the
+                            // dynamic children sql statements
+                            sqlText = sqlText.replace((CharSequence)"<object_id>",
+                                    (CharSequence)String.valueOf(node.getObjectId()));
+                            node.setDynamicChildrenStatement(sqlText);
+                            node.setDynamic(true);
+                            node.setLeaf(node.getDynamicChildrenStatement() == null);
+                        } else {
+                            dynChildCache.put(key, node.getDynamicChildrenStatement());
+                        }
+                    } catch (RemoteException e) {
+                        logger.error("Error while trying to add the dynamic children to the search results.", e);
+                    }
+                }
+            }
         }
     }
 }

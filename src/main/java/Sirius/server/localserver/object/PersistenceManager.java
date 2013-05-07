@@ -201,7 +201,7 @@ public final class PersistenceManager extends Shutdown {
                 transactionHelper.commit();
 
                 for (final CidsTrigger ct : rightTriggers) {
-                    ct.afterCommittedInsert(mo.getBean(), user);
+                    ct.afterCommittedUpdate(mo.getBean(), user);
                 }
             } catch (final Exception e) {
                 final String message = "cannot update metaobject"; // NOI18N
@@ -236,7 +236,7 @@ public final class PersistenceManager extends Shutdown {
             transactionHelper.commit();
 
             for (final CidsTrigger ct : rightTriggers) {
-                ct.afterCommittedInsert(mo.getBean(), user);
+                ct.afterCommittedDelete(mo.getBean(), user);
             }
 
             return rtn;
@@ -527,6 +527,14 @@ public final class PersistenceManager extends Shutdown {
                 if (mai == null) {
                     throw new IllegalStateException("MAI not found: " + mAttr[i].getName()); // NOI18N
                 }
+                if (mai.isExtensionAttribute()) {
+                    // extension attributes should be ignored
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(mAttr[i] + "is an extension attribute -> ignored");
+                    }
+
+                    continue;
+                }
                 // fieldname is now known, find value now
                 final java.lang.Object value = mAttr[i].getValue();
 
@@ -557,7 +565,13 @@ public final class PersistenceManager extends Shutdown {
                             valueToAdd = NULL;
                             break;
                         }
-                        case MetaObject.NO_STATUS:
+                        case MetaObject.NO_STATUS: {
+                            if (subObject.isDummy()) {
+                                updateMetaObjectWithoutTransaction(user, subObject);
+                            }
+                            valueToAdd = subObject.getID();
+                            break;
+                        }
                         // fall through because we define no status as modified status
                         case MetaObject.MODIFIED: {
                             updateMetaObjectWithoutTransaction(user, subObject);
@@ -618,7 +632,7 @@ public final class PersistenceManager extends Shutdown {
                             logMessage.append(". parameter: ");
                             logMessage.append(value.toString());
                         }
-                        LOG.debug(logMessage.toString());
+                        LOG.debug(logMessage.toString(), new Exception());
                     }
 
                     final TransactionHelper transactionHelper = local.get();
@@ -735,7 +749,9 @@ public final class PersistenceManager extends Shutdown {
                         break;
                     }
 
-                    case MetaObject.NO_STATUS:
+                    case MetaObject.NO_STATUS: {
+                        break;
+                    }
                     case MetaObject.MODIFIED: {
                         updateMetaObjectWithoutTransaction(user, metaObject);
                         break;
@@ -897,9 +913,10 @@ public final class PersistenceManager extends Shutdown {
                         + " isDummy(ArrayContainer) :" // NOI18N
                         + mo.isDummy());               // NOI18N
         }
-
-        if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
-                        user)
+        mo.forceStatus(MetaObject.NO_STATUS);
+        if (
+            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
+                        user.getUserGroup())
                     && (mo.isDummy() || mo.hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
             // existiert gar keine sinnvolle
             // bean won't insert history
@@ -974,6 +991,16 @@ public final class PersistenceManager extends Shutdown {
                     final String message = ("MAI not found: " + mAttr[i].getName()); // NOI18N
                     throw new IllegalStateException(message);
                 }
+
+                if (mai.isExtensionAttribute()) {
+                    // extension attributes should be ignored
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(mAttr[i] + "is an extension attribute -> ignored");
+                    }
+
+                    continue;
+                }
+
                 // add fieldname of this attribute to statement
                 paramSql.append(sep).append(mai.getFieldName());
                 if (!mAttr[i].referencesObject()) // does not reference object, so it does not have key
@@ -1020,8 +1047,10 @@ public final class PersistenceManager extends Shutdown {
                                         deleteMetaObjectWithoutTransaction(user, moAttr);
                                         break;
                                     }
-                                    case MetaObject.MODIFIED:
-                                    // NOP
+                                    case MetaObject.MODIFIED: {
+                                        updateMetaObjectWithoutTransaction(user, moAttr);
+                                        break;
+                                    }
                                     default: {
                                         // NOP
                                     }
@@ -1075,7 +1104,7 @@ public final class PersistenceManager extends Shutdown {
                         logMessage.append(". parameter: ");
                         logMessage.append(value.toString());
                     }
-                    LOG.debug(logMessage.toString());
+                    LOG.debug(logMessage.toString(), new Exception());
                 }
                 stmt = parameteriseStatement(stmt, values);
                 stmt.executeUpdate();

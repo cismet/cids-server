@@ -37,7 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import de.cismet.tools.StringTools;
+import de.cismet.commons.utils.StringUtils;
 
 /**
  * Klasse um auf den in der DB gespeicherten Graphen zuzugreifen.
@@ -928,7 +928,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             }
 
             descr = nodeTable.getString("url"); // NOI18N
-            descr = StringTools.deleteWhitespaces(descr);
+            descr = StringUtils.deleteWhitespaces(descr);
 
             id = nodeTable.getInt("id");                               // NOI18N
             dynamicChildren = nodeTable.getString("dynamic_children"); // NOI18N

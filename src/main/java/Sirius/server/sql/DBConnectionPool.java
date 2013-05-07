@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -49,6 +50,8 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
 
     private final transient LinkedList<DBConnection> cons;
     private final transient DBClassifier dbClassifier;
+
+    private List<DBConnection> longTermConnectionList = new ArrayList<DBConnection>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -137,21 +140,71 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
      */
     @Deprecated
     public DBConnection getDBConnection() {
+        return getDBConnection(false);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param       longTerm  DOCUMENT ME!
+     *
+     * @return      DOCUMENT ME!
+     *
+     * @deprecated  this operation is marked as deprecated as it is discouraged to use a {@link DBConnection} directly.
+     *              Use a DBBackend instead. This method is subject to be refactored to private access.
+     */
+    @Deprecated
+    public DBConnection getDBConnection(final boolean longTerm) {
         // ring
-        final DBConnection c;
+        DBConnection c = null;
+        int attemps = 0;
+
         synchronized (cons) {
-            final DBConnection old = cons.removeLast();
-            // throw the connection away if it is closed and create a new one instead
-            if (old.isClosed()) {
-                c = new DBConnection(dbClassifier);
-            } else {
-                c = old;
+            do {
+                final DBConnection old = cons.removeLast();
+                ++attemps;
+                // throw the connection away if it is closed and create a new one instead
+                if (old.isClosed()) {
+                    c = new DBConnection(dbClassifier);
+                } else {
+                    if ((attemps > cons.size()) || !longTermConnectionList.contains(old)) {
+                        c = old;
+                    } else {
+                        cons.addFirst(old);
+                    }
+                }
+            } while (c == null);
+
+            if (longTerm) {
+                longTermConnectionList.add(c);
             }
 
             cons.addFirst(c);
         }
 
         return c;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  connection  DOCUMENT ME!
+     */
+    public void releaseDbConnection(final Connection connection) {
+        synchronized (cons) {
+            DBConnection dbConnection = null;
+
+            for (final DBConnection tmp : longTermConnectionList) {
+                if (tmp.getConnection().equals(connection)) {
+                    dbConnection = tmp;
+                    break;
+                }
+            }
+
+            if (dbConnection != null) {
+                longTermConnectionList.remove(dbConnection);
+            }
+        }
     }
 
     /**
@@ -183,13 +236,22 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
         return retriesOnError;
     }
 
-    @Override
-    public Connection getConnection() throws SQLException {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   longTerm  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException     DOCUMENT ME!
+     * @throws  ServerExitError  DOCUMENT ME!
+     */
+    public Connection getConnection(final boolean longTerm) throws SQLException {
         Connection con = null;
         final int retryCount = 0;
 
         while ((con == null) && (retryCount < (cons.size() * 3))) {
-            final DBConnection dbcon = getDBConnection();
+            final DBConnection dbcon = getDBConnection(longTerm);
             final Connection candidate = dbcon.getConnection();
             if (candidate.isClosed()) {
                 dbcon.close();
@@ -205,6 +267,11 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
         }
 
         return con;
+    }
+
+    @Override
+    public Connection getConnection() throws SQLException {
+        return getConnection(false);
     }
 
     /**

@@ -569,6 +569,11 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
         getRealMetaObject().setStatus(status);
     }
 
+    @Override
+    public void forceStatus(final int status) {
+        getRealMetaObject().forceStatus(status);
+    }
+
     /**
      * DOCUMENT ME!
      */

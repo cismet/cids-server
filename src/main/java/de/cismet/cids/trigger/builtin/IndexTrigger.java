@@ -13,14 +13,18 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.sql.DBConnection;
 
+import org.apache.commons.beanutils.BeanAccessLanguageException;
+
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.cismet.cids.dynamics.CidsBean;
@@ -100,6 +104,12 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 + "FROM            derived_index "
                 + "ORDER BY        1,2,3,4 limit 1000000000;";
 
+    //~ Instance fields --------------------------------------------------------
+
+    private List<CidsBean> beansToCheck = new ArrayList<CidsBean>();
+    private List<CidsBeanInfo> beansToUpdate = new ArrayList<CidsBeanInfo>();
+    private Connection con = null;
+
     //~ Methods ----------------------------------------------------------------
 
     @Override
@@ -109,7 +119,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 @Override
                 public void run() {
                     try {
-                        final Connection connection = getDbServer().getConnectionPool().getConnection();
+                        final Connection connection = getConnection();
                         deleteIndex(connection, cidsBean.getMetaObject());
                     } catch (SQLException sQLException) {
                         log.error("Error during deleteIndex " + cidsBean.getMOString(), sQLException);
@@ -121,12 +131,13 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void afterInsert(final CidsBean cidsBean, final User user) {
+        beansToCheck.add(cidsBean);
         de.cismet.tools.CismetThreadPool.executeSequentially(new Runnable() {
 
                 @Override
                 public void run() {
                     try {
-                        final Connection connection = getDbServer().getConnectionPool().getConnection();
+                        final Connection connection = getConnection();
                         insertIndex(connection, cidsBean.getMetaObject());
                     } catch (SQLException sQLException) {
                         log.error("Error during insertIndex " + cidsBean.getMOString(), sQLException);
@@ -138,6 +149,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void afterUpdate(final CidsBean cidsBean, final User user) {
+        beansToCheck.add(cidsBean);
         // The triggers, which update the index should be executed sequentially, because
         // during the execution of the deleteMetaObject method, the updateMetaObject method can
         // be executed and this leads to a race condition between the
@@ -147,7 +159,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 @Override
                 public void run() {
                     try {
-                        final Connection connection = getDbServer().getConnectionPool().getConnection();
+                        final Connection connection = getConnection();
                         deleteIndex(connection, cidsBean.getMetaObject());
                         insertIndex(connection, cidsBean.getMetaObject());
 //                        updateIndex(connection, cidsBean.getMetaObject());
@@ -161,6 +173,16 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void beforeDelete(final CidsBean cidsBean, final User user) {
+        // The object is deleted from the database after afterDelete trigger, so the
+        // dependencies must be determined in the beforeDelete trigger.
+        try {
+            final Connection connection = getConnection();
+            final List<CidsBeanInfo> beanInfo = getDependentBeans(connection, cidsBean.getMetaObject());
+            addAll(beansToUpdate, beanInfo);
+        } catch (SQLException sQLException) {
+            log.error("Error during beforeDelete " + cidsBean.getMOString(), sQLException);
+            severeIncidence.error("Error during beforeDelete " + cidsBean.getMOString(), sQLException);
+        }
     }
 
     @Override
@@ -169,6 +191,16 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void beforeUpdate(final CidsBean cidsBean, final User user) {
+        // In the afterUpdate trigger, the object possibly references to other objects than now, so
+        // the dependend objects must be also determined in the beforeUpdate trigger
+        try {
+            final Connection connection = getConnection();
+            final List<CidsBeanInfo> beanInfo = getDependentBeans(connection, cidsBean.getMetaObject());
+            addAll(beansToUpdate, beanInfo);
+        } catch (SQLException sQLException) {
+            log.error("Error during beforeDelete " + cidsBean.getMOString(), sQLException);
+            severeIncidence.error("Error during beforeDelete " + cidsBean.getMOString(), sQLException);
+        }
     }
 
     @Override
@@ -186,6 +218,64 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     @Override
     public int compareTo(final CidsTrigger o) {
         return -1;
+    }
+
+    /**
+     * Determines all cids beans, the given meta object references to within an one to many relation.
+     *
+     * @param   connection  The connection to the database
+     * @param   mo          the meta object to check
+     *
+     * @return  all master objects of the given meta object
+     *
+     * @throws  SQLException              DOCUMENT ME!
+     * @throws  IllegalArgumentException  DOCUMENT ME!
+     */
+    private List<CidsBeanInfo> getDependentBeans(final Connection connection, final MetaObject mo) throws SQLException {
+        final List<CidsBeanInfo> dependentBeans = new ArrayList<CidsBeanInfo>();
+
+        if (mo == null) {
+            throw new IllegalArgumentException("MetaObject must not be null"); // NOI18N
+        } else if (mo.isDummy()) {
+            // don't do anything with a dummy object
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("insert index for dummy won't be done"); // NOI18N
+            }
+            return dependentBeans;
+        }
+
+        final String query = "SELECT class_id FROM cs_attr WHERE foreign_key_references_to = "
+                    + ((-1) * mo.getClassID());
+        final ResultSet masterClasses = connection.createStatement().executeQuery(query);
+
+        while (masterClasses.next()) {
+            final int classId = masterClasses.getInt(1);
+
+            final String fieldQuery = "select field_name from cs_attr where class_id = " + mo.getClassID()
+                        + " and foreign_key_references_to = " + classId;
+            final ResultSet field = connection.createStatement().executeQuery(fieldQuery);
+
+            if (field.next()) {
+                final String fieldName = field.getString(1);
+                final String idQuery = "select " + fieldName + " from " + mo.getMetaClass().getTableName()
+                            + " where id = " + mo.getID();
+                final ResultSet oid = connection.createStatement().executeQuery(idQuery);
+
+                if (oid.next()) {
+                    final int id = oid.getInt(1);
+                    final CidsBeanInfo beanInfo = new CidsBeanInfo();
+                    beanInfo.setObjectId(id);
+                    beanInfo.setClassId(classId);
+                    dependentBeans.add(beanInfo);
+                }
+
+                oid.close();
+            }
+
+            field.close();
+        }
+        masterClasses.close();
+        return dependentBeans;
     }
 
     /**
@@ -227,7 +317,47 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     // set the appropriate param values according to the field
                     // value
                     if (mai.isForeignKey()) {
-                        if (mai.isArray()) {
+                        if (mai.getForeignKeyClassId() < 0) {
+                            final String backreferenceQuery = "SELECT field_name FROM cs_attr WHERE class_id = "
+                                        + Math.abs(mai.getForeignKeyClassId()) + " AND foreign_key_references_to = "
+                                        + mai.getClassId() + " LIMIT 1";
+                            final ResultSet backreferenceRs = connection.createStatement()
+                                        .executeQuery(backreferenceQuery);
+
+                            if (backreferenceRs.next()) {
+                                final String backreferenceField = backreferenceRs.getString(1);
+                                backreferenceRs.close();
+                                String query = "SELECT table_name FROM cs_class where id = "
+                                            + Math.abs(attr.getMai().getForeignKeyClassId());
+                                final ResultSet rs = connection.createStatement().executeQuery(query);
+
+                                if (rs.next()) {
+                                    final String foreignTableName = rs.getString(1);
+                                    query = "SELECT id as id FROM " + foreignTableName + " WHERE "
+                                                + backreferenceField
+                                                + " =  " + String.valueOf(mo.getID());
+
+                                    final ResultSet arrayList = connection.createStatement().executeQuery(query);
+
+                                    while (arrayList.next()) {
+                                        // lazily prepare the statement
+                                        if (psAttrMap == null) {
+                                            psAttrMap = connection.prepareStatement(INS_ATTR_MAPPING);
+                                        }
+                                        psAttrMap.setInt(1, mo.getClassID());
+                                        psAttrMap.setInt(2, mo.getID());
+                                        psAttrMap.setInt(3, Math.abs(mai.getForeignKeyClassId()));
+                                        psAttrMap.setInt(4, arrayList.getInt(1));
+                                        psAttrMap.addBatch();
+                                    }
+
+                                    arrayList.close();
+                                }
+                                rs.close();
+                            } else {
+                                LOG.error("Cannot fill index table properly, because the backreference was not found.");
+                            }
+                        } else if (mai.isArray()) {
                             attr.getTypeId();
                             String query = "SELECT table_name FROM cs_class where id = "
                                         + attr.getMai().getForeignKeyClassId();
@@ -507,21 +637,35 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     }
 
     /**
-     * DOCUMENT ME!
+     * Updates the table cs_attr_object_derived.
      *
-     * @param   connection  DOCUMENT ME!
-     * @param   mo          DOCUMENT ME!
+     * @param   connection  the connection to the database
+     * @param   mo          the object that should be updated
      *
      * @throws  SQLException  DOCUMENT ME!
      */
     private void updateDerivedIndex(final Connection connection, final MetaObject mo) throws SQLException {
+        updateDerivedIndex(connection, mo.getClassID(), mo.getID());
+    }
+
+    /**
+     * Updates the table cs_attr_object_derived.
+     *
+     * @param   connection  the connection to the database
+     * @param   classId     the class id of the oject that should be updated
+     * @param   objectId    the object id of the oject that should be updated
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    private void updateDerivedIndex(final Connection connection, final int classId, final int objectId)
+            throws SQLException {
         final PreparedStatement psDeleteAttrMapDerive = connection.prepareStatement(DEL_DERIVE_ATTR_MAPPING);
         final PreparedStatement psInsertAttrMapDerive = connection.prepareStatement(INS_DERIVE_ATTR_MAPPING);
 
-        psDeleteAttrMapDerive.setInt(1, mo.getClassID());
-        psDeleteAttrMapDerive.setInt(2, mo.getID());
-        psInsertAttrMapDerive.setInt(1, mo.getClassID());
-        psInsertAttrMapDerive.setInt(2, mo.getID());
+        psDeleteAttrMapDerive.setInt(1, classId);
+        psDeleteAttrMapDerive.setInt(2, objectId);
+        psInsertAttrMapDerive.setInt(1, classId);
+        psInsertAttrMapDerive.setInt(2, objectId);
         final int del = psDeleteAttrMapDerive.executeUpdate();
         final int ins = psInsertAttrMapDerive.executeUpdate();
         if (LOG.isDebugEnabled()) {
@@ -593,13 +737,200 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void afterCommittedInsert(final CidsBean cidsBean, final User user) {
+        de.cismet.tools.CismetThreadPool.executeSequentially(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        final Connection connection = getConnection();
+                        insertIndex(connection, cidsBean.getMetaObject());
+                    } catch (SQLException sQLException) {
+                        log.error("Error during insertIndex " + cidsBean.getMOString(), sQLException);
+                        severeIncidence.error("Error during insertIndex " + cidsBean.getMOString(), sQLException);
+                    }
+                }
+            });
+        updateAllDependentBeans();
     }
 
     @Override
     public void afterCommittedUpdate(final CidsBean cidsBean, final User user) {
+        de.cismet.tools.CismetThreadPool.executeSequentially(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        // Some times, the master object is not updates, but only the detail objects.
+                        // In this case, the index of the master object should be also updated.
+                        final Connection connection = getConnection();
+                        deleteIndex(connection, cidsBean.getMetaObject());
+                        insertIndex(connection, cidsBean.getMetaObject());
+                    } catch (SQLException sQLException) {
+                        log.error("Error during updateIndex " + cidsBean.getMOString(), sQLException);
+                        severeIncidence.error("Error during updateIndex " + cidsBean.getMOString(), sQLException);
+                    }
+                }
+            });
+        updateAllDependentBeans();
     }
 
     @Override
     public void afterCommittedDelete(final CidsBean cidsBean, final User user) {
+        updateAllDependentBeans();
+    }
+
+    /**
+     * Updates the index of the master objects (master in an one to many relation).
+     */
+    private void updateAllDependentBeans() {
+        final List<CidsBeanInfo> beansToUpdateTmp = new ArrayList<CidsBeanInfo>(beansToUpdate);
+        final List<CidsBean> beansToCheckTmp = new ArrayList<CidsBean>(beansToCheck);
+        beansToUpdate.clear();
+        beansToCheck.clear();
+
+        de.cismet.tools.CismetThreadPool.executeSequentially(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        final Connection connection = getConnection();
+                        for (final CidsBean bean : beansToCheckTmp) {
+                            final List<CidsBeanInfo> beanInfo = getDependentBeans(
+                                    connection,
+                                    bean.getMetaObject());
+                            addAll(beansToUpdateTmp, beanInfo);
+                        }
+
+                        for (final CidsBeanInfo beanInfo : beansToUpdateTmp) {
+                            connection.createStatement()
+                                    .execute(
+                                        "select reindexpure("
+                                        + beanInfo.getClassId()
+                                        + ","
+                                        + beanInfo.getObjectId()
+                                        + ");");
+                            updateDerivedIndex(connection, beanInfo.getClassId(), beanInfo.getObjectId());
+                        }
+                    } catch (SQLException sQLException) {
+                        log.error("Error during updateAllDependentBeans ", sQLException);
+                        severeIncidence.error("Error during updateAllDependentBeans ", sQLException);
+                    } finally {
+                        releaseConnection();
+                    }
+                }
+            });
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    private synchronized Connection getConnection() throws SQLException {
+        if ((con == null) || con.isClosed()) {
+            if ((con != null) && con.isClosed()) {
+                getDbServer().getConnectionPool().releaseDbConnection(con);
+            }
+
+            con = getDbServer().getConnectionPool().getConnection(true);
+        }
+
+        return con;
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    private synchronized void releaseConnection() {
+        if (con != null) {
+            getDbServer().getConnectionPool().releaseDbConnection(con);
+            con = null;
+        }
+    }
+
+    /**
+     * add all elements from to list toAdd to the list base, if they are not already contained in the list base.
+     *
+     * @param  base   the list to fill
+     * @param  toAdd  the elements to add
+     */
+    private void addAll(final List<CidsBeanInfo> base, final List<CidsBeanInfo> toAdd) {
+        for (final CidsBeanInfo tmp : toAdd) {
+            if (!base.contains(tmp)) {
+                base.add(tmp);
+            }
+        }
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * Contains all information, which are required to identify a cids bean.
+     *
+     * @version  $Revision$, $Date$
+     */
+    private class CidsBeanInfo {
+
+        //~ Instance fields ----------------------------------------------------
+
+        private int objectId;
+        private int classId;
+
+        //~ Methods ------------------------------------------------------------
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  the objectId
+         */
+        public int getObjectId() {
+            return objectId;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param  objectId  the objectId to set
+         */
+        public void setObjectId(final int objectId) {
+            this.objectId = objectId;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  the classId
+         */
+        public int getClassId() {
+            return classId;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param  classId  the classId to set
+         */
+        public void setClassId(final int classId) {
+            this.classId = classId;
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            if (obj instanceof CidsBeanInfo) {
+                return (((CidsBeanInfo)obj).classId == this.classId) && (((CidsBeanInfo)obj).objectId == this.objectId);
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = (37 * hash) + this.objectId;
+            hash = (37 * hash) + this.classId;
+            return hash;
+        }
     }
 }
