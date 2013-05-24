@@ -67,8 +67,13 @@ public class ToStringConverter implements Serializable {
             final Collection<Attribute> names = ((Sirius.server.localserver.object.Object)o).getAttributeByName(
                     "name", // NOI18N
                     1);
-            for (final Attribute cur : names) {
-                stringRepresentation.append(cur.getValue());
+            if (names.size() > 0) {
+                for (final Attribute cur : names) {
+                    stringRepresentation.append(cur.getValue());
+                }
+            } else {
+                final ObjectAttribute oa = ((Sirius.server.localserver.object.Object)o).getAttributeByFieldName("name");
+                stringRepresentation.append(String.valueOf(oa.getValue()));
             }
         } else if (o instanceof Sirius.server.localserver.attribute.ObjectAttribute) {
             if (((Sirius.server.localserver.attribute.ObjectAttribute)o).getMai().getJavaclassname().equals(

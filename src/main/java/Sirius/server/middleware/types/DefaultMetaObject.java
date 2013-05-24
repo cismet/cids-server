@@ -68,6 +68,7 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
         this(o, domain, (User)null);
     }
     // bugfix
+
     /**
      * constructs a metaObject out of a (server) object. mainly adds the domain infromation
      *
@@ -156,7 +157,6 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     public String getDomain() {
         return domain;
     }
-    // workarround wegen Umstellung
 
     /**
      * getter for name.
@@ -166,23 +166,25 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     @Override
     public String getName() {
         final Collection c = getAttributeByName("name", 1); // NOI18N
+        String name = null;
+        if (c.size() > 0) {
+            final Iterator iter = c.iterator();
+            Attribute a = null;
+            if (iter.hasNext()) {
+                a = (Attribute)iter.next();
 
-        final Iterator iter = c.iterator();
-        Attribute a = null;
+                final Object value = a.getValue();
 
-        if (iter.hasNext()) {
-            a = (Attribute)iter.next();
-
-            final Object value = a.getValue();
-
-            if (value != null) {
-                return value.toString();
+                if (value != null) {
+                    name = value.toString();
+                }
             }
+        } else {
+            final ObjectAttribute oa = getAttributeByFieldName("name");
+            name = String.valueOf(oa.getValue());
         }
-
-        return null;
+        return name;
     }
-    // workarround wegen Umstellung
 
     /**
      * getter for description.
