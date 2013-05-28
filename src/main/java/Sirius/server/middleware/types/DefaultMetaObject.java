@@ -181,7 +181,9 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
             }
         } else {
             final ObjectAttribute oa = getAttributeByFieldName("name");
-            name = String.valueOf(oa.getValue());
+            if (oa != null) {
+                name = String.valueOf(oa.getValue());
+            }
         }
         return name;
     }
