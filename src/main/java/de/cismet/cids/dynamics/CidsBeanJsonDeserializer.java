@@ -83,7 +83,8 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
             while (jp.nextValue() != JsonToken.END_OBJECT) {
                 final String fieldName = jp.getCurrentName();
                 if (!cacheHit) {
-                    if (!keySet && fieldName.equals(CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER)||fieldName.equals(CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER)) {
+                    if ((!keySet && fieldName.equals(CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER))
+                                || fieldName.equals(CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER)) {
                         key = jp.getText();
                         final CidsBeanInfo bInfo = new CidsBeanInfo(key);
                         keySet = true;
@@ -96,7 +97,8 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                     } else {
                         if (cb == null) {
                             throw new RuntimeException("Json-Object has to start with a "
-                                        + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER+ "or with a "+CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER);                             // NOI18N
+                                        + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER + "or with a "
+                                        + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER);                   // NOI18N
                         }
                         switch (jp.getCurrentToken()) {
                             case START_ARRAY: {

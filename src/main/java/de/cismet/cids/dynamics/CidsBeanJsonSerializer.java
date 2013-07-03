@@ -1,12 +1,10 @@
-/**
- * *************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- * 
-* ... and it just works.
- * 
-***************************************************
- */
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -33,12 +31,13 @@ import de.cismet.cids.json.IntraObjectCacheJsonGenerator;
 /**
  * DOCUMENT ME!
  *
- * @author thorsten
- * @version $Revision$, $Date$
+ * @author   thorsten
+ * @version  $Revision$, $Date$
  */
 public class CidsBeanJsonSerializer extends StdSerializer<CidsBean> {
 
     //~ Constructors -----------------------------------------------------------
+
     /**
      * Creates a new CidsAttributeJsonSerializer object.
      */
@@ -47,12 +46,13 @@ public class CidsBeanJsonSerializer extends StdSerializer<CidsBean> {
     }
 
     //~ Methods ----------------------------------------------------------------
+
     @Override
     public void serialize(final CidsBean cb, final JsonGenerator _jg, final SerializerProvider sp) throws IOException,
-            JsonGenerationException {
+        JsonGenerationException {
         IntraObjectCacheJsonGenerator jg;
         if (_jg instanceof IntraObjectCacheJsonGenerator) {
-            jg = (IntraObjectCacheJsonGenerator) _jg;
+            jg = (IntraObjectCacheJsonGenerator)_jg;
         } else {
             jg = new IntraObjectCacheJsonGenerator(_jg);
         }
@@ -67,7 +67,7 @@ public class CidsBeanJsonSerializer extends StdSerializer<CidsBean> {
                 if (object instanceof CidsBean) {
                     jg.writeObjectField(attribute, object);
                 } else if (object instanceof List) {
-                    final List<CidsBean> collection = (List<CidsBean>) object;
+                    final List<CidsBean> collection = (List<CidsBean>)object;
                     jg.writeArrayFieldStart(attribute);
                     for (int j = 0; j < collection.size(); ++j) {
                         final CidsBean colBean = collection.get(j);
@@ -80,17 +80,17 @@ public class CidsBeanJsonSerializer extends StdSerializer<CidsBean> {
                     } else if (object instanceof Geometry) {
                         jg.writeStringField(attribute, StringEscapeUtils.escapeJava(String.valueOf(object)));
                     } else if (object instanceof BigDecimal) {
-                        jg.writeNumberField(attribute, (BigDecimal) object);
+                        jg.writeNumberField(attribute, (BigDecimal)object);
                     } else if (object instanceof Double) {
-                        jg.writeNumberField(attribute, (Double) object);
+                        jg.writeNumberField(attribute, (Double)object);
                     } else if (object instanceof Float) {
-                        jg.writeNumberField(attribute, (Float) object);
+                        jg.writeNumberField(attribute, (Float)object);
                     } else if (object instanceof Integer) {
-                        jg.writeNumberField(attribute, (Integer) object);
+                        jg.writeNumberField(attribute, (Integer)object);
                     } else if (object instanceof Long) {
-                        jg.writeNumberField(attribute, (Long) object);
+                        jg.writeNumberField(attribute, (Long)object);
                     } else if (object instanceof Boolean) {
-                        jg.writeBooleanField(attribute, (Boolean) object);
+                        jg.writeBooleanField(attribute, (Boolean)object);
                     } else if (object instanceof String) {
                         jg.writeStringField(attribute, String.valueOf(object));
                     } else {
@@ -101,8 +101,10 @@ public class CidsBeanJsonSerializer extends StdSerializer<CidsBean> {
             if (isIntraObjectCacheEnabled()) {
                 jg.put(cb.getCidsBeanInfo().getJsonObjectKey(), cb);
             }
-        } else{
-            jg.writeStringField(CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER, cb.getCidsBeanInfo().getJsonObjectKey());
+        } else {
+            jg.writeStringField(
+                CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER,
+                cb.getCidsBeanInfo().getJsonObjectKey());
         }
         jg.writeEndObject();
     }
@@ -110,7 +112,7 @@ public class CidsBeanJsonSerializer extends StdSerializer<CidsBean> {
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     protected boolean isIntraObjectCacheEnabled() {
         return false;
