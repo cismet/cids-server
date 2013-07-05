@@ -450,7 +450,7 @@ public final class HistoryServer extends Shutdown {
                 final Integer usrId = (user == null) ? null : user.getId();
                 final Integer ugId = (user == null) ? null : user.getUserGroup().getId();
                 final Timestamp valid_from = new Timestamp(timestamp.getTime());
-                final String jsonData = mo.isPersistent() ? mo.getBean().toJSONString() : JSON_DELETED;
+                final String jsonData = mo.isPersistent() ? mo.getBean().toJSONString(true) : JSON_DELETED;
 
                 final DBConnection con = server.getConnectionPool().getDBConnection();
                 final int result = con.submitInternalUpdate(
