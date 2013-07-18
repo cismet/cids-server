@@ -13,6 +13,8 @@ package de.cismet.cids.server.search.builtin;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 
+import org.apache.log4j.Logger;
+
 import org.openide.util.Exceptions;
 
 import java.rmi.RemoteException;
@@ -35,6 +37,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final String WRRL_DOMAIN = "WRRL_DB_MV"; // NOI18N
+    private static final Logger LOG = Logger.getLogger(CidsLayerSearchStatement.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -48,7 +51,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
         "%s from wk_sg, geom where wk_sg.geom = geom.id and geo_field && 'BOX3D(%s %s,%s %s)'::box3d";
     private final String count = "Select count(*)";
     private final String select =
-        "Select (select id from cs_class where table_name ilike 'wk_sg') as class_id, wk_sg.id as object_id";
+        "Select (select id from cs_class where table_name ilike 'wk_sg') as class_id, wk_sg.id as object_id, asEWKT(geom.geo_field)";
 
     //~ Constructors -----------------------------------------------------------
 
@@ -112,7 +115,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
             final String query1 = String.format(query, searchCount ? count : select, x1, y1, x2, y2);
             return ms.performCustomSearch(query1);
         } catch (RemoteException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.error("Error in customSearch", ex);
         }
         return null;
     }
