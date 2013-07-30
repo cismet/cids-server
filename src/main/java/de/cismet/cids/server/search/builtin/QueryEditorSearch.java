@@ -43,7 +43,6 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
                 + "                     c.class_id ={2} "    // NOI18N
                 + "              AND    c.object_id=tbl.id " // NOI18N
                 + "              ) WHERE {1}";
-    private static final String WRRL_DOMAIN = "WRRL_DB_MV";  // NOI18N
     private static final transient Logger LOG = Logger.getLogger(QueryEditorSearch.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -51,27 +50,30 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
     private String metaClass;
     private String whereClause;
     private int classId;
+    private String DOMAIN;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new QueryEditorSearch object.
      *
+     * @param  domain       DOCUMENT ME!
      * @param  metaClass    DOCUMENT ME!
      * @param  whereClause  DOCUMENT ME!
      * @param  classId      DOCUMENT ME!
      */
-    public QueryEditorSearch(final String metaClass, final String whereClause, final int classId) {
+    public QueryEditorSearch(final String domain, final String metaClass, final String whereClause, final int classId) {
         this.whereClause = whereClause;
         this.metaClass = metaClass;
         this.classId = classId;
+        this.DOMAIN = domain;
     }
 
     //~ Methods ----------------------------------------------------------------
 
     @Override
     public Collection<MetaObjectNode> performServerSearch() throws SearchException {
-        final MetaService ms = (MetaService)getActiveLocalServers().get(WRRL_DOMAIN);
+        final MetaService ms = (MetaService)getActiveLocalServers().get(DOMAIN);
         if (ms != null) {
             try {
                 final String query = MessageFormat.format(this.query, metaClass, whereClause, classId);
@@ -89,7 +91,7 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
                             LOG.trace("no name present for metaobjectnode", e); // NOI18N
                         }
                     }
-                    final MetaObjectNode mon = new MetaObjectNode(WRRL_DOMAIN, oid, cid, name);
+                    final MetaObjectNode mon = new MetaObjectNode(DOMAIN, oid, cid, name);
                     metaObjects.add(mon);
                 }
 
