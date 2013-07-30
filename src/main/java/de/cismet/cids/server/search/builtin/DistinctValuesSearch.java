@@ -36,7 +36,7 @@ public class DistinctValuesSearch extends AbstractCidsServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String query = "SELECT DISTINCT {1} FROM {0} LIMIT 100;";
+    private static final String query = "SELECT DISTINCT {1} FROM {0} order by {1} LIMIT 100;";
     private static final String WRRL_DOMAIN = "WRRL_DB_MV"; // NOI18N
     private static final transient Logger LOG = Logger.getLogger(DistinctValuesSearch.class);
 
