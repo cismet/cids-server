@@ -21,6 +21,7 @@ import java.rmi.RemoteException;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
