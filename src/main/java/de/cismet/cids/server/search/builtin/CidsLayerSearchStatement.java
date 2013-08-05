@@ -11,7 +11,9 @@
  */
 package de.cismet.cids.server.search.builtin;
 
+import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
+import Sirius.server.middleware.types.MetaClass;
 
 import org.apache.log4j.Logger;
 
@@ -22,6 +24,7 @@ import java.rmi.RemoteException;
 import java.text.MessageFormat;
 
 import java.util.Collection;
+import java.util.Map;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
@@ -45,13 +48,13 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
     double x2;
     double y1;
     double y2;
-    boolean searchCount = false;
+    // boolean searchCount = false;
+    String className;
 
-    private final String query =
-        "%s from wk_sg, geom where wk_sg.geom = geom.id and geo_field && 'BOX3D(%s %s,%s %s)'::box3d";
-    private final String count = "Select count(*)";
+    /*private final String query =
+     *  "%s ";private final String count = "Select count(*)";*/
     private final String select =
-        "Select (select id from cs_class where table_name ilike 'wk_sg') as class_id, wk_sg.id as object_id, asEWKT(geom.geo_field)";
+        "Select (select id from cs_class where table_name ilike '%s') as class_id, asEWKT(geom.geo_field)%s from %s, geom where %s = geom.id and geo_field && 'BOX3D(%s %s,%s %s)'::box3d";
 
     //~ Constructors -----------------------------------------------------------
 
@@ -102,18 +105,42 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
     /**
      * DOCUMENT ME!
      *
-     * @param  countOnly  DOCUMENT ME!
+     * @param  className  countOnly DOCUMENT ME!
      */
-    public void setCountOnly(final boolean countOnly) {
-        this.searchCount = countOnly;
+    /*public void setCountOnly(final boolean countOnly) {
+     *  this.searchCount = countOnly;}*/
+
+    public void setClassId(final String className) {
+        this.className = className;
     }
 
     @Override
     public Collection performServerSearch() throws SearchException {
         final MetaService ms = (MetaService)getActiveLocalServers().get(WRRL_DOMAIN);
         try {
-            final String query1 = String.format(query, searchCount ? count : select, x1, y1, x2, y2);
-            return ms.performCustomSearch(query1);
+            final MetaClass clazz = ms.getClassByTableName(getUser(), className);
+            final ClassAttribute attribute = clazz.getClassAttribute("cidsLayer");
+            if (attribute == null) {
+                return null;
+            }
+            final Map<String, String> options = attribute.getOptions();
+            final StringBuilder sb = new StringBuilder();
+            for (final Map.Entry<String, String> entry : options.entrySet()) {
+                if (!"geom_id".equals(entry.getKey())) {
+                    sb.append(", ").append(entry.getValue()).append(" as ").append(entry.getKey());
+                }
+            }
+            final String query = String.format(
+                    select,
+                    className,
+                    sb.toString(),
+                    className,
+                    options.get("geom_id"),
+                    x1,
+                    y1,
+                    x2,
+                    y2);
+            return ms.performCustomSearch(query);
         } catch (RemoteException ex) {
             LOG.error("Error in customSearch", ex);
         }
