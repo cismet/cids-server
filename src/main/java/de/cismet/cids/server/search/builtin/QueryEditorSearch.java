@@ -74,12 +74,12 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
     @Override
     public Collection<MetaObjectNode> performServerSearch() throws SearchException {
         final MetaService ms = (MetaService)getActiveLocalServers().get(DOMAIN);
+        final ArrayList<MetaObjectNode> metaObjects = new ArrayList<MetaObjectNode>();
         if (ms != null) {
             try {
                 final String query = MessageFormat.format(this.query, metaClass, whereClause, classId);
                 final ArrayList<ArrayList> results = ms.performCustomSearch(query);
 
-                final ArrayList<MetaObjectNode> metaObjects = new ArrayList<MetaObjectNode>();
                 for (final ArrayList al : results) {
                     final int cid = (Integer)al.get(0);
                     final int oid = (Integer)al.get(1);
@@ -98,11 +98,12 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
                 return metaObjects;
             } catch (RemoteException ex) {
                 LOG.error(ex.getMessage(), ex);
+                throw new SearchException("SQL Query fehlerhaft");
             }
         } else {
             LOG.error("active local server not found"); // NOI18N
         }
 
-        return null;
+        return metaObjects;
     }
 }
