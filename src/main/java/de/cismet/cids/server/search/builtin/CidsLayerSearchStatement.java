@@ -39,7 +39,6 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String WRRL_DOMAIN = "WRRL_DB_MV"; // NOI18N
     private static final Logger LOG = Logger.getLogger(CidsLayerSearchStatement.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -48,8 +47,8 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
     double x2;
     double y1;
     double y2;
-    // boolean searchCount = false;
-    String className;
+    int classId;
+    private String domain = "WRRL_DB_MV"; // NOI18N
 
     /*private final String query =
      *  "%s ";private final String count = "Select count(*)";*/
@@ -62,6 +61,16 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
      * Creates a new CidsLayerSearchStatement object.
      */
     public CidsLayerSearchStatement() {
+    }
+
+    /**
+     * Creates a new CidsLayerSearchStatement object.
+     *
+     * @param  clazz  DOCUMENT ME!
+     */
+    public CidsLayerSearchStatement(final MetaClass clazz) {
+        classId = clazz.getID();
+        domain = clazz.getDomain();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -105,20 +114,30 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
     /**
      * DOCUMENT ME!
      *
-     * @param  className  countOnly DOCUMENT ME!
+     * @return  DOCUMENT ME!
+     */
+    public int getClassId() {
+        return classId;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SearchException  DOCUMENT ME!
      */
     /*public void setCountOnly(final boolean countOnly) {
      *  this.searchCount = countOnly;}*/
 
-    public void setClassId(final String className) {
-        this.className = className;
-    }
+    /*public void setClassId(final String className) {
+     *  this.classId = className;}*/
 
     @Override
     public Collection performServerSearch() throws SearchException {
-        final MetaService ms = (MetaService)getActiveLocalServers().get(WRRL_DOMAIN);
+        final MetaService ms = (MetaService)getActiveLocalServers().get(domain);
         try {
-            final MetaClass clazz = ms.getClassByTableName(getUser(), className);
+            final MetaClass clazz = ms.getClass(getUser(), classId);
             final ClassAttribute attribute = clazz.getClassAttribute("cidsLayer");
             if (attribute == null) {
                 return null;
@@ -132,9 +151,9 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
             }
             final String query = String.format(
                     select,
-                    className,
+                    clazz.getTableName(),
                     sb.toString(),
-                    className,
+                    clazz.getTableName(),
                     options.get("geom_id"),
                     x1,
                     y1,
