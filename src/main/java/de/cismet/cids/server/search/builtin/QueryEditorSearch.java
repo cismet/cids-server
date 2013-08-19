@@ -78,6 +78,7 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
         if (ms != null) {
             try {
                 final String query = MessageFormat.format(this.query, metaClass, whereClause, classId);
+                LOG.info(query);
                 final ArrayList<ArrayList> results = ms.performCustomSearch(query);
 
                 for (final ArrayList al : results) {
@@ -98,7 +99,7 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
                 return metaObjects;
             } catch (RemoteException ex) {
                 LOG.error(ex.getMessage(), ex);
-                throw new SearchException("SQL Query fehlerhaft");
+                throw new SearchException("An error is occured, possibly an sql syntax error",ex);
             }
         } else {
             LOG.error("active local server not found"); // NOI18N
