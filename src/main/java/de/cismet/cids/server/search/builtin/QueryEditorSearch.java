@@ -37,7 +37,7 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String query = "SELECT {2} classid, tbl.id objectid, c.stringrep FROM {0} tbl "
+    private static final String query = "SELECT {2} AS classid, tbl.id AS objectid, c.stringrep FROM {0} tbl "
                 + "LEFT OUTER JOIN cs_stringrepcache c "     // NOI18N
                 + "       ON     ( "                         // NOI18N
                 + "                     c.class_id ={2} "    // NOI18N
@@ -99,7 +99,7 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
                 return metaObjects;
             } catch (RemoteException ex) {
                 LOG.error(ex.getMessage(), ex);
-                throw new SearchException("An error is occured, possibly an sql syntax error",ex);
+                throw new SearchException("An error is occured, possibly an sql syntax error", ex);
             }
         } else {
             LOG.error("active local server not found"); // NOI18N
