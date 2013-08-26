@@ -20,33 +20,17 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.io.WKTReader;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
 import org.jdesktop.observablecollections.ObservableList;
 
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import java.beans.IntrospectionException;
@@ -54,12 +38,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyDescriptor;
-
-import java.io.IOException;
-
-import java.math.BigDecimal;
-
-import java.sql.Timestamp;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,22 +47,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import de.cismet.cids.json.IntraObjectCacheJsonGenerator;
-import de.cismet.cids.json.IntraObjectCacheJsonParser;
-
 import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
 
-import de.cismet.commons.classloading.BlacklistClassloading;
-
-import static com.fasterxml.jackson.core.JsonToken.VALUE_FALSE;
-import static com.fasterxml.jackson.core.JsonToken.VALUE_NULL;
-import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_FLOAT;
-import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_INT;
-import static com.fasterxml.jackson.core.JsonToken.VALUE_TRUE;
-
-import static de.cismet.cids.dynamics.CidsBean.CIDS_OBJECT_KEY_IDENTIFIER;
 import static de.cismet.cids.dynamics.CidsBean.mapper;
 
 /**
@@ -93,16 +59,15 @@ import static de.cismet.cids.dynamics.CidsBean.mapper;
  * @author   hell
  * @version  $Revision$, $Date$
  */
-@JsonSerialize(using = CidsBeanJsonSerializer.class)
-@JsonDeserialize(using = CidsBeanJsonDeserializer.class)
+//@JsonSerialize(using = CidsBeanJsonSerializer.class)
+//@JsonDeserialize(using = CidsBeanJsonDeserializer.class)
 public class CidsBean implements PropertyChangeListener {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient Logger LOG = Logger.getLogger(CidsBean.class);
     static final ObjectMapper mapper = new ObjectMapper();
-    public static final String CIDS_OBJECT_KEY_IDENTIFIER = "cidsObjectKey";
-    static boolean INTRA_OBJECT_CACHE_ENABLED = true;
+    static final ObjectMapper intraObjectCacheMapper = new ObjectMapper();
     /**
      * DOCUMENT ME!
      *
@@ -117,6 +82,15 @@ public class CidsBean implements PropertyChangeListener {
 
     static {
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        intraObjectCacheMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        final SimpleModule regularModule = new SimpleModule("NOIOC", new Version(1, 0, 0, null, null, null));
+        regularModule.addSerializer(new CidsBeanJsonSerializer());
+        regularModule.addDeserializer(CidsBean.class, new CidsBeanJsonDeserializer());
+        mapper.registerModule(regularModule);
+        final SimpleModule intraObjectCacheModule = new SimpleModule("IOC", new Version(1, 0, 0, null, null, null));
+        intraObjectCacheModule.addSerializer(new IntraObjectCacheEnabledCidsBeanJsonSerializer());
+        intraObjectCacheModule.addDeserializer(CidsBean.class, new IntraObjectCacheEnabledCidsBeanJsonDeserializer());
+        intraObjectCacheMapper.registerModule(intraObjectCacheModule);
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -138,6 +112,24 @@ public class CidsBean implements PropertyChangeListener {
     private CustomBeanPermissionProvider customPermissionProvider;
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ObjectMapper getCidsBeanObjectMapper() {
+        return mapper;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ObjectMapper getCidsBeanIntraObjectCacheMapper() {
+        return intraObjectCacheMapper;
+    }
 
     /**
      * DOCUMENT ME!
@@ -440,9 +432,9 @@ public class CidsBean implements PropertyChangeListener {
                 final CidsBean cbv = (CidsBean)value;
                 realChanges = ((oldValue == null)
                                 || ((oldValue instanceof MetaObject)
-                                    && !((Sirius.server.middleware.types.MetaObject)oldValue).getBean().toJSONString()
-                                    .equals(
-                                        cbv.toJSONString())));
+                                    && !((Sirius.server.middleware.types.MetaObject)oldValue).getBean().toJSONString(
+                                        true).equals(
+                                        cbv.toJSONString(true))));
                 oa.setValue(cbv.getMetaObject());
                 cbv.setBacklinkInformation(field, this);
                 if (cbv.getMetaObject().getStatus() == MetaObject.TO_DELETE) {
@@ -900,12 +892,18 @@ public class CidsBean implements PropertyChangeListener {
     /**
      * DOCUMENT ME!
      *
+     * @param   intraObjectCacheEnabled  DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      */
-    public String toJSONString() {
+    public String toJSONString(final boolean intraObjectCacheEnabled) {
         try {
             this.intraObjectCache.clear();
-            return mapper.writeValueAsString(this);
+            if (intraObjectCacheEnabled) {
+                return intraObjectCacheMapper.writeValueAsString(this);
+            } else {
+                return mapper.writeValueAsString(this);
+            }
         } catch (Exception ex) {
             LOG.error("Error in Json Output", ex);
             return "{\"error\":\"Error during Json Production\",\"exception\":\"" + ex
@@ -916,13 +914,18 @@ public class CidsBean implements PropertyChangeListener {
     /**
      * DOCUMENT ME!
      *
-     * @param   beans  DOCUMENT ME!
+     * @param   intraObjectCacheEnabled  DOCUMENT ME!
+     * @param   beans                    DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public static String toJSONString(final Collection<CidsBean> beans) {
+    public static String toJSONString(final boolean intraObjectCacheEnabled, final Collection<CidsBean> beans) {
         try {
-            return mapper.writeValueAsString(beans);
+            if (intraObjectCacheEnabled) {
+                return intraObjectCacheMapper.writeValueAsString(beans);
+            } else {
+                return mapper.writeValueAsString(beans);
+            }
         } catch (Exception ex) {
             LOG.error("Error in serialization of Cidsbeans Array");
             return null;
@@ -934,13 +937,10 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @return  DOCUMENT ME!
      */
-    public String getCidsObjectKey() {
-        return new StringBuffer("/").append(getMetaObject().getMetaClass().getTableName())
-                    .append('@')
-                    .append(getMetaObject().getMetaClass().getDomain())
-                    .append('/')
-                    .append(getPrimaryKeyValue())
-                    .toString();
+    public CidsBeanInfo getCidsBeanInfo() {
+        return new CidsBeanInfo(getMetaObject().getMetaClass().getDomain(),
+                getMetaObject().getMetaClass().getTableName(),
+                getPrimaryKeyValue());
     }
 
     /**
@@ -994,29 +994,47 @@ public class CidsBean implements PropertyChangeListener {
     /**
      * DOCUMENT ME!
      *
-     * @param   json  DOCUMENT ME!
+     * @param   intraObjectCacheEnabled  DOCUMENT ME!
+     * @param   json                     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public static CidsBean createNewCidsBeanFromJSON(final String json) throws Exception {
-        final CidsBean jsonBean = mapper.readValue(json, CidsBean.class);
-        return jsonBean;
+    public static CidsBean createNewCidsBeanFromJSON(final boolean intraObjectCacheEnabled, final String json)
+            throws Exception {
+        if (intraObjectCacheEnabled) {
+            return intraObjectCacheMapper.readValue(json, CidsBean.class);
+        } else {
+            return mapper.readValue(json, CidsBean.class);
+        }
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   json  DOCUMENT ME!
+     * @param   intraObjectCacheEnabled  DOCUMENT ME!
+     * @param   json                     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public static Collection<CidsBean> createNewCidsBeansFromJSONCollection(final String json) throws Exception {
-        final Collection<CidsBean> jsonBeans = mapper.readValue(json, Collection.class);
-        return jsonBeans;
+    public static Collection<CidsBean> createNewCidsBeansFromJSONCollection(final boolean intraObjectCacheEnabled,
+            final String json) throws Exception {
+        final TypeFactory t = TypeFactory.defaultInstance();
+
+        if (intraObjectCacheEnabled) {
+            final Collection<CidsBean> jsonBeans = intraObjectCacheMapper.readValue(
+                    json,
+                    t.constructCollectionType(Collection.class, CidsBean.class));
+            return jsonBeans;
+        } else {
+            final Collection<CidsBean> jsonBeans = mapper.readValue(
+                    json,
+                    t.constructCollectionType(Collection.class, CidsBean.class));
+            return jsonBeans;
+        }
     }
 
     /**
@@ -1091,276 +1109,5 @@ public class CidsBean implements PropertyChangeListener {
      */
     public static boolean checkWritePermission(final User user, final CidsBean bean) {
         return bean.getHasWritePermission(user) && bean.hasObjectWritePermission(user);
-    }
-}
-
-/**
- * DOCUMENT ME!
- *
- * @version  $Revision$, $Date$
- */
-class CidsBeanJsonSerializer extends StdSerializer<CidsBean> {
-
-    //~ Constructors -----------------------------------------------------------
-
-    /**
-     * Creates a new CidsAttributeJsonSerializer object.
-     */
-    public CidsBeanJsonSerializer() {
-        super(CidsBean.class);
-    }
-
-    //~ Methods ----------------------------------------------------------------
-
-    @Override
-    public void serialize(final CidsBean cb, final JsonGenerator _jg, final SerializerProvider sp) throws IOException,
-        JsonGenerationException {
-        IntraObjectCacheJsonGenerator jg;
-        if (_jg instanceof IntraObjectCacheJsonGenerator) {
-            jg = (IntraObjectCacheJsonGenerator)_jg;
-        } else {
-            jg = new IntraObjectCacheJsonGenerator(_jg);
-        }
-
-        jg.writeStartObject();
-        jg.writeStringField(CidsBean.CIDS_OBJECT_KEY_IDENTIFIER, cb.getCidsObjectKey());
-        if (!CidsBean.INTRA_OBJECT_CACHE_ENABLED || !jg.containsKey(cb.getCidsObjectKey())) {
-            final String[] propNames = cb.getPropertyNames();
-            for (int i = 0; i < propNames.length; ++i) {
-                final String attribute = propNames[i];
-                final Object object = cb.getProperty(attribute);
-                if (object instanceof CidsBean) {
-                    jg.writeObjectField(attribute, object);
-                } else if (object instanceof List) {
-                    final List<CidsBean> collection = (List<CidsBean>)object;
-                    jg.writeArrayFieldStart(attribute);
-                    for (int j = 0; j < collection.size(); ++j) {
-                        final CidsBean colBean = collection.get(j);
-                        jg.writeObject(colBean);
-                    }
-                    jg.writeEndArray();
-                } else {
-                    if (object == null) {
-                        jg.writeNullField(attribute);
-                    } else if (object instanceof Geometry) {
-                        jg.writeStringField(attribute, StringEscapeUtils.escapeJava(String.valueOf(object)));
-                    } else if (object instanceof BigDecimal) {
-                        jg.writeNumberField(attribute, (BigDecimal)object);
-                    } else if (object instanceof Double) {
-                        jg.writeNumberField(attribute, (Double)object);
-                    } else if (object instanceof Float) {
-                        jg.writeNumberField(attribute, (Float)object);
-                    } else if (object instanceof Integer) {
-                        jg.writeNumberField(attribute, (Integer)object);
-                    } else if (object instanceof Long) {
-                        jg.writeNumberField(attribute, (Long)object);
-                    } else if (object instanceof Boolean) {
-                        jg.writeBooleanField(attribute, (Boolean)object);
-                    } else if (object instanceof String) {
-                        jg.writeStringField(attribute, String.valueOf(object));
-                    } else {
-                        jg.writeObjectField(attribute, object);
-                    }
-                }
-            }
-            if (CidsBean.INTRA_OBJECT_CACHE_ENABLED) {
-                jg.put(cb.getCidsObjectKey(), cb);
-            }
-        }
-        jg.writeEndObject();
-    }
-}
-
-/**
- * DOCUMENT ME!
- *
- * @version  $Revision$, $Date$
- */
-class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
-
-    //~ Constructors -----------------------------------------------------------
-
-    /**
-     * Creates a new CidsBeanJsonDeserializer object.
-     */
-    public CidsBeanJsonDeserializer() {
-        super(CidsBean.class);
-    }
-
-    //~ Methods ----------------------------------------------------------------
-
-    @Override
-    public CidsBean deserialize(final JsonParser _jp, final DeserializationContext dc) throws IOException,
-        JsonProcessingException {
-        boolean cacheHit = false;
-        boolean keySet = false;
-        CidsBean cb = null;
-        String key = "???";
-        IntraObjectCacheJsonParser jp = null;
-        if (_jp instanceof IntraObjectCacheJsonParser) {
-            jp = (IntraObjectCacheJsonParser)_jp;
-        } else {
-            jp = new IntraObjectCacheJsonParser(_jp);
-        }
-
-        try {
-            while (jp.nextValue() != JsonToken.END_OBJECT) {
-                final String fieldName = jp.getCurrentName();
-                if (!cacheHit) {
-                    if (!keySet && fieldName.equals(CIDS_OBJECT_KEY_IDENTIFIER)) {
-                        key = jp.getText();
-                        final String[] parts = key.split("/");
-                        final String classKey = parts[1];
-                        final String[] classKeyParts = classKey.split("@");
-                        final String tablename = classKeyParts[0];
-                        final String domain = classKeyParts[1];
-                        final String pk = parts[2];
-                        keySet = true;
-                        if (CidsBean.INTRA_OBJECT_CACHE_ENABLED && jp.containsKey(key)) {
-                            cb = jp.get(key);
-                            cacheHit = true;
-                        } else {
-                            cb = CidsBean.createNewCidsBeanFromTableName(domain, tablename);                             // test
-                        }
-                    } else {
-                        if (cb == null) {
-                            throw new RuntimeException("Json-Object has to start with a " + CIDS_OBJECT_KEY_IDENTIFIER); // NOI18N
-                        }
-                        switch (jp.getCurrentToken()) {
-                            case START_ARRAY: {
-                                while (jp.nextValue() != JsonToken.END_ARRAY) {
-                                    final CidsBean arrayObject = jp.readValueAs(CidsBean.class);
-                                    if (CidsBean.INTRA_OBJECT_CACHE_ENABLED) {
-                                        jp.put(arrayObject.getCidsObjectKey(), arrayObject);
-                                    }
-                                    cb.addCollectionElement(fieldName, arrayObject);
-                                }
-                                // Clean up
-                                // No changed flags shall be true.
-                                // All statuses shall be NO_STATUS
-                                final ObjectAttribute oa = cb.getMetaObject().getAttributeByFieldName(fieldName);
-                                oa.setChanged(false);
-                                final MetaObject dummy = (MetaObject)oa.getValue();
-                                if (dummy != null) {
-                                    dummy.setChanged(false);
-                                    dummy.forceStatus(MetaObject.NO_STATUS);
-                                    dummy.setStatus(MetaObject.NO_STATUS);
-                                    final ObjectAttribute[] entries = dummy.getAttribs();
-                                    for (final ObjectAttribute entry : entries) {
-                                        entry.setChanged(false);
-                                        ((MetaObject)entry.getValue()).forceStatus(MetaObject.NO_STATUS);
-                                        ((MetaObject)entry.getValue()).setChanged(false);
-                                    }
-                                }
-                                break;
-                            }
-
-                            case START_OBJECT: {
-                                final CidsBean subObject = jp.readValueAs(CidsBean.class);
-                                if (CidsBean.INTRA_OBJECT_CACHE_ENABLED) {
-                                    jp.put(subObject.getCidsObjectKey(), subObject);
-                                }
-                                cb.quiteSetProperty(fieldName, subObject);
-                                break;
-                            }
-
-                            case VALUE_NUMBER_FLOAT:
-                            case VALUE_NUMBER_INT: {
-                                try {
-                                    final Class numberClass = BlacklistClassloading.forName(cb.getMetaObject()
-                                                    .getAttributeByFieldName(
-                                                        fieldName).getMai().getJavaclassname());
-                                    if (numberClass.equals(Integer.class)) {
-                                        final int i = jp.getIntValue();
-                                        cb.quiteSetProperty(fieldName, i);
-                                    } else if (numberClass.equals(Long.class)) {
-                                        final long l = jp.getLongValue();
-                                        cb.quiteSetProperty(fieldName, l);
-                                    } else if (numberClass.equals(Float.class)) {
-                                        final float f = jp.getFloatValue();
-                                        cb.quiteSetProperty(fieldName, f);
-                                    } else if (numberClass.equals(Double.class)) {
-                                        final double d = jp.getDoubleValue();
-                                        cb.quiteSetProperty(fieldName, d);
-                                    } else if (numberClass.equals(java.sql.Timestamp.class)) {
-                                        final Timestamp ts = new Timestamp(jp.getLongValue());
-                                        cb.quiteSetProperty(fieldName, ts);
-                                    } else if (numberClass.equals(BigDecimal.class)) {
-                                        final BigDecimal bd = new BigDecimal(jp.getText());
-                                        cb.quiteSetProperty(fieldName, bd);
-                                    } else {
-                                        throw new RuntimeException("no handler available for " + numberClass);
-                                    }
-                                } catch (Exception ex) {
-                                    throw new RuntimeException("problem during processing of " + fieldName + ". value:"
-                                                + jp.getText(),
-                                        ex);
-                                }
-                                break;
-                            }
-
-                            case VALUE_NULL: {
-                                cb.quiteSetProperty(fieldName, null);
-                                break;
-                            }
-
-                            case VALUE_TRUE: {
-                                cb.quiteSetProperty(fieldName, true);
-                                break;
-                            }
-
-                            case VALUE_FALSE: {
-                                cb.quiteSetProperty(fieldName, false);
-                                break;
-                            }
-
-                            case VALUE_STRING: {
-                                final Class attrClass = BlacklistClassloading.forName(cb.getMetaObject()
-                                                .getAttributeByFieldName(
-                                                    fieldName).getMai().getJavaclassname());
-                                if (attrClass.equals(String.class)) {
-                                    final String s = jp.getText();
-                                    cb.quiteSetProperty(fieldName, s);
-                                } else if (attrClass.equals(Geometry.class)) {
-                                    try {
-                                        final String s = jp.getText();
-                                        cb.quiteSetProperty(fieldName, new WKTReader(new GeometryFactory()).read(s));
-                                    } catch (Exception e) {
-                                        throw new RuntimeException("problem during processing of " + fieldName + "("
-                                                    + attrClass + "). value:"
-                                                    + jp.getText(),
-                                            e);
-                                    }
-                                } else {
-                                    try {
-                                        cb.quiteSetProperty(fieldName, mapper.readValue(jp, attrClass));
-                                    } catch (Exception e) {
-                                        throw new RuntimeException("problem bei " + fieldName + "(" + attrClass + ")",
-                                            e);
-                                    }
-                                }
-
-                                break;
-                            }
-                            case VALUE_EMBEDDED_OBJECT: {
-                                throw new UnsupportedOperationException("Not supported yet.");
-                            }
-
-                            default: {
-                                throw new RuntimeException("unhandled case. This is a bad thing"); // NOI18N
-                            }
-                        }
-                    }
-                }
-            }
-            cb.getMetaObject().setID(cb.getPrimaryKeyValue());
-            cb.getMetaObject().forceStatus(MetaObject.NO_STATUS);
-            if (CidsBean.INTRA_OBJECT_CACHE_ENABLED) {
-                jp.put(key, cb);
-            }
-            return cb;
-        } catch (Exception ex) {
-            throw new RuntimeException("Error during creation of new CidsBean key=" + key, ex);    // NOI18N
-        }
     }
 }
