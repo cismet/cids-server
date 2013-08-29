@@ -17,17 +17,15 @@ import Sirius.server.middleware.types.MetaClass;
 
 import org.apache.log4j.Logger;
 
-import org.openide.util.Exceptions;
 
 import java.rmi.RemoteException;
 
-import java.text.MessageFormat;
 
 import java.util.Collection;
-import java.util.Map;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
+import java.util.ArrayList;
 
 /**
  * DOCUMENT ME!
@@ -48,13 +46,15 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
     double y1;
     double y2;
     int classId;
-    private String domain = "WRRL_DB_MV"; // NOI18N
+    int srid;
+    private String domain = ""; // NOI18N
 
     /*private final String query =
      *  "%s ";private final String count = "Select count(*)";*/
     private final String select =
         "Select (select id from cs_class where table_name ilike '%s') as class_id, asEWKT(geom.geo_field)%s from %s, geom where %s = geom.id and geo_field && 'BOX3D(%s %s,%s %s)'::box3d";
-
+    private final String selectFromView = "Select * from %s where geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d) order by object_id";
+    
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -141,7 +141,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
             final ClassAttribute attribute = clazz.getClassAttribute("cidsLayer");
             if (attribute == null) {
                 return null;
-            }
+            }/*
             final Map<String, String> options = attribute.getOptions();
             final StringBuilder sb = new StringBuilder();
             for (final Map.Entry<String, String> entry : options.entrySet()) {
@@ -158,11 +158,30 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
                     x1,
                     y1,
                     x2,
-                    y2);
-            return ms.performCustomSearch(query);
+                    y2);*/
+            if(!(attribute.getValue() instanceof String)) {
+                LOG.error("Could not read layer view for metaclass " + clazz.getTableName());
+                return null;
+            }
+            final String viewName = (String)attribute.getValue();
+            ArrayList<ArrayList> columns = ms.performCustomSearch("select column_name from information_schema.columns where table_name = '" + viewName + "' order by ordinal_position ASC");
+            final String query = String.format(selectFromView, viewName, x1, y1,x2, y2, srid);
+            LOG.info(query);
+            ArrayList<ArrayList> result = ms.performCustomSearch(query);
+            ArrayList columnNames = new ArrayList();
+            for(ArrayList column : columns) {
+                columnNames.add(column.get(0));
+            }
+            LOG.info("Column names are " + columnNames.toString());
+            result.add(0, columnNames);
+            return result;
         } catch (RemoteException ex) {
             LOG.error("Error in customSearch", ex);
         }
         return null;
+    }
+
+    public void setSrid(int defaultCrsAlias) {
+        srid = defaultCrsAlias;
     }
 }
