@@ -24,7 +24,6 @@ import java.util.Collection;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
-import java.util.ArrayList;
 
 /**
  * DOCUMENT ME!
