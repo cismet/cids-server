@@ -7,6 +7,7 @@
 ****************************************************/
 package Sirius.server.newuser.permission;
 
+import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
 
 import Sirius.util.Mapable;
@@ -116,17 +117,31 @@ public final class PermissionHolder implements Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   user  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public boolean hasReadPermission(final UserGroup ug) {
-        try {
-            return hasPermission(ug.getKey().toString(), READPERMISSION);
-        } catch (final Exception e) {
-            LOG.error("error in hasReadPermission (ug = " // NOI18N
-                        + ug
-                        + "). Will return false.", e); // NOI18N
+    public boolean hasReadPermission(final User user) {
+        if (user != null) {
+            final UserGroup userGroup = user.getUserGroup();
+            try {
+                if (userGroup != null) {
+                    return hasPermission(userGroup.getKey().toString(), READPERMISSION);
+                } else {
+                    for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
+                        if (hasPermission(potentialUserGroup.getKey().toString(), READPERMISSION)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            } catch (final Exception e) {
+                LOG.error("error in hasReadPermission (ug = " // NOI18N
+                            + userGroup
+                            + "). Will return false.", e); // NOI18N
+                return false;
+            }
+        } else {
             return false;
         }
     }
@@ -134,17 +149,31 @@ public final class PermissionHolder implements Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   user  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public boolean hasWritePermission(final UserGroup ug) {
-        try {
-            return hasPermission(ug.getKey().toString(), WRITEPERMISSION);
-        } catch (final Exception e) {
-            LOG.error("Error in hasWritePermission (ug = " // NOI18N
-                        + ug
-                        + "). Will return false.", e); // NOI18N
+    public boolean hasWritePermission(final User user) {
+        if (user != null) {
+            final UserGroup userGroup = user.getUserGroup();
+            if (userGroup != null) {
+                try {
+                    return hasPermission(userGroup.getKey().toString(), WRITEPERMISSION);
+                } catch (final Exception e) {
+                    LOG.error("Error in hasWritePermission (ug = " // NOI18N
+                                + userGroup
+                                + "). Will return false.", e); // NOI18N
+                    return false;
+                }
+            } else {
+                for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
+                    if (hasPermission(potentialUserGroup.getKey().toString(), WRITEPERMISSION)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        } else {
             return false;
         }
     }

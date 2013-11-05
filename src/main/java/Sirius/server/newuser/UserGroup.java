@@ -24,6 +24,7 @@ public class UserGroup implements Serializable, Mapable {
     protected String domain;
     protected String name;
     protected String description;
+    protected int prio;
     protected boolean isAdmin;
 
     //~ Constructors -----------------------------------------------------------
@@ -36,11 +37,7 @@ public class UserGroup implements Serializable, Mapable {
      * @param  domain  DOCUMENT ME!
      */
     public UserGroup(final int id, final String name, final String domain) {
-        this.id = id;
-        this.domain = domain.trim();
-        this.name = name.trim();
-        this.description = ""; // NOI18N
-        this.isAdmin = false;
+        this(id, name, domain, "", Integer.MAX_VALUE);
     }
 
     /**
@@ -50,10 +47,15 @@ public class UserGroup implements Serializable, Mapable {
      * @param  name         DOCUMENT ME!
      * @param  domain       DOCUMENT ME!
      * @param  description  DOCUMENT ME!
+     * @param  prio         DOCUMENT ME!
      */
-    public UserGroup(final int id, final String name, final String domain, final String description) {
-        this(id, name, domain);
-        this.description = description;
+    public UserGroup(final int id, final String name, final String domain, final String description, final int prio) {
+        this.id = id;
+        this.domain = domain.trim();
+        this.name = name.trim();
+        this.description = description; // NOI18N
+        this.isAdmin = false;
+        this.prio = prio;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -128,6 +130,15 @@ public class UserGroup implements Serializable, Mapable {
      */
     public int getId() {
         return id;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public int getPrio() {
+        return prio;
     }
 
     /**

@@ -77,7 +77,7 @@ public class Seeker {
      *
      * @param   query           DOCUMENT ME!
      * @param   classIds        DOCUMENT ME!
-     * @param   usr             ug DOCUMENT ME!
+     * @param   usr             DOCUMENT ME!
      * @param   recursionLevel  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -219,12 +219,12 @@ public class Seeker {
 
                 final MetaObjectNode on = (MetaObjectNode)n[i];
 
-                if (on.getPermissions().hasPermission(usr.getUserGroup().getKey(), PermissionHolder.READPERMISSION)) // readPermission
+                if (on.getPermissions().hasReadPermission(usr)) // readPermission
                 {
                     // objectzuordnung abgeschaltet
                     filtered.add(on);
                 } else {
-                    logger.info("UserGroup " + usr.getUserGroup() + " has no Read Permission for node " + on); // NOI18N
+                    logger.info("User  " + usr + "has no Read Permission for node " + on); // NOI18N
                 }
             }
 

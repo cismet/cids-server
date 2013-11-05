@@ -622,9 +622,9 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             final String password) throws RemoteException, UserException {
         LOGINLOG.info("Login: " + userName + "@" + userGroupName + "@" + userGroupLsName);
         return userService.getUser(
-                userLsName,
-                userGroupName,
                 userGroupLsName,
+                userGroupName,
+                userLsName,
                 userName,
                 password);
     }
