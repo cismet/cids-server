@@ -58,6 +58,7 @@ public final class DBConnection implements DBBackend {
     public static final String DESC_FETCH_CONFIG_ATTR_USER_VALUE = "fetch_config_attr_user_value";             // NOI18N
     public static final String DESC_FETCH_CONFIG_ATTR_UG_VALUE = "fetch_config_attr_ug_value";                 // NOI18N
     public static final String DESC_FETCH_CONFIG_ATTR_DOMAIN_VALUE = "fetch_config_attr_domain_value";         // NOI18N
+    public static final String DESC_FETCH_CONFIG_ATTR_EXEMPT_VALUE = "fetch_config_attr_exempt_value";         // NOI18N
     public static final String DESC_FETCH_HISTORY = "fetch_history";                                           // NOI18N
     public static final String DESC_FETCH_HISTORY_LIMIT = "fetch_history_limit";                               // NOI18N
     public static final String DESC_INSERT_HISTORY_ENTRY = "insert_history_entry";                             // NOI18N

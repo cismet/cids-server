@@ -17,7 +17,6 @@ import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
-import Sirius.server.newuser.UserGroup;
 import Sirius.server.sql.DBConnection;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -353,9 +352,8 @@ public final class PersistenceManager extends Shutdown {
                         + mo.isDummy());
         }
 
-        if (
-            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
-                        user.getUserGroup())
+        if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
+                        user)
                     && (mo.isDummy() || mo.hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
 
             if (LOG_PERFORMANCE.isDebugEnabled()) {
@@ -406,15 +404,8 @@ public final class PersistenceManager extends Shutdown {
                     before = System.currentTimeMillis();
                 }
 
-                // intitialize UserGroup
-                UserGroup ug = null;
-
-                // retrieve userGroup is user is not null
-                if (user != null) {
-                    ug = user.getUserGroup();
-                }
                 // retrieve the metaObject's class
-                final Sirius.server.localserver._class.Class c = dbServer.getClass(ug, mo.getClassID());
+                final Sirius.server.localserver._class.Class c = dbServer.getClass(user, mo.getClassID());
                 // get Tablename from class
                 final String tableName = c.getTableName();
                 // get primary Key from class
@@ -644,9 +635,8 @@ public final class PersistenceManager extends Shutdown {
                         + " isDummy(ArrayContainer) :" // NOI18N
                         + mo.isDummy());               // NOI18N
         }
-        if (
-            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
-                        user.getUserGroup())
+        if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
+                        user)
                     && (mo.isDummy() || mo.hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
             // existiert gar keine sinnvolle
             // bean
@@ -1136,8 +1126,7 @@ public final class PersistenceManager extends Shutdown {
         }
         mo.forceStatus(MetaObject.NO_STATUS);
         if (
-            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(
-                        user.getUserGroup())
+            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(user)
                     && (mo.isDummy() || mo.hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
             // existiert gar keine sinnvolle
             // bean won't insert history
