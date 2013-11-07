@@ -1125,8 +1125,7 @@ public final class PersistenceManager extends Shutdown {
                         + mo.isDummy());               // NOI18N
         }
         mo.forceStatus(MetaObject.NO_STATUS);
-        if (
-            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(user)
+        if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(user)
                     && (mo.isDummy() || mo.hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
             // existiert gar keine sinnvolle
             // bean won't insert history
