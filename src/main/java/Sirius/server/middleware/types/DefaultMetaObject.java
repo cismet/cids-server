@@ -70,7 +70,8 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     // bugfix
 
     /**
-     * constructs a metaObject out of a (server) object. mainly adds the domain infromation
+     * constructs a metaObject out of a (server) object. mainly adds the domain infromation and filters attribute not
+     * allowed for a user
      *
      * @param  o       "server" object
      * @param  domain  domain
@@ -79,6 +80,7 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     public DefaultMetaObject(final Sirius.server.localserver.object.Object o, final String domain, final User user) {
         // zum Testen einfach rekursives ersetzen
         super(o);
+        o.filter(user);
         this.domain = domain;
         setStatus(o.getStatus());
         if (o instanceof DefaultMetaObject) {
@@ -109,23 +111,6 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
         this.setDummy(o.isDummy());
     }
 
-    /**
-     * constructs a metaObject out of a (server) object. mainly adds the domain infromation and filters attribute not
-     * allowed for a usergroup (ug)
-     * {@link #DefaultMetaObject(Sirius.server.localserver.object.Object, java.lang.String, Sirius.server.newuser.User)}
-     * should be used in order to build possibly contained LightweightMetaObjects properly.
-     *
-     * @param   object  "server" object
-     * @param   domain  domain
-     * @param   ug      user group
-     *
-     * @throws  Exception  java.lang.Exception error
-     */
-    public DefaultMetaObject(final Sirius.server.localserver.object.Object object,
-            final String domain,
-            final UserGroup ug) throws Exception {
-        this(object.filter(ug), domain);
-    }
     // --------------------------------------------------------------
 
     //~ Methods ----------------------------------------------------------------

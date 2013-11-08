@@ -43,7 +43,6 @@ public final class UserStore extends Shutdown {
     //~ Instance fields --------------------------------------------------------
 
     protected DBConnectionPool conPool;
-
     protected Vector users;
     protected Vector userGroups;
     // protected Hashtable userGroupHash;
@@ -111,7 +110,8 @@ public final class UserStore extends Shutdown {
                             userGroupTable.getInt("id"),             // NOI18N
                             userGroupTable.getString("name").trim(), // NOI18N
                             domain,
-                            userGroupTable.getString("descr"));      // NOI18N
+                            userGroupTable.getString("descr"),
+                            userGroupTable.getInt("prio"));          // NOI18N
                     userGroups.addElement(tmp);
                 } catch (Exception e) {
                     LOG.error(e);
@@ -245,7 +245,6 @@ public final class UserStore extends Shutdown {
      *
      * @return  DOCUMENT ME!
      */
-
     // FIXME: WHATS THE PURPOSE OF THIS IMPL???
     public boolean validateUser(final User user) {
         return true;
@@ -313,17 +312,60 @@ public final class UserStore extends Shutdown {
 
         assert keyId > 0 : "invalid key id"; // NOI18N
 
+        final UserGroup userGroup = user.getUserGroup();
+        if (userGroup != null) {
+            return getConfigAttrForUserGroup(keyId, user, userGroup);
+        } else {
+            final ResultSet exemptGroupValueSet = conPool.submitInternalQuery(
+                    DBConnection.DESC_FETCH_CONFIG_ATTR_EXEMPT_VALUE,
+                    user.getId(),
+                    keyId);
+            final int groupId;
+            if (exemptGroupValueSet.next()) {
+                groupId = exemptGroupValueSet.getInt(1);
+            } else {
+                groupId = -1;
+            }
+
+            for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
+                final String configAttr = getConfigAttrForUserGroup(keyId, user, potentialUserGroup);
+                if (groupId < 0) {
+                    if (configAttr != null) {
+                        return configAttr;
+                    }
+                } else if (potentialUserGroup.getId() == groupId) {
+                    return configAttr;
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   keyId      DOCUMENT ME!
+     * @param   user       DOCUMENT ME!
+     * @param   userGroup  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    private String getConfigAttrForUserGroup(final int keyId, final User user, final UserGroup userGroup)
+            throws SQLException {
         ResultSet userValueSet = null;
         ResultSet ugValueSet = null;
         ResultSet domainValueSet = null;
+
         try {
             final String userName = user.getName();
-            final String userGroupName = user.getUserGroup().getName();
+            final String userGroupName = userGroup.getName();
             final String domain;
-            if (properties.getServerName().equals(user.getUserGroup().getDomain())) {
+            if (properties.getServerName().equals(userGroup.getDomain())) {
                 domain = "LOCAL"; // NOI18N
             } else {
-                domain = user.getUserGroup().getDomain();
+                domain = userGroup.getDomain();
             }
 
             final String value;

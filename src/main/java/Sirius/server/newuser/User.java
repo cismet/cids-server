@@ -8,6 +8,8 @@
 package Sirius.server.newuser;
 import Sirius.util.*;
 
+import java.util.Collection;
+
 /**
  * DOCUMENT ME!
  *
@@ -28,6 +30,8 @@ public class User implements java.io.Serializable, Mapable {
 
     /** Die Benutzergruppe, der der Benutzer zugeordnet ist. Sie wird explizit gesetzt * */
     protected UserGroup userGroup;
+
+    protected Collection<UserGroup> potentialUserGroups;
 
     /** Variable, die anzeigt, ob eine Benutzergruppe gesetzt wurde.* */
     protected boolean valid = false;
@@ -112,12 +116,30 @@ public class User implements java.io.Serializable, Mapable {
     }
 
     /**
+     * DOCUMENT ME!
+     *
+     * @param  potentialUserGroups  DOCUMENT ME!
+     */
+    public void setPotentialUserGroups(final Collection<UserGroup> potentialUserGroups) {
+        this.potentialUserGroups = potentialUserGroups;
+    }
+
+    /**
      * liefert UserGroup.*
      *
      * @return  DOCUMENT ME!
      */
     public UserGroup getUserGroup() {
         return userGroup;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Collection<UserGroup> getPotentialUserGroups() {
+        return potentialUserGroups;
     }
 
     /**
