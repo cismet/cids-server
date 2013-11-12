@@ -159,7 +159,9 @@ public final class PersistenceManager extends Shutdown {
             try {
                 return System.currentTimeMillis();
             } catch (final Throwable t) {
-                LOG.debug("error while doing performance measurement", t);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("error while doing performance measurement", t);
+                }
             }
         }
         return 0;
@@ -175,11 +177,16 @@ public final class PersistenceManager extends Shutdown {
     private void stopPerformanceMeasurement(final String name, final MetaObject mo, final long before) {
         if (LOG_PERFORMANCE.isDebugEnabled()) {
             try {
-                    final long time = (System.currentTimeMillis() - before);
-                    LOG_PERFORMANCE.debug("PerformanceTest: " + time + "ms |  " + name + " | MetaClass: " + mo.getMetaClass().getName() + " | MetaObject: " + mo.getId());
+                final long time = (System.currentTimeMillis() - before);
+                if (LOG_PERFORMANCE.isDebugEnabled()) {
+                    LOG_PERFORMANCE.debug("PerformanceTest: " + time + "ms |  " + name + " | MetaClass: "
+                                + mo.getMetaClass().getName() + " | MetaObject: " + mo.getId());
+                }
             } catch (final Throwable t) {
-                LOG.debug("error while doing performance measurement", t);
-            }        
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("error while doing performance measurement", t);
+                }
+            }
         }
     }
 
@@ -591,8 +598,12 @@ public final class PersistenceManager extends Shutdown {
 
             before = startPerformanceMeasurement();
             final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
+            stopPerformanceMeasurement("updateMetaObjectWithoutTransaction - getRightTriggers", mo, before);
+            before = startPerformanceMeasurement();
             for (final CidsTrigger ct : rightTriggers) {
+                final long beforeFine = startPerformanceMeasurement();
                 ct.beforeUpdate(mo.getBean(), user);
+                stopPerformanceMeasurement("beforeUpdate " + ct.toString(), mo, beforeFine);
             }
             stopPerformanceMeasurement("updateMetaObjectWithoutTransaction - beforeUpdateTriggers", mo, before);
 
