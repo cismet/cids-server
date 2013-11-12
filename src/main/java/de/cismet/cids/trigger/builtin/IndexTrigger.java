@@ -837,7 +837,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
      * @throws  SQLException  DOCUMENT ME!
      */
     private synchronized Connection getConnection() throws SQLException {
-        return getConnection(false);
+        return getDbServer().getConnectionPool().getConnection(false);
     }
 
     /**
