@@ -13,13 +13,10 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.sql.DBConnection;
 
-import org.apache.commons.beanutils.BeanAccessLanguageException;
 
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -119,7 +116,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 @Override
                 public void run() {
                     try {
-                        final Connection connection = getConnection();
+                        final Connection connection = getLongtermConnection();
                         deleteIndex(connection, cidsBean.getMetaObject());
                     } catch (SQLException sQLException) {
                         log.error("Error during deleteIndex " + cidsBean.getMOString(), sQLException);
@@ -137,7 +134,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 @Override
                 public void run() {
                     try {
-                        final Connection connection = getConnection();
+                        final Connection connection = getLongtermConnection();
                         insertIndex(connection, cidsBean.getMetaObject());
                     } catch (SQLException sQLException) {
                         log.error("Error during insertIndex " + cidsBean.getMOString(), sQLException);
@@ -159,7 +156,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 @Override
                 public void run() {
                     try {
-                        final Connection connection = getConnection();
+                        final Connection connection = getLongtermConnection();
                         deleteIndex(connection, cidsBean.getMetaObject());
                         insertIndex(connection, cidsBean.getMetaObject());
 //                        updateIndex(connection, cidsBean.getMetaObject());
@@ -742,7 +739,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 @Override
                 public void run() {
                     try {
-                        final Connection connection = getConnection();
+                        final Connection connection = getLongtermConnection();
                         insertIndex(connection, cidsBean.getMetaObject());
                     } catch (SQLException sQLException) {
                         log.error("Error during insertIndex " + cidsBean.getMOString(), sQLException);
@@ -762,7 +759,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     try {
                         // Some times, the master object is not updates, but only the detail objects.
                         // In this case, the index of the master object should be also updated.
-                        final Connection connection = getConnection();
+                        final Connection connection = getLongtermConnection();
                         deleteIndex(connection, cidsBean.getMetaObject());
                         insertIndex(connection, cidsBean.getMetaObject());
                     } catch (SQLException sQLException) {
@@ -793,7 +790,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                 @Override
                 public void run() {
                     try {
-                        final Connection connection = getConnection();
+                        final Connection connection = getLongtermConnection();
                         for (final CidsBean bean : beansToCheckTmp) {
                             final List<CidsBeanInfo> beanInfo = getDependentBeans(
                                     connection,
@@ -828,13 +825,37 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
      *
      * @throws  SQLException  DOCUMENT ME!
      */
+    private synchronized Connection getLongtermConnection() throws SQLException {
+        return getConnection(true);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
     private synchronized Connection getConnection() throws SQLException {
+        return getConnection(false);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   longterm  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    private synchronized Connection getConnection(final boolean longterm) throws SQLException {
         if ((con == null) || con.isClosed()) {
             if ((con != null) && con.isClosed()) {
                 getDbServer().getConnectionPool().releaseDbConnection(con);
             }
 
-            con = getDbServer().getConnectionPool().getConnection(true);
+            con = getDbServer().getConnectionPool().getConnection(longterm);
         }
 
         return con;
