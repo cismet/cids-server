@@ -13,7 +13,6 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.sql.DBConnection;
 
-
 import org.openide.util.lookup.ServiceProvider;
 
 import java.sql.Connection;
