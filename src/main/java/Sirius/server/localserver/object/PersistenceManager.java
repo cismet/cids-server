@@ -63,6 +63,7 @@ public final class PersistenceManager extends Shutdown {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient Logger LOG = Logger.getLogger(PersistenceManager.class);
+    private static final transient Logger LOG_PERFORMANCE = Logger.getLogger("PersistPerformance");
     public static final String NULL = "NULL"; // NOI18N
 
     //~ Instance fields --------------------------------------------------------
@@ -151,6 +152,47 @@ public final class PersistenceManager extends Shutdown {
     /**
      * DOCUMENT ME!
      *
+     * @return  DOCUMENT ME!
+     */
+    private long startPerformanceMeasurement() {
+        if (LOG_PERFORMANCE.isDebugEnabled()) {
+            try {
+                return System.currentTimeMillis();
+            } catch (final Throwable t) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("error while doing performance measurement", t);
+                }
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  name    DOCUMENT ME!
+     * @param  mo      DOCUMENT ME!
+     * @param  before  DOCUMENT ME!
+     */
+    private void stopPerformanceMeasurement(final String name, final MetaObject mo, final long before) {
+        if (LOG_PERFORMANCE.isDebugEnabled()) {
+            try {
+                final long time = (System.currentTimeMillis() - before);
+                if (LOG_PERFORMANCE.isDebugEnabled()) {
+                    LOG_PERFORMANCE.debug("PerformanceTest: " + time + "ms |  " + name + " | MetaClass: "
+                                + mo.getMetaClass().getName() + " | MetaObject: " + mo.getId());
+                }
+            } catch (final Throwable t) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("error while doing performance measurement", t);
+                }
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   user  DOCUMENT ME!
      * @param   mo    DOCUMENT ME!
      *
@@ -160,15 +202,21 @@ public final class PersistenceManager extends Shutdown {
      */
     public int insertMetaObject(final User user, final MetaObject mo) throws PersistenceException {
         try {
+            long before = 0;
+
+            before = startPerformanceMeasurement();
             final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
             final TransactionHelper transactionHelper = local.get();
             transactionHelper.beginWork();
             final int rtn = insertMetaObjectWithoutTransaction(user, mo);
             transactionHelper.commit();
+            stopPerformanceMeasurement("insertMetaObject - insertMetaObjectWithoutTransaction", mo, before);
 
+            before = startPerformanceMeasurement();
             for (final CidsTrigger ct : rightTriggers) {
                 ct.afterCommittedInsert(mo.getBean(), user);
             }
+            stopPerformanceMeasurement("insertMetaObject - afterCommittedInsert", mo, before);
 
             return rtn;
         } catch (final Exception e) {
@@ -194,15 +242,21 @@ public final class PersistenceManager extends Shutdown {
     public void updateMetaObject(final User user, final MetaObject mo) throws PersistenceException, SQLException {
         if (!(mo instanceof LightweightMetaObject)) {
             try {
+                long before = 0;
+
+                before = startPerformanceMeasurement();
                 final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
                 final TransactionHelper transactionHelper = local.get();
                 transactionHelper.beginWork();
                 updateMetaObjectWithoutTransaction(user, mo);
                 transactionHelper.commit();
+                stopPerformanceMeasurement("updateMetaObject - updateMetaObjectWithoutTransaction", mo, before);
 
+                before = startPerformanceMeasurement();
                 for (final CidsTrigger ct : rightTriggers) {
                     ct.afterCommittedUpdate(mo.getBean(), user);
                 }
+                stopPerformanceMeasurement("updateMetaObject - afterCommittedUpdate", mo, before);
             } catch (final Exception e) {
                 final String message = "cannot update metaobject"; // NOI18N
                 LOG.error(message, e);
@@ -228,17 +282,21 @@ public final class PersistenceManager extends Shutdown {
      * @throws  PersistenceException  DOCUMENT ME!
      */
     public int deleteMetaObject(final User user, final MetaObject mo) throws PersistenceException {
+        long before = 0;
+        before = startPerformanceMeasurement();
         try {
             final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
             final TransactionHelper transactionHelper = local.get();
             transactionHelper.beginWork();
             final int rtn = deleteMetaObjectWithoutTransaction(user, mo);
             transactionHelper.commit();
+            stopPerformanceMeasurement("deleteMetaObject - deleteMetaObjectWithoutTransaction", mo, before);
 
+            before = startPerformanceMeasurement();
             for (final CidsTrigger ct : rightTriggers) {
                 ct.afterCommittedDelete(mo.getBean(), user);
             }
-
+            stopPerformanceMeasurement("deleteMetaObject - afterCommittedDelete", mo, before);
             return rtn;
         } catch (final Exception e) {
             final String message = "cannot delete metaobject"; // NOI18N
@@ -281,7 +339,10 @@ public final class PersistenceManager extends Shutdown {
      */
     private int deleteMetaObjectWithoutTransaction(final User user, final MetaObject mo) throws PersistenceException,
         SQLException {
+        long before = 0;
+        before = startPerformanceMeasurement();
         fixMissingMetaClass(mo);
+        stopPerformanceMeasurement("deleteMetaObjectWithoutTransaction - fixMissingMetaClass", mo, before);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug(
@@ -299,11 +360,14 @@ public final class PersistenceManager extends Shutdown {
                         user)
                     && (mo.isDummy() || mo.hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
 
+            before = startPerformanceMeasurement();
             final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
             for (final CidsTrigger ct : rightTriggers) {
                 ct.beforeDelete(mo.getBean(), user);
             }
+            stopPerformanceMeasurement("deleteMetaObjectWithoutTransaction - beforeDeleteTriggers", mo, before);
 
+            before = startPerformanceMeasurement();
             PreparedStatement stmt = null;
             try {
                 // Mo was created artificially (array holder) so there is no object to delete
@@ -321,11 +385,15 @@ public final class PersistenceManager extends Shutdown {
                         break;
                     }
                 }
+                stopPerformanceMeasurement("deleteMetaObjectWithoutTransaction - checkForDeeper", mo, before);
 
+                before = startPerformanceMeasurement();
                 if (deeper) {
                     updateMetaObjectWithoutTransaction(user, mo);
                 }
+                stopPerformanceMeasurement("deleteMetaObjectWithoutTransaction - updateDeeper", mo, before);
 
+                before = startPerformanceMeasurement();
                 // retrieve the metaObject's class
                 final Sirius.server.localserver._class.Class c = dbServer.getClass(user, mo.getClassID());
                 // get Tablename from class
@@ -350,6 +418,9 @@ public final class PersistenceManager extends Shutdown {
                 // execute deletion and retrieve number of affected objects
                 int result = stmt.executeUpdate();
 
+                stopPerformanceMeasurement("deleteMetaObjectWithoutTransaction - executeUpdate", mo, before);
+
+                before = startPerformanceMeasurement();
                 // now delete all array entries
                 for (final ObjectAttribute oa : allAttributes) {
                     final java.lang.Object value = oa.getValue();
@@ -366,15 +437,21 @@ public final class PersistenceManager extends Shutdown {
                     }
                 }
 
+                stopPerformanceMeasurement("deleteMetaObjectWithoutTransaction - deleteAllArrayEntries", mo, before);
+
+                before = startPerformanceMeasurement();
                 // if the metaobject is deleted it is obviously not persistent anymore
                 mo.setPersistent(false);
 
                 for (final CidsTrigger ct : rightTriggers) {
                     ct.afterDelete(mo.getBean(), user);
                 }
+                stopPerformanceMeasurement("deleteMetaObjectWithoutTransaction - afterDeleteTriggers", mo, before);
                 return result;
             } finally {
+                before = startPerformanceMeasurement();
                 DBConnection.closeStatements(stmt);
+                stopPerformanceMeasurement("deleteMetaObjectWithoutTransaction - closeStatements", mo, before);
             }
         } else {
             if (LOG.isDebugEnabled()) {
@@ -405,7 +482,10 @@ public final class PersistenceManager extends Shutdown {
      */
     private int deleteOneToManyChildsWithoutTransaction(final User user, final MetaObject arrayMo) throws SQLException,
         PersistenceException {
+        long before = 0;
+        before = startPerformanceMeasurement();
         fixMissingMetaClass(arrayMo);
+        stopPerformanceMeasurement("deleteOneToManyChildsWithoutTransaction - fixMissingMetaClass", arrayMo, before);
 
         if (!arrayMo.isDummy()) {
             LOG.error("deleteOneToManyEntries on a metaobject that is not a dummy");
@@ -432,7 +512,10 @@ public final class PersistenceManager extends Shutdown {
      * @throws  SQLException  DOCUMENT ME!
      */
     private int deleteArrayEntriesWithoutTransaction(final User user, final MetaObject arrayMo) throws SQLException {
+        long before = 0;
+        before = startPerformanceMeasurement();
         fixMissingMetaClass(arrayMo);
+        stopPerformanceMeasurement("deleteArrayEntriesWithoutTransaction - fixMissingMetaClass", arrayMo, before);
 
         if (!arrayMo.isDummy()) {
             LOG.error("deleteArrayEntries on a metaobject that is not a dummy");
@@ -442,6 +525,7 @@ public final class PersistenceManager extends Shutdown {
         PreparedStatement stmt = null;
 
         try {
+            before = startPerformanceMeasurement();
             final String tableName = arrayMo.getMetaClass().getTableName();
             final String arrayKeyFieldName = arrayMo.getReferencingObjectAttribute().getMai().getArrayKeyFieldName();
             final String paramStmt = "DELETE FROM " + tableName + " WHERE " + arrayKeyFieldName + " = ?"; // NOI18N+
@@ -452,13 +536,17 @@ public final class PersistenceManager extends Shutdown {
             // execute deletion and retrieve number of affected objects
             final int result = stmt.executeUpdate();
 
+            stopPerformanceMeasurement("deleteArrayEntriesWithoutTransaction - executeUpdate", arrayMo, before);
+
             if (LOG.isDebugEnabled()) {
                 LOG.debug("array elements deleted :: " + result); // NOI18N
             }
 
             return result;
         } finally {
+            before = startPerformanceMeasurement();
             DBConnection.closeStatements(stmt);
+            stopPerformanceMeasurement("deleteArrayEntriesWithoutTransaction - closeStatements", arrayMo, before);
         }
     }
 
@@ -475,7 +563,10 @@ public final class PersistenceManager extends Shutdown {
      */
     private void updateMetaObjectWithoutTransaction(final User user, final MetaObject mo) throws PersistenceException,
         SQLException {
+        long before = 0;
+        before = startPerformanceMeasurement();
         fixMissingMetaClass(mo);
+        stopPerformanceMeasurement("updateMetaObjectWithoutTransaction - fixMissingMetaClass", mo, before);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug(
@@ -493,17 +584,29 @@ public final class PersistenceManager extends Shutdown {
                     && (mo.isDummy() || mo.hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
             // existiert gar keine sinnvolle
             // bean
+            before = startPerformanceMeasurement();
 
             // if Array
             if (mo.isDummy()) {
                 updateArrayObjectsWithoutTransaction(user, mo);
                 return;
             }
+            stopPerformanceMeasurement(
+                "updateMetaObjectWithoutTransaction - updateArrayObjectsWithoutTransaction",
+                mo,
+                before);
 
+            before = startPerformanceMeasurement();
             final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
+            stopPerformanceMeasurement("updateMetaObjectWithoutTransaction - getRightTriggers", mo, before);
+            before = startPerformanceMeasurement();
             for (final CidsTrigger ct : rightTriggers) {
+                final long beforeFine = startPerformanceMeasurement();
                 ct.beforeUpdate(mo.getBean(), user);
+                stopPerformanceMeasurement("beforeUpdate " + ct.toString(), mo, beforeFine);
             }
+            stopPerformanceMeasurement("updateMetaObjectWithoutTransaction - beforeUpdateTriggers", mo, before);
+
             // variables for sql statement
             final StringBuffer paramStmt = new StringBuffer("UPDATE "); // NOI18N
             String sep = "";                                            // NOI18N
@@ -593,12 +696,17 @@ public final class PersistenceManager extends Shutdown {
                         }
                     }
                 } else {
+                    before = startPerformanceMeasurement();
                     // TODO: try to convert JTS GEOMETRY to PGgeometry directly
                     if (PersistenceHelper.GEOMETRY.isAssignableFrom(value.getClass())) {
                         valueToAdd = PostGisGeometryFactory.getPostGisCompliantDbString((Geometry)value);
                     } else {
                         valueToAdd = value;
                     }
+                    stopPerformanceMeasurement(
+                        "updateMetaObjectWithoutTransaction - getPostGisCompliantDbString",
+                        mo,
+                        before);
                 }
                 if (!mAttr[i].isVirtualOneToManyAttribute()) {
                     values.add(valueToAdd);
@@ -635,20 +743,27 @@ public final class PersistenceManager extends Shutdown {
                         LOG.debug(logMessage.toString(), new Exception());
                     }
 
+                    before = startPerformanceMeasurement();
+
                     final TransactionHelper transactionHelper = local.get();
                     stmt = transactionHelper.getConnection().prepareStatement(paramStmt.toString());
                     parameteriseStatement(stmt, values);
                     stmt.executeUpdate();
+                    stopPerformanceMeasurement("updateMetaObjectWithoutTransaction - executeUpdate", mo, before);
 
                     /*
                      * since the meta-jdbc driver is obsolete the index must be refreshed by the server explicitly
                      */
 
+                    before = startPerformanceMeasurement();
                     for (final CidsTrigger ct : rightTriggers) {
                         ct.afterUpdate(mo.getBean(), user);
                     }
+                    stopPerformanceMeasurement("updateMetaObjectWithoutTransaction - afterUpdateTriggers", mo, before);
                 } finally {
+                    before = startPerformanceMeasurement();
                     DBConnection.closeStatements(stmt);
+                    stopPerformanceMeasurement("updateMetaObjectWithoutTransaction - closeStatements", mo, before);
                 }
             }
         } else {
@@ -705,7 +820,10 @@ public final class PersistenceManager extends Shutdown {
      */
     private void updateArrayObjectsWithoutTransaction(final User user, final MetaObject mo) throws PersistenceException,
         SQLException {
+        long before = 0;
+        before = startPerformanceMeasurement();
         fixMissingMetaClass(mo);
+        stopPerformanceMeasurement("updateArrayObjectsWithoutTransaction - fixMissingMetaClass", mo, before);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("updateArrayObjects called for: " + mo); // NOI18N
@@ -900,7 +1018,10 @@ public final class PersistenceManager extends Shutdown {
      */
     private int insertMetaObjectWithoutTransaction(final User user, final MetaObject mo, final int fk)
             throws PersistenceException, SQLException {
+        long before = 0;
+        before = startPerformanceMeasurement();
         fixMissingMetaClass(mo);
+        stopPerformanceMeasurement("insertMetaObjectWithoutTransaction - fixMissingMetaClass", mo, before);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug(
@@ -914,18 +1035,19 @@ public final class PersistenceManager extends Shutdown {
                         + mo.isDummy());               // NOI18N
         }
         mo.forceStatus(MetaObject.NO_STATUS);
-        if (
-            dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(user)
+        if (dbServer.getClassCache().getClass(mo.getClassID()).getPermissions().hasWritePermission(user)
                     && (mo.isDummy() || mo.hasObjectWritePermission(user))) { // wenn mo ein dummy ist dann
             // existiert gar keine sinnvolle
             // bean won't insert history
             // here since we assume that the
             // object to be inserted is new
 
+            before = startPerformanceMeasurement();
             final Collection<CidsTrigger> rightTriggers = getRightTriggers(mo);
             for (final CidsTrigger ct : rightTriggers) {
                 ct.beforeInsert(mo.getBean(), user);
             }
+            stopPerformanceMeasurement("insertMetaObjectWithoutTransaction - beforeInsertTriggers", mo, before);
 
             final StringBuffer paramSql = new StringBuffer("INSERT INTO "); // NOI18N
             // class of the new object
@@ -1008,12 +1130,17 @@ public final class PersistenceManager extends Shutdown {
                         // use defaultvalue
                         values.add(persistenceHelper.getDefaultValue(mai, value));
                     } else {
+                        before = startPerformanceMeasurement();
                         // TODO: try to convert JTS GEOMETRY to PGgeometry directly
                         if (PersistenceHelper.GEOMETRY.isAssignableFrom(value.getClass())) {
                             values.add(PostGisGeometryFactory.getPostGisCompliantDbString((Geometry)value));
                         } else {
                             values.add(value);
                         }
+                        stopPerformanceMeasurement(
+                            "insertMetaObjectWithoutTransaction - getPostGisCompliantDbString",
+                            mo,
+                            before);
                     }
                 } else if (!mAttr[i].isPrimaryKey()) { // references metaobject
 
@@ -1088,6 +1215,8 @@ public final class PersistenceManager extends Shutdown {
             // set params and execute stmt
             PreparedStatement stmt = null;
             try {
+                before = startPerformanceMeasurement();
+
                 final TransactionHelper transactionHelper = local.get();
                 stmt = transactionHelper.getConnection().prepareStatement(paramSql.toString());
                 if (LOG.isDebugEnabled()) {
@@ -1107,16 +1236,21 @@ public final class PersistenceManager extends Shutdown {
                 }
                 stmt = parameteriseStatement(stmt, values);
                 stmt.executeUpdate();
+                stopPerformanceMeasurement("insertMetaObjectWithoutTransaction - executeUpdate", mo, before);
 
                 for (final MetaObject vChild : virtual1toMChildren) {
                     insertMetaObjectArrayWithoutTransaction(user, vChild, rootPk);
                 }
 
+                before = startPerformanceMeasurement();
                 for (final CidsTrigger ct : rightTriggers) {
                     ct.afterInsert(mo.getBean(), user);
                 }
+                stopPerformanceMeasurement("insertMetaObjectWithoutTransaction - afterInsertTriggers", mo, before);
             } finally {
+                before = startPerformanceMeasurement();
                 DBConnection.closeStatements(stmt);
+                stopPerformanceMeasurement("insertMetaObjectWithoutTransaction - closeStatements", mo, before);
             }
 
             return rootPk;

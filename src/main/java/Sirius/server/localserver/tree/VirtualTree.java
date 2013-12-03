@@ -10,6 +10,7 @@ import Sirius.server.AbstractShutdownable;
 import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
 import Sirius.server.localserver._class.ClassCache;
+import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.types.Link;
 import Sirius.server.middleware.types.MetaClassNode;
 import Sirius.server.middleware.types.MetaNode;
@@ -25,6 +26,10 @@ import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DBConnectionPool;
 
 import org.apache.log4j.Logger;
+
+import org.openide.util.Exceptions;
+
+import java.rmi.RemoteException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -885,6 +890,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             String descr = null;
             String dynamicChildren = null;
             String artifical_id = null;
+            String additionaltreepermissiontagString = null;
             int classId = -1;
             try {
                 if (nodeTable.getObject("class_id") != null) {                                      // NOI18N
@@ -911,6 +917,21 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                     icon = nodeTable.getString("icon");    // NOI18N
                 }
             } catch (Exception skip) {
+            }
+
+            try {
+                if (nodeTable.getObject("additionaltreepermissiontag") != null) {                           // NOI18N
+                    additionaltreepermissiontagString = nodeTable.getString("additionaltreepermissiontag"); // NOI18N
+                }
+            } catch (Exception skip) {
+            }
+            boolean additionaltreepermissiontag;
+            try {
+                additionaltreepermissiontag = DomainServerImpl.getServerInstance()
+                            .hasConfigAttr(user, additionaltreepermissiontagString);
+            } catch (RemoteException ex) {
+                additionaltreepermissiontag = false;
+                LOG.error(ex.getMessage(), ex);
             }
 
             c = nodeTable.getString("node_type").charAt(0); // alias for the leftmost character of the   // NOI18N
@@ -1070,7 +1091,9 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                 // Das hinzufügen zu nodes bzw. nodesHM auf doppelte Einträge braucht/kann nur gecheckt werden , wenn
                 // die Nodes nicht dynamisch sind. Deshalb der Check auf isDynamic) bzw auf nodeId==-1 (Das soll wieder
                 // raus wenn isDynamic() den richtigen Wert liefert)
-                if (!nodeHM.containsKey(nodeKey) || tmp.isDynamic() || (tmp.getId() == -1)) {
+                if ((!nodeHM.containsKey(nodeKey) || tmp.isDynamic()
+                                || (tmp.getId() == -1))
+                            && ((additionaltreepermissiontagString == null) || additionaltreepermissiontag)) {
                     nodeHM.put(nodeKey, tmp);
                     nodes.add(tmp);
                 }
