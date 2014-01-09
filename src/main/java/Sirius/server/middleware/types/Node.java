@@ -329,7 +329,6 @@ public abstract class Node implements java.io.Serializable, Groupable // Compara
      *
      * @param  dynamic  DOCUMENT ME!
      */
-    // FIXME: a node is dynamic if the getDynamicChildrenStatement operation does not return null
     public void setDynamic(final boolean dynamic) {
         this.dynamic = dynamic;
     }
