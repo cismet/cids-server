@@ -56,7 +56,9 @@ import java.util.Vector;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -199,9 +201,29 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
             // init context
             final SSLContext context = SSLContext.getInstance(SSLConfig.CONTEXT_TYPE_TLS);
+
+            // Use the CidsTrustManager to validate the default certificates and the cismet certificate
+            final CidsTrustManager trustManager;
+            X509TrustManager cidsManager = null;
+            TrustManager[] trustManagerArray = null;
+
+            if ((tmf != null) && (tmf.getTrustManagers() != null) && (tmf.getTrustManagers().length == 1)) {
+                if (tmf.getTrustManagers()[0] instanceof X509TrustManager) {
+                    cidsManager = (X509TrustManager)tmf.getTrustManagers()[0];
+                }
+            }
+
+            try {
+                trustManager = new CidsTrustManager(cidsManager);
+                trustManagerArray = new TrustManager[] { trustManager };
+            } catch (Exception e) {
+                LOG.error("Cannot create CidsTrustManager.", e);
+                trustManagerArray = (tmf == null) ? null : tmf.getTrustManagers();
+            }
+
             context.init(
                 (kmf == null) ? null : kmf.getKeyManagers(),
-                (tmf == null) ? null : tmf.getTrustManagers(),
+                trustManagerArray,
                 null);
 
             SSLContext.setDefault(context);
