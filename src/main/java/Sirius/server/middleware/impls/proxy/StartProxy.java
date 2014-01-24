@@ -1,10 +1,12 @@
-/***************************************************
-*
-* cismet GmbH, Saarbruecken, Germany
-*
-*              ... and it just works.
-*
-****************************************************/
+/**
+ * *************************************************
+ *
+ * cismet GmbH, Saarbruecken, Germany
+ * 
+* ... and it just works.
+ * 
+***************************************************
+ */
 package Sirius.server.middleware.impls.proxy;
 
 import Sirius.server.Server;
@@ -13,6 +15,7 @@ import Sirius.server.ServerExitError;
 import Sirius.server.ServerStatus;
 import Sirius.server.ServerType;
 import Sirius.server.Shutdown;
+import Sirius.server.middleware.interfaces.domainserver.DomainServerStartupHook;
 import Sirius.server.property.ServerProperties;
 
 import org.apache.log4j.Logger;
@@ -38,36 +41,35 @@ import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.ServerSecurityManager;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
 import de.cismet.cids.server.ws.rest.RESTfulService;
+import java.util.Collection;
+import org.openide.util.Lookup;
 
 /**
  * DOCUMENT ME!
  *
- * @version  $Revision$, $Date$
+ * @version $Revision$, $Date$
  */
 public final class StartProxy {
 
     //~ Static fields/initializers ---------------------------------------------
-
     private static final transient Logger LOG = Logger.getLogger(StartProxy.class);
-
+    
     private static StartProxy instance;
 
     //~ Instance fields --------------------------------------------------------
-
     private final transient CallServerService callServer;
     private final transient String siriusRegistryIP;
     private final transient Server serverInfo;
     private final transient ServerStatus status;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new StartProxy object.
      *
-     * @param   configFile  DOCUMENT ME!
+     * @param configFile DOCUMENT ME!
      *
-     * @throws  ServerExitError        DOCUMENT ME!
-     * @throws  IllegalStateException  DOCUMENT ME!
+     * @throws ServerExitError DOCUMENT ME!
+     * @throws IllegalStateException DOCUMENT ME!
      */
     private StartProxy(final String configFile) throws ServerExitError {
         if (LOG.isDebugEnabled()) {
@@ -86,24 +88,24 @@ public final class StartProxy {
                 LOG.warn("could not initialise Log4J", e); // NOI18N
             }
         }
-
+        
         if ("proxy".equalsIgnoreCase(properties.getStartMode())) {
             if (LOG.isInfoEnabled()) {
                 LOG.info("<CS> INFO: starting RESTful pass-through proxy");
             }
-
+            
             siriusRegistryIP = null;
             serverInfo = null;
             status = null;
-
+            
             if (!properties.isRestEnabled()) {
                 throw new IllegalStateException("if the startmode is proxy then REST must be enabled"); // NOI18N
             }
-
+            
             if (LOG.isInfoEnabled()) {
                 LOG.info("<CS> INFO: pass-through url: " + properties.getServerProxyURL());
             }
-
+            
             callServer = new RESTfulSerialInterfaceConnector(properties.getServerProxyURL());
             RESTfulService.up(properties);
         } else {
@@ -147,7 +149,7 @@ public final class StartProxy {
                     LOG.error("could not bring up RESTful interface", e); // NOI18N
                 }
             }
-
+            
             if (LOG.isDebugEnabled()) {
                 LOG.debug("<CS> RMIRegistry does exist...");                                           // NOI18N
                 final String[] list;
@@ -167,18 +169,26 @@ public final class StartProxy {
                 }
             }
         }
+        final Collection<? extends DomainServerStartupHook> startupHooks = Lookup.getDefault()
+                .lookupAll(DomainServerStartupHook.class);
+        for (final DomainServerStartupHook hook : startupHooks) {
+            try {
+                hook.domainServerStarted();
+            } catch (Exception ex) {
+                LOG.error("error durin ServerStartupHook", ex);
+            }
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * DOCUMENT ME!
      *
-     * @param   configFile  DOCUMENT ME!
+     * @param configFile DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      *
-     * @throws  ServerExitError  DOCUMENT ME!
+     * @throws ServerExitError DOCUMENT ME!
      */
     private ServerProperties initServerProperties(final String configFile) throws ServerExitError {
         try {
@@ -197,11 +207,11 @@ public final class StartProxy {
     /**
      * DOCUMENT ME!
      *
-     * @param   properties  DOCUMENT ME!
+     * @param properties DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      *
-     * @throws  ServerExitError  DOCUMENT ME!
+     * @throws ServerExitError DOCUMENT ME!
      */
     private String initServerRegistryIP(final ServerProperties properties) throws ServerExitError {
         try {
@@ -215,7 +225,7 @@ public final class StartProxy {
                 if (LOG.isInfoEnabled()) {
                     LOG.info("using registry ip: " + ip);                                  // NOI18N
                 }
-
+                
                 return ip;
             }
         } catch (final MissingResourceException mre) {
@@ -230,11 +240,11 @@ public final class StartProxy {
     /**
      * DOCUMENT ME!
      *
-     * @param   properties  DOCUMENT ME!
+     * @param properties DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      *
-     * @throws  ServerExitError  DOCUMENT ME!
+     * @throws ServerExitError DOCUMENT ME!
      */
     private Server initServer(final ServerProperties properties) throws ServerExitError {
         try {
@@ -255,7 +265,7 @@ public final class StartProxy {
                 }
                 rmiPort = "1099";                                               // NOI18N
             }
-
+            
             return new Server(
                     ServerType.CALLSERVER,
                     properties.getServerName(),
@@ -272,18 +282,18 @@ public final class StartProxy {
     /**
      * DOCUMENT ME!
      *
-     * @param   port  DOCUMENT ME!
+     * @param port DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      *
-     * @throws  ServerExitError  DOCUMENT ME!
+     * @throws ServerExitError DOCUMENT ME!
      */
     private Registry initRegistry(final int port) throws ServerExitError {
         try {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("<CS> DEBUG: getRMIRegistry on port " + port); // NOI18N
             }
-
+            
             return LocateRegistry.getRegistry(port);
         } catch (final RemoteException e) {
             // no registry present, create new registry on rmiPort
@@ -296,7 +306,7 @@ public final class StartProxy {
                 LOG.info(info, e);
                 LOG.info(message);
             }
-
+            
             try {
                 return LocateRegistry.createRegistry(port);
             } catch (final RemoteException ex) {
@@ -310,11 +320,11 @@ public final class StartProxy {
     /**
      * DOCUMENT ME!
      *
-     * @param   properties  DOCUMENT ME!
+     * @param properties DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      *
-     * @throws  ServerExitError  DOCUMENT ME!
+     * @throws ServerExitError DOCUMENT ME!
      */
     private ProxyImpl createAndBindProxy(final ServerProperties properties) throws ServerExitError {
         try {
@@ -340,24 +350,24 @@ public final class StartProxy {
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      *
-     * @throws  IllegalStateException  DOCUMENT ME!
+     * @throws IllegalStateException DOCUMENT ME!
      */
     public static synchronized StartProxy getInstance() throws IllegalStateException {
         if (instance == null) {
             throw new IllegalStateException("startproxy not up yet"); // NOI18N
         }
-
+        
         return instance;
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      *
-     * @throws  IllegalStateException  DOCUMENT ME!
+     * @throws IllegalStateException DOCUMENT ME!
      */
     public static synchronized StartProxy getServerInstance() throws IllegalStateException {
         return getInstance();
@@ -366,11 +376,11 @@ public final class StartProxy {
     /**
      * DOCUMENT ME!
      *
-     * @param   configFile  DOCUMENT ME!
+     * @param configFile DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      *
-     * @throws  ServerExitError  DOCUMENT ME!
+     * @throws ServerExitError DOCUMENT ME!
      */
     public static synchronized StartProxy getInstance(final String configFile) throws ServerExitError {
         if (LOG.isDebugEnabled()) {
@@ -379,14 +389,14 @@ public final class StartProxy {
         if (instance == null) {
             instance = new StartProxy(configFile);
         }
-
+        
         return instance;
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      */
     public ServerStatus getStatus() {
         return status;
@@ -395,7 +405,7 @@ public final class StartProxy {
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      */
     public CallServerService getCallServer() {
         return callServer;
@@ -404,30 +414,30 @@ public final class StartProxy {
     /**
      * DOCUMENT ME!
      *
-     * @throws  ServerExit       Throwable DOCUMENT ME!
-     * @throws  ServerExitError  DOCUMENT ME!
+     * @throws ServerExit Throwable DOCUMENT ME!
+     * @throws ServerExitError DOCUMENT ME!
      */
     public synchronized void shutdown() throws ServerExit, ServerExitError {
         if (LOG.isDebugEnabled()) {
             LOG.debug("shutdown proxy: " + this); // NOI18N
         }
-
+        
         try {
             final Shutdown shutdown = Shutdown.createShutdown(this);
             shutdown.shutdown();
-
+            
             if (callServer instanceof ProxyImpl) {
-                final ProxyImpl proxyimpl = (ProxyImpl)callServer;
+                final ProxyImpl proxyimpl = (ProxyImpl) callServer;
                 proxyimpl.unregisterAsObserver(siriusRegistryIP + ":" + serverInfo.getServerPort()); // NOI18N
                 proxyimpl.getNameServer()
                         .unregisterServer(
-                            serverInfo.getType(),
-                            serverInfo.getName(),
-                            serverInfo.getIP(),
-                            serverInfo.getServerPort());
-
+                                serverInfo.getType(),
+                                serverInfo.getName(),
+                                serverInfo.getIP(),
+                                serverInfo.getServerPort());
+                
                 RESTfulService.down();
-
+                
                 try {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("unbind callserver");                                                     // NOI18N
@@ -439,7 +449,7 @@ public final class StartProxy {
             } else {
                 RESTfulService.down();
             }
-
+            
             final String message = "Server shutdown success"; // NOI18N
             if (LOG.isInfoEnabled()) {
                 LOG.info(message);
@@ -458,9 +468,9 @@ public final class StartProxy {
     /**
      * DOCUMENT ME!
      *
-     * @param   args  DOCUMENT ME!
+     * @param args DOCUMENT ME!
      *
-     * @throws  ServerExitError  DOCUMENT ME!
+     * @throws ServerExitError DOCUMENT ME!
      */
     public static void main(final String[] args) throws ServerExitError {
         if (args == null) {
@@ -468,7 +478,7 @@ public final class StartProxy {
         } else if (args.length < 1) {
             throw new ServerExitError("too few arguments"); // NOI18N
         }
-
+        
         StartProxy.getInstance(args[0]);
     }
 }
