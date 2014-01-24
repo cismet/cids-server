@@ -166,7 +166,6 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             Naming.bind(serverInfo.getBindString(), this);
 
             // status = new ServerStatus();
-
             register();
 
             if (logger.isDebugEnabled()) {
@@ -174,6 +173,12 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             }
 
             historyServer = dbServer.getHistoryServer();
+
+            final Collection<? extends DomainServerStartupHook> startupHooks = Lookup.getDefault()
+                        .lookupAll(DomainServerStartupHook.class);
+            for (final DomainServerStartupHook hook : startupHooks) {
+                hook.domainServerStarted();
+            }
 
             final Collection<? extends ServerAction> serverActions = Lookup.getDefault().lookupAll(ServerAction.class);
             for (final ServerAction serverAction : serverActions) {
@@ -607,7 +612,6 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         return dbServer.getMethods(); // dbServer.getMethods(user.getuserGroup()); // instead
 
         // return new MethodMap();
-
     }
 
     @Override
