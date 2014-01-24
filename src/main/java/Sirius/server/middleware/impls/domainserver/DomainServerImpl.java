@@ -94,6 +94,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     private static final String EXTENSION_FACTORY_PREFIX = "de.cismet.cids.custom.extensionfactories."; // NOI18N
     private static transient DomainServerImpl instance;
     public static final String SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX = "csa://";
+    // this servers configuration
+    protected static ServerProperties properties;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -105,8 +107,6 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     protected HistoryServer historyServer;
     // executing the searchservice
     protected Seeker seeker;
-    // this servers configuration
-    protected ServerProperties properties;
     // for storing and loading prdefinded queries
     protected Store queryStore;
     protected QueryCache queryCache;
@@ -195,6 +195,15 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ServerProperties getServerProperties() {
+        return properties;
+    }
 
     @Override
     public NodeReferenceList getChildren(final Node node, final User user) throws RemoteException {

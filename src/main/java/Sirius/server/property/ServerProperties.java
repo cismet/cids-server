@@ -198,6 +198,14 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
     //~ Methods ----------------------------------------------------------------
 
     /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getServerResourcesBasePath() {
+        return this.getString("cids.custom.server.resourcesBasePath");
+    }
+    /**
      * Liefert den Wert des Keys "serverName".
      *
      * @return  Servername*
