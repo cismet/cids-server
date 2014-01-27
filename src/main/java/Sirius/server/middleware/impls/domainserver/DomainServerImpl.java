@@ -177,7 +177,13 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final Collection<? extends DomainServerStartupHook> startupHooks = Lookup.getDefault()
                         .lookupAll(DomainServerStartupHook.class);
             for (final DomainServerStartupHook hook : startupHooks) {
-                hook.domainServerStarted();
+                if (hook.getDomain() != null) {
+                    if (hook.getDomain().equalsIgnoreCase(properties.getServerName())
+                                || hook.getDomain().equalsIgnoreCase(
+                                    DomainServerStartupHook.START_ON_DOMAIN.ANY.toString())) {
+                        hook.domainServerStarted();
+                    }
+                }
             }
 
             final Collection<? extends ServerAction> serverActions = Lookup.getDefault().lookupAll(ServerAction.class);

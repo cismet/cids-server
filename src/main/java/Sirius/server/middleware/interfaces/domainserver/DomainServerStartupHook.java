@@ -20,10 +20,31 @@ package Sirius.server.middleware.interfaces.domainserver;
  */
 public interface DomainServerStartupHook {
 
+    //~ Enums ------------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    enum START_ON_DOMAIN {
+
+        //~ Enum constants -----------------------------------------------------
+
+        ANY
+    }
+
     //~ Methods ----------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      */
     void domainServerStarted();
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    String getDomain();
 }
