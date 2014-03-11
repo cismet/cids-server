@@ -79,6 +79,8 @@ public class HttpTunnelAction implements ServerAction {
                 notunnelmethod = AccessHandler.ACCESS_METHODS.GET_REQUEST_NO_TUNNEL;
             } else if (method == AccessHandler.ACCESS_METHODS.POST_REQUEST) {
                 notunnelmethod = AccessHandler.ACCESS_METHODS.POST_REQUEST_NO_TUNNEL;
+            } else if (method == AccessHandler.ACCESS_METHODS.HEAD_REQUEST) {
+                notunnelmethod = AccessHandler.ACCESS_METHODS.HEAD_REQUEST_NO_TUNNEL;
             } else {
                 throw new RuntimeException(
                     "try to tunnel a request that has a \"*_NO_TUNNEL\" method. This should not happen.");
