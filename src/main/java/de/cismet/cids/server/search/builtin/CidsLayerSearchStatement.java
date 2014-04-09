@@ -46,13 +46,23 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
     int classId;
     int srid;
     private String domain = ""; // NOI18N
+    private boolean countOnly = false;
+    private String query;
+    private int offset;
+    private int limit;
+    private String[] orderBy;
+    private boolean exactSearch = false;
 
     /*private final String query =
      *  "%s ";private final String count = "Select count(*)";*/
     private final String select =
         "Select (select id from cs_class where table_name ilike '%s') as class_id, asEWKT(geom.geo_field)%s from %s, geom where %s = geom.id and geo_field && 'BOX3D(%s %s,%s %s)'::box3d";
     private final String selectFromView =
-        "Select * from %s where geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d) order by object_id";
+        "Select * from %s where geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
+    private final String selectFromViewExactly =
+        "Select * from %1$s where geo_field && setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d) and st_intersects(geo_field, setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d))";
+    private final String selectCountFromView =
+        "Select count(*) from %s where geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
 
     //~ Constructors -----------------------------------------------------------
 
@@ -122,12 +132,11 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  SearchException  DOCUMENT ME!
+     * @param  countOnly  DOCUMENT ME!
      */
-    /*public void setCountOnly(final boolean countOnly) {
-     *  this.searchCount = countOnly;}*/
+    public void setCountOnly(final boolean countOnly) {
+        this.countOnly = countOnly;
+    }
 
     /*public void setClassId(final String className) {
      *  this.classId = className;}*/
@@ -140,30 +149,73 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
             final ClassAttribute attribute = clazz.getClassAttribute("cidsLayer");
             if (attribute == null) {
                 return null;
-            } /*
-               * final Map<String, String> options = attribute.getOptions(); final StringBuilder sb = new
-               * StringBuilder(); for (final Map.Entry<String, String> entry : options.entrySet()) { if
-               * (!"geom_id".equals(entry.getKey())) {    sb.append(", ").append(entry.getValue()).append(" as
-               * ").append(entry.getKey()); } } final String query = String.format(    select,    clazz.getTableName(),
-               *   sb.toString(),    clazz.getTableName(),    options.get("geom_id"),    x1,    y1,    x2,    y2);*/
+            }
+
             if (!(attribute.getValue() instanceof String)) {
                 LOG.error("Could not read layer view for metaclass " + clazz.getTableName());
                 return null;
             }
             final String viewName = (String)attribute.getValue();
-            final ArrayList<ArrayList> columns = ms.performCustomSearch(
-                    "select column_name from information_schema.columns where table_name = '"
-                            + viewName
-                            + "' order by ordinal_position ASC");
-            final String query = String.format(selectFromView, viewName, x1, y1, x2, y2, srid);
-            LOG.info(query);
-            final ArrayList<ArrayList> result = ms.performCustomSearch(query);
-            final ArrayList columnNames = new ArrayList();
-            for (final ArrayList column : columns) {
-                columnNames.add(column.get(0));
+            final StringBuilder queryString;
+
+            if (countOnly) {
+                queryString = new StringBuilder(String.format(selectCountFromView, viewName, x1, y1, x2, y2, srid));
+            } else {
+                if (exactSearch) {
+                    queryString = new StringBuilder(String.format(
+                                selectFromViewExactly,
+                                viewName,
+                                x1,
+                                y1,
+                                x2,
+                                y2,
+                                srid));
+                } else {
+                    queryString = new StringBuilder(String.format(selectFromView, viewName, x1, y1, x2, y2, srid));
+                }
             }
-            LOG.info("Column names are " + columnNames.toString());
-            result.add(0, columnNames);
+
+            if ((query != null) && !query.equals("")) {
+                queryString.append(" AND ").append(query);
+            }
+
+            if (limit > 0) {
+                queryString.append(" LIMIT ").append(limit);
+            }
+
+            if (offset > 0) {
+                queryString.append(" OFFSET ").append(offset);
+            }
+
+            if ((orderBy != null) && (orderBy.length > 0)) {
+                boolean firstAttr = true;
+                queryString.append(" ORDER BY ");
+                for (final String attr : orderBy) {
+                    if (firstAttr) {
+                        firstAttr = false;
+                    } else {
+                        queryString.append(",");
+                    }
+                    queryString.append(attr);
+                }
+            }
+
+            LOG.info(queryString.toString());
+            final ArrayList<ArrayList> result = ms.performCustomSearch(queryString.toString());
+
+            if (!countOnly) {
+                final ArrayList<ArrayList> columns = ms.performCustomSearch(
+                        "select column_name from information_schema.columns where table_name = '"
+                                + viewName
+                                + "' order by ordinal_position ASC");
+
+                final ArrayList columnNames = new ArrayList();
+                for (final ArrayList column : columns) {
+                    columnNames.add(column.get(0));
+                }
+                LOG.info("Column names are " + columnNames.toString());
+                result.add(0, columnNames);
+            }
             return result;
         } catch (RemoteException ex) {
             LOG.error("Error in customSearch", ex);
@@ -178,5 +230,95 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
      */
     public void setSrid(final int defaultCrsAlias) {
         srid = defaultCrsAlias;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the query
+     */
+    public String getQuery() {
+        return query;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  query  the query to set
+     */
+    public void setQuery(final String query) {
+        this.query = query;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the offset
+     */
+    public int getOffset() {
+        return offset;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  offset  the offset to set
+     */
+    public void setOffset(final int offset) {
+        this.offset = offset;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the limit
+     */
+    public int getLimit() {
+        return limit;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  limit  the limit to set
+     */
+    public void setLimit(final int limit) {
+        this.limit = limit;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the orderBy
+     */
+    public String[] getOrderBy() {
+        return orderBy;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  orderBy  the orderBy to set
+     */
+    public void setOrderBy(final String[] orderBy) {
+        this.orderBy = orderBy;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the exactSearch
+     */
+    public boolean isExactSearch() {
+        return exactSearch;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  exactSearch  the exactSearch to set
+     */
+    public void setExactSearch(final boolean exactSearch) {
+        this.exactSearch = exactSearch;
     }
 }
