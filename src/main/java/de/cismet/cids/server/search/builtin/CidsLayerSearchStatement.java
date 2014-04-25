@@ -60,7 +60,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
     private final String selectFromView =
         "Select * from %s where geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
     private final String selectFromViewExactly =
-        "Select * from %1$s where geo_field && setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d) and st_intersects(geo_field, setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d))";
+        "Select * from %1$s where geo_field && setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d) and st_intersects(geo_field::GEOMETRY, setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d))";
     private final String selectCountFromView =
         "Select count(*) from %s where geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
 
