@@ -20,6 +20,11 @@ import de.cismet.cids.dynamics.CidsBean;
  */
 public class CidsBeanDeepPropertyListener implements PropertyChangeListener {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final transient org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
+            CidsBeanDeepPropertyListener.class);
+
     //~ Instance fields --------------------------------------------------------
 
     private CidsBean rootBean;
@@ -53,7 +58,9 @@ public class CidsBeanDeepPropertyListener implements PropertyChangeListener {
                 refreshPath();
                 final String[] subArray = new String[index + 1];
                 System.arraycopy(propertyPath, 0, subArray, 0, index + 1);
-                propertyChangeSupport.firePropertyChange(implode(subArray, "."), oldCidsBean, beanPath[index]);
+                propertyChangeSupport.firePropertyChange(implode(subArray, "."),
+                    evt.getOldValue(),
+                    evt.getNewValue());
                 return;
             }
         }
@@ -150,5 +157,14 @@ public class CidsBeanDeepPropertyListener implements PropertyChangeListener {
                 }
             }
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  args  DOCUMENT ME!
+     */
+    public static void main(final String[] args) {
+        final CidsBeanDeepPropertyListener dpl = new CidsBeanDeepPropertyListener(null, null);
     }
 }
