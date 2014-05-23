@@ -26,6 +26,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.Logger;
 
@@ -441,7 +443,10 @@ public class CidsBean implements PropertyChangeListener {
                     cbv.getMetaObject().setStatus(MetaObject.MODIFIED);
                 }
             } else {
-                if (((oldValue != null) && !oldValue.equals(value)) || ((oldValue == null) && (value != null))) {
+                if (((oldValue == null) && (value != null))
+                            || ((oldValue instanceof Geometry)
+                                && (System.identityHashCode(oldValue) != System.identityHashCode(value)))
+                            || ((oldValue != null) && !oldValue.equals(value))) {
                     oa.setValue(value);
                     realChanges = true;
                 }
