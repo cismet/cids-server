@@ -57,9 +57,9 @@ public class HttpTunnelAction implements ServerAction {
 
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
+        String request = "";
+        URL url = null;
         try {
-            String request = "";
-            URL url = null;
             AccessHandler.ACCESS_METHODS method = AccessHandler.ACCESS_METHODS.GET_REQUEST_NO_TUNNEL;
             HashMap<String, String> options = new HashMap<String, String>();
 
@@ -97,8 +97,9 @@ public class HttpTunnelAction implements ServerAction {
             final byte[] result = IOUtils.toByteArray(is);
             return result;
         } catch (Exception exception) {
-            LOG.error("Problem during HttpTunnelAction", exception);
-            throw new RuntimeException("Problem during HttpTunnelAction", exception);
+            final String errorinfo = ("Problem during HttpTunnelAction(" + url + "=, request=" + request + ")");
+            LOG.error(errorinfo, exception);
+            throw new RuntimeException(errorinfo, exception);
         }
     }
 
