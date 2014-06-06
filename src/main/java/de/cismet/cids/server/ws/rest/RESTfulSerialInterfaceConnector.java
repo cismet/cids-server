@@ -86,6 +86,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient Logger LOG = Logger.getLogger(RESTfulSerialInterfaceConnector.class);
+    private static final String MULTITHREADEDHTTPCONNECTION_IGNORE_EXCEPTION =
+        "Interrupted while waiting in MultiThreadedHttpConnectionManager";
     private static final int TIMEOUT = 10000;
 
     //~ Instance fields --------------------------------------------------------
@@ -396,9 +398,27 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             throw new IllegalStateException("neither builder nor type may be null"); // NOI18N
         }
 
-        final byte[] bytes = builder.post(byte[].class, queryData);
-
-        return Converter.deserialiseFromBase64(bytes, type);
+        try {
+            final byte[] bytes = builder.post(byte[].class, queryData);
+            return Converter.deserialiseFromBase64(bytes, type);
+        } catch (final RuntimeException ex) {
+            if ((ex.getCause() != null) && (ex.getCause() instanceof IllegalThreadStateException)) {
+                if (ex.getCause().getMessage().equals(MULTITHREADEDHTTPCONNECTION_IGNORE_EXCEPTION)) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(
+                            "ignoring \""
+                                    + MULTITHREADEDHTTPCONNECTION_IGNORE_EXCEPTION
+                                    + "\" IllegalThreadStateException",
+                            ex);
+                    }
+                } else {
+                    LOG.warn("Error while querying request", ex);
+                }
+                return null;
+            } else {
+                throw ex;
+            }
+        }
     }
 
     /**
