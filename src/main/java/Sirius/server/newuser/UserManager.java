@@ -102,7 +102,7 @@ public class UserManager implements UserServer {
                 for (int i = 0; i < l.size(); i++) {
                     final Membership m = (Membership)l.get(i);
 
-                    if (m.getUgDomain().equalsIgnoreCase(userGroupDomain) && m.getUg().equalsIgnoreCase(userGroup)) {
+                    if (m.getUgDomain().equals(userGroupDomain) && m.getUg().equals(userGroup)) {
                         break;
                     }
 
