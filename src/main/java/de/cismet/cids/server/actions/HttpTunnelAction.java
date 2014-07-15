@@ -98,7 +98,9 @@ public class HttpTunnelAction implements ServerAction {
             return result;
         } catch (Exception exception) {
             final String errorinfo = ("Problem during HttpTunnelAction(" + url + "=, request=" + request + ")");
-            LOG.error(errorinfo, exception);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(errorinfo + "\n" + exception.getMessage());
+            }
             throw new RuntimeException(errorinfo, exception);
         }
     }
