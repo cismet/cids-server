@@ -449,7 +449,9 @@ public final class HistoryServer extends Shutdown {
                 final int classId = mo.getClassID();
                 final int objectId = mo.getId();
                 final Integer usrId = (user == null) ? null : user.getId();
-                LOG.fatal("check for all userGroups");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("check for all userGroups");
+                }
                 // TODO check for all userGroups
                 final UserGroup userGroup = user.getUserGroup();
                 final Integer ugId = (user == null) ? null : userGroup.getId();

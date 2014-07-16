@@ -21,7 +21,8 @@ import java.net.URL;
 import java.util.HashMap;
 
 import de.cismet.security.AccessHandler;
-import de.cismet.security.WebAccessManager;
+
+import de.cismet.security.exceptions.BadHttpStatusCodeException;
 
 import de.cismet.security.handler.DefaultHTTPAccessHandler;
 
@@ -96,6 +97,12 @@ public class HttpTunnelAction implements ServerAction {
                     options);
             final byte[] result = IOUtils.toByteArray(is);
             return result;
+        } catch (BadHttpStatusCodeException badStatusCodeEx) {
+            final String errorinfo = ("Problem during HttpTunnelAction(" + url + "=, request=" + request + ")");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(errorinfo + "\n" + badStatusCodeEx.getMessage());
+            }
+            return null;
         } catch (Exception exception) {
             final String errorinfo = ("Problem during HttpTunnelAction(" + url + "=, request=" + request + ")");
             if (LOG.isDebugEnabled()) {

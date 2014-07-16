@@ -47,6 +47,8 @@ import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.search.CidsServerSearch;
 
+import de.cismet.security.exceptions.BadHttpStatusCodeException;
+
 import de.cismet.tools.Converter;
 
 /**
@@ -2078,13 +2080,25 @@ public final class RESTfulSerialInterface {
 
             return createResponse(callserver.executeTask(user, taskname, taskdomain, body, params), null);
         } catch (final IOException e) {
-            final String message = "could not update metaobject"; // NOI18N
+            final String message = "could not execute task"; // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         } catch (final ClassNotFoundException e) {
-            final String message = "could not update metaobject"; // NOI18N
+            final String message = "could not execute task"; // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
+        } catch (final RuntimeException e) {
+            final String message = "could not execute task"; // NOI18N
+            final Throwable cause = e.getCause();
+            if (cause instanceof BadHttpStatusCodeException) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(message, e);
+                }
+                throw new RemoteException(message);
+            } else {
+                LOG.error(message, e);
+                throw new RemoteException(message, e);
+            }
         }
     }
 
