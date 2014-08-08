@@ -940,7 +940,15 @@ public final class ObjectFactory extends Shutdown {
 
                 // columnname@tablename
                 while (pks.next()) {
-                    final String pk = (pks.getString(4) + "@" + pks.getString(3)).toLowerCase(); // NOI18N
+                    String schema = pks.getString(2);
+
+                    if ((schema == null) || schema.equalsIgnoreCase("public")) {
+                        schema = "";
+                    } else {
+                        schema += ".";
+                    }
+
+                    final String pk = (pks.getString(4) + "@" + schema + pks.getString(3)).toLowerCase(); // NOI18N
                     primaryKeys.add(pk);
                     // LOG.debug("pk added :: "+pk);
                 }
