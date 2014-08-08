@@ -14,18 +14,21 @@ package de.cismet.cids.server.search.builtin;
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaClass;
-import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 
 import org.apache.log4j.Logger;
+
+import java.lang.reflect.Constructor;
 
 import java.rmi.RemoteException;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
+import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
-import java.lang.reflect.Constructor;
+
+import de.cismet.cids.tools.CidsLayerUtil;
 
 /**
  * DOCUMENT ME!
@@ -54,20 +57,19 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
     private int limit;
     private String[] orderBy;
     private boolean exactSearch = false;
-    private CidsLayerInfo layerInfo; 
+    private CidsLayerInfo layerInfo;
 
     /*private final String query =
      *  "%s ";private final String count = "Select count(*)";*/
-//    private final String select =
-//        "Select (select id from cs_class where table_name ilike '%s') as class_id, asEWKT(geom.geo_field)%s from %s, geom where %s = geom.id and geo_field && 'BOX3D(%s %s,%s %s)'::box3d";
+// private final String select =
+// "Select (select id from cs_class where table_name ilike '%s') as class_id, asEWKT(geom.geo_field)%s from %s, geom where %s = geom.id and geo_field && 'BOX3D(%s %s,%s %s)'::box3d";
 //    private final String selectFromView =
 //        "Select * from %s where geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
 //    private final String selectFromViewExactly =
 //        "Select * from %1$s where geo_field && setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d) and st_intersects(geo_field::GEOMETRY, setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d))";
 //    private final String selectCountFromView =
 //        "Select count(*) from %s where geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
-    private final String selectFromView =
-        "%s where geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
+    private final String selectFromView = "%s where geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
     private final String selectFromViewExactly =
         "%1$s where geo_field && setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d) and st_intersects(geo_field::GEOMETRY, setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d))";
     private final String selectAll = "%s";
@@ -91,23 +93,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
     public CidsLayerSearchStatement(final MetaClass clazz) {
         classId = clazz.getID();
         domain = clazz.getDomain();
-        final ClassAttribute attr = clazz.getClassAttribute("cidsLayer");
-
-        if (attr != null) {
-            String className = attr.getValue().toString();
-
-            try {
-                Class classObject = Class.forName(className);
-                Constructor c = classObject.getConstructor(MetaClass.class);
-                Object info = c.newInstance(clazz);
-
-                if (info instanceof CidsLayerInfo) {
-                    layerInfo = (CidsLayerInfo)info;
-                }
-            } catch (Exception e) {
-                LOG.error("Cannot instantiate CidsLayerInfo class: " + className, e);
-            }
-        }        
+        layerInfo = CidsLayerUtil.getCidsLayerInfo(clazz);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -176,10 +162,17 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
             final StringBuilder queryString;
 
             if (countOnly) {
-                queryString = new StringBuilder(String.format(selectCountFromView, layerInfo.getSelectString(), x1, y1, x2, y2, srid));
+                queryString = new StringBuilder(String.format(
+                            selectCountFromView,
+                            layerInfo.getSelectString(),
+                            x1,
+                            y1,
+                            x2,
+                            y2,
+                            srid));
             } else {
                 if (exactSearch) {
-                    if (x1 == 0.0 && x2 == 0.0 && y1 == 0.0 && y2 == 0.0) {
+                    if ((x1 == 0.0) && (x2 == 0.0) && (y1 == 0.0) && (y2 == 0.0)) {
                         queryString = new StringBuilder(String.format(selectAll, layerInfo.getSelectString()));
                     } else {
                         queryString = new StringBuilder(String.format(
@@ -192,19 +185,28 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
                                     srid));
                     }
                 } else {
-                    if (x1 == 0.0 && x2 == 0.0 && y1 == 0.0 && y2 == 0.0) {
+                    if ((x1 == 0.0) && (x2 == 0.0) && (y1 == 0.0) && (y2 == 0.0)) {
                         queryString = new StringBuilder(String.format(selectAll, layerInfo.getSelectString()));
                     } else {
-                        queryString = new StringBuilder(String.format(selectFromView, layerInfo.getSelectString(), x1, y1, x2, y2, srid));
+                        queryString = new StringBuilder(String.format(
+                                    selectFromView,
+                                    layerInfo.getSelectString(),
+                                    x1,
+                                    y1,
+                                    x2,
+                                    y2,
+                                    srid));
                     }
                 }
             }
 
             if ((query != null) && !query.equals("")) {
-                if (!(x1 == 0.0 && x2 == 0.0 && y1 == 0.0 && y2 == 0.0)) {
+                if (!((x1 == 0.0) && (x2 == 0.0) && (y1 == 0.0) && (y2 == 0.0))) {
                     queryString.append(" AND ");
+                } else {
+                    queryString.append(" WHERE ");
                 }
-                
+
                 queryString.append(query);
             }
 
@@ -232,25 +234,6 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
             LOG.info(queryString.toString());
             final ArrayList<ArrayList> result = ms.performCustomSearch(queryString.toString());
 
-//            if (!countOnly) {
-//                String view = viewName;
-//                String schemaName = "public";
-//                int dotPosition = viewName.indexOf(".");
-//                
-//                if (dotPosition != -1) {
-//                    view = viewName.substring(dotPosition + 1);
-//                    schemaName = viewName.substring(0, dotPosition);
-//                }
-//                
-//                final ArrayList<ArrayList> columns = ms.performCustomSearch(String.format(columnNameQuery, schemaName, view));
-//
-//                final ArrayList columnNames = new ArrayList();
-//                for (final ArrayList column : columns) {
-//                    columnNames.add(column.get(0));
-//                }
-//                LOG.info("Column names are " + columnNames.toString());
-//                result.add(0, columnNames);
-//            }
             return result;
         } catch (RemoteException ex) {
             LOG.error("Error in customSearch", ex);
