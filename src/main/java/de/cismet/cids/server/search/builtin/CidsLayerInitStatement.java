@@ -17,8 +17,6 @@ import Sirius.server.middleware.types.MetaClass;
 
 import org.apache.log4j.Logger;
 
-import java.lang.reflect.Constructor;
-
 import java.rmi.RemoteException;
 
 import java.util.ArrayList;
