@@ -47,7 +47,7 @@ import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.search.CidsServerSearch;
 
-import de.cismet.security.exceptions.BadHttpStatusCodeException;
+import de.cismet.commons.security.exceptions.BadHttpStatusCodeException;
 
 import de.cismet.tools.Converter;
 
