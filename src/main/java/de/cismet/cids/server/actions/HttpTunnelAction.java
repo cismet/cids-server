@@ -22,6 +22,7 @@ import java.util.HashMap;
 
 import de.cismet.commons.security.AccessHandler;
 import de.cismet.commons.security.exceptions.BadHttpStatusCodeException;
+import de.cismet.commons.security.handler.SimpleHttpAccessHandler;
 
 /**
  * DOCUMENT ME!
@@ -86,8 +87,7 @@ public class HttpTunnelAction implements ServerAction {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("tunneled Request for:" + url + "?" + request + " (end of url)");
             }
-            final AccessHandler handler = new DefaultHTTPAccessHandler();
-//            final AccessHandler handler = new BasicHTTPAccessHandler();
+            final AccessHandler handler = new SimpleHttpAccessHandler();
             final InputStream is = handler.doRequest(
                     url,
                     new StringReader(request),
