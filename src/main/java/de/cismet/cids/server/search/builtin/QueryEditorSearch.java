@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
+import de.cismet.cids.server.search.CidsServerSearch;
 import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
@@ -33,6 +34,7 @@ import de.cismet.cids.server.search.SearchException;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
+@org.openide.util.lookup.ServiceProvider(service = CidsServerSearch.class)
 public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaObjectNodeServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
@@ -50,9 +52,15 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
     private String metaClass;
     private String whereClause;
     private int classId;
-    private String DOMAIN;
+    private String domain;
 
     //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new QueryEditorSearch object.
+     */
+    public QueryEditorSearch() {
+    }
 
     /**
      * Creates a new QueryEditorSearch object.
@@ -63,17 +71,89 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
      * @param  classId      DOCUMENT ME!
      */
     public QueryEditorSearch(final String domain, final String metaClass, final String whereClause, final int classId) {
-        this.whereClause = whereClause;
-        this.metaClass = metaClass;
-        this.classId = classId;
-        this.DOMAIN = domain;
+        setWhereClause(whereClause);
+        setMetaClass(metaClass);
+        setClassId(classId);
+        setDomain(domain);
     }
 
     //~ Methods ----------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getMetaClass() {
+        return metaClass;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getWhereClause() {
+        return whereClause;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public int getClassId() {
+        return classId;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getDomain() {
+        return domain;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  metaClass  DOCUMENT ME!
+     */
+    public final void setMetaClass(final String metaClass) {
+        this.metaClass = metaClass;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  whereClause  DOCUMENT ME!
+     */
+    public final void setWhereClause(final String whereClause) {
+        this.whereClause = whereClause;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  classId  DOCUMENT ME!
+     */
+    public final void setClassId(final int classId) {
+        this.classId = classId;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  DOMAIN  DOCUMENT ME!
+     */
+    public final void setDomain(final String DOMAIN) {
+        this.domain = DOMAIN;
+    }
+
     @Override
     public Collection<MetaObjectNode> performServerSearch() throws SearchException {
-        final MetaService ms = (MetaService)getActiveLocalServers().get(DOMAIN);
+        final MetaService ms = (MetaService)getActiveLocalServers().get(domain);
         final ArrayList<MetaObjectNode> metaObjects = new ArrayList<MetaObjectNode>();
         if (ms != null) {
             try {
@@ -92,7 +172,7 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
                             LOG.trace("no name present for metaobjectnode", e); // NOI18N
                         }
                     }
-                    final MetaObjectNode mon = new MetaObjectNode(DOMAIN, oid, cid, name);
+                    final MetaObjectNode mon = new MetaObjectNode(domain, oid, cid, name);
                     metaObjects.add(mon);
                 }
 

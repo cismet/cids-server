@@ -11,7 +11,6 @@
  */
 package de.cismet.cids.server.search.builtin;
 
-import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 
 import org.apache.log4j.Logger;
@@ -24,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
+import de.cismet.cids.server.search.CidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
 /**
@@ -32,6 +32,7 @@ import de.cismet.cids.server.search.SearchException;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
+@org.openide.util.lookup.ServiceProvider(service = CidsServerSearch.class)
 public class DistinctValuesSearch extends AbstractCidsServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
@@ -43,9 +44,15 @@ public class DistinctValuesSearch extends AbstractCidsServerSearch {
 
     private String metaClass;
     private String attribute;
-    private String DOMAIN;
+    private String domain;
 
     //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new DistinctValuesSearch object.
+     */
+    public DistinctValuesSearch() {
+    }
 
     /**
      * Creates a new DistinctValuesSearch object.
@@ -55,16 +62,70 @@ public class DistinctValuesSearch extends AbstractCidsServerSearch {
      * @param  attribute  DOCUMENT ME!
      */
     public DistinctValuesSearch(final String domain, final String metaClass, final String attribute) {
-        this.metaClass = metaClass;
-        this.attribute = attribute;
-        this.DOMAIN = domain;
+        setMetaClass(metaClass);
+        setAttribute(attribute);
+        setDomain(domain);
     }
 
     //~ Methods ----------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getMetaClass() {
+        return metaClass;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getAttribute() {
+        return attribute;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getDomain() {
+        return domain;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  metaClass  DOCUMENT ME!
+     */
+    public final void setMetaClass(final String metaClass) {
+        this.metaClass = metaClass;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  attribute  DOCUMENT ME!
+     */
+    public final void setAttribute(final String attribute) {
+        this.attribute = attribute;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  domain  DOCUMENT ME!
+     */
+    public final void setDomain(final String domain) {
+        this.domain = domain;
+    }
+
     @Override
     public Collection performServerSearch() throws SearchException {
-        final MetaService ms = (MetaService)getActiveLocalServers().get(DOMAIN);
+        final MetaService ms = (MetaService)getActiveLocalServers().get(domain);
         if (ms != null) {
             try {
                 final String query = MessageFormat.format(this.query, metaClass, attribute);
