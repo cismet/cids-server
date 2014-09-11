@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTWriter;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
@@ -46,6 +47,20 @@ public class CidsBeanJsonSerializer extends StdSerializer<CidsBean> {
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   geom  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private static String toEwkt(final Geometry geom) {
+        if (geom == null) {
+            return null;
+        }
+        return "SRID=" + geom.getSRID() + ";" + new WKTWriter().write(geom);
+    }
 
     @Override
     public void serialize(final CidsBean cb, final JsonGenerator _jg, final SerializerProvider sp) throws IOException,
@@ -78,7 +93,7 @@ public class CidsBeanJsonSerializer extends StdSerializer<CidsBean> {
                     if (object == null) {
                         jg.writeNullField(attribute);
                     } else if (object instanceof Geometry) {
-                        jg.writeStringField(attribute, StringEscapeUtils.escapeJava(String.valueOf(object)));
+                        jg.writeStringField(attribute, StringEscapeUtils.escapeJava(toEwkt((Geometry)object)));
                     } else if (object instanceof BigDecimal) {
                         jg.writeNumberField(attribute, (BigDecimal)object);
                     } else if (object instanceof Double) {
