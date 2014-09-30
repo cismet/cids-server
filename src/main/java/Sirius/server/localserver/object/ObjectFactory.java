@@ -110,16 +110,17 @@ public final class ObjectFactory extends Shutdown {
      */
     public Sirius.server.localserver.object.Object getObject(final int objectId, final int classId, final User usr)
             throws SQLException {
-        return getObject(objectId, classId, usr, new HashMap<String, Sirius.server.localserver.object.Object>());
+        return getObject(objectId, classId, usr, new HashMap<String, Sirius.server.localserver.object.Object>(), 0);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   objectId  DOCUMENT ME!
-     * @param   classId   DOCUMENT ME!
-     * @param   usr       DOCUMENT ME!
-     * @param   ohm       DOCUMENT ME!
+     * @param   objectId            DOCUMENT ME!
+     * @param   classId             DOCUMENT ME!
+     * @param   usr                 DOCUMENT ME!
+     * @param   ohm                 DOCUMENT ME!
+     * @param   byPassCacheCounter  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -128,8 +129,9 @@ public final class ObjectFactory extends Shutdown {
     private Sirius.server.localserver.object.Object getObject(final int objectId,
             final int classId,
             final User usr,
-            final HashMap<String, Sirius.server.localserver.object.Object> ohm) throws SQLException {
-        final Sirius.server.localserver.object.Object o = getObject(objectId, classId, ohm);
+            final HashMap<String, Sirius.server.localserver.object.Object> ohm,
+            final int byPassCacheCounter) throws SQLException {
+        final Sirius.server.localserver.object.Object o = getObject(objectId, classId, ohm, byPassCacheCounter);
         if (o != null) {
             setAttributePermissions(o, usr);
         }
@@ -148,15 +150,16 @@ public final class ObjectFactory extends Shutdown {
      */
     public Sirius.server.localserver.object.Object getObject(final int objectId, final int classId)
             throws SQLException {
-        return getObject(objectId, classId, new HashMap<String, Sirius.server.localserver.object.Object>());
+        return getObject(objectId, classId, new HashMap<String, Sirius.server.localserver.object.Object>(), 0);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   objectId  DOCUMENT ME!
-     * @param   classId   DOCUMENT ME!
-     * @param   ohm       DOCUMENT ME!
+     * @param   objectId            DOCUMENT ME!
+     * @param   classId             DOCUMENT ME!
+     * @param   ohm                 DOCUMENT ME!
+     * @param   byPassCacheCounter  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -164,8 +167,9 @@ public final class ObjectFactory extends Shutdown {
      */
     private Sirius.server.localserver.object.Object getObject(final int objectId,
             final int classId,
-            final HashMap<String, Sirius.server.localserver.object.Object> ohm) throws SQLException {
-        return getObject(objectId, classId, false, ohm);
+            final HashMap<String, Sirius.server.localserver.object.Object> ohm,
+            final int byPassCacheCounter) throws SQLException {
+        return getObject(objectId, classId, false, ohm, byPassCacheCounter);
     }
 
     /**
@@ -175,6 +179,7 @@ public final class ObjectFactory extends Shutdown {
      * @param   classId                  DOCUMENT ME!
      * @param   allowLightweightObjects  DOCUMENT ME!
      * @param   ohm                      DOCUMENT ME!
+     * @param   byPassCacheCounter       DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -183,7 +188,8 @@ public final class ObjectFactory extends Shutdown {
     private Sirius.server.localserver.object.Object getObject(final int objectId,
             final int classId,
             final boolean allowLightweightObjects,
-            final HashMap<String, Sirius.server.localserver.object.Object> ohm) throws SQLException {
+            final HashMap<String, Sirius.server.localserver.object.Object> ohm,
+            final int byPassCacheCounter) throws SQLException {
         if (LOG != null) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
@@ -227,10 +233,18 @@ public final class ObjectFactory extends Shutdown {
                 rs = stmnt.executeQuery(getObjectStmnt);
 
                 if (rs.next()) {
-                    if (ohm == null) {
-                        return createObject(objectId, rs, c, allowLightweightObjects, ohm);
+                    if ((ohm == null)) {
+                        final int newBapassCacheCounter;
+                        if (byPassCacheCounter > 0) {
+                            newBapassCacheCounter = byPassCacheCounter - 1;
+                        } else {
+                            newBapassCacheCounter = byPassCacheCounter;
+                        }
+                        return createObject(objectId, rs, c, allowLightweightObjects, ohm, newBapassCacheCounter);
                     } else {
-                        ohm.put(ohmKey, createObject(objectId, rs, c, allowLightweightObjects, ohm));
+                        ohm.put(
+                            ohmKey,
+                            createObject(objectId, rs, c, allowLightweightObjects, ohm, byPassCacheCounter));
                     }
                 } else {
                     LOG.error("<LS> ERROR kein match f\u00FCr " + getObjectStmnt); // NOI18N
@@ -271,7 +285,7 @@ public final class ObjectFactory extends Shutdown {
     public Sirius.server.localserver.object.Object getObject(final int objectId,
             final int classId,
             final boolean allowLightweightObjects) throws SQLException {
-        return getObject(objectId, classId, allowLightweightObjects, null);
+        return getObject(objectId, classId, allowLightweightObjects, null, 0);
     }
 
     /**
@@ -282,6 +296,7 @@ public final class ObjectFactory extends Shutdown {
      * @param   c                        DOCUMENT ME!
      * @param   allowLightweightObjects  DOCUMENT ME!
      * @param   ohm                      DOCUMENT ME!
+     * @param   byPassCacheCounter       DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -291,8 +306,9 @@ public final class ObjectFactory extends Shutdown {
             final ResultSet rs,
             final Sirius.server.localserver._class.Class c,
             final boolean allowLightweightObjects,
-            final HashMap<String, Sirius.server.localserver.object.Object> ohm) throws SQLException {
-        return createObject(objectId, rs, c, null, allowLightweightObjects, ohm);
+            final HashMap<String, Sirius.server.localserver.object.Object> ohm,
+            final int byPassCacheCounter) throws SQLException {
+        return createObject(objectId, rs, c, null, allowLightweightObjects, ohm, byPassCacheCounter);
     }
 
     /**
@@ -311,7 +327,7 @@ public final class ObjectFactory extends Shutdown {
             final ResultSet rs,
             final Sirius.server.localserver._class.Class c,
             final boolean allowLightweightObjects) throws SQLException {
-        return createObject(objectId, rs, c, allowLightweightObjects, null);
+        return createObject(objectId, rs, c, allowLightweightObjects, null, 0);
     }
 
     /**
@@ -321,6 +337,7 @@ public final class ObjectFactory extends Shutdown {
      * @param   rs                      DOCUMENT ME!
      * @param   c                       DOCUMENT ME!
      * @param   backlinkClassToExclude  DOCUMENT ME!
+     * @param   byPassCacheCounter      DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -329,8 +346,9 @@ public final class ObjectFactory extends Shutdown {
     Sirius.server.localserver.object.Object createObject(final int objectId,
             final ResultSet rs,
             final Sirius.server.localserver._class.Class c,
-            final Sirius.server.localserver._class.Class backlinkClassToExclude) throws SQLException {
-        return createObject(objectId, rs, c, backlinkClassToExclude, null);
+            final Sirius.server.localserver._class.Class backlinkClassToExclude,
+            final int byPassCacheCounter) throws SQLException {
+        return createObject(objectId, rs, c, backlinkClassToExclude, null, byPassCacheCounter);
     }
 
     /**
@@ -341,6 +359,7 @@ public final class ObjectFactory extends Shutdown {
      * @param   c                       DOCUMENT ME!
      * @param   backlinkClassToExclude  DOCUMENT ME!
      * @param   ohm                     DOCUMENT ME!
+     * @param   byPassCacheCounter      DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -350,8 +369,9 @@ public final class ObjectFactory extends Shutdown {
             final ResultSet rs,
             final Sirius.server.localserver._class.Class c,
             final Sirius.server.localserver._class.Class backlinkClassToExclude,
-            final HashMap<String, Sirius.server.localserver.object.Object> ohm) throws SQLException {
-        return createObject(objectId, rs, c, backlinkClassToExclude, false, ohm);
+            final HashMap<String, Sirius.server.localserver.object.Object> ohm,
+            final int byPassCacheCounter) throws SQLException {
+        return createObject(objectId, rs, c, backlinkClassToExclude, false, ohm, byPassCacheCounter);
     }
 
     /**
@@ -363,6 +383,7 @@ public final class ObjectFactory extends Shutdown {
      * @param   backlinkClassToExclude   DOCUMENT ME!
      * @param   allowLightweightObjects  DOCUMENT ME!
      * @param   ohm                      DOCUMENT ME!
+     * @param   byPassCacheCounter       DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -373,7 +394,8 @@ public final class ObjectFactory extends Shutdown {
             final Sirius.server.localserver._class.Class c,
             final Sirius.server.localserver._class.Class backlinkClassToExclude,
             final boolean allowLightweightObjects,
-            final HashMap<String, Sirius.server.localserver.object.Object> ohm) throws SQLException {
+            final HashMap<String, Sirius.server.localserver.object.Object> ohm,
+            final int byPassCacheCounter) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("create Object entered for result" + rs + "object_id:: " + objectId + " class " + c.getID()); // NOI18N
             // construct object rump attributes have to be added yet
@@ -505,7 +527,12 @@ public final class ObjectFactory extends Shutdown {
                                         if (allowLightweightObjects && cacheHintSet) {
                                             attrValue = new LightweightObject(o_id, mai.getForeignKeyClassId());
                                         } else {
-                                            attrValue = getObject(o_id, mai.getForeignKeyClassId(), true, ohm);
+                                            attrValue = getObject(
+                                                    o_id,
+                                                    mai.getForeignKeyClassId(),
+                                                    true,
+                                                    ohm,
+                                                    byPassCacheCounter);
                                         }
                                     } catch (Exception e) {
                                         LOG.error("getObject recursion interrupted for oid" + o_id + "  MAI " + mai, e); // NOI18N
@@ -593,7 +620,7 @@ public final class ObjectFactory extends Shutdown {
             final Sirius.server.localserver._class.Class c,
             final Sirius.server.localserver._class.Class backlinkClassToExclude,
             final boolean allowLightweightObjects) throws SQLException {
-        return createObject(objectId, rs, c, backlinkClassToExclude, allowLightweightObjects, null);
+        return createObject(objectId, rs, c, backlinkClassToExclude, allowLightweightObjects, null, 0);
     }
 
     /**
@@ -658,7 +685,7 @@ public final class ObjectFactory extends Shutdown {
             while (rs.next()) {
                 final int o_id = rs.getInt(c.getPrimaryKey());
 
-                final Sirius.server.localserver.object.Object element = createObject(o_id, rs, c, true, ohm);
+                final Sirius.server.localserver.object.Object element = createObject(o_id, rs, c, true, null, 1);
 
                 if (element != null) {
                     final ObjectAttribute oa = new ObjectAttribute(
@@ -779,7 +806,8 @@ public final class ObjectFactory extends Shutdown {
                         rs,
                         detailClass,
                         masterClass,
-                        ohm);
+                        ohm,
+                        1);
 
                 if (element != null) {
                     final ObjectAttribute oa = new ObjectAttribute(
