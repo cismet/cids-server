@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 import java.io.IOException;
@@ -64,6 +65,34 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   ewkt  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private static Geometry fromEwkt(final String ewkt) {
+        final int skIndex = ewkt.indexOf(';');
+        if (skIndex > 0) {
+            final String sridKV = ewkt.substring(0, skIndex);
+            final int eqIndex = sridKV.indexOf('=');
+
+            if (eqIndex > 0) {
+                final int srid = Integer.parseInt(sridKV.substring(eqIndex + 1));
+                final String wkt = ewkt.substring(skIndex + 1);
+                try {
+                    final Geometry geom = new WKTReader(new GeometryFactory()).read(wkt);
+                    geom.setSRID(srid);
+                    return geom;
+                } catch (final ParseException ex) {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
 
     @Override
     public CidsBean deserialize(final JsonParser _jp, final DeserializationContext dc) throws IOException,
@@ -198,7 +227,7 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                                 } else if (attrClass.equals(Geometry.class)) {
                                     try {
                                         final String s = jp.getText();
-                                        cb.quiteSetProperty(fieldName, new WKTReader(new GeometryFactory()).read(s));
+                                        cb.quiteSetProperty(fieldName, fromEwkt(s));
                                     } catch (Exception e) {
                                         throw new RuntimeException("problem during processing of " + fieldName + "("
                                                     + attrClass + "). value:"
