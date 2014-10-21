@@ -284,7 +284,7 @@ public final class UserStore extends Shutdown {
      *
      * @throws  SQLException  DOCUMENT ME!
      */
-    public String getConfigAttr(final User user, final String key) throws SQLException {
+    public synchronized String getConfigAttr(final User user, final String key) throws SQLException {
         if ((user == null) || (key == null)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("user and/or key is null, returning null: user: " + user + " || key: " + key);
