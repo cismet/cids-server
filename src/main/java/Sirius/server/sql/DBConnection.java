@@ -244,13 +244,17 @@ public final class DBConnection implements DBBackend {
                 throw new SQLException(message, SQL_CODE_ALREADY_CLOSED);
             }
 
-            // we don't close the statement here as it is cached for further usage
-            final PreparedStatement stmt = prepareQuery(descriptor, parameters);
+            // synchronizing prevents that we return by accident a result set
+            // that has been created/prepared by antoher thread.
+            synchronized (this) {
+                // we don't close the statement here as it is cached for further usage
+                final PreparedStatement stmt = prepareQuery(descriptor, parameters);
 
-            // TODO: does't care if there is an open resultset, must be refactored
-            final ResultSet set = stmt.executeQuery();
+                // TODO: does't care if there is an open resultset, must be refactored
+                final ResultSet set = stmt.executeQuery();
 
-            return set;
+                return set;
+            }
         } catch (final MissingResourceException e) {
             final String message = "invalid descriptor: " + descriptor; // NOI18N
             LOG.error(message, e);
