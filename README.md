@@ -1,4 +1,5 @@
-Server components of the cids system.
+Server components of the cids system [![Build Status](http://ci.cismet.de/buildStatus/icon?job=cids-server)](https://ci.cismet.de/job/cids-server/)
+===
 
 #cids README
 ![Figure 0](http://www.cismet.de/images/faq-images/fis_wasser1.png)
