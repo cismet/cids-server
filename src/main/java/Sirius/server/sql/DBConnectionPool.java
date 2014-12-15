@@ -125,7 +125,8 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
                 props.getDbPassword(),
                 props.getJDBCDriver(),
                 props.getPoolSize(),
-                props.getSQLDialect()));
+                props.getSQLDialect(),
+                props.getInteralDialect()));
     }
 
     //~ Methods ----------------------------------------------------------------

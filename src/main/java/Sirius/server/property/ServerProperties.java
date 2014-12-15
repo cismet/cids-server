@@ -503,6 +503,28 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @return  DOCUMENT ME!
      */
+    public final String getInteralDialect() {
+        try {
+            final String internalDialect = getString("internalDialect");
+
+            if (internalDialect == null) {
+                // using the default dialect
+                return "";
+            } else {
+                return internalDialect;
+            }
+        } catch (final Exception e) {
+            LOG.warn("error reading internalDialect property, using default", e); // NOI18N
+
+            return "";
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public String getStartMode() {
         return this.getString("startMode"); // NOI18N
     }

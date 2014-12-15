@@ -65,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.MissingResourceException;
+import java.util.Properties;
 
 import de.cismet.cids.objectextension.ObjectExtensionFactory;
 
@@ -1119,6 +1120,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             System.out.println("Info :: <LS>  !!!LocalSERVER started!!!!");               // NOI18N
         } catch (Exception e) {
             System.err.println("Error while starting domainserver :: " + e.getMessage()); // NOI18N
+            e.printStackTrace();
             if (instance != null) {
                 instance.shutdown();
             }

@@ -196,7 +196,7 @@ public final class MethodCache extends Shutdown {
             final DBConnection con = conPool.getDBConnection();
 
             final String sql =
-                "select c.id as c_id , m.plugin_id as p_id,m.method_id as m_id  from cs_class as c, cs_method as m, cs_method_class_assoc as assoc where c.id=assoc.class_id and m.id = assoc.method_id"; // NOI18N
+                "select c.id c_id , m.plugin_id p_id,m.method_id m_id  from cs_class c, cs_method m, cs_method_class_assoc assoc where c.id=assoc.class_id and m.id = assoc.method_id"; // NOI18N
 
             final ResultSet table = con.getConnection().createStatement().executeQuery(sql);
 
