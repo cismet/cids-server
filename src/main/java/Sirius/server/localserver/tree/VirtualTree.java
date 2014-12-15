@@ -27,7 +27,7 @@ import Sirius.server.sql.DBConnectionPool;
 
 import org.apache.log4j.Logger;
 
-import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 import java.rmi.RemoteException;
 
@@ -132,7 +132,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         //J-
         final String localChildren =
                 "SELECT "                                                                                    // NOI18N
-                    + "y.id AS id, "                                                                         // NOI18N
+                    + "y.id id, "                                                                         // NOI18N
                     + "name, "                                                                               // NOI18N
                     + "class_id, "                                                                           // NOI18N
                     + "object_id, "                                                                          // NOI18N
@@ -140,9 +140,9 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                     + "dynamic_children, "                                                                   // NOI18N
                     + "sql_sort, "                                                                           // NOI18N
                     + "url, "                                                                                // NOI18N
-                    + "p.permission AS perm_id, "                                                            // NOI18N
+                    + "p.permission perm_id, "                                                            // NOI18N
                     + "p.ug_id, "                                                                            // NOI18N
-                    + "pp.key AS perm_key, "                                                                 // NOI18N
+                    + "pp.key perm_key, "                                                                 // NOI18N
                     + "y.policy, "                                                                           // NOI18N
                     + "iconfactory, "                                                                        // NOI18N
                     + "icon, "                                                                               // NOI18N
@@ -151,7 +151,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                 + "FROM "                                                                                    // NOI18N
                     + "("                                                                                    // NOI18N
                     + "SELECT "                                                                              // NOI18N
-                        + "n.id AS id, "                                                                     // NOI18N
+                        + "n.id id, "                                                                     // NOI18N
                         + "name, "                                                                           // NOI18N
                         + "class_id, "                                                                       // NOI18N
                         + "object_id, "                                                                      // NOI18N
@@ -159,18 +159,18 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                         + "dynamic_children, "                                                               // NOI18N
                         + "sql_sort, "                                                                       // NOI18N
                         + "n.policy, "                                                                       // NOI18N
-                        + "prot_prefix || server || path || object_name AS url, "                            // NOI18N
+                        + "prot_prefix || server || path || object_name url, "                            // NOI18N
                         + "iconfactory, "                                                                    // NOI18N
                         + "icon, "                                                                           // NOI18N
                         + "derive_permissions_from_class"                                                    // NOI18N
                             + (artificialIdSupported ? ", artificial_id " : " ")                             // NOI18N
                     + "FROM "                                                                                // NOI18N
-                        + "cs_cat_node AS n "                                                                // NOI18N
+                        + "cs_cat_node n "                                                                // NOI18N
                     + "LEFT OUTER JOIN url ON (n.descr = url.id) "                                           // NOI18N
-                    + "LEFT OUTER JOIN url_base AS ub ON (url.url_base_id = ub.id) "                         // NOI18N
-                    + ") AS y "                                                                              // NOI18N
-                + "LEFT OUTER JOIN cs_ug_cat_node_perm AS p ON (p.cat_node_id = y.id) "                      // NOI18N
-                + "LEFT OUTER JOIN cs_permission AS pp ON (p.permission = pp.id AND ug_id IN (" + implodedUserGroupIds + ")) " // NOI18N
+                    + "LEFT OUTER JOIN url_base ub ON (url.url_base_id = ub.id) "                         // NOI18N
+                    + ") y "                                                                              // NOI18N
+                + "LEFT OUTER JOIN cs_ug_cat_node_perm p ON (p.cat_node_id = y.id) "                      // NOI18N
+                + "LEFT OUTER JOIN cs_permission pp ON (p.permission = pp.id AND ug_id IN (" + implodedUserGroupIds + ")) " // NOI18N
                 + "WHERE "                                                                                   // NOI18N
                     + "y.id IN (SELECT id_to FROM cs_cat_link WHERE id_from = " + nodeId + ") ";             // NOI18N
         //J+
@@ -184,8 +184,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         //J-
         final String remoteChildren =
                 "SELECT "                                                                          // NOI18N
-                    + "id_to AS id, "                                                              // NOI18N
-                    + "domain_to AS domain "                                                       // NOI18N
+                    + "id_to id, "                                                              // NOI18N
+                    + "domain_to domain "                                                       // NOI18N
                 + "FROM "                                                                          // NOI18N
                     + "cs_cat_link "                                                               // NOI18N
                 + "WHERE "                                                                         // NOI18N
@@ -315,35 +315,25 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         }
 
         boolean isRoot = false;
-        char root = 'F';
 
         String policy = "null"; // NOI18N
 
         if ((parent == null) && (parent.getNodeId() < 0)) {
             isRoot = true;
-            root = 'T';
         } else {
             final Node parentNode = getNode(parent.getNodeId(), user);
             policy = parentNode.getPermissions().getPolicy().getDbID() + ""; // NOI18N
         }
         final int nodeId = getNextNodeID();
 
-        final String addNode =
-            "insert into cs_cat_node (id, name, descr, class_id, object_id, node_type, is_root, org,dynamic_children,sql_sort,policy) values ( " // NOI18N
-                    + nodeId
-                    + ",'"                                                                                                                       // NOI18N
-                    + node.getName()
-                    + "',1,"                                                                                                                     // NOI18N
-                    + classId
-                    + ","                                                                                                                        // NOI18N
-                    + objectId
-                    + ",'"                                                                                                                       // NOI18N
-                    + nodeType
-                    + "','"                                                                                                                      // NOI18N
-                    + root
-                    + "', NULL,NULL,false,"                                                                                                      // NOI18N
-                    + policy
-                    + " )";                                                                                                                      // NOI18N
+        final String addNode = getStatements(properties.getInteralDialect()).getAddNodeStatement(
+                nodeId,
+                node.getName(),
+                classId,
+                objectId,
+                nodeType,
+                isRoot,
+                policy);
 
         Statement stmt = null;
         try {
@@ -364,6 +354,29 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         } finally {
             DBConnection.closeStatements(stmt);
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   dialect  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  IllegalStateException  DOCUMENT ME!
+     */
+    public VirtualTreeStatements getStatements(final String dialect) {
+        final Collection<? extends VirtualTreeStatements> c = Lookup.getDefault()
+                    .lookupAll(VirtualTreeStatements.class);
+        final String d = ((dialect == null) || dialect.isEmpty()) ? "postgres_9" : dialect;
+
+        for (final VirtualTreeStatements v : c) {
+            if (v.getDialect().equals(d)) {
+                return v;
+            }
+        }
+
+        throw new IllegalStateException("dialect not found: " + dialect);
     }
 
     /**
@@ -515,7 +528,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      */
     @Override
     public int getNextNodeID() throws SQLException {
-        final String query = "SELECT NEXTVAL('cs_cat_node_sequence')"; // NOI18N
+        final String query = getStatements(properties.getInteralDialect()).getNextNodeIdStatement();
 
         Statement stmt = null;
         ResultSet rs = null;
@@ -564,20 +577,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     public Node[] getClassTreeNodes(final User user) throws SQLException {
         final String implodedUserGroupIds = implodedUserGroupIds(user);
 
-        final String statement = "select  distinct "                                                                                                                                                                     // NOI18N
-                    + "y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
-                    + "("                                                                                                                                                                                                // NOI18N
-                    + "select "                                                                                                                                                                                          // NOI18N
-                    + "n.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name as url,iconfactory,icon,derive_permissions_from_class  "                   // NOI18N
-                    + "from "                                                                                                                                                                                            // NOI18N
-                    + "cs_cat_node as n left outer join url  on ( n.descr=url.id ) "                                                                                                                                     // NOI18N
-                    + "left outer join url_base as ub  on (url.url_base_id=ub.id)   "                                                                                                                                    // NOI18N
-                    + "where "                                                                                                                                                                                           // NOI18N
-                    + "is_root=true and node_type='C' "                                                                                                                                                                  // NOI18N
-                    + ") as y "                                                                                                                                                                                          // NOI18N
-                    + "left outer join cs_ug_cat_node_perm as p on p.cat_node_id=y.id and ug_id IN ("                                                                                                                    // NOI18N
-                    + implodedUserGroupIds
-                    + ") left outer join cs_permission as pp on p.permission=pp.id ";                                                                                                                                    // NOI18N
+        final String statement = getStatements(properties.getInteralDialect()).getClassTreeNodesStatement(
+                implodedUserGroupIds); // NOI18N
 
         Statement stmt = null;
         ResultSet rs = null;
@@ -718,20 +719,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     public Node[] getTopNodes(final User user) throws SQLException {
         final String implodedUserGroupIds = implodedUserGroupIds(user);
 
-        final String statement = "select  distinct "                                                                                                                                                                     // NOI18N
-                    + "y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
-                    + "("                                                                                                                                                                                                // NOI18N
-                    + "select "                                                                                                                                                                                          // NOI18N
-                    + "n.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name as url,iconfactory,icon,derive_permissions_from_class  "                   // NOI18N
-                    + "from "                                                                                                                                                                                            // NOI18N
-                    + "cs_cat_node as n left outer join url  on ( n.descr=url.id ) "                                                                                                                                     // NOI18N
-                    + "left outer join url_base as ub  on (url.url_base_id=ub.id)   "                                                                                                                                    // NOI18N
-                    + "where "                                                                                                                                                                                           // NOI18N
-                    + "is_root=true and node_type<>'C' "                                                                                                                                                                 // NOI18N
-                    + ") as y "                                                                                                                                                                                          // NOI18N
-                    + "left outer join cs_ug_cat_node_perm as p on p.cat_node_id=y.id and ug_id IN ("
-                    + implodedUserGroupIds
-                    + ") left outer join cs_permission as pp on p.permission=pp.id ";                                                                                                                                    // NOI18N
+        final String statement = getStatements(properties.getInteralDialect()).getTopNodesStatement(
+                implodedUserGroupIds); 
 
         Statement stmt = null;
         ResultSet rs = null;
@@ -791,17 +780,17 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         ResultSet rs = null;
         try {
             final String statement =
-                "select  y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url , p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  "                                                                 // NOI18N
-                        + "from"                                                                                                                                                                                                                                                     // NOI18N
-                        + " (select n.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name as url,iconfactory,icon,derive_permissions_from_class  from cs_cat_node as n left outer join url  on ( n.descr=url.id ) " // NOI18N
-                        + "left outer join url_base as ub  on (url.url_base_id=ub.id)   "                                                                                                                                                                                            // NOI18N
-                        + "where n.id="                                                                                                                                                                                                                                              // NOI18N
+                "select  y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url , p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  "                                                                 // NOI18N
+                        + "from"                                                                                                                                                                                                                                            // NOI18N
+                        + " (select n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  from cs_cat_node n left outer join url  on ( n.descr=url.id ) " // NOI18N
+                        + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                                                                                      // NOI18N
+                        + "where n.id="                                                                                                                                                                                                                                     // NOI18N
                         + nodeId
-                        + " ) as y "                                                                                                                                                                                                                                                 // NOI18N
-                        + "left outer join cs_ug_cat_node_perm as p on p.cat_node_id=y.id and ug_id IN ("                                                                                                                                                                            // NOI18N
+                        + " ) y "                                                                                                                                                                                                                                           // NOI18N
+                        + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and ug_id IN ("                                                                                                                                                                      // NOI18N
                         + implodedUserGroupIds
-                        + ") "                                                                                                                                                                                                                                                       // NOI18N
-                        + "left outer join cs_permission as pp on p.permission=pp.id";                                                                                                                                                                                               // NOI18N
+                        + ") "                                                                                                                                                                                                                                              // NOI18N
+                        + "left outer join cs_permission pp on p.permission=pp.id";                                                                                                                                                                                         // NOI18N
 
             stmt = conPool.getConnection().createStatement();
 
@@ -1189,7 +1178,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         // a where id_to  in (select distinct id_from from cs_cat_link) union select distinct id from cs_cat_node where
         // is_root=true ";
         final String statement =
-            "select distinct id_from from cs_cat_link union select distinct id as id_from from cs_cat_node where dynamic_children is not null"; // NOI18N
+            "select distinct id_from from cs_cat_link union select distinct id id_from from cs_cat_node where dynamic_children is not null"; // NOI18N
 
         // the non leafs are of the order 10K in wundalive
         // TODO: optimisation: probably a select count() would be useful here since the normal catalogue is not used
@@ -1246,7 +1235,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
          */
         UserGroupIdentifiers(final DBConnectionPool conPool) {
             final String statement =
-                "select u.id, u.name||'@'||d.name as ug_identifier  from cs_ug as u , cs_domain as d where u.domain=d.id and not (lower(d.name) = 'local')"; // NOI18N
+                "select u.id, u.name||'@'||d.name ug_identifier  from cs_ug u , cs_domain d where u.domain=d.id and not (lower(d.name) = 'local')"; // NOI18N
 
             Statement stmt = null;
             ResultSet rs = null;
