@@ -13,6 +13,7 @@ import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.sql.DBConnection;
+import Sirius.server.sql.SQLTools;
 
 import org.apache.log4j.Logger;
 
@@ -141,7 +142,8 @@ public class PersistenceHelper {
      */
     int getNextID(final String tableName, final String key) throws SQLException {
         final Connection con = dbServer.getActiveDBConnection().getConnection();
-        final String query = "SELECT NEXTVAL('" + tableName.toUpperCase() + "_SEQ')"; // NOI18N
+        final String query = SQLTools.getStatements(dbServer.getProperties().getInteralDialect())
+                    .getPersistenceHelperNextvalStmt(tableName.toUpperCase());
 
         Statement stmt = null;
         ResultSet rs = null;

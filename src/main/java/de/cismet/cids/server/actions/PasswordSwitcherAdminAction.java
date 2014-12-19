@@ -13,6 +13,8 @@ package de.cismet.cids.server.actions;
 
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.newuser.User;
+import Sirius.server.sql.SQLTools;
+import Sirius.server.sql.ServerSQLStatements;
 
 import org.apache.log4j.Logger;
 
@@ -31,14 +33,6 @@ public class PasswordSwitcherAdminAction implements UserAwareServerAction {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger LOG = Logger.getLogger(PasswordSwitcherAdminAction.class);
-
-    private static final String QUERY_SELECT_USER = "SELECT * FROM cs_usr WHERE login_name = '%1$s'";
-    private static final String QUERY_CHANGE_AND_BACKUP = "UPDATE cs_usr SET last_password = password, password = "
-                + "(SELECT password FROM cs_usr WHERE login_name = '%2$s') "
-                + "WHERE login_name = '%1$s'";
-
-    public static final String QUERY_RECOVERY =
-        "UPDATE cs_usr SET password = last_password, last_password = NULL WHERE login_name = '%1$s'";
 
     public static final String TASK_NAME = "passwordSwitcherAdminAction";
 
@@ -95,22 +89,25 @@ public class PasswordSwitcherAdminAction implements UserAwareServerAction {
 
             final String adminLogin = getUser().getName();
 
-            ResultSet rs = s.executeQuery(String.format(QUERY_SELECT_USER, loginNameToSwitch));
+            final ServerSQLStatements stmts = SQLTools.getStatements(DomainServerImpl.getServerProperties()
+                            .getInteralDialect());
+
+            ResultSet rs = s.executeQuery(stmts.getPasswordSwitcherAdminActionSelectUserStmt(loginNameToSwitch));
             if (!rs.next()) {
                 return new Exception("User '" + loginNameToSwitch + "' not found!");
             }
-            rs = s.executeQuery(String.format(QUERY_SELECT_USER, adminLogin));
+            rs = s.executeQuery(stmts.getPasswordSwitcherAdminActionSelectUserStmt(adminLogin));
             if (!rs.next()) {
                 return new Exception("User '" + adminLogin + "' not found!");
             }
 
-            s.executeUpdate(String.format(QUERY_CHANGE_AND_BACKUP, loginNameToSwitch, adminLogin));
+            s.executeUpdate(stmts.getPasswordSwitcherAdminActionChangeAndBackupStmt(loginNameToSwitch, adminLogin));
             try {
                 Thread.sleep(recoveryTimer);
             } catch (final InterruptedException ex) {
                 LOG.error("Insomnia ! I can't sleep", ex);
             }
-            s.executeUpdate(String.format(QUERY_RECOVERY, loginNameToSwitch));
+            s.executeUpdate(stmts.getPasswordSwitcherAdminActionRecoveryStmt(loginNameToSwitch));
 
             return null;
         } catch (final SQLException ex) {

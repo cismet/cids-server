@@ -11,14 +11,14 @@
  */
 package de.cismet.cids.server.search.builtin;
 
+import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
+import Sirius.server.sql.SQLTools;
 
 import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;
-
-import java.text.MessageFormat;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,7 +28,8 @@ import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
 /**
- * DOCUMENT ME!
+ * As this search allows the user to specify a where clause he has to know what backend the server it is executed on
+ * uses. Thus the search may fail due to wrong dialect.
  *
  * @author   mroncoroni
  * @version  $Revision$, $Date$
@@ -114,6 +115,8 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
         final ArrayList<MetaObjectNode> metaObjects = new ArrayList<MetaObjectNode>();
         if (ms != null) {
             try {
+                final String query = SQLTools.getStatements(DomainServerImpl.getServerProperties().getInteralDialect())
+                            .getQueryEditorSearchStmt(metaClass, classId, whereClause);
                 final boolean paginationEnabled = limit
                             >= 0;
                 final String query = (!paginationEnabled)

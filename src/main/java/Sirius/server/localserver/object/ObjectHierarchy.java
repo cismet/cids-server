@@ -75,8 +75,12 @@ public class ObjectHierarchy {
 
             // konstruiere select string f\u00FCr Vaterobjekt mit Auswahlkriterium = Objektid des Attributes
 
-            final String value = "Select " + father + " class_id ," + pk + " object_id" + " from "
-                        + rs.getString("table_name") + " where " + rs.getString("field_name") + " = ";
+            final String value = SQLTools.getStatements(props.getInteralDialect())
+                        .getObjectHierarchyFatherStmt(
+                            father,
+                            pk,
+                            rs.getString("table_name"),
+                            rs.getString("field_name"));
             if (logger.isDebugEnabled()) {
                 logger.debug(" get Father key :: " + key + " value :: " + value); // NOI18N
             }
@@ -105,13 +109,17 @@ public class ObjectHierarchy {
             final String father_table = rs.getString("father_table"); // NOI18N
             final String child_pk = rs.getString("child_pk");         // NOI18N
 
-            final String value = "Select " + father + " class_id ," + father_pk + " object_id"
-                        + " from "                                                                         // NOI18N
-                        + father_table
-                        + " where " + attribute + " in "
-                        + " (select " + arrayKey + " from " + child_table + " where  " + child_pk + " = "; // ? )
+            final String value = SQLTools.getStatements(props.getInteralDialect())
+                        .getObjectHierarchyFatherArrayStmt(
+                            father,
+                            father_pk,
+                            father_table,
+                            attribute,
+                            arrayKey,
+                            child_table,
+                            child_pk);
             if (logger.isDebugEnabled()) {
-                logger.debug(" get Array Father key :: " + key + " value :: " + value);                    // NOI18N
+                logger.debug(" get Array Father key :: " + key + " value :: " + value); // NOI18N
             }
 
             arrayFatherStmnts.put(key, value);

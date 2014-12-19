@@ -13,6 +13,7 @@ import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.newuser.permission.PermissionHolder;
 import Sirius.server.newuser.permission.Policy;
+import Sirius.server.sql.SQLTools;
 
 import Sirius.util.Mapable;
 import Sirius.util.image.Image;
@@ -93,6 +94,7 @@ public class Class implements java.io.Serializable, Mapable {
      * @param  permissions      permission container
      * @param  attributePolicy  DOCUMENT ME!
      * @param  indexed          DOCUMENT ME!
+     * @param  dialect          DOCUMENT ME!
      */
     public Class(final int id,
             final String name,
@@ -104,7 +106,8 @@ public class Class implements java.io.Serializable, Mapable {
             final String toString,
             final PermissionHolder permissions,
             final Policy attributePolicy,
-            final boolean indexed) {
+            final boolean indexed,
+            final String dialect) {
         this(
             id,
             name,
@@ -116,7 +119,8 @@ public class Class implements java.io.Serializable, Mapable {
             toString,
             (Policy)null,
             attributePolicy,
-            indexed);
+            indexed,
+            dialect);
         this.permissions = permissions;
     }
 
@@ -134,6 +138,7 @@ public class Class implements java.io.Serializable, Mapable {
      * @param  policy           DOCUMENT ME!
      * @param  attributePolicy  DOCUMENT ME!
      * @param  indexed          DOCUMENT ME!
+     * @param  dialect          DOCUMENT ME!
      */
     public Class(final int id,
             final String name,
@@ -145,7 +150,8 @@ public class Class implements java.io.Serializable, Mapable {
             final String toString,
             final Policy policy,
             final Policy attributePolicy,
-            final boolean indexed) {
+            final boolean indexed,
+            final String dialect) {
         this.id = id;
 
         this.name = name;
@@ -170,11 +176,11 @@ public class Class implements java.io.Serializable, Mapable {
 
         this.toString = toString;
 
-        this.getInstanceStmnt = "Select * from " + tableName + " where " + primaryKey + " = ?"; // NOI18N
+        this.getInstanceStmnt = SQLTools.getStatements(dialect).getClassGetInstanceStmnt(tableName, primaryKey);
 
-        this.getDefaultInstanceStmnt = "Select * from " + tableName + " where " + primaryKey // NOI18N
-                    + " = (select min( "                                                     // NOI18N
-                    + primaryKey + ") from " + tableName + ")";                              // NOI18N
+        this.getDefaultInstanceStmnt = SQLTools.getStatements(dialect)
+                    .getClassGetDefaultInstanceStmnt(tableName, primaryKey);
+
         this.indexed = indexed;
     }
 

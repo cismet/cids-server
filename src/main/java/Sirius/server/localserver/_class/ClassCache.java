@@ -163,7 +163,8 @@ public class ClassCache extends Shutdown {
                         toStringQualifier,
                         policy,
                         attributePolicy,
-                        indexed);
+                        indexed,
+                        properties.getInteralDialect());
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("to string for Class :" + className + " :: " + toStringQualifier); // NOI18N
                 }
