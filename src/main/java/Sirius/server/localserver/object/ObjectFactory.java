@@ -22,6 +22,7 @@ import Sirius.server.newuser.permission.PermissionHolder;
 import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DBConnectionPool;
 import Sirius.server.sql.QueryParametrizer;
+import Sirius.server.sql.SQLTools;
 
 import org.apache.log4j.Logger;
 
@@ -38,8 +39,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-
-import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
 
 import de.cismet.tools.CurrentStackTrace;
 
@@ -61,6 +60,7 @@ public final class ObjectFactory extends Shutdown {
     private DBConnectionPool conPool;
     private DatabaseMetaData dbMeta = null;
     private HashSet primaryKeys;
+    private final String dialect;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -69,10 +69,12 @@ public final class ObjectFactory extends Shutdown {
      *
      * @param  conPool     DOCUMENT ME!
      * @param  classCache  DOCUMENT ME!
+     * @param  dialect     DOCUMENT ME!
      */
-    public ObjectFactory(final DBConnectionPool conPool, final ClassCache classCache) {
+    public ObjectFactory(final DBConnectionPool conPool, final ClassCache classCache, final String dialect) {
         this.classCache = classCache;
         this.conPool = conPool;
+        this.dialect = dialect;
 
         try {
             this.dbMeta = conPool.getConnection().getMetaData();
@@ -449,7 +451,7 @@ public final class ObjectFactory extends Shutdown {
                                     LOG.debug("Class of attribute " + mai.getName() + " = null"); // NOI18N
                                 }
                             }
-                            if (attrValue instanceof org.postgis.PGgeometry)     // TODO assignable from machen
+                            if (SQLTools.getGeometryFactory(dialect).isGeometryObject(attrValue))
                             // attrValue = de.cismet.tools.postgis.FeatureConverter.convert( (
                             // (org.postgis.PGgeometry)attrValue).getGeometry());
                             {
@@ -462,8 +464,7 @@ public final class ObjectFactory extends Shutdown {
                                                 + ")  = " // NOI18N
                                                 + attrValue);
                                 }
-                                attrValue = PostGisGeometryFactory.createJtsGeometry(
-                                        ((org.postgis.PGgeometry)attrValue).getGeometry());
+                                attrValue = SQLTools.getGeometryFactory(dialect).createGeometry(attrValue);
                             }
                             if (attrValue != null) {
                                 if (LOG.isDebugEnabled()) {

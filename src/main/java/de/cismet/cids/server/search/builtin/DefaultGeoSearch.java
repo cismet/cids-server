@@ -7,8 +7,10 @@
 ****************************************************/
 package de.cismet.cids.server.search.builtin;
 
+import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
+import Sirius.server.sql.SQLTools;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -55,28 +57,6 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
 
     @Override
     public String getSearchSql(final String domainKey) {
-        final String sql = ""                                                                                                      // NOI18N
-                    + "SELECT DISTINCT i.class_id , "                                                                              // NOI18N
-                    + "                i.object_id, "                                                                              // NOI18N
-                    + "                s.stringrep "                                                                               // NOI18N
-                    + "FROM            geom g, "                                                                                   // NOI18N
-                    + "                cs_attr_object_derived i "                                                                  // NOI18N
-                    + "                LEFT OUTER JOIN cs_stringrepcache s "                                                       // NOI18N
-                    + "                ON              ( "                                                                         // NOI18N
-                    + "                                                s.class_id =i.class_id "                                    // NOI18N
-                    + "                                AND             s.object_id=i.object_id "                                   // NOI18N
-                    + "                                ) "                                                                         // NOI18N
-                    + "WHERE           i.attr_class_id = "                                                                         // NOI18N
-                    + "                ( SELECT cs_class.id "                                                                      // NOI18N
-                    + "                FROM    cs_class "                                                                          // NOI18N
-                    + "                WHERE   cs_class.table_name::text = 'GEOM'::text "                                          // NOI18N
-                    + "                ) "                                                                                         // NOI18N
-                    + "AND             i.attr_object_id = g.id "                                                                   // NOI18N
-                    + "AND i.class_id IN <cidsClassesInStatement> "                                                                // NOI18N
-                    + "AND geo_field && st_GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>') "             // NOI18N
-                    + "AND st_intersects(geo_field,st_GeometryFromText('SRID=<cidsSearchGeometrySRID>;<cidsSearchGeometryWKT>')) " // NOI18N
-                    + "ORDER BY        1,2,3";
-
         final String cidsSearchGeometryWKT = geometry.toText();
         final String sridString = Integer.toString(geometry.getSRID());
         final String classesInStatement = getClassesInSnippetsPerDomain().get(domainKey);
@@ -102,10 +82,8 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
             return null;
         }
 
-        return
-            sql.replaceAll("<cidsClassesInStatement>", classesInStatement) // NOI18N
-            .replaceAll("<cidsSearchGeometryWKT>", cidsSearchGeometryWKT)  // NOI18N
-            .replaceAll("<cidsSearchGeometrySRID>", sridString);           // NOI18N
+        return SQLTools.getStatements(DomainServerImpl.getServerProperties().getInteralDialect())
+                    .getDefaultGeoSearchStmt(cidsSearchGeometryWKT, sridString, classesInStatement);
     }
 
     @Override

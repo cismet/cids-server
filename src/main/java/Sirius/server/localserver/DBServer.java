@@ -21,7 +21,6 @@ import Sirius.server.localserver.tree.VirtualTree;
 import Sirius.server.localserver.user.UserStore;
 import Sirius.server.middleware.types.*;
 import Sirius.server.newuser.User;
-import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.permission.PolicyHolder;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.sql.DBConnection;
@@ -92,7 +91,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
             LOG.debug("DBServer connectionPool instantiated :: Instantiate PolicyHolder "); // NOI18N
         }
 
-        policyHolder = new PolicyHolder(connectionPool);
+        policyHolder = new PolicyHolder(connectionPool, properties.getInteralDialect());
         if (LOG.isDebugEnabled()) {
             LOG.debug("DBServer PolicyHolder instantiated :: Instantiate ClassCache "); // NOI18N
         }
@@ -102,7 +101,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
             LOG.debug("DBServer ClassCache instantiated :: Instantiate ObjectFactory "); // NOI18N
         }
 
-        objects = new ObjectFactory(connectionPool, classes);
+        objects = new ObjectFactory(connectionPool, classes, properties.getInteralDialect());
         if (LOG.isDebugEnabled()) {
             LOG.debug("DBServerObjectFactory instantiated :: Instantiate Tree "); // NOI18N
         }
@@ -134,7 +133,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
      * @return  DOCUMENT ME!
      */
     public MetaClass getClass(final int classID) {
-        return new MetaClass(classes.getClass(classID), getDomain());
+        return new MetaClass(classes.getClass(classID), getDomain(), properties.getInteralDialect());
     }
     /**
      * ---------------------------------------------------------------------------
@@ -150,7 +149,8 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
 
         for (int i = 0; i < tmpClasses.size(); i++) {
             middleWareClasses[i] = new MetaClass((Sirius.server.localserver._class.Class)tmpClasses.get(i),
-                    getDomain());
+                    getDomain(),
+                    properties.getInteralDialect());
         }
 
         return middleWareClasses;
@@ -166,7 +166,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     public MetaClass getClass(final User u, final int classID) {
         final Sirius.server.localserver._class.Class c = classes.getClass(u, classID);
         if (c != null) {
-            return new MetaClass(c, getDomain());
+            return new MetaClass(c, getDomain(), properties.getInteralDialect());
         } else {
             return null;
         }
@@ -185,7 +185,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     public MetaClass getClassByTableName(final User u, final String tableName) throws Throwable {
         final Sirius.server.localserver._class.Class c = classes.getClassNyTableName(u, tableName);
         if (c != null) {
-            return new MetaClass(c, getDomain());
+            return new MetaClass(c, getDomain(), properties.getInteralDialect());
         } else {
             return null;
         }
@@ -206,7 +206,8 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
 
             for (int i = 0; i < tmpClasses.size(); i++) {
                 middleWareClasses[i] = new MetaClass((Sirius.server.localserver._class.Class)tmpClasses.get(i),
-                        getDomain());
+                        getDomain(),
+                        properties.getInteralDialect());
             }
         }
 

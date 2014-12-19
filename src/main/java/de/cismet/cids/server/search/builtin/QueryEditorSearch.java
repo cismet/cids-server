@@ -11,14 +11,14 @@
  */
 package de.cismet.cids.server.search.builtin;
 
+import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
+import Sirius.server.sql.SQLTools;
 
 import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;
-
-import java.text.MessageFormat;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,7 +28,8 @@ import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
 /**
- * DOCUMENT ME!
+ * As this search allows the user to specify a where clause he has to know what backend the server it is executed on
+ * uses. Thus the search may fail due to wrong dialect.
  *
  * @author   mroncoroni
  * @version  $Revision$, $Date$
@@ -37,12 +38,6 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String query = "SELECT {2} AS classid, tbl.id AS objectid, c.stringrep FROM {0} tbl "
-                + "LEFT OUTER JOIN cs_stringrepcache c "     // NOI18N
-                + "       ON     ( "                         // NOI18N
-                + "                     c.class_id ={2} "    // NOI18N
-                + "              AND    c.object_id=tbl.id " // NOI18N
-                + "              ) WHERE {1}";
     private static final transient Logger LOG = Logger.getLogger(QueryEditorSearch.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -77,7 +72,8 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
         final ArrayList<MetaObjectNode> metaObjects = new ArrayList<MetaObjectNode>();
         if (ms != null) {
             try {
-                final String query = MessageFormat.format(this.query, metaClass, whereClause, classId);
+                final String query = SQLTools.getStatements(DomainServerImpl.getServerProperties().getInteralDialect())
+                            .getQueryEditorSearchStmt(metaClass, classId, whereClause);
                 LOG.info(query);
                 final ArrayList<ArrayList> results = ms.performCustomSearch(query);
 

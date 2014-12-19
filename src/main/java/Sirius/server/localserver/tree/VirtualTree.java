@@ -24,10 +24,9 @@ import Sirius.server.newuser.permission.PolicyHolder;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DBConnectionPool;
+import Sirius.server.sql.SQLTools;
 
 import org.apache.log4j.Logger;
-
-import org.openide.util.Lookup;
 
 import java.rmi.RemoteException;
 
@@ -82,7 +81,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         this.conPool = conPool;
         this.properties = properties;
         this.nonLeafs = initNonLeafs();
-        this.idMap = new UserGroupIdentifiers(conPool);
+        this.idMap = new UserGroupIdentifiers(conPool, properties.getInteralDialect());
         this.policyHolder = policyHolder;
         this.classCache = classCache;
 
@@ -129,51 +128,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             DBConnection.closeResultSets(set);
         }
 
-        //J-
-        final String localChildren =
-                "SELECT "                                                                                    // NOI18N
-                    + "y.id id, "                                                                         // NOI18N
-                    + "name, "                                                                               // NOI18N
-                    + "class_id, "                                                                           // NOI18N
-                    + "object_id, "                                                                          // NOI18N
-                    + "node_type, "                                                                          // NOI18N
-                    + "dynamic_children, "                                                                   // NOI18N
-                    + "sql_sort, "                                                                           // NOI18N
-                    + "url, "                                                                                // NOI18N
-                    + "p.permission perm_id, "                                                            // NOI18N
-                    + "p.ug_id, "                                                                            // NOI18N
-                    + "pp.key perm_key, "                                                                 // NOI18N
-                    + "y.policy, "                                                                           // NOI18N
-                    + "iconfactory, "                                                                        // NOI18N
-                    + "icon, "                                                                               // NOI18N
-                    + "derive_permissions_from_class"                                                        // NOI18N
-                    + (artificialIdSupported ? ", artificial_id " : " ")                                     // NOI18N
-                + "FROM "                                                                                    // NOI18N
-                    + "("                                                                                    // NOI18N
-                    + "SELECT "                                                                              // NOI18N
-                        + "n.id id, "                                                                     // NOI18N
-                        + "name, "                                                                           // NOI18N
-                        + "class_id, "                                                                       // NOI18N
-                        + "object_id, "                                                                      // NOI18N
-                        + "node_type, "                                                                      // NOI18N
-                        + "dynamic_children, "                                                               // NOI18N
-                        + "sql_sort, "                                                                       // NOI18N
-                        + "n.policy, "                                                                       // NOI18N
-                        + "prot_prefix || server || path || object_name url, "                            // NOI18N
-                        + "iconfactory, "                                                                    // NOI18N
-                        + "icon, "                                                                           // NOI18N
-                        + "derive_permissions_from_class"                                                    // NOI18N
-                            + (artificialIdSupported ? ", artificial_id " : " ")                             // NOI18N
-                    + "FROM "                                                                                // NOI18N
-                        + "cs_cat_node n "                                                                // NOI18N
-                    + "LEFT OUTER JOIN url ON (n.descr = url.id) "                                           // NOI18N
-                    + "LEFT OUTER JOIN url_base ub ON (url.url_base_id = ub.id) "                         // NOI18N
-                    + ") y "                                                                              // NOI18N
-                + "LEFT OUTER JOIN cs_ug_cat_node_perm p ON (p.cat_node_id = y.id) "                      // NOI18N
-                + "LEFT OUTER JOIN cs_permission pp ON (p.permission = pp.id AND ug_id IN (" + implodedUserGroupIds + ")) " // NOI18N
-                + "WHERE "                                                                                   // NOI18N
-                    + "y.id IN (SELECT id_to FROM cs_cat_link WHERE id_from = " + nodeId + ") ";             // NOI18N
-        //J+
+        final String localChildren = SQLTools.getStatements(properties.getInteralDialect())
+                    .getVirtualTreeLocalChildrenStmt(artificialIdSupported, implodedUserGroupIds, nodeId);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("getChildren for " + nodeId + "  called\nlocalChildren from:" + localChildren); // NOI18N
@@ -181,26 +137,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
         // select remote child links
 
-        //J-
-        final String remoteChildren =
-                "SELECT "                                                                          // NOI18N
-                    + "id_to id, "                                                              // NOI18N
-                    + "domain_to domain "                                                       // NOI18N
-                + "FROM "                                                                          // NOI18N
-                    + "cs_cat_link "                                                               // NOI18N
-                + "WHERE "                                                                         // NOI18N
-                    + "domain_to NOT IN "                                                          // NOI18N
-                        + "( "                                                                     // NOI18N
-                        + "SELECT "                                                                // NOI18N
-                            + "id "                                                                // NOI18N
-                        + "FROM "                                                                  // NOI18N
-                            + "cs_domain "                                                         // NOI18N
-                        + "WHERE "                                                                 // NOI18N
-                            + "lower(name)='local' "                                               // NOI18N
-                            + "OR lower(name)= lower('" + properties.getServerName().trim() + "')" // NOI18N
-                        + ") "                                                                     // NOI18N
-                    + "AND id_from = " + nodeId;                                                   // NOI18N
-        //J+
+        final String remoteChildren = SQLTools.getStatements(properties.getInteralDialect())
+                    .getVirtualTreeRemoteChildrenStmt(properties.getServerName().trim(), nodeId);
 
         Statement stmt = null;
         ResultSet rs = null;
@@ -326,14 +264,15 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         }
         final int nodeId = getNextNodeID();
 
-        final String addNode = getStatements(properties.getInteralDialect()).getAddNodeStatement(
-                nodeId,
-                node.getName(),
-                classId,
-                objectId,
-                nodeType,
-                isRoot,
-                policy);
+        final String addNode = SQLTools.getStatements(properties.getInteralDialect())
+                    .getVirtualTreeAddNodeStatement(
+                        nodeId,
+                        node.getName(),
+                        classId,
+                        objectId,
+                        nodeType,
+                        isRoot,
+                        policy);
 
         Statement stmt = null;
         try {
@@ -359,29 +298,6 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     /**
      * DOCUMENT ME!
      *
-     * @param   dialect  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  IllegalStateException  DOCUMENT ME!
-     */
-    public VirtualTreeStatements getStatements(final String dialect) {
-        final Collection<? extends VirtualTreeStatements> c = Lookup.getDefault()
-                    .lookupAll(VirtualTreeStatements.class);
-        final String d = ((dialect == null) || dialect.isEmpty()) ? "postgres_9" : dialect;
-
-        for (final VirtualTreeStatements v : c) {
-            if (v.getDialect().equals(d)) {
-                return v;
-            }
-        }
-
-        throw new IllegalStateException("dialect not found: " + dialect);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @param   node  DOCUMENT ME!
      * @param   user  DOCUMENT ME!
      *
@@ -396,22 +312,22 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             return false;
         }
 
-        final String deleteNode = "DELETE FROM cs_cat_node where id = "
-                    + node.getId(); // NOI18N
+        final String deleteNode = SQLTools.getStatements(properties.getInteralDialect())
+                    .getVirtualTreeDeleteNodeStmt(node.getId());
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("delete Node " + deleteNode); // NOI18N
         }
 
-        final String delLink = "DELETE FROM cs_cat_link where id_to = "
-                    + node.getId(); // NOI18N
+        final String delLink = SQLTools.getStatements(properties.getInteralDialect())
+                    .getVirtualTreeDeleteNodeLinkStmt(node.getId());
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("delte Link in delete node " + delLink); // NOI18N
         }
 
-        final String delPerm = "DELETE FROM cs_ug_cat_node_perm where cat_node_id = "
-                    + node.getId(); // NOI18N
+        final String delPerm = SQLTools.getStatements(properties.getInteralDialect())
+                    .getVirtualTreeDeleteNodePermStmt(node.getId());
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("delete permission statement; " + delPerm); // NOI18N
@@ -443,13 +359,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      */
     @Override
     public boolean addLink(final int father, final int child) throws SQLException {
-        final String addLink = "INSERT INTO cs_cat_link (id_from,id_to,org,domain_to) values(" // NOI18N
-                    + father
-                    + ","                                                                      // NOI18N
-                    + child
-                    + ",null, (select id from cs_domain where name ='"                         // NOI18N
-                    + properties.getServerName().trim()
-                    + "'))";                                                                   // NOI18N
+        final String addLink = SQLTools.getStatements(properties.getInteralDialect())
+                    .getVirtualTreeAddNodeLinkStmt(properties.getServerName().trim(), father, child);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("addLink " + addLink); // NOI18N
@@ -486,16 +397,11 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             LOG.debug("delete link from :" + from.toString() + " to :" + to.toString()); // NOI18N
         }
 
-        final String deleteLink = "DELETE FROM cs_cat_link WHERE id_from = "   // NOI18N
-                    + from.getId()
-                    + " AND id_to =  "                                         // NOI18N
-                    + to.getId()
-                    + " AND domain_to = "                                      // NOI18N
-                    + "( SELECT id from cs_domain where lower(name) = lower('" // NOI18N
-                    + to.getDomain()
-                    + "')  )";                                                 // NOI18N
+        final String deleteLink = SQLTools.getStatements(properties.getInteralDialect())
+                    .getVirtualTreeDeleteNodeLinkStmt(to.getDomain(), from.getId(), to.getId());
+
         if (LOG.isDebugEnabled()) {
-            LOG.debug("deleteLink: " + deleteLink);                            // NOI18N
+            LOG.debug("deleteLink: " + deleteLink); // NOI18N
         }
 
         Statement stmt = null;
@@ -528,7 +434,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      */
     @Override
     public int getNextNodeID() throws SQLException {
-        final String query = getStatements(properties.getInteralDialect()).getNextNodeIdStatement();
+        final String query = SQLTools.getStatements(properties.getInteralDialect()).getVirtualTreeNextNodeIdStatement();
 
         Statement stmt = null;
         ResultSet rs = null;
@@ -577,8 +483,9 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     public Node[] getClassTreeNodes(final User user) throws SQLException {
         final String implodedUserGroupIds = implodedUserGroupIds(user);
 
-        final String statement = getStatements(properties.getInteralDialect()).getClassTreeNodesStatement(
-                implodedUserGroupIds); // NOI18N
+        final String statement = SQLTools.getStatements(properties.getInteralDialect())
+                    .getVirtualTreeClassTreeNodesStatement(
+                        implodedUserGroupIds); // NOI18N
 
         Statement stmt = null;
         ResultSet rs = null;
@@ -613,12 +520,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     @Deprecated
     public void inheritNodePermission(final int nodeId, final int parentNodeId) throws SQLException {
         // precondition id is set with autokey (sequence)
-        final String statement =
-            "insert into cs_ug_cat_node_perm  (ug_id,cat_node_id,permission)  (select ug_id," // NOI18N
-                    + nodeId
-                    + ",permission  from cs_ug_cat_node_perm where cat_node_id="              // NOI18N
-                    + parentNodeId
-                    + ")";                                                                    // NOI18N
+        final String statement = SQLTools.getStatements(properties.getInteralDialect())
+                    .getVirtualTreeInheritNodePermStmt(parentNodeId, nodeId);
 
         Statement stmt = null;
         try {
@@ -642,11 +545,9 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     @Override
     public boolean hasNodes(final String objectId) throws SQLException {
         // oId@cId
-        final String[] ids = objectId.split("@");                                       // NOI18N
-        final String statement = "select count(id) from cs_cat_node where object_id = " // NOI18N
-                    + ids[0]
-                    + " and class_id = "                                                // NOI18N
-                    + ids[1];
+        final String[] ids = objectId.split("@"); // NOI18N
+        final String statement = SQLTools.getStatements(properties.getInteralDialect())
+                    .getVirtualTreeHasNodesStmt(ids[1], ids[0]);
 
         Statement stmt = null;
         ResultSet rs = null;
@@ -719,8 +620,9 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     public Node[] getTopNodes(final User user) throws SQLException {
         final String implodedUserGroupIds = implodedUserGroupIds(user);
 
-        final String statement = getStatements(properties.getInteralDialect()).getTopNodesStatement(
-                implodedUserGroupIds); 
+        final String statement = SQLTools.getStatements(properties.getInteralDialect())
+                    .getVirtualTreeTopNodesStatement(
+                        implodedUserGroupIds);
 
         Statement stmt = null;
         ResultSet rs = null;
@@ -779,18 +681,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         Statement stmt = null;
         ResultSet rs = null;
         try {
-            final String statement =
-                "select  y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url , p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  "                                                                 // NOI18N
-                        + "from"                                                                                                                                                                                                                                            // NOI18N
-                        + " (select n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  from cs_cat_node n left outer join url  on ( n.descr=url.id ) " // NOI18N
-                        + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                                                                                      // NOI18N
-                        + "where n.id="                                                                                                                                                                                                                                     // NOI18N
-                        + nodeId
-                        + " ) y "                                                                                                                                                                                                                                           // NOI18N
-                        + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and ug_id IN ("                                                                                                                                                                      // NOI18N
-                        + implodedUserGroupIds
-                        + ") "                                                                                                                                                                                                                                              // NOI18N
-                        + "left outer join cs_permission pp on p.permission=pp.id";                                                                                                                                                                                         // NOI18N
+            final String statement = SQLTools.getStatements(properties.getInteralDialect())
+                        .getVirtualTreeGetNodeStmt(nodeId, implodedUserGroupIds);
 
             stmt = conPool.getConnection().createStatement();
 
@@ -819,8 +711,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      */
     @Override
     public boolean nodeIsLeaf(final int nodeId) throws SQLException {
-        final String statement = "select count(id_from) from cs_cat_link where id_from = "
-                    + nodeId; // NOI18N
+        final String statement = SQLTools.getStatements(properties.getInteralDialect())
+                    .getVirtualTreeNodeIsLeafStmt(nodeId);
 
         Statement stmt = null;
         ResultSet rs = null;
@@ -1177,8 +1069,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         // find nodes that are not leafs (a link exists) String statement = "select distinct id_to  from cs_cat_link as
         // a where id_to  in (select distinct id_from from cs_cat_link) union select distinct id from cs_cat_node where
         // is_root=true ";
-        final String statement =
-            "select distinct id_from from cs_cat_link union select distinct id id_from from cs_cat_node where dynamic_children is not null"; // NOI18N
+        final String statement = SQLTools.getStatements(properties.getInteralDialect())
+                    .getVirtualTreeInitNonLeafsStmt();
 
         // the non leafs are of the order 10K in wundalive
         // TODO: optimisation: probably a select count() would be useful here since the normal catalogue is not used
@@ -1232,10 +1124,10 @@ public class VirtualTree extends Shutdown implements AbstractTree {
          * Creates a new UserGroupIdentifiers object.
          *
          * @param  conPool  DOCUMENT ME!
+         * @param  dialect  DOCUMENT ME!
          */
-        UserGroupIdentifiers(final DBConnectionPool conPool) {
-            final String statement =
-                "select u.id, u.name||'@'||d.name ug_identifier  from cs_ug u , cs_domain d where u.domain=d.id and not (lower(d.name) = 'local')"; // NOI18N
+        UserGroupIdentifiers(final DBConnectionPool conPool, final String dialect) {
+            final String statement = SQLTools.getStatements(dialect).getUserGroupIdentifiersUgIdentifiersStmt();
 
             Statement stmt = null;
             ResultSet rs = null;
