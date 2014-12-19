@@ -118,14 +118,6 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.5.8</version>
         </dependency>
-        <!-- should be injected -->
-        <dependency>
-            <groupId>oracle.jdbc</groupId>
-            <artifactId>ojdbc7_g</artifactId>
-            <version>1.0</version>
-            <scope>runtime</scope>
-            <optional>true</optional>
-        </dependency>
     </dependencies>
 
     <build>
