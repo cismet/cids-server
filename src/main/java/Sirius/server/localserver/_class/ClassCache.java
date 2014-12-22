@@ -15,13 +15,13 @@ import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.permission.Permission;
-import Sirius.server.newuser.permission.PermissionHolder;
 import Sirius.server.newuser.permission.Policy;
 import Sirius.server.newuser.permission.PolicyHolder;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DBConnectionPool;
 import Sirius.server.sql.ExceptionHandler;
+import Sirius.server.sql.SQLTools;
 
 import Sirius.util.image.Image;
 import Sirius.util.image.IntMapsImage;
@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
+import java.sql.Types;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -394,7 +395,16 @@ public class ClassCache extends Shutdown {
                 for (int i = 1; i <= rsmd.getColumnCount(); ++i) {
                     final String fieldname = rsmd.getColumnName(i);
                     final String javaclassname = rsmd.getColumnClassName(i);
-                    fieldtypes.put(fieldname.toLowerCase(), javaclassname);
+                    if(SQLTools.getGeometryFactory(properties.getInteralDialect()).isGeometryColumn(rsmd.getColumnTypeName(i))) {
+                        // we use the jts geometry class for geometry fields, however, the ObjectFactory has to do similar conversion
+                        fieldtypes.put(fieldname.toLowerCase(), com.vividsolutions.jts.geom.Geometry.class.getName());
+                    } else if(Types.CLOB == rsmd.getColumnType(i)){
+                        // since clobs are not serialisable we "use" String with all it's limitations
+                        // this has to be done similarly in ObjectFactory
+                        fieldtypes.put(fieldname.toLowerCase(), String.class.getName());
+                    }else {
+                        fieldtypes.put(fieldname.toLowerCase(), javaclassname);
+                    }
                 }
                 resultset.close();
                 s.close();
@@ -521,10 +531,6 @@ public class ClassCache extends Shutdown {
                 mai.setComplexEditor(complexEditor);
 
                 mai.setJavaclassname(classfieldtypes.get(classId).get(fieldName.toLowerCase()));
-                if ((mai.getJavaclassname() != null)
-                            && mai.getJavaclassname().equals(org.postgis.PGgeometry.class.getName())) {
-                    mai.setJavaclassname(com.vividsolutions.jts.geom.Geometry.class.getName());
-                }
                 mai.setExtensionAttribute(extensionAttribute);
                 if (mai.isExtensionAttribute()) {
                     mai.setJavaclassname(java.lang.Object.class.getCanonicalName());
