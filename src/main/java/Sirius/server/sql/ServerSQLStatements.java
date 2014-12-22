@@ -494,6 +494,27 @@ public interface ServerSQLStatements {
     /**
      * DOCUMENT ME!
      *
+     * @param   tableName     DOCUMENT ME!
+     * @param   fieldname     DOCUMENT ME!
+     * @param   referenceKey  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    String getObjectFactoryGetObjectStmt(String tableName, String fieldname, String referenceKey);
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   classId               DOCUMENT ME!
+     * @param   implodedUserGroupIds  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    String getObjectFactoryAttrPermStmt(int classId, String implodedUserGroupIds);
+
+    /**
+     * DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      */
     String getDialect();

@@ -666,10 +666,8 @@ public final class ObjectFactory extends Shutdown {
                 c.getID());
         result.setDummy(true);
 
-        final String getObjectStmnt = "Select * from " + c.getTableName() + " where " // NOI18N
-                    + mai.getArrayKeyFieldName()
-                    + " = "                                                           // NOI18N
-                    + referenceKey;
+        final String getObjectStmnt = SQLTools.getStatements(dialect)
+                    .getObjectFactoryGetObjectStmt(c.getTableName(), mai.getArrayKeyFieldName(), referenceKey);
 
         Statement stmnt = null;
         ResultSet rs = null;
@@ -782,10 +780,11 @@ public final class ObjectFactory extends Shutdown {
 
         result.setDummy(true);
 
-        final String getObjectStmnt = "Select * from " + detailClass.getTableName() + " where " // NOI18N
-                    + maiBacklink.getFieldName()
-                    + " = "                                                                     // NOI18N
-                    + array_predicate;
+        final String getObjectStmnt = SQLTools.getStatements(dialect)
+                    .getObjectFactoryGetObjectStmt(
+                        detailClass.getTableName(),
+                        maiBacklink.getFieldName(),
+                        String.valueOf(array_predicate));
 
         Statement stmnt = null;
         ResultSet rs = null;
@@ -1041,12 +1040,8 @@ public final class ObjectFactory extends Shutdown {
         try {
             final UserGroup userGroup = user.getUserGroup();
             // check kann es Probleme bei nicht lokalen ugs geben?
-            final String attribPerm =
-                "select p.id as pid,p.key as key, u.ug_id as ug_id, u.attr_id as attr_id from cs_ug_attr_perm as u, cs_permission as p  where attr_id in (select id  from cs_attr where class_id ="
-                        + o.getClassID()
-                        + ") and u.permission = p.id and ug_id IN ("
-                        + implodedUserGroupIds
-                        + ")";
+            final String attribPerm = SQLTools.getStatements(dialect)
+                        .getObjectFactoryAttrPermStmt(o.getClassID(), implodedUserGroupIds);
 
             stmnt = conPool.getConnection().createStatement();
 
