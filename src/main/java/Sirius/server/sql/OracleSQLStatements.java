@@ -64,7 +64,7 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                     + "where "                                                                                                                                                                                  // NOI18N
                     + "is_root='1' and node_type='C' "                                                                                                                                                          // NOI18N
                     + ") y "                                                                                                                                                                                    // NOI18N
-                    + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and ug_id IN ("                                                                                                              // NOI18N
+                    + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and nvl(ug_id, '-1') IN ("                                                                                                   // NOI18N
                     + implodedUserGroupIds
                     + ") left outer join cs_permission pp on p.permission=pp.id ";
     }
@@ -82,7 +82,7 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                     + "where "                                                                                                                                                                                  // NOI18N
                     + "is_root='1' and node_type<>'C' "                                                                                                                                                         // NOI18N
                     + ") y "                                                                                                                                                                                    // NOI18N
-                    + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and ug_id IN ("
+                    + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and nvl(ug_id, '-1') IN ("
                     + implodedUserGroupIds
                     + ") left outer join cs_permission pp on p.permission=pp.id ";
     }
@@ -132,7 +132,7 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                     + "LEFT OUTER JOIN url_base ub ON (url.url_base_id = ub.id) "                         // NOI18N
                     + ") y "                                                                              // NOI18N
                 + "LEFT OUTER JOIN cs_ug_cat_node_perm p ON (p.cat_node_id = y.id) "                      // NOI18N
-                + "LEFT OUTER JOIN cs_permission pp ON (p.permission = pp.id AND ug_id IN (" + implodedUserGroupIds + ")) " // NOI18N
+                + "LEFT OUTER JOIN cs_permission pp ON (p.permission = pp.id AND nvl(ug_id, '-1') IN (" + implodedUserGroupIds + ")) " // NOI18N
                 + "WHERE "                                                                                   // NOI18N
                     + "y.id IN (SELECT id_to FROM cs_cat_link WHERE id_from = " + nodeId + ") ";             // NOI18N
         //J+
