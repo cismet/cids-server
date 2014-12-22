@@ -26,6 +26,7 @@ import Sirius.server.sql.SQLTools;
 
 import org.apache.log4j.Logger;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -449,6 +450,22 @@ public final class ObjectFactory extends Shutdown {
                             } else {
                                 if (LOG.isDebugEnabled()) {
                                     LOG.debug("Class of attribute " + mai.getName() + " = null"); // NOI18N
+                                }
+                            }
+                            if (attrValue instanceof Clob) {
+                                // we convert the clob to a string, otherwise the value is not serialisable out of the
+                                // box due to the direct connection to the database
+                                // TODO: handle overflows, i.e. clob too big
+                                final Clob clob = (Clob)attrValue;
+                                if (clob.length() <= Integer.valueOf(Integer.MAX_VALUE).longValue()) {
+                                    attrValue = clob.getSubString(1, Long.valueOf(clob.length()).intValue());
+                                } else {
+                                    throw new IllegalStateException(
+                                        "cannot handle clobs larger than Integer.MAX_VALUE: [class="
+                                                + c.getName()
+                                                + "|field="
+                                                + fieldName
+                                                + "]");
                                 }
                             }
                             if (SQLTools.getGeometryFactory(dialect).isGeometryObject(attrValue))
