@@ -663,6 +663,29 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
     }
 
     @Override
+    public String getObjectFactoryGetObjectStmt(final String tableName,
+            final String fieldname,
+            final String referenceKey) {
+        return "Select * from "
+                    + tableName
+                    + " where " // NOI18N
+                    + fieldname
+                    + " = "     // NOI18N
+                    + referenceKey;
+    }
+
+    @Override
+    public String getObjectFactoryAttrPermStmt(final int classId, final String implodedUserGroupIds) {
+        return "select p.id as pid,p.key as key, u.ug_id as ug_id, u.attr_id as attr_id"
+                    + " from cs_ug_attr_perm as u, cs_permission as p  where attr_id in "
+                    + "(select id  from cs_attr where class_id ="
+                    + classId
+                    + ") and u.permission = p.id and ug_id IN ("
+                    + implodedUserGroupIds
+                    + ")";
+    }
+
+    @Override
     public String getDialect() {
         return "postgres_9";
     }

@@ -663,6 +663,29 @@ public final class OracleSQLStatements implements ServerSQLStatements {
     }
 
     @Override
+    public String getObjectFactoryGetObjectStmt(final String tableName,
+            final String fieldname,
+            final String referenceKey) {
+        return "Select * from "
+                    + tableName
+                    + " where " // NOI18N
+                    + fieldname
+                    + " = "     // NOI18N
+                    + referenceKey;
+    }
+
+    @Override
+    public String getObjectFactoryAttrPermStmt(final int classId, final String implodedUserGroupIds) {
+        return "select p.id pid,p.key key, u.ug_id ug_id, u.attr_id attr_id"
+                    + " from cs_ug_attr_perm u, cs_permission p  where attr_id in "
+                    + "(select id  from cs_attr where class_id ="
+                    + classId
+                    + ") and u.permission = p.id and nvl(ug_id, '-1') IN ("
+                    + implodedUserGroupIds
+                    + ")";
+    }
+
+    @Override
     public String getDialect() {
         return "oracle_11g";
     }
