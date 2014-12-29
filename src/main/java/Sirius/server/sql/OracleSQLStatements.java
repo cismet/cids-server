@@ -490,7 +490,7 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                     + wkt
                     + "', "
                     + srid
-                    + "), 'mask=anyinteract') "                                                  // NOI18N
+                    + "), 'mask=anyinteract') = 'TRUE'"                                          // NOI18N
                     + "ORDER BY        1,2,3";
     }
 
