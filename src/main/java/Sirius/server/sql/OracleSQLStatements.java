@@ -324,7 +324,7 @@ public final class OracleSQLStatements implements ServerSQLStatements {
     public String getPersistenceHelperNextvalStmt(final String tableName) {
         return "SELECT "
                     + tableName
-                    + "_SEQ.NEXTVALUE FROM DUAL')"; // NOI18N
+                    + "_SEQ.NEXTVAL FROM DUAL"; // NOI18N
     }
 
     @Override

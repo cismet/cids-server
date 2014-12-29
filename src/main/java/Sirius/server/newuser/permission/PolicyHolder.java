@@ -16,9 +16,12 @@ import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
 import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DBConnectionPool;
+import Sirius.server.sql.DialectProvider;
 import Sirius.server.sql.SQLTools;
 
 import org.apache.log4j.Logger;
+
+import org.openide.util.Lookup;
 
 import java.io.Serializable;
 
@@ -60,7 +63,9 @@ public class PolicyHolder extends Shutdown implements Serializable {
         try {
             final ResultSet serverPolicies = con.getConnection()
                         .createStatement()
-                        .executeQuery(SQLTools.getStatements(dialect).getPolicyHolderServerPoliciesStmt());
+                        .executeQuery(SQLTools.getStatements(
+                                Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                            .getPolicyHolderServerPoliciesStmt());
 
             if (serverPolicies == null) {
                 LOG.error(

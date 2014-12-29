@@ -13,9 +13,12 @@ import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.sql.DBConnection;
+import Sirius.server.sql.DialectProvider;
 import Sirius.server.sql.SQLTools;
 
 import org.apache.log4j.Logger;
+
+import org.openide.util.Lookup;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -142,7 +145,7 @@ public class PersistenceHelper {
      */
     int getNextID(final String tableName, final String key) throws SQLException {
         final Connection con = dbServer.getActiveDBConnection().getConnection();
-        final String query = SQLTools.getStatements(dbServer.getProperties().getInteralDialect())
+        final String query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                     .getPersistenceHelperNextvalStmt(tableName.toUpperCase());
 
         Statement stmt = null;

@@ -115,10 +115,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "test1",
-                    null);
+                    false),
+                "test1");
         List<String> exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.test1.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.test1.MyClassRenderer",
@@ -142,10 +140,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "test2",
-                    null);
+                    false),
+                "test2");
         exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.test2.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.test2.MyClassRenderer",
@@ -165,10 +161,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "TEST2",
-                    null);
+                    false),
+                "TEST2");
         exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.test2.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.test2.MyClassRenderer",
@@ -188,10 +182,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "test3",
-                    null);
+                    false),
+                "test3");
         exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.test3.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.test3.MyClassRenderer",
@@ -219,10 +211,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "TEST3",
-                    null);
+                    false),
+                "TEST3");
         exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.test3.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.test3.MyClassRenderer",
@@ -250,10 +240,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "test4",
-                    null);
+                    false),
+                "test4");
         exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.test4.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.test4.MyClassRenderer",
@@ -285,10 +273,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "test5",
-                    null);
+                    false),
+                "test5");
         exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.test5.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.test5.MyClassRenderer",
@@ -308,10 +294,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "test6",
-                    null);
+                    false),
+                "test6");
         exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.test6.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.test6.MyClassRenderer",
@@ -335,10 +319,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "test7",
-                    null);
+                    false),
+                "test7");
         exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.test7.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.test7.MyClassRenderer",
@@ -362,10 +344,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "Test-7",
-                    null);
+                    false),
+                "Test-7");
         exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.test7.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.test7.MyClassRenderer",
@@ -394,10 +374,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "testorderdefault_default",
-                    null);
+                    false),
+                "testorderdefault_default");
         List<String> exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.testorderdefault_default.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.testorderdefault_default.MyClassRenderer",
@@ -417,10 +395,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "testorderdefault_foo",
-                    null);
+                    false),
+                "testorderdefault_foo");
         exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.testorderdefault_foo.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.testorderdefault_foo.MyClassRenderer",
@@ -440,10 +416,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "testorderdefault_empty",
-                    null);
+                    false),
+                "testorderdefault_empty");
         exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.testorderdefault_empty.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.testorderdefault_empty.MyClassRenderer",
@@ -463,10 +437,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "testorderdefault_nokey",
-                    null);
+                    false),
+                "testorderdefault_nokey");
         exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.testorderdefault_nokey.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.testorderdefault_nokey.MyClassRenderer",
@@ -491,10 +463,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "testorderclasstype",
-                    null);
+                    false),
+                "testorderclasstype");
         List<String> exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.testorderclasstype.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.testorderclasstype.MyClassRenderer",
@@ -519,10 +489,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "testorderclasstypealtdomain",
-                    null);
+                    false),
+                "testorderclasstypealtdomain");
         List<String> exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.testorderclasstypealtdomain.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.testorderclasstypealtdomain.MyClassRenderer",
@@ -551,10 +519,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "testorderdomain",
-                    null);
+                    false),
+                "testorderdomain");
         List<String> exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.testorderdomain.objectrenderer.My_classRenderer", 
                 "de.cismet.cids.utils.clht.testorderdomain.objectrenderer.MyClassRenderer",
@@ -579,10 +545,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "testorderdomainaltdomain",
-                    null);
+                    false),
+                "testorderdomainaltdomain");
         List<String> exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.testorderdomainaltdomain.objectrenderer.My_classRenderer", 
                 "de.cismet.cids.utils.clht.testorderdomainaltdomain.objectrenderer.MyClassRenderer",
@@ -611,10 +575,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "testorderbothclasstype",
-                    null);
+                    false),
+                "testorderbothclasstype");
         List<String> exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.testorderbothclasstype.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.testorderbothclasstype.MyClassRenderer",
@@ -643,10 +605,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "testorderbothclasstypealtdomain",
-                    null);
+                    false),
+                "testorderbothclasstypealtdomain");
         List<String> exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.objectrenderer.testorderbothclasstypealtdomain.My_classRenderer", 
                 "de.cismet.cids.utils.clht.objectrenderer.testorderbothclasstypealtdomain.MyClassRenderer",
@@ -683,10 +643,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "testorderbothdomain",
-                    null);
+                    false),
+                "testorderbothdomain");
         List<String> exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.testorderbothdomain.objectrenderer.My_classRenderer", 
                 "de.cismet.cids.utils.clht.testorderbothdomain.objectrenderer.MyClassRenderer",
@@ -715,10 +673,8 @@ public class ClassloadingHelperTest {
                     null,
                     (Policy)null,
                     null,
-                    false,
-                    null),
-                "testorderbothdomainaltdomain",
-                    null);
+                    false),
+                "testorderbothdomainaltdomain");
         List<String> exp = new ArrayList<String>(Arrays.asList(
                 "de.cismet.cids.utils.clht.testorderbothdomainaltdomain.objectrenderer.My_classRenderer", 
                 "de.cismet.cids.utils.clht.testorderbothdomainaltdomain.objectrenderer.MyClassRenderer",

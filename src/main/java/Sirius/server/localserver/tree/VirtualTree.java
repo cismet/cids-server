@@ -24,9 +24,12 @@ import Sirius.server.newuser.permission.PolicyHolder;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DBConnectionPool;
+import Sirius.server.sql.DialectProvider;
 import Sirius.server.sql.SQLTools;
 
 import org.apache.log4j.Logger;
+
+import org.openide.util.Lookup;
 
 import java.rmi.RemoteException;
 
@@ -81,7 +84,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         this.conPool = conPool;
         this.properties = properties;
         this.nonLeafs = initNonLeafs();
-        this.idMap = new UserGroupIdentifiers(conPool, properties.getInteralDialect());
+        this.idMap = new UserGroupIdentifiers(conPool, Lookup.getDefault().lookup(DialectProvider.class).getDialect());
         this.policyHolder = policyHolder;
         this.classCache = classCache;
 
@@ -128,7 +131,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             DBConnection.closeResultSets(set);
         }
 
-        final String localChildren = SQLTools.getStatements(properties.getInteralDialect())
+        final String localChildren = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                            .getDialect())
                     .getVirtualTreeLocalChildrenStmt(artificialIdSupported, implodedUserGroupIds, nodeId);
 
         if (LOG.isDebugEnabled()) {
@@ -137,7 +141,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
 
         // select remote child links
 
-        final String remoteChildren = SQLTools.getStatements(properties.getInteralDialect())
+        final String remoteChildren = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                            .getDialect())
                     .getVirtualTreeRemoteChildrenStmt(properties.getServerName().trim(), nodeId);
 
         Statement stmt = null;
@@ -264,7 +269,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         }
         final int nodeId = getNextNodeID();
 
-        final String addNode = SQLTools.getStatements(properties.getInteralDialect())
+        final String addNode = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                     .getVirtualTreeAddNodeStatement(
                         nodeId,
                         node.getName(),
@@ -312,21 +317,21 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             return false;
         }
 
-        final String deleteNode = SQLTools.getStatements(properties.getInteralDialect())
+        final String deleteNode = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                     .getVirtualTreeDeleteNodeStmt(node.getId());
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("delete Node " + deleteNode); // NOI18N
         }
 
-        final String delLink = SQLTools.getStatements(properties.getInteralDialect())
+        final String delLink = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                     .getVirtualTreeDeleteNodeLinkStmt(node.getId());
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("delte Link in delete node " + delLink); // NOI18N
         }
 
-        final String delPerm = SQLTools.getStatements(properties.getInteralDialect())
+        final String delPerm = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                     .getVirtualTreeDeleteNodePermStmt(node.getId());
 
         if (LOG.isDebugEnabled()) {
@@ -359,7 +364,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      */
     @Override
     public boolean addLink(final int father, final int child) throws SQLException {
-        final String addLink = SQLTools.getStatements(properties.getInteralDialect())
+        final String addLink = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                     .getVirtualTreeAddNodeLinkStmt(properties.getServerName().trim(), father, child);
 
         if (LOG.isDebugEnabled()) {
@@ -397,7 +402,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             LOG.debug("delete link from :" + from.toString() + " to :" + to.toString()); // NOI18N
         }
 
-        final String deleteLink = SQLTools.getStatements(properties.getInteralDialect())
+        final String deleteLink = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                     .getVirtualTreeDeleteNodeLinkStmt(to.getDomain(), from.getId(), to.getId());
 
         if (LOG.isDebugEnabled()) {
@@ -434,7 +439,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      */
     @Override
     public int getNextNodeID() throws SQLException {
-        final String query = SQLTools.getStatements(properties.getInteralDialect()).getVirtualTreeNextNodeIdStatement();
+        final String query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                    .getVirtualTreeNextNodeIdStatement();
 
         Statement stmt = null;
         ResultSet rs = null;
@@ -483,7 +489,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     public Node[] getClassTreeNodes(final User user) throws SQLException {
         final String implodedUserGroupIds = implodedUserGroupIds(user);
 
-        final String statement = SQLTools.getStatements(properties.getInteralDialect())
+        final String statement = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                     .getVirtualTreeClassTreeNodesStatement(
                         implodedUserGroupIds); // NOI18N
 
@@ -520,7 +526,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     @Deprecated
     public void inheritNodePermission(final int nodeId, final int parentNodeId) throws SQLException {
         // precondition id is set with autokey (sequence)
-        final String statement = SQLTools.getStatements(properties.getInteralDialect())
+        final String statement = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                     .getVirtualTreeInheritNodePermStmt(parentNodeId, nodeId);
 
         Statement stmt = null;
@@ -546,7 +552,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     public boolean hasNodes(final String objectId) throws SQLException {
         // oId@cId
         final String[] ids = objectId.split("@"); // NOI18N
-        final String statement = SQLTools.getStatements(properties.getInteralDialect())
+        final String statement = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                     .getVirtualTreeHasNodesStmt(ids[1], ids[0]);
 
         Statement stmt = null;
@@ -620,7 +626,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     public Node[] getTopNodes(final User user) throws SQLException {
         final String implodedUserGroupIds = implodedUserGroupIds(user);
 
-        final String statement = SQLTools.getStatements(properties.getInteralDialect())
+        final String statement = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                     .getVirtualTreeTopNodesStatement(
                         implodedUserGroupIds);
 
@@ -681,7 +687,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         Statement stmt = null;
         ResultSet rs = null;
         try {
-            final String statement = SQLTools.getStatements(properties.getInteralDialect())
+            final String statement = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                .getDialect())
                         .getVirtualTreeGetNodeStmt(nodeId, implodedUserGroupIds);
 
             stmt = conPool.getConnection().createStatement();
@@ -711,7 +718,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
      */
     @Override
     public boolean nodeIsLeaf(final int nodeId) throws SQLException {
-        final String statement = SQLTools.getStatements(properties.getInteralDialect())
+        final String statement = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                     .getVirtualTreeNodeIsLeafStmt(nodeId);
 
         Statement stmt = null;
@@ -1069,7 +1076,7 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         // find nodes that are not leafs (a link exists) String statement = "select distinct id_to  from cs_cat_link as
         // a where id_to  in (select distinct id_from from cs_cat_link) union select distinct id from cs_cat_node where
         // is_root=true ";
-        final String statement = SQLTools.getStatements(properties.getInteralDialect())
+        final String statement = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                     .getVirtualTreeInitNonLeafsStmt();
 
         // the non leafs are of the order 10K in wundalive

@@ -13,7 +13,7 @@ package Sirius.server.sql;
  * @author   martin.scholl@cismet.de
  * @version  $Revision$, $Date$
  */
-public interface ServerSQLStatements {
+public interface ServerSQLStatements extends DialectProvider {
 
     //~ Methods ----------------------------------------------------------------
 
@@ -511,11 +511,4 @@ public interface ServerSQLStatements {
      * @return  DOCUMENT ME!
      */
     String getObjectFactoryAttrPermStmt(int classId, String implodedUserGroupIds);
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    String getDialect();
 }

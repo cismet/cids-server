@@ -13,10 +13,13 @@ import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.newuser.permission.PermissionHolder;
 import Sirius.server.newuser.permission.Policy;
+import Sirius.server.sql.DialectProvider;
 import Sirius.server.sql.SQLTools;
 
 import Sirius.util.Mapable;
 import Sirius.util.image.Image;
+
+import org.openide.util.Lookup;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -94,7 +97,6 @@ public class Class implements java.io.Serializable, Mapable {
      * @param  permissions      permission container
      * @param  attributePolicy  DOCUMENT ME!
      * @param  indexed          DOCUMENT ME!
-     * @param  dialect          DOCUMENT ME!
      */
     public Class(final int id,
             final String name,
@@ -106,8 +108,7 @@ public class Class implements java.io.Serializable, Mapable {
             final String toString,
             final PermissionHolder permissions,
             final Policy attributePolicy,
-            final boolean indexed,
-            final String dialect) {
+            final boolean indexed) {
         this(
             id,
             name,
@@ -119,8 +120,7 @@ public class Class implements java.io.Serializable, Mapable {
             toString,
             (Policy)null,
             attributePolicy,
-            indexed,
-            dialect);
+            indexed);
         this.permissions = permissions;
     }
 
@@ -138,7 +138,6 @@ public class Class implements java.io.Serializable, Mapable {
      * @param  policy           DOCUMENT ME!
      * @param  attributePolicy  DOCUMENT ME!
      * @param  indexed          DOCUMENT ME!
-     * @param  dialect          DOCUMENT ME!
      */
     public Class(final int id,
             final String name,
@@ -150,8 +149,7 @@ public class Class implements java.io.Serializable, Mapable {
             final String toString,
             final Policy policy,
             final Policy attributePolicy,
-            final boolean indexed,
-            final String dialect) {
+            final boolean indexed) {
         this.id = id;
 
         this.name = name;
@@ -176,10 +174,11 @@ public class Class implements java.io.Serializable, Mapable {
 
         this.toString = toString;
 
-        this.getInstanceStmnt = SQLTools.getStatements(dialect).getClassGetInstanceStmnt(tableName, primaryKey);
+        this.getInstanceStmnt = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                    .getClassGetInstanceStmnt(tableName, primaryKey);
 
-        this.getDefaultInstanceStmnt = SQLTools.getStatements(dialect)
-                    .getClassGetDefaultInstanceStmnt(tableName, primaryKey);
+        this.getDefaultInstanceStmnt = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                            .getDialect()).getClassGetDefaultInstanceStmnt(tableName, primaryKey);
 
         this.indexed = indexed;
     }

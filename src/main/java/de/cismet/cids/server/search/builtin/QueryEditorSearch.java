@@ -14,9 +14,12 @@ package de.cismet.cids.server.search.builtin;
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
+import Sirius.server.sql.DialectProvider;
 import Sirius.server.sql.SQLTools;
 
 import org.apache.log4j.Logger;
+
+import org.openide.util.Lookup;
 
 import java.rmi.RemoteException;
 
@@ -72,7 +75,8 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
         final ArrayList<MetaObjectNode> metaObjects = new ArrayList<MetaObjectNode>();
         if (ms != null) {
             try {
-                final String query = SQLTools.getStatements(DomainServerImpl.getServerProperties().getInteralDialect())
+                final String query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                    .getDialect())
                             .getQueryEditorSearchStmt(metaClass, classId, whereClause);
                 LOG.info(query);
                 final ArrayList<ArrayList> results = ms.performCustomSearch(query);

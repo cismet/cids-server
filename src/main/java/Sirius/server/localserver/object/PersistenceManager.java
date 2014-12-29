@@ -18,6 +18,7 @@ import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.sql.DBConnection;
+import Sirius.server.sql.DialectProvider;
 import Sirius.server.sql.SQLTools;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -29,14 +30,11 @@ import org.apache.log4j.Logger;
 
 import org.openide.util.Lookup;
 
-import org.postgis.PGgeometry;
-
 import java.beans.PropertyVetoException;
 
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Types;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -401,7 +399,8 @@ public final class PersistenceManager extends Shutdown {
                 final String pk = c.getPrimaryKey();
                 // add tablename and whereclause to the delete statement
 
-                final String paramStmt = SQLTools.getStatements(dbServer.getProperties().getInteralDialect())
+                final String paramStmt = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                    .getDialect())
                             .getPersistenceManagerDeleteFromStmt(tableName, pk);
 
                 if (LOG.isDebugEnabled()) {
@@ -529,7 +528,8 @@ public final class PersistenceManager extends Shutdown {
             before = startPerformanceMeasurement();
             final String tableName = arrayMo.getMetaClass().getTableName();
             final String arrayKeyFieldName = arrayMo.getReferencingObjectAttribute().getMai().getArrayKeyFieldName();
-            final String paramStmt = SQLTools.getStatements(dbServer.getProperties().getInteralDialect())
+            final String paramStmt = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                .getDialect())
                         .getPersistenceManagerDeleteFromStmt(tableName, arrayKeyFieldName);
 
             final TransactionHelper transactionHelper = local.get();
@@ -619,6 +619,7 @@ public final class PersistenceManager extends Shutdown {
             int updateCounter = 0;
             final List<String> fieldNames = new ArrayList<String>();
             final ArrayList values = new ArrayList(mAttr.length);
+            final TransactionHelper transactionHelper = local.get();
             // iterate over all attributes
             for (int i = 0; i < mAttr.length; ++i) {
                 // if it is not changed, skip and proceed
@@ -696,15 +697,15 @@ public final class PersistenceManager extends Shutdown {
                     }
                 } else {
                     before = startPerformanceMeasurement();
-                    // TODO: try to convert JTS GEOMETRY to PGgeometry directly
                     if (PersistenceHelper.GEOMETRY.isAssignableFrom(value.getClass())) {
-                        valueToAdd = SQLTools.getGeometryFactory(dbServer.getProperties().getInteralDialect())
-                                    .getDbString((Geometry)value);
+                        valueToAdd = SQLTools.getGeometryFactory(Lookup.getDefault().lookup(DialectProvider.class)
+                                            .getDialect())
+                                    .getDbObject((Geometry)value, transactionHelper.getConnection());
                     } else {
                         valueToAdd = value;
                     }
                     stopPerformanceMeasurement(
-                        "updateMetaObjectWithoutTransaction - getPostGisCompliantDbString",
+                        "updateMetaObjectWithoutTransaction - getDbObject",
                         mo,
                         before);
                 }
@@ -721,7 +722,8 @@ public final class PersistenceManager extends Shutdown {
                 try {
                     // statment done, just append the where clause using the object's primary key
                     values.add(Integer.valueOf(mo.getID()));
-                    final String paramStmt = SQLTools.getStatements(dbServer.getProperties().getInteralDialect())
+                    final String paramStmt = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                        .getDialect())
                                 .getPersistenceManagerUpdateStmt(metaClass.getTableName(),
                                     metaClass.getPrimaryKey(),
                                     fieldNames.toArray(new String[fieldNames.size()]));
@@ -744,7 +746,6 @@ public final class PersistenceManager extends Shutdown {
 
                     before = startPerformanceMeasurement();
 
-                    final TransactionHelper transactionHelper = local.get();
                     stmt = transactionHelper.getConnection().prepareStatement(paramStmt);
                     parameteriseStatement(stmt, values);
                     stmt.executeUpdate();
@@ -797,9 +798,6 @@ public final class PersistenceManager extends Shutdown {
             final int type = metaData.getParameterType(i + 1);
             if (NULL.equals(values.get(i))) {
                 stmt.setNull(i + 1, type);
-            } else if (type == Types.OTHER) {
-                // assume PGgeometry as String
-                stmt.setObject(i + 1, new PGgeometry(String.valueOf(values.get(i))));
             } else {
                 stmt.setObject(i + 1, values.get(i), type);
             }
@@ -1077,6 +1075,7 @@ public final class PersistenceManager extends Shutdown {
 
             final ArrayList values = new ArrayList(mAttr.length);
             final List<String> fieldNames = new ArrayList<String>();
+            final TransactionHelper transactionHelper = local.get();
             // iterate all attributes to create insert statement
             for (int i = 0; i < mAttr.length; i++) {
                 // attribute value
@@ -1128,13 +1127,15 @@ public final class PersistenceManager extends Shutdown {
                     } else {
                         before = startPerformanceMeasurement();
                         if (PersistenceHelper.GEOMETRY.isAssignableFrom(value.getClass())) {
-                            values.add(SQLTools.getGeometryFactory(dbServer.getProperties().getInteralDialect())
-                                        .getDbString((Geometry)value));
+                            values.add(SQLTools.getGeometryFactory(
+                                    Lookup.getDefault().lookup(DialectProvider.class).getDialect()).getDbObject(
+                                    (Geometry)value,
+                                    transactionHelper.getConnection()));
                         } else {
                             values.add(value);
                         }
                         stopPerformanceMeasurement(
-                            "insertMetaObjectWithoutTransaction - getPostGisCompliantDbString",
+                            "insertMetaObjectWithoutTransaction - getDbObject",
                             mo,
                             before);
                     }
@@ -1202,8 +1203,8 @@ public final class PersistenceManager extends Shutdown {
             try {
                 before = startPerformanceMeasurement();
 
-                final TransactionHelper transactionHelper = local.get();
-                final String paramSql = SQLTools.getStatements(dbServer.getProperties().getInteralDialect())
+                final String paramSql = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                    .getDialect())
                             .getPersistenceManagerInsertStmt(metaClass.getTableName(),
                                 fieldNames.toArray(new String[fieldNames.size()]));
                 stmt = transactionHelper.getConnection().prepareStatement(paramSql);
@@ -1304,8 +1305,7 @@ public final class PersistenceManager extends Shutdown {
         if (mo.getMetaClass() == null) {
             mo.setMetaClass(new MetaClass(
                     dbServer.getClassCache().getClass(mo.getClassID()),
-                    mo.getDomain(),
-                    dbServer.getProperties().getInteralDialect()));
+                    mo.getDomain()));
         }
     }
 }
