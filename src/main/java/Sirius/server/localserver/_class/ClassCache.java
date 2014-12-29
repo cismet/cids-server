@@ -20,6 +20,7 @@ import Sirius.server.newuser.permission.PolicyHolder;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DBConnectionPool;
+import Sirius.server.sql.DialectProvider;
 import Sirius.server.sql.ExceptionHandler;
 import Sirius.server.sql.SQLTools;
 
@@ -27,6 +28,8 @@ import Sirius.util.image.Image;
 import Sirius.util.image.IntMapsImage;
 
 import org.apache.log4j.Logger;
+
+import org.openide.util.Lookup;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -164,8 +167,7 @@ public class ClassCache extends Shutdown {
                         toStringQualifier,
                         policy,
                         attributePolicy,
-                        indexed,
-                        properties.getInteralDialect());
+                        indexed);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("to string for Class :" + className + " :: " + toStringQualifier); // NOI18N
                 }
@@ -395,14 +397,17 @@ public class ClassCache extends Shutdown {
                 for (int i = 1; i <= rsmd.getColumnCount(); ++i) {
                     final String fieldname = rsmd.getColumnName(i);
                     final String javaclassname = rsmd.getColumnClassName(i);
-                    if(SQLTools.getGeometryFactory(properties.getInteralDialect()).isGeometryColumn(rsmd.getColumnTypeName(i))) {
-                        // we use the jts geometry class for geometry fields, however, the ObjectFactory has to do similar conversion
+                    if (SQLTools.getGeometryFactory(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                                .isGeometryColumn(
+                                    rsmd.getColumnTypeName(i))) {
+                        // we use the jts geometry class for geometry fields, however, the ObjectFactory has to do
+                        // similar conversion
                         fieldtypes.put(fieldname.toLowerCase(), com.vividsolutions.jts.geom.Geometry.class.getName());
-                    } else if(Types.CLOB == rsmd.getColumnType(i)){
+                    } else if (Types.CLOB == rsmd.getColumnType(i)) {
                         // since clobs are not serialisable we "use" String with all it's limitations
                         // this has to be done similarly in ObjectFactory
                         fieldtypes.put(fieldname.toLowerCase(), String.class.getName());
-                    }else {
+                    } else {
                         fieldtypes.put(fieldname.toLowerCase(), javaclassname);
                     }
                 }

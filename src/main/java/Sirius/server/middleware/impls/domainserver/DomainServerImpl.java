@@ -1063,6 +1063,14 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
      * @throws  IllegalStateException  DOCUMENT ME!
      */
     public static void main(final String[] args) throws Throwable {
+        final Properties p = new Properties();
+        p.put("log4j.appender.Remote", "org.apache.log4j.net.SocketAppender"); // NOI18N
+        p.put("log4j.appender.Remote.remoteHost", "localhost");                // NOI18N
+        p.put("log4j.appender.Remote.port", "4445");                           // NOI18N
+        p.put("log4j.appender.Remote.locationInfo", "true");                   // NOI18N
+        p.put("log4j.rootLogger", "DEBUG,Remote");                             // NOI18N
+        org.apache.log4j.PropertyConfigurator.configure(p);
+
         // first of all register the default exception handler for all threads
         Thread.setDefaultUncaughtExceptionHandler(new DefaultServerExceptionHandler());
 

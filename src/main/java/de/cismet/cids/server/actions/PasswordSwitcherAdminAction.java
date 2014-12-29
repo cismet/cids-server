@@ -13,10 +13,13 @@ package de.cismet.cids.server.actions;
 
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.newuser.User;
+import Sirius.server.sql.DialectProvider;
 import Sirius.server.sql.SQLTools;
 import Sirius.server.sql.ServerSQLStatements;
 
 import org.apache.log4j.Logger;
+
+import org.openide.util.Lookup;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -89,8 +92,8 @@ public class PasswordSwitcherAdminAction implements UserAwareServerAction {
 
             final String adminLogin = getUser().getName();
 
-            final ServerSQLStatements stmts = SQLTools.getStatements(DomainServerImpl.getServerProperties()
-                            .getInteralDialect());
+            final ServerSQLStatements stmts = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                            .getDialect());
 
             ResultSet rs = s.executeQuery(stmts.getPasswordSwitcherAdminActionSelectUserStmt(loginNameToSwitch));
             if (!rs.next()) {

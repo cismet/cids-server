@@ -54,11 +54,10 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
     /**
      * constuructor adding the domain.
      *
-     * @param  c        "server" class
-     * @param  domain   domain
-     * @param  dialect  DOCUMENT ME!
+     * @param  c       "server" class
+     * @param  domain  domain
      */
-    public MetaClass(final Sirius.server.localserver._class.Class c, final String domain, final String dialect) {
+    public MetaClass(final Sirius.server.localserver._class.Class c, final String domain) {
         /*
          * SystemProperties
          */
@@ -74,8 +73,7 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
             c.getToString(),
             c.getPermissions(),
             c.getAttributePolicy(),
-            c.isIndexed(),
-            dialect);
+            c.isIndexed());
         super.attribs = new AttributeVector(c.getAttributes());
         super.memberAttributeInfos = new LinkedHashMap(c.getMemberAttributeInfos());
         // Hell

@@ -9,9 +9,12 @@ package Sirius.server.localserver.object;
 
 import Sirius.server.property.ServerProperties;
 import Sirius.server.sql.DBConnectionPool;
+import Sirius.server.sql.DialectProvider;
 import Sirius.server.sql.SQLTools;
 
 import Sirius.util.collections.MultiMap;
+
+import org.openide.util.Lookup;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -61,7 +64,7 @@ public class ObjectHierarchy {
         // schl\u00FCssel , vatertabellen name , Atrributname
 
         final String initLookupTable = SQLTools.getStatement(this.getClass(),
-                props.getInteralDialect(),
+                Lookup.getDefault().lookup(DialectProvider.class).getDialect(),
                 "initLookupTable");
         ResultSet rs = stmnt.executeQuery(initLookupTable);
 
@@ -75,7 +78,7 @@ public class ObjectHierarchy {
 
             // konstruiere select string f\u00FCr Vaterobjekt mit Auswahlkriterium = Objektid des Attributes
 
-            final String value = SQLTools.getStatements(props.getInteralDialect())
+            final String value = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                         .getObjectHierarchyFatherStmt(
                             father,
                             pk,
@@ -94,7 +97,7 @@ public class ObjectHierarchy {
         // init array stmns notwendig da array merkmal nicht der primary key ist
 
         final String initArrayLookupTable = SQLTools.getStatement(this.getClass(),
-                props.getInteralDialect(),
+                Lookup.getDefault().lookup(DialectProvider.class).getDialect(),
                 "initArrayLookupTable");
 
         rs = stmnt.executeQuery(initArrayLookupTable);
@@ -109,7 +112,7 @@ public class ObjectHierarchy {
             final String father_table = rs.getString("father_table"); // NOI18N
             final String child_pk = rs.getString("child_pk");         // NOI18N
 
-            final String value = SQLTools.getStatements(props.getInteralDialect())
+            final String value = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                         .getObjectHierarchyFatherArrayStmt(
                             father,
                             father_pk,

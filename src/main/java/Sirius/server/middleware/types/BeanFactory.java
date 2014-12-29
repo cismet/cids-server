@@ -13,6 +13,11 @@ package Sirius.server.middleware.types;
 
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
+import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
+import Sirius.server.sql.DialectProvider;
+import Sirius.server.sql.SQLTools;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -28,6 +33,8 @@ import org.jdesktop.observablecollections.ObservableList;
 import org.jdesktop.observablecollections.ObservableListListener;
 
 import org.openide.util.Lookup;
+
+import java.math.BigDecimal;
 
 import java.security.ProtectionDomain;
 
@@ -217,6 +224,11 @@ public class BeanFactory {
                         }
                         bean.setProperty(field, value);
                     }
+                    if (mc.getPrimaryKey().equalsIgnoreCase(field) && (value instanceof BigDecimal)) {
+                        // FIXME: this is probably not what we want
+                        value = ((BigDecimal)value).intValue();
+                    }
+                    bean.setProperty(field, value);
                 }
                 // bean.addPropertyChangeListener(metaObject);
                 bean.setMetaObject(metaObject);
@@ -343,11 +355,16 @@ public class BeanFactory {
             final String fieldname = mai.getFieldName().toLowerCase();
             String attributeJavaClassName = mai.getJavaclassname();
 
-            if (mai.isArray() || (mai.isVirtual() && (mai.getForeignKeyClassId() < 0))) {
+            // FIXME: some drivers (such as oracle) map any number to BigDecimal
+            // at least for the primary key field we assume integer
+            if (mai.getFieldName().equalsIgnoreCase(metaClass.getPrimaryKey())) {
+                attributeJavaClassName = Integer.class.getName();
+            } else if (mai.isArray() || (mai.isVirtual() && (mai.getForeignKeyClassId() < 0))) {
                 attributeJavaClassName = "org.jdesktop.observablecollections.ObservableList"; // NOI18N
             } else if (mai.isForeignKey()) {
-                if (attributeJavaClassName.equals("org.postgis.PGgeometry")) {                // NOI18N
-                    attributeJavaClassName = "com.vividsolutions.jts.geom.Geometry";          // NOI18N
+                if (SQLTools.getGeometryFactory(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                            .isGeometryColumn(attributeJavaClassName)) {                      // NOI18N
+                    attributeJavaClassName = Geometry.class.getName();
                 } else {
                     attributeJavaClassName = CIDS_DYNAMICS_SUPERCLASS;
                 }

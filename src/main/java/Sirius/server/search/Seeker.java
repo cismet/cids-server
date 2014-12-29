@@ -61,7 +61,7 @@ public class Seeker {
             // to get classes from classIDs
             classCache = dbServer.getClassCache();
 
-            objectFactory = new ObjectFactory(conPool, classCache, dbServer.getProperties().getInteralDialect());
+            objectFactory = new ObjectFactory(conPool, classCache);
 
             hierarchy = new ObjectHierarchy(conPool, dbServer.getProperties());
         } catch (Throwable e) {

@@ -12,8 +12,10 @@ import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.sql.DBConnection;
+import Sirius.server.sql.DialectProvider;
 import Sirius.server.sql.SQLTools;
 
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 import java.sql.Connection;
@@ -189,20 +191,22 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
             return dependentBeans;
         }
 
-        final String query = SQLTools.getStatements(dbServer.getProperties().getInteralDialect())
+        final String query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                     .getIndexTriggerSelectClassIdForeignKeyStmt((-1) * mo.getClassID());
         final ResultSet masterClasses = connection.createStatement().executeQuery(query);
 
         while (masterClasses.next()) {
             final int classId = masterClasses.getInt(1);
 
-            final String fieldQuery = SQLTools.getStatements(dbServer.getProperties().getInteralDialect())
+            final String fieldQuery = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                .getDialect())
                         .getIndexTriggerSelectFieldStmt(mo.getClassID(), classId);
             final ResultSet field = connection.createStatement().executeQuery(fieldQuery);
 
             if (field.next()) {
                 final String fieldName = field.getString(1);
-                final String idQuery = SQLTools.getStatements(dbServer.getProperties().getInteralDialect())
+                final String idQuery = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                    .getDialect())
                             .getIndexTriggerSelectObjFieldStmt(fieldName, mo.getMetaClass().getTableName(), mo.getID());
                 final ResultSet oid = connection.createStatement().executeQuery(idQuery);
 
@@ -263,8 +267,8 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     // value
                     if (mai.isForeignKey()) {
                         if (mai.getForeignKeyClassId() < 0) {
-                            final String backreferenceQuery = SQLTools.getStatements(dbServer.getProperties()
-                                                .getInteralDialect())
+                            final String backreferenceQuery = SQLTools.getStatements(Lookup.getDefault().lookup(
+                                            DialectProvider.class).getDialect())
                                         .getIndexTriggerSelectBackReferenceStmt(Math.abs(mai.getForeignKeyClassId()),
                                             mai.getClassId());
                             final ResultSet backreferenceRs = connection.createStatement()
@@ -273,14 +277,16 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                             if (backreferenceRs.next()) {
                                 final String backreferenceField = backreferenceRs.getString(1);
                                 backreferenceRs.close();
-                                String query = SQLTools.getStatements(dbServer.getProperties().getInteralDialect())
+                                String query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                                    .getDialect())
                                             .getIndexTriggerSelectTableNameByClassIdStmt(Math.abs(
                                                     attr.getMai().getForeignKeyClassId()));
                                 final ResultSet rs = connection.createStatement().executeQuery(query);
 
                                 if (rs.next()) {
                                     final String foreignTableName = rs.getString(1);
-                                    query = SQLTools.getStatements(dbServer.getProperties().getInteralDialect())
+                                    query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                                        .getDialect())
                                                 .getIndexTriggerSelectFKIdStmt(
                                                         foreignTableName,
                                                         backreferenceField,
@@ -292,7 +298,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                                         // lazily prepare the statement
                                         if (psAttrMap == null) {
                                             psAttrMap = connection.prepareStatement(SQLTools.getStatements(
-                                                        getDbServer().getProperties().getInteralDialect())
+                                                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                                                             .getIndexTriggerInsertAttrObjectStmt());
                                         }
                                         psAttrMap.setInt(1, mo.getClassID());
@@ -310,14 +316,16 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                             }
                         } else if (mai.isArray()) {
                             attr.getTypeId();
-                            String query = SQLTools.getStatements(dbServer.getProperties().getInteralDialect())
+                            String query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                                .getDialect())
                                         .getIndexTriggerSelectTableNameByClassIdStmt(attr.getMai()
                                             .getForeignKeyClassId());
                             final ResultSet rs = connection.createStatement().executeQuery(query);
 
                             if (rs.next()) {
                                 final String foreignTableName = rs.getString(1);
-                                query = SQLTools.getStatements(dbServer.getProperties().getInteralDialect())
+                                query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                                    .getDialect())
                                             .getIndexTriggerSelectFKIdStmt(
                                                     foreignTableName,
                                                     mai.getArrayKeyFieldName(),
@@ -329,7 +337,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                                     // lazily prepare the statement
                                     if (psAttrMap == null) {
                                         psAttrMap = connection.prepareStatement(SQLTools.getStatements(
-                                                    getDbServer().getProperties().getInteralDialect())
+                                                    Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                                                         .getIndexTriggerInsertAttrObjectStmt());
                                     }
                                     psAttrMap.setInt(1, mo.getClassID());
@@ -346,7 +354,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                             // lazily prepare the statement
                             if (psAttrMap == null) {
                                 psAttrMap = connection.prepareStatement(SQLTools.getStatements(
-                                            getDbServer().getProperties().getInteralDialect())
+                                            Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                                                 .getIndexTriggerInsertAttrObjectStmt());
                             }
                             psAttrMap.setInt(1, mo.getClassID());
@@ -362,7 +370,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                         // lazily prepare the statement
                         if (psAttrString == null) {
                             psAttrString = connection.prepareStatement(SQLTools.getStatements(
-                                        getDbServer().getProperties().getInteralDialect())
+                                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                                             .getIndexTriggerInsertAttrObjectStmt());
                         }
                         psAttrString.setInt(1, mo.getClassID());
@@ -453,14 +461,16 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     if (mai.isForeignKey()) {
                         if (mai.isArray()) {
                             attr.getTypeId();
-                            String query = SQLTools.getStatements(dbServer.getProperties().getInteralDialect())
+                            String query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                                .getDialect())
                                         .getIndexTriggerSelectTableNameByClassIdStmt(attr.getMai()
                                             .getForeignKeyClassId());
                             final ResultSet rs = connection.createStatement().executeQuery(query);
 
                             if (rs.next()) {
                                 final String foreignTableName = rs.getString(1);
-                                query = SQLTools.getStatements(dbServer.getProperties().getInteralDialect())
+                                query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                                    .getDialect())
                                             .getIndexTriggerSelectFKIdStmt(
                                                     foreignTableName,
                                                     mai.getArrayKeyFieldName(),
@@ -468,7 +478,8 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
                                 final ResultSet arrayList = connection.createStatement().executeQuery(query);
                                 final PreparedStatement psAttrMapDelArray = connection.prepareStatement(
-                                        SQLTools.getStatements(getDbServer().getProperties().getInteralDialect())
+                                        SQLTools.getStatements(
+                                            Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                                                     .getIndexTriggerDeleteAttrObjectArrayStmt());
 
                                 psAttrMapDelArray.setInt(1, mo.getClassID());
@@ -481,7 +492,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                                     // lazily prepare the statement
                                     if (psAttrMapArray == null) {
                                         psAttrMapArray = connection.prepareStatement(SQLTools.getStatements(
-                                                    getDbServer().getProperties().getInteralDialect())
+                                                    Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                                                         .getIndexTriggerInsertAttrObjectStmt());
                                     }
                                     psAttrMapArray.setInt(1, mo.getClassID());
@@ -498,7 +509,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                             // lazily prepare the statement
                             if (psAttrMap == null) {
                                 psAttrMap = connection.prepareStatement(SQLTools.getStatements(
-                                            getDbServer().getProperties().getInteralDialect())
+                                            Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                                                 .getIndexTriggerUpdateAttrObjectStmt());
                             }
                             // if field represents a foreign key the attribute value
@@ -514,7 +525,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                                 final StringBuilder logMessage = new StringBuilder(
                                         "Parameterized SQL added to batch: ");
                                 logMessage.append(SQLTools.getStatements(
-                                        getDbServer().getProperties().getInteralDialect())
+                                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                                             .getIndexTriggerUpdateAttrObjectStmt());
                                 logMessage.append('\n');
                                 logMessage.append("attr_obj_id: ");
@@ -532,7 +543,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                         // lazily prepare the statement
                         if (psAttrString == null) {
                             psAttrString = connection.prepareStatement(SQLTools.getStatements(
-                                        getDbServer().getProperties().getInteralDialect())
+                                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                                             .getIndexTriggerUpdateAttrStringStmt());
                         }
                         // interpret the fields value as a string
@@ -544,7 +555,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                         if (LOG.isDebugEnabled()) {
                             final StringBuilder logMessage = new StringBuilder("Parameterized SQL added to batch: ");
                             logMessage.append(SQLTools.getStatements(
-                                    getDbServer().getProperties().getInteralDialect())
+                                    Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                                         .getIndexTriggerUpdateAttrStringStmt());
                             logMessage.append('\n');
                             logMessage.append("attr_obj_id: ");
@@ -634,9 +645,11 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     private void updateDerivedIndex(final Connection connection, final int classId, final int objectId)
             throws SQLException {
         final PreparedStatement psDeleteAttrMapDerive = connection.prepareStatement(SQLTools.getStatements(
-                    getDbServer().getProperties().getInteralDialect()).getIndexTriggerDeleteAttrObjectDerivedStmt());
+                    Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                        .getIndexTriggerDeleteAttrObjectDerivedStmt());
         final PreparedStatement psInsertAttrMapDerive = connection.prepareStatement(SQLTools.getStatements(
-                    getDbServer().getProperties().getInteralDialect()).getIndexTriggerInsertAttrObjectDerivedStmt());
+                    Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                        .getIndexTriggerInsertAttrObjectDerivedStmt());
 
         psDeleteAttrMapDerive.setInt(1, classId);
         psDeleteAttrMapDerive.setInt(2, objectId);
@@ -677,11 +690,13 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
         try {
             // prepare the update statements
             psAttrString = connection.prepareStatement(SQLTools.getStatements(
-                        getDbServer().getProperties().getInteralDialect()).getIndexTriggerDeleteAttrStringObjectStmt());
+                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                            .getIndexTriggerDeleteAttrStringObjectStmt());
             psAttrMap = connection.prepareStatement(SQLTools.getStatements(
-                        getDbServer().getProperties().getInteralDialect()).getIndexTriggerDeleteAttrObjectObjectStmt());
+                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                            .getIndexTriggerDeleteAttrObjectObjectStmt());
             psAttrDerive = connection.prepareStatement(SQLTools.getStatements(
-                        getDbServer().getProperties().getInteralDialect())
+                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                             .getIndexTriggerDeleteAttrObjectDerivedStmt());
             // set the appropriate param values
             psAttrString.setInt(1, mo.getClassID());
@@ -784,7 +799,8 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                         for (final CidsBeanInfo beanInfo : beansToUpdateTmp) {
                             connection.createStatement()
                                     .execute(
-                                        SQLTools.getStatements(getDbServer().getProperties().getInteralDialect())
+                                        SQLTools.getStatements(
+                                            Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                                             .getIndexTriggerSelectReindexPureStmt(
                                                 beanInfo.getClassId(),
                                                 beanInfo.getObjectId()));
