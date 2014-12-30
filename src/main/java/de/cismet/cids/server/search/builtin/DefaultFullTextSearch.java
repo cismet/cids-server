@@ -121,8 +121,9 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
                     }
                     final ArrayList<ArrayList> result = ms.performCustomSearch(sqlStatement);
                     for (final ArrayList al : result) {
-                        final int cid = (Integer)al.get(0);
-                        final int oid = (Integer)al.get(1);
+                        // FIXME: yet another hack to circumvent odd type behaviour
+                        final int cid = ((Number)al.get(0)).intValue();
+                        final int oid = ((Number)al.get(1)).intValue();
                         String name = null;
                         try {
                             name = (String)al.get(2);
