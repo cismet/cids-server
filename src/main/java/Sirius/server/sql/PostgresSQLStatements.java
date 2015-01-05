@@ -601,6 +601,7 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                     + "                acid , "
                     + "                aid "
                     + "FROM            derived_index "
+                    + "WHERE NOT (xocid = acid AND xoid = aid)"
                     + "ORDER BY        1,2,3,4 limit 1000000000;";
     }
 

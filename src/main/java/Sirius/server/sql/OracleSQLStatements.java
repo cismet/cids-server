@@ -600,7 +600,7 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                     + "                acid , "
                     + "                aid "
                     + "FROM            derived_index "
-                    + "WHERE           rownum <= 1000000000"
+                    + "WHERE           rownum <= 1000000000 AND NOT (xocid = acid AND xoid = aid)"
                     + "ORDER BY        1,2,3,4";
     }
 
