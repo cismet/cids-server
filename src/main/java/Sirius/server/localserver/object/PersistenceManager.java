@@ -11,6 +11,7 @@ import Sirius.server.AbstractShutdownable;
 import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
 import Sirius.server.localserver.DBServer;
+import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.LightweightMetaObject;
@@ -19,6 +20,7 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DialectProvider;
+import Sirius.server.sql.PreparableStatement;
 import Sirius.server.sql.SQLTools;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -699,8 +701,7 @@ public final class PersistenceManager extends Shutdown {
                     before = startPerformanceMeasurement();
                     if (PersistenceHelper.GEOMETRY.isAssignableFrom(value.getClass())) {
                         valueToAdd = SQLTools.getGeometryFactory(Lookup.getDefault().lookup(DialectProvider.class)
-                                            .getDialect())
-                                    .getDbObject((Geometry)value, transactionHelper.getConnection());
+                                            .getDialect()).getDbString((Geometry)value);
                     } else {
                         valueToAdd = value;
                     }
@@ -722,11 +723,23 @@ public final class PersistenceManager extends Shutdown {
                 try {
                     // statment done, just append the where clause using the object's primary key
                     values.add(Integer.valueOf(mo.getID()));
-                    final String paramStmt = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
-                                        .getDialect())
-                                .getPersistenceManagerUpdateStmt(metaClass.getTableName(),
-                                    metaClass.getPrimaryKey(),
-                                    fieldNames.toArray(new String[fieldNames.size()]));
+
+                    PreparableStatement paramStmt = null;
+                    if (metaClass.getAttribs() != null) {
+                        for (final ClassAttribute ca : metaClass.getAttribs()) {
+                            if (ca.getName().equals("customUpdateStmt")) {
+                                paramStmt = PreparableStatement.fromString((String)ca.getValue());
+                                break;
+                            }
+                        }
+                    }
+                    if (paramStmt == null) {
+                        paramStmt = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                            .getDialect())
+                                    .getPersistenceManagerUpdateStmt(metaClass.getTableName(),
+                                            metaClass.getPrimaryKey(),
+                                            fieldNames.toArray(new String[fieldNames.size()]));
+                    }
 
                     if (LOG.isDebugEnabled()) {
                         final StringBuilder logMessage = new StringBuilder("Parameterized SQL: ");
@@ -746,8 +759,8 @@ public final class PersistenceManager extends Shutdown {
 
                     before = startPerformanceMeasurement();
 
-                    stmt = transactionHelper.getConnection().prepareStatement(paramStmt);
-                    parameteriseStatement(stmt, values);
+                    paramStmt.setObjects(values.toArray());
+                    stmt = paramStmt.parameterise(transactionHelper.getConnection());
                     stmt.executeUpdate();
                     stopPerformanceMeasurement("updateMetaObjectWithoutTransaction - executeUpdate", mo, before);
 
@@ -1134,9 +1147,8 @@ public final class PersistenceManager extends Shutdown {
                         before = startPerformanceMeasurement();
                         if (PersistenceHelper.GEOMETRY.isAssignableFrom(value.getClass())) {
                             values.add(SQLTools.getGeometryFactory(
-                                    Lookup.getDefault().lookup(DialectProvider.class).getDialect()).getDbObject(
-                                    (Geometry)value,
-                                    transactionHelper.getConnection()));
+                                    Lookup.getDefault().lookup(DialectProvider.class).getDialect()).getDbString(
+                                    (Geometry)value));
                         } else {
                             values.add(value);
                         }
@@ -1209,14 +1221,26 @@ public final class PersistenceManager extends Shutdown {
             try {
                 before = startPerformanceMeasurement();
 
-                final String paramSql = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
-                                    .getDialect())
-                            .getPersistenceManagerInsertStmt(metaClass.getTableName(),
-                                fieldNames.toArray(new String[fieldNames.size()]));
-                stmt = transactionHelper.getConnection().prepareStatement(paramSql);
+                PreparableStatement paramStmt = null;
+                if (metaClass.getAttribs() != null) {
+                    for (final ClassAttribute ca : metaClass.getAttribs()) {
+                        if (ca.getName().equals("customInsertStmt")) {
+                            paramStmt = PreparableStatement.fromString((String)ca.getValue());
+                            break;
+                        }
+                    }
+                }
+                if (paramStmt == null) {
+                    paramStmt = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                                .getPersistenceManagerInsertStmt(metaClass.getTableName(),
+                                        fieldNames.toArray(new String[fieldNames.size()]));
+                }
+
+                paramStmt.setObjects(values.toArray());
+                stmt = paramStmt.parameterise(transactionHelper.getConnection());
                 if (LOG.isDebugEnabled()) {
                     final StringBuilder logMessage = new StringBuilder("Parameterized SQL: ");
-                    logMessage.append(paramSql);
+                    logMessage.append(paramStmt);
                     logMessage.append('\n');
                     final int i = 1;
                     for (final java.lang.Object value : values) {
@@ -1229,7 +1253,6 @@ public final class PersistenceManager extends Shutdown {
                     }
                     LOG.debug(logMessage.toString(), new Exception());
                 }
-                stmt = parameteriseStatement(stmt, values);
                 stmt.executeUpdate();
                 stopPerformanceMeasurement("insertMetaObjectWithoutTransaction - executeUpdate", mo, before);
 

@@ -267,7 +267,7 @@ public interface ServerSQLStatements extends DialectProvider {
      *
      * @return  DOCUMENT ME!
      */
-    String getPersistenceManagerUpdateStmt(String tableName, String pkField, String... fieldNames);
+    PreparableStatement getPersistenceManagerUpdateStmt(String tableName, String pkField, String... fieldNames);
 
     /**
      * DOCUMENT ME!
@@ -277,7 +277,7 @@ public interface ServerSQLStatements extends DialectProvider {
      *
      * @return  DOCUMENT ME!
      */
-    String getPersistenceManagerInsertStmt(String tableName, String... fieldNames);
+    PreparableStatement getPersistenceManagerInsertStmt(String tableName, String... fieldNames);
 
     /**
      * DOCUMENT ME!
@@ -324,7 +324,10 @@ public interface ServerSQLStatements extends DialectProvider {
      *
      * @return  DOCUMENT ME!
      */
-    String getDefaultFullTextSearchStmt(String searchText, String classesIn, String geoSql, boolean caseSensitive);
+    PreparableStatement getDefaultFullTextSearchStmt(String searchText,
+            String classesIn,
+            PreparableStatement geoSql,
+            boolean caseSensitive);
 
     /**
      * DOCUMENT ME!
@@ -335,7 +338,7 @@ public interface ServerSQLStatements extends DialectProvider {
      *
      * @return  DOCUMENT ME!
      */
-    String getDefaultGeoSearchStmt(String wkt, String srid, String classesIn);
+    PreparableStatement getDefaultGeoSearchStmt(String wkt, String srid, String classesIn);
 
     /**
      * DOCUMENT ME!

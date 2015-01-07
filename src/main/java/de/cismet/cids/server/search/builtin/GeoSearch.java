@@ -7,6 +7,8 @@
 ****************************************************/
 package de.cismet.cids.server.search.builtin;
 
+import Sirius.server.sql.PreparableStatement;
+
 import com.vividsolutions.jts.geom.Geometry;
 
 import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
@@ -41,5 +43,5 @@ public interface GeoSearch extends MetaObjectNodeServerSearch {
      *
      * @return  DOCUMENT ME!
      */
-    String getSearchSql(String domainKey);
+    PreparableStatement getSearchSql(String domainKey);
 }
