@@ -35,21 +35,24 @@ public class PreparableStatement implements Serializable {
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Creates a new PreparableStatement object.
+     * Creates a new PreparableStatement object. Similar to {@link #PreparableStatement(java.lang.String, int...)} with
+     * <code>null</code> for types array.
      *
-     * @param  stmt  DOCUMENT ME!
+     * @param  stmt  the parameterised statement, not <code>null</code>
      */
     public PreparableStatement(final String stmt) {
         this(stmt, null);
     }
 
     /**
-     * Creates a new PreparableStatement object.
+     * Creates a new PreparableStatement object. If <code>null</code> for the types array is provided then the parameterise
+     * operation will assume that the types are properly inferred by the jdbc driver.
      *
-     * @param   stmt   DOCUMENT ME!
-     * @param   types  DOCUMENT ME!
+     * @param   stmt   the parameterised statement, not <code>null</code>
+     * @param   types  an int array with the types of the single parameters, sorted by occurrence in statement, or <code>null</code>
+     * if the types shall be inferred by the jdbc driver.
      *
-     * @throws  IllegalArgumentException  DOCUMENT ME!
+     * @throws  IllegalArgumentException  if the stmt is <code>null</code>
      */
     public PreparableStatement(final String stmt, final int... types) {
         if (stmt == null) {
@@ -63,45 +66,46 @@ public class PreparableStatement implements Serializable {
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * DOCUMENT ME!
+     * The statement
      *
-     * @return  DOCUMENT ME!
+     * @return  the statement
      */
     public String getStatement() {
         return statement;
     }
 
     /**
-     * DOCUMENT ME!
+     * The types of the parameters of the statement, <code>null</code> if the types shall be inferred by the jdbc driver.
      *
-     * @return  DOCUMENT ME!
+     * @return  the types of the parameters of the statement
      */
     public int[] getTypes() {
         return types;
     }
 
     /**
-     * DOCUMENT ME!
+     * The actual values for the parameters.
      *
-     * @return  DOCUMENT ME!
+     * @return  the actual values for the parameters
      */
     public Object[] getObjects() {
         return objects;
     }
 
     /**
-     * DOCUMENT ME!
+     * Sets the actual objects that shall be used for parameterisation. The number of objects must match the number of
+     * types if the types are actually provided.
      *
-     * @param   objects  DOCUMENT ME!
+     * @param   objects  the objects to use during parameterisation
      *
-     * @throws  IllegalArgumentException  DOCUMENT ME!
+     * @throws  IllegalArgumentException  if objects is <code>null</code> or if the number of object does not match the number of types if the types are not <code>null</code>
      */
     public void setObjects(final Object... objects) {
         if (objects == null) {
             throw new IllegalArgumentException("objects must not be null"); // NOI18N
         }
 
-        if (objects.length != types.length) {
+        if (types != null && objects.length != types.length) {
             throw new IllegalArgumentException("length of types and objects does not match: [types.length=" // NOI18N
                         + types.length + "|" + objects.length + "]");        // NOI18N
         }
@@ -110,14 +114,15 @@ public class PreparableStatement implements Serializable {
     }
 
     /**
-     * DOCUMENT ME!
+     * Creates a <code>PreparedStatement</code> using the parameterised statement, the types of this instance or the
+     * types of the jdbc driver if the types of this instance is <code>null</code> and the actual objects.
      *
-     * @param   c  DOCUMENT ME!
+     * @param   c  a jdbc connection to create the statement
      *
-     * @return  DOCUMENT ME!
+     * @return  the parameterised <code>PreparedStatement</code> ready for execution
      *
-     * @throws  SQLException           DOCUMENT ME!
-     * @throws  IllegalStateException  DOCUMENT ME!
+     * @throws  SQLException           if there is an error during parameterisation
+     * @throws  IllegalStateException  if the objects have not been set (objects are <code>null</code>)
      */
     public PreparedStatement parameterise(final Connection c) throws SQLException {
         if (objects == null) {
@@ -145,6 +150,11 @@ public class PreparableStatement implements Serializable {
         return ps;
     }
 
+    /**
+     * This operation is only for debugging purposes. It does not provide proper serialisation or anything similar.
+     * 
+     * @return a debug string representation of the instance
+     */
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder(statement);
