@@ -9,6 +9,8 @@ package Sirius.server.sql;
 
 import org.openide.util.lookup.ServiceProvider;
 
+import java.sql.Types;
+
 /**
  * DOCUMENT ME!
  *
@@ -337,7 +339,7 @@ public final class OracleSQLStatements implements ServerSQLStatements {
     }
 
     @Override
-    public String getPersistenceManagerUpdateStmt(final String tableName,
+    public PreparableStatement getPersistenceManagerUpdateStmt(final String tableName,
             final String pkField,
             final String... fieldNames) {
         final StringBuilder sb = new StringBuilder();
@@ -354,11 +356,11 @@ public final class OracleSQLStatements implements ServerSQLStatements {
 
         sb.append(" WHERE ").append(pkField).append(" = ?");
 
-        return sb.toString();
+        return new PreparableStatement(sb.toString());
     }
 
     @Override
-    public String getPersistenceManagerInsertStmt(final String tableName, final String... fieldNames) {
+    public PreparableStatement getPersistenceManagerInsertStmt(final String tableName, final String... fieldNames) {
         final StringBuilder sb = new StringBuilder();
 
         sb.append("INSERT INTO ").append(tableName);
@@ -382,7 +384,7 @@ public final class OracleSQLStatements implements ServerSQLStatements {
 
         sb.append(")");
 
-        return sb.toString();
+        return new PreparableStatement(sb.toString());
     }
 
     @Override
@@ -429,9 +431,9 @@ public final class OracleSQLStatements implements ServerSQLStatements {
     }
 
     @Override
-    public String getDefaultFullTextSearchStmt(final String searchText,
+    public PreparableStatement getDefaultFullTextSearchStmt(final String searchText,
             final String classesIn,
-            final String geoSql,
+            final PreparableStatement geoSql,
             final boolean caseSensitive) {
         // NOTE: lower of oracle and lower of java may behave differently
         final String sql = "SELECT DISTINCT i.class_id ocid,i.object_id oid, c.stringrep " // NOI18N
@@ -448,50 +450,71 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                     + (caseSensitive ? "" : "lower(")
                     + "s.string_val"
                     + (caseSensitive ? "" : ")")
-                    + " like '%"
-                    + (caseSensitive ? searchText : searchText.toLowerCase())
-                    + "%' "                                                                // NOI18N
+                    + " like ? "                                                           // NOI18N
                     + "AND i.class_id IN "
                     + classesIn;
+        final PreparableStatement ps;
+
+        final String param = "%"
+                    + (caseSensitive ? searchText : searchText.toLowerCase())
+                    + "%";
         if (geoSql == null) {
-            return sql;
+            ps = new PreparableStatement(sql, Types.CLOB);
+            ps.setObjects(param);
         } else {
-            return "select distinct * from ("
-                        + sql
-                        + ") as txt,(select distinct class_id as ocid,object_id as oid,stringrep from ("
-                        + geoSql
-                        + ")as y ) as geo where txt.ocid=geo.ocid and txt.oid=geo.oid";
+            final int[] types = new int[geoSql.getTypes().length
+                            + 1];
+            System.arraycopy(geoSql.getTypes(), 0, types, 1, geoSql.getTypes().length);
+            types[0] = Types.CLOB;
+
+            final Object[] objects = new Object[geoSql.getObjects().length
+                            + 1];
+            System.arraycopy(geoSql.getObjects(), 0, objects, 1, geoSql.getObjects().length);
+            objects[0] = param;
+
+            ps = new PreparableStatement("select distinct * from ("
+                            + sql
+                            + ") as txt,(select distinct class_id as ocid,object_id as oid,stringrep from ("
+                            + geoSql
+                            + ")as y ) as geo where txt.ocid=geo.ocid and txt.oid=geo.oid",
+                    types);
+            ps.setObjects(objects);
         }
+
+        return ps;
     }
 
     @Override
-    public String getDefaultGeoSearchStmt(final String wkt, final String srid, final String classesIn) {
+    public PreparableStatement getDefaultGeoSearchStmt(final String wkt, final String srid, final String classesIn) {
         // NOTE: does not narrow down matches using the bbox of the geometry like the postgis version via '&&' thus may
         // be too slow
-        return "SELECT DISTINCT i.class_id , "                                                   // NOI18N
-                    + "                i.object_id, "                                            // NOI18N
-                    + "                s.stringrep "                                             // NOI18N
-                    + "FROM            geom g, "                                                 // NOI18N
-                    + "                cs_attr_object_derived i "                                // NOI18N
-                    + "                LEFT OUTER JOIN cs_stringrepcache s "                     // NOI18N
-                    + "                ON              ( "                                       // NOI18N
-                    + "                                                s.class_id =i.class_id "  // NOI18N
-                    + "                                AND             s.object_id=i.object_id " // NOI18N
-                    + "                                ) "                                       // NOI18N
-                    + "WHERE           i.attr_class_id = "                                       // NOI18N
-                    + "                ( SELECT cs_class.id "                                    // NOI18N
-                    + "                FROM    cs_class "                                        // NOI18N
-                    + "                WHERE   cs_class.table_name = 'GEOM' "                    // NOI18N
-                    + "                ) "                                                       // NOI18N
-                    + "AND             i.attr_object_id = g.id "                                 // NOI18N
-                    + "AND i.class_id IN "
-                    + classesIn                                                                  // NOI18N
-                    + "AND sdo_relate(geo_field,sdo_geometry('"
-                    + wkt
-                    + "', "
-                    + srid
-                    + "), 'mask=anyinteract') = 'TRUE'"                                          // NOI18N
-                    + "ORDER BY        1,2,3";
+        final PreparableStatement ps = new PreparableStatement(
+                "SELECT DISTINCT i.class_id , "                                                      // NOI18N
+                        + "                i.object_id, "                                            // NOI18N
+                        + "                s.stringrep "                                             // NOI18N
+                        + "FROM            geom g, "                                                 // NOI18N
+                        + "                cs_attr_object_derived i "                                // NOI18N
+                        + "                LEFT OUTER JOIN cs_stringrepcache s "                     // NOI18N
+                        + "                ON              ( "                                       // NOI18N
+                        + "                                                s.class_id =i.class_id "  // NOI18N
+                        + "                                AND             s.object_id=i.object_id " // NOI18N
+                        + "                                ) "                                       // NOI18N
+                        + "WHERE           i.attr_class_id = "                                       // NOI18N
+                        + "                ( SELECT cs_class.id "                                    // NOI18N
+                        + "                FROM    cs_class "                                        // NOI18N
+                        + "                WHERE   cs_class.table_name = 'GEOM' "                    // NOI18N
+                        + "                ) "                                                       // NOI18N
+                        + "AND             i.attr_object_id = g.id "                                 // NOI18N
+                        + "AND i.class_id IN "                                                       // NOI18N
+                        + classesIn
+                        + " AND sdo_relate(geo_field,sdo_geometry(?, "                               // NOI18N
+                        + srid
+                        + "), 'mask=anyinteract') = 'TRUE'"                                          // NOI18N
+                        + "ORDER BY        1,2,3",
+                Types.CLOB);                                                                         // NOI18N
+        ps.setObjects(wkt);
+
+        return ps;
     }
 
     @Override

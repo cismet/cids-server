@@ -41,6 +41,7 @@ import Sirius.server.search.Seeker;
 import Sirius.server.search.store.Info;
 import Sirius.server.search.store.QueryData;
 import Sirius.server.sql.DBConnectionPool;
+import Sirius.server.sql.PreparableStatement;
 import Sirius.server.sql.SystemStatement;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -57,6 +58,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -821,17 +823,48 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         try {
             final Statement s = getConnectionPool().getDBConnection().getConnection().createStatement();
             final ResultSet rs = s.executeQuery(query);
-            final ArrayList<ArrayList> result = new ArrayList<ArrayList>();
-            while (rs.next()) {
-                final ArrayList row = new ArrayList();
-                for (int i = 0; i < rs.getMetaData().getColumnCount(); ++i) {
-                    row.add(rs.getObject(i + 1));
-                }
-                result.add(row);
-            }
+            final ArrayList<ArrayList> result = collectResults(rs);
+
             return result;
         } catch (Exception e) {
             final String msg = "Error during sql statement: " + query;
+            logger.error(msg, e);
+            throw new RemoteException(msg, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   rs  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    public ArrayList<ArrayList> collectResults(final ResultSet rs) throws SQLException {
+        final ArrayList<ArrayList> result = new ArrayList<ArrayList>();
+        while (rs.next()) {
+            final ArrayList row = new ArrayList();
+            for (int i = 0; i < rs.getMetaData().getColumnCount(); ++i) {
+                row.add(rs.getObject(i + 1));
+            }
+            result.add(row);
+        }
+
+        return result;
+    }
+
+    @Override
+    public ArrayList<ArrayList> performCustomSearch(final PreparableStatement ps) throws RemoteException {
+        try {
+            final PreparedStatement stmt = ps.parameterise(getConnectionPool().getDBConnection().getConnection());
+            final ResultSet rs = stmt.executeQuery();
+            final ArrayList<ArrayList> result = collectResults(rs);
+
+            return result;
+        } catch (final Exception e) {
+            final String msg = "Error during sql statement: " + ps;
             logger.error(msg, e);
             throw new RemoteException(msg, e);
         }

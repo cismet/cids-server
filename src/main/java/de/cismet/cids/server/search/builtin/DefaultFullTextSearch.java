@@ -7,10 +7,10 @@
 ****************************************************/
 package de.cismet.cids.server.search.builtin;
 
-import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.sql.DialectProvider;
+import Sirius.server.sql.PreparableStatement;
 import Sirius.server.sql.SQLTools;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -107,12 +107,12 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
                 final MetaService ms = (MetaService)getActiveLocalServers().get(key);
                 final String classesInStatement = getClassesInSnippetsPerDomain().get((String)key);
                 if (classesInStatement != null) {
-                    String geoSql = null;
+                    PreparableStatement geoSql = null;
                     if (geometry != null) {
                         geoSql = geoSearch.getSearchSql((String)key);
                     }
 
-                    final String sqlStatement = SQLTools.getStatements(Lookup.getDefault().lookup(
+                    final PreparableStatement sqlStatement = SQLTools.getStatements(Lookup.getDefault().lookup(
                                     DialectProvider.class).getDialect())
                                 .getDefaultFullTextSearchStmt(searchText, classesInStatement, geoSql, caseSensitive);
 

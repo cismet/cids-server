@@ -16,6 +16,7 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.Node;
 import Sirius.server.newuser.User;
 import Sirius.server.search.Query;
+import Sirius.server.sql.PreparableStatement;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -305,6 +306,17 @@ public interface MetaService extends Remote {
      * @throws  RemoteException  DOCUMENT ME!
      */
     ArrayList<ArrayList> performCustomSearch(String query) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   ps  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    ArrayList<ArrayList> performCustomSearch(PreparableStatement ps) throws RemoteException;
 
     /**
      * @see  Sirius.server.middleware.interfaces.proxy.MetaService#getHistory(int, int, java.lang.String,

@@ -10,6 +10,7 @@ package de.cismet.cids.server.search.builtin;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.sql.DialectProvider;
+import Sirius.server.sql.PreparableStatement;
 import Sirius.server.sql.SQLTools;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -57,7 +58,7 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
     }
 
     @Override
-    public String getSearchSql(final String domainKey) {
+    public PreparableStatement getSearchSql(final String domainKey) {
         final String cidsSearchGeometryWKT = geometry.toText();
         final String sridString = Integer.toString(geometry.getSRID());
         final String classesInStatement = getClassesInSnippetsPerDomain().get(domainKey);
@@ -101,7 +102,7 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
             for (final Object domainKey : keyset) {
                 final MetaService ms = (MetaService)getActiveLocalServers().get(domainKey);
 
-                final String sqlStatement = getSearchSql((String)domainKey);
+                final PreparableStatement sqlStatement = getSearchSql((String)domainKey);
                 if (sqlStatement != null) {
                     if (LOG.isInfoEnabled()) {
                         LOG.info("geosearch: " + sqlStatement); // NOI18N
