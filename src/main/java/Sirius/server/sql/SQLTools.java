@@ -11,9 +11,6 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.io.WKBReader;
-import com.vividsolutions.jts.io.oracle.OraReader;
-
-import oracle.sql.STRUCT;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -27,14 +24,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,7 +38,7 @@ import de.cismet.cismap.commons.jtsgeometryfactories.IGeometryFactory;
  * DOCUMENT ME!
  *
  * @author   martin.scholl@cismet.de
- * @version  $Revision$, $Date$
+ * @version  0.1
  */
 public final class SQLTools {
 
@@ -199,43 +192,6 @@ public final class SQLTools {
             IOUtils.closeQuietly(br);
             IOUtils.closeQuietly(bw);
         }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   args  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    public static void main(final String[] args) throws Exception {
-        final Properties p = new Properties();
-        p.put("log4j.appender.Remote", "org.apache.log4j.net.SocketAppender"); // NOI18N
-        p.put("log4j.appender.Remote.remoteHost", "localhost");                // NOI18N
-        p.put("log4j.appender.Remote.port", "4445");                           // NOI18N
-        p.put("log4j.appender.Remote.locationInfo", "true");                   // NOI18N
-        p.put("log4j.rootLogger", "DEBUG,Remote");                             // NOI18N
-        org.apache.log4j.PropertyConfigurator.configure(p);
-
-        final DBClassifier dbc = new DBClassifier(
-                "jdbc:oracle:thin:@enciva-de2.com:1521:humboldt",
-                "CISMET",                   // NOI18N
-                "rTid9dEke5",               // NOI18N
-                "oracle.jdbc.OracleDriver", // NOI18N
-                5);
-        final DBConnection con = new DBConnection(dbc);
-        final Connection c = con.getConnection();
-        final ResultSet s = c.createStatement().executeQuery("select * from geom where rownum <= 1");
-        System.out.println(s.next());
-        System.out.println(s.getInt(1));
-        System.out.println(s.getObject(2));
-        final OraReader or = new OraReader(new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING), 4326));
-        final Geometry g = or.read((STRUCT)s.getObject(2));
-        System.out.println(g.toText());
-
-//        insertIntoGeom(new File("/Users/mscholl/Desktop/switchon_geometries.plaindump"),
-//            new File("/Users/mscholl/Desktop/switchon_geometries_oracle.plaindump"),
-//            4326);
     }
 
     //~ Inner Classes ----------------------------------------------------------
