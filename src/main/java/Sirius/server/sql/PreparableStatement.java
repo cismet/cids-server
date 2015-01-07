@@ -45,12 +45,12 @@ public class PreparableStatement implements Serializable {
     }
 
     /**
-     * Creates a new PreparableStatement object. If <code>null</code> for the types array is provided then the parameterise
-     * operation will assume that the types are properly inferred by the jdbc driver.
+     * Creates a new PreparableStatement object. If <code>null</code> for the types array is provided then the
+     * parameterise operation will assume that the types are properly inferred by the jdbc driver.
      *
      * @param   stmt   the parameterised statement, not <code>null</code>
-     * @param   types  an int array with the types of the single parameters, sorted by occurrence in statement, or <code>null</code>
-     * if the types shall be inferred by the jdbc driver.
+     * @param   types  an int array with the types of the single parameters, sorted by occurrence in statement, or
+     *                 <code>null</code> if the types shall be inferred by the jdbc driver.
      *
      * @throws  IllegalArgumentException  if the stmt is <code>null</code>
      */
@@ -66,7 +66,7 @@ public class PreparableStatement implements Serializable {
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * The statement
+     * The statement.
      *
      * @return  the statement
      */
@@ -75,7 +75,8 @@ public class PreparableStatement implements Serializable {
     }
 
     /**
-     * The types of the parameters of the statement, <code>null</code> if the types shall be inferred by the jdbc driver.
+     * The types of the parameters of the statement, <code>null</code> if the types shall be inferred by the jdbc
+     * driver.
      *
      * @return  the types of the parameters of the statement
      */
@@ -98,14 +99,15 @@ public class PreparableStatement implements Serializable {
      *
      * @param   objects  the objects to use during parameterisation
      *
-     * @throws  IllegalArgumentException  if objects is <code>null</code> or if the number of object does not match the number of types if the types are not <code>null</code>
+     * @throws  IllegalArgumentException  if objects is <code>null</code> or if the number of object does not match the
+     *                                    number of types if the types are not <code>null</code>
      */
     public void setObjects(final Object... objects) {
         if (objects == null) {
             throw new IllegalArgumentException("objects must not be null"); // NOI18N
         }
 
-        if (types != null && objects.length != types.length) {
+        if ((types != null) && (objects.length != types.length)) {
             throw new IllegalArgumentException("length of types and objects does not match: [types.length=" // NOI18N
                         + types.length + "|" + objects.length + "]");        // NOI18N
         }
@@ -152,8 +154,8 @@ public class PreparableStatement implements Serializable {
 
     /**
      * This operation is only for debugging purposes. It does not provide proper serialisation or anything similar.
-     * 
-     * @return a debug string representation of the instance
+     *
+     * @return  a debug string representation of the instance
      */
     @Override
     public String toString() {
