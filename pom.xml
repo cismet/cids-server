@@ -84,7 +84,7 @@
         <dependency>
             <groupId>de.cismet.custom</groupId>
             <artifactId>beansbinding</artifactId>
-            <version>1.2.2-SNAPSHOT</version>
+            <version>1.2.2-uba-20150109</version>
         </dependency>
         <dependency>
             <groupId>com.sun.jersey</groupId>
