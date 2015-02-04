@@ -14,6 +14,7 @@ package de.cismet.cids.server.search.builtin;
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.newuser.User;
 
 import org.apache.log4j.Logger;
 
@@ -46,7 +47,8 @@ public class CidsLayerInitStatement extends AbstractCidsServerSearch {
 
 // private String envelopeQuery = "select st_asText(st_extent(geo_field)) from %s;";
 // private String envelopeQuery = "select st_asText(st_extent(tmp.%s)) from (%s) as tmp";
-    private String envelopeQuery = "select st_asText(st_extent(%s)) %s";
+    private final String envelopeQuery = "select st_asText(st_extent(%s)) %s";
+    private final String geometryTypeQuery = "SELECT distinct st_geometryType(%1$s), (select st_asText(%1$s) %2$s  where %1$s is not null limit 1) %2$s  where %1$s is not null";
 //    private String initString = "select column_name, data_type from information_schema.columns where table_schema = '%s' and table_name = '%s' order by ordinal_position ASC";
     private int classId;
     private String domain;
@@ -65,10 +67,10 @@ public class CidsLayerInitStatement extends AbstractCidsServerSearch {
      *
      * @param  clazz  DOCUMENT ME!
      */
-    public CidsLayerInitStatement(final MetaClass clazz) {
+    public CidsLayerInitStatement(final MetaClass clazz, final User user) {
         classId = clazz.getID();
         domain = clazz.getDomain();
-        layerInfo = CidsLayerUtil.getCidsLayerInfo(clazz);
+        layerInfo = CidsLayerUtil.getCidsLayerInfo(clazz, user);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -89,7 +91,22 @@ public class CidsLayerInitStatement extends AbstractCidsServerSearch {
             final String tables = layerInfo.getSelectString().substring(layerInfo.getSelectString().indexOf("from "));
             final String query = String.format(envelopeQuery, layerInfo.getSqlGeoField(), tables);
             final ArrayList<ArrayList> envelope = ms.performCustomSearch(query);
+            final String typeQuery = String.format(geometryTypeQuery, layerInfo.getSqlGeoField(), tables);
+            final ArrayList<ArrayList> geometryType = ms.performCustomSearch(typeQuery);
+            String type = null;
+            
+            if (geometryType.size() == 1) {
+                ArrayList list = geometryType.get(0);
+                
+                if (list.size() == 2 && list.get(1) != null) {
+                    type = list.get(1).toString();
+                }
+            }
 
+            if (type != null) {
+                envelope.get(0).add(type);
+            }
+            
             return envelope;
         } catch (RemoteException ex) {
             LOG.error("Error in customSearch", ex);

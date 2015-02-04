@@ -14,6 +14,7 @@ package de.cismet.cids.server.search.builtin;
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.newuser.User;
 
 import org.apache.log4j.Logger;
 
@@ -59,23 +60,22 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
     private boolean exactSearch = false;
     private CidsLayerInfo layerInfo;
 
-    /*private final String query =
-     *  "%s ";private final String count = "Select count(*)";*/
-// private final String select =
-// "Select (select id from cs_class where table_name ilike '%s') as class_id, asEWKT(geom.geo_field)%s from %s, geom where %s = geom.id and geo_field && 'BOX3D(%s %s,%s %s)'::box3d";
-//    private final String selectFromView =
-//        "Select * from %s where geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
-//    private final String selectFromViewExactly =
-//        "Select * from %1$s where geo_field && setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d) and st_intersects(geo_field::GEOMETRY, setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d))";
-//    private final String selectCountFromView =
-//        "Select count(*) from %s where geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
     private final String selectFromView = "%s where geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
     private final String selectFromViewExactly =
         "%1$s where geo_field && setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d) and st_intersects(geo_field::GEOMETRY, setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d))";
     private final String selectAll = "%s";
     private final String selectCountFromView =
-        "Select count(tmp.*) from (%s where geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)) as tmp";
-//    private final String columnNameQuery = "select column_name from information_schema.columns where table_schema = '%s' and table_name = '%s' order by ordinal_position ASC";
+        "Select count(*) from (%s where geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)) as tmp";
+    private final String selectTotalCountFromView =
+        "Select count(*) from (%s) as tmp";
+    private final String selectFromViewWithRestriction = "%s where %s and geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
+    private final String selectFromViewExactlyWithRestriction =
+        "%1$s where %7$s and geo_field && setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d) and st_intersects(geo_field::GEOMETRY, setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d))";
+    private final String selectAllWithRestriction = "%s WHERE %s";
+    private final String selectCountFromViewWithRestriction =
+        "Select count(*) from (%s where %s and geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)) as tmp";
+    private final String selectTotalCountFromViewWithRestriction =
+        "Select count(*) from (%s where %s) as tmp";
 
     //~ Constructors -----------------------------------------------------------
 
@@ -90,10 +90,10 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
      *
      * @param  clazz  DOCUMENT ME!
      */
-    public CidsLayerSearchStatement(final MetaClass clazz) {
+    public CidsLayerSearchStatement(final MetaClass clazz, User user) {
         classId = clazz.getID();
         domain = clazz.getDomain();
-        layerInfo = CidsLayerUtil.getCidsLayerInfo(clazz);
+        layerInfo = CidsLayerUtil.getCidsLayerInfo(clazz, user);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -160,20 +160,65 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
         final MetaService ms = (MetaService)getActiveLocalServers().get(domain);
         try {
             final StringBuilder queryString;
+            String restriction = layerInfo.getRestriction();
+            
+            if ((query != null) && !query.equals("")) {
+                if (restriction == null) {
+                    restriction = query;
+                } else {
+                    restriction = "(" + restriction + ") AND (" + query + ")";
+                }
+            }
 
             if (countOnly) {
-                queryString = new StringBuilder(String.format(
-                            selectCountFromView,
-                            layerInfo.getSelectString(),
-                            x1,
-                            y1,
-                            x2,
-                            y2,
-                            srid));
+                if ((x1 == 0.0) && (x2 == 0.0) && (y1 == 0.0) && (y2 == 0.0)) {
+                    // retrieve all features
+                    if (restriction != null) {
+                        queryString = new StringBuilder(String.format(selectTotalCountFromViewWithRestriction, layerInfo.getSelectString(), restriction));
+                    } else {
+                        queryString = new StringBuilder(String.format(selectTotalCountFromView, layerInfo.getSelectString()));
+                    }
+                } else {
+                    if (restriction != null) {
+                        queryString = new StringBuilder(String.format(
+                                selectCountFromViewWithRestriction,
+                                layerInfo.getSelectString(),
+                                restriction,
+                                x1,
+                                y1,
+                                x2,
+                                y2,
+                                srid));
+                    } else {
+                        queryString = new StringBuilder(String.format(
+                                selectCountFromView,
+                                layerInfo.getSelectString(),
+                                x1,
+                                y1,
+                                x2,
+                                y2,
+                                srid));
+                    }
+                }
             } else {
-                if (exactSearch) {
-                    if ((x1 == 0.0) && (x2 == 0.0) && (y1 == 0.0) && (y2 == 0.0)) {
+                if ((x1 == 0.0) && (x2 == 0.0) && (y1 == 0.0) && (y2 == 0.0)) {
+                    // retrieve all features
+                    if (restriction != null) {
+                        queryString = new StringBuilder(String.format(selectAllWithRestriction, layerInfo.getSelectString(), restriction));
+                    } else {
                         queryString = new StringBuilder(String.format(selectAll, layerInfo.getSelectString()));
+                    }
+                } else if (exactSearch) {
+                    if (restriction != null) {
+                        queryString = new StringBuilder(String.format(
+                                    selectFromViewExactlyWithRestriction,
+                                    layerInfo.getSelectString(),
+                                    x1,
+                                    y1,
+                                    x2,
+                                    y2,
+                                    srid,
+                                    restriction));
                     } else {
                         queryString = new StringBuilder(String.format(
                                     selectFromViewExactly,
@@ -185,8 +230,16 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
                                     srid));
                     }
                 } else {
-                    if ((x1 == 0.0) && (x2 == 0.0) && (y1 == 0.0) && (y2 == 0.0)) {
-                        queryString = new StringBuilder(String.format(selectAll, layerInfo.getSelectString()));
+                    if (restriction != null) {
+                        queryString = new StringBuilder(String.format(
+                                    selectFromViewWithRestriction,
+                                    layerInfo.getSelectString(),
+                                    restriction,
+                                    x1,
+                                    y1,
+                                    x2,
+                                    y2,
+                                    srid));
                     } else {
                         queryString = new StringBuilder(String.format(
                                     selectFromView,
@@ -200,24 +253,6 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
                 }
             }
 
-            if ((query != null) && !query.equals("")) {
-                if (!((x1 == 0.0) && (x2 == 0.0) && (y1 == 0.0) && (y2 == 0.0))) {
-                    queryString.append(" AND ");
-                } else {
-                    queryString.append(" WHERE ");
-                }
-
-                queryString.append(query);
-            }
-
-            if (limit > 0) {
-                queryString.append(" LIMIT ").append(limit);
-            }
-
-            if (offset > 0) {
-                queryString.append(" OFFSET ").append(offset);
-            }
-
             if ((orderBy != null) && (orderBy.length > 0)) {
                 boolean firstAttr = true;
                 queryString.append(" ORDER BY ");
@@ -229,6 +264,14 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
                     }
                     queryString.append(attr);
                 }
+            }
+
+            if (limit > 0) {
+                queryString.append(" LIMIT ").append(limit);
+            }
+
+            if (offset > 0) {
+                queryString.append(" OFFSET ").append(offset);
             }
 
             LOG.info(queryString.toString());

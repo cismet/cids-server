@@ -13,6 +13,7 @@ package de.cismet.cids.tools;
 
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.newuser.User;
 
 import org.apache.log4j.Logger;
 
@@ -41,7 +42,7 @@ public class CidsLayerUtil {
      *
      * @return  the CidsLayerInfo object for the given meta class
      */
-    public static CidsLayerInfo getCidsLayerInfo(final MetaClass mc) {
+    public static CidsLayerInfo getCidsLayerInfo(final MetaClass mc, User user) {
         CidsLayerInfo layerInfo = null;
         final ClassAttribute attr = mc.getClassAttribute("cidsLayer");
 
@@ -50,11 +51,21 @@ public class CidsLayerUtil {
 
             try {
                 final Class classObject = Class.forName(className);
-                final Constructor c = classObject.getConstructor(MetaClass.class);
-                final Object info = c.newInstance(mc);
+                try {
+                    Constructor c = classObject.getConstructor(MetaClass.class, User.class);
+                    final Object info = c.newInstance(mc, user);
 
-                if (info instanceof CidsLayerInfo) {
-                    layerInfo = (CidsLayerInfo)info;
+                    if (info instanceof CidsLayerInfo) {
+                        layerInfo = (CidsLayerInfo)info;
+                    }
+                } catch (NoSuchMethodException e) {
+                    Constructor c = classObject.getConstructor(MetaClass.class);
+
+                    final Object info = c.newInstance(mc);
+
+                    if (info instanceof CidsLayerInfo) {
+                        layerInfo = (CidsLayerInfo)info;
+                    }
                 }
             } catch (Exception e) {
                 LOG.error("Cannot instantiate CidsLayerInfo class: " + className, e);

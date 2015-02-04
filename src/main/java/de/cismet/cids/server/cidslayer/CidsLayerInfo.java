@@ -142,6 +142,8 @@ public interface CidsLayerInfo {
      * @return  DOCUMENT ME!
      */
     boolean isReferenceToCidsClass(String column);
+    
+    String getRestriction();
 
 //    /**
 //     *

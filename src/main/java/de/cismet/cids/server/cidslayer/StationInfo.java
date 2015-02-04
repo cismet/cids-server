@@ -27,6 +27,7 @@ public class StationInfo implements Serializable {
     private boolean fromStation;
     private String routeTable;
     private int lineId;
+//    private String stationPropertyName;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -52,6 +53,7 @@ public class StationInfo implements Serializable {
         this.fromStation = fromStation;
         this.routeTable = routeTable;
         this.lineId = lineId;
+//        this.stationPropertyName = stationPropertyName;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -127,4 +129,18 @@ public class StationInfo implements Serializable {
     public void setFromStation(final boolean fromStation) {
         this.fromStation = fromStation;
     }
+
+//    /**
+//     * @return the stationPropertyName
+//     */
+//    public String getStationPropertyName() {
+//        return stationPropertyName;
+//    }
+//
+//    /**
+//     * @param stationPropertyName the stationPropertyName to set
+//     */
+//    public void setStationPropertyName(String stationPropertyName) {
+//        this.stationPropertyName = stationPropertyName;
+//    }
 }
