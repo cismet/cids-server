@@ -690,9 +690,7 @@ public class CidsBean implements PropertyChangeListener {
 
                             dummy.setStatus(MetaObject.MODIFIED);
                             final ObjectAttribute entryToAddOA = new ObjectAttribute(
-                                    mai.getId()
-                                            + "."
-                                            + arrayElementAttrs.length,
+                                    null,
                                     mai,
                                     -1,
                                     cb.getMetaObject(),
