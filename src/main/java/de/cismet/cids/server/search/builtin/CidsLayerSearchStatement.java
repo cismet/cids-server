@@ -66,16 +66,15 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
     private final String selectAll = "%s";
     private final String selectCountFromView =
         "Select count(*) from (%s where geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)) as tmp";
-    private final String selectTotalCountFromView =
-        "Select count(*) from (%s) as tmp";
-    private final String selectFromViewWithRestriction = "%s where %s and geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
+    private final String selectTotalCountFromView = "Select count(*) from (%s) as tmp";
+    private final String selectFromViewWithRestriction =
+        "%s where %s and geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
     private final String selectFromViewExactlyWithRestriction =
         "%1$s where %7$s and geo_field && setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d) and st_intersects(geo_field::GEOMETRY, setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d))";
     private final String selectAllWithRestriction = "%s WHERE %s";
     private final String selectCountFromViewWithRestriction =
         "Select count(*) from (%s where %s and geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)) as tmp";
-    private final String selectTotalCountFromViewWithRestriction =
-        "Select count(*) from (%s where %s) as tmp";
+    private final String selectTotalCountFromViewWithRestriction = "Select count(*) from (%s where %s) as tmp";
 
     //~ Constructors -----------------------------------------------------------
 
@@ -89,8 +88,9 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
      * Creates a new CidsLayerSearchStatement object.
      *
      * @param  clazz  DOCUMENT ME!
+     * @param  user   DOCUMENT ME!
      */
-    public CidsLayerSearchStatement(final MetaClass clazz, User user) {
+    public CidsLayerSearchStatement(final MetaClass clazz, final User user) {
         classId = clazz.getID();
         domain = clazz.getDomain();
         layerInfo = CidsLayerUtil.getCidsLayerInfo(clazz, user);
@@ -161,7 +161,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
         try {
             final StringBuilder queryString;
             String restriction = layerInfo.getRestriction();
-            
+
             if ((query != null) && !query.equals("")) {
                 if (restriction == null) {
                     restriction = query;
@@ -174,37 +174,45 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
                 if ((x1 == 0.0) && (x2 == 0.0) && (y1 == 0.0) && (y2 == 0.0)) {
                     // retrieve all features
                     if (restriction != null) {
-                        queryString = new StringBuilder(String.format(selectTotalCountFromViewWithRestriction, layerInfo.getSelectString(), restriction));
+                        queryString = new StringBuilder(String.format(
+                                    selectTotalCountFromViewWithRestriction,
+                                    layerInfo.getSelectString(),
+                                    restriction));
                     } else {
-                        queryString = new StringBuilder(String.format(selectTotalCountFromView, layerInfo.getSelectString()));
+                        queryString = new StringBuilder(String.format(
+                                    selectTotalCountFromView,
+                                    layerInfo.getSelectString()));
                     }
                 } else {
                     if (restriction != null) {
                         queryString = new StringBuilder(String.format(
-                                selectCountFromViewWithRestriction,
-                                layerInfo.getSelectString(),
-                                restriction,
-                                x1,
-                                y1,
-                                x2,
-                                y2,
-                                srid));
+                                    selectCountFromViewWithRestriction,
+                                    layerInfo.getSelectString(),
+                                    restriction,
+                                    x1,
+                                    y1,
+                                    x2,
+                                    y2,
+                                    srid));
                     } else {
                         queryString = new StringBuilder(String.format(
-                                selectCountFromView,
-                                layerInfo.getSelectString(),
-                                x1,
-                                y1,
-                                x2,
-                                y2,
-                                srid));
+                                    selectCountFromView,
+                                    layerInfo.getSelectString(),
+                                    x1,
+                                    y1,
+                                    x2,
+                                    y2,
+                                    srid));
                     }
                 }
             } else {
                 if ((x1 == 0.0) && (x2 == 0.0) && (y1 == 0.0) && (y2 == 0.0)) {
                     // retrieve all features
                     if (restriction != null) {
-                        queryString = new StringBuilder(String.format(selectAllWithRestriction, layerInfo.getSelectString(), restriction));
+                        queryString = new StringBuilder(String.format(
+                                    selectAllWithRestriction,
+                                    layerInfo.getSelectString(),
+                                    restriction));
                     } else {
                         queryString = new StringBuilder(String.format(selectAll, layerInfo.getSelectString()));
                     }

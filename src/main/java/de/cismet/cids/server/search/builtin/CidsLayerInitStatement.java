@@ -48,7 +48,8 @@ public class CidsLayerInitStatement extends AbstractCidsServerSearch {
 // private String envelopeQuery = "select st_asText(st_extent(geo_field)) from %s;";
 // private String envelopeQuery = "select st_asText(st_extent(tmp.%s)) from (%s) as tmp";
     private final String envelopeQuery = "select st_asText(st_extent(%s)) %s";
-    private final String geometryTypeQuery = "SELECT distinct st_geometryType(%1$s), (select st_asText(%1$s) %2$s  where %1$s is not null limit 1) %2$s  where %1$s is not null";
+    private final String geometryTypeQuery =
+        "SELECT distinct st_geometryType(%1$s), (select st_asText(%1$s) %2$s  where %1$s is not null limit 1) %2$s  where %1$s is not null";
 //    private String initString = "select column_name, data_type from information_schema.columns where table_schema = '%s' and table_name = '%s' order by ordinal_position ASC";
     private int classId;
     private String domain;
@@ -66,6 +67,7 @@ public class CidsLayerInitStatement extends AbstractCidsServerSearch {
      * Creates a new CidsLayerSearchStatement object.
      *
      * @param  clazz  DOCUMENT ME!
+     * @param  user   DOCUMENT ME!
      */
     public CidsLayerInitStatement(final MetaClass clazz, final User user) {
         classId = clazz.getID();
@@ -94,11 +96,11 @@ public class CidsLayerInitStatement extends AbstractCidsServerSearch {
             final String typeQuery = String.format(geometryTypeQuery, layerInfo.getSqlGeoField(), tables);
             final ArrayList<ArrayList> geometryType = ms.performCustomSearch(typeQuery);
             String type = null;
-            
+
             if (geometryType.size() == 1) {
-                ArrayList list = geometryType.get(0);
-                
-                if (list.size() == 2 && list.get(1) != null) {
+                final ArrayList list = geometryType.get(0);
+
+                if ((list.size() == 2) && (list.get(1) != null)) {
                     type = list.get(1).toString();
                 }
             }
@@ -106,7 +108,7 @@ public class CidsLayerInitStatement extends AbstractCidsServerSearch {
             if (type != null) {
                 envelope.get(0).add(type);
             }
-            
+
             return envelope;
         } catch (RemoteException ex) {
             LOG.error("Error in customSearch", ex);

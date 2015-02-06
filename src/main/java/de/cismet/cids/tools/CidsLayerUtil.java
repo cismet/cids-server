@@ -38,11 +38,12 @@ public class CidsLayerUtil {
     /**
      * Determines the CidsLayerInfo object for the given meta class.
      *
-     * @param   mc  the meta class
+     * @param   mc    the meta class
+     * @param   user  DOCUMENT ME!
      *
      * @return  the CidsLayerInfo object for the given meta class
      */
-    public static CidsLayerInfo getCidsLayerInfo(final MetaClass mc, User user) {
+    public static CidsLayerInfo getCidsLayerInfo(final MetaClass mc, final User user) {
         CidsLayerInfo layerInfo = null;
         final ClassAttribute attr = mc.getClassAttribute("cidsLayer");
 
@@ -52,14 +53,14 @@ public class CidsLayerUtil {
             try {
                 final Class classObject = Class.forName(className);
                 try {
-                    Constructor c = classObject.getConstructor(MetaClass.class, User.class);
+                    final Constructor c = classObject.getConstructor(MetaClass.class, User.class);
                     final Object info = c.newInstance(mc, user);
 
                     if (info instanceof CidsLayerInfo) {
                         layerInfo = (CidsLayerInfo)info;
                     }
                 } catch (NoSuchMethodException e) {
-                    Constructor c = classObject.getConstructor(MetaClass.class);
+                    final Constructor c = classObject.getConstructor(MetaClass.class);
 
                     final Object info = c.newInstance(mc);
 
