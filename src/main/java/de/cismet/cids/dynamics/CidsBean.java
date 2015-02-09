@@ -49,6 +49,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import de.cismet.cids.json.IntraObjectCacheJsonParams;
+
 import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
@@ -102,8 +104,10 @@ public class CidsBean implements PropertyChangeListener {
     protected String backlinkFieldname;
     protected CidsBean backlinkObject;
     protected boolean artificialChange;
+    protected transient IntraObjectCacheJsonParams jsonSerializerParams;
     String pkFieldName = null;
     HashMap<String, CidsBean> intraObjectCache = new HashMap<String, CidsBean>();
+
     /**
      * DOCUMENT ME!
      *
@@ -900,7 +904,50 @@ public class CidsBean implements PropertyChangeListener {
      * @return  DOCUMENT ME!
      */
     public String toJSONString(final boolean intraObjectCacheEnabled) {
+        final IntraObjectCacheJsonParams params = new IntraObjectCacheJsonParams();
+        params.setCacheDuplicates(intraObjectCacheEnabled);
+
+        return toJSONString(params);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   intraObjectCacheEnabled  DOCUMENT ME!
+     * @param   jsonOmitNull             DOCUMENT ME!
+     * @param   jsonLevel                DOCUMENT ME!
+     * @param   jsonPropFields           DOCUMENT ME!
+     * @param   jsonPropExpand           DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String toJSONString(final boolean intraObjectCacheEnabled,
+            final boolean jsonOmitNull,
+            final int jsonLevel,
+            final Collection<String> jsonPropFields,
+            final Collection<String> jsonPropExpand) {
+        final IntraObjectCacheJsonParams params = new IntraObjectCacheJsonParams();
+        params.setCacheDuplicates(intraObjectCacheEnabled);
+        params.setOmitNull(jsonOmitNull);
+        params.setMaxLevel(jsonLevel);
+        params.setFieldsPropNames(jsonPropFields);
+        params.setExpandPropNames(jsonPropExpand);
+
+        return toJSONString(params);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   params  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String toJSONString(final IntraObjectCacheJsonParams params) {
         try {
+            setJsonSerializerParams(params);
+            final boolean intraObjectCacheEnabled = (params != null) && params.isCacheDuplicates();
+
             this.intraObjectCache.clear();
             if (intraObjectCacheEnabled) {
                 return intraObjectCacheMapper.writeValueAsString(this);
@@ -923,12 +970,26 @@ public class CidsBean implements PropertyChangeListener {
      * @return  DOCUMENT ME!
      */
     public static String toJSONString(final boolean intraObjectCacheEnabled, final Collection<CidsBean> beans) {
+        final IntraObjectCacheJsonParams params = new IntraObjectCacheJsonParams();
+        params.setCacheDuplicates(intraObjectCacheEnabled);
+
+        return toJSONString(params, beans);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   params  DOCUMENT ME!
+     * @param   beans   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static String toJSONString(final IntraObjectCacheJsonParams params, final Collection<CidsBean> beans) {
         try {
-            if (intraObjectCacheEnabled) {
-                return intraObjectCacheMapper.writeValueAsString(beans);
-            } else {
-                return mapper.writeValueAsString(beans);
+            for (final CidsBean bean : beans) {
+                bean.setJsonSerializerParams(params);
             }
+            return intraObjectCacheMapper.writeValueAsString(beans);
         } catch (Exception ex) {
             LOG.error("Error in serialization of Cidsbeans Array");
             return null;
@@ -1006,11 +1067,7 @@ public class CidsBean implements PropertyChangeListener {
      */
     public static CidsBean createNewCidsBeanFromJSON(final boolean intraObjectCacheEnabled, final String json)
             throws Exception {
-        if (intraObjectCacheEnabled) {
-            return intraObjectCacheMapper.readValue(json, CidsBean.class);
-        } else {
-            return mapper.readValue(json, CidsBean.class);
-        }
+        return intraObjectCacheMapper.readValue(json, CidsBean.class);
     }
 
     /**
@@ -1027,17 +1084,10 @@ public class CidsBean implements PropertyChangeListener {
             final String json) throws Exception {
         final TypeFactory t = TypeFactory.defaultInstance();
 
-        if (intraObjectCacheEnabled) {
-            final Collection<CidsBean> jsonBeans = intraObjectCacheMapper.readValue(
-                    json,
-                    t.constructCollectionType(Collection.class, CidsBean.class));
-            return jsonBeans;
-        } else {
-            final Collection<CidsBean> jsonBeans = mapper.readValue(
-                    json,
-                    t.constructCollectionType(Collection.class, CidsBean.class));
-            return jsonBeans;
-        }
+        final Collection<CidsBean> jsonBeans = intraObjectCacheMapper.readValue(
+                json,
+                t.constructCollectionType(Collection.class, CidsBean.class));
+        return jsonBeans;
     }
 
     /**
@@ -1112,5 +1162,23 @@ public class CidsBean implements PropertyChangeListener {
      */
     public static boolean checkWritePermission(final User user, final CidsBean bean) {
         return bean.getHasWritePermission(user) && bean.hasObjectWritePermission(user);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public IntraObjectCacheJsonParams getJsonSerializerParams() {
+        return jsonSerializerParams;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  jsonSerializerParams  DOCUMENT ME!
+     */
+    protected void setJsonSerializerParams(final IntraObjectCacheJsonParams jsonSerializerParams) {
+        this.jsonSerializerParams = jsonSerializerParams;
     }
 }
