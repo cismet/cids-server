@@ -37,20 +37,31 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String query = "SELECT {2} AS classid, tbl.id AS objectid, c.stringrep FROM {0} tbl "
+    private static final String rawQuery = "SELECT {2} AS classid, tbl.id AS objectid, c.stringrep FROM {0} tbl "
                 + "LEFT OUTER JOIN cs_stringrepcache c "     // NOI18N
                 + "       ON     ( "                         // NOI18N
                 + "                     c.class_id ={2} "    // NOI18N
                 + "              AND    c.object_id=tbl.id " // NOI18N
                 + "              ) WHERE {1}";
+
+    private static final String rawQueryPagination =
+        "SELECT * FROM (SELECT {2} AS classid, tbl.id AS objectid, c.stringrep FROM {0} tbl "
+                + "LEFT OUTER JOIN cs_stringrepcache c "     // NOI18N
+                + "       ON     ( "                         // NOI18N
+                + "                     c.class_id ={2} "    // NOI18N
+                + "              AND    c.object_id=tbl.id " // NOI18N
+                + "              ) WHERE {1}) AS sub LIMIT {3} OFFSET {4}";
+
     private static final transient Logger LOG = Logger.getLogger(QueryEditorSearch.class);
 
     //~ Instance fields --------------------------------------------------------
 
-    private String metaClass;
-    private String whereClause;
-    private int classId;
-    private String DOMAIN;
+    private final String metaClass;
+    private final String whereClause;
+    private final int classId;
+    private final String DOMAIN;
+    private final int limit;
+    private final int offset;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -67,6 +78,32 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
         this.metaClass = metaClass;
         this.classId = classId;
         this.DOMAIN = domain;
+        this.limit = -1;
+        this.offset = -1;
+    }
+
+    /**
+     * Creates a new QueryEditorSearch object.
+     *
+     * @param  domain       DOCUMENT ME!
+     * @param  metaClass    DOCUMENT ME!
+     * @param  whereClause  DOCUMENT ME!
+     * @param  classId      DOCUMENT ME!
+     * @param  limit        DOCUMENT ME!
+     * @param  offset       DOCUMENT ME!
+     */
+    public QueryEditorSearch(final String domain,
+            final String metaClass,
+            final String whereClause,
+            final int classId,
+            final int limit,
+            final int offset) {
+        this.whereClause = whereClause;
+        this.metaClass = metaClass;
+        this.classId = classId;
+        this.DOMAIN = domain;
+        this.limit = limit;
+        this.offset = offset;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -77,7 +114,11 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
         final ArrayList<MetaObjectNode> metaObjects = new ArrayList<MetaObjectNode>();
         if (ms != null) {
             try {
-                final String query = MessageFormat.format(this.query, metaClass, whereClause, classId);
+                final boolean paginationEnabled = limit
+                            >= 0;
+                final String query = (!paginationEnabled)
+                    ? MessageFormat.format(rawQuery, metaClass, whereClause, classId)
+                    : MessageFormat.format(rawQueryPagination, metaClass, whereClause, classId, limit, offset);
                 LOG.info(query);
                 final ArrayList<ArrayList> results = ms.performCustomSearch(query);
 

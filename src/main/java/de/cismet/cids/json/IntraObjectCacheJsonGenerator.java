@@ -16,12 +16,17 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.util.JsonGeneratorDelegate;
 
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -36,9 +41,16 @@ import de.cismet.cids.dynamics.CidsBean;
  */
 public class IntraObjectCacheJsonGenerator extends JsonGeneratorDelegate {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final transient Logger LOG = Logger.getLogger(IntraObjectCacheJsonGenerator.class);
+
     //~ Instance fields --------------------------------------------------------
 
     HashMap<String, CidsBean> ioc = new HashMap<String, CidsBean>();
+    final List<String> propNames = new ArrayList<String>();
+    transient IntraObjectCacheJsonParams params;
+    int level = -1;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -190,5 +202,153 @@ public class IntraObjectCacheJsonGenerator extends JsonGeneratorDelegate {
             "No ObjectCodec defined for the generator, can only serialize simple wrapper types (type passed "
                     + value.getClass().getName()
                     + ")");
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public IntraObjectCacheJsonParams getParams() {
+        return params;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  params  DOCUMENT ME!
+     */
+    public void setParams(final IntraObjectCacheJsonParams params) {
+        this.params = params;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  propName  DOCUMENT ME!
+     */
+    public void appendPropertyName(final String propName) {
+        if (level > -1) {
+            if (level >= propNames.size()) {
+                this.propNames.add(propName);
+            } else {
+                this.propNames.set(level, propName);
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   level  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getPropName(final int level) {
+        final int toLevel = (level >= propNames.size()) ? propNames.size() : level;
+        final String propName = IntraObjectCacheJsonParams.implode(propNames.subList(0, toLevel).toArray(new String[0]),
+                ".");
+        return propName;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getCurrentBasePropName() {
+        return getPropName(level);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getCurrentPropName() {
+        return getPropName(level + 1);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean checkLevelExpand() {
+        if (params == null) {
+            return true;
+        }
+
+        final boolean isLevelSet = (params != null) && (params.getMaxLevel() >= 0);
+        final boolean isExpandSet = (params != null) && !params.getExpandPropNames().isEmpty();
+
+        final String basePropNameToCheck = getCurrentBasePropName();
+
+        if (isExpandSet) {
+            final int maxLevel;
+            if (isLevelSet) {
+                maxLevel = params.getMaxLevel();
+            } else {
+                maxLevel = level;
+            }
+
+            // root level always expanded
+            if (this.level <= 0) {
+                return true;
+            }
+
+            // searching for expand properties that begins with the actual property
+            for (final String expandPropName : params.getExpandPropNames()) {
+                if (expandPropName.startsWith(basePropNameToCheck + ".")) {
+                    return true;
+                }
+            }
+
+            final List<String> props = Arrays.asList(basePropNameToCheck.split("\\."));
+            // backward search for expandName (full property, then fullproperty - 1 level, etc...).
+            // only needs to go back maxLevel times (index >= (props.size() - maxLevel)
+            // taking care not to have negative index (index >= 0)
+            for (int index = props.size(); (index >= 0) && (index >= (props.size() - maxLevel)); index--) {
+                final String tester = IntraObjectCacheJsonParams.implode(props.subList(0, index).toArray(
+                            new String[0]),
+                        ".");
+                if (params.getExpandPropNames().contains(tester)) {
+                    // property of expanded object within level restriction
+                    return true;
+                }
+            }
+
+            return false;
+        } else if (isLevelSet) {
+            return this.level <= params.getMaxLevel();
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean checkFields() {
+        if ((params != null) && !params.getFieldsPropNames().isEmpty()) {
+            final String propNameToCheck = getCurrentPropName();
+            return (propNameToCheck != null) && params.getFieldsPropNames().contains(propNameToCheck);
+        } else {
+            return true;
+        }
+    }
+
+    @Override
+    public void writeStartObject() throws IOException, JsonGenerationException {
+        this.level++;
+        super.writeStartObject(); // To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void writeEndObject() throws IOException, JsonGenerationException {
+        super.writeEndObject(); // To change body of generated methods, choose Tools | Templates.
+        this.level--;
     }
 }
