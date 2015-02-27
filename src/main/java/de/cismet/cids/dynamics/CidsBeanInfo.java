@@ -23,6 +23,9 @@ public class CidsBeanInfo {
 
     public static final String JSON_CIDS_OBJECT_KEY_IDENTIFIER = "$self";
     public static final String JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER = "$ref";
+    public static final String JSON_CIDS_OBJECT_PATCH_ADD_SUFFIX = "$patch$add";
+    public static final String JSON_CIDS_OBJECT_PATCH_REMOVE_SUFFIX = "$patch$remove";
+    public static final String JSON_CIDS_OBJECT_PATCH_UPDATE_SUFFIX = "$patch$update";
 
     //~ Instance fields --------------------------------------------------------
 
