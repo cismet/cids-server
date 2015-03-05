@@ -256,7 +256,7 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                     }
                 }
             }
-            cb.getMetaObject().setID(cb.getPrimaryKeyValue());
+            cb.getMetaObject().setID((cb.getPrimaryKeyValue() != null) ? (int)cb.getPrimaryKeyValue() : -1);
             cb.getMetaObject().forceStatus(MetaObject.NO_STATUS);
             if (isIntraObjectCacheEnabled()) {
                 jp.put(key, cb);
