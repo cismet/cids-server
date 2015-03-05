@@ -78,10 +78,14 @@ public class CidsBeanInfo {
      * @param  classKey   DOCUMENT ME!
      * @param  objectPK   DOCUMENT ME!
      */
-    public CidsBeanInfo(final String domainKey, final String classKey, final int objectPK) {
+    public CidsBeanInfo(final String domainKey, final String classKey, final Integer objectPK) {
         this.classKey = classKey;
         this.domainKey = domainKey;
-        this.objectKey = String.valueOf(objectPK);
+        if (objectPK != null) {
+            this.objectKey = String.valueOf(objectPK);
+        } else {
+            this.objectKey = null;
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
