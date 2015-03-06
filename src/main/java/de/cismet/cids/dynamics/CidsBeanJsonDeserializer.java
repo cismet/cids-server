@@ -256,7 +256,7 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                         }
                     } else {
                         try {
-                            cb.quiteSetProperty(prop, mapper.readValue(jp, attrClass));
+                            cb.quiteSetProperty(prop, value);
                         } catch (Exception e) {
                             throw new RuntimeException("problem bei " + prop + "(" + attrClass + ")",
                                 e);
