@@ -31,6 +31,8 @@ import java.math.BigDecimal;
 
 import java.sql.Timestamp;
 
+import java.util.HashMap;
+
 import de.cismet.cids.json.IntraObjectCacheJsonParser;
 
 import de.cismet.commons.classloading.BlacklistClassloading;
@@ -108,6 +110,7 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
             jp = new IntraObjectCacheJsonParser(_jp);
         }
 
+        final HashMap<String, Object> propValueMap = new HashMap<String, Object>();
         try {
             while (jp.nextValue() != JsonToken.END_OBJECT) {
                 final String fieldName = jp.getCurrentName();
@@ -124,11 +127,6 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                             cb = CidsBean.createNewCidsBeanFromTableName(bInfo.getDomainKey(), bInfo.getClassKey()); // test
                         }
                     } else {
-                        if (cb == null) {
-                            throw new RuntimeException("Json-Object has to start with a "
-                                        + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER + "or with a "
-                                        + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER);                   // NOI18N
-                        }
                         switch (jp.getCurrentToken()) {
                             case START_ARRAY: {
                                 while (jp.nextValue() != JsonToken.END_ARRAY) {
@@ -136,7 +134,7 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                                     if (isIntraObjectCacheEnabled()) {
                                         jp.put(arrayObject.getCidsBeanInfo().getJsonObjectKey(), arrayObject);
                                     }
-                                    cb.addCollectionElement(fieldName, arrayObject);
+                                    propValueMap.put(fieldName, arrayObject);
                                 }
                                 // Clean up
                                 // No changed flags shall be true.
@@ -163,7 +161,7 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                                 if (isIntraObjectCacheEnabled()) {
                                     jp.put(subObject.getCidsBeanInfo().getJsonObjectKey(), subObject);
                                 }
-                                cb.quiteSetProperty(fieldName, subObject);
+                                propValueMap.put(fieldName, subObject);
                                 break;
                             }
 
@@ -175,26 +173,26 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                                                         fieldName).getMai().getJavaclassname());
                                     if (numberClass.equals(Integer.class)) {
                                         final int i = jp.getIntValue();
-                                        cb.quiteSetProperty(fieldName, i);
+                                        propValueMap.put(fieldName, i);
                                     } else if (numberClass.equals(Long.class)) {
                                         final long l = jp.getLongValue();
-                                        cb.quiteSetProperty(fieldName, l);
+                                        propValueMap.put(fieldName, l);
                                     } else if (numberClass.equals(Float.class)) {
                                         final float f = jp.getFloatValue();
-                                        cb.quiteSetProperty(fieldName, f);
+                                        propValueMap.put(fieldName, f);
                                     } else if (numberClass.equals(Double.class)) {
                                         final double d = jp.getDoubleValue();
-                                        cb.quiteSetProperty(fieldName, d);
+                                        propValueMap.put(fieldName, d);
                                     } else if (numberClass.equals(java.sql.Timestamp.class)) {
                                         final Timestamp ts = new Timestamp(jp.getLongValue());
-                                        cb.quiteSetProperty(fieldName, ts);
+                                        propValueMap.put(fieldName, ts);
                                     } else if (numberClass.equals(BigDecimal.class)) {
                                         final BigDecimal bd = new BigDecimal(jp.getText());
-                                        cb.quiteSetProperty(fieldName, bd);
+                                        propValueMap.put(fieldName, bd);
                                     } else {
                                         throw new RuntimeException("no handler available for " + numberClass);
                                     }
-                                } catch (Exception ex) {
+                                } catch (final Exception ex) {
                                     throw new RuntimeException("problem during processing of " + fieldName + ". value:"
                                                 + jp.getText(),
                                         ex);
@@ -203,17 +201,17 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                             }
 
                             case VALUE_NULL: {
-                                cb.quiteSetProperty(fieldName, null);
+                                propValueMap.put(fieldName, null);
                                 break;
                             }
 
                             case VALUE_TRUE: {
-                                cb.quiteSetProperty(fieldName, true);
+                                propValueMap.put(fieldName, true);
                                 break;
                             }
 
                             case VALUE_FALSE: {
-                                cb.quiteSetProperty(fieldName, false);
+                                propValueMap.put(fieldName, false);
                                 break;
                             }
 
@@ -223,11 +221,11 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                                                     fieldName).getMai().getJavaclassname());
                                 if (attrClass.equals(String.class)) {
                                     final String s = jp.getText();
-                                    cb.quiteSetProperty(fieldName, s);
+                                    propValueMap.put(fieldName, s);
                                 } else if (attrClass.equals(Geometry.class)) {
                                     try {
                                         final String s = jp.getText();
-                                        cb.quiteSetProperty(fieldName, fromEwkt(s));
+                                        propValueMap.put(fieldName, fromEwkt(s));
                                     } catch (Exception e) {
                                         throw new RuntimeException("problem during processing of " + fieldName + "("
                                                     + attrClass + "). value:"
@@ -236,7 +234,7 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                                     }
                                 } else {
                                     try {
-                                        cb.quiteSetProperty(fieldName, mapper.readValue(jp, attrClass));
+                                        propValueMap.put(fieldName, mapper.readValue(jp, attrClass));
                                     } catch (Exception e) {
                                         throw new RuntimeException("problem bei " + fieldName + "(" + attrClass + ")",
                                             e);
@@ -256,14 +254,24 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                     }
                 }
             }
+
+            if (cb == null) {
+                throw new RuntimeException("Json-Object has to contain a "
+                            + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER + "or a "
+                            + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER);          // NOI18N
+            }
             cb.getMetaObject().setID((cb.getPrimaryKeyValue() != null) ? (int)cb.getPrimaryKeyValue() : -1);
+            for (final String prop : propValueMap.keySet()) {
+                final Object value = propValueMap.get(prop);
+                cb.quiteSetProperty(prop, value);
+            }
             cb.getMetaObject().forceStatus(MetaObject.NO_STATUS);
             if (isIntraObjectCacheEnabled()) {
                 jp.put(key, cb);
             }
             return cb;
         } catch (Exception ex) {
-            throw new RuntimeException("Error during creation of new CidsBean key=" + key, ex);    // NOI18N
+            throw new RuntimeException("Error during creation of new CidsBean key=" + key, ex); // NOI18N
         }
     }
 
