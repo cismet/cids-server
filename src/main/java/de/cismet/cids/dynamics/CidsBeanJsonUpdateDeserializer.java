@@ -163,6 +163,7 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
             final MultiMap updateListMap = new MultiMap();
             final MultiMap removeListMap = new MultiMap();
 
+            final HashMap<String, Object> propValueMap = new HashMap<String, Object>();
             while (jp.nextValue() != JsonToken.END_OBJECT) {
                 final String fieldName = jp.getCurrentName();
                 if (!cacheHit) {
@@ -187,11 +188,6 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
                                         bInfo.getDomainKey()).getBean();
                         }
                     } else {
-                        if (cb == null) {
-                            throw new RuntimeException("Json-Object has to start with a "
-                                        + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER + "or with a "
-                                        + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER); // NOI18N
-                        }
                         switch (jp.getCurrentToken()) {
                             case START_ARRAY: {
                                 final String refersToList;
@@ -231,7 +227,7 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
                                 if (isIntraObjectCacheEnabled()) {
                                     jp.put(subObject.getCidsBeanInfo().getJsonObjectKey(), subObject);
                                 }
-                                cb.setPropertyForceChanged(fieldName, subObject);
+                                propValueMap.put(fieldName, subObject);
                                 break;
                             }
 
@@ -243,22 +239,22 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
                                                         fieldName).getMai().getJavaclassname());
                                     if (numberClass.equals(Integer.class)) {
                                         final int i = jp.getIntValue();
-                                        cb.setPropertyForceChanged(fieldName, i);
+                                        propValueMap.put(fieldName, i);
                                     } else if (numberClass.equals(Long.class)) {
                                         final long l = jp.getLongValue();
-                                        cb.setPropertyForceChanged(fieldName, l);
+                                        propValueMap.put(fieldName, l);
                                     } else if (numberClass.equals(Float.class)) {
                                         final float f = jp.getFloatValue();
-                                        cb.setPropertyForceChanged(fieldName, f);
+                                        propValueMap.put(fieldName, f);
                                     } else if (numberClass.equals(Double.class)) {
                                         final double d = jp.getDoubleValue();
-                                        cb.setPropertyForceChanged(fieldName, d);
+                                        propValueMap.put(fieldName, d);
                                     } else if (numberClass.equals(java.sql.Timestamp.class)) {
                                         final Timestamp ts = new Timestamp(jp.getLongValue());
-                                        cb.setPropertyForceChanged(fieldName, ts);
+                                        propValueMap.put(fieldName, ts);
                                     } else if (numberClass.equals(BigDecimal.class)) {
                                         final BigDecimal bd = new BigDecimal(jp.getText());
-                                        cb.setPropertyForceChanged(fieldName, bd);
+                                        propValueMap.put(fieldName, bd);
                                     } else {
                                         throw new RuntimeException("no handler available for " + numberClass);
                                     }
@@ -271,17 +267,17 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
                             }
 
                             case VALUE_NULL: {
-                                cb.setPropertyForceChanged(fieldName, null);
+                                propValueMap.put(fieldName, null);
                                 break;
                             }
 
                             case VALUE_TRUE: {
-                                cb.setPropertyForceChanged(fieldName, true);
+                                propValueMap.put(fieldName, true);
                                 break;
                             }
 
                             case VALUE_FALSE: {
-                                cb.setPropertyForceChanged(fieldName, false);
+                                propValueMap.put(fieldName, false);
                                 break;
                             }
 
@@ -291,11 +287,11 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
                                                     fieldName).getMai().getJavaclassname());
                                 if (attrClass.equals(String.class)) {
                                     final String s = jp.getText();
-                                    cb.setPropertyForceChanged(fieldName, s);
+                                    propValueMap.put(fieldName, s);
                                 } else if (attrClass.equals(Geometry.class)) {
                                     try {
                                         final String s = jp.getText();
-                                        cb.setPropertyForceChanged(fieldName, fromEwkt(s));
+                                        propValueMap.put(fieldName, fromEwkt(s));
                                     } catch (Exception e) {
                                         throw new RuntimeException("problem during processing of " + fieldName + "("
                                                     + attrClass + "). value:"
@@ -304,7 +300,7 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
                                     }
                                 } else {
                                     try {
-                                        cb.setPropertyForceChanged(fieldName, mapper.readValue(jp, attrClass));
+                                        propValueMap.put(fieldName, mapper.readValue(jp, attrClass));
                                     } catch (Exception e) {
                                         throw new RuntimeException("problem bei " + fieldName + "(" + attrClass + ")",
                                             e);
@@ -323,6 +319,17 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
                         }
                     }
                 }
+            }
+
+            if (cb == null) {
+                throw new RuntimeException("Json-Object has to contain a "
+                            + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER + "or a "
+                            + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER); // NOI18N
+            }
+
+            for (final String prop : propValueMap.keySet()) {
+                final Object value = propValueMap.get(prop);
+                cb.quiteSetProperty(prop, value);
             }
 
             for (final String listName : (Set<String>)fullListMap.keySet()) {
