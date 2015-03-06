@@ -216,31 +216,7 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                             }
 
                             case VALUE_STRING: {
-                                final Class attrClass = BlacklistClassloading.forName(cb.getMetaObject()
-                                                .getAttributeByFieldName(
-                                                    fieldName).getMai().getJavaclassname());
-                                if (attrClass.equals(String.class)) {
-                                    final String s = jp.getText();
-                                    propValueMap.put(fieldName, s);
-                                } else if (attrClass.equals(Geometry.class)) {
-                                    try {
-                                        final String s = jp.getText();
-                                        propValueMap.put(fieldName, fromEwkt(s));
-                                    } catch (Exception e) {
-                                        throw new RuntimeException("problem during processing of " + fieldName + "("
-                                                    + attrClass + "). value:"
-                                                    + jp.getText(),
-                                            e);
-                                    }
-                                } else {
-                                    try {
-                                        propValueMap.put(fieldName, mapper.readValue(jp, attrClass));
-                                    } catch (Exception e) {
-                                        throw new RuntimeException("problem bei " + fieldName + "(" + attrClass + ")",
-                                            e);
-                                    }
-                                }
-
+                                propValueMap.put(fieldName, jp.getText());
                                 break;
                             }
                             case VALUE_EMBEDDED_OBJECT: {
@@ -258,12 +234,37 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
             if (cb == null) {
                 throw new RuntimeException("Json-Object has to contain a "
                             + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER + "or a "
-                            + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER);          // NOI18N
+                            + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER); // NOI18N
             }
             cb.getMetaObject().setID((cb.getPrimaryKeyValue() != null) ? (int)cb.getPrimaryKeyValue() : -1);
             for (final String prop : propValueMap.keySet()) {
                 final Object value = propValueMap.get(prop);
-                cb.quiteSetProperty(prop, value);
+
+                if (value instanceof String) {
+                    final Class attrClass = BlacklistClassloading.forName(cb.getMetaObject().getAttributeByFieldName(
+                                prop).getMai().getJavaclassname());
+                    if (attrClass.equals(String.class)) {
+                        cb.quiteSetProperty(prop, (String)value);
+                    } else if (attrClass.equals(Geometry.class)) {
+                        try {
+                            cb.quiteSetProperty(prop, fromEwkt((String)value));
+                        } catch (Exception e) {
+                            throw new RuntimeException("problem during processing of " + prop + "("
+                                        + attrClass + "). value:"
+                                        + value,
+                                e);
+                        }
+                    } else {
+                        try {
+                            cb.quiteSetProperty(prop, mapper.readValue(jp, attrClass));
+                        } catch (Exception e) {
+                            throw new RuntimeException("problem bei " + prop + "(" + attrClass + ")",
+                                e);
+                        }
+                    }
+                } else {
+                    cb.quiteSetProperty(prop, value);
+                }
             }
             cb.getMetaObject().forceStatus(MetaObject.NO_STATUS);
             if (isIntraObjectCacheEnabled()) {
