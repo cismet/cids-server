@@ -83,12 +83,12 @@ public class CsvExportSearchStatement extends AbstractCidsServerSearch {
                     final String javaClassName = moDummy.getAttributeByFieldName(field).getMai().getJavaclassname();
                     final Class javaClass = Class.forName(javaClassName);
 
-                    if (javaClass.isAssignableFrom(Date.class)) {
-                        formattedFields.add("to_char(" + field + ", " + dateFormat + ")");
-                    } else if (javaClass.isAssignableFrom(Boolean.class)) {
+                    if (Date.class.isAssignableFrom(javaClass)) {
+                        formattedFields.add("to_char(" + field + ", '" + dateFormat + "')");
+                    } else if (Boolean.class.isAssignableFrom(javaClass)) {
                         formattedFields.add("CASE WHEN " + field + " IS TRUE THEN '" + booleanFormat[1] + "' ELSE '"
                                     + booleanFormat[0] + "' END");
-                    } else if (javaClass.isAssignableFrom(Geometry.class)) {
+                    } else if (Geometry.class.isAssignableFrom(javaClass)) {
                         formattedFields.add("st_astext(" + field + ")");
                     } else {
                         formattedFields.add(field);

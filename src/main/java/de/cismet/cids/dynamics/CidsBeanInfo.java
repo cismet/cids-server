@@ -23,6 +23,9 @@ public class CidsBeanInfo {
 
     public static final String JSON_CIDS_OBJECT_KEY_IDENTIFIER = "$self";
     public static final String JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER = "$ref";
+    public static final String JSON_CIDS_OBJECT_PATCH_ADD_SUFFIX = "$patch$add";
+    public static final String JSON_CIDS_OBJECT_PATCH_REMOVE_SUFFIX = "$patch$remove";
+    public static final String JSON_CIDS_OBJECT_PATCH_UPDATE_SUFFIX = "$patch$update";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -75,10 +78,14 @@ public class CidsBeanInfo {
      * @param  classKey   DOCUMENT ME!
      * @param  objectPK   DOCUMENT ME!
      */
-    public CidsBeanInfo(final String domainKey, final String classKey, final int objectPK) {
+    public CidsBeanInfo(final String domainKey, final String classKey, final Integer objectPK) {
         this.classKey = classKey;
         this.domainKey = domainKey;
-        this.objectKey = String.valueOf(objectPK);
+        if (objectPK != null) {
+            this.objectKey = String.valueOf(objectPK);
+        } else {
+            this.objectKey = null;
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
