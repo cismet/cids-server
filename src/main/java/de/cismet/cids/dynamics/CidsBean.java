@@ -72,6 +72,9 @@ public class CidsBean implements PropertyChangeListener {
     private static final transient Logger LOG = Logger.getLogger(CidsBean.class);
     static final ObjectMapper mapper = new ObjectMapper();
     static final ObjectMapper intraObjectCacheMapper = new ObjectMapper();
+    static final ObjectMapper updateObjectMapper = new ObjectMapper();
+    static final ObjectMapper patchedUpdateObjectMapper = new ObjectMapper();
+
     /**
      * DOCUMENT ME!
      *
@@ -86,15 +89,26 @@ public class CidsBean implements PropertyChangeListener {
 
     static {
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        intraObjectCacheMapper.enable(SerializationFeature.INDENT_OUTPUT);
         final SimpleModule regularModule = new SimpleModule("NOIOC", new Version(1, 0, 0, null, null, null));
         regularModule.addSerializer(new CidsBeanJsonSerializer());
         regularModule.addDeserializer(CidsBean.class, new CidsBeanJsonDeserializer());
         mapper.registerModule(regularModule);
+
+        intraObjectCacheMapper.enable(SerializationFeature.INDENT_OUTPUT);
         final SimpleModule intraObjectCacheModule = new SimpleModule("IOC", new Version(1, 0, 0, null, null, null));
         intraObjectCacheModule.addSerializer(new IntraObjectCacheEnabledCidsBeanJsonSerializer());
         intraObjectCacheModule.addDeserializer(CidsBean.class, new IntraObjectCacheEnabledCidsBeanJsonDeserializer());
         intraObjectCacheMapper.registerModule(intraObjectCacheModule);
+
+        updateObjectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        final SimpleModule updateModule = new SimpleModule("IOC", new Version(1, 0, 0, null, null, null));
+        updateModule.addDeserializer(CidsBean.class, new CidsBeanJsonUpdateDeserializer(false));
+        updateObjectMapper.registerModule(updateModule);
+
+        patchedUpdateObjectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        final SimpleModule patchedUpdateModule = new SimpleModule("IOC", new Version(1, 0, 0, null, null, null));
+        patchedUpdateModule.addDeserializer(CidsBean.class, new CidsBeanJsonUpdateDeserializer(true));
+        patchedUpdateObjectMapper.registerModule(patchedUpdateModule);
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -619,6 +633,19 @@ public class CidsBean implements PropertyChangeListener {
     }
 
     /**
+     * DOCUMENT ME!
+     *
+     * @param   name   DOCUMENT ME!
+     * @param   value  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    void setPropertyForceChanged(final String name, final Object value) throws Exception {
+        setProperty(name, value);
+        metaObject.getAttributeByFieldName(name).setChanged(true);
+    }
+
+    /**
      * Convenience Method. Wraps <code>PropertyUtils.getProperty(this, name);</code>
      *
      * @param   name  DOCUMENT ME!
@@ -1068,6 +1095,24 @@ public class CidsBean implements PropertyChangeListener {
     public static CidsBean createNewCidsBeanFromJSON(final boolean intraObjectCacheEnabled, final String json)
             throws Exception {
         return intraObjectCacheMapper.readValue(json, CidsBean.class);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   json          DOCUMENT ME!
+     * @param   patchEnabled  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static CidsBean updateCidsBeanFromJSON(final String json, final boolean patchEnabled) throws Exception {
+        if (patchEnabled) {
+            return patchedUpdateObjectMapper.readValue(json, CidsBean.class);
+        } else {
+            return updateObjectMapper.readValue(json, CidsBean.class);
+        }
     }
 
     /**

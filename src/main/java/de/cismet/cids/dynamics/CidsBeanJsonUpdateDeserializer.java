@@ -6,13 +6,16 @@
 *
 ****************************************************/
 /*
- * To change this template, choose Tools | Templates
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package de.cismet.cids.dynamics;
 
-import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
+import Sirius.server.newuser.UserContextProvider;
+
+import Sirius.util.collections.MultiMap;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,45 +28,62 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
+import org.apache.commons.lang.StringUtils;
+
+import org.openide.util.Lookup;
+
 import java.io.IOException;
 
 import java.math.BigDecimal;
 
 import java.sql.Timestamp;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 import de.cismet.cids.json.IntraObjectCacheJsonParser;
 
-import de.cismet.commons.classloading.BlacklistClassloading;
+import de.cismet.cids.server.CallServerService;
+import de.cismet.cids.server.CallServerServiceProvider;
 
-import static com.fasterxml.jackson.core.JsonToken.START_ARRAY;
-import static com.fasterxml.jackson.core.JsonToken.START_OBJECT;
-import static com.fasterxml.jackson.core.JsonToken.VALUE_EMBEDDED_OBJECT;
-import static com.fasterxml.jackson.core.JsonToken.VALUE_FALSE;
-import static com.fasterxml.jackson.core.JsonToken.VALUE_NULL;
-import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_FLOAT;
-import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_INT;
-import static com.fasterxml.jackson.core.JsonToken.VALUE_STRING;
-import static com.fasterxml.jackson.core.JsonToken.VALUE_TRUE;
+import de.cismet.commons.classloading.BlacklistClassloading;
 
 import static de.cismet.cids.dynamics.CidsBean.mapper;
 
 /**
  * DOCUMENT ME!
  *
- * @author   thorsten
+ * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
+public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
+
+    //~ Instance fields --------------------------------------------------------
+
+    private final boolean patchEnabled;
+    private CallServerService metaService;
+    private UserContextProvider userContext;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new CidsBeanJsonDeserializer object.
      */
-    public CidsBeanJsonDeserializer() {
+    public CidsBeanJsonUpdateDeserializer() {
+        this(false);
+    }
+
+    /**
+     * Creates a new CidsBeanJsonUpdateDeserializer object.
+     *
+     * @param  patchEnabled  DOCUMENT ME!
+     */
+    public CidsBeanJsonUpdateDeserializer(final boolean patchEnabled) {
         super(CidsBean.class);
+        this.patchEnabled = patchEnabled;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -96,6 +116,33 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
         return null;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    protected CallServerService getMetaService() {
+        if (metaService == null) {
+            final CallServerServiceProvider csProvider = Lookup.getDefault().lookup(CallServerServiceProvider.class);
+            if (csProvider != null) {
+                metaService = csProvider.getCallServerService();
+            }
+        }
+        return metaService;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    protected UserContextProvider getUserContext() {
+        if (userContext == null) {
+            userContext = Lookup.getDefault().lookup(UserContextProvider.class);
+        }
+        return userContext;
+    }
+
     @Override
     public CidsBean deserialize(final JsonParser _jp, final DeserializationContext dc) throws IOException,
         JsonProcessingException {
@@ -110,8 +157,13 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
             jp = new IntraObjectCacheJsonParser(_jp);
         }
 
-        final HashMap<String, Object> propValueMap = new HashMap<String, Object>();
         try {
+            final MultiMap fullListMap = new MultiMap();
+            final MultiMap addListMap = new MultiMap();
+            final MultiMap updateListMap = new MultiMap();
+            final MultiMap removeListMap = new MultiMap();
+
+            final HashMap<String, Object> propValueMap = new HashMap<String, Object>();
             while (jp.nextValue() != JsonToken.END_OBJECT) {
                 final String fieldName = jp.getCurrentName();
                 if (!cacheHit) {
@@ -124,35 +176,49 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                             cb = jp.get(key);
                             cacheHit = true;
                         } else {
-                            cb = CidsBean.createNewCidsBeanFromTableName(bInfo.getDomainKey(), bInfo.getClassKey()); // test
+                            final int classId = getMetaService().getClassByTableName(
+                                        getUserContext().getUser(),
+                                        bInfo.getClassKey().toLowerCase(),
+                                        bInfo.getDomainKey())
+                                        .getId();
+                            final int objectId = Integer.parseInt(bInfo.getObjectKey());
+                            cb = getMetaService().getMetaObject(getUserContext().getUser(),
+                                        objectId,
+                                        classId,
+                                        bInfo.getDomainKey()).getBean();
                         }
                     } else {
                         switch (jp.getCurrentToken()) {
                             case START_ARRAY: {
+                                final String refersToList;
+                                final MultiMap listMap;
+                                if (fieldName.endsWith(CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_ADD_SUFFIX)) {
+                                    refersToList = StringUtils.substringBeforeLast(
+                                            fieldName,
+                                            CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_ADD_SUFFIX);
+                                    listMap = addListMap;
+                                } else if (fieldName.endsWith(CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_UPDATE_SUFFIX)) {
+                                    refersToList = StringUtils.substringBeforeLast(
+                                            fieldName,
+                                            CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_UPDATE_SUFFIX);
+                                    listMap = updateListMap;
+                                } else if (fieldName.endsWith(CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_REMOVE_SUFFIX)) {
+                                    refersToList = StringUtils.substringBeforeLast(
+                                            fieldName,
+                                            CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_REMOVE_SUFFIX);
+                                    listMap = removeListMap;
+                                } else {
+                                    refersToList = fieldName;
+                                    listMap = fullListMap;
+                                }
                                 while (jp.nextValue() != JsonToken.END_ARRAY) {
                                     final CidsBean arrayObject = jp.readValueAs(CidsBean.class);
                                     if (isIntraObjectCacheEnabled()) {
                                         jp.put(arrayObject.getCidsBeanInfo().getJsonObjectKey(), arrayObject);
                                     }
-                                    propValueMap.put(fieldName, arrayObject);
+                                    listMap.put(refersToList, arrayObject);
                                 }
-                                // Clean up
-                                // No changed flags shall be true.
-                                // All statuses shall be NO_STATUS
-                                final ObjectAttribute oa = cb.getMetaObject().getAttributeByFieldName(fieldName);
-                                oa.setChanged(false);
-                                final MetaObject dummy = (MetaObject)oa.getValue();
-                                if (dummy != null) {
-                                    dummy.setChanged(false);
-                                    dummy.forceStatus(MetaObject.NO_STATUS);
-                                    dummy.setStatus(MetaObject.NO_STATUS);
-                                    final ObjectAttribute[] entries = dummy.getAttribs();
-                                    for (final ObjectAttribute entry : entries) {
-                                        entry.setChanged(false);
-                                        ((MetaObject)entry.getValue()).forceStatus(MetaObject.NO_STATUS);
-                                        ((MetaObject)entry.getValue()).setChanged(false);
-                                    }
-                                }
+
                                 break;
                             }
 
@@ -192,7 +258,7 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                                     } else {
                                         throw new RuntimeException("no handler available for " + numberClass);
                                     }
-                                } catch (final Exception ex) {
+                                } catch (Exception ex) {
                                     throw new RuntimeException("problem during processing of " + fieldName + ". value:"
                                                 + jp.getText(),
                                         ex);
@@ -236,7 +302,7 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                             + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER + "or a "
                             + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER); // NOI18N
             }
-            cb.getMetaObject().setID((cb.getPrimaryKeyValue() != null) ? (int)cb.getPrimaryKeyValue() : -1);
+
             for (final String prop : propValueMap.keySet()) {
                 final Object value = propValueMap.get(prop);
 
@@ -244,10 +310,10 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                     final Class attrClass = BlacklistClassloading.forName(cb.getMetaObject().getAttributeByFieldName(
                                 prop).getMai().getJavaclassname());
                     if (attrClass.equals(String.class)) {
-                        cb.quiteSetProperty(prop, (String)value);
+                        cb.setPropertyForceChanged(prop, (String)value);
                     } else if (attrClass.equals(Geometry.class)) {
                         try {
-                            cb.quiteSetProperty(prop, fromEwkt((String)value));
+                            cb.setPropertyForceChanged(prop, fromEwkt((String)value));
                         } catch (Exception e) {
                             throw new RuntimeException("problem during processing of " + prop + "("
                                         + attrClass + "). value:"
@@ -256,17 +322,108 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                         }
                     } else {
                         try {
-                            cb.quiteSetProperty(prop, value);
+                            cb.setPropertyForceChanged(prop, mapper.readValue(jp, attrClass));
                         } catch (Exception e) {
                             throw new RuntimeException("problem bei " + prop + "(" + attrClass + ")",
                                 e);
                         }
                     }
                 } else {
-                    cb.quiteSetProperty(prop, value);
+                    cb.setPropertyForceChanged(prop, value);
                 }
             }
-            cb.getMetaObject().forceStatus(MetaObject.NO_STATUS);
+
+            for (final String listName : (Set<String>)fullListMap.keySet()) {
+                final List<CidsBean> origColl = cb.getBeanCollectionProperty(listName);
+
+                // each object from the json list collection that not exists
+                // in the original collection have to be added.
+                final List<CidsBean> toAddColl = new ArrayList<CidsBean>();
+
+                // contains first all objects of the original collection.
+                // each object from the json list collection that already exists
+                // in this collection is removed from it, so that after processing all
+                // objects from the json list, the remaing objects are all the objects
+                // that have to be removed from the original collection. (because they dont
+                // have be found in the json collection).
+                final List<CidsBean> toRemoveColl = new ArrayList<CidsBean>(origColl);
+
+                final HashMap<CidsBean, Integer> toUpdateMap = new HashMap<CidsBean, Integer>();
+
+                // processing the objects of the json list
+                for (final CidsBean bean : (Collection<CidsBean>)fullListMap.get(listName)) {
+                    final int indexOf = toRemoveColl.indexOf(bean);
+                    if (indexOf < 0) { // not found in the original collection
+                        toAddColl.add(bean);
+                    } else {           // found => update & remove from toRemove (yes, thats right
+                                       // !)
+                        toUpdateMap.put(bean, indexOf);
+                        toRemoveColl.remove(bean);
+                    }
+                }
+
+                // here happens all the changes to the original list collection
+
+                // - add
+                origColl.addAll(toAddColl);
+
+                // - update
+                for (final CidsBean toUpdateBean : toUpdateMap.keySet()) {
+                    final Integer indexOf = toUpdateMap.get(toUpdateBean);
+                    origColl.set(indexOf, toUpdateBean);
+                }
+
+                // - remove
+                origColl.removeAll(toRemoveColl);
+            }
+
+            // ignore the patch tags if patch is not enabled
+            if (isPatchEnabled()) {
+                // add
+                for (final String listName : (Set<String>)addListMap.keySet()) {
+                    final List<CidsBean> origColl = cb.getBeanCollectionProperty(listName);
+                    for (final CidsBean toAddBean : (Collection<CidsBean>)addListMap.get(listName)) {
+                        origColl.add(toAddBean);
+                    }
+                }
+
+                // update
+                for (final String listName : (Set<String>)updateListMap.keySet()) {
+                    final HashMap<CidsBean, Integer> toUpdateMap = new HashMap<CidsBean, Integer>();
+
+                    // first filling HashMap for more performance later.
+                    final List<CidsBean> toUpdateColl = (List<CidsBean>)updateListMap.get(listName);
+                    for (int indexOfUpdate = 0; indexOfUpdate < toUpdateColl.size(); indexOfUpdate++) {
+                        final CidsBean toUpdateBean = toUpdateColl.get(indexOfUpdate);
+                        toUpdateMap.put(toUpdateBean, indexOfUpdate);
+                    }
+
+                    // now processing update
+                    final List<CidsBean> origColl = cb.getBeanCollectionProperty(listName);
+                    for (int indexOfOrig = 0; indexOfOrig < origColl.size(); indexOfOrig++) {
+                        final CidsBean origBean = origColl.get(indexOfOrig);
+                        if (toUpdateMap.containsKey(origBean)) {
+                            final Integer indexOfUpdate = toUpdateMap.get(origBean);
+                            final CidsBean toUpdateBean = toUpdateColl.get(indexOfUpdate);
+                            origColl.set(indexOfOrig, toUpdateBean);
+                            toUpdateBean.getMetaObject()
+                                    .getAttributeByFieldName(listName)
+                                    .getParentObject()
+                                    .setStatus(MetaObject.MODIFIED);
+                        }
+                    }
+                }
+
+                // remove
+                for (final String listName : (Set<String>)removeListMap.keySet()) {
+                    final List<CidsBean> origColl = cb.getBeanCollectionProperty(listName);
+                    for (final CidsBean toRemoveBean
+                                : (Collection<CidsBean>)removeListMap.get(listName)) {
+                        origColl.remove(toRemoveBean);
+                    }
+                }
+            }
+
             if (isIntraObjectCacheEnabled()) {
                 jp.put(key, cb);
             }
@@ -282,6 +439,15 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
      * @return  DOCUMENT ME!
      */
     protected boolean isIntraObjectCacheEnabled() {
-        return false;
+        return true;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    protected boolean isPatchEnabled() {
+        return patchEnabled;
     }
 }

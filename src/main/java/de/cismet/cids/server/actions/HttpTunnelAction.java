@@ -11,6 +11,7 @@
  */
 package de.cismet.cids.server.actions;
 
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.io.IOUtils;
 
 import java.io.InputStream;
@@ -22,6 +23,7 @@ import java.util.HashMap;
 
 import de.cismet.commons.security.AccessHandler;
 import de.cismet.commons.security.exceptions.BadHttpStatusCodeException;
+import de.cismet.commons.security.exceptions.CannotReadFromURLException;
 import de.cismet.commons.security.handler.SimpleHttpAccessHandler;
 
 /**
@@ -38,6 +40,9 @@ public class HttpTunnelAction implements ServerAction {
     private static final transient org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
             HttpTunnelAction.class);
 
+    public static String CREDENTIALS_USERNAME_KEY = "username";
+    public static String CREDENTIALS_PASSWORD_KEY = "password";
+
     //~ Enums ------------------------------------------------------------------
 
     /**
@@ -49,11 +54,21 @@ public class HttpTunnelAction implements ServerAction {
 
         //~ Enum constants -----------------------------------------------------
 
-        URL, REQUEST, METHOD, OPTIONS
+        URL, REQUEST, METHOD, OPTIONS, CREDENTIALS
     }
 
     //~ Methods ----------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   body    DOCUMENT ME!
+     * @param   params  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RuntimeException  DOCUMENT ME!
+     */
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
         String request = "";
@@ -61,6 +76,7 @@ public class HttpTunnelAction implements ServerAction {
         try {
             AccessHandler.ACCESS_METHODS method = AccessHandler.ACCESS_METHODS.GET_REQUEST_NO_TUNNEL;
             HashMap<String, String> options = new HashMap<String, String>();
+            HashMap<String, String> credentials = new HashMap<String, String>();
 
             for (final ServerActionParameter sap : params) {
                 if (sap.getKey().equals(PARAMETER_TYPE.URL.toString())) {
@@ -71,6 +87,8 @@ public class HttpTunnelAction implements ServerAction {
                     request = (String)sap.getValue();
                 } else if (sap.getKey().equals(PARAMETER_TYPE.OPTIONS.toString()) && (sap.getValue() != null)) {
                     options = (HashMap<String, String>)sap.getValue();
+                } else if (sap.getKey().equals(PARAMETER_TYPE.CREDENTIALS.toString()) && (sap.getValue() != null)) {
+                    credentials = (HashMap<String, String>)sap.getValue();
                 }
             }
             AccessHandler.ACCESS_METHODS notunnelmethod;
@@ -87,21 +105,41 @@ public class HttpTunnelAction implements ServerAction {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("tunneled Request for:" + url + "?" + request + " (end of url)");
             }
-            final AccessHandler handler = new SimpleHttpAccessHandler();
+
+            final String usermame;
+            final String password;
+            if (credentials != null) {
+                usermame = credentials.get(CREDENTIALS_USERNAME_KEY);
+                password = credentials.get(CREDENTIALS_PASSWORD_KEY);
+            } else {
+                usermame = null;
+                password = null;
+            }
+            final UsernamePasswordCredentials creds;
+            if ((usermame != null) && (password != null)) {
+                creds = new UsernamePasswordCredentials(usermame, password);
+            } else {
+                creds = null;
+            }
+
+            final SimpleHttpAccessHandler handler = new SimpleHttpAccessHandler();
             final InputStream is = handler.doRequest(
                     url,
                     new StringReader(request),
                     notunnelmethod,
-                    options);
+                    options,
+                    creds);
             final byte[] result = IOUtils.toByteArray(is);
             return result;
-        } catch (BadHttpStatusCodeException badStatusCodeEx) {
+        } catch (final BadHttpStatusCodeException badStatusCodeEx) {
             final String errorinfo = ("Problem during HttpTunnelAction(" + url + "=, request=" + request + ")");
             if (LOG.isDebugEnabled()) {
                 LOG.debug(errorinfo + "\n" + badStatusCodeEx.getMessage());
             }
             return null;
-        } catch (Exception exception) {
+        } catch (final CannotReadFromURLException exception) {
+            return exception;
+        } catch (final Exception exception) {
             final String errorinfo = ("Problem during HttpTunnelAction(" + url + "=, request=" + request + ")");
             if (LOG.isDebugEnabled()) {
                 LOG.debug(errorinfo + "\n" + exception.getMessage());
@@ -110,6 +148,11 @@ public class HttpTunnelAction implements ServerAction {
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     @Override
     public String getTaskName() {
         return "httpTunnelAction";
