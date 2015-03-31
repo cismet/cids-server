@@ -70,6 +70,8 @@ import de.cismet.cids.objectextension.ObjectExtensionFactory;
 
 import de.cismet.cids.server.DefaultServerExceptionHandler;
 import de.cismet.cids.server.ServerSecurityManager;
+import de.cismet.cids.server.actions.ScheduledServerAction;
+import de.cismet.cids.server.actions.ScheduledServerActionManager;
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.ws.rest.RESTfulService;
@@ -117,6 +119,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     protected Server serverInfo;
     private HashMap<String, ServerAction> serverActionMap = new HashMap<String, ServerAction>();
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
+    private final ScheduledServerActionManager scheduledManager;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -193,6 +196,13 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
             DomainServerClassCache.getInstance().setAllClasses(dbServer.getClasses(), properties.getServerName());
 
+            scheduledManager = new ScheduledServerActionManager(
+                    this,
+                    dbServer.getActiveDBConnection(),
+                    userServer,
+                    serverInfo.getName());
+            scheduledManager.resumeAll();
+
             // initFrame();
         } catch (Throwable e) {
             logger.error(e, e);
@@ -243,6 +253,17 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             return new NodeReferenceList();
                 // throw new RemoteException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   taskname  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public ServerAction getServerActionByTaskname(final String taskname) {
+        return serverActionMap.get(taskname);
     }
 
     @Override
@@ -1172,7 +1193,22 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             }
 
             if (serverAction != null) {
-                return serverAction.execute(body, params);
+                if (serverAction instanceof ScheduledServerAction) {
+                    final String key = ((ScheduledServerAction)serverAction).createKey();
+                    try {
+                        return scheduledManager.scheduleAction(
+                                user,
+                                key,
+                                (ScheduledServerAction)serverAction,
+                                body,
+                                params);
+                    } catch (Exception ex) {
+                        logger.fatal(ex, ex);
+                        return null;
+                    }
+                } else {
+                    return serverAction.execute(body, params);
+                }
             } else {
                 return null;
             }
