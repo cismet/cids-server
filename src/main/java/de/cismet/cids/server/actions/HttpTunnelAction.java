@@ -79,16 +79,18 @@ public class HttpTunnelAction implements ServerAction {
             HashMap<String, String> credentials = new HashMap<String, String>();
 
             for (final ServerActionParameter sap : params) {
-                if (sap.getKey().equals(PARAMETER_TYPE.URL.toString())) {
-                    url = (URL)sap.getValue();
-                } else if (sap.getKey().equals(PARAMETER_TYPE.METHOD.toString())) {
-                    method = (AccessHandler.ACCESS_METHODS)sap.getValue();
-                } else if (sap.getKey().equals(PARAMETER_TYPE.REQUEST.toString())) {
-                    request = (String)sap.getValue();
-                } else if (sap.getKey().equals(PARAMETER_TYPE.OPTIONS.toString()) && (sap.getValue() != null)) {
-                    options = (HashMap<String, String>)sap.getValue();
-                } else if (sap.getKey().equals(PARAMETER_TYPE.CREDENTIALS.toString()) && (sap.getValue() != null)) {
-                    credentials = (HashMap<String, String>)sap.getValue();
+                if (sap != null) {
+                    if (sap.getKey().equals(PARAMETER_TYPE.URL.toString())) {
+                        url = (URL)sap.getValue();
+                    } else if (sap.getKey().equals(PARAMETER_TYPE.METHOD.toString())) {
+                        method = (AccessHandler.ACCESS_METHODS)sap.getValue();
+                    } else if (sap.getKey().equals(PARAMETER_TYPE.REQUEST.toString())) {
+                        request = (String)sap.getValue();
+                    } else if (sap.getKey().equals(PARAMETER_TYPE.OPTIONS.toString()) && (sap.getValue() != null)) {
+                        options = (HashMap<String, String>)sap.getValue();
+                    } else if (sap.getKey().equals(PARAMETER_TYPE.CREDENTIALS.toString()) && (sap.getValue() != null)) {
+                        credentials = (HashMap<String, String>)sap.getValue();
+                    }
                 }
             }
             AccessHandler.ACCESS_METHODS notunnelmethod;
