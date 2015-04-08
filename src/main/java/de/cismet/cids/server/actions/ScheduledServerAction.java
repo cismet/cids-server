@@ -20,9 +20,9 @@ package de.cismet.cids.server.actions;
  */
 public interface ScheduledServerAction extends JsonableServerAction {
 
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
-    String SSAPK_DELAY = "SSAPK_DELAY";
+    String SSAPK_START = "SSAPK_START";
     String SSAPK_RULE = "SSAPK_RULE";
     String SSAPK_ABORT = "SSAPK_ABORT";
 

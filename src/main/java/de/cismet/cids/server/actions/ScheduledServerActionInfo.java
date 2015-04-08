@@ -37,8 +37,6 @@ public class ScheduledServerActionInfo implements Serializable {
     private final String scheduleRule;
     private final Date offsetDate;
 
-//    private final transient ScheduledServerAction serverAction;
-
     private transient Timer timer;
 
     //~ Constructors -----------------------------------------------------------
@@ -58,7 +56,6 @@ public class ScheduledServerActionInfo implements Serializable {
      */
     public ScheduledServerActionInfo(final int id,
             final String key,
-//            final ScheduledServerAction serverAction,
             final String taskName,
             final String userName,
             final String groupName,
@@ -71,7 +68,6 @@ public class ScheduledServerActionInfo implements Serializable {
         this.userName = userName;
         this.groupName = groupName;
         this.key = key;
-//        this.serverAction = serverAction;
         this.body = body;
         this.params = params;
         this.offsetDate = offsetDate;
@@ -99,7 +95,7 @@ public class ScheduledServerActionInfo implements Serializable {
     }
 
     /**
-     * /** * DOCUMENT ME! * * @return DOCUMENT ME!
+     * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
@@ -139,7 +135,7 @@ public class ScheduledServerActionInfo implements Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    public Date getOffsetDate() {
+    public Date getStartDate() {
         return offsetDate;
     }
 

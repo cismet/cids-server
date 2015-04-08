@@ -17,6 +17,7 @@ import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 import Sirius.server.newuser.UserServer;
 import Sirius.server.sql.DBConnection;
+import Sirius.server.sql.ExceptionHandler;
 
 import org.quartz.CronExpression;
 
@@ -55,6 +56,7 @@ public class ScheduledServerActionManager {
             ScheduledServerActionManager.class);
 
     public static final String SSA_TABLE = "cs_scheduled_serveractions";
+    public static final String SEQUENCE_ID = "cs_scheduled_serveractions_sequence";
     public static final String COLUMN_ID = "id";
     public static final String COLUMN_KEY = "key";
     public static final String COLUMN_TASKNAME = "taskname";
@@ -97,9 +99,9 @@ public class ScheduledServerActionManager {
             final String domain) {
         try {
             con = dbConnection.getConnection();
-            maxId = con.prepareStatement("SELECT max(" + COLUMN_ID + ") FROM " + SSA_TABLE + ""); // NOI18N
+            maxId = con.prepareStatement("SELECT NEXTVAL('" + SEQUENCE_ID + "')"); // NOI18N
         } catch (final SQLException ex) {
-            LOG.error(ex, ex);
+            LOG.error("select next id from sequence failed", ex);
         }
         this.userServer = userServer;
         this.domainserver = domainserver;
@@ -119,7 +121,7 @@ public class ScheduledServerActionManager {
                 LOG.info("resuming ScheduledServerAction: " + keys);
                 final ScheduledServerActionInfo info = getInfoByKey(key);
                 final List<ServerActionParameter> list = new ArrayList<ServerActionParameter>();
-                list.add(new ServerActionParameter(ScheduledServerAction.SSAPK_DELAY, info.getOffsetDate()));
+                list.add(new ServerActionParameter(ScheduledServerAction.SSAPK_START, info.getStartDate()));
                 list.add(new ServerActionParameter(ScheduledServerAction.SSAPK_RULE, info.getScheduleRule()));
                 list.addAll(Arrays.asList(info.getParams()));
                 domainserver.executeTask(getUserByName(info.getUserName(), info.getGroupName()),
@@ -128,7 +130,7 @@ public class ScheduledServerActionManager {
                     list.toArray(new ServerActionParameter[0]));
             }
         } catch (final Exception ex) {
-            LOG.warn(ex, ex);
+            LOG.warn("ScheduledServerActions could'nt be resumed", ex);
         }
     }
 
@@ -155,35 +157,36 @@ public class ScheduledServerActionManager {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  SQLException            DOCUMENT ME!
-     * @throws  IOException             DOCUMENT ME!
-     * @throws  ClassNotFoundException  DOCUMENT ME!
-     * @throws  InstantiationException  DOCUMENT ME!
-     * @throws  IllegalAccessException  DOCUMENT ME!
+     * @throws  Exception  DOCUMENT ME!
      */
-    public ScheduledServerActionInfo getInfoByKey(final String key) throws SQLException,
-        IOException,
-        ClassNotFoundException,
-        InstantiationException,
-        IllegalAccessException {
-        final Statement selectByKeyStatement = con.createStatement();
-        final ResultSet rs = selectByKeyStatement.executeQuery("SELECT * FROM " + SSA_TABLE + " WHERE " + COLUMN_KEY
-                        + " = '" + key
-                        + "' AND " + COLUMN_EXECUTION + " IS NULL ORDER BY " + COLUMN_START + " ASC"); // NOI18N
-        while (rs.next()) {
-            final String taskName = rs.getString(COLUMN_TASKNAME);
+    public ScheduledServerActionInfo getInfoByKey(final String key) throws Exception {
+        try {
+            final Statement selectByKeyStatement = con.createStatement();
+            final String query = "SELECT * "
+                        + "FROM " + SSA_TABLE + " "
+                        + "WHERE " + COLUMN_KEY + " = '" + key + "' AND " + COLUMN_EXECUTION + " IS NULL "
+                        + "ORDER BY " + COLUMN_START + " ASC";
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(query);
+            }
+            final ResultSet rs = selectByKeyStatement.executeQuery(query); // NOI18N
+            while (rs.next()) {
+                final String taskName = rs.getString(COLUMN_TASKNAME);
 
-            final ScheduledServerActionInfo info = new ScheduledServerActionInfo(
-                    rs.getInt(COLUMN_ID),
-                    key,
-                    taskName,
-                    rs.getString(COLUMN_USERNAME),
-                    rs.getString(COLUMN_GROUPNAME),
-                    getServerAction(taskName).jsonToBody(rs.getString(COLUMN_BODY)),
-                    getServerAction(taskName).jsonToParams(rs.getString(COLUMN_PARAMS)),
-                    rs.getTimestamp(COLUMN_START),
-                    rs.getString(COLUMN_RULE));
-            return info;
+                final ScheduledServerActionInfo info = new ScheduledServerActionInfo(
+                        rs.getInt(COLUMN_ID),
+                        key,
+                        taskName,
+                        rs.getString(COLUMN_USERNAME),
+                        rs.getString(COLUMN_GROUPNAME),
+                        getServerAction(taskName).jsonToBody(rs.getString(COLUMN_BODY)),
+                        getServerAction(taskName).jsonToParams(rs.getString(COLUMN_PARAMS)),
+                        rs.getTimestamp(COLUMN_START),
+                        rs.getString(COLUMN_RULE));
+                return info;
+            }
+        } catch (final SQLException e) {
+            throw new Exception(ExceptionHandler.handle(e));
         }
         return null;
     }
@@ -192,18 +195,25 @@ public class ScheduledServerActionManager {
      * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
-     *
-     * @throws  SQLException  DOCUMENT ME!
-     * @throws  IOException   DOCUMENT ME!
      */
-    public List<String> getResumableKeys() throws SQLException, IOException {
-        final Statement selectKeysStatement = con.createStatement();
-        final ResultSet rs = selectKeysStatement.executeQuery("SELECT " + COLUMN_KEY + " FROM " + SSA_TABLE
-                        + " WHERE " + COLUMN_EXECUTION + " IS NULL GROUP BY " + COLUMN_KEY); // NOI18N
-
+    public List<String> getResumableKeys() {
         final List<String> keys = new ArrayList<String>();
-        while (rs.next()) {
-            keys.add(rs.getString(1));
+        try {
+            final Statement selectKeysStatement = con.createStatement();
+            final String query = "SELECT " + COLUMN_KEY + " "
+                        + "FROM " + SSA_TABLE + " "
+                        + "WHERE " + COLUMN_EXECUTION + " IS NULL "
+                        + "GROUP BY " + COLUMN_KEY;
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(query);
+            }
+            final ResultSet rs = selectKeysStatement.executeQuery(query); // NOI18N
+
+            while (rs.next()) {
+                keys.add(rs.getString(1));
+            }
+        } catch (Exception e) {
+            ExceptionHandler.handle(e);
         }
         return keys;
     }
@@ -228,25 +238,27 @@ public class ScheduledServerActionManager {
             final ServerActionParameter... origParams) throws Exception {
         final ScheduledServerActionInfo cancelInfo = cancelAction(key);
 
-        Date offsetTime = new Date();
+        Date startTime = new Date();
         String scheduleRule = null;
         Boolean abort = false;
         final List<ServerActionParameter> trunkedParams = new ArrayList<ServerActionParameter>();
         for (final ServerActionParameter param : origParams) {
-            final String paramKey = param.getKey();
-            final Object paramValue = param.getValue();
-            if (ScheduledServerAction.SSAPK_DELAY.equals(paramKey)) {
-                if (paramValue instanceof Date) {
-                    offsetTime = (Date)paramValue;
+            if (param != null) {
+                final String paramKey = param.getKey();
+                final Object paramValue = param.getValue();
+                if (ScheduledServerAction.SSAPK_START.equals(paramKey)) {
+                    if (paramValue instanceof Date) {
+                        startTime = (Date)paramValue;
+                    }
+                } else if (ScheduledServerAction.SSAPK_RULE.equals(paramKey)) {
+                    if (paramValue instanceof String) {
+                        scheduleRule = (String)paramValue;
+                    }
+                } else if (ScheduledServerAction.SSAPK_ABORT.equals(paramKey)) {
+                    abort = true;
+                } else {
+                    trunkedParams.add(param);
                 }
-            } else if (ScheduledServerAction.SSAPK_RULE.equals(paramKey)) {
-                if (paramValue instanceof String) {
-                    scheduleRule = (String)paramValue;
-                }
-            } else if (ScheduledServerAction.SSAPK_ABORT.equals(paramKey)) {
-                abort = true;
-            } else {
-                trunkedParams.add(param);
             }
         }
 
@@ -261,7 +273,7 @@ public class ScheduledServerActionManager {
                 (user.getUserGroup() != null) ? user.getUserGroup().getName() : null,
                 body,
                 trunkedParams.toArray(new ServerActionParameter[0]),
-                offsetTime,
+                startTime,
                 scheduleRule);
         return launch(info);
     }
@@ -291,7 +303,7 @@ public class ScheduledServerActionManager {
      * @param   groupName     DOCUMENT ME!
      * @param   body          DOCUMENT ME!
      * @param   params        DOCUMENT ME!
-     * @param   offsetTime    DOCUMENT ME!
+     * @param   startTime     DOCUMENT ME!
      * @param   scheduleRule  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -304,7 +316,7 @@ public class ScheduledServerActionManager {
             final String groupName,
             final Object body,
             final ServerActionParameter[] params,
-            final Date offsetTime,
+            final Date startTime,
             final String scheduleRule) throws Exception {
         final ScheduledServerActionInfo info = new ScheduledServerActionInfo(
                 getMaxId(),
@@ -314,7 +326,7 @@ public class ScheduledServerActionManager {
                 groupName,
                 body,
                 params,
-                offsetTime,
+                startTime,
                 scheduleRule);
 
         createDbEntry(info);
@@ -336,7 +348,10 @@ public class ScheduledServerActionManager {
             ssaInfoMap.put(info.getKey(), info);
         }
 
-        final Date timeToExecute = calculateExecutionDate(info.getOffsetDate(), info.getScheduleRule());
+        final Date timeToExecute = calculateExecutionDate(info.getStartDate(), info.getScheduleRule());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("launch ServerActionSchedule for " + timeToExecute);
+        }
         final Timer timer = new Timer();
         timer.schedule(new TimerTask() {
 
@@ -345,7 +360,7 @@ public class ScheduledServerActionManager {
                     final Object result = getServerAction(info.getTaskName()).execute(info.getBody(), info.getParams());
                     timerFinished(info, result);
                 }
-            }, timeToExecute);
+            }, new Date(timeToExecute.getTime() + 1000));
         return timer;
     }
 
@@ -370,27 +385,39 @@ public class ScheduledServerActionManager {
                     info.getGroupName(),
                     info.getBody(),
                     getServerAction(info.getTaskName()).getNextParams(info.getParams()),
-                    info.getOffsetDate(),
+                    now,
                     info.getScheduleRule());
             launch(newInfo);
         } catch (final Exception ex) {
-            LOG.error(ex, ex);
+            LOG.error("error while relaunching scheduledServerAction", ex);
         }
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   offsetDate     DOCUMENT ME!
+     * @param   startDate      DOCUMENT ME!
      * @param   executionRule  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  ParseException  DOCUMENT ME!
      */
-    public Date calculateExecutionDate(final Date offsetDate, final String executionRule) throws ParseException {
+    public static Date calculateExecutionDate(final Date startDate, final String executionRule) throws ParseException {
         final CronExpression expr = new CronExpression(executionRule);
-        return expr.getNextValidTimeAfter(new Date());
+
+        // remove 1000 ms for not skipping first start
+        final Date now = new Date(new Date().getTime() - 1000);
+
+        // if startDate is in the past, check for now
+        final Date checkDate;
+        if (startDate.before(now)) {
+            checkDate = now;
+        } else {
+            checkDate = startDate;
+        }
+
+        return expr.getNextValidTimeAfter(new Date(checkDate.getTime() - 1000));
     }
 
     /**
@@ -400,18 +427,10 @@ public class ScheduledServerActionManager {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  SQLException            DOCUMENT ME!
-     * @throws  IOException             DOCUMENT ME!
-     * @throws  ClassNotFoundException  DOCUMENT ME!
-     * @throws  InstantiationException  DOCUMENT ME!
-     * @throws  IllegalAccessException  DOCUMENT ME!
+     * @throws  Exception  DOCUMENT ME!
      */
-    public ScheduledServerActionInfo cancelAction(final String key) throws SQLException,
-        IOException,
-        ClassNotFoundException,
-        InstantiationException,
-        IllegalAccessException {
-        ScheduledServerActionInfo info = null;
+    public ScheduledServerActionInfo cancelAction(final String key) throws Exception {
+        ScheduledServerActionInfo info;
 
         synchronized (ssaInfoMap) {
             info = ssaInfoMap.remove(key);
@@ -435,9 +454,9 @@ public class ScheduledServerActionManager {
      *
      * @param   info  DOCUMENT ME!
      *
-     * @throws  Exception  DOCUMENT ME!
+     * @throws  IOException  DOCUMENT ME!
      */
-    public void createDbEntry(final ScheduledServerActionInfo info) throws Exception {
+    public void createDbEntry(final ScheduledServerActionInfo info) throws IOException {
         final String paramsJson = getServerAction(info.getTaskName()).paramsToJson(info.getParams());
         final String bodyJson = getServerAction(info.getTaskName()).bodyToJson(info.getBody());
 
@@ -448,31 +467,36 @@ public class ScheduledServerActionManager {
         final String column_key = "'" + info.getKey() + "'";
         final String column_body = (bodyJson != null) ? ("'" + bodyJson + "'") : "NULL";
         final String column_params = (paramsJson != null) ? ("'" + paramsJson + "'") : "NULL";
-        final String column_start = "'" + new Timestamp(info.getOffsetDate().getTime()) + "'";
+        final String column_start = "'" + new Timestamp(info.getStartDate().getTime()) + "'";
         final String column_rule = (info.getScheduleRule() != null) ? ("'" + info.getScheduleRule() + "'") : "NULL";
-        final String stmnt = "INSERT INTO " + SSA_TABLE
-                    + " ( "
-                    + COLUMN_ID + ", "
-                    + COLUMN_USERNAME + ", "
-                    + COLUMN_GROUPNAME + ", "
-                    + COLUMN_TASKNAME + ", "
-                    + COLUMN_KEY + ", "
-                    + COLUMN_BODY + ", "
-                    + COLUMN_PARAMS + ", "
-                    + COLUMN_START + ", "
-                    + COLUMN_RULE + ""
-                    + ") VALUES ("
-                    + "" + column_id + ", "
-                    + column_username + ", "
-                    + column_groupname + ", "
-                    + column_taskname + ", "
-                    + column_key + ", "
-                    + column_body + ", "
-                    + column_params + ", "
-                    + column_start + ", "
-                    + column_rule + ")";
-        final Statement insert = con.createStatement();
-        insert.executeUpdate(stmnt);
+
+        try {
+            final String stmnt = "INSERT INTO " + SSA_TABLE
+                        + " ( "
+                        + COLUMN_ID + ", "
+                        + COLUMN_USERNAME + ", "
+                        + COLUMN_GROUPNAME + ", "
+                        + COLUMN_TASKNAME + ", "
+                        + COLUMN_KEY + ", "
+                        + COLUMN_BODY + ", "
+                        + COLUMN_PARAMS + ", "
+                        + COLUMN_START + ", "
+                        + COLUMN_RULE + ""
+                        + ") VALUES ("
+                        + "" + column_id + ", "
+                        + column_username + ", "
+                        + column_groupname + ", "
+                        + column_taskname + ", "
+                        + column_key + ", "
+                        + column_body + ", "
+                        + column_params + ", "
+                        + column_start + ", "
+                        + column_rule + ")";
+            final Statement insert = con.createStatement();
+            insert.executeUpdate(stmnt);
+        } catch (final SQLException e) {
+            ExceptionHandler.handle(e);
+        }
     }
 
     /**
@@ -499,24 +523,28 @@ public class ScheduledServerActionManager {
      * @param   result_json          DOCUMENT ME!
      * @param   aborted              DOCUMENT ME!
      *
-     * @throws  SQLException  DOCUMENT ME!
+     * @throws  Exception  DOCUMENT ME!
      */
     private void updateDbEntry(final int id,
             final Date executionFinishedAt,
             final String result_json,
-            final boolean aborted) throws SQLException {
+            final boolean aborted) throws Exception {
         final String stmnt;
         final String column_execution = "'" + new Timestamp(executionFinishedAt.getTime()) + "'";
         final String column_aborted = Boolean.toString(aborted);
         final String column_result = (result_json != null) ? ("'" + result_json + "'") : "NULL";
-        stmnt = "UPDATE " + SSA_TABLE + " SET "
-                    + COLUMN_EXECUTION + " = " + column_execution + ", "
-                    + COLUMN_ABORTED + " = " + column_aborted + ", "
-                    + COLUMN_RESULT + " = " + column_result + " "
-                    + "WHERE " + COLUMN_ID + " = " + id;
+        try {
+            stmnt = "UPDATE " + SSA_TABLE + " SET "
+                        + COLUMN_EXECUTION + " = " + column_execution + ", "
+                        + COLUMN_ABORTED + " = " + column_aborted + ", "
+                        + COLUMN_RESULT + " = " + column_result + " "
+                        + "WHERE " + COLUMN_ID + " = " + id;
 
-        final Statement insert = con.createStatement();
-        insert.executeUpdate(stmnt);
+            final Statement insert = con.createStatement();
+            insert.executeUpdate(stmnt);
+        } catch (final SQLException e) {
+            throw new Exception(ExceptionHandler.handle(e));
+        }
     }
 
     /**
@@ -524,15 +552,20 @@ public class ScheduledServerActionManager {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  SQLException  DOCUMENT ME!
+     * @throws  Exception  DOCUMENT ME!
      */
-    private int getMaxId() throws SQLException {
+    private int getMaxId() throws Exception {
         int max = 0;
-        final ResultSet maxRs = maxId.executeQuery();
+        try {
+            final ResultSet maxRs = maxId.executeQuery();
 
-        if (maxRs.next()) {
-            max = maxRs.getInt(1) + 1;
+            if (maxRs.next()) {
+                max = maxRs.getInt(1) + 1;
+            }
+        } catch (final SQLException e) {
+            throw new Exception(ExceptionHandler.handle(e));
         }
+
         return max;
     }
 }

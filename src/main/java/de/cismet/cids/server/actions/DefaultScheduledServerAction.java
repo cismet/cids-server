@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -54,6 +55,26 @@ public abstract class DefaultScheduledServerAction implements ScheduledServerAct
         return new ServerActionParameter<String>(SSAPK_RULE, rule);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   startTime  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ServerActionParameter<Date> createStartTimeSAP(final Date startTime) {
+        return new ServerActionParameter<Date>(SSAPK_START, startTime);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ServerActionParameter<String> createAbortionSAP() {
+        return new ServerActionParameter<String>(SSAPK_ABORT, null);
+    }
+
     @Override
     public String paramsToJson(final ServerActionParameter[] params) throws IOException {
         final String json = new ObjectMapper().writeValueAsString(params);
@@ -82,24 +103,36 @@ public abstract class DefaultScheduledServerAction implements ScheduledServerAct
 
     @Override
     public String bodyToJson(final Object body) throws IOException {
+        if (body == null) {
+            return null;
+        }
         final String json = new ObjectMapper().writeValueAsString(body);
         return json;
     }
 
     @Override
     public Object jsonToBody(final String json) throws IOException {
+        if (json == null) {
+            return null;
+        }
         final Object body = new ObjectMapper().readValue(json, Object.class);
         return body;
     }
 
     @Override
     public String resultToJson(final Object result) throws IOException {
+        if (result == null) {
+            return null;
+        }
         final String json = new ObjectMapper().writeValueAsString(result);
         return json;
     }
 
     @Override
     public Object jsonToResult(final String json) throws IOException {
+        if (json == null) {
+            return null;
+        }
         final Object result = new ObjectMapper().readValue(json, Object.class);
         return result;
     }

@@ -1203,7 +1203,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                                 body,
                                 params);
                     } catch (Exception ex) {
-                        logger.fatal(ex, ex);
+                        logger.error("error whhile scheduling serveraction", ex);
                         return null;
                     }
                 } else {
