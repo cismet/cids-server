@@ -379,15 +379,17 @@ public class ScheduledServerActionManager {
                 ssaInfoMap.remove(info.getKey());
             }
 
-            final ScheduledServerActionInfo newInfo = createInfo(info.getKey(),
-                    info.getTaskName(),
-                    info.getUserName(),
-                    info.getGroupName(),
-                    info.getBody(),
-                    getServerAction(info.getTaskName()).getNextParams(info.getParams()),
-                    now,
-                    info.getScheduleRule());
-            launch(newInfo);
+            if (info.getScheduleRule() != null) {
+                final ScheduledServerActionInfo newInfo = createInfo(info.getKey(),
+                        info.getTaskName(),
+                        info.getUserName(),
+                        info.getGroupName(),
+                        info.getBody(),
+                        getServerAction(info.getTaskName()).getNextParams(info.getParams()),
+                        now,
+                        info.getScheduleRule());
+                launch(newInfo);
+            }
         } catch (final Exception ex) {
             LOG.error("error while relaunching scheduledServerAction", ex);
         }
@@ -404,10 +406,7 @@ public class ScheduledServerActionManager {
      * @throws  ParseException  DOCUMENT ME!
      */
     public static Date calculateExecutionDate(final Date startDate, final String executionRule) throws ParseException {
-        final CronExpression expr = new CronExpression(executionRule);
-
-        // remove 1000 ms for not skipping first start
-        final Date now = new Date(new Date().getTime() - 1000);
+        final Date now = new Date();
 
         // if startDate is in the past, check for now
         final Date checkDate;
@@ -417,7 +416,13 @@ public class ScheduledServerActionManager {
             checkDate = startDate;
         }
 
-        return expr.getNextValidTimeAfter(new Date(checkDate.getTime() - 1000));
+        if (executionRule == null) {
+            return checkDate;
+        } else {
+            final CronExpression expr = new CronExpression(executionRule);
+            // remove 2000 ms for not skipping first start
+            return expr.getNextValidTimeAfter(new Date(checkDate.getTime() - 2000));
+        }
     }
 
     /**
