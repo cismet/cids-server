@@ -45,13 +45,14 @@ public class CsvExportSearchStatement extends AbstractCidsServerSearch {
     private final String domainName;
     private final List<String> fields;
     private final String whereCause;
+    private final String distinctOn;
     private String dateFormat = "dd.MM.yyyy";
     private String[] booleanFormat = new String[] { "no", "yes" };
 
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Creates a new KassenzeichenSearchStatement object.
+     * Creates a new CsvExportSearchStatement object.
      *
      * @param  metaClassName  DOCUMENT ME!
      * @param  domainName     DOCUMENT ME!
@@ -62,10 +63,28 @@ public class CsvExportSearchStatement extends AbstractCidsServerSearch {
             final String domainName,
             final List<String> fields,
             final String whereCause) {
+        this(metaClassName, domainName, fields, whereCause, null);
+    }
+
+    /**
+     * Creates a new KassenzeichenSearchStatement object.
+     *
+     * @param  metaClassName  DOCUMENT ME!
+     * @param  domainName     DOCUMENT ME!
+     * @param  fields         DOCUMENT ME!
+     * @param  whereCause     DOCUMENT ME!
+     * @param  distinctOn     DOCUMENT ME!
+     */
+    public CsvExportSearchStatement(final String metaClassName,
+            final String domainName,
+            final List<String> fields,
+            final String whereCause,
+            final String distinctOn) {
         this.metaClassName = metaClassName;
         this.domainName = domainName;
         this.fields = fields;
         this.whereCause = whereCause;
+        this.distinctOn = distinctOn;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -80,21 +99,26 @@ public class CsvExportSearchStatement extends AbstractCidsServerSearch {
 
                 final List<String> formattedFields = new ArrayList<String>(fields.size());
                 for (final String field : fields) {
-                    final String javaClassName = moDummy.getAttributeByFieldName(field).getMai().getJavaclassname();
-                    final Class javaClass = Class.forName(javaClassName);
+                    if (moDummy.getAttributeByFieldName(field) != null) {
+                        final String javaClassName = moDummy.getAttributeByFieldName(field).getMai().getJavaclassname();
+                        final Class javaClass = Class.forName(javaClassName);
 
-                    if (Date.class.isAssignableFrom(javaClass)) {
-                        formattedFields.add("to_char(" + field + ", '" + dateFormat + "')");
-                    } else if (Boolean.class.isAssignableFrom(javaClass)) {
-                        formattedFields.add("CASE WHEN " + field + " IS TRUE THEN '" + booleanFormat[1] + "' ELSE '"
-                                    + booleanFormat[0] + "' END");
-                    } else if (Geometry.class.isAssignableFrom(javaClass)) {
-                        formattedFields.add("st_astext(" + field + ")");
+                        if (Date.class.isAssignableFrom(javaClass)) {
+                            formattedFields.add("to_char(" + field + ", '" + dateFormat + "')");
+                        } else if (Boolean.class.isAssignableFrom(javaClass)) {
+                            formattedFields.add("CASE WHEN " + field + " IS TRUE THEN '" + booleanFormat[1] + "' ELSE '"
+                                        + booleanFormat[0] + "' END");
+                        } else if (Geometry.class.isAssignableFrom(javaClass)) {
+                            formattedFields.add("st_astext(" + field + ")");
+                        } else {
+                            formattedFields.add(field);
+                        }
                     } else {
                         formattedFields.add(field);
                     }
                 }
-                final String sql = "SELECT " + implode(formattedFields.toArray(new String[0]), ", ") + " "
+                final String sql = "SELECT " + ((distinctOn != null) ? ("DISTINCT ON (" + distinctOn + ") ") : "")
+                            + implode(formattedFields.toArray(new String[0]), ", ") + " "
                             + "FROM " + metaClass.getTableName() + " "
                             + "WHERE " + whereCause;
 
