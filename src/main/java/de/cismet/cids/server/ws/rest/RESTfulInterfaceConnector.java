@@ -30,6 +30,7 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.ClientResponse.Status;
+import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
@@ -47,6 +48,9 @@ import java.util.Vector;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.api.types.CidsClass;
+import de.cismet.cids.server.api.types.CollectionResource;
+import de.cismet.cids.server.api.types.GenericCollectionResource;
 import de.cismet.cids.server.api.types.legacy.UserFactory;
 import de.cismet.cids.server.search.CidsServerSearch;
 import de.cismet.cids.server.ws.SSLConfig;
@@ -56,6 +60,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+import java.util.List;
 import java.util.Map;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
@@ -77,6 +82,9 @@ import org.apache.log4j.Logger;
  * @version 0.1 2015/04/17
  */
 public class RESTfulInterfaceConnector implements CallServerService {
+
+    public final static String USERS_API = "users";
+    public final static String CLASSES_API = "classes";
 
     private static final transient Logger LOG = Logger.getLogger(RESTfulInterfaceConnector.class);
 
@@ -392,6 +400,21 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
     }
 
+    /**
+     * Removes the BasicAuthString for a specific user in the credentials map,
+     * e.g. when the login failed.
+     *
+     * @param user
+     */
+    private void removeBasicAuthString(final User user) {
+        final String key = user.getName() + "@" + user.getDomain();
+        if (!this.credentialsCache.containsKey(key)) {
+            LOG.warn("user '" + user.getName() + "' is not authenticated at '" + user.getDomain() + ", cannot remove");
+        } else {
+            this.credentialsCache.remove(key);
+        }
+    }
+
     @Override
     public Node[] getRoots(final User user, final String domainName) throws RemoteException {
         throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
@@ -543,8 +566,24 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
     @Override
     public MetaClass[] getClasses(final User user, final String domain) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+
+        final MultivaluedMap queryParameters = this.createUserParameters(user);
+        final WebResource webResource = this.createWebResource(CLASSES_API).queryParams(queryParameters);
+        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        builder = this.createMediaTypeHeaders(builder);
+
+        try {
+            //final List<CidsClass> restCidsClasses = builder.get(new GenericType<List<CidsClass>>(){});
+            //return UserFactory.getFactory().cidsUserFromRestUser(restUser);
+            
+            final GenericCollectionResource<CidsClass> restCidsClasses = builder.get(new GenericType<GenericCollectionResource<CidsClass>>(){});
+            return new MetaClass[]{};
+        } catch (UniformInterfaceException ue) {
+            final Status status = ue.getResponse().getClientResponseStatus();
+            final String message = status.toString();
+            LOG.error(message, ue);
+            throw new RemoteException(message, ue);
+        }
     }
 
     @Override
@@ -745,10 +784,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
         final User cidsUser = new User(-1, userName, userLsName);
 
-        //
         this.putBasicAuthString(cidsUser, password);
 
-        final WebResource webResource = this.createWebResource("users");
+        final WebResource webResource = this.createWebResource(USERS_API);
         WebResource.Builder builder = this.createAuthorisationHeader(webResource, cidsUser);
         builder = this.createMediaTypeHeaders(builder);
 
@@ -757,12 +795,15 @@ public class RESTfulInterfaceConnector implements CallServerService {
             return UserFactory.getFactory().cidsUserFromRestUser(restUser);
 
         } catch (UniformInterfaceException ue) {
+
+            this.removeBasicAuthString(cidsUser);
+
             final Status status = ue.getResponse().getClientResponseStatus();
-            final String message = "login of user '"+userName+"' at domain '"+userLsName
-                        +"' failed: " + status.toString();
+            final String message = "login of user '" + userName + "' at domain '" + userLsName
+                    + "' failed: " + status.toString();
             LOG.error(message, ue);
-            
-            if(status.getStatusCode() < 500) {
+
+            if (status.getStatusCode() < 500) {
                 throw new UserException(message, true, true, false, false);
             } else {
                 throw new RemoteException(message, ue);
