@@ -1,10 +1,13 @@
-/***************************************************
-*
-* cismet GmbH, Saarbruecken, Germany
-*
-*              ... and it just works.
-*
-****************************************************/
+/**
+ * *************************************************
+ *
+ * cismet GmbH, Saarbruecken, Germany
+ * 
+* ... and it just works.
+ * 
+***************************************************
+ */
+
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -23,32 +26,31 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-import java.io.IOException;
+import de.cismet.cids.server.api.types.configkeys.CidsAttributeConfigurationFlagKey;
+import de.cismet.cids.server.api.types.configkeys.CidsAttributeConfigurationKey;
 
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import de.cismet.cids.server.api.types.data.CidsAttributeConfigurationFlagKey;
-import de.cismet.cids.server.api.types.data.CidsAttributeConfigurationKey;
-
 /**
- * DOCUMENT ME!
+ * cids attribute REST API Type and JSON Serializer / Deserializer
  *
- * @author   thorsten
- * @version  $Revision$, $Date$
+ * <strong>Code copied from de.cismet.cids.server.data.legacy.CidsAttribute
+ * (cids-server-rest-legacy project) for feature branch #100</strong>
+ * TODO: Integrate into <strong>cids-server-rest-types project</strong>!
+ *
+ * @author thorsten
+ * @version $Revision$, $Date$
  */
 @JsonSerialize(using = CidsAttributeJsonSerializer.class)
 @JsonDeserialize(using = CidsAttributeJsonDeserializer.class)
 public class CidsAttribute {
 
-    //~ Instance fields --------------------------------------------------------
-
     String key;
     String classKey;
     LinkedHashMap<String, Object> configurationAttributes = new LinkedHashMap<String, Object>();
-
-    //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new CidsAttribute object.
@@ -59,20 +61,18 @@ public class CidsAttribute {
     /**
      * Creates a new CidsAttribute object.
      *
-     * @param  key       DOCUMENT ME!
-     * @param  classKey  DOCUMENT ME!
+     * @param key DOCUMENT ME!
+     * @param classKey DOCUMENT ME!
      */
     public CidsAttribute(final String key, final String classKey) {
         this.key = key;
         this.classKey = classKey;
     }
 
-    //~ Methods ----------------------------------------------------------------
-
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      */
     public String getAttributeKey() {
         return new StringBuffer(classKey).append('/').append(key).toString();
@@ -81,7 +81,7 @@ public class CidsAttribute {
     /**
      * DOCUMENT ME!
      *
-     * @param  attrKey  DOCUMENT ME!
+     * @param attrKey DOCUMENT ME!
      */
     public void setAttributeKey(final String attrKey) {
         final int firstAt = attrKey.lastIndexOf('/');
@@ -92,16 +92,17 @@ public class CidsAttribute {
     /**
      * DOCUMENT ME!
      *
-     * @param  key  DOCUMENT ME!
+     * @param key DOCUMENT ME!
      */
     public void setConfigFlag(final CidsAttributeConfigurationFlagKey key) {
-        configurationAttributes.put(key.toString(), true);
+        configurationAttributes.put(key.toString(),
+                true);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param  key  DOCUMENT ME!
+     * @param key DOCUMENT ME!
      */
     public void removeConfigFlag(final CidsAttributeConfigurationFlagKey key) {
         configurationAttributes.remove(key.toString());
@@ -110,30 +111,31 @@ public class CidsAttribute {
     /**
      * DOCUMENT ME!
      *
-     * @param  key    DOCUMENT ME!
-     * @param  value  DOCUMENT ME!
+     * @param key DOCUMENT ME!
+     * @param value DOCUMENT ME!
      */
     public void setConfigAttribute(final CidsAttributeConfigurationKey key, final Object value) {
-        configurationAttributes.put(key.toString(), value);
+        configurationAttributes.put(key.toString(),
+                value);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param  key  DOCUMENT ME!
+     * @param key DOCUMENT ME!
      */
     public void removeConfigAttribute(final CidsAttributeConfigurationKey key) {
         configurationAttributes.remove(key.toString());
     }
 }
+
 /**
  * DOCUMENT ME!
  *
- * @version  $Revision$, $Date$
+ * @version $Revision$, $Date$
  */
-class CidsAttributeJsonSerializer extends StdSerializer<CidsAttribute> {
-
-    //~ Constructors -----------------------------------------------------------
+class CidsAttributeJsonSerializer
+        extends StdSerializer<CidsAttribute> {
 
     /**
      * Creates a new CidsAttributeJsonSerializer object.
@@ -142,16 +144,18 @@ class CidsAttributeJsonSerializer extends StdSerializer<CidsAttribute> {
         super(CidsAttribute.class);
     }
 
-    //~ Methods ----------------------------------------------------------------
-
     @Override
-    public void serialize(final CidsAttribute t, final JsonGenerator jg, final SerializerProvider sp)
+    public void serialize(final CidsAttribute cidsAttribute, final JsonGenerator jg, final SerializerProvider sp)
             throws IOException, JsonGenerationException {
         jg.writeStartObject();
-        jg.writeStringField("$self", t.getAttributeKey());
-        final Set<Map.Entry<String, Object>> entrySet = t.configurationAttributes.entrySet();
+        jg.writeStringField("$self",
+                cidsAttribute.getAttributeKey());
+
+        final Set<Map.Entry<String, Object>> entrySet = cidsAttribute.configurationAttributes.entrySet();
+
         for (final Map.Entry<String, Object> entry : entrySet) {
-            jg.writeObjectField(entry.getKey(), entry.getValue());
+            jg.writeObjectField(entry.getKey(),
+                    entry.getValue());
         }
 
         jg.writeEndObject();
@@ -161,11 +165,10 @@ class CidsAttributeJsonSerializer extends StdSerializer<CidsAttribute> {
 /**
  * DOCUMENT ME!
  *
- * @version  $Revision$, $Date$
+ * @version $Revision$, $Date$
  */
-class CidsAttributeJsonDeserializer extends StdDeserializer<CidsAttribute> {
-
-    //~ Constructors -----------------------------------------------------------
+class CidsAttributeJsonDeserializer
+        extends StdDeserializer<CidsAttribute> {
 
     /**
      * Creates a new CidsAttributeJsonDeserializer object.
@@ -174,46 +177,52 @@ class CidsAttributeJsonDeserializer extends StdDeserializer<CidsAttribute> {
         super(CidsAttribute.class);
     }
 
-    //~ Methods ----------------------------------------------------------------
-
     @Override
-    public CidsAttribute deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
-        JsonProcessingException {
-        final CidsAttribute ca = new CidsAttribute();
+    public CidsAttribute deserialize(final JsonParser jp, final DeserializationContext dc)
+            throws IOException, JsonProcessingException {
+        final CidsAttribute cidsAttribute = new CidsAttribute();
         boolean keySet = false;
+
         while (jp.nextValue() != JsonToken.END_OBJECT) {
             final String fieldName = jp.getCurrentName();
-            if (!keySet && fieldName.equals("key")) {
-                ca.setAttributeKey(jp.getText());
+
+            if (!keySet && fieldName.equals("$self")) {
+                cidsAttribute.setAttributeKey(jp.getText());
                 keySet = true;
             } else {
                 switch (jp.getCurrentToken()) {
                     case VALUE_NUMBER_FLOAT: {
                         final double d = jp.getDoubleValue();
-                        ca.configurationAttributes.put(fieldName, d);
+                        cidsAttribute.configurationAttributes.put(fieldName, d);
+
                         break;
                     }
+
                     case VALUE_NUMBER_INT: {
                         final int i = jp.getIntValue();
-                        ca.configurationAttributes.put(fieldName, i);
+                        cidsAttribute.configurationAttributes.put(fieldName, i);
+
                         break;
                     }
+
                     case VALUE_NULL:
                     case VALUE_TRUE: {
-                        ca.configurationAttributes.put(fieldName, true);
+                        cidsAttribute.configurationAttributes.put(fieldName, true);
+
                         break;
                     }
-                    case VALUE_FALSE: {
+
+                    case VALUE_FALSE:
                         break;
-                    }
+
                     default: {
                         final String s = jp.getText();
-                        ca.configurationAttributes.put(fieldName, s);
+                        cidsAttribute.configurationAttributes.put(fieldName, s);
                     }
                 }
             }
         }
 
-        return ca;
+        return cidsAttribute;
     }
 }
