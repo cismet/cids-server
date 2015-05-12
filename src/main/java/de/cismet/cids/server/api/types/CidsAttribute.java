@@ -33,9 +33,11 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import org.apache.log4j.Logger;
 
 /**
  * cids attribute REST API Type and JSON Serializer / Deserializer
+ * Represents attribute meta data, not an actual attribute!
  *
  * <strong>Code copied from de.cismet.cids.server.data.legacy.CidsAttribute
  * (cids-server-rest-legacy project) for feature branch #100</strong>
@@ -44,8 +46,8 @@ import java.util.Set;
  * @author thorsten
  * @version $Revision$, $Date$
  */
-@JsonSerialize(using = CidsAttributeJsonSerializer.class)
-@JsonDeserialize(using = CidsAttributeJsonDeserializer.class)
+@JsonSerialize(using = CidsAttributeSerializer.class)
+@JsonDeserialize(using = CidsAttributeDeserializer.class)
 public class CidsAttribute {
 
     String key;
@@ -130,17 +132,23 @@ public class CidsAttribute {
 }
 
 /**
- * DOCUMENT ME!
+/**
+ * Custom serializer for cids attribute REST types.
+ * Uses default object serialization for the simplified cids attribute object structure.
+ * Conversion from complex legacy MemberAttributeInfo to cids attribute 
+ * is performed in CidsClassFactory.
  *
  * @version $Revision$, $Date$
  */
-class CidsAttributeJsonSerializer
+class CidsAttributeSerializer
         extends StdSerializer<CidsAttribute> {
 
+    private final static transient Logger LOG = Logger.getLogger(CidsAttributeSerializer.class);
+    
     /**
      * Creates a new CidsAttributeJsonSerializer object.
      */
-    public CidsAttributeJsonSerializer() {
+    public CidsAttributeSerializer() {
         super(CidsAttribute.class);
     }
 
@@ -154,8 +162,12 @@ class CidsAttributeJsonSerializer
         final Set<Map.Entry<String, Object>> entrySet = cidsAttribute.configurationAttributes.entrySet();
 
         for (final Map.Entry<String, Object> entry : entrySet) {
-            jg.writeObjectField(entry.getKey(),
-                    entry.getValue());
+            final Object value = entry.getValue();
+            if(LOG.isDebugEnabled() && !(value instanceof String)) {
+                LOG.warn("setting non-string attribute '"+entry.getKey()+"'");
+            }
+            
+            jg.writeObjectField(entry.getKey(), entry.getValue());
         }
 
         jg.writeEndObject();
@@ -163,17 +175,22 @@ class CidsAttributeJsonSerializer
 }
 
 /**
- * DOCUMENT ME!
+ * Custom deserializer for cids attribute REST type.
+ * 
+ * Uses mainly the default object deserialization for the simplified cids attribute object structure.
+ * Conversion from cids attribute to complex legacy MemberAttributeInfo is performed in CidsClassFactory.
  *
  * @version $Revision$, $Date$
  */
-class CidsAttributeJsonDeserializer
+class CidsAttributeDeserializer
         extends StdDeserializer<CidsAttribute> {
 
+     private final static transient Logger LOG = Logger.getLogger(CidsAttributeDeserializer.class);
+    
     /**
      * Creates a new CidsAttributeJsonDeserializer object.
      */
-    public CidsAttributeJsonDeserializer() {
+    public CidsAttributeDeserializer() {
         super(CidsAttribute.class);
     }
 
@@ -194,28 +211,33 @@ class CidsAttributeJsonDeserializer
                     case VALUE_NUMBER_FLOAT: {
                         final double d = jp.getDoubleValue();
                         cidsAttribute.configurationAttributes.put(fieldName, d);
-
                         break;
                     }
 
                     case VALUE_NUMBER_INT: {
                         final int i = jp.getIntValue();
                         cidsAttribute.configurationAttributes.put(fieldName, i);
-
                         break;
                     }
 
                     case VALUE_NULL:
                     case VALUE_TRUE: {
                         cidsAttribute.configurationAttributes.put(fieldName, true);
-
                         break;
                     }
+                    
+                     case VALUE_STRING: {
+                        final String s = jp.getValueAsString();
+                        cidsAttribute.configurationAttributes.put(fieldName, s);
+                        break;
+                     }
 
                     case VALUE_FALSE:
+                        cidsAttribute.configurationAttributes.put(fieldName, false);
                         break;
 
                     default: {
+                        LOG.warn("deserializing non-string attribute '"+fieldName+"'");
                         final String s = jp.getText();
                         cidsAttribute.configurationAttributes.put(fieldName, s);
                     }

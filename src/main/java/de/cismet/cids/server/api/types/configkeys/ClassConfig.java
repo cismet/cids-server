@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class ClassConfig
 {
     /**
-     * DOCUMENT ME!
+     * Standard configuration attributes of the cids class.
      *
      * @version  1.0
      */
@@ -28,22 +28,32 @@ public class ClassConfig
     public enum Key
         implements CidsClassConfigurationKey
     {NAME( "Name" ),
-        CLASS_ICON( "ClassIcon" ),
-        OBJECT_ICON( "ObjectIcon" ),
-        PK_FIELD( "PK_Field" ),
+        //CLASS_ICON( "ClassIcon" ),
+        //OBJECT_ICON( "ObjectIcon" ),
+        LEGACY_CLASS_ICON( "LegacyClassIcon" ),
+        LEGACY_OBJECT_ICON( "LegacyObjectIcon" ),
+        LEGACY_PK_FIELD( "LegacyPK_Field" ),
         POLICY( "Policy" ),
         ATTRIBUTE_POLICY( "AttributePolicy" ),
         FEATURE_BG( "FeatureBG" ),
         FEATURE_FG( "FeatureFG" ),
         FEATURE_POINT_SYMBOL( "FeaturePointSymbol" ),
         FEATURE_POINT_SYMBOL_SWEETSPOT_X( "FeaturePointSymbolSweetspotX" ),
-        FEATURE_POINT_SYMBOL_SWEETSPOT_Y( "FeaturePointSymbolSweetspotY" );
+        FEATURE_POINT_SYMBOL_SWEETSPOT_Y( "FeaturePointSymbolSweetspotY" ),
+        QUERYABLE( "Queryable" ),
+        SORTING_COLUMN("sortingColumn"),
+        SEARCH_HIT_DYNAMIC_CHILDREN("searchHit_dynamicChildren"),
+        SEARCH_HIT_DYNAMIC_CHILDREN_ATTRIBUTE("searchHit_dynamicChildrenAttribute"),
+        HISTORY_ENABLED("history_enabled"),       // NOI18N
+        HISTORY_OPTION_ANONYMOUS("anonymous"),   // NOI18N
+        TO_STRING_CACHE_ENABLED("tostringcache"); // NOI18N
+        
 
         private final String key;
     }
 
     /**
-     * DOCUMENT ME!
+     * Binary configuration attributes (flags).If unset, then false.
      *
      * @version  1.0
      */
@@ -60,7 +70,7 @@ public class ClassConfig
     }
 
     /**
-     * DOCUMENT ME!
+     * XP (??) configuration attributes
      *
      * @version  1.0
      */
@@ -80,7 +90,7 @@ public class ClassConfig
     }
 
     /**
-     * DOCUMENT ME!
+     * FeatureSupportingrasterService configuration attributes
      *
      * @version  1.0
      */

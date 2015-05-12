@@ -8,17 +8,20 @@
 package Sirius.util.image;
 
 import java.io.*;
+import lombok.Data;
+import lombok.NonNull;
 
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
+@Data
 public class Image implements java.io.Serializable {
 
     //~ Instance fields --------------------------------------------------------
 
-    private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
+    private final static transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(Image.class);
     /////////////////members//////////////////////////////////
 
     private byte[] imageData;
@@ -41,7 +44,7 @@ public class Image implements java.io.Serializable {
      *
      * @param  filepath  DOCUMENT ME!
      */
-    public Image(final String filepath) {
+    public Image(@NonNull final String filepath) {
         this(new File(filepath));
     }
 
@@ -50,7 +53,7 @@ public class Image implements java.io.Serializable {
      *
      * @param  inFile  DOCUMENT ME!
      */
-    public Image(final File inFile) {
+    public Image(@NonNull final File inFile) {
         try {
             final InputStream stream;
             name = inFile.getName();
@@ -74,34 +77,5 @@ public class Image implements java.io.Serializable {
         } catch (Exception e) {
             logger.error(e);
         }
-    }
-
-    //~ Methods ----------------------------------------------------------------
-
-    /**
-     * ////////////////methods////////////////////////////////////////////////
-     *
-     * @return  DOCUMENT ME!
-     */
-    public final byte[] getImageData() {
-        return imageData;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public final String getName() {
-        return name;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public final String getDescription() {
-        return description;
     }
 }
