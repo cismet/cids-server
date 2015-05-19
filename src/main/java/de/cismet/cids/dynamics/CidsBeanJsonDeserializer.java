@@ -31,6 +31,8 @@ import java.math.BigDecimal;
 
 import java.sql.Timestamp;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
 import de.cismet.cids.json.IntraObjectCacheJsonParser;
@@ -46,8 +48,6 @@ import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_FLOAT;
 import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_INT;
 import static com.fasterxml.jackson.core.JsonToken.VALUE_STRING;
 import static com.fasterxml.jackson.core.JsonToken.VALUE_TRUE;
-
-import static de.cismet.cids.dynamics.CidsBean.mapper;
 
 /**
  * DOCUMENT ME!
@@ -129,13 +129,16 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                     } else {
                         switch (jp.getCurrentToken()) {
                             case START_ARRAY: {
+                                final Collection<CidsBean> array = new ArrayList<CidsBean>();
                                 while (jp.nextValue() != JsonToken.END_ARRAY) {
                                     final CidsBean arrayObject = jp.readValueAs(CidsBean.class);
                                     if (isIntraObjectCacheEnabled()) {
                                         jp.put(arrayObject.getCidsBeanInfo().getJsonObjectKey(), arrayObject);
                                     }
-                                    propValueMap.put(fieldName, arrayObject);
+                                    array.add(arrayObject);
                                 }
+                                propValueMap.put(fieldName, array);
+
                                 // Clean up
                                 // No changed flags shall be true.
                                 // All statuses shall be NO_STATUS
@@ -236,7 +239,6 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                             + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER + "or a "
                             + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER); // NOI18N
             }
-            cb.getMetaObject().setID((cb.getPrimaryKeyValue() != null) ? (int)cb.getPrimaryKeyValue() : -1);
             for (final String prop : propValueMap.keySet()) {
                 final Object value = propValueMap.get(prop);
 
@@ -263,9 +265,14 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                         }
                     }
                 } else {
-                    cb.quiteSetProperty(prop, value);
+                    if (value instanceof Collection) {
+                        cb.getBeanCollectionProperty(prop).addAll((Collection)value);
+                    } else {
+                        cb.quiteSetProperty(prop, value);
+                    }
                 }
             }
+            cb.getMetaObject().setID((cb.getPrimaryKeyValue() != null) ? (int)cb.getPrimaryKeyValue() : -1);
             cb.getMetaObject().forceStatus(MetaObject.NO_STATUS);
             if (isIntraObjectCacheEnabled()) {
                 jp.put(key, cb);
