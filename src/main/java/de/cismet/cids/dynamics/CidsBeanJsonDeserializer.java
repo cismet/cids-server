@@ -59,7 +59,8 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(CidsBeanJsonDeserializer.class);
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
+            CidsBeanJsonDeserializer.class);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -237,7 +238,7 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                             + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER + "or a "
                             + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER); // NOI18N
             }
-            if (!cacheHit && cb != null) {
+            if (!cacheHit && (cb != null)) {
                 for (final String prop : propValueMap.keySet()) {
                     final Object value = propValueMap.get(prop);
 
@@ -268,23 +269,27 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                         if (value instanceof Collection) {
                             cb.getBeanCollectionProperty(prop).addAll((Collection)value);
 
-                            // Clean up
-                            // No changed flags shall be true.
-                            // All statuses shall be NO_STATUS
-                            final ObjectAttribute oa = cb.getMetaObject().getAttributeByFieldName(prop);
-                            oa.setChanged(false);
-                            final MetaObject dummy = (MetaObject)oa.getValue();
-                            if (dummy != null) {
-                                dummy.setChanged(false);
-                                dummy.forceStatus(MetaObject.NO_STATUS);
-                                dummy.setStatus(MetaObject.NO_STATUS);
-                                final ObjectAttribute[] entries = dummy.getAttribs();
-                                for (final ObjectAttribute entry : entries) {
-                                    entry.setChanged(false);
-                                    ((MetaObject)entry.getValue()).forceStatus(MetaObject.NO_STATUS);
-                                    ((MetaObject)entry.getValue()).setChanged(false);
-                                }
-                            }
+                            // insert does not work for arrays if statii are not set
+                            // the status is important for updates of objects, but there 
+                            // is an update deserializer for that => CidsBeanJsonUpdataDesirializer
+                            
+//                            // Clean up
+//                            // No changed flags shall be true.
+//                            // All statuses shall be NO_STATUS
+//                            final ObjectAttribute oa = cb.getMetaObject().getAttributeByFieldName(prop);
+//                            oa.setChanged(false);
+//                            final MetaObject dummy = (MetaObject)oa.getValue();
+//                            if (dummy != null) {
+//                                dummy.setChanged(false);
+//                                dummy.forceStatus(MetaObject.NO_STATUS);
+//                                dummy.setStatus(MetaObject.NO_STATUS);
+//                                final ObjectAttribute[] entries = dummy.getAttribs();
+//                                for (final ObjectAttribute entry : entries) {
+//                                    entry.setChanged(false);
+//                                    ((MetaObject)entry.getValue()).forceStatus(MetaObject.NO_STATUS);
+//                                    ((MetaObject)entry.getValue()).setChanged(false);
+//                                }
+//                            }
                         } else {
                             cb.quiteSetProperty(prop, value);
                         }
