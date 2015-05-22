@@ -28,7 +28,6 @@ import Sirius.server.search.store.QueryData;
 import Sirius.util.image.Image;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.UniformInterfaceException;
@@ -49,8 +48,8 @@ import java.util.Vector;
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.api.types.CidsClass;
-import de.cismet.cids.server.api.types.CollectionResource;
 import de.cismet.cids.server.api.types.GenericCollectionResource;
+import de.cismet.cids.server.api.types.legacy.CidsClassFactory;
 import de.cismet.cids.server.api.types.legacy.UserFactory;
 import de.cismet.cids.server.search.CidsServerSearch;
 import de.cismet.cids.server.ws.SSLConfig;
@@ -60,7 +59,6 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
-import java.util.List;
 import java.util.Map;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
@@ -573,14 +571,46 @@ public class RESTfulInterfaceConnector implements CallServerService {
         builder = this.createMediaTypeHeaders(builder);
 
         try {
-            //final List<CidsClass> restCidsClasses = builder.get(new GenericType<List<CidsClass>>(){});
-            //return UserFactory.getFactory().cidsUserFromRestUser(restUser);
+            final GenericCollectionResource<CidsClass> restCidsClasses 
+                    = builder.get(new GenericType<GenericCollectionResource<CidsClass>>() {});
             
-            final GenericCollectionResource<CidsClass> restCidsClasses = builder.get(new GenericType<GenericCollectionResource<CidsClass>>(){});
-            return new MetaClass[]{};
+            if (restCidsClasses != null && restCidsClasses.get$collection() != null
+                    && restCidsClasses.get$collection().size() > 0) {
+
+                LOG.debug("found " + restCidsClasses.get$collection().size()
+                        + " cids classes at domain '" + domain
+                        + "' for user '" + user.getName() + "'. performing conversion to cids legacy class.");
+
+                final MetaClass[] metaClasses = new MetaClass[restCidsClasses.get$collection().size()];
+                int i = 0;
+                for (CidsClass cidsClass : restCidsClasses.get$collection()) {
+                    try {
+                        final MetaClass metaClass
+                                = CidsClassFactory.getFactory().legacyCidsClassFromRestCidsClass(cidsClass);
+                        metaClasses[i] = metaClass;
+                        i++;
+
+                    } catch (Exception ex) {
+                        final String message = "could not perform conversion from cids rest class '"
+                                + cidsClass.getKey() + "' to cids legacy class: " + ex.getMessage();
+                        LOG.error(ex);
+                        throw new RemoteException(message, ex);
+                    }
+                }
+                
+                return metaClasses;
+            } else {
+                LOG.error("could not find any cids classes at domain '"
+                        + domain + "' for user '" + user.getName() + "'");
+                return null;
+            }
+
         } catch (UniformInterfaceException ue) {
             final Status status = ue.getResponse().getClientResponseStatus();
-            final String message = status.toString();
+            final String message =  "could get cids classes at domain '" 
+                    + domain + "' for user '" + user.getName() + "': "
+                    + status.getReasonPhrase();
+            
             LOG.error(message, ue);
             throw new RemoteException(message, ue);
         }

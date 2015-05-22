@@ -31,13 +31,14 @@ public class AttributeConfig {
     @RequiredArgsConstructor
     public enum Key
             implements CidsAttributeConfigurationKey {
-
+        LEGACY_ID( "Id" ),
         NAME("Name"),
         ARRAY_KEY_FIELD_NAME("ArrayKeyFieldName"),
         DEFAULT_VALUE("DefaultValue"),
         POSITION("Position"),
-        JAVACLASS_NAME("Javaclassname"),
-        REFERENCE_TYPE("ReferenceType");
+        JAVACLASS_NAME("JavaClassName"),
+        REFERENCE_TYPE("ReferenceType"),
+        LEGACY_FOREIGN_KEY_CLASS_ID("ForeignKeyClassId");
 
         private final String key;
     }
@@ -58,7 +59,8 @@ public class AttributeConfig {
         ARRAY("Array"),
         OPTIONAL("Optional"),
         EXTENSION_ATTRIBUTE("ExtensionAttribute"),
-        VIRTUAL("Virtual");
+        VIRTUAL("Virtual"),
+        SUBSTITUTE("Subsitute");
 
         private final String key;
     }

@@ -50,8 +50,8 @@ import org.apache.log4j.Logger;
 @JsonDeserialize(using = CidsAttributeDeserializer.class)
 public class CidsAttribute {
 
-    String key;
-    String classKey;
+    String name;
+    String className;
     LinkedHashMap<String, Object> configurationAttributes = new LinkedHashMap<String, Object>();
 
     /**
@@ -63,12 +63,10 @@ public class CidsAttribute {
     /**
      * Creates a new CidsAttribute object.
      *
-     * @param key DOCUMENT ME!
-     * @param classKey DOCUMENT ME!
      */
-    public CidsAttribute(final String key, final String classKey) {
-        this.key = key;
-        this.classKey = classKey;
+    public CidsAttribute(final String name, final String className) {
+        this.name = name;
+        this.className = className;
     }
 
     /**
@@ -77,7 +75,7 @@ public class CidsAttribute {
      * @return DOCUMENT ME!
      */
     public String getAttributeKey() {
-        return new StringBuffer(classKey).append('/').append(key).toString();
+        return new StringBuffer(className).append('/').append(name).toString();
     }
 
     /**
@@ -87,8 +85,8 @@ public class CidsAttribute {
      */
     public void setAttributeKey(final String attrKey) {
         final int firstAt = attrKey.lastIndexOf('/');
-        classKey = attrKey.substring(0, firstAt);
-        key = attrKey.substring(firstAt + 1);
+        className = attrKey.substring(0, firstAt);
+        name = attrKey.substring(firstAt + 1);
     }
 
     /**
@@ -105,6 +103,7 @@ public class CidsAttribute {
      * DOCUMENT ME!
      *
      * @param key DOCUMENT ME!
+     * @deprecated operation is not used
      */
     public void removeConfigFlag(final CidsAttributeConfigurationFlagKey key) {
         configurationAttributes.remove(key.toString());
@@ -125,9 +124,27 @@ public class CidsAttribute {
      * DOCUMENT ME!
      *
      * @param key DOCUMENT ME!
+     * @deprecated operation is not used
      */
     public void removeConfigAttribute(final CidsAttributeConfigurationKey key) {
         configurationAttributes.remove(key.toString());
+    }
+    
+    public String getName() {
+        return name;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    /**
+     * Returns all configuration attributes of the cids attribute
+     * 
+     * @return 
+     */
+    public LinkedHashMap<String, Object> getConfigurationAttributes() {
+        return configurationAttributes;
     }
 }
 

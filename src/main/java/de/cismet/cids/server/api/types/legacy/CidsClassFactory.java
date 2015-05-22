@@ -13,6 +13,9 @@ import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 
 import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.newuser.permission.Permission;
+import Sirius.server.newuser.permission.Policy;
+import Sirius.util.image.Image;
 
 import de.cismet.cids.server.api.types.CidsAttribute;
 import de.cismet.cids.server.api.types.CidsClass;
@@ -47,16 +50,732 @@ public class CidsClassFactory {
         return factory;
     }
 
-    
 //     ClassAttribute attrib = new ClassAttribute(id + "", classID, name, typeID, classes.getClass(classID).getPolicy()); // NOI18N
 //                attrib.setValue(value);
 //                classes.getClass(attrib.getClassID()).addAttribute(attrib);
-    
-    
-    
     /**
-     * Transforms a cids legacy meta class object into a cids rest API class
-     * object
+     * Transforms a cids rest API class into a cids legacy meta class object
+     * (Sirius) object.
+     *
+     * @param cidsClass
+     * @return the reconstructed metaClass
+     * @throws java.lang.Exception
+     */
+    public MetaClass legacyCidsClassFromRestCidsClass(final CidsClass cidsClass) throws Exception {
+
+        // create a copy of the cids class' configuration attributes
+        final HashMap<String, Object> configurationAttributes = new HashMap<String, Object>();
+        configurationAttributes.putAll(cidsClass.getConfigurationAttributes());
+
+        String configurationKey;
+        Object configurationAttribute;
+
+        // MetaClass.id --------------------------------------------------------
+        final int id;
+        configurationKey = ClassConfig.Key.LEGACY_ID.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        id = this.getIntValue("MetaClass.id", configurationKey, configurationAttribute);
+        if (id == -1) {
+            //throw new NoSuchFieldException(message);
+            // FIXME: adjust cids rest legacy cids bean serialization and inlcude LEGACY_ID!
+            LOG.warn("NoSuchFieldException Exception for MetaClass.id '" + configurationKey + "' supressed to ensure compatibility with cids rest legacy cids bean serialization.");
+        }
+
+        // MetaClass.tableName ------------------------------------------------------
+        // the table name of the meta class is part of the class key of the cids class (tablename@domain) .
+        final String tableName = cidsClass.getName();
+        if (tableName == null || tableName.isEmpty()) {
+            final String message = "cannot set MetaClass.tableName to CidsClass.name: property is not available or null! Name is a required attribute and part of the class key (name@domain) of the cids class";
+            LOG.error(message);
+            throw new NoSuchFieldException(message);
+        }
+
+        // MetaClass.name ------------------------------------------------------
+        configurationKey = ClassConfig.Key.NAME.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        final String name;
+        if (configurationAttribute != null) {
+            name = configurationAttribute.toString();
+        } else {
+            final String message = "cannot set MetaClass.name to configuration attribute '"
+                    + configurationKey + "': configuration attribute is not available or null. Setting to MetaClass.name to MetaClass.tableName: '" + tableName + "'.";
+            LOG.warn(message);
+            name = tableName;
+        }
+
+        // MetaClass.description -----------------------------------------------
+        final String description;
+        configurationKey = ClassConfig.Key.DESCRIPTION.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        if (configurationAttribute != null) {
+            description = configurationAttribute.toString();
+        } else {
+            final String message = "cannot set MetaClass.description to configuration attribute '"
+                    + configurationKey + "': configuration attribute is not available or null";
+            LOG.warn(message);
+            description = "no description available";
+        }
+
+        // MetaClass.icon ------------------------------------------------------
+        //FIXME: build icon object from CLASS_ICON (string) instead from 
+        // LEGACY_CLASS_ICON (byte[]).
+        final Image icon;
+        configurationKey = ClassConfig.Key.LEGACY_CLASS_ICON.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        if (configurationAttribute != null) {
+            if (Sirius.util.image.Image.class.isAssignableFrom(configurationAttribute.getClass())) {
+                icon = (Sirius.util.image.Image) configurationAttribute;
+            } else {
+                final String message = "cannot restore MetaClass.icon from configuration attribute '"
+                        + configurationKey + "' = '" + configurationAttribute
+                        + "': unexpected configuration attribute class '"
+                        + configurationAttribute.getClass() + "'";
+                LOG.error(message);
+                throw new ClassCastException(message);
+            }
+        } else {
+            final String message = "cannot set MetaClass.icon to to configuration attribute '"
+                    + configurationKey + "': property is not available or null";
+            LOG.error(message);
+            throw new NoSuchFieldException(message);
+        }
+
+        // MetaClass.objectIcon -------------------------------------------------
+        //FIXME: build icon object from CLASS_ICON (string) instead from 
+        // LEGACY_CLASS_ICON (byte[]).
+        final Image objectIcon;
+        configurationKey = ClassConfig.Key.LEGACY_OBJECT_ICON.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        if (configurationAttribute != null) {
+            if (Sirius.util.image.Image.class.isAssignableFrom(configurationAttribute.getClass())) {
+                objectIcon = (Sirius.util.image.Image) configurationAttribute;
+            } else {
+                final String message = "cannot restore MetaClass.objectIcon from configuration attribute '"
+                        + configurationKey + "' = '" + configurationAttribute
+                        + "': unexpected configuration attribute class '"
+                        + configurationAttribute.getClass() + "'";
+                LOG.error(message);
+                throw new ClassCastException(message);
+            }
+        } else {
+            final String message = "cannot set MetaClass.objectIcon to to configuration attribute '"
+                    + configurationKey + "': property is not available or null";
+            LOG.error(message);
+            throw new NoSuchFieldException(message);
+        }
+
+        // MetaClass.primaryKey ------------------------------------------------
+        final String primaryKey;
+        configurationKey = ClassConfig.Key.LEGACY_PK_FIELD.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        if (configurationAttribute != null) {
+            primaryKey = configurationAttribute.toString();
+        } else {
+            final String message = "cannot set MetaClass.primaryKey to configuration attribute '"
+                    + configurationKey + "': configuration attribute is not available or null. Setting to default: 'id'.";
+            LOG.warn(message);
+            primaryKey = "id";
+        }
+
+        // MetaClass.toString -------------------------------------------------
+        final String toString;
+        configurationKey = ClassConfig.XPKey.TO_STRING_XP.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        if (configurationAttribute != null) {
+            toString = configurationAttribute.toString();
+        } else {
+            final String message = "cannot set MetaClass.toString to configuration attribute '"
+                    + configurationKey + "': configuration attribute is not available or null";
+            LOG.debug(message);
+            toString = null;
+        }
+
+        // MetaClass.Policy ----------------------------------------------------
+        final Policy policy;
+        configurationKey = ClassConfig.Key.POLICY.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        if (configurationAttribute != null) {
+            final String policyName = configurationAttribute.toString().toUpperCase();
+            policy = this.createPolicy(policyName);
+        } else {
+            final String message = "cannot set MetaClass.policy to configuration attribute '"
+                    + configurationKey + "': configuration attribute is not available or null. Setting to default: 'SECURE'";
+            LOG.debug(message);
+            policy = this.createPolicy("SECURE");
+        }
+
+        // MetaClass.attributePolicy -------------------------------------------
+        final Policy attributePolicy;
+        configurationKey = ClassConfig.Key.ATTRIBUTE_POLICY.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        if (configurationAttribute != null) {
+            final String policyName = configurationAttribute.toString().toUpperCase();
+            attributePolicy = this.createPolicy(policyName);
+        } else {
+            final String message = "cannot set MetaClass.attributePolicy to configuration attribute '"
+                    + configurationKey + "': configuration attribute is not available or null. Setting to default: 'SECURE'";
+            LOG.warn(message);
+            attributePolicy = this.createPolicy("SECURE");
+        }
+
+        // MetaClass.indexed ---------------------------------------------------
+        final boolean indexed;
+        configurationKey = ClassConfig.FlagKey.INDEXED.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        indexed = this.getBooleanValue("indexed", configurationKey, configurationAttribute);
+
+        // MetaClass.domain ----------------------------------------------------
+        final String domain = cidsClass.getDomain();
+        if (domain == null || domain.isEmpty()) {
+            final String message = "cannot set MetaClass.domain to CidsClass.domain: property is not available or null";
+            LOG.error(message);
+            throw new NoSuchFieldException(message);
+        }
+
+        // MetaClass.editor ----------------------------------------------------
+        final String editor;
+        configurationKey = ClassConfig.XPKey.EDITOR_XP.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        if (configurationAttribute != null) {
+            editor = configurationAttribute.toString();
+        } else {
+            final String message = "cannot set MetaClass.editor to configuration attribute '"
+                    + configurationKey + "': configuration attribute is not available or null";
+            LOG.debug(message);
+            editor = null;
+        }
+
+        // MetaClass.renderer --------------------------------------------------
+        final String renderer;
+        configurationKey = ClassConfig.XPKey.EDITOR_XP.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        if (configurationAttribute != null) {
+            renderer = configurationAttribute.toString();
+        } else {
+            final String message = "cannot set MetaClass.renderer to configuration attribute '"
+                    + configurationKey + "': configuration attribute is not available or null";
+            LOG.debug(message);
+            renderer = null;
+        }
+
+        // MetaClass.arrayLink -------------------------------------------------
+        final boolean arrayLink;
+        configurationKey = ClassConfig.FlagKey.ARRAY_LINK.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        arrayLink = this.getBooleanValue("arrayLink", configurationKey, configurationAttribute);
+
+        // create the class with basic attributes
+        final Sirius.server.localserver._class.Class siriusClass
+                = new Sirius.server.localserver._class.Class(id, name, description,
+                        icon, objectIcon, tableName, primaryKey, toString, policy,
+                        attributePolicy, indexed);
+        final MetaClass metaClass = new MetaClass(siriusClass, domain);
+        metaClass.setEditor(editor);
+        metaClass.setRenderer(renderer);
+        metaClass.setArrayElementLink(arrayLink);
+
+        // process configuration attributes and create the respective class attributes
+        for (final String configurationKeyName : configurationAttributes.keySet()) {
+
+            Object value = configurationAttributes.get(configurationKeyName);
+            String classAttributeName = null;
+
+            // ckeck ClassConfig.Key -------------------------------------------
+            try {
+                // JSON property names of configurationAttributes are names of the Key Enums
+                // key.getName(), not keys of Key Enums key.getKey()!
+                // - >Enums can  be reconstructed from property names!
+                final ClassConfig.Key classConfigKey
+                        = ClassConfig.Key.valueOf(ClassConfig.Key.class, configurationKeyName);
+                classAttributeName = classConfigKey.getKey();
+            } catch (IllegalArgumentException ex) {
+                final String message = "configuration attribute '"
+                        + configurationKeyName + "' is not a known ClassConfig Key.";
+                LOG.debug(message);
+            }
+
+            // check ClassConfig.FeatureSupportingrasterServiceKey -------------
+            if (classAttributeName == null) {
+                try {
+                    final ClassConfig.FeatureSupportingrasterServiceKey classConfigKey
+                            = ClassConfig.FeatureSupportingrasterServiceKey.valueOf(ClassConfig.FeatureSupportingrasterServiceKey.class, configurationKeyName);
+                    classAttributeName = classConfigKey.getKey();
+                } catch (IllegalArgumentException ex) {
+                    final String message = "configuration attribute '"
+                            + configurationKeyName + "' is not a known ClassConfig FeatureSupportingrasterServiceKey.";
+                    LOG.debug(message);
+                }
+            }
+
+            // check ClassConfig.XPKey -----------------------------------------
+            if (classAttributeName == null) {
+                try {
+                    final ClassConfig.XPKey classConfigKey
+                            = ClassConfig.XPKey.valueOf(ClassConfig.XPKey.class, configurationKeyName);
+                    classAttributeName = classConfigKey.getKey();
+                } catch (IllegalArgumentException ex) {
+                    final String message = "configuration attribute '"
+                            + configurationKeyName + "' is not a known ClassConfig XPKey.";
+                    LOG.debug(message);
+                }
+            }
+
+            // check ClassConfig.FlagKey ---------------------------------------
+            if (classAttributeName == null) {
+                try {
+                    final ClassConfig.FlagKey classConfigKey
+                            = ClassConfig.FlagKey.valueOf(ClassConfig.FlagKey.class, configurationKeyName);
+                    classAttributeName = classConfigKey.getKey();
+                    // try to convert to boolean
+                    value = this.getBooleanValue("classAttribute." + classAttributeName,
+                            classAttributeName, value);
+                } catch (IllegalArgumentException ex) {
+                    final String message = "configuration attribute '"
+                            + configurationKeyName + "' is not a known ClassConfig FlagKey.";
+                    LOG.debug(message);
+                }
+            }
+
+            // "unknown configuration attribute!"
+            if (classAttributeName == null) {
+                final String message = "configuration attribute '"
+                        + configurationKeyName + "' is not a known ClassConfig attribute";
+                LOG.warn(message);
+            }
+
+            final ClassAttribute classAttribute = this.createClassAttribute(classAttributeName, value, metaClass);
+            metaClass.getAttributes().add(classAttribute);
+        }
+
+        // process attributes and create the respective member attribute info
+        for (final CidsAttribute cidsAttribute : cidsClass.getAttributes().values()) {
+            final MemberAttributeInfo mai = this.createMemberAttributeInfo(metaClass, cidsAttribute);
+            metaClass.addMemberAttributeInfo(mai);
+        }
+
+        return metaClass;
+    }
+
+    private MemberAttributeInfo createMemberAttributeInfo(MetaClass metaClass, CidsAttribute cidsAttribute) {
+
+        // create a copy of the cids class' configuration attributes
+        final HashMap<String, Object> configurationAttributes = new HashMap<String, Object>();
+        configurationAttributes.putAll(cidsAttribute.getConfigurationAttributes());
+
+        String configurationKey;
+        Object configurationAttribute;
+
+        // MemberAttributeInfo.id ----------------------------------------------
+        final int id;
+        configurationKey = AttributeConfig.Key.LEGACY_ID.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        id = this.getIntValue("MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".id", configurationKey, configurationAttribute);
+        if (id == -1) {
+            //final String message = "Missing or invalid integer Attribute MemberAttributeInfo."+cidsAttribute.getAttributeKey()+".id in cids class '"+metaClass.getKey()+"'";
+            //LOG.error(message);
+            //throw new NoSuchFieldException(message);
+            // FIXME: adjust cids rest legacy cids bean serialization and inlcude LEGACY_ID!
+            LOG.warn("NoSuchFieldException Exception for MemberAttributeInfo" + cidsAttribute.getAttributeKey() + ".id (" + configurationKey + ") supressed to ensure compatibility with cids rest legacy cids bean serialization.");
+        }
+
+        // MemberAttributeInfo.classId -----------------------------------------
+        final int classId = metaClass.getId();
+
+        // MemberAttributeInfo.typeId ------------------------------------------
+        final int typeId;
+        configurationKey = AttributeConfig.Key.REFERENCE_TYPE.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        typeId = this.getIntValue("MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".typeId", configurationKey, configurationAttribute);
+        if (typeId == -1) {
+            final String message = "Missing or invalid integer Attribute MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".typeId in cids class '" + metaClass.getKey()
+                    + "', setting to default value: " + typeId;
+            LOG.warn(message);
+        }
+
+        // MemberAttributeInfo.fieldName ---------------------------------------
+        final String fieldName = cidsAttribute.getName();
+
+        // MemberAttributeInfo.name --------------------------------------------
+        configurationKey = AttributeConfig.Key.NAME.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        final String name;
+        if (configurationAttribute != null) {
+            name = configurationAttribute.toString();
+        } else {
+            final String message = "cannot set MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".name to configuration attribute '"
+                    + configurationKey + "': configuration attribute is not available or null. Setting to name to fieldName: '" + fieldName + "'.";
+            LOG.warn(message);
+            name = fieldName;
+        }
+
+        // MemberAttributeInfo.foreignKey --------------------------------------       
+        final boolean foreignKey;
+        configurationKey = AttributeConfig.FlagKey.FOREIGN_KEY.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        foreignKey = this.getBooleanValue("MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".foreignKey",
+                configurationKey, configurationAttribute);
+
+        // MemberAttributeInfo.substitute --------------------------------------       
+        final boolean substitute;
+        configurationKey = AttributeConfig.FlagKey.SUBSTITUTE.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        substitute = this.getBooleanValue("MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".foreignKey",
+                configurationKey, configurationAttribute);
+
+        // MemberAttributeInfo.foreignKeyClassId ------------------------------- 
+        final int foreignKeyClassId;
+        configurationKey = AttributeConfig.Key.LEGACY_FOREIGN_KEY_CLASS_ID.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        foreignKeyClassId = this.getIntValue("MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".foreignKeyClassId", configurationKey, configurationAttribute);
+        if (foreignKeyClassId == -1) {
+            final String message = "Missing or invalid integer Attribute MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".foreignKeyClassId in cids class '" + metaClass.getKey()
+                    + "', setting to default value: " + foreignKeyClassId;
+            LOG.warn(message);
+        }
+
+        // MemberAttributeInfo.visible ----------------------------------------- 
+        final boolean visible;
+        configurationKey = AttributeConfig.FlagKey.VISIBLE.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        visible = this.getBooleanValue("MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".visible",
+                configurationKey, configurationAttribute);
+
+        // MemberAttributeInfo.indexed ----------------------------------------- 
+        final boolean indexed;
+        configurationKey = AttributeConfig.FlagKey.INDEXED.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        indexed = this.getBooleanValue("MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".indexed",
+                configurationKey, configurationAttribute);
+
+        // MemberAttributeInfo.isArray -----------------------------------------         
+        final boolean isArray;
+        configurationKey = AttributeConfig.FlagKey.ARRAY.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        isArray = this.getBooleanValue("MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".isArray",
+                configurationKey, configurationAttribute);
+
+        // MemberAttributeInfo.arrayKeyFieldName -------------------------------
+        final String arrayKeyFieldName;
+        configurationKey = AttributeConfig.Key.ARRAY_KEY_FIELD_NAME.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        if (configurationAttribute != null) {
+            arrayKeyFieldName = configurationAttribute.toString();
+        } else {
+            final String message = "cannot set MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".indexed to configuration attribute '"
+                    + configurationKey + "': configuration attribute is not available or null";
+            LOG.debug(message);
+            arrayKeyFieldName = null;
+        }
+
+        // MemberAttributeInfo.fromString --------------------------------------    
+        final String fromString;
+        configurationKey = AttributeConfig.XPKey.FROM_STRING_XP.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        if (configurationAttribute != null) {
+            fromString = configurationAttribute.toString();
+        } else {
+            final String message = "cannot set MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".fromString to configuration attribute '"
+                    + configurationKey + "': configuration attribute is not available or null";
+            LOG.debug(message);
+            fromString = null;
+        }
+
+        // MemberAttributeInfo.toString ----------------------------------------      
+        final String toString;
+        configurationKey = AttributeConfig.XPKey.TO_STRING_XP.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        if (configurationAttribute != null) {
+            toString = configurationAttribute.toString();
+        } else {
+            final String message = "cannot set MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".toString to configuration attribute '"
+                    + configurationKey + "': configuration attribute is not available or null";
+            LOG.debug(message);
+            toString = null;
+        }
+
+        // MemberAttributeInfo.position ----------------------------------------       
+        final int position;
+        configurationKey = AttributeConfig.Key.LEGACY_FOREIGN_KEY_CLASS_ID.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        position = this.getIntValue("MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".position", configurationKey, configurationAttribute);
+        if (position == -1) {
+            final String message = "Missing or invalid integer Attribute MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".position in cids class '" + metaClass.getKey()
+                    + "', setting to default value: " + foreignKeyClassId;
+            LOG.warn(message);
+        }
+
+        // MemberAttributeInfo.render ------------------------------------------ 
+        final String render;
+        configurationKey = AttributeConfig.XPKey.RENDERER_XP.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        if (configurationAttribute != null) {
+            render = configurationAttribute.toString();
+        } else {
+            final String message = "cannot set MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".render to configuration attribute '"
+                    + configurationKey + "': configuration attribute is not available or null";
+            LOG.debug(message);
+            render = null;
+        }
+
+        // MemberAttributeInfo.editor ------------------------------------------ 
+        final String editor;
+        configurationKey = AttributeConfig.XPKey.EDITOR_XP.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        if (configurationAttribute != null) {
+            editor = configurationAttribute.toString();
+        } else {
+            final String message = "cannot set MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".editor to configuration attribute '"
+                    + configurationKey + "': configuration attribute is not available or null";
+            LOG.debug(message);
+            editor = null;
+        }
+
+        // MemberAttributeInfo.Javaclassname ------------------------------------------ 
+        final String javaclassname;
+        configurationKey = AttributeConfig.Key.JAVACLASS_NAME.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        if (configurationAttribute != null) {
+            javaclassname = configurationAttribute.toString();
+        } else {
+            final String message = "cannot set MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".javaclassname to configuration attribute '"
+                    + configurationKey + "': configuration attribute is not available or null";
+            LOG.debug(message);
+            javaclassname = null;
+        }
+
+        // MemberAttributeInfo.defaultValue ------------------------------------
+        final String defaultValue;
+        configurationKey = AttributeConfig.Key.DEFAULT_VALUE.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        if (configurationAttribute != null) {
+            defaultValue = configurationAttribute.toString();
+        } else {
+            final String message = "cannot set MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".defaultValue to configuration attribute '"
+                    + configurationKey + "': configuration attribute is not available or null";
+            LOG.debug(message);
+            defaultValue = null;
+        }
+
+        // MemberAttributeInfo.optional ----------------------------------------
+        final boolean optional;
+        configurationKey = AttributeConfig.FlagKey.OPTIONAL.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        optional = this.getBooleanValue("MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".optional",
+                configurationKey, configurationAttribute);
+
+        // MemberAttributeInfo.virtual -----------------------------------------
+        final boolean virtual;
+        configurationKey = AttributeConfig.FlagKey.VIRTUAL.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        virtual = this.getBooleanValue("MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".virtual",
+                configurationKey, configurationAttribute);
+
+        // MemberAttributeInfo.virtual -----------------------------------------
+        final boolean extensionAttribute;
+        configurationKey = AttributeConfig.FlagKey.EXTENSION_ATTRIBUTE.name();
+        configurationAttribute = configurationAttributes.remove(configurationKey);
+        extensionAttribute = this.getBooleanValue("MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".extensionAttribute",
+                configurationKey, configurationAttribute);
+
+        if (!configurationAttributes.isEmpty()) {
+            LOG.warn(configurationAttributes.size()
+                    + " unsupported configuration attributes in attribute '"
+                    + cidsAttribute.getAttributeKey() + "'!");
+            if (LOG.isDebugEnabled()) {
+                for (final String configurationKeyKey : configurationAttributes.keySet()) {
+                    LOG.debug("unsupported configuration attribute '" + configurationKeyKey
+                            + "' = ' " + configurationAttributes.get(configurationKeyKey)
+                            + "' in attribute '" + cidsAttribute.getAttributeKey() + "'!");
+                }
+            }
+        }
+
+        final MemberAttributeInfo mai = new MemberAttributeInfo(id, classId, typeId,
+                name, fieldName, foreignKey, substitute, foreignKeyClassId, visible,
+                indexed, isArray, arrayKeyFieldName, fromString, toString, position);
+
+        mai.setRenderer(render);
+        mai.setEditor(editor);
+        mai.setJavaclassname(javaclassname);
+        mai.setDefaultValue(defaultValue);
+        mai.setOptional(optional);
+        mai.setVirtual(virtual);
+        mai.setExtensionAttribute(extensionAttribute);
+
+        return mai;
+    }
+
+    /**
+     * Create a new legacy Class Attribute from a Configuration Attribute. TODO:
+     * check if typeID is really required
+     *
+     * @param attributeName
+     * @param value
+     * @param metaClass
+     * @return
+     */
+    private ClassAttribute createClassAttribute(final String attributeName,
+            final Object value,
+            final MetaClass metaClass) {
+
+        //ClassAttribute.id ----------------------------------------------------
+        final String id = attributeName;
+        //ClassAttribute.classID -----------------------------------------------
+        final int classID = metaClass.getID();
+        //ClassAttribute.name --------------------------------------------------
+        final String name = attributeName;
+        //ClassAttribute.typeID ------------------------------------------------
+        // set to default (7 = char)
+        final int typeID = 7;
+        //ClassAttribute.policy ------------------------------------------------
+        final Policy policy = metaClass.getPolicy();
+        //ClassAttribute.value -------------------------------------------------
+        final ClassAttribute classAttribute = new ClassAttribute(id, classID, name, typeID, policy);
+        classAttribute.setValue(value);
+        if (value != null) {
+            if (String.class.isAssignableFrom(value.getClass())) {
+                final String message = "value of class attribute '"
+                        + attributeName + "' (created from existing configuration attribute) is not of type String but '"
+                        + value.getClass() + "'";
+                LOG.warn(message);
+            }
+        } else {
+            final String message = "value of class attribute '"
+                    + attributeName + "' (created from existing configuration attribute) is null!";
+            LOG.debug(message);
+        }
+
+        return classAttribute;
+    }
+
+    /**
+     * Get a boolean value from a configuration attribute. Return false by
+     * default
+     *
+     * @param attributeName
+     * @param configurationKey
+     * @param configurationAttributes
+     * @return
+     */
+    private boolean getBooleanValue(final String attributeName,
+            final String configurationKey,
+            final Object configurationAttribute) {
+
+        boolean booleanValue = false;
+        if (configurationAttribute != null) {
+            if (Boolean.class.isAssignableFrom(configurationAttribute.getClass())) {
+                booleanValue = ((Boolean) configurationAttribute);
+            } else {
+                LOG.warn("cannot restore boolean MetaClass." + attributeName + " from configuration attribute '"
+                        + configurationKey + "': unexpected configuration attribute class '"
+                        + configurationAttribute.getClass() + "', forcing string-deserialization");
+                try {
+                    booleanValue = Boolean.valueOf(configurationAttribute.toString());
+                } catch (Exception ex) {
+                    final String message = "cannot restore boolean MetaClass." + attributeName + " from configuration attribute '"
+                            + configurationKey + "' = '" + configurationAttribute
+                            + "': '" + ex.getMessage() + "' -> Setting to default: false";
+                    LOG.warn(message, ex);
+                }
+            }
+        } else {
+            final String message = "cannot set boolean MetaClass." + attributeName + " to configuration attribute '"
+                    + configurationKey + "': configuration attribute is not available or null. -> Setting to default: false";
+            LOG.debug(message);
+        }
+
+        return booleanValue;
+    }
+
+    private int getIntValue(final String attributeName,
+            final String configurationKey,
+            final Object configurationAttribute) {
+
+        int intValue = -1;
+
+        if (configurationAttribute != null) {
+            if (Integer.class.isAssignableFrom(configurationAttribute.getClass())) {
+                intValue = ((Integer) configurationAttribute);
+            } else {
+                LOG.warn("cannot restore '" + attributeName + "' from configuration attribute '"
+                        + configurationKey + "': unexpected configuration attribute class '"
+                        + configurationAttribute.getClass() + "', forcing string-deserialization");
+                try {
+                    intValue = Integer.parseInt(configurationAttribute.toString());
+                } catch (Exception ex) {
+                    final String message = "cannot restore '" + attributeName + "' from configuration attribute '"
+                            + configurationKey + "' = '" + configurationAttribute
+                            + "' : '" + ex.getMessage() + "', returning default value: -1";
+                    LOG.warn(message, ex);
+                    //throw new NumberFormatException(message);
+                }
+            }
+        } else {
+            final String message = "cannot set '" + attributeName + "' to configuration attribute '"
+                    + configurationKey + "': configuration attribute is not available or null. Returning default: -1";
+            LOG.warn(message);
+        }
+
+        return intValue;
+    }
+
+    /**
+     * Helper method for creating Policies
+     *
+     * @param policyName
+     * @return
+     */
+    private Policy createPolicy(String policyName) {
+
+        if (!policyName.equalsIgnoreCase("STANDARD")
+                || !policyName.equalsIgnoreCase("SECURE")
+                || !policyName.equalsIgnoreCase("WIKI")) {
+
+            LOG.warn("policy '" + policyName + "' is currently not supported, setting to default 'SECURE'");
+        }
+
+        final Permission readPermission = new Permission(0, "read");
+        final Permission writePermission = new Permission(1, "write");
+        final Map<Permission, Boolean> policyMap = new HashMap<Permission, Boolean>();
+        
+        if(policyName.equalsIgnoreCase("STANDARD")) {
+            policyMap.put(readPermission, false);
+            policyMap.put(writePermission, false);
+            return new Policy(policyMap, 0, policyName);
+        } else if(policyName.equalsIgnoreCase("WIKI")) {
+            policyMap.put(readPermission, true);
+            policyMap.put(writePermission, true);
+            return new Policy(policyMap, 1, policyName);
+        } else {
+            policyMap.put(readPermission, false);
+            policyMap.put(writePermission, false);
+            return new Policy(policyMap, 2, policyName);
+        }
+
+// not support in 1.6
+//        switch (policyName) {
+//            case "STANDARD": {
+//                policyMap.put(readPermission, false);
+//                policyMap.put(writePermission, false);
+//                return new Policy(policyMap, 0, policyName);
+//            }
+//            case "WIKI": {
+//                policyMap.put(readPermission, true);
+//                policyMap.put(writePermission, true);
+//                return new Policy(policyMap, 1, policyName);
+//            }
+//            case "SECURE":
+//            default: {
+//                policyMap.put(readPermission, false);
+//                policyMap.put(writePermission, false);
+//                return new Policy(policyMap, 2, policyName);
+//            }
+//        }
+    }
+
+    /**
+     * Transforms a cids legacy meta class object (Sirius) into a cids rest API
+     * class object.
      *
      * <strong>Code copied from
      * de.cismet.cids.server.backend.legacy.LegacyCoreBackend.createCidsClass()
@@ -69,27 +788,34 @@ public class CidsClassFactory {
     public CidsClass restCidsClassFromLegacyCidsClass(final MetaClass metaClass) {
         final CidsClass cidsClass = new CidsClass((String) metaClass.getTableName(),
                 metaClass.getDomain());
-        LOG.info("converting legacy meta class '"+metaClass.getKey()+"' to JSON serializable cids REST type");
-        
+        LOG.info("converting legacy meta class '" + metaClass.getKey() + "' to JSON serializable cids REST type");
+
         // 1st process the class attributes (configuration) of the cids class
         // map properties of Sirius.server.localserver._class.Class/MetaClass AND
         // class attributes (table cs_class_atr) to configuration attributes!
         final Collection<ClassAttribute> metaClassAttributes = (Collection<ClassAttribute>) metaClass.getAttributes();
-        final Map<String, ClassAttribute> caMap = new HashMap<String, ClassAttribute>();
-        
+        final Map<String, ClassAttribute> classAttributesMap = new HashMap<String, ClassAttribute>();
+
         // enumerate class attributes
         for (final ClassAttribute metaClassAttribute : metaClassAttributes) {
-            caMap.put(metaClassAttribute.getName(),
+            classAttributesMap.put(metaClassAttribute.getName(),
                     metaClassAttribute);
         }
-        LOG.debug(caMap.size() + " class attributes found in legacy meta class '"+metaClass.getKey()+"'");
+        LOG.debug(classAttributesMap.size() + " class attributes found in legacy meta class '" + metaClass.getKey() + "'");
 
-        // KEY Attributes ------------------------------------------------------
-        // ATTRIBUTE_POLICY: The name is sufficient
+        // KEY Attributes ======================================================
+        // LEGACY CLASS ID -------------------------------------------------< OK
+        // required to reconstruct the legacy SIRIUS MetaClass from REST cidsClass
+        setClassConfig(cidsClass,
+                ClassConfig.Key.LEGACY_ID,
+                metaClass.getID());
+        // ATTRIBUTE_POLICY ------------------------------------------------< OK
+        // The name is sufficient
         setClassConfig(cidsClass,
                 ClassConfig.Key.ATTRIBUTE_POLICY,
                 metaClass.getAttributePolicy().getName());
-        // LEGACY binary Icon! 
+        // LEGACY_CLASS_ICON -----------------------------------------------< OK
+        // required to reconstruct the legacy class icon (binary data!) from REST cidsClass
         // TODO: To be repaced by fully qualified icon name (see CLASS_ICON)
         setClassConfig(cidsClass,
                 ClassConfig.Key.LEGACY_CLASS_ICON,
@@ -97,18 +823,26 @@ public class CidsClassFactory {
 //      setClassConfig(cidsClass,
 //                ClassConfig.Key.CLASS_ICON,
 //                metaClass.getIcon().getName());
+        //NAME -------------------------------------------------------------< OK
         setClassConfig(cidsClass,
                 ClassConfig.Key.NAME,
                 metaClass.getName());
-        // TODO: Check if LEGACY_PK_FIELD is still needed  by pure REST clients
+        // DESCRIPTION -----------------------------------------------------< OK
+        setClassConfig(cidsClass,
+                ClassConfig.Key.DESCRIPTION,
+                metaClass.getDescription());
+        // LEGACY_PK_FIELD -------------------------------------------------< OK
+        // TODO: Check if LEGACY_PK_FIELD is still needed by pure REST clients
         setClassConfig(cidsClass,
                 ClassConfig.Key.LEGACY_PK_FIELD,
                 metaClass.getPrimaryKey());
-        // POLICY: The name is sufficient!
+        // POLICY ----------------------------------------------------------< OK
+        // The name is sufficient!
         setClassConfig(cidsClass,
                 ClassConfig.Key.POLICY,
                 metaClass.getPolicy().getName());
-        // LEGACY binary Icon! 
+        // LEGACY_OBJECT_ICON ----------------------------------------------< OK
+        // required to reconstruct the legacy object icon (binary data!) from REST cidsClass
         // TODO: To be repaced by fully qualified icon name (see OBJECT_ICON)
         setClassConfig(cidsClass,
                 ClassConfig.Key.LEGACY_OBJECT_ICON,
@@ -117,200 +851,259 @@ public class CidsClassFactory {
 //                ClassConfig.Key.OBJECT_ICON,
 //                metaClass.getObjectIcon().getName());
         // well known class attribute. assuming string type.
+        // FEATURE_BG ------------------------------------------------------< OK
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.Key.FEATURE_BG,
-                caMap.remove(ClassConfig.Key.FEATURE_BG.getKey()));
+                classAttributesMap.remove(ClassConfig.Key.FEATURE_BG.getKey()));
+        // FEATURE_FG ------------------------------------------------------< OK
         // well known class attribute. assuming string type.
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.Key.FEATURE_FG,
-                caMap.remove(ClassConfig.Key.FEATURE_FG.getKey()));
+                classAttributesMap.remove(ClassConfig.Key.FEATURE_FG.getKey()));
+        // FEATURE_POINT_SYMBOL --------------------------------------------< OK
         // well known class attribute. assuming string type.
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.Key.FEATURE_POINT_SYMBOL,
-                caMap.remove(ClassConfig.Key.FEATURE_POINT_SYMBOL.getKey()));
+                classAttributesMap.remove(ClassConfig.Key.FEATURE_POINT_SYMBOL.getKey()));
+        // FEATURE_POINT_SYMBOL_SWEETSPOT_X --------------------------------< OK
         // well known class attribute. assuming string type.
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.Key.FEATURE_POINT_SYMBOL_SWEETSPOT_X,
-                caMap.remove(ClassConfig.Key.FEATURE_POINT_SYMBOL_SWEETSPOT_X.getKey()));
+                classAttributesMap.remove(ClassConfig.Key.FEATURE_POINT_SYMBOL_SWEETSPOT_X.getKey()));
+        // FEATURE_POINT_SYMBOL_SWEETSPOT_Y --------------------------------< OK
         // well known class attribute. assuming string type.
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.Key.FEATURE_POINT_SYMBOL_SWEETSPOT_Y,
-                caMap.remove(ClassConfig.Key.FEATURE_POINT_SYMBOL_SWEETSPOT_Y.getKey()));
+                classAttributesMap.remove(ClassConfig.Key.FEATURE_POINT_SYMBOL_SWEETSPOT_Y.getKey()));
+        // QUERYABLE -------------------------------------------------------< OK
         // well known class attribute. assuming string type.
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.Key.QUERYABLE,
-                caMap.remove(ClassConfig.Key.QUERYABLE.getKey()));
+                classAttributesMap.remove(ClassConfig.Key.QUERYABLE.getKey()));
+        // SORTING_COLUMN --------------------------------------------------< OK
         // well known class attribute. assuming string type.
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.Key.SORTING_COLUMN,
-                caMap.remove(ClassConfig.Key.SORTING_COLUMN.getKey()));
+                classAttributesMap.remove(ClassConfig.Key.SORTING_COLUMN.getKey()));
+        // SEARCH_HIT_DYNAMIC_CHILDREN -------------------------------------< OK
         // well known class attribute. assuming string type.
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.Key.SEARCH_HIT_DYNAMIC_CHILDREN,
-                caMap.remove(ClassConfig.Key.SEARCH_HIT_DYNAMIC_CHILDREN.getKey()));
+                classAttributesMap.remove(ClassConfig.Key.SEARCH_HIT_DYNAMIC_CHILDREN.getKey()));
+        // SEARCH_HIT_DYNAMIC_CHILDREN_ATTRIBUTE ---------------------------< OK
         // well known class attribute. assuming string type.
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.Key.SEARCH_HIT_DYNAMIC_CHILDREN_ATTRIBUTE,
-                caMap.remove(ClassConfig.Key.SEARCH_HIT_DYNAMIC_CHILDREN_ATTRIBUTE.getKey()));
+                classAttributesMap.remove(ClassConfig.Key.SEARCH_HIT_DYNAMIC_CHILDREN_ATTRIBUTE.getKey()));
+        // HISTORY_ENABLED --------------------------------------------------< OK
         // well known class attribute. assuming string type.
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.Key.HISTORY_ENABLED,
-                caMap.remove(ClassConfig.Key.HISTORY_ENABLED.getKey()));
+                classAttributesMap.remove(ClassConfig.Key.HISTORY_ENABLED.getKey()));
+        // HISTORY_OPTION_ANONYMOUS ----------------------------------------< OK
         // well known class attribute. assuming string type.
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.Key.HISTORY_OPTION_ANONYMOUS,
-                caMap.remove(ClassConfig.Key.HISTORY_OPTION_ANONYMOUS.getKey()));
+                classAttributesMap.remove(ClassConfig.Key.HISTORY_OPTION_ANONYMOUS.getKey()));
+        // TO_STRING_CACHE_ENABLED -----------------------------------------< OK
         // well known class attribute. assuming string type.
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.Key.TO_STRING_CACHE_ENABLED,
-                caMap.remove(ClassConfig.Key.TO_STRING_CACHE_ENABLED.getKey()));
+                classAttributesMap.remove(ClassConfig.Key.TO_STRING_CACHE_ENABLED.getKey()));
 
-        // XPKEY
+        // XPKEYs ==============================================================
         // well known class attribute. assuming string type.
+        // AGGREGATION_RENDERER_XP -----------------------------------------< OK
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.XPKey.AGGREGATION_RENDERER_XP,
-                caMap.remove(ClassConfig.XPKey.AGGREGATION_RENDERER_XP.getKey()));
+                classAttributesMap.remove(ClassConfig.XPKey.AGGREGATION_RENDERER_XP.getKey()));
         // well known attribute, string type.
+        // EDITOR_XP -------------------------------------------------------< OK
         setClassConfig(cidsClass,
                 ClassConfig.XPKey.EDITOR_XP,
                 metaClass.getEditor());
+        // FEATURE_RENDERER_XP ---------------------------------------------< OK
         // well known class attribute. assuming string type.
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.XPKey.FEATURE_RENDERER_XP,
-                caMap.remove(ClassConfig.XPKey.FEATURE_RENDERER_XP.getKey()));
+                classAttributesMap.remove(ClassConfig.XPKey.FEATURE_RENDERER_XP.getKey()));
+        // FROM_STRING_XP --------------------------------------------------< OK
         // well known class attribute. assuming string type.
-        setClassConfigFromClassAttribute(cidsClass, ClassConfig.XPKey.FROM_STRING_XP, 
-                caMap.remove(ClassConfig.XPKey.FROM_STRING_XP.getKey()));
+        setClassConfigFromClassAttribute(cidsClass, ClassConfig.XPKey.FROM_STRING_XP,
+                classAttributesMap.remove(ClassConfig.XPKey.FROM_STRING_XP.getKey()));
+        // ICON_FACTORY_XP -------------------------------------------------< OK
         // well known class attribute. assuming string type.
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.XPKey.ICON_FACTORY_XP,
-                caMap.remove(ClassConfig.XPKey.ICON_FACTORY_XP.getKey()));
+                classAttributesMap.remove(ClassConfig.XPKey.ICON_FACTORY_XP.getKey()));
+        // RENDERER_XP -----------------------------------------------------< OK
         // well known attribute, string type.
         setClassConfig(cidsClass,
                 ClassConfig.XPKey.RENDERER_XP,
                 metaClass.getRenderer());
+        // TO_STRING_XP ----------------------------------------------------< OK
         // well attribute, string type.
         setClassConfig(cidsClass,
                 ClassConfig.XPKey.TO_STRING_XP,
                 metaClass.getToString());
+        // FEATURE_SUPPORTING_RASTER_SERVICE_ID_ATTRIBUTE ------------------< OK
         // well known class attribute. assuming string type.
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.FeatureSupportingrasterServiceKey.FEATURE_SUPPORTING_RASTER_SERVICE_ID_ATTRIBUTE,
-                caMap.remove(ClassConfig.FeatureSupportingrasterServiceKey.FEATURE_SUPPORTING_RASTER_SERVICE_ID_ATTRIBUTE.getKey()));
+                classAttributesMap.remove(ClassConfig.FeatureSupportingrasterServiceKey.FEATURE_SUPPORTING_RASTER_SERVICE_ID_ATTRIBUTE.getKey()));
+        // FEATURE_SUPPORTING_RASTER_SERVICE_LAYER -------------------------< OK
         // well known class attribute. assuming string type.
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.FeatureSupportingrasterServiceKey.FEATURE_SUPPORTING_RASTER_SERVICE_LAYER,
-                caMap.remove(ClassConfig.FeatureSupportingrasterServiceKey.FEATURE_SUPPORTING_RASTER_SERVICE_LAYER.getKey()));
+                classAttributesMap.remove(ClassConfig.FeatureSupportingrasterServiceKey.FEATURE_SUPPORTING_RASTER_SERVICE_LAYER.getKey()));
+        // FEATURE_SUPPORTING_RASTER_SERVICE_NAME --------------------------< OK
         // well known class attribute. assuming string type.
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.FeatureSupportingrasterServiceKey.FEATURE_SUPPORTING_RASTER_SERVICE_NAME,
-                caMap.remove(ClassConfig.FeatureSupportingrasterServiceKey.FEATURE_SUPPORTING_RASTER_SERVICE_NAME.getKey()));
+                classAttributesMap.remove(ClassConfig.FeatureSupportingrasterServiceKey.FEATURE_SUPPORTING_RASTER_SERVICE_NAME.getKey()));
+        // FEATURE_SUPPORTING_RASTER_SERVICE_SIMPLE_URL --------------------< OK
         // well known class attribute. assuming string type.
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.FeatureSupportingrasterServiceKey.FEATURE_SUPPORTING_RASTER_SERVICE_SIMPLE_URL,
-                caMap.remove(ClassConfig.FeatureSupportingrasterServiceKey.FEATURE_SUPPORTING_RASTER_SERVICE_SIMPLE_URL.getKey()));
+                classAttributesMap.remove(ClassConfig.FeatureSupportingrasterServiceKey.FEATURE_SUPPORTING_RASTER_SERVICE_SIMPLE_URL.getKey()));
+        // FEATURE_SUPPORTING_RASTER_SERVICE_SUPPORT_XP --------------------< OK
         // well known class attribute. assuming string type.
         setClassConfigFromClassAttribute(cidsClass,
                 ClassConfig.FeatureSupportingrasterServiceKey.FEATURE_SUPPORTING_RASTER_SERVICE_SUPPORT_XP,
-                caMap.remove(ClassConfig.FeatureSupportingrasterServiceKey.FEATURE_SUPPORTING_RASTER_SERVICE_SUPPORT_XP.getKey()));
+                classAttributesMap.remove(ClassConfig.FeatureSupportingrasterServiceKey.FEATURE_SUPPORTING_RASTER_SERVICE_SUPPORT_XP.getKey()));
 
-        // FLAGKEY - binary attributes
+        // FLAGKEY - boolean attributes ========================================
+        //  ARRAY_LINK -----------------------------------------------------< OK
         setClassFlag(cidsClass,
                 ClassConfig.FlagKey.ARRAY_LINK,
                 metaClass.isArrayElementLink());
-        setClassFlag(cidsClass, ClassConfig.FlagKey.HIDE_FEATURE, 
-                caMap.remove(ClassConfig.FlagKey.HIDE_FEATURE.getKey()) != null);
+        //   HIDE_FEATURE --------------------------------------------------< OK
+        setClassFlag(cidsClass, ClassConfig.FlagKey.HIDE_FEATURE,
+                classAttributesMap.remove(ClassConfig.FlagKey.HIDE_FEATURE.getKey()) != null);
+        // INDEXED  --------------------------------------------------------< OK
         setClassFlag(cidsClass,
                 ClassConfig.FlagKey.INDEXED,
                 metaClass.isIndexed());
-        setClassFlag(cidsClass, ClassConfig.FlagKey.REASONABLE_FEW, 
-                caMap.remove(ClassConfig.FlagKey.REASONABLE_FEW.getKey()) != null);
+        //  REASONABLE_FEW -------------------------------------------------< OK
+        setClassFlag(cidsClass, ClassConfig.FlagKey.REASONABLE_FEW,
+                classAttributesMap.remove(ClassConfig.FlagKey.REASONABLE_FEW.getKey()) != null);
 
-        // set other "unkown" class attributes
-        for (final String caName : caMap.keySet()) {
-            final ClassAttribute otherClassAttribute = caMap.get(caName);
+        // set other "unkown" class attributes =================================
+        for (final String caName : classAttributesMap.keySet()) {
+            final ClassAttribute otherClassAttribute = classAttributesMap.get(caName);
             setClassConfigFromClassAttribute(cidsClass, caName, otherClassAttribute);
         }
 
-        //2nd process the instance attributes of the cids class
-        for (final MemberAttributeInfo mai : 
-                (Collection<MemberAttributeInfo>) metaClass.getMemberAttributeInfos().values()) {
+        //2nd process the instance attributes of the cids class ////////////////
+        for (final MemberAttributeInfo mai
+                : (Collection<MemberAttributeInfo>) metaClass.getMemberAttributeInfos().values()) {
             try {
                 // process legacy cids attributes from meberattributeinfo
                 final CidsAttribute cidsAttribute
                         = new CidsAttribute((String) mai.getFieldName(), (String) metaClass.getTableName());
-                // KEY
+                // KEY /////////////////////////////////////////////////////////
+                // LEGACY_ID -----------------------------------------------< OK
+                setAttributeConfig(cidsAttribute,
+                        AttributeConfig.Key.LEGACY_ID,
+                        mai.getId());
+                // NAME ----------------------------------------------------< OK
                 setAttributeConfig(cidsAttribute,
                         AttributeConfig.Key.NAME,
                         mai.getName());
+                // DEFAULT_VALUE -------------------------------------------<
                 setAttributeConfig(cidsAttribute,
                         AttributeConfig.Key.DEFAULT_VALUE,
                         mai.getDefaultValue());
                 setAttributeConfig(cidsAttribute,
+                        // ARRAY_KEY_FIELD_NAME ------------------------------------< OK
                         AttributeConfig.Key.ARRAY_KEY_FIELD_NAME,
                         mai.getArrayKeyFieldName());
+                // JAVACLASS_NAME ------------------------------------------<
                 setAttributeConfig(cidsAttribute,
                         AttributeConfig.Key.JAVACLASS_NAME,
                         mai.getJavaclassname());
+                // POSITION ------------------------------------------------<
                 setAttributeConfig(cidsAttribute,
                         AttributeConfig.Key.POSITION,
                         mai.getPosition());
+                // REFERENCE_TYPE ------------------------------------------< OK
                 setAttributeConfig(cidsAttribute,
                         AttributeConfig.Key.REFERENCE_TYPE,
                         mai.getTypeId());
+                // LEGACY_FOREIGN_KEY_CLASS_ID -----------------------------< OK
+                setAttributeConfig(cidsAttribute,
+                        AttributeConfig.Key.LEGACY_FOREIGN_KEY_CLASS_ID,
+                        mai.getForeignKeyClassId());
 
-                // XPKey
+                // XPKey ///////////////////////////////////////////////////////
+                // COMPLEX_EDITOR_XP ---------------------------------------<
                 setAttributeConfig(cidsAttribute,
                         AttributeConfig.XPKey.COMPLEX_EDITOR_XP,
                         mai.getComplexEditor());
+                // EDITOR_XP -----------------------------------------------<
                 setAttributeConfig(cidsAttribute,
                         AttributeConfig.XPKey.EDITOR_XP,
                         mai.getEditor());
+                // FROM_STRING_XP ------------------------------------------< OK
                 setAttributeConfig(cidsAttribute,
                         AttributeConfig.XPKey.FROM_STRING_XP,
                         mai.getFromString());
+                // RENDERER_XP ---------------------------------------------<
                 setAttributeConfig(cidsAttribute,
                         AttributeConfig.XPKey.RENDERER_XP,
                         mai.getRenderer());
+                // TO_STRING_XP --------------------------------------------< OK
                 setAttributeConfig(cidsAttribute,
                         AttributeConfig.XPKey.TO_STRING_XP,
                         mai.getToString());
 
-                // FLAGKEY
+                // FLAGKEY /////////////////////////////////////////////////////
+                // ARRAY ---------------------------------------------------< OK
                 setAttributeFlag(cidsAttribute,
                         AttributeConfig.FlagKey.ARRAY,
                         mai.isArray());
+                // EXTENSION_ATTRIBUTE -------------------------------------<
                 setAttributeFlag(cidsAttribute,
                         AttributeConfig.FlagKey.EXTENSION_ATTRIBUTE,
                         mai.isExtensionAttribute());
+                // FOREIGN_KEY ---------------------------------------------< OK
                 setAttributeFlag(cidsAttribute,
                         AttributeConfig.FlagKey.FOREIGN_KEY,
                         mai.isForeignKey());
+                // INDEXED -------------------------------------------------< OK
                 setAttributeFlag(cidsAttribute,
                         AttributeConfig.FlagKey.INDEXED,
                         mai.isIndexed());
+                // OPTIONAL ------------------------------------------------<
                 setAttributeFlag(cidsAttribute,
                         AttributeConfig.FlagKey.OPTIONAL,
                         mai.isOptional());
+                // VIRTUAL -------------------------------------------------<
                 setAttributeFlag(cidsAttribute,
                         AttributeConfig.FlagKey.VIRTUAL,
                         mai.isVirtual());
+                // VISIBLE -------------------------------------------------< OK
                 setAttributeFlag(cidsAttribute,
                         AttributeConfig.FlagKey.VISIBLE,
                         mai.isVisible());
+                // SUBSTITUTE ----------------------------------------------< OK
+                setAttributeFlag(cidsAttribute,
+                        AttributeConfig.FlagKey.SUBSTITUTE,
+                        mai.isSubstitute());
 
                 cidsClass.putAttribute(cidsAttribute);
             } catch (final Exception ex) {
                 LOG.error("could not convert meta object attribute '"
-                        +mai.getName()+"' to cids REST attribute: " + ex.getMessage(), ex);
+                        + mai.getName() + "' to cids REST attribute: " + ex.getMessage(), ex);
             }
         }
-        
+
         return cidsClass;
     }
 
     /**
-     * Helper method for setting a well known configuration attribute of a cids class.
+     * Helper method for setting a well known configuration attribute of a cids
+     * class.
      *
      * @param cidsClass DOCUMENT ME!
      * @param key DOCUMENT ME!
@@ -321,14 +1114,14 @@ public class CidsClassFactory {
             cidsClass.setConfigAttribute(key, value);
         }
     }
-    
+
     /**
-     * Helper method for setting a configuration attribute from a cids class  attribute.
-     * Instead of storing the the complete attribute information, only the value
-     * of the attribute is stored. 
-     * 
-     * Note: When reconstructing  the class attribute information from the deserialized JSON
-     * Object, default values have to be set!
+     * Helper method for setting a configuration attribute from a cids class
+     * attribute. Instead of storing the complete attribute information, only
+     * the value of the attribute is stored.
+     *
+     * Note: When reconstructing the class attribute information from the
+     * deserialized JSON Object, default values have to be set!
      *
      * @param cidsClass DOCUMENT ME!
      * @param key DOCUMENT ME!
@@ -337,25 +1130,26 @@ public class CidsClassFactory {
     private void setClassConfigFromClassAttribute(final CidsClass cidsClass, final CidsClassConfigurationKey key, final ClassAttribute classAttribute) {
         if ((cidsClass != null) && (key != null) && (classAttribute != null) && (classAttribute.getValue() != null)) {
             final Object value = classAttribute.getValue();
-            if(LOG.isDebugEnabled() && !(value instanceof String)) {
-                LOG.warn("setting non-string config attribute '"+key+"'");
+            if (LOG.isDebugEnabled() && !(value instanceof String)) {
+                LOG.warn("setting non-string config attribute '" + key + "'");
             }
             cidsClass.setConfigAttribute(key, value);
         }
     }
-    
+
     private void setClassConfigFromClassAttribute(final CidsClass cidsClass, final String key, final ClassAttribute classAttribute) {
         if ((cidsClass != null) && (key != null) && (classAttribute != null) && (classAttribute.getValue() != null)) {
             final Object value = classAttribute.getValue();
-            if(LOG.isDebugEnabled() && !(value instanceof String)) {
-                LOG.warn("setting non-string config attribute '"+key+"'");
+            if (LOG.isDebugEnabled() && !(value instanceof String)) {
+                LOG.warn("setting non-string config attribute '" + key + "'");
             }
             cidsClass.setOtherConfigAttribute(key, value);
         }
     }
 
     /**
-     * Helper method for setting a well known binary configuration attribute (flag) of a cids class.
+     * Helper method for setting a well known boolean configuration attribute
+     * (flag) of a cids class.
      *
      * @param cidsClass DOCUMENT ME!
      * @param flagKey DOCUMENT ME!
@@ -369,7 +1163,8 @@ public class CidsClassFactory {
     }
 
     /**
-     * Helper method for setting a well known configuration attribute of a cids attribute
+     * Helper method for setting a well known configuration attribute of a cids
+     * attribute
      *
      * @param cidsAttribute DOCUMENT ME!
      * @param key DOCUMENT ME!
@@ -378,13 +1173,13 @@ public class CidsClassFactory {
     private void setAttributeConfig(final CidsAttribute cidsAttribute, final CidsAttributeConfigurationKey key,
             final Object value) {
         if ((cidsAttribute != null) && (key != null) && (value != null)) {
-            if(LOG.isDebugEnabled() && !(value instanceof String)) {
-                LOG.warn("setting non-string attribute '"+key+"'");
+            if (LOG.isDebugEnabled() && !(value instanceof String)) {
+                LOG.warn("setting non-string attribute '" + key + "'");
             }
-            
-            if(key == AttributeConfig.Key.DEFAULT_VALUE) {
-                 LOG.warn("converting attribute default value to string");
-                 cidsAttribute.setConfigAttribute(key, value.toString());
+
+            if (key == AttributeConfig.Key.DEFAULT_VALUE) {
+                LOG.warn("converting attribute default value to string");
+                cidsAttribute.setConfigAttribute(key, value.toString());
             } else {
                 cidsAttribute.setConfigAttribute(key, value);
             }
@@ -392,7 +1187,8 @@ public class CidsClassFactory {
     }
 
     /**
-      * Helper method for setting a well known binary configuration attribute (flag) of a cids attribute.
+     * Helper method for setting a well known boolean configuration attribute
+     * (flag) of a cids attribute.
      *
      * @param cidsAttribute DOCUMENT ME!
      * @param flagKey DOCUMENT ME!

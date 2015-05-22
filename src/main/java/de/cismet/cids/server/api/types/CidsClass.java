@@ -57,19 +57,20 @@ public class CidsClass {
 
     private final static transient Logger LOG = Logger.getLogger(CidsClass.class);
 
-    String key;
-    String domain;
-    LinkedHashMap<String, CidsAttribute> attributes = new LinkedHashMap<String, CidsAttribute>();
-    LinkedHashMap<String, Object> configurationAttributes = new LinkedHashMap<String, Object>();
+    private String name;
+    private String domain;
+    private final LinkedHashMap<String, CidsAttribute> attributes = new LinkedHashMap<String, CidsAttribute>();
+
+    private final LinkedHashMap<String, Object> configurationAttributes = new LinkedHashMap<String, Object>();
 
     /**
      * Creates a new CidsClass object.
      *
-     * @param key DOCUMENT ME!
+     * @param name DOCUMENT ME!
      * @param domain DOCUMENT ME!
      */
-    public CidsClass(final String key, final String domain) {
-        this.key = key;
+    public CidsClass(final String name, final String domain) {
+        this.name = name;
         this.domain = domain;
     }
 
@@ -104,6 +105,7 @@ public class CidsClass {
      * DOCUMENT ME!
      *
      * @param attr DOCUMENT ME!
+     * @deprecated operation is not used
      */
     public void removeAttribute(final CidsAttribute attr) {
         attributes.remove(attr.getAttributeKey());
@@ -125,6 +127,7 @@ public class CidsClass {
      * Removes a binary configuration flag.
      *
      * @param key DOCUMENT ME!
+     * @deprecated operation is not used
      */
     public void removeConfigFlag(final CidsClassConfigurationFlagKey key) {
         configurationAttributes.remove(key.toString());
@@ -139,8 +142,23 @@ public class CidsClass {
      * @param value DOCUMENT ME!
      */
     public void setConfigAttribute(final CidsClassConfigurationKey key, final Object value) {
+        // ATTENTION: name.toString() returns the NAME of the ENUM, not the value of the
+        // name, e.g. NAME( "Name" ) -> JSON property names are uppercase.
+        // This allows for reconstructing the ENUM from the JSON property name.
         configurationAttributes.put(key.toString(),
                 value);
+    }
+    
+    /**
+     * Returns a configuration attribute. This operation id used to 
+     * return well-known configuration attributes (identified by a CidsClassConfigurationKey)
+     * as well as other "unknown" configuration attributes.
+     * 
+     * @param key Either a CidsClassConfigurationKey or a String
+     * @return 
+     */
+    public Object getConfigAttribute(final String key) {
+        return configurationAttributes.get(key);
     }
 
     /**
@@ -161,22 +179,43 @@ public class CidsClass {
      * DOCUMENT ME!
      *
      * @param key DOCUMENT ME!
+     * @deprecated operation is not used
      */
     public void removeConfigAttribute(final CidsClassConfigurationKey key) {
         configurationAttributes.remove(key.toString());
     }
 
+    
     /**
-     * Return the key resp. the $self reference of the cids class instance.
+     * Returns the name of the class
+     * 
+     * @return 
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Returns the domain of the class
+     * 
+     * @return 
+     */
+    public String getDomain() {
+        return domain;
+    }
+    
+    
+    /**
+     * Return the name resp. the $self reference of the cids class instance.
      *
      * @return DOCUMENT ME!
      */
     public String getKey() {
-        return new StringBuffer("/").append(domain).append('.').append(key).toString();
+        return new StringBuffer("/").append(domain).append('.').append(name).toString();
     }
 
     /**
-     * Sets the key resp. the $self reference of the cids class instance and
+     * Sets the name resp. the $self reference of the cids class instance and
      * derives and sets additionally the domain property.
      *
      * @param key
@@ -185,11 +224,29 @@ public class CidsClass {
         final int domainSeparator = key.lastIndexOf('.');
         if (domainSeparator > 3 && key.length() > domainSeparator + 1) {
             // ignore trailing /
-            domain = key.substring(1, domainSeparator);
-            this.key = key.substring(domainSeparator + 1);
+            this.domain = key.substring(1, domainSeparator);
+            this.name = key.substring(domainSeparator + 1);
         } else {
             LOG.error("invalid class key provided, expected $self reference: '/DOMAIN.CLASSNAME'");
         }
+    }
+    
+    /**
+     * Returns all configuration attributes (~ class attributes) of the cids class
+     * 
+     * @return 
+     */
+    public LinkedHashMap<String, CidsAttribute> getAttributes() {
+        return attributes;
+    }
+
+    /**
+     * Returns all configuration attributes (~class attributes) attributes of the cids class
+     * 
+     * @return 
+     */
+    public LinkedHashMap<String, Object> getConfigurationAttributes() {
+        return configurationAttributes;
     }
 }
 
@@ -220,7 +277,7 @@ class CidsClassSerializer
         jg.writeFieldName("configuration");
         jg.writeStartObject();
 
-        final Set<Map.Entry<String, Object>> configAttributesSet = cidsClass.configurationAttributes.entrySet();
+        final Set<Map.Entry<String, Object>> configAttributesSet = cidsClass.getConfigurationAttributes().entrySet();
 
         for (final Map.Entry<String, Object> entry : configAttributesSet) {
             jg.writeObjectField(entry.getKey(),
@@ -230,14 +287,14 @@ class CidsClassSerializer
         jg.writeEndObject();
 
         // ------- Attributes
-        final Set<Map.Entry<String, CidsAttribute>> attributesSet = cidsClass.attributes.entrySet();
+        final Set<Map.Entry<String, CidsAttribute>> attributesSet = cidsClass.getAttributes().entrySet();
 
         if (attributesSet.size() > 0) {
             jg.writeFieldName("attributes");
             jg.writeStartObject();
 
             for (final Map.Entry<String, CidsAttribute> attr : attributesSet) {
-                jg.writeObjectField(attr.getValue().key,
+                jg.writeObjectField(attr.getValue().name,
                         attr.getValue());
             }
 
@@ -293,36 +350,36 @@ class CidsClassDeserializer
             if (ClassConfig.Key.LEGACY_CLASS_ICON.toString().equals(configKey)) {
                 // TODO: get rid of the legacy binary icons!
                 final Image image = this.deserializeSiriusImage(configKey, configNode);
-                cidsClass.configurationAttributes.put(configKey, image);
+                cidsClass.getConfigurationAttributes().put(configKey, image);
             } else if (ClassConfig.Key.LEGACY_OBJECT_ICON.toString().equals(configKey)) {
                 // TODO: get rid of the legacy binary icons!
                 final Image image = this.deserializeSiriusImage(configKey, configNode);
-                cidsClass.configurationAttributes.put(configKey, image);
+                cidsClass.getConfigurationAttributes().put(configKey, image);
             } else if (configNode.isArray()) {
                 LOG.warn("unexpected JSON configuration Attribute array. expecting string value for node '" + configKey
                         + "', ignoring node!");
                 final Object value = mapper.treeToValue(rootNode, Object.class);
-                cidsClass.configurationAttributes.put(configKey, value);
+                cidsClass.getConfigurationAttributes().put(configKey, value);
             } else if (configNode.isObject()) {
                 LOG.warn("unexpected JSON configuration Attribute object node. Expecting string value for node '" + configKey
                         + "' but actual value is: \n" + configNode.toString());
                 final Object value = mapper.treeToValue(rootNode, Object.class);
-                cidsClass.configurationAttributes.put(configKey, value);
+                cidsClass.getConfigurationAttributes().put(configKey, value);
             } else if (configNode.isTextual()) {
-                cidsClass.configurationAttributes.put(configKey, configNode.textValue());
+                cidsClass.getConfigurationAttributes().put(configKey, configNode.textValue());
             } else if (configNode.isBinary()) {
-                cidsClass.configurationAttributes.put(configKey, configNode.binaryValue());
+                cidsClass.getConfigurationAttributes().put(configKey, configNode.binaryValue());
             } else if (configNode.isInt()) {
-                cidsClass.configurationAttributes.put(configKey, configNode.intValue());
+                cidsClass.getConfigurationAttributes().put(configKey, configNode.intValue());
             } else if (configNode.isBigInteger()) {
-                cidsClass.configurationAttributes.put(configKey, configNode.bigIntegerValue());
+                cidsClass.getConfigurationAttributes().put(configKey, configNode.bigIntegerValue());
             } else if (configNode.isLong()) {
-                cidsClass.configurationAttributes.put(configKey, configNode.longValue());
+                cidsClass.getConfigurationAttributes().put(configKey, configNode.longValue());
             } else {
                 LOG.warn("unknown type of JSON configuration Attribute '" + configKey
                         + "': \n" + configNode.toString());
                 final Object value = mapper.treeToValue(rootNode, Object.class);
-                cidsClass.configurationAttributes.put(configKey, value);
+                cidsClass.getConfigurationAttributes().put(configKey, value);
             }
         }
 

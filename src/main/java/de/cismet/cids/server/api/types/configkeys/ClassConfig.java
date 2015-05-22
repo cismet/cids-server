@@ -9,6 +9,7 @@ package de.cismet.cids.server.api.types.configkeys;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.openide.util.Exceptions;
 
 /**
  * <strong>Code copied  from package de.cismet.cids.server.data.configkeys (cids-server-rest project)</strong>
@@ -27,12 +28,14 @@ public class ClassConfig
     @RequiredArgsConstructor
     public enum Key
         implements CidsClassConfigurationKey
-    {NAME( "Name" ),
+    {LEGACY_ID( "Id" ),
+        NAME( "Name" ),
+        DESCRIPTION( "Description" ),
         //CLASS_ICON( "ClassIcon" ),
         //OBJECT_ICON( "ObjectIcon" ),
-        LEGACY_CLASS_ICON( "LegacyClassIcon" ),
-        LEGACY_OBJECT_ICON( "LegacyObjectIcon" ),
-        LEGACY_PK_FIELD( "LegacyPK_Field" ),
+        LEGACY_CLASS_ICON( "ClassIcon" ),
+        LEGACY_OBJECT_ICON( "ObjectIcon" ),
+        LEGACY_PK_FIELD( "PK_Field" ),
         POLICY( "Policy" ),
         ATTRIBUTE_POLICY( "AttributePolicy" ),
         FEATURE_BG( "FeatureBG" ),
@@ -105,5 +108,19 @@ public class ClassConfig
         FEATURE_SUPPORTING_RASTER_SERVICE_SIMPLE_URL( "FeatureSupportingRasterServiceSimpleURL" );
 
         private final String key;
+    }
+    
+    public static void main(String args[]) {
+        try {
+            final ClassConfig.Key classConfigKey = 
+                    ClassConfig.Key.valueOf(ClassConfig.Key.class, "DESCRIPTION");
+            System.out.println("classConfigKey.getKey(): "+classConfigKey.getKey());
+            System.out.println("classConfigKey.name(): "+classConfigKey.name());
+            System.out.println("classConfigKey.toString(): "+classConfigKey.toString());
+        
+        
+        } catch(IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }
