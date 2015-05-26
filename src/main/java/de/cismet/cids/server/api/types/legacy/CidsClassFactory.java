@@ -390,7 +390,7 @@ public class CidsClassFactory {
 
         // MemberAttributeInfo.typeId ------------------------------------------
         final int typeId;
-        configurationKey = AttributeConfig.Key.REFERENCE_TYPE.name();
+        configurationKey = AttributeConfig.Key.LEGACY_REFERENCE_TYPE.name();
         configurationAttribute = configurationAttributes.remove(configurationKey);
         typeId = this.getIntValue("MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".typeId", configurationKey, configurationAttribute);
         if (typeId == -1) {
@@ -463,7 +463,7 @@ public class CidsClassFactory {
 
         // MemberAttributeInfo.arrayKeyFieldName -------------------------------
         final String arrayKeyFieldName;
-        configurationKey = AttributeConfig.Key.ARRAY_KEY_FIELD_NAME.name();
+        configurationKey = AttributeConfig.Key.LEGACY_ARRAY_KEY_FIELD_NAME.name();
         configurationAttribute = configurationAttributes.remove(configurationKey);
         if (configurationAttribute != null) {
             arrayKeyFieldName = configurationAttribute.toString();
@@ -539,7 +539,7 @@ public class CidsClassFactory {
 
         // MemberAttributeInfo.Javaclassname ------------------------------------------ 
         final String javaclassname;
-        configurationKey = AttributeConfig.Key.JAVACLASS_NAME.name();
+        configurationKey = AttributeConfig.Key.LEGACY_JAVACLASS_NAME.name();
         configurationAttribute = configurationAttributes.remove(configurationKey);
         if (configurationAttribute != null) {
             javaclassname = configurationAttribute.toString();
@@ -1020,20 +1020,20 @@ public class CidsClassFactory {
                         AttributeConfig.Key.DEFAULT_VALUE,
                         mai.getDefaultValue());
                 setAttributeConfig(cidsAttribute,
-                        // ARRAY_KEY_FIELD_NAME ------------------------------------< OK
-                        AttributeConfig.Key.ARRAY_KEY_FIELD_NAME,
+                        // LEGACY_ARRAY_KEY_FIELD_NAME ------------------------------------< OK
+                        AttributeConfig.Key.LEGACY_ARRAY_KEY_FIELD_NAME,
                         mai.getArrayKeyFieldName());
-                // JAVACLASS_NAME ------------------------------------------<
+                // LEGACY_JAVACLASS_NAME ------------------------------------------<
                 setAttributeConfig(cidsAttribute,
-                        AttributeConfig.Key.JAVACLASS_NAME,
+                        AttributeConfig.Key.LEGACY_JAVACLASS_NAME,
                         mai.getJavaclassname());
                 // POSITION ------------------------------------------------<
                 setAttributeConfig(cidsAttribute,
                         AttributeConfig.Key.POSITION,
                         mai.getPosition());
-                // REFERENCE_TYPE ------------------------------------------< OK
+                // LEGACY_REFERENCE_TYPE ------------------------------------------< OK
                 setAttributeConfig(cidsAttribute,
-                        AttributeConfig.Key.REFERENCE_TYPE,
+                        AttributeConfig.Key.LEGACY_REFERENCE_TYPE,
                         mai.getTypeId());
                 // LEGACY_FOREIGN_KEY_CLASS_ID -----------------------------< OK
                 setAttributeConfig(cidsAttribute,

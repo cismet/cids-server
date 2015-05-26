@@ -551,6 +551,23 @@ public class RESTfulInterfaceConnector implements CallServerService {
         // Tools | Templates.
     }
 
+     /**
+     * <p>Gets a meta class by its legacy class id (int) for the user form the specified domain.
+     * The connector performs fist a lookup for legacy meta class ids (int) against REST
+     * meta class ids (strings) in a local class key cache and then delegates the call to 
+     * {@link #getClassByTableName(Sirius.server.newuser.User, java.lang.String, java.lang.String)}.
+     * <strong>Example REST Call (delegated):</strong><br>
+     * <code>
+     *  <a href="http://localhost:8890/classes/SWITCHON.tag">
+     *      http://localhost:8890/classes/SWITCHON.tag
+     *  </a>
+     * </code> 
+     * @param user user performing the request
+     * @param classID legacy id of the class
+     * @param domain domain of the class
+     * @return
+     * @throws RemoteException 
+     */
     @Override
     public MetaClass getClass(final User user, final int classID, final String domain) throws RemoteException {
         LOG.debug("getClass '"+classID+"@"+domain + "' for user '"+user+"'");
@@ -581,17 +598,33 @@ public class RESTfulInterfaceConnector implements CallServerService {
         return this.getClassByTableName(user, className, domain);
     }
 
+    /**
+     * <p>Gets a meta class by its name for the user form the specified domain.
+     * The REST meta class id is constructed as <code>tableName.domain</code></p>
+     * <strong>Example REST Call:</strong><br>
+     * <code>
+     *  <a href="http://localhost:8890/classes/SWITCHON.tag">
+     *      http://localhost:8890/classes/SWITCHON.tag
+     *  </a>
+     * </code> 
+     * @param user user performing the request
+     * @param tableName name of the class
+     * @param domain domain of the class
+     * @return
+     * @throws RemoteException 
+     */
     @Override
     public MetaClass getClassByTableName(final User user, final String tableName, final String domain)
             throws RemoteException {
-        LOG.debug("getClassByTableName '"+tableName+"@"+domain + "' for user '"+user+"'");
         final MultivaluedMap queryParameters = this.createUserParameters(user);
-        
         final WebResource webResource = this.createWebResource(CLASSES_API)
                 .path(domain + "." + tableName)
                 .queryParams(queryParameters);
         WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
         builder = this.createMediaTypeHeaders(builder);
+        
+        LOG.debug("getClassByTableName '"+tableName+"@"+domain + "' for user '"+user+"': "
+            + webResource.toString());
 
         try {
 
@@ -624,15 +657,15 @@ public class RESTfulInterfaceConnector implements CallServerService {
     }
 
     /**
-     * <p>Get all classes for the user the form the domain.</p>
-     * <strong>Example:</strong><br>
+     * <p>Gets all meta classes for the user from the specified the domain.</p>
+     * <strong>Example REST Call:</strong><br>
      * <code>
      *  <a href="http://localhost:8890/classes?domain=SWITCHON">
      *      http://localhost:8890/classes?domain=SWITCHON
      *  </a>
      * </code>
      * 
-     * @param user legacy cids user
+     * @param user legacy cids user performing the request
      * @param domain domain (~localserver)
      * @return Array with all meta classes
      * @throws RemoteException if any server error occurs

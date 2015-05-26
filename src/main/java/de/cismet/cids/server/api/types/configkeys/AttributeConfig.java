@@ -33,11 +33,11 @@ public class AttributeConfig {
             implements CidsAttributeConfigurationKey {
         LEGACY_ID( "Id" ),
         NAME("Name"),
-        ARRAY_KEY_FIELD_NAME("ArrayKeyFieldName"),
+        LEGACY_ARRAY_KEY_FIELD_NAME("ArrayKeyFieldName"),
         DEFAULT_VALUE("DefaultValue"),
         POSITION("Position"),
-        JAVACLASS_NAME("JavaClassName"),
-        REFERENCE_TYPE("ReferenceType"),
+        LEGACY_JAVACLASS_NAME("JavaClassName"),
+        LEGACY_REFERENCE_TYPE("ReferenceType"),
         LEGACY_FOREIGN_KEY_CLASS_ID("ForeignKeyClassId");
 
         private final String key;
