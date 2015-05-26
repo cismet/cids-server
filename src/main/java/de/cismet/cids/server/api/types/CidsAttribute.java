@@ -61,8 +61,10 @@ public class CidsAttribute {
     }
 
     /**
-     * Creates a new CidsAttribute object.
-     *
+     * Creates an new cids attribute and initilaizes it with name and class name
+     * 
+     * @param name name of the attribute
+     * @param className meta class name of the attribute
      */
     public CidsAttribute(final String name, final String className) {
         this.name = name;
@@ -72,7 +74,7 @@ public class CidsAttribute {
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return the key as <code>className/attributeName</code>
      */
     public String getAttributeKey() {
         return new StringBuffer(className).append('/').append(name).toString();
@@ -141,7 +143,7 @@ public class CidsAttribute {
     /**
      * Returns all configuration attributes of the cids attribute
      * 
-     * @return 
+     * @return all configuration attributes of the cids attribute
      */
     public LinkedHashMap<String, Object> getConfigurationAttributes() {
         return configurationAttributes;

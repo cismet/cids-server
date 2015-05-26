@@ -37,8 +37,8 @@ public class UserFactory {
     /**
      * Transforms a cids legacy user object into a cids rest API user object
      *
-     * @param cidsUser
-     * @return
+     * @param cidsUser the cids legacy user object to be converted
+     * @return the converted  cids rest API user object
      */
     public de.cismet.cids.server.api.types.User restUserFromLegacyUser(final Sirius.server.newuser.User cidsUser) {
         final de.cismet.cids.server.api.types.User restUser = new de.cismet.cids.server.api.types.User();
@@ -59,8 +59,8 @@ public class UserFactory {
     /**
      * Transforms a cids rest API user object into a cids legacy user object
      *
-     * @param restUser
-     * @return
+     * @param restUser the cids rest API user object to be converted
+     * @return the converted  cids legacy user object
      */
     public Sirius.server.newuser.User cidsUserFromRestUser(final de.cismet.cids.server.api.types.User restUser) {
         final Sirius.server.newuser.User cidsUser

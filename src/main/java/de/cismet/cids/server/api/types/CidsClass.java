@@ -155,7 +155,7 @@ public class CidsClass {
      * as well as other "unknown" configuration attributes.
      * 
      * @param key Either a CidsClassConfigurationKey or a String
-     * @return 
+     * @return The value of a configuration attribute
      */
     public Object getConfigAttribute(final String key) {
         return configurationAttributes.get(key);
@@ -189,7 +189,7 @@ public class CidsClass {
     /**
      * Returns the name of the class
      * 
-     * @return 
+     * @return name of the class
      */
     public String getName() {
         return name;
@@ -198,7 +198,7 @@ public class CidsClass {
     /**
      * Returns the domain of the class
      * 
-     * @return 
+     * @return the domain of the class
      */
     public String getDomain() {
         return domain;
@@ -218,7 +218,7 @@ public class CidsClass {
      * Sets the name resp. the $self reference of the cids class instance and
      * derives and sets additionally the domain property.
      *
-     * @param key
+     * @param key the $self reference of the cids class
      */
     public void setKey(final String key) {
         final int domainSeparator = key.lastIndexOf('.');
@@ -227,14 +227,15 @@ public class CidsClass {
             this.domain = key.substring(1, domainSeparator);
             this.name = key.substring(domainSeparator + 1);
         } else {
-            LOG.error("invalid class key provided, expected $self reference: '/DOMAIN.CLASSNAME'");
+            LOG.error("invalid class key provided: '" + key 
+                    + "', expected $self reference: '/DOMAIN.CLASSNAME'");
         }
     }
     
     /**
-     * Returns all configuration attributes (~ class attributes) of the cids class
+     * Returns all  attributes (~ member attribute info) of the cids class
      * 
-     * @return 
+     * @return map with all attributes 
      */
     public LinkedHashMap<String, CidsAttribute> getAttributes() {
         return attributes;
@@ -243,7 +244,7 @@ public class CidsClass {
     /**
      * Returns all configuration attributes (~class attributes) attributes of the cids class
      * 
-     * @return 
+     * @return map with all configuration attributes 
      */
     public LinkedHashMap<String, Object> getConfigurationAttributes() {
         return configurationAttributes;
@@ -340,8 +341,8 @@ class CidsClassDeserializer
 
         // 1st process the configuration attributes (class atributes)
         final ObjectNode configurationNodes = (ObjectNode) rootNode.get("configuration");
-        for (final Iterator<Map.Entry<String, JsonNode>> configurationElements = configurationNodes.fields();
-                configurationElements.hasNext();) {
+        final Iterator<Map.Entry<String, JsonNode>> configurationElements = configurationNodes.fields();
+        while (configurationElements.hasNext()) {
             final Map.Entry<String, JsonNode> configEntry = configurationElements.next();
             final String configKey = configEntry.getKey();
             final JsonNode configNode = configEntry.getValue();
@@ -358,12 +359,12 @@ class CidsClassDeserializer
             } else if (configNode.isArray()) {
                 LOG.warn("unexpected JSON configuration Attribute array. expecting string value for node '" + configKey
                         + "', ignoring node!");
-                final Object value = mapper.treeToValue(rootNode, Object.class);
+                final Object value = mapper.treeToValue(configNode, Object.class);
                 cidsClass.getConfigurationAttributes().put(configKey, value);
             } else if (configNode.isObject()) {
                 LOG.warn("unexpected JSON configuration Attribute object node. Expecting string value for node '" + configKey
                         + "' but actual value is: \n" + configNode.toString());
-                final Object value = mapper.treeToValue(rootNode, Object.class);
+                final Object value = mapper.treeToValue(configNode, Object.class);
                 cidsClass.getConfigurationAttributes().put(configKey, value);
             } else if (configNode.isTextual()) {
                 cidsClass.getConfigurationAttributes().put(configKey, configNode.textValue());
@@ -375,17 +376,20 @@ class CidsClassDeserializer
                 cidsClass.getConfigurationAttributes().put(configKey, configNode.bigIntegerValue());
             } else if (configNode.isLong()) {
                 cidsClass.getConfigurationAttributes().put(configKey, configNode.longValue());
+            } else if (configNode.isBoolean()) {
+                cidsClass.getConfigurationAttributes().put(configKey, configNode.booleanValue());
             } else {
                 LOG.warn("unknown type of JSON configuration Attribute '" + configKey
                         + "': \n" + configNode.toString());
-                final Object value = mapper.treeToValue(rootNode, Object.class);
+                final Object value = mapper.treeToValue(configNode, Object.class);
                 cidsClass.getConfigurationAttributes().put(configKey, value);
             }
         }
 
         // 2nd process the instance attributes
         final JsonNode attributeNodes = (ObjectNode) rootNode.get("attributes");
-        for (final Iterator<JsonNode> attributesElements = attributeNodes.elements(); attributesElements.hasNext();) {
+        final Iterator<JsonNode> attributesElements = attributeNodes.elements();
+        while (attributesElements.hasNext()) {
 
             final JsonNode attributeNode = attributesElements.next();
             final CidsAttribute cidsAttribute = mapper.treeToValue(attributeNode, CidsAttribute.class);

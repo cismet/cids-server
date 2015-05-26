@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  *
  * @author Pascal Dihé
  * @version 1.0
- * @param <C>
+ * @param <C> the type of the members of the collection
  */
 // NOTE: by default lombok ignores all $ vars and @Data does not support "of"
 @XmlRootElement

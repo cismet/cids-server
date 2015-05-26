@@ -57,9 +57,9 @@ public class CidsClassFactory {
      * Transforms a cids rest API class into a cids legacy meta class object
      * (Sirius) object.
      *
-     * @param cidsClass
+     * @param cidsClass the cids class to be converted
      * @return the reconstructed metaClass
-     * @throws java.lang.Exception
+     * @throws java.lang.Exception if any error occurs
      */
     public MetaClass legacyCidsClassFromRestCidsClass(final CidsClass cidsClass) throws Exception {
 
@@ -77,7 +77,7 @@ public class CidsClassFactory {
         id = this.getIntValue("MetaClass.id", configurationKey, configurationAttribute);
         if (id == -1) {
             //throw new NoSuchFieldException(message);
-            // FIXME: adjust cids rest legacy cids bean serialization and inlcude LEGACY_ID!
+            // FIXME: adjust cids rest legacy cids bean serialization and include LEGACY_ID!
             LOG.warn("NoSuchFieldException Exception for MetaClass.id '" + configurationKey + "' supressed to ensure compatibility with cids rest legacy cids bean serialization.");
         }
 
@@ -137,7 +137,10 @@ public class CidsClassFactory {
             final String message = "cannot set MetaClass.icon to to configuration attribute '"
                     + configurationKey + "': property is not available or null";
             LOG.error(message);
-            throw new NoSuchFieldException(message);
+            // FIXME: adjust cids rest legacy cids bean serialization and include LEGACY_CLASS_ICON!
+            //throw new NoSuchFieldException(message);
+            LOG.warn("NoSuchFieldException Exception for MetaClass.icon '" + configurationKey + "' supressed to ensure compatibility with cids rest legacy cids bean serialization.");
+            icon = null;
         }
 
         // MetaClass.objectIcon -------------------------------------------------
@@ -161,7 +164,10 @@ public class CidsClassFactory {
             final String message = "cannot set MetaClass.objectIcon to to configuration attribute '"
                     + configurationKey + "': property is not available or null";
             LOG.error(message);
-            throw new NoSuchFieldException(message);
+            // FIXME: adjust cids rest legacy cids bean serialization and include LEGACY_OBJECT_ICON!
+            //throw new NoSuchFieldException(message);
+            LOG.warn("NoSuchFieldException Exception for MetaClass.objectIcon '" + configurationKey + "' supressed to ensure compatibility with cids rest legacy cids bean serialization.");
+            objectIcon = null;
         }
 
         // MetaClass.primaryKey ------------------------------------------------
@@ -340,6 +346,7 @@ public class CidsClassFactory {
             if (classAttributeName == null) {
                 final String message = "configuration attribute '"
                         + configurationKeyName + "' is not a known ClassConfig attribute";
+                classAttributeName = configurationKeyName;
                 LOG.warn(message);
             }
 
@@ -495,7 +502,7 @@ public class CidsClassFactory {
 
         // MemberAttributeInfo.position ----------------------------------------       
         final int position;
-        configurationKey = AttributeConfig.Key.LEGACY_FOREIGN_KEY_CLASS_ID.name();
+        configurationKey = AttributeConfig.Key.POSITION.name();
         configurationAttribute = configurationAttributes.remove(configurationKey);
         position = this.getIntValue("MemberAttributeInfo." + cidsAttribute.getAttributeKey() + ".position", configurationKey, configurationAttribute);
         if (position == -1) {
@@ -581,12 +588,10 @@ public class CidsClassFactory {
             LOG.warn(configurationAttributes.size()
                     + " unsupported configuration attributes in attribute '"
                     + cidsAttribute.getAttributeKey() + "'!");
-            if (LOG.isDebugEnabled()) {
-                for (final String configurationKeyKey : configurationAttributes.keySet()) {
-                    LOG.debug("unsupported configuration attribute '" + configurationKeyKey
-                            + "' = ' " + configurationAttributes.get(configurationKeyKey)
-                            + "' in attribute '" + cidsAttribute.getAttributeKey() + "'!");
-                }
+            for (final String configurationKeyKey : configurationAttributes.keySet()) {
+                LOG.debug("unsupported configuration attribute '" + configurationKeyKey
+                        + "' = ' " + configurationAttributes.get(configurationKeyKey)
+                        + "' in attribute '" + cidsAttribute.getAttributeKey() + " '!");
             }
         }
 
@@ -633,7 +638,7 @@ public class CidsClassFactory {
         final ClassAttribute classAttribute = new ClassAttribute(id, classID, name, typeID, policy);
         classAttribute.setValue(value);
         if (value != null) {
-            if (String.class.isAssignableFrom(value.getClass())) {
+            if (!String.class.isAssignableFrom(value.getClass())) {
                 final String message = "value of class attribute '"
                         + attributeName + "' (created from existing configuration attribute) is not of type String but '"
                         + value.getClass() + "'";
@@ -737,12 +742,12 @@ public class CidsClassFactory {
         final Permission readPermission = new Permission(0, "read");
         final Permission writePermission = new Permission(1, "write");
         final Map<Permission, Boolean> policyMap = new HashMap<Permission, Boolean>();
-        
-        if(policyName.equalsIgnoreCase("STANDARD")) {
+
+        if (policyName.equalsIgnoreCase("STANDARD")) {
             policyMap.put(readPermission, false);
             policyMap.put(writePermission, false);
             return new Policy(policyMap, 0, policyName);
-        } else if(policyName.equalsIgnoreCase("WIKI")) {
+        } else if (policyName.equalsIgnoreCase("WIKI")) {
             policyMap.put(readPermission, true);
             policyMap.put(writePermission, true);
             return new Policy(policyMap, 1, policyName);
@@ -782,8 +787,8 @@ public class CidsClassFactory {
      * (cids-server-rest-legacy project)</strong>
      *
      *
-     * @param metaClass
-     * @return
+     * @param metaClass the sirius meta class to be converted
+     * @return the converted cids rest API class object
      */
     public CidsClass restCidsClassFromLegacyCidsClass(final MetaClass metaClass) {
         final CidsClass cidsClass = new CidsClass((String) metaClass.getTableName(),
