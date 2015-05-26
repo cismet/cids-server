@@ -129,9 +129,12 @@ public class SearchServiceImpl {
      * public Sirius.server.search.SearchResult search(User user, String[] classIds, Sirius.server.search.SearchOption[]
      * searchOptions) throws RemoteException { SearchResult v = new SearchResult(new Node[0]); // //fehlt
      * \u00FCberpr\u00FCfung ob Typ tats\u00E4chlich passt //alle Queries m\u00FCssen einen Typ liefern //sp\u00E4ter //
-     * Query q = null; try { for(int i =0;i<searchOptions.length;i++) { q = searchOptions[i].getQuery();
+     * <code>
+     * Query q = null; try { for(int i =0;i&lt;searchOptions.length;i++) { q = searchOptions[i].getQuery();
      * v.addAll((SearchResult) qex.executeQuery(user,classIds,q)); } }catch(Exception e) {System.err.println(e);throw
-     * new RemoteException(e.getMessage(),e);} return v; } permissions muessen hier gepr\u00FCft werden nicht nur die
+     * new RemoteException(e.getMessage(),e);} return v; }
+     * </code> 
+     * permissions muessen hier gepr\u00FCft werden nicht nur die
      * Domain abfragen.
      *
      * @param   user         DOCUMENT ME!

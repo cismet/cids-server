@@ -17,7 +17,7 @@ import java.util.Map;
 
 /**
  * Abstract class for the handling of {@link CidsServerSearch}es. For compatibility reasons this class extends the
- * {@link Sirius.server.search.CidsServerSearch} class
+ * {@link de.cismet.cids.server.search.CidsServerSearch} class
  *
  * @author   thorsten
  * @version  $Revision$, $Date$

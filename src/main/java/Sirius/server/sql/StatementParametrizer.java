@@ -15,15 +15,15 @@ import java.sql.*;
  * <p>typ :=<BR>
  * </p>
  *
- * <p>boolean -> Z<BR>
- * byte -> B<BR>
- * char -> C<BR>
- * String -> S<BR>
- * int -> I<BR>
- * float -> F<BR>
- * Date -> D<BR>
+ * <p>boolean -&gt; Z<BR>
+ * byte -&gt; B<BR>
+ * char -&gt; C<BR>
+ * String -&gt; S<BR>
+ * int -&gt; I<BR>
+ * float -&gt; F<BR>
+ * Date -&gt; D<BR>
  * <BR>
- * typ[] -> [typ<BR>
+ * typ[] -&gt; [typ<BR>
  * </p>
  *
  * <p>Trennzeichen: §typ$<BR>

@@ -114,7 +114,7 @@ public interface RMForwarder extends Remote {
     void updateRegistry() throws RemoteException;
 
     /**
-     * This method logs the current content of the registry to the log4j logger in the way qualified name --> rmiAdress.
+     * This method logs the current content of the registry to the log4j logger in the way qualified name --&gt; rmiAdress.
      *
      * @throws  RemoteException  DOCUMENT ME!
      */

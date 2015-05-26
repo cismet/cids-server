@@ -177,7 +177,7 @@ public interface AbstractTree {
     Node[] getTopNodes(User u) throws Throwable;
 
     /**
-     * public java.util.ArrayList<Node> getObjectNodes(String objectID,UserGroup ug) throws Throwable;
+     * public java.util.ArrayList&lt;Node&gt; getObjectNodes(String objectID,UserGroup ug) throws Throwable;
      *
      * @param   nodeID  DOCUMENT ME!
      * @param   u       DOCUMENT ME!

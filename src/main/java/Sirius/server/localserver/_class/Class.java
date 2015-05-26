@@ -35,8 +35,6 @@ public class Class implements java.io.Serializable, Mapable {
 
     /**
      * Fungiert als Klassenreferenz in einem assoziativen Container.<BR>
-     *
-     * @see  Sirius.Class.ClassMap
      */
     protected final int id;
     /** Name der Klasse wird bei der Visualisierung angzeigt. */
@@ -206,8 +204,6 @@ public class Class implements java.io.Serializable, Mapable {
      * getter f\u00FCr ID.
      *
      * @return  id of this class
-     *
-     * @see     #classID
      */
     public final int getID() {
         return id;

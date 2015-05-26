@@ -22,7 +22,7 @@ public interface CidsSearch {
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Collection<MetaClass> getPossibleResultClasses();
+     * Collection&lt;MetaClass&gt; getPossibleResultClasses();
      *
      * @return  DOCUMENT ME!
      */

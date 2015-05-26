@@ -145,8 +145,10 @@ public class IpListHash extends Hashtable<Integer, HashMap<String, String>> {
      * liefert die IP eines Servers.
      *
      * @param   serverTyp  spezifiziert, um welchen Server es sich handelt (Call-,Local-,ProtocolServer), es sollen die
-     *                     Konstanten {@link #CALLSERVER CALLSERVER}, {@link #LOCALSERVER LOCALSERVER} und
-     *                     {@link #PROTOCOLSERVER PROTOCOLSERVER} benutzt werden. *
+     *                     Konstanten 
+     *                     {@link Sirius.server.ServerType#CALLSERVER}, 
+     *                     {@link Sirius.server.ServerType#LOCALSERVER} und
+     *                     {@link Sirius.server.ServerType#PROTOCOLSERVER} benutzt werden. *
      * @param   name       DOCUMENT ME!
      *
      * @return  DOCUMENT ME!

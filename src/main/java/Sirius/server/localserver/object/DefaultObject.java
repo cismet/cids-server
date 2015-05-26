@@ -135,11 +135,6 @@ public class DefaultObject implements Object {
      * F\u00FCgt ein Attribut in die davor vorgesehenen AtrributVectoren ein.<BR>
      *
      * @param  anyAttribute  Objektattribute
-     *
-     * @see    #longs
-     * @see    #dates
-     * @see    #doubles
-     * @see    #longs
      */
     @Override
     public void addAttribute(final ObjectAttribute anyAttribute) {
@@ -175,8 +170,6 @@ public class DefaultObject implements Object {
      * beschafft eine Arrayrprenstation aller Attribute des DefaultObject.<BR>
      *
      * @return  Alle Attribute des Objekts
-     *
-     * @see     #longs
      */
     @Override
     public ObjectAttribute[] getAttribs() {

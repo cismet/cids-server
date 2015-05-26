@@ -56,11 +56,6 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      * Fügt ein Attribut in die davor vorgesehenen AtrributVectoren ein.<BR>
      *
      * @param  anyAttribute  Objektattribute
-     *
-     * @see    #longs
-     * @see    #dates
-     * @see    #doubles
-     * @see    #longs
      */
     void addAttribute(ObjectAttribute anyAttribute);
 
@@ -104,8 +99,6 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      * beschafft eine Arrayrprenstation aller Attribute des Object.<BR>
      *
      * @return  Alle Attribute des Objekts
-     *
-     * @see     #longs
      */
     ObjectAttribute[] getAttribs();
 
@@ -178,17 +171,13 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      * getter for classID.
      *
      * @return  id der Klasse dieses Objekts
-     *
-     * @see     #classID
      */
     int getClassID();
-
+    
     /**
      * getter for ID.
      *
      * @return  eineutiger Schlüssel (innerhlab einer Klasse)
-     *
-     * @see     #objectID
      */
     int getID();
 
@@ -217,7 +206,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
     /**
      * geter for status.
      *
-     * @return  staturs
+     * @return  status
      */
     int getStatus();
 

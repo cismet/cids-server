@@ -33,49 +33,55 @@ public class ServerType implements Comparable, Createable {
 
     /**
      * Konstante, die den ServerTyp LocalServer repraesentiert. Wird benoetigt bei
-     * {@link #registerServer(int, String, String) registerServer},
-     * {@link #unregisterServer(int, String, String)    unregisterServer}, {@link #getServerIP(int,String) getServerIP }
-     * {@link #getServerIPs(int) getServerIPs }*
+     * {@link Sirius.server.naming.NameServer#registerServer(int, java.lang.String, java.lang.String)},
+     * {@link Sirius.server.naming.NameServer#unregisterServer(int, java.lang.String, java.lang.String)},
+     * {@link Sirius.server.naming.NameServer#getServerIP(int, java.lang.String)} 
+     * {@link Sirius.server.naming.NameServer#getServerIPs(int) }
      */
     public static final int LOCALSERVER = 1;
 
     /**
      * Konstante, die den ServerTyp CallServer repraesentiert. Wird benoetigt bei
-     * {@link #registerServer(int, String, String) registerServer},
-     * {@link #unregisterServer(int , String , String)  unregisterServer},
-     * {@link #getServerIP(int, String) getServerIP } {@link #getServerIPs(int) getServerIPs }*
+     * {@link Sirius.server.naming.NameServer#registerServer(int, java.lang.String, java.lang.String)},
+     * {@link Sirius.server.naming.NameServer#unregisterServer(int, java.lang.String, java.lang.String)},
+     * {@link Sirius.server.naming.NameServer#getServerIP(int, java.lang.String)} 
+     * {@link Sirius.server.naming.NameServer#getServerIPs(int) }
      */
     public static final int CALLSERVER = 2;
 
     /**
      * Konstante, die den ServerTyp ProtocolServer repraesentiert. Wird benoetigt bei
-     * {@link #registerServer(int, String, String) registerServer},
-     * {@link #unregisterServer(int , String, String)   unregisterServer},
-     * {@link #getServerIP(int, String) getServerIP } {@link #getServerIPs(int) getServerIPs }*
+     * {@link Sirius.server.naming.NameServer#registerServer(int, java.lang.String, java.lang.String)},
+     * {@link Sirius.server.naming.NameServer#unregisterServer(int, java.lang.String, java.lang.String)},
+     * {@link Sirius.server.naming.NameServer#getServerIP(int, java.lang.String)} 
+     * {@link Sirius.server.naming.NameServer#getServerIPs(int) }
      */
     public static final int PROTOCOLSERVER = 3;
 
     /**
      * Konstante, die den ServerTyp ProtocolServer repraesentiert. Wird benoetigt bei
-     * {@link #registerServer(int, String, String) registerServer},
-     * {@link #unregisterServer(int , String, String)   unregisterServer},
-     * {@link #getServerIP(int, String) getServerIP } {@link #getServerIPs(int) getServerIPs }*
+     * {@link Sirius.server.naming.NameServer#registerServer(int, java.lang.String, java.lang.String)},
+     * {@link Sirius.server.naming.NameServer#unregisterServer(int, java.lang.String, java.lang.String)},
+     * {@link Sirius.server.naming.NameServer#getServerIP(int, java.lang.String)} 
+     * {@link Sirius.server.naming.NameServer#getServerIPs(int) }
      */
     public static final int USERSERVER = 4;
 
     /**
      * Konstante, die den ServerTyp ModelServer repraesentiert. Wird benoetigt bei
-     * {@link #registerServer(int, String, String) registerServer},
-     * {@link #unregisterServer(int , String, String)   unregisterServer},
-     * {@link #getServerIP(int, String) getServerIP } {@link #getServerIPs(int) getServerIPs }*
+     * {@link Sirius.server.naming.NameServer#registerServer(int, java.lang.String, java.lang.String)},
+     * {@link Sirius.server.naming.NameServer#unregisterServer(int, java.lang.String, java.lang.String)},
+     * {@link Sirius.server.naming.NameServer#getServerIP(int, java.lang.String)} 
+     * {@link Sirius.server.naming.NameServer#getServerIPs(int) }
      */
     public static final int MODELSERVER = 6;
 
     /**
      * Konstante, die den ServerTyp ModelServer repraesentiert. Wird benoetigt bei
-     * {@link #registerServer(int, String, String) registerServer},
-     * {@link #unregisterServer(int , String, String)   unregisterServer},
-     * {@link #getServerIP(int, String) getServerIP } {@link #getServerIPs(int) getServerIPs }*
+     * {@link Sirius.server.naming.NameServer#registerServer(int, java.lang.String, java.lang.String)},
+     * {@link Sirius.server.naming.NameServer#unregisterServer(int, java.lang.String, java.lang.String)},
+     * {@link Sirius.server.naming.NameServer#getServerIP(int, java.lang.String)} 
+     * {@link Sirius.server.naming.NameServer#getServerIPs(int) }
      */
     public static final int IRSEARCHSERVER = 7;
 

@@ -23,7 +23,7 @@ import de.cismet.tools.PasswordEncrypter;
  * Verwaltet Informationen zur allgemeinen Serverkonfiguration. (Local-, Call-, Translationserver). Das jeweilige
  * Configfile kann folgende Schluessel und Werte besitzen.
  *
- * <table border=1>
+ * <table border=1 summary="Verwaltet Informationen zur allgemeinen Serverkonfiguration">
  *   <tr>
  *     <td><b>KEY</b></td>
  *     <td><b>VALUE</b></td>
@@ -239,8 +239,8 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
     }
 
     /**
-     * Delivers the server's rest port.<br/>
-     * <br/>
+     * Delivers the server's rest port.<br>
+     * <br>
      * <b>If the port is not retrievable from the property file the port number defaults to <code>9986</code></b>.
      *
      * @return  the server's rest port
@@ -264,8 +264,8 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
     }
 
     /**
-     * Indicates whether rest shall be enabled.<br/>
-     * <br/>
+     * Indicates whether rest shall be enabled.<br>
+     * <br>
      * <b>If the flag is not retrievable from the property file it defaults to <code>false</code></b>.
      *
      * @return  whether the server shall enable rest
@@ -356,8 +356,8 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
     }
 
     /**
-     * Indicates whether rest shall be run in debug mode.<br/>
-     * <br/>
+     * Indicates whether rest shall be run in debug mode.<br>
+     * <br>
      * <b>If the flag is not retrievable from the property file it defaults to <code>false</code></b>.
      *
      * @return  whether the server shall run rest in debug mode

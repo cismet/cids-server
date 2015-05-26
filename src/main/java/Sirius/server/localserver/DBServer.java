@@ -315,12 +315,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
         return obs;
     }
     /**
-     * //bugfix public Node getNode(Node node, UserGroup ug) throws Throwable { if(node instanceof
-     * Sirius.server.localserver.tree.node.ObjectNode) { Sirius.server.localserver.tree.node.ObjectNode newNode =
-     * (Sirius.server.localserver.tree.node.ObjectNode)node; return new MetaObjectNode( newNode,getDomain()); } else if
-     * (node instanceof Sirius.server.localserver.tree.node.ClassNode) return new
-     * MetaClassNode((Sirius.server.localserver.tree.node.ClassNode)node,getDomain()); return new
-     * MetaNode(node,getDomain()); } -----------------------------------------------------------------
+     * DOCUMENT ME!
      *
      * @param   ids  DOCUMENT ME!
      * @param   u    DOCUMENT ME!
@@ -340,11 +335,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
     }
 
     /**
-     * public Sirius.server.localserver.tree.NodeReferenceList getObjectNodes(String[] objectIDs,UserGroup ug) throws
-     * Throwable { //estimated 2 Nodes per object in average ! java.util.ArrayList<Node> v = new
-     * java.util.ArrayList<Node>(objectIDs.length * 2); for(int i =0;i< objectIDs.length;i++) {
-     * v.addAll(tree.getObjectNodes(objectIDs[i],ug)); } return new Sirius.server.localserver.tree.NodeReferenceList(v);
-     * } ----------------------------------------------------------------
+     * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *

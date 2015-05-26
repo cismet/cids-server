@@ -90,13 +90,13 @@ public interface UserService extends Remote {
      *   <li>the value of the <code>UserGroup</code>'s <code>Domain</code> if it is set.</li>
      *   <li><code>null</code> otherwise.</li>
      * </ul>
-     * <br/>
-     * <br/>
+     * <br>
+     * <br>
      * If you want to explicitely retrieve the value for the <code>UserGroup</code> though the <code>User</code>'s value
-     * is set hand over an <code>User</code> object with <code>id < 0</code>.<br/>
+     * is set hand over an <code>User</code> object with <code>id &lt; 0</code>.<br>
      * If you want to explicitely retrieve the value for the <code>Domain</code> though any other value is set hand over
-     * an <code>User</code> object with <code>id < 0</code> that contains a <code>UserGroup</code> object with <code>id
-     * < 0</code>.
+     * an <code>User</code> object with <code>id &lt; 0</code> that contains a <code>UserGroup</code> object with <code>id
+     * &lt; 0</code>.
      *
      * @param   user  the <code>User</code> whose value shall be retrieved
      * @param   key   the key for the value to be retrieved

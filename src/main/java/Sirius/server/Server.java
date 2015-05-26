@@ -35,7 +35,7 @@ public class Server implements Serializable {
      * Konstruktor.
      *
      * @param  serverType  Kennzeichnet die Art des Servers. es soll einer der Konstanten
-     *                     {@link #LOCALSERVER LOCALSERVER} oder {@link #CALLSERVER CALLSERVER} verwendet werden.
+     *                     {@link Sirius.server.ServerType#LOCALSERVER} oder {@link Sirius.server.ServerType#CALLSERVER} verwendet werden.
      * @param  name        Name mit dem der Server angesprochen wird
      * @param  ip          the ip of the server and the registry
      * @param  rmiPort     the port where the rmi registry is running

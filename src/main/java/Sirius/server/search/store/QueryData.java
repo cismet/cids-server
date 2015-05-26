@@ -100,7 +100,7 @@ public class QueryData extends QueryInfo implements java.io.Serializable, Info {
     /**
      * DOCUMENT ME!
      *
-     * @return  true wenn id > 0, sonst false*
+     * @return  true wenn id &gt; 0, sonst false*
      */
     public boolean idIsValid() {
         return id >= 0;

@@ -187,7 +187,7 @@ public interface MetaService extends Remote {
      * @param   metaObject  the current state of the meta object
      * @param   domain      domain where meta object is hosted
      *
-     * @return  whether the update was successfull > 0
+     * @return  whether the update was successfull (&gt; 0)
      *
      * @throws  RemoteException  server error
      */
@@ -200,7 +200,7 @@ public interface MetaService extends Remote {
      * @param   metaObject  meta object to be deleted
      * @param   domain      domain where the object to be deleted resides
      *
-     * @return  succesfull if > 0
+     * @return  succesfull if &gt; 0
      *
      * @throws  RemoteException  server error
      */
@@ -411,15 +411,15 @@ public interface MetaService extends Remote {
      * retrieved depends on the given element count and the amount of available historic elements. Resolution strategy:
      *
      * <ul>
-     *   <li>elements < 1: order by timestamp</li>
-     *   <li>elements > 0: order by timestamp limit <code>elements</code></li>
+     *   <li>elements &lt; 1: order by timestamp</li>
+     *   <li>elements &gt; 0: order by timestamp limit <code>elements</code></li>
      * </ul>
      *
      * @param   classId   the id of the desired class
      * @param   objectId  the id of the object of the desired class
      * @param   domain    the name of the domain the desired class belongs to
      * @param   user      the user that requests the history
-     * @param   elements  the number of historic elements to be retrieved or an int < 1 to retrieve all available
+     * @param   elements  the number of historic elements to be retrieved or an int &lt; 1 to retrieve all available
      *                    elements
      *
      * @return  the historic objects

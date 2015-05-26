@@ -38,8 +38,6 @@ public class SearchOption implements java.io.Serializable {
      * Short concise description. Additional verbose description.
      *
      * @param   query  descriptor description.
-     *
-     * @return  description.
      */
     public SearchOption(final Query query) {
         this(query, new HashSet(), new HashSet());

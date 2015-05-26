@@ -306,7 +306,16 @@ public interface MetaService extends Remote {
      */
     ArrayList<ArrayList> performCustomSearch(String query) throws RemoteException;
 
+
     /**
+     *  DOCUMENT ME!
+     * 
+     * @param classId  DOCUMENT ME!
+     * @param objectId  DOCUMENT ME!
+     * @param user  DOCUMENT ME!
+     * @param elements  DOCUMENT ME!
+     * @return  DOCUMENT ME!
+     * @throws RemoteException   DOCUMENT ME!
      * @see  Sirius.server.middleware.interfaces.proxy.MetaService#getHistory(int, int, java.lang.String,
      *       Sirius.server.newuser.User, int)
      */

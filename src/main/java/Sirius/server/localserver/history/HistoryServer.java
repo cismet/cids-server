@@ -108,8 +108,8 @@ public final class HistoryServer extends Shutdown {
      * retrieved depends on the given element count and the amount of available historic elements. Resolution strategy:
      *
      * <ul>
-     *   <li>elements < 1: order by timestamp</li>
-     *   <li>elements > 0: order by timestamp limit <code>elements</code></li>
+     *   <li>elements &lt; 1: order by timestamp</li>
+     *   <li>elements &gt; 0: order by timestamp limit <code>elements</code></li>
      * </ul>
      *
      * <p>This operation initialises the history of the object if its class is history enabled and it is not initialised
@@ -119,7 +119,7 @@ public final class HistoryServer extends Shutdown {
      * @param   classId   the id of the desired class
      * @param   objectId  the id of the object of the desired class
      * @param   usr       the {@link User} that requests the history
-     * @param   elements  the number of historic elements to be retrieved or an int < 1 to retrieve all available
+     * @param   elements  the number of historic elements to be retrieved or an int &lt; 1 to retrieve all available
      *                    elements
      *
      * @return  the historic objects or <code>null</code> if the class is not history enabled
@@ -222,9 +222,9 @@ public final class HistoryServer extends Shutdown {
     /**
      * Determines if there are any history entries for the given {@link MetaObject}. This operation does not care about
      * the {@link ClassAttribute#HISTORY_ENABLED} flag. It simply looks up whether there are entries in the database or
-     * not.<br/>
-     * <b>NOTE: This operation does not initialise the history!</b><br/>
-     * <br/>
+     * not.<br>
+     * <b>NOTE: This operation does not initialise the history!</b><br>
+     * <br>
      * <b>IMPORTANT: This operation should not be exposed directly through server api/middleware since it is not
      * protected by permission check</b>
      *
@@ -341,8 +341,8 @@ public final class HistoryServer extends Shutdown {
     /**
      * Returns rather fast and only enqueues the entry instead of actually creating the history entry. If the
      * {@link MetaObject}'s {@link MetaClass} is not history enabled at all nothing will be done. If the "anonymous"
-     * option is enabled the given user is ignored.<br/>
-     * <br/>
+     * option is enabled the given user is ignored.<br>
+     * <br>
      * <b>NOTE: This operation does not initialise the history!</b>
      *
      * @param  mo         the metaobject that shall be historicised

@@ -33,16 +33,16 @@ import de.cismet.tools.Calculator;
 
 /**
  * Utility class that is mainly used to load classes of the various special cids {@link CLASS_TYPE}s for a
- * {@link MetaClass}. The procedure to load a specific class is the following:<br/>
- * <br/>
+ * {@link MetaClass}. The procedure to load a specific class is the following:<br>
+ * <br>
  *
  * <ol>
  *   <li>From a name that was specified by a {@link System#getProperty(java.lang.String)}</li>
  *   <li>From candidate names produced by
- *     {@link #getClassNames(Sirius.server.middleware.types.MetaClass, de.cismet.cids.utils.ClassloadingHelper.CLASS_TYPE, java.lang.String)}
+ *     {@link #getClassNames(Sirius.server.middleware.types.MetaClass, de.cismet.cids.utils.ClassloadingHelper.CLASS_TYPE) )}
  *     for the domain of the <code>MetaClass</code></li>
  *   <li>From candidate names produced by
- *     {@link #getClassNames(Sirius.server.middleware.types.MetaClass, de.cismet.cids.utils.ClassloadingHelper.CLASS_TYPE, java.lang.String)}
+ *     {@link #getClassNames(Sirius.server.middleware.types.MetaClass, de.cismet.cids.utils.ClassloadingHelper.CLASS_TYPE)}
  *     for the alternative domains defined by the {@link #CL_PROP_ALT_DOMAINS} property</li>
  * </ol>
  *
@@ -56,16 +56,16 @@ public class ClassloadingHelper {
 
     /**
      * A property file 'classloading.properties' that may contain configurations concerning classloading. It shall be
-     * placed in a package with the following name:<br/>
-     * <br/>
+     * placed in a package with the following name:<br>
+     * <br>
      * &nbsp;&lt;packagePrefix provided by a {@link ClassLoadingPackagePrefixProvider}&gt;.&lt;domain of the
-     * {@link MetaClass}&gt;<br/>
-     * <br/>
+     * {@link MetaClass}&gt;<br>
+     * <br>
      * Example:<br>
-     * &nbsp; <code>DefaultClassLoadingPackagePrefixProvider</code> -> prefix= <code>de.cismet.cids.custom</code><br/>
-     * &nbsp; <code>MetaClass</code> -> domain= <code>MY_DOMAIN</code><br/>
-     * <br/>
-     * &nbsp;property file expected here -> <code>de.cismet.cids.custom.my_domain.classloading.properties</code>
+     * &nbsp; <code>DefaultClassLoadingPackagePrefixProvider</code> -&gt; prefix= <code>de.cismet.cids.custom</code><br>
+     * &nbsp; <code>MetaClass</code> -&gt; domain= <code>MY_DOMAIN</code><br>
+     * <br>
+     * &nbsp;property file expected here -&gt; <code>de.cismet.cids.custom.my_domain.classloading.properties</code>
      *
      * @see  ClassLoadingPackagePrefixProvider
      * @see  StringUtils#toPackage(java.lang.String)
@@ -79,8 +79,8 @@ public class ClassloadingHelper {
     public static final String CL_PROP_ALT_DOMAINS = "classloading.alternativeDomains";     // NOI18N
     /**
      * The property 'classloading.domainClassTypeOrder' which can be used to specify the desired order during candidate
-     * class name build. Valid values are:<br/>
-     * <br/>
+     * class name build. Valid values are:<br>
+     * <br>
      *
      * <ul>
      *   <li><i>default</i> (classtype only) )</li>
@@ -89,8 +89,8 @@ public class ClassloadingHelper {
      *   <li><i>both-classtype</i> (both, classtype first)</li>
      *   <li><i>both-domain</i> (both, domain first)</li>
      * </ul>
-     * <br/>
-     * <br/>
+     * <br>
+     * <br>
      * The property must be defined in a {@link #CL_PROPERTIES} file if it shall be used by the <code>
      * ClassloadingHelper</code> to create candidate names.
      */
@@ -460,7 +460,7 @@ public class ClassloadingHelper {
 
     /**
      * Capitalises a given string. The result of will be an all lowercase string except for an uppercase first letter,
-     * e.g. fOo_BAR -> Foo_bar.
+     * e.g. fOo_BAR -&gt; Foo_bar.
      *
      * @param   toCapitalize  the string to capitalise
      *
@@ -509,8 +509,8 @@ public class ClassloadingHelper {
 
     /**
      * Produces candidate names for a given <code>MetaClass</code>, <code>CLASS_TYPE</code>, domain and order. The
-     * procedure to create candidate names is the following:<br/>
-     * <br/>
+     * procedure to create candidate names is the following:<br>
+     * <br>
      *
      * <ol>
      *   <li>Use name specified by a {@link System#getProperty(java.lang.String)}</li>
@@ -521,14 +521,14 @@ public class ClassloadingHelper {
      *     {@link #getClassNameByConfiguration(Sirius.server.middleware.types.MetaClass, de.cismet.cids.utils.ClassloadingHelper.CLASS_TYPE)}
      *   </li>
      * </ol>
-     * <br/>
-     * The system property that can be used to specify a candidate name is build with the following pattern:<br/>
-     * <br/>
-     * &nbsp;&lt;domain&gt;.&lt;tableName&gt;.&lt;{@link CLASS_TYPE#overrideProperty}&gt;<br/>
-     * <br/>
+     * <br>
+     * The system property that can be used to specify a candidate name is build with the following pattern:<br>
+     * <br>
+     * &nbsp;&lt;domain&gt;.&lt;tableName&gt;.&lt;{@link CLASS_TYPE#overrideProperty}&gt;<br>
+     * <br>
      * NOTE: The domain name is converted to a proper package name first using
-     * {@link StringUtils#toPackage(java.lang.String) }.<br/>
-     * <br/>
+     * {@link StringUtils#toPackage(java.lang.String) }.<br>
+     * <br>
      * <b>IMPORTANT:</b> Currently the order does not properly follow the 'convention over configuration' rules!
      *
      * @param   metaClass  the <code>MetaClass</code> to create candidate class names for
@@ -634,28 +634,28 @@ public class ClassloadingHelper {
 
     /**
      * Builds the candidate class names using the given parameters. The candidate class names are build with the
-     * following pattern:<br/>
-     * <br/>
-     * If order is {@link DOM_CTYPE_ORDER#CLASSTYPE} or {@link DOM_CTYPE_ORDER#DEFAULT}:<br/>
+     * following pattern:<br>
+     * <br>
+     * If order is {@link DOM_CTYPE_ORDER#CLASSTYPE} or {@link DOM_CTYPE_ORDER#DEFAULT}:<br>
      * &nbsp;<i>&lt;masterPrefix&gt;.&lt;{@link CLASS_TYPE#packagePrefix}&gt;.&lt;domain&gt;.&lt;
-     * {@link #capitalize(java.lang.String) } tablename{@link CLASS_TYPE#classNameSuffix}&gt;</i><br/>
+     * {@link #capitalize(java.lang.String) } tablename{@link CLASS_TYPE#classNameSuffix}&gt;</i><br>
      * &nbsp;<i>&lt;masterPrefix&gt;.&lt;{@link CLASS_TYPE#packagePrefix}&gt;.&lt;domain&gt;.&lt;
-     * {@link #camelize(java.lang.String) } tablename{@link CLASS_TYPE#classNameSuffix}&gt;</i><br/>
-     * <br/>
-     * If order is {@link DOM_CTYPE_ORDER#DOMAIN}:<br/>
+     * {@link #camelize(java.lang.String) } tablename{@link CLASS_TYPE#classNameSuffix}&gt;</i><br>
+     * <br>
+     * If order is {@link DOM_CTYPE_ORDER#DOMAIN}:<br>
      * &nbsp;<i>&lt;masterPrefix&gt;.&lt;domain&gt;.&lt;{@link CLASS_TYPE#packagePrefix}&gt;.&lt;
-     * {@link #capitalize(java.lang.String) } tablename{@link CLASS_TYPE#classNameSuffix}&gt;</i><br/>
+     * {@link #capitalize(java.lang.String) } tablename{@link CLASS_TYPE#classNameSuffix}&gt;</i><br>
      * &nbsp;<i>&lt;masterPrefix&gt;.&lt;domain&gt;.&lt;{@link CLASS_TYPE#packagePrefix}&gt;.&lt;
-     * {@link #camelize(java.lang.String) } tablename{@link CLASS_TYPE#classNameSuffix}&gt;</i><br/>
-     * <br/>
+     * {@link #camelize(java.lang.String) } tablename{@link CLASS_TYPE#classNameSuffix}&gt;</i><br>
+     * <br>
      * <b>NOTE:</b>Only <code>CLASSTYPE</code>, <code>DEFAULT</code> and <code>DOMAIN</code> order directive is
-     * supported. Any other value will result in an {@link IllegalArgumentException}<br/>
-     * <br/>
-     * Example:<br/>
+     * supported. Any other value will result in an {@link IllegalArgumentException}<br>
+     * <br>
+     * Example:<br>
      * &nbsp;<code>buildCandidateNames("my.master.prefix", "myDomain", "myTable", CLASS_TYPE.EDITOR,
-     * DOM_CTYPE_ORDER.DOMAIN)</code> will result in<br/>
-     * <br/>
-     * &nbsp;<i>"my.master.prefix.myDomain.objecteditors.MytableEditor</i> and<br/>
+     * DOM_CTYPE_ORDER.DOMAIN)</code> will result in<br>
+     * <br>
+     * &nbsp;<i>"my.master.prefix.myDomain.objecteditors.MytableEditor</i> and<br>
      * &nbsp;<i>"my.master.prefix.myDomain.objecteditors.MyTableEditor</i>
      *
      * @param   masterPrefix  the master prefix of the candidate class names
@@ -834,7 +834,7 @@ public class ClassloadingHelper {
 
     /**
      * Camelises a given string. It ignores all non-letters and non-digits. However, the very first character and every
-     * character following an ignored one will be uppercase. The rest will be lowercase, e.g. fOo_bAr -> FooBar
+     * character following an ignored one will be uppercase. The rest will be lowercase, e.g. fOo_bAr -&gt; FooBar
      *
      * @param   toCamelize  the string to camelise
      *

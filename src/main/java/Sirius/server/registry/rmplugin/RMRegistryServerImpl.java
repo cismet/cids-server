@@ -695,7 +695,7 @@ public class RMRegistryServerImpl implements RMRegistryServer {
     }
 
     /**
-     * This method logs the current content of the registry to the log4j logger in the way qualified name --> rmiAdress.
+     * This method logs the current content of the registry to the log4j logger in the way qualified name --&gt; rmiAdress.
      */
     @Override
     public void logCurrentRegistry() {

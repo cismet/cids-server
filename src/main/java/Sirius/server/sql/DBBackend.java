@@ -57,10 +57,10 @@ public interface DBBackend extends Shutdownable {
     /**
      * This operation shall be used to execute queries that related to the tables of the underlying cids system (cs_*).
      * The available query descriptors are defined within this interface. Any other given descriptor String results in a
-     * {@link SQLException}.<br/>
+     * {@link SQLException}.<br>
      * The number of given parameters must match the parameter count of the statement described by the given descriptor.
-     * If the number of the parameters mismatch a <code>SQLException</code> is thrown.<br/>
-     * <br/>
+     * If the number of the parameters mismatch a <code>SQLException</code> is thrown.<br>
+     * <br>
      * This operation shall throw a <code>SQLException</code> if the {@link Shutdownable#shutdown()} has already been
      * called.
      *
@@ -81,10 +81,10 @@ public interface DBBackend extends Shutdownable {
     /**
      * This operation shall be used to execute updates that related to the tables of the underlying cids system (cs_*).
      * The available query descriptors are defined within this interface. Any other given descriptor String results in a
-     * {@link SQLException}.<br/>
+     * {@link SQLException}.<br>
      * The number of given parameters must match the parameter count of the statement described by the given descriptor.
-     * If the number of the parameters mismatch a <code>SQLException</code> is thrown.<br/>
-     * <br/>
+     * If the number of the parameters mismatch a <code>SQLException</code> is thrown.<br>
+     * <br>
      * This operation shall throw a <code>SQLException</code> if the {@link Shutdownable#shutdown()} has already been
      * called.
      *
@@ -103,8 +103,8 @@ public interface DBBackend extends Shutdownable {
     int submitInternalUpdate(final String descriptor, final Object... parameters) throws SQLException;
 
     /**
-     * DOCUMENT ME!<br/>
-     * <br/>
+     * DOCUMENT ME!<br>
+     * <br>
      * This operation shall throw a <code>SQLException</code> if the {@link Shutdownable#shutdown()} has already been
      * called.
      *
@@ -118,8 +118,8 @@ public interface DBBackend extends Shutdownable {
     ResultSet submitQuery(final String descriptor, final Object... parameters) throws SQLException;
 
     /**
-     * DOCUMENT ME!<br/>
-     * <br/>
+     * DOCUMENT ME!<br>
+     * <br>
      * This operation shall throw a <code>SQLException</code> if the {@link Shutdownable#shutdown()} has already been
      * called.
      *
@@ -133,8 +133,8 @@ public interface DBBackend extends Shutdownable {
     ResultSet submitQuery(final int sqlID, final java.lang.Object... parameters) throws SQLException;
 
     /**
-     * DOCUMENT ME!<br/>
-     * <br/>
+     * DOCUMENT ME!<br>
+     * <br>
      * This operation shall throw a <code>SQLException</code> if the {@link Shutdownable#shutdown()} has already been
      * called.
      *
@@ -147,8 +147,8 @@ public interface DBBackend extends Shutdownable {
     ResultSet submitQuery(final Query q) throws SQLException;
 
     /**
-     * DOCUMENT ME!<br/>
-     * <br/>
+     * DOCUMENT ME!<br>
+     * <br>
      * This operation shall throw a <code>SQLException</code> if the {@link Shutdownable#shutdown()} has already been
      * called.
      *
@@ -162,8 +162,8 @@ public interface DBBackend extends Shutdownable {
     int submitUpdate(final String descriptor, final Object... parameters) throws SQLException;
 
     /**
-     * DOCUMENT ME!<br/>
-     * <br/>
+     * DOCUMENT ME!<br>
+     * <br>
      * This operation shall throw a <code>SQLException</code> if the {@link Shutdownable#shutdown()} has already been
      * called.
      *
@@ -177,8 +177,8 @@ public interface DBBackend extends Shutdownable {
     int submitUpdate(final int sqlID, final Object... parameters) throws SQLException;
 
     /**
-     * DOCUMENT ME!<br/>
-     * <br/>
+     * DOCUMENT ME!<br>
+     * <br>
      * This operation shall throw a <code>SQLException</code> if the {@link Shutdownable#shutdown()} has already been
      * called.
      *
