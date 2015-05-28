@@ -24,6 +24,7 @@ import Sirius.server.search.SearchOption;
 import Sirius.server.search.SearchResult;
 import Sirius.server.search.store.Info;
 import Sirius.server.search.store.QueryData;
+import Sirius.server.sql.SystemStatement;
 
 import Sirius.util.image.Image;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
@@ -48,8 +49,11 @@ import java.util.Vector;
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.api.types.CidsClass;
+import de.cismet.cids.server.api.types.CidsNode;
 import de.cismet.cids.server.api.types.GenericCollectionResource;
 import de.cismet.cids.server.api.types.legacy.CidsClassFactory;
+import de.cismet.cids.server.api.types.legacy.CidsNodeFactory;
+import de.cismet.cids.server.api.types.legacy.ClassNameCache;
 import de.cismet.cids.server.api.types.legacy.UserFactory;
 import de.cismet.cids.server.search.CidsServerSearch;
 import de.cismet.cids.server.ws.SSLConfig;
@@ -83,12 +87,13 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
     public final static String USERS_API = "users";
     public final static String CLASSES_API = "classes";
+    public final static String NODES_API = "nodes";
 
     private static final transient Logger LOG = Logger.getLogger(RESTfulInterfaceConnector.class);
 
     private final transient String rootResource;
     private final transient Map<String, Client> clientCache;
-    private final transient Map<String, Map<Integer, String>> classKeyCache;
+    private final transient ClassNameCache classKeyCache;
     private static final int TIMEOUT = 10000;
     private final transient Proxy proxy;
 
@@ -161,7 +166,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         LOG.info("connecting to root resource '" + this.rootResource + "' using proxy: " + this.proxy); // NOI18N
         clientCache = new HashMap<String, Client>();
         credentialsCache = new HashMap<String, String>();
-        classKeyCache = new HashMap<String, Map<Integer, String>>();
+        classKeyCache = new ClassNameCache();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -172,7 +177,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @throws IllegalStateException DOCUMENT ME!
      */
-    private void initSSL(final SSLConfig sslConfig) {
+    protected final void initSSL(final SSLConfig sslConfig) {
         if (LOG.isInfoEnabled()) {
             LOG.info("initialising ssl connection: " + sslConfig); // NOI18N
         }
@@ -206,7 +211,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
             // Use the CidsTrustManager to validate the default certificates and the cismet certificate
             final CidsTrustManager trustManager;
             X509TrustManager cidsManager = null;
-            TrustManager[] trustManagerArray = null;
+            TrustManager[] trustManagerArray;
 
             if ((tmf != null) && (tmf.getTrustManagers() != null) && (tmf.getTrustManagers().length == 1)) {
                 if (tmf.getTrustManagers()[0] instanceof X509TrustManager) {
@@ -246,7 +251,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @return DOCUMENT ME!
      */
-    public String getRootResource() {
+    protected String getRootResource() {
         return rootResource;
     }
 
@@ -261,7 +266,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @return a <code>WebResource</code> ready to perform an operation (GET,
      * POST, PUT...)
      */
-    public WebResource createWebResource(final String path) {
+    protected WebResource createWebResource(final String path) {
         // remove leading '/' if present
         final String resource;
         if (path == null) {
@@ -318,21 +323,30 @@ public class RESTfulInterfaceConnector implements CallServerService {
         return webResource;
     }
 
-    private WebResource.Builder createAuthorisationHeader(final WebResource webResource, final User user) throws RemoteException {
+    protected WebResource.Builder createAuthorisationHeader(final WebResource webResource, final User user) throws RemoteException {
         final String basicAuthString = this.getBasicAuthString(user);
         final WebResource.Builder builder = webResource.header("Authorization", basicAuthString);
         return builder;
     }
 
-    private WebResource.Builder createMediaTypeHeaders(final WebResource.Builder builder) {
+    protected WebResource.Builder createMediaTypeHeaders(final WebResource.Builder builder) {
         return builder.type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE);
     }
 
-    private WebResource.Builder createMediaTypeHeaders(final WebResource webResource) {
+    protected WebResource.Builder createMediaTypeHeaders(final WebResource webResource) {
         return webResource.type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE);
     }
 
-    private MultivaluedMap createUserParameters(final MultivaluedMap queryParams, final User user) {
+    /**
+     * Helper Method for adding 'domain' and 'role' query parameters to an
+     * existing query parameters map from a legacy cids user object.
+     *
+     * @param queryParams existing query parameters that should be extended by
+     * this method
+     * @param user legacy cids user object
+     * @return query parameters that have been extended by this method
+     */
+    protected MultivaluedMap createUserParameters(final MultivaluedMap queryParams, final User user) {
         if (user.getDomain() != null) {
             queryParams.add("domain", user.getDomain());
         }
@@ -344,7 +358,14 @@ public class RESTfulInterfaceConnector implements CallServerService {
         return queryParams;
     }
 
-    private MultivaluedMap createUserParameters(final User user) {
+    /**
+     * Helper Method for creating 'domain' and 'role' query parameters from
+     * legacy cids user object.
+     *
+     * @param user legacy cids user object
+     * @return query parameters 'domain' and 'role'
+     */
+    protected MultivaluedMap createUserParameters(final User user) {
         return this.createUserParameters(new MultivaluedMapImpl(), user);
     }
 
@@ -356,7 +377,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @return
      * @throws RemoteException
      */
-    private String getBasicAuthString(final User user) throws RemoteException {
+    protected String getBasicAuthString(final User user) throws RemoteException {
 
         final String message;
         if (user != null && user.getName() != null && user.getDomain() != null) {
@@ -379,10 +400,11 @@ public class RESTfulInterfaceConnector implements CallServerService {
     /**
      * Stores the BasicAuthString for a specific user in the credentials map
      *
-     * @param user
-     * @param password
+     * @param user legacy cids user
+     * @param password password of the user
+     * @throws java.rmi.RemoteException if the login fails
      */
-    private void putBasicAuthString(final User user, final String password) throws RemoteException {
+    protected void putBasicAuthString(final User user, final String password) throws RemoteException {
 
         if (user != null && user.getName() != null && user.getDomain() != null && password != null) {
             final String key = user.getName() + "@" + user.getDomain();
@@ -406,7 +428,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @param user
      */
-    private void removeBasicAuthString(final User user) {
+    protected void removeBasicAuthString(final User user) {
         final String key = user.getName() + "@" + user.getDomain();
         if (!this.credentialsCache.containsKey(key)) {
             LOG.warn("user '" + user.getName() + "' is not authenticated at '" + user.getDomain() + ", cannot remove");
@@ -423,62 +445,229 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
     @Override
     public Node[] getRoots(final User user) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final MultivaluedMap queryParameters = this.createUserParameters(user);
+        final WebResource webResource = this.createWebResource(NODES_API).queryParams(queryParameters);
+        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        builder = this.createMediaTypeHeaders(builder);
+        LOG.debug("getRoots for user '" + user + "': " + webResource.toString());
+
+        try {
+            final GenericCollectionResource<CidsNode> restCidsNodes
+                    = builder.get(new GenericType<GenericCollectionResource<CidsNode>>() {
+                    });
+
+            if (restCidsNodes != null && restCidsNodes.get$collection() != null
+                    && restCidsNodes.get$collection().size() > 0) {
+
+                LOG.debug("found " + restCidsNodes.get$collection().size()
+                        + " root nodes for user '" + user.getName()
+                        + "'. performing conversion to cids legacy nodes.");
+
+                final Node[] legacyNodes = new Node[restCidsNodes.get$collection().size()];
+                int i = 0;
+                for (CidsNode cidsNode : restCidsNodes.get$collection()) {
+                    try {
+                        final Node legacyNode
+                                = CidsNodeFactory.getFactory().legacyCidsNodeFromRestCidsNode(cidsNode);
+                        legacyNodes[i] = legacyNode;
+                        i++;
+
+                    } catch (Exception ex) {
+                        final String message = "could not perform conversion from cids rest node '"
+                                + cidsNode.getKey() + "' to cids legacy node: " + ex.getMessage();
+                        LOG.error(ex);
+                        throw new RemoteException(message, ex);
+                    }
+                }
+
+                return legacyNodes;
+
+            } else {
+                LOG.error("could not find any cids nodes for user '" + user.getName() + "'");
+                return null;
+            }
+
+        } catch (UniformInterfaceException ue) {
+            final Status status = ue.getResponse().getClientResponseStatus();
+            final String message = "could get cids nodes for user '" + user.getName() + "': "
+                    + status.getReasonPhrase();
+
+            LOG.error(message, ue);
+            throw new RemoteException(message, ue);
+        }
     }
 
     @Override
-    public Node[] getChildren(final Node node, final User usr) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+    public Node[] getChildren(final Node node, final User user) throws RemoteException {
+        final MultivaluedMap queryParameters = this.createUserParameters(user);
+        final WebResource webResource = this.createWebResource(NODES_API)
+                .path(user.getDomain() + "." + String.valueOf(node.getId()) + "/children")
+                .queryParams(queryParameters);
+        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        builder = this.createMediaTypeHeaders(builder);
+        LOG.debug("getChildren of node '" + node.getName()
+                + "' (" + node.getId() + ") for user '" + user + "': " + webResource.toString());
+
+        try {
+            final GenericCollectionResource<CidsNode> restCidsNodes
+                    = builder.get(new GenericType<GenericCollectionResource<CidsNode>>() {
+                    });
+
+            if (restCidsNodes != null && restCidsNodes.get$collection() != null
+                    && restCidsNodes.get$collection().size() > 0) {
+
+                LOG.debug("found " + restCidsNodes.get$collection().size()
+                        + " child nodes of node '" + node.getName()
+                        + "' (" + node.getId() + ") for user '" + user.getName()
+                        + "'. performing conversion to cids legacy nodes.");
+
+                final Node[] legacyNodes = new Node[restCidsNodes.get$collection().size()];
+                int i = 0;
+                for (CidsNode cidsNode : restCidsNodes.get$collection()) {
+                    try {
+                        final Node legacyNode
+                                = CidsNodeFactory.getFactory().legacyCidsNodeFromRestCidsNode(cidsNode);
+                        legacyNodes[i] = legacyNode;
+                        i++;
+
+                    } catch (Exception ex) {
+                        final String message = "could not perform conversion from cids rest node '"
+                                + cidsNode.getKey() + "' to cids legacy node: " + ex.getMessage();
+                        LOG.error(ex);
+                        throw new RemoteException(message, ex);
+                    }
+                }
+
+                return legacyNodes;
+
+            } else {
+                LOG.error("could not find any child nodes of node '" + node.getName()
+                        + "' (" + node.getId() + ") for user '" + user.getName() + "'");
+                return null;
+            }
+        } catch (UniformInterfaceException ue) {
+            final Status status = ue.getResponse().getClientResponseStatus();
+            final String message = "could retrieve children of node '" + node.getName()
+                    + "' (" + node.getId() + ") for user '" + user.getName()
+                    + "' at domain '" + user.getDomain() + "'"
+                    + status.getReasonPhrase();
+
+            LOG.error(message, ue);
+            throw new RemoteException(message, ue);
+        }
     }
 
     @Override
     public Node addNode(final Node node, final Link parent, final User user) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        // TODO: Implement method in Nodes API or remove
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is not yet supported by Nodes REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
     @Override
     public boolean deleteNode(final Node node, final User user) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        // TODO: Implement method in Nodes API or remove
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is not yet supported by Nodes REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
     @Override
     public boolean addLink(final Node from, final Node to, final User user) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        // TODO: Implement method in Nodes API or remove
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is not yet supported by Nodes REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
     @Override
     public boolean deleteLink(final Node from, final Node to, final User user) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        // TODO: Implement method in Nodes API or remove
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is not yet supported by Nodes REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
+    /**
+     * TODO: To be implemented in cids REST API
+     *
+     * @return list with domain names
+     * @throws RemoteException if any remote error occurs
+     */
     @Override
     public String[] getDomains() throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        // TODO: Implement method in Nodes API or remove
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is not yet supported by the cids REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
     @Override
-    public Node getMetaObjectNode(final User usr, final int nodeID, final String domain) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+    public Node getMetaObjectNode(final User user, final int nodeID, final String domain) throws RemoteException {
+        final MultivaluedMap queryParameters = this.createUserParameters(user);
+        final WebResource webResource = this.createWebResource(NODES_API)
+                .path(user.getDomain() + "." + String.valueOf(nodeID))
+                .queryParams(queryParameters);
+        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        builder = this.createMediaTypeHeaders(builder);
+        LOG.debug("getMetaObjectNode by id '" + nodeID
+                + "' for user '" + user + "' and domain '"
+                + user.getDomain() + "': " + webResource.toString());
+
+        try {
+            final CidsNode restCidsNode = builder.get(CidsNode.class);
+
+            if (restCidsNode != null) {
+
+                LOG.debug("found node '" + restCidsNode.getName()
+                        + "' (" + restCidsNode.getId() + ") for user '" + user.getName()
+                        + "'. performing conversion to cids legacy nodes.");
+                try {
+                    final Node legacyNode
+                            = CidsNodeFactory.getFactory().legacyCidsNodeFromRestCidsNode(restCidsNode);
+                    return legacyNode;
+                } catch (Exception ex) {
+                    final String message = "could not perform conversion from cids rest node '"
+                            + restCidsNode.getKey() + "' to cids legacy node: " + ex.getMessage();
+                    LOG.error(ex);
+                    throw new RemoteException(message, ex);
+                }
+            } else {
+                LOG.error("could not find node with id '" + nodeID
+                        + "' for user '" + user.getName()
+                        + "' at domain '" + user.getDomain() + "'");
+                return null;
+            }
+        } catch (UniformInterfaceException ue) {
+            final Status status = ue.getResponse().getClientResponseStatus();
+            final String message = "could retrieve node with id '" + nodeID
+                    + "' for user '" + user.getName()
+                    + "' at domain '" + user.getDomain() + "'"
+                    + status.getReasonPhrase();
+
+            LOG.error(message, ue);
+            throw new RemoteException(message, ue);
+        }
     }
 
     @Override
     public Node[] getMetaObjectNode(final User usr, final String query) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final Query nodeQuery
+                = new Query(new SystemStatement(true, -1, "", false,
+                                SearchResult.NODE, query), usr.getDomain());
+
+        return this.getMetaObjectNode(usr, nodeQuery);
     }
 
     @Override
-    public Node[] getMetaObjectNode(final User usr, final Query query) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+    public Node[] getMetaObjectNode(final User user, final Query query) throws RemoteException {
+        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated 
     }
 
     @Override
@@ -547,46 +736,42 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
     @Override
     public MetaObject getInstance(final User user, final MetaClass c) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        return c.getEmptyInstance();
     }
 
-     /**
-     * <p>Gets a meta class by its legacy class id (int) for the user form the specified domain.
-     * The connector performs fist a lookup for legacy meta class ids (int) against REST
-     * meta class ids (strings) in a local class key cache and then delegates the call to 
+    /**
+     * <p>
+     * Gets a meta class by its legacy class id (int) for the user form the
+     * specified domain. The connector performs fist a lookup for legacy meta
+     * class ids (int) against REST meta class ids (strings) in a local class
+     * key cache and then delegates the call to
      * {@link #getClassByTableName(Sirius.server.newuser.User, java.lang.String, java.lang.String)}.
      * <strong>Example REST Call (delegated):</strong><br>
      * <code>
-     *  <a href="http://localhost:8890/classes/SWITCHON.tag">
-     *      http://localhost:8890/classes/SWITCHON.tag
-     *  </a>
-     * </code> 
+     * <a href="http://localhost:8890/classes/SWITCHON.tag">
+     * http://localhost:8890/classes/SWITCHON.tag
+     * </a>
+     * </code>
+     *
      * @param user user performing the request
-     * @param classID legacy id of the class
+     * @param classId legacy id of the class
      * @param domain domain of the class
      * @return
-     * @throws RemoteException 
+     * @throws RemoteException
      */
     @Override
-    public MetaClass getClass(final User user, final int classID, final String domain) throws RemoteException {
-        LOG.debug("getClass '"+classID+"@"+domain + "' for user '"+user+"'");
-        if (!this.classKeyCache.containsKey(domain)) {
+    public MetaClass getClass(final User user, final int classId, final String domain) throws RemoteException {
+        LOG.debug("getClass '" + classId + "@" + domain + "' for user '" + user + "'");
+
+        if (!this.classKeyCache.isDomainCached(domain)) {
             LOG.info("class key cache does not contain class ids for domain '" + domain
                     + "', need to fill teche first!");
             this.getClasses(user, domain);
         }
 
-        Map<Integer, String> classKeyMap = this.classKeyCache.get(domain);
-        if (classKeyMap == null || classKeyMap.isEmpty()) {
-            final String message = "could not find classes for domain '" + domain + "' for user '" + user.getName() + "', class key map is empty.";
-            LOG.error(message);
-            //return null;
-            throw new RemoteException(message);
-        }
-
-        if (classKeyMap.containsKey(classID)) {
-            final String message = "could not find class with id '" + classID
+        final String className = this.classKeyCache.getClassNameForClassId(domain, classId);
+        if (className == null) {
+            final String message = "could not find class with id '" + classId
                     + "' at domain '" + domain + "' for user '"
                     + user.getName() + "', class key map does not contain id.";
             LOG.error(message);
@@ -594,24 +779,25 @@ public class RESTfulInterfaceConnector implements CallServerService {
             throw new RemoteException(message);
         }
 
-        final String className = classKeyMap.get(classID);
         return this.getClassByTableName(user, className, domain);
     }
 
     /**
-     * <p>Gets a meta class by its name for the user form the specified domain.
-     * The REST meta class id is constructed as <code>tableName.domain</code></p>
+     * <p>
+     * Gets a meta class by its name for the user form the specified domain. The
+     * REST meta class id is constructed as <code>tableName.domain</code></p>
      * <strong>Example REST Call:</strong><br>
      * <code>
-     *  <a href="http://localhost:8890/classes/SWITCHON.tag">
-     *      http://localhost:8890/classes/SWITCHON.tag
-     *  </a>
-     * </code> 
+     * <a href="http://localhost:8890/classes/SWITCHON.tag">
+     * http://localhost:8890/classes/SWITCHON.tag
+     * </a>
+     * </code>
+     *
      * @param user user performing the request
      * @param tableName name of the class
      * @param domain domain of the class
      * @return
-     * @throws RemoteException 
+     * @throws RemoteException
      */
     @Override
     public MetaClass getClassByTableName(final User user, final String tableName, final String domain)
@@ -622,9 +808,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 .queryParams(queryParameters);
         WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
         builder = this.createMediaTypeHeaders(builder);
-        
-        LOG.debug("getClassByTableName '"+tableName+"@"+domain + "' for user '"+user+"': "
-            + webResource.toString());
+
+        LOG.debug("getClassByTableName '" + tableName + "@" + domain + "' for user '" + user + "': "
+                + webResource.toString());
 
         try {
 
@@ -657,14 +843,15 @@ public class RESTfulInterfaceConnector implements CallServerService {
     }
 
     /**
-     * <p>Gets all meta classes for the user from the specified the domain.</p>
+     * <p>
+     * Gets all meta classes for the user from the specified the domain.</p>
      * <strong>Example REST Call:</strong><br>
      * <code>
-     *  <a href="http://localhost:8890/classes?domain=SWITCHON">
-     *      http://localhost:8890/classes?domain=SWITCHON
-     *  </a>
+     * <a href="http://localhost:8890/classes?domain=SWITCHON">
+     * http://localhost:8890/classes?domain=SWITCHON
+     * </a>
      * </code>
-     * 
+     *
      * @param user legacy cids user performing the request
      * @param domain domain (~localserver)
      * @return Array with all meta classes
@@ -676,7 +863,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         final WebResource webResource = this.createWebResource(CLASSES_API).queryParams(queryParameters);
         WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
         builder = this.createMediaTypeHeaders(builder);
-        LOG.debug("getClasses from domain '"+domain + "' for user '"+user+"': " 
+        LOG.debug("getClasses from domain '" + domain + "' for user '" + user + "': "
                 + webResource.toString());
 
         try {
@@ -691,15 +878,6 @@ public class RESTfulInterfaceConnector implements CallServerService {
                         + " cids classes at domain '" + domain
                         + "' for user '" + user.getName() + "'. performing conversion to cids legacy class.");
 
-                final Map classKeyMap;
-                if (!classKeyCache.containsKey(domain)) {
-                    LOG.info("class key cache for domain '" + domain + "' is empty, filling with "
-                            + restCidsClasses.get$collection().size() + "meta class ids");
-                    classKeyMap = new HashMap<Integer, String>();
-                } else {
-                    classKeyMap = null;
-                }
-
                 final MetaClass[] metaClasses = new MetaClass[restCidsClasses.get$collection().size()];
                 int i = 0;
                 for (CidsClass cidsClass : restCidsClasses.get$collection()) {
@@ -708,10 +886,6 @@ public class RESTfulInterfaceConnector implements CallServerService {
                                 = CidsClassFactory.getFactory().legacyCidsClassFromRestCidsClass(cidsClass);
                         metaClasses[i] = metaClass;
                         i++;
-
-                        if (classKeyMap != null) {
-                            classKeyMap.put(metaClass.getID(), metaClass.getTableName());
-                        }
                     } catch (Exception ex) {
                         final String message = "could not perform conversion from cids rest class '"
                                 + cidsClass.getKey() + "' to cids legacy class: " + ex.getMessage();
@@ -720,10 +894,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
                     }
                 }
 
-                if (classKeyMap != null) {
-                    classKeyCache.put(domain, classKeyMap);
-                }
-
+                this.classKeyCache.fillCache(domain, metaClasses);
                 return metaClasses;
             } else {
                 LOG.error("could not find any cids classes at domain '"

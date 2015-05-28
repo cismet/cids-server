@@ -30,14 +30,15 @@ import de.cismet.cids.server.api.types.configkeys.CidsAttributeConfigurationFlag
 import de.cismet.cids.server.api.types.configkeys.CidsAttributeConfigurationKey;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import org.apache.log4j.Logger;
 
 /**
- * cids attribute REST API Type and JSON Serializer / Deserializer
- * Represents attribute meta data, not an actual attribute!
+ * cids attribute REST API Type and JSON Serializer / Deserializer Represents
+ * attribute meta data, not an actual attribute!
  *
  * <strong>Code copied from de.cismet.cids.server.data.legacy.CidsAttribute
  * (cids-server-rest-legacy project) for feature branch #100</strong>
@@ -62,7 +63,7 @@ public class CidsAttribute {
 
     /**
      * Creates an new cids attribute and initilaizes it with name and class name
-     * 
+     *
      * @param name name of the attribute
      * @param className meta class name of the attribute
      */
@@ -131,7 +132,7 @@ public class CidsAttribute {
     public void removeConfigAttribute(final CidsAttributeConfigurationKey key) {
         configurationAttributes.remove(key.toString());
     }
-    
+
     public String getName() {
         return name;
     }
@@ -142,7 +143,7 @@ public class CidsAttribute {
 
     /**
      * Returns all configuration attributes of the cids attribute
-     * 
+     *
      * @return all configuration attributes of the cids attribute
      */
     public LinkedHashMap<String, Object> getConfigurationAttributes() {
@@ -151,11 +152,11 @@ public class CidsAttribute {
 }
 
 /**
-/**
- * Custom serializer for cids attribute REST types.
- * Uses default object serialization for the simplified cids attribute object structure.
- * Conversion from complex legacy MemberAttributeInfo to cids attribute 
- * is performed in CidsClassFactory.
+ * /**
+ * Custom serializer for cids attribute REST types. Uses default object
+ * serialization for the simplified cids attribute object structure. Conversion
+ * from complex legacy MemberAttributeInfo to cids attribute is performed in
+ * CidsClassFactory.
  *
  * @version $Revision$, $Date$
  */
@@ -163,7 +164,7 @@ class CidsAttributeSerializer
         extends StdSerializer<CidsAttribute> {
 
     private final static transient Logger LOG = Logger.getLogger(CidsAttributeSerializer.class);
-    
+
     /**
      * Creates a new CidsAttributeJsonSerializer object.
      */
@@ -181,12 +182,32 @@ class CidsAttributeSerializer
         final Set<Map.Entry<String, Object>> entrySet = cidsAttribute.configurationAttributes.entrySet();
 
         for (final Map.Entry<String, Object> entry : entrySet) {
+            final String key = entry.getKey();
             final Object value = entry.getValue();
-            if(LOG.isDebugEnabled() && !(value instanceof String)) {
-                LOG.warn("setting non-string attribute '"+entry.getKey()+"'");
+            if (value != null) {
+                final Class valueType = value.getClass();
+                if (Integer.class.isAssignableFrom(valueType)) {
+                    jg.writeNumberField(key, (Integer) value);
+                } else if (Float.class.isAssignableFrom(valueType)) {
+                    jg.writeNumberField(key, (Float) value);
+                } else if (Long.class.isAssignableFrom(valueType)) {
+                    jg.writeNumberField(key, (Long) value);
+                } else if (Double.class.isAssignableFrom(valueType)) {
+                    jg.writeNumberField(key, (Double) value);
+                } else if (BigDecimal.class.isAssignableFrom(valueType)) {
+                    jg.writeNumberField(key, (BigDecimal) value);
+                } else if (Boolean.class.isAssignableFrom(valueType)) {
+                    jg.writeBooleanField(key, (Boolean) value);
+                } else if (String.class.isAssignableFrom(valueType)) {
+                    jg.writeStringField(key, (String) value);
+                } else {
+                    LOG.warn("setting attribute '" + entry.getKey() + "' of type '"
+                            + value.getClass().getName() + "'");
+                    jg.writeObjectField(entry.getKey(), entry.getValue());
+                }
+            } else {
+                LOG.warn("value of attribute '" + entry.getKey() + "' is null!");
             }
-            
-            jg.writeObjectField(entry.getKey(), entry.getValue());
         }
 
         jg.writeEndObject();
@@ -195,17 +216,18 @@ class CidsAttributeSerializer
 
 /**
  * Custom deserializer for cids attribute REST type.
- * 
- * Uses mainly the default object deserialization for the simplified cids attribute object structure.
- * Conversion from cids attribute to complex legacy MemberAttributeInfo is performed in CidsClassFactory.
+ *
+ * Uses mainly the default object deserialization for the simplified cids
+ * attribute object structure. Conversion from cids attribute to complex legacy
+ * MemberAttributeInfo is performed in CidsClassFactory.
  *
  * @version $Revision$, $Date$
  */
 class CidsAttributeDeserializer
         extends StdDeserializer<CidsAttribute> {
 
-     private final static transient Logger LOG = Logger.getLogger(CidsAttributeDeserializer.class);
-    
+    private final static transient Logger LOG = Logger.getLogger(CidsAttributeDeserializer.class);
+
     /**
      * Creates a new CidsAttributeJsonDeserializer object.
      */
@@ -244,19 +266,19 @@ class CidsAttributeDeserializer
                         cidsAttribute.configurationAttributes.put(fieldName, true);
                         break;
                     }
-                    
-                     case VALUE_STRING: {
+
+                    case VALUE_STRING: {
                         final String s = jp.getValueAsString();
                         cidsAttribute.configurationAttributes.put(fieldName, s);
                         break;
-                     }
+                    }
 
                     case VALUE_FALSE:
                         cidsAttribute.configurationAttributes.put(fieldName, false);
                         break;
 
                     default: {
-                        LOG.warn("deserializing non-string attribute '"+fieldName+"'");
+                        LOG.warn("deserializing non-string attribute '" + fieldName + "'");
                         final String s = jp.getText();
                         cidsAttribute.configurationAttributes.put(fieldName, s);
                     }

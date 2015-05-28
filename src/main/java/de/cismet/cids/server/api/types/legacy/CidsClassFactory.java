@@ -50,9 +50,6 @@ public class CidsClassFactory {
         return factory;
     }
 
-//     ClassAttribute attrib = new ClassAttribute(id + "", classID, name, typeID, classes.getClass(classID).getPolicy()); // NOI18N
-//                attrib.setValue(value);
-//                classes.getClass(attrib.getClassID()).addAttribute(attrib);
     /**
      * Transforms a cids rest API class into a cids legacy meta class object
      * (Sirius) object.
@@ -730,12 +727,12 @@ public class CidsClassFactory {
      * @param policyName
      * @return
      */
-    private Policy createPolicy(String policyName) {
+    protected Policy createPolicy(String policyName) {
 
-        if (!policyName.equalsIgnoreCase("STANDARD")
-                || !policyName.equalsIgnoreCase("SECURE")
-                || !policyName.equalsIgnoreCase("WIKI")) {
-
+        if (!policyName.equalsIgnoreCase("DEFAULT")
+                && !policyName.equalsIgnoreCase("STANDARD")
+                && !policyName.equalsIgnoreCase("SECURE")
+                && !policyName.equalsIgnoreCase("WIKI")) {
             LOG.warn("policy '" + policyName + "' is currently not supported, setting to default 'SECURE'");
         }
 
@@ -743,18 +740,19 @@ public class CidsClassFactory {
         final Permission writePermission = new Permission(1, "write");
         final Map<Permission, Boolean> policyMap = new HashMap<Permission, Boolean>();
 
-        if (policyName.equalsIgnoreCase("STANDARD")) {
+        if (policyName.equalsIgnoreCase("STANDARD") 
+                || policyName.equalsIgnoreCase("DEFAULT")) {
             policyMap.put(readPermission, false);
             policyMap.put(writePermission, false);
-            return new Policy(policyMap, 0, policyName);
+            return new Policy(policyMap, 0, "STANDARD");
         } else if (policyName.equalsIgnoreCase("WIKI")) {
             policyMap.put(readPermission, true);
             policyMap.put(writePermission, true);
-            return new Policy(policyMap, 1, policyName);
+            return new Policy(policyMap, 1, "WIKI");
         } else {
             policyMap.put(readPermission, false);
             policyMap.put(writePermission, false);
-            return new Policy(policyMap, 2, policyName);
+            return new Policy(policyMap, 2, "SECURE");
         }
 
 // not support in 1.6

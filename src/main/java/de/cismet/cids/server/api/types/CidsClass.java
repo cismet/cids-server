@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import de.cismet.cids.base.types.Key;
 
 import de.cismet.cids.server.api.types.configkeys.CidsClassConfigurationFlagKey;
 import de.cismet.cids.server.api.types.configkeys.CidsClassConfigurationKey;
@@ -53,7 +54,7 @@ import org.apache.log4j.Logger;
  */
 @JsonSerialize(using = CidsClassSerializer.class)
 @JsonDeserialize(using = CidsClassDeserializer.class)
-public class CidsClass {
+public class CidsClass implements Key {
 
     private final static transient Logger LOG = Logger.getLogger(CidsClass.class);
 
@@ -206,16 +207,17 @@ public class CidsClass {
     
     
     /**
-     * Return the name resp. the $self reference of the cids class instance.
+     * Return the key resp. the $self reference of the cids class instance.
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public String getKey() {
         return new StringBuffer("/").append(domain).append('.').append(name).toString();
     }
 
     /**
-     * Sets the name resp. the $self reference of the cids class instance and
+     * Sets the key resp. the $self reference of the cids class instance and
      * derives and sets additionally the domain property.
      *
      * @param key the $self reference of the cids class
@@ -229,6 +231,8 @@ public class CidsClass {
         } else {
             LOG.error("invalid class key provided: '" + key 
                     + "', expected $self reference: '/DOMAIN.CLASSNAME'");
+            this.domain = "LOCAL";
+            this.name = "INVALID";
         }
     }
     
@@ -422,7 +426,7 @@ class CidsClassDeserializer
 
             if (objectNode.has("imageData")) {
                 try {
-                    image.setImageData(objectNode.get("description").binaryValue());
+                    image.setImageData(objectNode.get("imageData").binaryValue());
                 } catch (IOException ex) {
                     LOG.error("cannot deserialize binary image data for '" + configKey + "':"
                             + ex.getMessage(), ex);
