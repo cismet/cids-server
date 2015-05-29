@@ -59,7 +59,8 @@ public class CidsNode implements Key {
     private String dynamicChildren;
     private boolean clientSort = false;
     private boolean derivePermissionsFromClass = true;
-    private boolean isLeaf = false;
+    private boolean leaf = false;
+    private boolean dynamic = false;
     private String icon = null;
     /**
      * @deprecated
@@ -124,7 +125,7 @@ public class CidsNode implements Key {
         if(this.objectKey != null && this.objectKey.lastIndexOf('/') != -1) {
             try {
                 final int objectId 
-                        = Integer.parseInt(this.objectKey.substring(this.objectKey.lastIndexOf('/')));
+                        = Integer.parseInt(this.objectKey.substring(this.objectKey.lastIndexOf('/')+1));
                 return objectId;
             } catch(Exception ex) {
                 LOG.error("could not get object id from object key '" + this.objectKey 

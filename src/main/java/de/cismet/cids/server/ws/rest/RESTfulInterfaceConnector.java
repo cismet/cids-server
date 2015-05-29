@@ -24,7 +24,6 @@ import Sirius.server.search.SearchOption;
 import Sirius.server.search.SearchResult;
 import Sirius.server.search.store.Info;
 import Sirius.server.search.store.QueryData;
-import Sirius.server.sql.SystemStatement;
 
 import Sirius.util.image.Image;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
@@ -39,6 +38,7 @@ import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
 import com.sun.jersey.core.util.Base64;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
+import de.cismet.cids.dynamics.CidsBean;
 
 import java.rmi.RemoteException;
 
@@ -87,6 +87,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
     public final static String USERS_API = "users";
     public final static String CLASSES_API = "classes";
+    public final static String ENTITIES_API = "";
     public final static String NODES_API = "nodes";
 
     private static final transient Logger LOG = Logger.getLogger(RESTfulInterfaceConnector.class);
@@ -102,7 +103,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
      */
     private final transient Map<String, String> credentialsCache;
 
-//~ Constructors -----------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
+    // <editor-fold desc="~ Constructors" defaultstate="collapsed">
     /**
      * Creates a new RESTfulInterfaceConnector object.
      *
@@ -169,7 +171,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
         classKeyCache = new ClassNameCache();
     }
 
+    // </editor-fold>
     //~ Methods ----------------------------------------------------------------
+    // <editor-fold desc="~ Helper Methods" defaultstate="collapsed">
     /**
      * DOCUMENT ME!
      *
@@ -269,7 +273,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     protected WebResource createWebResource(final String path) {
         // remove leading '/' if present
         final String resource;
-        if (path == null) {
+        if (path == null || path.isEmpty()) {
             resource = rootResource;
         } else if ('/' == path.charAt(0)) {
             resource = rootResource + path.substring(1, path.length() - 1);
@@ -426,7 +430,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * Removes the BasicAuthString for a specific user in the credentials map,
      * e.g. when the login failed.
      *
-     * @param user
+     * @param user user object o remove from the credentials map
      */
     protected void removeBasicAuthString(final User user) {
         final String key = user.getName() + "@" + user.getDomain();
@@ -436,13 +440,71 @@ public class RESTfulInterfaceConnector implements CallServerService {
             this.credentialsCache.remove(key);
         }
     }
+    
+    private String getClassNameForClassId(final User user, final String domain, final int classId) throws RemoteException {
+        final String className;
+        
+        if (!this.classKeyCache.isDomainCached(domain)) {
+            LOG.info("class key cache does not contain class ids for domain '" + domain
+                    + "', need to fill the cache first!");
+            this.getClasses(user, domain);
+        }
 
+        className = this.classKeyCache.getClassNameForClassId(domain, classId);
+        if (className == null) {
+            final String message = "could not find class with id '" + classId
+                    + "' at domain '" + domain + "' for user '"
+                    + user.getName() + "', class key map does not contain id.";
+            LOG.error(message);
+            //return null;
+            throw new RemoteException(message);
+        }
+        
+        return className;
+    }
+    
+    
+
+    // </editor-fold>
+    
+    // <editor-fold desc="NODES API" defaultstate="collapsed">
+    /**
+     * Gets legacy root nodes of a specific domain.
+     * <br>
+     * <br>
+     * <strong>Example REST Call:</strong><br>
+     * <code>
+     * <a href="http://localhost:8890/nodes?domain=SWITCHON&limit=100&offset=0&role=all">
+     * http://localhost:8890/nodes?domain=SWITCHON&limit=100&offset=0&role=all
+     * </a>
+     * </code>
+     *
+     * @param user legacy user needed for authentication
+     * @param domainName
+     * @return array of legacy root nodes
+     * @throws RemoteException if any server error occurs
+     */
     @Override
     public Node[] getRoots(final User user, final String domainName) throws RemoteException {
         throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
         // Tools | Templates.
     }
 
+    /**
+     * Gets all legacy root nodes of all domains supported by the server.
+     * <br>
+     * <br>
+     * <strong>Example REST Call:</strong><br>
+     * <code>
+     * <a href="http://localhost:8890/nodes?limit=100&offset=0&role=all">
+     * http://localhost:8890/nodes?limit=100&offset=0&role=all
+     * </a>
+     * </code>
+     *
+     * @param user legacy user needed for authentication
+     * @return array of legacy root nodes
+     * @throws RemoteException if any server error occurs
+     */
     @Override
     public Node[] getRoots(final User user) throws RemoteException {
         final MultivaluedMap queryParameters = this.createUserParameters(user);
@@ -497,21 +559,68 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
     }
 
+    /**
+     * Gets the children of the specified node for the specified user. The
+     * specified node has to contain either a valid node id or a dynamic
+     * children statement. Depending on whether the node contains an id or a
+     * dynamic children statement, the call is performed against the
+     * "getChildrenById" or "getChildrenByQuery" REST Node API.
+     * <br>
+     * <br>
+     * <strong>Example REST Call (without dynamic children):</strong><br>
+     * <code>
+     * <a href="http://localhost:8890/nodes/SWITCHON.7/children?limit=100&offset=0&role=all">
+     * http://localhost:8890/nodes/SWITCHON.7/children?limit=100&offset=0&role=all
+     * </a>
+     * </code>
+     * <br>
+     * <br>
+     * <strong>Example REST Call (with dynamic children):</strong><br>
+     * <code>
+     * curl --user username@SWITCHON:password -H "Content-Type: application/json" -X POST -d "SELECT -1 AS id,  taggroup.name,  cs_class.id AS class_id,  NULL AS object_id,  'N' AS node_type,  NULL AS url,  csdc.tags(taggroup.id) AS dynamic_children,  FALSE AS sql_sort FROM taggroup,  cs_class WHERE cs_class.name = 'taggroup' ORDER BY taggroup.name;" http://localhost:8890/nodes/SWITCHON/children?limit=100&offset=0&role=all
+     * </code>
+     *
+     * @param node the legacy node that contains either a valid node id or a
+     * dynamic children statements
+     * @param user
+     * @return child nodes as legacy node array
+     * @throws RemoteException if any remote error occurs
+     */
     @Override
     public Node[] getChildren(final Node node, final User user) throws RemoteException {
         final MultivaluedMap queryParameters = this.createUserParameters(user);
-        final WebResource webResource = this.createWebResource(NODES_API)
-                .path(user.getDomain() + "." + String.valueOf(node.getId()) + "/children")
-                .queryParams(queryParameters);
-        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
-        builder = this.createMediaTypeHeaders(builder);
-        LOG.debug("getChildren of node '" + node.getName()
-                + "' (" + node.getId() + ") for user '" + user + "': " + webResource.toString());
-
+        final GenericCollectionResource<CidsNode> restCidsNodes;
         try {
-            final GenericCollectionResource<CidsNode> restCidsNodes
-                    = builder.get(new GenericType<GenericCollectionResource<CidsNode>>() {
-                    });
+            if (node.getId() == -1) {
+                if (node.getDynamicChildrenStatement() == null || node.getDynamicChildrenStatement().isEmpty()) {
+                    final String message = "node '" + node.getName() + "' with id '" + node.getId()
+                            + "' has no dynamic children statement, returning null!";
+                    LOG.error(message);
+                    return new Node[]{};
+                }
+                LOG.debug("node '" + node.getName() + "' with id '" + node.getId()
+                        + "' has a dynamic children statement");
+
+                final WebResource webResource = this.createWebResource(NODES_API)
+                        .path(user.getDomain() + "/children")
+                        .queryParams(queryParameters);
+                WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+                builder = this.createMediaTypeHeaders(builder);
+                LOG.debug("getDynamicChildren of node '" + node.getName()
+                        + "' (" + node.getId() + ") for user '" + user + "': " + webResource.toString());
+                restCidsNodes = builder.post(new GenericType<GenericCollectionResource<CidsNode>>() {
+                }, node.getDynamicChildrenStatement());
+            } else {
+                final WebResource webResource = this.createWebResource(NODES_API)
+                        .path(user.getDomain() + "." + String.valueOf(node.getId()) + "/children")
+                        .queryParams(queryParameters);
+                WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+                builder = this.createMediaTypeHeaders(builder);
+                LOG.debug("getChildren of node '" + node.getName()
+                        + "' (" + node.getId() + ") for user '" + user + "': " + webResource.toString());
+                restCidsNodes = builder.get(new GenericType<GenericCollectionResource<CidsNode>>() {
+                }); 
+            }
 
             if (restCidsNodes != null && restCidsNodes.get$collection() != null
                     && restCidsNodes.get$collection().size() > 0) {
@@ -566,6 +675,14 @@ public class RESTfulInterfaceConnector implements CallServerService {
         throw new UnsupportedOperationException(message);
     }
 
+    /**
+     * TODO: Implement method in Nodes API or remove
+     *
+     * @param node TODO
+     * @param user TODO
+     * @return TODO
+     * @throws RemoteException TODO
+     */
     @Override
     public boolean deleteNode(final Node node, final User user) throws RemoteException {
         // TODO: Implement method in Nodes API or remove
@@ -575,6 +692,15 @@ public class RESTfulInterfaceConnector implements CallServerService {
         throw new UnsupportedOperationException(message);
     }
 
+    /**
+     * TODO: Implement method in Nodes API or remove
+     *
+     * @param from TODO
+     * @param to TODO
+     * @param user TODO
+     * @return TODO
+     * @throws RemoteException TODO
+     */
     @Override
     public boolean addLink(final Node from, final Node to, final User user) throws RemoteException {
         // TODO: Implement method in Nodes API or remove
@@ -584,6 +710,15 @@ public class RESTfulInterfaceConnector implements CallServerService {
         throw new UnsupportedOperationException(message);
     }
 
+    /**
+     * TODO: Implement method in Nodes API or remove
+     *
+     * @param from TODO
+     * @param to TODO
+     * @param user TODO
+     * @return TODO
+     * @throws RemoteException TODO
+     */
     @Override
     public boolean deleteLink(final Node from, final Node to, final User user) throws RemoteException {
         // TODO: Implement method in Nodes API or remove
@@ -594,20 +729,24 @@ public class RESTfulInterfaceConnector implements CallServerService {
     }
 
     /**
-     * TODO: To be implemented in cids REST API
+     * Gets a legacy node by its id. The method is not restricted to nodes of
+     * type of MetaObjectNode!
      *
-     * @return list with domain names
-     * @throws RemoteException if any remote error occurs
+     * <br>
+     * <br>
+     * <strong>Example REST Call:</strong><br>
+     * <code>
+     * <a href="http://localhost:8890/nodes/SWITCHON.7">
+     * http://localhost:8890/nodes/SWITCHON.7
+     * </a>
+     * </code>
+     *
+     * @param user legacy user
+     * @param nodeID id of the legacy node
+     * @param domain domain name
+     * @return legacy node object or null
+     * @throws RemoteException
      */
-    @Override
-    public String[] getDomains() throws RemoteException {
-        // TODO: Implement method in Nodes API or remove
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
-                + "' is not yet supported by the cids REST API!";
-        LOG.error(message);
-        throw new UnsupportedOperationException(message);
-    }
-
     @Override
     public Node getMetaObjectNode(final User user, final int nodeID, final String domain) throws RemoteException {
         final MultivaluedMap queryParameters = this.createUserParameters(user);
@@ -656,24 +795,92 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
     }
 
+    /**
+     * <strong>Unsupported Operation</strong>
+     * <p>This operation is not supported anymore in the cids REST API,
+     * it should not be called and throws an UnsupportedOperationException 
+     * when invoked by the client!</p>
+     *
+     * @param usr UnsupportedOperation
+     * @param query UnsupportedOperation
+     * @return UnsupportedOperation
+     * @throws RemoteException UnsupportedOperation
+     * @deprecated UnsupportedOperation
+     */
     @Override
     public Node[] getMetaObjectNode(final User usr, final String query) throws RemoteException {
-        final Query nodeQuery
-                = new Query(new SystemStatement(true, -1, "", false,
-                                SearchResult.NODE, query), usr.getDomain());
-
-        return this.getMetaObjectNode(usr, nodeQuery);
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is deprecated and not supported by Nodes REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
+    /**
+     * <strong>Unsupported Operation</strong>
+     * <p>This operation is not supported anymore in the cids REST API,
+     * it should not be called and throws an UnsupportedOperationException 
+     * when invoked by the client!</p>
+     *
+     * @param user UnsupportedOperation
+     * @param query UnsupportedOperation
+     * @return UnsupportedOperation
+     * @throws RemoteException UnsupportedOperation
+     * @deprecated UnsupportedOperation
+     */
     @Override
     public Node[] getMetaObjectNode(final User user, final Query query) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated 
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is deprecated and not supported by Nodes REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
+    /**
+     * <strong>Unsupported Operation</strong>
+     * <p>This operation is not supported anymore in the cids REST API,
+     * it returns an empty result!</p>
+     *
+     * @param user parameter is ignored
+     * @return empty node array
+     * @throws RemoteException is never thrown
+     * @deprecated UnsupportedOperation
+     */
+    @Override
+    public Node[] getClassTreeNodes(final User user) throws RemoteException {
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is deprecated and not supported by Nodes REST API!";
+        LOG.warn(message);
+        //throw new UnsupportedOperationException(message);
+        return new Node[]{};
+    }
+
+    /**
+     * <strong>Unsupported Operation</strong>
+     * <p>This operation is not supported anymore in the cids REST API,
+     * it returns an empty result!</p>
+     *
+     * @param user parameter is ignored
+     * @param domain parameter is ignored
+     * @return empty node array
+     * @throws RemoteException is never thrown
+     * @deprecated UnsupportedOperation
+     */
+    @Override
+    public Node[] getClassTreeNodes(final User user, final String domain) throws RemoteException {
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is deprecated and not supported by Nodes REST API!";
+        LOG.warn(message);
+        //throw new UnsupportedOperationException(message);
+        return new Node[]{};
+    }
+
+    //</editor-fold>
+    // <editor-fold desc="ENTITIES API" defaultstate="collapsed">
     @Override
     public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
         throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
         // Tools | Templates.
+        
     }
 
     @Override
@@ -695,10 +902,40 @@ public class RESTfulInterfaceConnector implements CallServerService {
     }
 
     @Override
-    public MetaObject getMetaObject(final User usr, final int objectID, final int classID, final String domain)
+    public MetaObject getMetaObject(final User user, final int objectID, final int classId, final String domain)
             throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        
+        final String className = this.getClassNameForClassId(user, domain, classId);
+
+        final MultivaluedMap queryParameters = this.createUserParameters(user);
+        final WebResource webResource = this.createWebResource(ENTITIES_API)
+                .path(domain + "." + className + "/" + objectID)
+                .queryParams(queryParameters);
+        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        builder = this.createMediaTypeHeaders(builder);
+
+        LOG.debug("getMetaObject '" + objectID + "@" + classId + "@" + domain 
+                + "' for user '" + user + "' :" + webResource.toString());
+        
+        try {
+            final CidsBean cidsBean = builder.get(CidsBean.class);
+            if (cidsBean != null) {
+                    final MetaObject metaObject =  cidsBean.getMetaObject();
+                    return metaObject;
+            } else {
+                LOG.error("could not find meta object  '" + objectID + "@" + classId + "@" + domain 
+                + "' for user '" + user + "'");
+                return null;
+            }
+        } catch (UniformInterfaceException ue) {
+            final Status status = ue.getResponse().getClientResponseStatus();
+            final String message = "could get meta object '" + objectID + "@" + classId + "@" + domain 
+                + "' for user '" + user + "': "
+                    + status.getReasonPhrase();
+
+            LOG.error(message, ue);
+            throw new RemoteException(message, ue);
+        }
     }
 
     @Override
@@ -729,7 +966,43 @@ public class RESTfulInterfaceConnector implements CallServerService {
     }
 
     @Override
+    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classId,
+            final User user,
+            final String[] representationFields,
+            final String representationPattern) throws RemoteException {
+        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
+        // Tools | Templates.
+    }
+
+    @Override
     public int update(final User user, final String query, final String domain) throws RemoteException {
+        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
+        // Tools | Templates.
+    }
+
+    @Override
+    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classId,
+            final User user,
+            final String[] representationFields) throws RemoteException {
+        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
+        // Tools | Templates.
+    }
+
+    @Override
+    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
+            final User user,
+            final String query,
+            final String[] representationFields,
+            final String representationPattern) throws RemoteException {
+        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
+        // Tools | Templates.
+    }
+
+    @Override
+    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
+            final User user,
+            final String query,
+            final String[] representationFields) throws RemoteException {
         throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
         // Tools | Templates.
     }
@@ -739,13 +1012,16 @@ public class RESTfulInterfaceConnector implements CallServerService {
         return c.getEmptyInstance();
     }
 
+    // </editor-fold>
+    // <editor-fold desc="ENTITY INFO (CLASSES) API" defaultstate="collapsed">
     /**
-     * <p>
      * Gets a meta class by its legacy class id (int) for the user form the
      * specified domain. The connector performs fist a lookup for legacy meta
      * class ids (int) against REST meta class ids (strings) in a local class
      * key cache and then delegates the call to
      * {@link #getClassByTableName(Sirius.server.newuser.User, java.lang.String, java.lang.String)}.
+     * <br>
+     * <br>
      * <strong>Example REST Call (delegated):</strong><br>
      * <code>
      * <a href="http://localhost:8890/classes/SWITCHON.tag">
@@ -913,76 +1189,42 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
     }
 
-    @Override
-    public Node[] getClassTreeNodes(final User user) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
-    }
-
-    @Override
-    public Node[] getClassTreeNodes(final User user, final String domain) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
-    }
-
+    // </editor-fold>
+    // <editor-fold desc="METHODS (DEPRECATED)" defaultstate="collapsed">
+    /**
+     * <strong>UnsupportedOperation</strong>
+     *
+     * @param user UnsupportedOperation
+     * @return UnsupportedOperation
+     * @throws RemoteException UnsupportedOperation
+     * @deprecated UnsupportedOperation
+     */
     @Override
     public MethodMap getMethods(final User user) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is deprecated and not supported by the cids REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
+    /**
+     * <strong>UnsupportedOperation</strong>
+     *
+     * @param user UnsupportedOperation
+     * @param localServerName UnsupportedOperation
+     * @return UnsupportedOperation
+     * @throws RemoteException UnsupportedOperation
+     */
     @Override
     public MethodMap getMethods(final User user, final String localServerName) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is deprecated and not supported by the cids REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
-    @Override
-    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classId,
-            final User user,
-            final String[] representationFields,
-            final String representationPattern) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
-    }
-
-    @Override
-    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classId,
-            final User user,
-            final String[] representationFields) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
-    }
-
-    @Override
-    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
-            final User user,
-            final String query,
-            final String[] representationFields,
-            final String representationPattern) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
-    }
-
-    @Override
-    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
-            final User user,
-            final String query,
-            final String[] representationFields) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
-    }
-
-    @Override
-    public HistoryObject[] getHistory(final int classId,
-            final int objectId,
-            final String domain,
-            final User user,
-            final int elements) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
-    }
-
+    // </editor-fold>
+    // <editor-fold desc="QUERIES (DEPRECATED?)" defaultstate="collapsed">
     @Override
     public boolean storeQuery(final User user, final QueryData data) throws RemoteException {
         throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
@@ -1055,16 +1297,46 @@ public class RESTfulInterfaceConnector implements CallServerService {
         // Tools | Templates.
     }
 
+    // </editor-fold>
+    // <editor-fold desc="SEARCH API" defaultstate="collapsed">
+    
+    /**
+     * <strong>Unsupported Operation</strong>
+     * <p>This operation is not supported anymore in the cids REST API,
+     * it returns an empty result!</p>
+     * 
+     * @param user parameter is ignored
+     * @return <strong>empty</strong> HashMap;
+     * @throws RemoteException never thrown
+     * @deprecated
+     */
     @Override
     public HashMap getSearchOptions(final User user) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is deprecated and not supported by cids REST API! -> returns empty result";
+        LOG.warn(message);
+        //throw new UnsupportedOperationException(message);
+        return new HashMap(0);
     }
 
+    /**
+     * <strong>Unsupported Operation</strong>
+     * <p>This operation is not supported anymore in the cids REST API,
+     * it returns an empty result!</p>
+     * 
+     * @param user parameter is ignored
+     * @param domain parameter is ignored
+     * @return <strong>empty</strong> HashMap;
+     * @throws RemoteException never thrown
+     * @deprecated
+     */
     @Override
     public HashMap getSearchOptions(final User user, final String domain) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is deprecated and not supported by cids REST API! -> returns empty result";
+        LOG.warn(message);
+        //throw new UnsupportedOperationException(message);
+        return new HashMap(0);
     }
 
     @Override
@@ -1080,6 +1352,23 @@ public class RESTfulInterfaceConnector implements CallServerService {
         // Tools | Templates.
     }
 
+    // </editor-fold>
+    // <editor-fold desc="INFRASTRUCTURE API (NEW)" defaultstate="collapsed">
+    /**
+     * TODO: To be implemented in cids REST API
+     *
+     * @return list with domain names
+     * @throws RemoteException if any remote error occurs
+     */
+    @Override
+    public String[] getDomains() throws RemoteException {
+        // TODO: Implement method in Nodes API or remove
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is not yet supported by the cids REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
+    }
+
     @Override
     public Image[] getDefaultIcons(final String lsName) throws RemoteException {
         throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
@@ -1092,6 +1381,18 @@ public class RESTfulInterfaceConnector implements CallServerService {
         // Tools | Templates.
     }
 
+    @Override
+    public HistoryObject[] getHistory(final int classId,
+            final int objectId,
+            final String domain,
+            final User user,
+            final int elements) throws RemoteException {
+        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
+        // Tools | Templates.
+    }
+
+    // </editor-fold>
+    // <editor-fold desc="USERS API" defaultstate="collapsed">
     @Override
     public boolean changePassword(final User user, final String oldPassword, final String newPassword)
             throws RemoteException, UserException {
@@ -1154,6 +1455,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
         // Tools | Templates.
     }
 
+    // </editor-fold>
+    // <editor-fold desc="CONFIGATTRIBUTES API" defaultstate="collapsed">
     @Override
     public String getConfigAttr(final User user, final String key) throws RemoteException {
         throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
@@ -1166,6 +1469,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
         // Tools | Templates.
     }
 
+    // </editor-fold>
+    // <editor-fold desc="ACTIONS API" defaultstate="collapsed">
     @Override
     public Object executeTask(final User user,
             final String taskname,
@@ -1175,4 +1480,6 @@ public class RESTfulInterfaceConnector implements CallServerService {
         throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
         // Tools | Templates.
     }
+
+    // </editor-fold>
 }

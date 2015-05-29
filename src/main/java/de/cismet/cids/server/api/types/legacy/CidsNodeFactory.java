@@ -8,6 +8,7 @@
 ***************************************************
  */
 package de.cismet.cids.server.api.types.legacy;
+
 import Sirius.server.middleware.types.MetaClassNode;
 import Sirius.server.middleware.types.MetaNode;
 import Sirius.server.middleware.types.MetaObjectNode;
@@ -43,7 +44,7 @@ public class CidsNodeFactory {
      * @throws Exception if any error occurs during the conversion
      */
     public Sirius.server.middleware.types.Node legacyCidsNodeFromRestCidsNode(final de.cismet.cids.server.api.types.CidsNode cidsNode) throws Exception {
-        
+
         final int id = cidsNode.getId() != null ? Integer.parseInt(cidsNode.getId()) : -1;
         final String name = cidsNode.getName();
         final String description = cidsNode.getDescription();
@@ -52,72 +53,76 @@ public class CidsNodeFactory {
         final boolean isLeaf = cidsNode.isLeaf();
         final Policy policy = CidsClassFactory.getFactory().createPolicy(cidsNode.getPolicy());
         final int iconFactory = cidsNode.getIconFactory();
-        final String icon  = cidsNode.getIcon();
+        final String icon = cidsNode.getIcon();
         final boolean derivePermissionsFromClass = cidsNode.isDerivePermissionsFromClass();
         final String artificialId = cidsNode.getArtificialId();
         final String dynamicChildrenStatement = cidsNode.getDynamicChildren();
         final boolean sqlSort = cidsNode.isClientSort();
-        
+        final boolean isDynamic = cidsNode.isDynamic();
+
         final Node legacyNode;
- 
-        if(cidsNode.getObjectKey() != null && !cidsNode.getObjectKey().isEmpty()) {
-            LOG.debug("node '"+cidsNode.getName()+"' ("+cidsNode.getId()+") will be converted to meta object node");
+
+        if (cidsNode.getObjectKey() != null && !cidsNode.getObjectKey().isEmpty()) {
+            LOG.debug("node '" + cidsNode.getName() + "' (" + cidsNode.getId() + ") will be converted to meta object node");
             final int objectId = cidsNode.getObjectId();
             legacyNode = new MetaObjectNode(
-                    id, 
-                    name, 
-                    description, 
-                    domain, 
-                    objectId, 
-                    classId, 
-                    isLeaf, 
-                    policy, 
-                    iconFactory, 
-                    icon, 
-                    derivePermissionsFromClass, 
-                    artificialId);
-        } else if(cidsNode.getClassKey() != null && !cidsNode.getClassKey().isEmpty()) {
-            LOG.debug("node '"+cidsNode.getName()+"' ("+cidsNode.getId()+") will be converted to meta class node");
-            legacyNode = new MetaClassNode(
-                    id, 
-                    domain, 
-                    classId, 
-                    name, 
-                    description, 
-                    isLeaf, 
+                    id,
+                    name,
+                    description,
+                    domain,
+                    objectId,
+                    classId,
+                    isLeaf,
                     policy,
-                    iconFactory, 
-                    icon, 
-                    derivePermissionsFromClass, 
-                    classId, 
+                    iconFactory,
+                    icon,
+                    derivePermissionsFromClass,
+                    artificialId);
+        } else if (cidsNode.getClassKey() != null && !cidsNode.getClassKey().isEmpty()) {
+            LOG.debug("node '" + cidsNode.getName() + "' (" + cidsNode.getId() + ") will be converted to meta class node");
+            legacyNode = new MetaClassNode(
+                    id,
+                    domain,
+                    classId,
+                    name,
+                    description,
+                    isLeaf,
+                    policy,
+                    iconFactory,
+                    icon,
+                    derivePermissionsFromClass,
+                    classId,
                     artificialId);
         } else {
-            LOG.debug("node '"+cidsNode.getName()+"' ("+cidsNode.getId()+") will be converted to meta node");
+            LOG.debug("node '" + cidsNode.getName() + "' (" + cidsNode.getId() + ") will be converted to meta node");
             legacyNode = new MetaNode(
-                    id, 
-                    domain, 
-                    name, 
-                    description, 
-                    isLeaf, 
-                    policy, 
-                    iconFactory, 
-                    icon, 
-                    derivePermissionsFromClass, 
-                    classId, 
+                    id,
+                    domain,
+                    name,
+                    description,
+                    isLeaf,
+                    policy,
+                    iconFactory,
+                    icon,
+                    derivePermissionsFromClass,
+                    classId,
                     artificialId);
         }
-        
+
         legacyNode.setDynamicChildrenStatement(dynamicChildrenStatement);
         legacyNode.setSqlSort(sqlSort);
-        return legacyNode;        
+        legacyNode.setDynamic(isDynamic);
+        return legacyNode;
     }
 
     /**
-     * Transforms a cids legacy node(Sirius) object into a cids rest API node.<br>
-     * Since a meta class node (in contrast to meta object node) does not contain 
-     * a meta class instance, we have to pass the class name parameter in order to
-     * be able to create a cids class $self reference for the property classKey!
-     * 
+     * Transforms a cids legacy node(Sirius) object into a cids rest API
+     * node.<br>
+     * Since a meta class node (in contrast to meta object node) does not
+     * contain a meta class instance, we have to pass the class name parameter
+     * in order to be able to create a cids class $self reference for the
+     * property classKey!
+     *
      * @param legacyNode the cids legacy node to be converted
      * @param className name (table name) of the class associated with the node
      * @return the converted cids rest node
@@ -132,66 +137,79 @@ public class CidsNodeFactory {
         final String dynamicChildren = legacyNode.getDynamicChildrenStatement();
         final boolean clientSort = legacyNode.isSqlSort();
         final boolean derivePermissionsFromClass = legacyNode.isDerivePermissionsFromClass();
-        final boolean isLeaf = legacyNode.isLeaf();
+        final boolean leaf = legacyNode.isLeaf();
         final String icon = legacyNode.getIconString();
         final int iconFactory = legacyNode.getIconFactory();
         final String policy = legacyNode.getPermissions().getPolicy().getName();
         final int classId = legacyNode.getClassId();
         final String objectKey;
         final String classKey;
-        
-        
-        if(MetaObjectNode.class.isAssignableFrom(legacyNode.getClass())) {
-            final MetaObjectNode metaObjectNode = (MetaObjectNode)legacyNode;
-            if(className == null) {
-                LOG.warn("className == null, trying to derive class name from object node '"+name+"' ("+id+")");
-                if(metaObjectNode.getObject() != null && metaObjectNode.getObject().getMetaClass() != null) {
+        final boolean dynamic = legacyNode.isDynamic();
+
+        if (MetaObjectNode.class.isAssignableFrom(legacyNode.getClass())) {
+            final MetaObjectNode metaObjectNode = (MetaObjectNode) legacyNode;
+            if (className == null) {
+                LOG.warn("className == null, trying to derive class name from object node '" + name + "' (" + id + ")");
+                if (metaObjectNode.getObject() != null && metaObjectNode.getObject().getMetaClass() != null) {
                     className = metaObjectNode.getObject().getMetaClass().getTableName();
-                }   
+                }
             }
-            
-            if(className != null && domain != null) {
-                objectKey = "/"+domain + "." + className + "/" + ((MetaObjectNode)legacyNode).getObjectId();
+
+            if (className != null && domain != null) {
+                objectKey = "/" + domain + "." + className + "/" + ((MetaObjectNode) legacyNode).getObjectId();
             } else {
                 objectKey = null;
-                LOG.error("could not set object key of object node '"+name+"' ("+id+"), domain or classKey == null");
+                LOG.error("could not set object key of object node '" + name + "' (" + id + "), domain or classKey == null");
             }
         } else {
-            LOG.debug("node '"+name+"' ("+id+") is no meta object node!");
+            LOG.debug("node '" + name + "' (" + id + ") is no meta object node -> class node or pure node");
             objectKey = null;
         }
-        
+
         // cannot derive class name from meta class node since meta class node
         // does not contain a class object!
 //        if(className == null && MetaClassNode.class.isAssignableFrom(legacyNode.getClass())) {
 //            LOG.warn("className == null, trying to derive class name from class node '"+name+"' ("+id+")");
 //            final MetaClassNode metaClassNode = (MetaClassNode)legacyNode;
 //        }
-        
-        if(className != null && domain != null) {
-            classKey = "/"+domain+"."+className;
+        if (className != null && domain != null) {
+            classKey = "/" + domain + "." + className;
         } else {
-            LOG.warn("could not set class key of node '"+name+"' ("+id+"), domain or className == null");
+            LOG.debug("could not set class key of node '" + name + "' (" + id + "), "
+                    + "domain or className == null, node is no class node -> pure node)");
             classKey = null;
         }
-        
+
         final CidsNode cidsNode = new CidsNode(
-                id, 
-                name, 
-                description, 
-                domain, 
-                classKey, 
-                objectKey, 
-                dynamicChildren, 
-                clientSort, 
-                derivePermissionsFromClass, 
-                isLeaf, 
-                icon, 
-                iconFactory, 
-                policy, 
+                id,
+                name,
+                description,
+                domain,
+                classKey,
+                objectKey,
+                dynamicChildren,
+                clientSort,
+                derivePermissionsFromClass,
+                leaf,
+                dynamic,
+                icon,
+                iconFactory,
+                policy,
                 artificialId,
                 classId);
 
         return cidsNode;
+    }
+
+    public Sirius.server.middleware.types.Node createLegacyQueryNode(
+            final String domain, final String nodeQuery) {
+        
+        final Sirius.server.middleware.types.Node legacyNode = new MetaNode(
+                -1, domain, "QUERY NODE", "NO DESCRIPTION", false, 
+                CidsClassFactory.getFactory().createPolicy("STANDARD"), 
+                -1, null, false, -1);
+        
+        legacyNode.setDynamicChildrenStatement(nodeQuery);
+        return legacyNode;
     }
 }

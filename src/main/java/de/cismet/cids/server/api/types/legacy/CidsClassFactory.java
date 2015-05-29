@@ -742,7 +742,7 @@ public class CidsClassFactory {
 
         if (policyName.equalsIgnoreCase("STANDARD") 
                 || policyName.equalsIgnoreCase("DEFAULT")) {
-            policyMap.put(readPermission, false);
+            policyMap.put(readPermission, true);
             policyMap.put(writePermission, false);
             return new Policy(policyMap, 0, "STANDARD");
         } else if (policyName.equalsIgnoreCase("WIKI")) {
@@ -1176,9 +1176,9 @@ public class CidsClassFactory {
     private void setAttributeConfig(final CidsAttribute cidsAttribute, final CidsAttributeConfigurationKey key,
             final Object value) {
         if ((cidsAttribute != null) && (key != null) && (value != null)) {
-            if (LOG.isDebugEnabled() && !(value instanceof String)) {
-                LOG.warn("setting non-string attribute '" + key + "'");
-            }
+//            if (LOG.isDebugEnabled() && !(value instanceof String)) {
+//                LOG.warn("setting non-string attribute '" + key + "'");
+//            }
 
             if (key == AttributeConfig.Key.DEFAULT_VALUE) {
                 LOG.warn("converting attribute default value to string");
