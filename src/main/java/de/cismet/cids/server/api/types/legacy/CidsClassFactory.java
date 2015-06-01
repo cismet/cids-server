@@ -109,8 +109,8 @@ public class CidsClassFactory {
         } else {
             final String message = "cannot set MetaClass.description to configuration attribute '"
                     + configurationKey + "': configuration attribute is not available or null";
-            LOG.warn(message);
-            description = "no description available";
+            //LOG.debug(message);
+            description = null;
         }
 
         // MetaClass.icon ------------------------------------------------------

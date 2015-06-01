@@ -26,6 +26,7 @@ import Sirius.server.search.store.Info;
 import Sirius.server.search.store.QueryData;
 
 import Sirius.util.image.Image;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse.Status;
@@ -351,9 +352,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @return query parameters that have been extended by this method
      */
     protected MultivaluedMap createUserParameters(final MultivaluedMap queryParams, final User user) {
-        if (user.getDomain() != null) {
-            queryParams.add("domain", user.getDomain());
-        }
+        //        if (user.getDomain() != null) {
+        //            queryParams.add("domain", user.getDomain());
+        //        }
 
         if (user.getUserGroup() != null) {
             queryParams.add("role", user.getUserGroup());
@@ -440,10 +441,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
             this.credentialsCache.remove(key);
         }
     }
-    
+
     private String getClassNameForClassId(final User user, final String domain, final int classId) throws RemoteException {
         final String className;
-        
+
         if (!this.classKeyCache.isDomainCached(domain)) {
             LOG.info("class key cache does not contain class ids for domain '" + domain
                     + "', need to fill the cache first!");
@@ -459,14 +460,11 @@ public class RESTfulInterfaceConnector implements CallServerService {
             //return null;
             throw new RemoteException(message);
         }
-        
+
         return className;
     }
-    
-    
 
     // </editor-fold>
-    
     // <editor-fold desc="NODES API" defaultstate="collapsed">
     /**
      * Gets legacy root nodes of a specific domain.
@@ -619,7 +617,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 LOG.debug("getChildren of node '" + node.getName()
                         + "' (" + node.getId() + ") for user '" + user + "': " + webResource.toString());
                 restCidsNodes = builder.get(new GenericType<GenericCollectionResource<CidsNode>>() {
-                }); 
+                });
             }
 
             if (restCidsNodes != null && restCidsNodes.get$collection() != null
@@ -797,9 +795,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
     /**
      * <strong>Unsupported Operation</strong>
-     * <p>This operation is not supported anymore in the cids REST API,
-     * it should not be called and throws an UnsupportedOperationException 
-     * when invoked by the client!</p>
+     * <p>
+     * This operation is not supported anymore in the cids REST API, it should
+     * not be called and throws an UnsupportedOperationException when invoked by
+     * the client!</p>
      *
      * @param usr UnsupportedOperation
      * @param query UnsupportedOperation
@@ -817,9 +816,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
     /**
      * <strong>Unsupported Operation</strong>
-     * <p>This operation is not supported anymore in the cids REST API,
-     * it should not be called and throws an UnsupportedOperationException 
-     * when invoked by the client!</p>
+     * <p>
+     * This operation is not supported anymore in the cids REST API, it should
+     * not be called and throws an UnsupportedOperationException when invoked by
+     * the client!</p>
      *
      * @param user UnsupportedOperation
      * @param query UnsupportedOperation
@@ -837,8 +837,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
     /**
      * <strong>Unsupported Operation</strong>
-     * <p>This operation is not supported anymore in the cids REST API,
-     * it returns an empty result!</p>
+     * <p>
+     * This operation is not supported anymore in the cids REST API, it returns
+     * an empty result!</p>
      *
      * @param user parameter is ignored
      * @return empty node array
@@ -856,8 +857,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
     /**
      * <strong>Unsupported Operation</strong>
-     * <p>This operation is not supported anymore in the cids REST API,
-     * it returns an empty result!</p>
+     * <p>
+     * This operation is not supported anymore in the cids REST API, it returns
+     * an empty result!</p>
      *
      * @param user parameter is ignored
      * @param domain parameter is ignored
@@ -878,59 +880,101 @@ public class RESTfulInterfaceConnector implements CallServerService {
     // <editor-fold desc="ENTITIES API" defaultstate="collapsed">
     @Override
     public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
+        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName()
+                + " is not supported yet: " + query); // To change body of generated methods, choose
         // Tools | Templates.
-        
+
     }
 
     @Override
     public MetaObject[] getMetaObject(final User usr, final String query, final String domain) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
+        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName()
+                + " is not supported yet:" + query); // To change body of generated methods, choose
         // Tools | Templates.
     }
 
     @Override
     public MetaObject[] getMetaObject(final User usr, final Query query) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
+        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName()
+                + " is not supported yet: " + query.toString()); // To change body of generated methods, choose
         // Tools | Templates.
     }
 
     @Override
     public MetaObject[] getMetaObject(final User usr, final Query query, final String domain) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
+        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName()
+                + " is not supported yet: " + query.toString()); // To change body of generated methods, choose
         // Tools | Templates.
     }
 
+    /** 
+     * Retrieves a Meta data object referenced by a symbolic pointer to the MIS 
+     * objctId@classID@domain from this pointer.
+     * <br>
+     * <br>
+     * <strong>Example REST Call:</strong><br>
+     * <code>
+     * <a href="http://localhost:8890/SWITCHON.CONTACT/76">
+     * http://localhost:8890/SWITCHON.CONTACT/76
+     * </a>
+     * </code>
+     *
+     * @param   user       user token
+     * @param   objectId  symbolic pointer to the meta object
+     * @param   classId   class of the meta object
+     * @param   domain    domain where the meta object is hosted
+     * @return
+     * @throws RemoteException 
+     */
     @Override
-    public MetaObject getMetaObject(final User user, final int objectID, final int classId, final String domain)
+    public MetaObject getMetaObject(final User user, final int objectId, final int classId, final String domain)
             throws RemoteException {
-        
+
         final String className = this.getClassNameForClassId(user, domain, classId);
 
         final MultivaluedMap queryParameters = this.createUserParameters(user);
+        queryParameters.add("deduplicate", "true");
         final WebResource webResource = this.createWebResource(ENTITIES_API)
-                .path(domain + "." + className + "/" + objectID)
+                .path(domain + "." + className + "/" + objectId)
                 .queryParams(queryParameters);
         WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
         builder = this.createMediaTypeHeaders(builder);
 
-        LOG.debug("getMetaObject '" + objectID + "@" + classId + "@" + domain 
-                + "' for user '" + user + "' :" + webResource.toString());
-        
+        LOG.debug("getMetaObject '" + objectId + "@" + classId + "@" + domain
+                + "' ("+domain+"."+className+") for user '" + user + "' :" + webResource.toString());
+
         try {
-            final CidsBean cidsBean = builder.get(CidsBean.class);
+            final ObjectNode objectNode = builder.get(ObjectNode.class);
+            if (objectNode == null || objectNode.size() == 0) {
+                LOG.error("could not find meta object  '" + objectId + "@" + classId + "@" + domain
+                        + "' ("+domain+"."+className+") for user '" + user + "'");
+                return null;
+            }
+
+            final CidsBean cidsBean;
+            try {
+                cidsBean = CidsBean.createNewCidsBeanFromJSON(false, objectNode.toString());
+            } catch (Exception ex) {
+                final String message = "could not deserialize cids bean from object node  '"
+                        + objectId + "@" + classId + "@" + domain 
+                        + "' ("+domain+"."+className+") for user '" + user + "': "
+                        + ex.getMessage();
+                LOG.error(message, ex);
+                throw new RemoteException(message, ex);
+            }
+
             if (cidsBean != null) {
-                    final MetaObject metaObject =  cidsBean.getMetaObject();
-                    return metaObject;
+                final MetaObject metaObject = cidsBean.getMetaObject();
+                return metaObject;
             } else {
-                LOG.error("could not find meta object  '" + objectID + "@" + classId + "@" + domain 
-                + "' for user '" + user + "'");
+                LOG.error("could not find meta object  '" + objectId + "@" + classId + "@" + domain
+                        + "' ("+domain+"."+className+") for user '" + user + "'");
                 return null;
             }
         } catch (UniformInterfaceException ue) {
             final Status status = ue.getResponse().getClientResponseStatus();
-            final String message = "could get meta object '" + objectID + "@" + classId + "@" + domain 
-                + "' for user '" + user + "': "
+            final String message = "could not get meta object '" + objectId + "@" + classId + "@" + domain
+                    + "' ("+domain+"."+className+") for user '" + user + "': "
                     + status.getReasonPhrase();
 
             LOG.error(message, ue);
@@ -941,8 +985,58 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     public MetaObject insertMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        
+        final int classId = metaObject.getClassID();
+        final String className = this.getClassNameForClassId(user, domain, classId);
+
+        final MultivaluedMap queryParameters = this.createUserParameters(user);
+        queryParameters.add("requestResultingInstance", "true");
+        final WebResource webResource = this.createWebResource(ENTITIES_API)
+                .path(domain + "." + className)
+                .queryParams(queryParameters);
+        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        builder = this.createMediaTypeHeaders(builder);
+
+        LOG.debug("insertMetaObject for class '" + classId + "@" + domain
+                + "' ("+domain+"."+className+") for user '" + user + "' :" + webResource.toString());
+
+        try {
+            final ObjectNode objectNode = builder.post(ObjectNode.class,
+                    metaObject.getBean().toJSONString(true));
+            if (objectNode == null || objectNode.size() == 0) {
+                LOG.error("could not insert meta object for class '" + classId + "@" + domain
+                        + "' ("+domain+"."+className+") for user '" + user + "': newly inserted meta object could not be found");
+                return null;
+            }
+
+            final CidsBean cidsBean;
+            try {
+                cidsBean = CidsBean.createNewCidsBeanFromJSON(false, objectNode.toString());
+            } catch (Exception ex) {
+                final String message = "could not deserialize cids bean from object node for class '"
+                        + classId + "@" + domain + "' ("+domain+"."+className+") for user '" + user + "': "
+                        + ex.getMessage();
+                LOG.error(message, ex);
+                throw new RemoteException(message, ex);
+            }
+
+            if (cidsBean != null) {
+                final MetaObject newMetaObject = cidsBean.getMetaObject();
+                return newMetaObject;
+            } else {
+                LOG.error("could not insert meta object for class '" + classId + "@" + domain
+                        + "' ("+domain+"."+className+") for user '" + user + "': newly inserted meta object could not be found");
+                return null;
+            }
+        } catch (UniformInterfaceException ue) {
+            final Status status = ue.getResponse().getClientResponseStatus();
+            final String message = "could not insert meta object for class  '" + classId + "@" + domain
+                    + "' ("+domain+"."+className+") for user '" + user + "': "
+                    + status.getReasonPhrase();
+
+            LOG.error(message, ue);
+            throw new RemoteException(message, ue);
+        }
     }
 
     @Override
@@ -954,15 +1048,64 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     public int updateMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final int objectId = metaObject.getID();
+        final int classId = metaObject.getClassID();
+        final String className = this.getClassNameForClassId(user, domain, classId);
+
+        final MultivaluedMap queryParameters = this.createUserParameters(user);
+        queryParameters.add("requestResultingInstance", "false");
+        final WebResource webResource = this.createWebResource(ENTITIES_API)
+                .path(domain + "." + className + "/" + objectId)
+                .queryParams(queryParameters);
+        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        builder = this.createMediaTypeHeaders(builder);
+
+        LOG.debug("updateMetaObject '" + objectId + "@" + classId + "@" + domain
+                + "' ("+domain+"."+className+") for user '" + user + "' :" + webResource.toString());
+
+        try {
+            builder.put(ObjectNode.class, metaObject.getBean().toJSONString(true));
+            return 1;
+        } catch (UniformInterfaceException ue) {
+            final Status status = ue.getResponse().getClientResponseStatus();
+            final String message = "could not update meta object '" + objectId + "@" + classId + "@" + domain
+                    + "' ("+domain+"."+className+") for user '" + user + "': "
+                    + status.getReasonPhrase();
+
+            LOG.error(message, ue);
+            throw new RemoteException(message, ue);
+        }
     }
 
     @Override
     public int deleteMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final int objectId = metaObject.getID();
+        final int classId = metaObject.getClassID();
+        final String className = this.getClassNameForClassId(user, domain, classId);
+
+        final MultivaluedMap queryParameters = this.createUserParameters(user);
+        final WebResource webResource = this.createWebResource(ENTITIES_API)
+                .path(domain + "." + className + "/" + objectId)
+                .queryParams(queryParameters);
+        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        builder = this.createMediaTypeHeaders(builder);
+
+        LOG.debug("deleteMetaObject '" + objectId + "@" + classId + "@" + domain
+                + "' ("+domain+"."+className+") for user '" + user + "' :" + webResource.toString());
+
+        try {
+            builder.delete(ObjectNode.class);
+            return 1;
+        } catch (UniformInterfaceException ue) {
+            final Status status = ue.getResponse().getClientResponseStatus();
+            final String message = "could not delete meta object '" + objectId + "@" + classId + "@" + domain
+                    + "' ("+domain+"."+className+") for user '" + user + "': "
+                    + status.getReasonPhrase();
+
+            LOG.error(message, ue);
+            throw new RemoteException(message, ue);
+        }
     }
 
     @Override
@@ -994,7 +1137,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final String query,
             final String[] representationFields,
             final String representationPattern) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
+        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName()
+                + " is not supported yet: " + query); // To change body of generated methods, choose
         // Tools | Templates.
     }
 
@@ -1003,7 +1147,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final User user,
             final String query,
             final String[] representationFields) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
+        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName()
+                + " is not supported yet: " + query); // To change body of generated methods, choose
         // Tools | Templates.
     }
 
@@ -1136,6 +1281,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     public MetaClass[] getClasses(final User user, final String domain) throws RemoteException {
         final MultivaluedMap queryParameters = this.createUserParameters(user);
+        queryParameters.add("domain", user.getDomain());
         final WebResource webResource = this.createWebResource(CLASSES_API).queryParams(queryParameters);
         WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
         builder = this.createMediaTypeHeaders(builder);
@@ -1180,7 +1326,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
         } catch (UniformInterfaceException ue) {
             final Status status = ue.getResponse().getClientResponseStatus();
-            final String message = "could get cids classes at domain '"
+            final String message = "could not get cids classes at domain '"
                     + domain + "' for user '" + user.getName() + "': "
                     + status.getReasonPhrase();
 
@@ -1192,15 +1338,62 @@ public class RESTfulInterfaceConnector implements CallServerService {
     // </editor-fold>
     // <editor-fold desc="METHODS (DEPRECATED)" defaultstate="collapsed">
     /**
-     * <strong>UnsupportedOperation</strong>
+     * <strong>Unsupported Operation</strong>
+     * <p>
+     * This operation is not supported anymore in the cids REST API, it returns
+     * an empty result!</p>
      *
-     * @param user UnsupportedOperation
-     * @return UnsupportedOperation
-     * @throws RemoteException UnsupportedOperation
+     * @param user parameter is ignored
+     * @return <strong>empty</strong> MethodMap;
+     * @throws RemoteException never thrown
      * @deprecated UnsupportedOperation
      */
     @Override
     public MethodMap getMethods(final User user) throws RemoteException {
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is deprecated and not supported by the cids REST API!";
+        LOG.warn(message);
+        //throw new UnsupportedOperationException(message);
+        return new MethodMap();
+    }
+
+    /**
+     * <strong>Unsupported Operation</strong>
+     * <p>
+     * This operation is not supported anymore in the cids REST API, it returns
+     * an empty result!</p>
+     *
+     * @param user parameter is ignored
+     * @param localServerName parameter is ignored
+     * @return <strong>empty</strong> MethodMap;
+     * @throws RemoteException never thrown
+     * @deprecated UnsupportedOperation
+     */
+    @Override
+    public MethodMap getMethods(final User user, final String localServerName) throws RemoteException {
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is deprecated and not supported by the cids REST API!";
+        LOG.warn(message);
+        //throw new UnsupportedOperationException(message);
+        return new MethodMap();
+    }
+
+    // </editor-fold>
+    // <editor-fold desc="QUERIES (DEPRECATED)" defaultstate="collapsed">
+    /**
+     * <strong>Unsupported Operation</strong>
+     * <p>
+     * This operation is not supported anymore in the cids REST API, it throws
+     * an Unsupported Operation Exception!</p>
+     *
+     * @param user parameter is ignored
+     * @param data parameter is ignored
+     * @return UnsupportedOperationException
+     * @throws RemoteException never thrown
+     * @deprecated Unsupported Operation
+     */
+    @Override
+    public boolean storeQuery(final User user, final QueryData data) throws RemoteException {
         final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
                 + "' is deprecated and not supported by the cids REST API!";
         LOG.error(message);
@@ -1208,53 +1401,102 @@ public class RESTfulInterfaceConnector implements CallServerService {
     }
 
     /**
-     * <strong>UnsupportedOperation</strong>
+     * <strong>Unsupported Operation</strong>
+     * <p>
+     * This operation is not supported anymore in the cids REST API, it throws
+     * an Unsupported Operation Exception!</p>
      *
-     * @param user UnsupportedOperation
-     * @param localServerName UnsupportedOperation
-     * @return UnsupportedOperation
-     * @throws RemoteException UnsupportedOperation
+     * @param user parameter is ignored
+     * @return UnsupportedOperationException
+     * @throws RemoteException never thrown
+     * @deprecated Unsupported Operation
      */
     @Override
-    public MethodMap getMethods(final User user, final String localServerName) throws RemoteException {
+    public Info[] getQueryInfos(final User user) throws RemoteException {
         final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
                 + "' is deprecated and not supported by the cids REST API!";
         LOG.error(message);
         throw new UnsupportedOperationException(message);
     }
 
-    // </editor-fold>
-    // <editor-fold desc="QUERIES (DEPRECATED?)" defaultstate="collapsed">
-    @Override
-    public boolean storeQuery(final User user, final QueryData data) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
-    }
-
-    @Override
-    public Info[] getQueryInfos(final User user) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
-    }
-
+    /**
+     * <strong>Unsupported Operation</strong>
+     * <p>
+     * This operation is not supported anymore in the cids REST API, it throws
+     * an Unsupported Operation Exception!</p>
+     *
+     * @param userGroup parameter is ignored
+     * @return UnsupportedOperationException
+     * @throws RemoteException never thrown
+     * @deprecated Unsupported Operation
+     */
     @Override
     public Info[] getQueryInfos(final UserGroup userGroup) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is deprecated and not supported by the cids REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
+    /**
+     * <strong>Unsupported Operation</strong>
+     * <p>
+     * This operation is not supported anymore in the cids REST API, it throws
+     * an Unsupported Operation Exception!</p>
+     *
+     * @param id parameter is ignored
+     * @param domain parameter is ignored
+     * @return UnsupportedOperationException
+     * @throws RemoteException never thrown
+     * @deprecated Unsupported Operation
+     */
     @Override
     public QueryData getQuery(final int id, final String domain) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is deprecated and not supported by the cids REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
+    /**
+     * <strong>Unsupported Operation</strong>
+     * <p>
+     * This operation is not supported anymore in the cids REST API, it throws
+     * an Unsupported Operation Exception!</p>
+     *
+     * @param id parameter is ignored
+     * @param domain parameter is ignored
+     * @return UnsupportedOperationException
+     * @throws RemoteException never thrown
+     * @deprecated Unsupported Operation
+     */
     @Override
     public boolean delete(final int id, final String domain) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is deprecated and not supported by the cids REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
+    /**
+     * <strong>Unsupported Operation</strong>
+     * <p>
+     * This operation is not supported anymore in the cids REST API, it throws
+     * an Unsupported Operation Exception!</p>
+     *
+     * @param user parameter is ignored
+     * @param name parameter is ignored
+     * @param description parameter is ignored
+     * @param statement parameter is ignored
+     * @param resultType parameter is ignored
+     * @param isUpdate parameter is ignored
+     * @param isBatch parameter is ignored
+     * @param isRoot parameter is ignored
+     * @param isUnion parameter is ignored
+     * @return UnsupportedOperationException
+     * @throws RemoteException never thrown
+     * @deprecated Unsupported Operation
+     */
     @Override
     public int addQuery(final User user,
             final String name,
@@ -1265,17 +1507,52 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final char isBatch,
             final char isRoot,
             final char isUnion) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is deprecated and not supported by the cids REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
+    /**
+     * <strong>Unsupported Operation</strong>
+     * <p>
+     * This operation is not supported anymore in the cids REST API, it throws
+     * an Unsupported Operation Exception!</p>
+     *
+     * @param user parameter is ignored
+     * @param name parameter is ignored
+     * @param description parameter is ignored
+     * @param statement parameter is ignored
+     * @return UnsupportedOperationException
+     * @throws RemoteException never thrown
+     * @deprecated Unsupported Operation
+     */
     @Override
     public int addQuery(final User user, final String name, final String description, final String statement)
             throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is deprecated and not supported by the cids REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
+    /**
+     * <strong>Unsupported Operation</strong>
+     * <p>
+     * This operation is not supported anymore in the cids REST API, it throws
+     * an Unsupported Operation Exception!</p>
+     * 
+     * @param user parameter is ignored
+     * @param queryId parameter is ignored
+     * @param typeId parameter is ignored
+     * @param paramkey parameter is ignored
+     * @param description parameter is ignored
+     * @param isQueryResult parameter is ignored
+     * @param queryPosition parameter is ignored
+     * @return UnsupportedOperationException
+     * @throws RemoteException never thrown
+     * @deprecated Unsupported Operation
+     */
     @Override
     public boolean addQueryParameter(final User user,
             final int queryId,
@@ -1284,27 +1561,45 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final String description,
             final char isQueryResult,
             final int queryPosition) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is deprecated and not supported by the cids REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
+    /**
+     * <strong>Unsupported Operation</strong>
+     * <p>
+     * This operation is not supported anymore in the cids REST API, it throws
+     * an Unsupported Operation Exception!</p>
+     * 
+     * @param user parameter is ignored
+     * @param queryId parameter is ignored
+     * @param paramkey parameter is ignored
+     * @param description parameter is ignored
+     * @returnUnsupportedOperationException
+     * @throws RemoteException never thrown
+     * @deprecated Unsupported Operation
+     */
     @Override
     public boolean addQueryParameter(final User user,
             final int queryId,
             final String paramkey,
             final String description) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is deprecated and not supported by the cids REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
     // </editor-fold>
     // <editor-fold desc="SEARCH API" defaultstate="collapsed">
-    
     /**
      * <strong>Unsupported Operation</strong>
-     * <p>This operation is not supported anymore in the cids REST API,
-     * it returns an empty result!</p>
-     * 
+     * <p>
+     * This operation is not supported anymore in the cids REST API, it returns
+     * an empty result!</p>
+     *
      * @param user parameter is ignored
      * @return <strong>empty</strong> HashMap;
      * @throws RemoteException never thrown
@@ -1321,9 +1616,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
     /**
      * <strong>Unsupported Operation</strong>
-     * <p>This operation is not supported anymore in the cids REST API,
-     * it returns an empty result!</p>
-     * 
+     * <p>
+     * This operation is not supported anymore in the cids REST API, it returns
+     * an empty result!</p>
+     *
      * @param user parameter is ignored
      * @param domain parameter is ignored
      * @return <strong>empty</strong> HashMap;
@@ -1340,10 +1636,25 @@ public class RESTfulInterfaceConnector implements CallServerService {
     }
 
     @Override
+    /**
+     * <strong>Unsupported Operation</strong>
+     * <p>
+     * This operation is not supported anymore in the cids REST API, it throws
+     * an UnsupportedOperationException Exception</p>
+     *
+     * @param user parameter is ignored
+     * @param classIds parameter is ignored
+     * @param searchOptions parameter is ignored
+     * @return UnsupportedOperationException
+     * @throws RemoteException not thrown
+     * @deprecated
+     */
     public SearchResult search(final User user, final String[] classIds, final SearchOption[] searchOptions)
             throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+                + "' is deprecated and not supported by cids REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
     @Override

@@ -11,6 +11,7 @@ import Sirius.server.middleware.types.MetaClass;
 import de.cismet.cids.server.ws.rest.RESTfulInterfaceConnector;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 
 /**
@@ -109,5 +110,41 @@ public class ClassNameCache {
 
         final String className = classNameMap.get(classId);
         return className;
+    }
+    
+    /**
+     * Returns the id of a legacy meta class with the specified name (table name)
+     * for the specified domain. 
+     * 
+     * @param domain domain of the meta class
+     * @param className class name of the meta class
+     * @return id of the legacy meta class or -1 if the name or domain is not cached
+     */
+    public int getClassIdForClassName(final String domain, final String className) {
+        if (!this.isDomainCached(domain)) {
+            LOG.error("class name cache does not contain class names for domain '" + domain
+                    + "', need to fill the cache first!");
+            return -1;
+        }
+        
+        Map<String, String> classNameMap = this.classNameCache.get(domain);
+        if (classNameMap == null || classNameMap.isEmpty()) {
+            final String message = "could not find classes for domain '" 
+                    + domain + "', class name map is empty!";
+            LOG.error(message);
+            return -1;
+        }
+
+        for(Entry<String, String> entry: classNameMap.entrySet()) {
+            if(entry.getValue().equalsIgnoreCase(className)) {
+                final int classId = Integer.valueOf(entry.getKey());
+                return classId;
+            }
+        }
+        
+        final String message = "could not find class id for name '"+className+"' for domain '" 
+                    + domain + "' in class name map!";
+            LOG.error(message);
+            return -1;
     }
 }

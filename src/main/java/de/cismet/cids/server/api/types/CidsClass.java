@@ -82,6 +82,51 @@ public class CidsClass implements Key {
     }
 
     /**
+     * Returns the name part of a class key ('/DOMAIN.CLASSNAME') or null if the
+     * class key is invalid.
+     *
+     * @param classKey the class key e.g. '/DOMAIN.CLASSNAME'
+     * @return name part of the key or null if the class key is invalid
+     */
+    public static String nameFromKey(final String classKey) {
+        final int domainSeparator = classKey.lastIndexOf('.');
+        final String name;
+        if (domainSeparator > 3 && classKey.length() > domainSeparator + 1) {
+            // ignore trailing /
+            //final String domain = classKey.substring(1, domainSeparator);
+            name = classKey.substring(domainSeparator + 1);
+        } else {
+            LOG.error("invalid class key provided: '" + classKey
+                    + "', expected $self reference: '/DOMAIN.CLASSNAME'");
+            name = null;
+        }
+
+        return name;
+    }
+
+    /**
+     * Returns the domain part of a class key ('/DOMAIN.CLASSNAME') or null if
+     * the class key is invalid.
+     *
+     * @param classKey the class key e.g. '/DOMAIN.CLASSNAME'
+     * @return domain part of the key or null if the class key is invalid
+     */
+    public static String domainFromKey(final String classKey) {
+        final int domainSeparator = classKey.lastIndexOf('.');
+        final String domain;
+        if (domainSeparator > 3 && classKey.length() > domainSeparator + 1) {
+            // ignore trailing /
+            domain = classKey.substring(1, domainSeparator);
+        } else {
+            LOG.error("invalid class key provided: '" + classKey
+                    + "', expected $self reference: '/DOMAIN.CLASSNAME'");
+            domain = null;
+        }
+
+        return domain;
+    }
+
+    /**
      * DOCUMENT ME!
      *
      * @param attr DOCUMENT ME!
@@ -149,12 +194,13 @@ public class CidsClass implements Key {
         configurationAttributes.put(key.toString(),
                 value);
     }
-    
+
     /**
-     * Returns a configuration attribute. This operation id used to 
-     * return well-known configuration attributes (identified by a CidsClassConfigurationKey)
-     * as well as other "unknown" configuration attributes.
-     * 
+     * Returns a configuration attribute. This operation id used to return
+     * well-known configuration attributes (identified by a
+     * CidsClassConfigurationKey) as well as other "unknown" configuration
+     * attributes.
+     *
      * @param key Either a CidsClassConfigurationKey or a String
      * @return The value of a configuration attribute
      */
@@ -186,10 +232,9 @@ public class CidsClass implements Key {
         configurationAttributes.remove(key.toString());
     }
 
-    
     /**
      * Returns the name of the class
-     * 
+     *
      * @return name of the class
      */
     public String getName() {
@@ -198,14 +243,13 @@ public class CidsClass implements Key {
 
     /**
      * Returns the domain of the class
-     * 
+     *
      * @return the domain of the class
      */
     public String getDomain() {
         return domain;
     }
-    
-    
+
     /**
      * Return the key resp. the $self reference of the cids class instance.
      *
@@ -220,35 +264,27 @@ public class CidsClass implements Key {
      * Sets the key resp. the $self reference of the cids class instance and
      * derives and sets additionally the domain property.
      *
-     * @param key the $self reference of the cids class
+     * @param classKey the $self reference of the cids class
      */
-    public void setKey(final String key) {
-        final int domainSeparator = key.lastIndexOf('.');
-        if (domainSeparator > 3 && key.length() > domainSeparator + 1) {
-            // ignore trailing /
-            this.domain = key.substring(1, domainSeparator);
-            this.name = key.substring(domainSeparator + 1);
-        } else {
-            LOG.error("invalid class key provided: '" + key 
-                    + "', expected $self reference: '/DOMAIN.CLASSNAME'");
-            this.domain = "LOCAL";
-            this.name = "INVALID";
-        }
+    public void setKey(final String classKey) {
+        this.name = CidsClass.nameFromKey(classKey);
+        this.domain = CidsClass.domainFromKey(classKey);
     }
-    
+
     /**
-     * Returns all  attributes (~ member attribute info) of the cids class
-     * 
-     * @return map with all attributes 
+     * Returns all attributes (~ member attribute info) of the cids class
+     *
+     * @return map with all attributes
      */
     public LinkedHashMap<String, CidsAttribute> getAttributes() {
         return attributes;
     }
 
     /**
-     * Returns all configuration attributes (~class attributes) attributes of the cids class
-     * 
-     * @return map with all configuration attributes 
+     * Returns all configuration attributes (~class attributes) attributes of
+     * the cids class
+     *
+     * @return map with all configuration attributes
      */
     public LinkedHashMap<String, Object> getConfigurationAttributes() {
         return configurationAttributes;
@@ -256,10 +292,10 @@ public class CidsClass implements Key {
 }
 
 /**
- * Custom serializer for cids class REST types.
- * Uses default object serialization for the simplified cids class object structure.
- * Conversion from complex legacy meta class and attribute structure to cids class 
- * is performed in CidsClassFactory.
+ * Custom serializer for cids class REST types. Uses default object
+ * serialization for the simplified cids class object structure. Conversion from
+ * complex legacy meta class and attribute structure to cids class is performed
+ * in CidsClassFactory.
  *
  * @version $Revision$, $Date$
  */
@@ -312,11 +348,11 @@ class CidsClassSerializer
 
 /**
  * Custom deserializer for cids class REST type.
- * 
- * Uses mainly the default object deserialization for the simplified cids class object structure,
- * apart form binary legacy icons (Sirius Image).
- * Conversion from cids class to complex legacy meta class and attribute structure  
- * is performed in CidsClassFactory.
+ *
+ * Uses mainly the default object deserialization for the simplified cids class
+ * object structure, apart form binary legacy icons (Sirius Image). Conversion
+ * from cids class to complex legacy meta class and attribute structure is
+ * performed in CidsClassFactory.
  *
  * @version $Revision$, $Date$
  */
