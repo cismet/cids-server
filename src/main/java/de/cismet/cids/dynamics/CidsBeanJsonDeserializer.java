@@ -11,7 +11,6 @@
  */
 package de.cismet.cids.dynamics;
 
-import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -141,6 +140,8 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                         cacheHit = true;
                     } else {
                         cb = CidsBean.createNewCidsBeanFromTableName(bInfo.getDomainKey(), bInfo.getClassKey()); // test
+                        cb.quiteSetProperty(cb.getPrimaryKeyFieldname().toLowerCase(),
+                            Integer.parseInt(bInfo.getObjectKey()));
                     }
                 } else {
                     switch (jp.getCurrentToken()) {
@@ -270,26 +271,26 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                             cb.getBeanCollectionProperty(prop).addAll((Collection)value);
 
                             // insert does not work for arrays if statii are not set
-                            // the status is important for updates of objects, but there 
+                            // the status is important for updates of objects, but there
                             // is an update deserializer for that => CidsBeanJsonUpdataDesirializer
-                            
-//                            // Clean up
-//                            // No changed flags shall be true.
-//                            // All statuses shall be NO_STATUS
-//                            final ObjectAttribute oa = cb.getMetaObject().getAttributeByFieldName(prop);
-//                            oa.setChanged(false);
-//                            final MetaObject dummy = (MetaObject)oa.getValue();
-//                            if (dummy != null) {
-//                                dummy.setChanged(false);
-//                                dummy.forceStatus(MetaObject.NO_STATUS);
-//                                dummy.setStatus(MetaObject.NO_STATUS);
-//                                final ObjectAttribute[] entries = dummy.getAttribs();
-//                                for (final ObjectAttribute entry : entries) {
-//                                    entry.setChanged(false);
-//                                    ((MetaObject)entry.getValue()).forceStatus(MetaObject.NO_STATUS);
-//                                    ((MetaObject)entry.getValue()).setChanged(false);
-//                                }
-//                            }
+
+// // Clean up
+// // No changed flags shall be true.
+// // All statuses shall be NO_STATUS
+// final ObjectAttribute oa = cb.getMetaObject().getAttributeByFieldName(prop);
+// oa.setChanged(false);
+// final MetaObject dummy = (MetaObject)oa.getValue();
+// if (dummy != null) {
+// dummy.setChanged(false);
+// dummy.forceStatus(MetaObject.NO_STATUS);
+// dummy.setStatus(MetaObject.NO_STATUS);
+// final ObjectAttribute[] entries = dummy.getAttribs();
+// for (final ObjectAttribute entry : entries) {
+// entry.setChanged(false);
+// ((MetaObject)entry.getValue()).forceStatus(MetaObject.NO_STATUS);
+// ((MetaObject)entry.getValue()).setChanged(false);
+// }
+// }
                         } else {
                             cb.quiteSetProperty(prop, value);
                         }
