@@ -91,6 +91,38 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
                 }
             });
     }
+    
+        /**
+     * Creates a new LightweightMetaObject object.
+     *
+     * @param  classID   DOCUMENT ME!
+     * @param  objectID  DOCUMENT ME!
+     * @param  domain    DOCUMENT ME!
+     * @param  user      DOCUMENT ME!
+     * @param attributesMap  DOCUMENT ME!
+     */
+    public LightweightMetaObject(final int classID,
+            final int objectID,
+            final String domain,
+            final User user,
+            final Map<String, Object> attributesMap) {
+        
+        this(
+                classID, 
+                objectID, 
+                domain, 
+                user, 
+                attributesMap, 
+                new AbstractAttributeRepresentationFormater() {
+
+                @Override
+                public String getRepresentation() {
+                    final StringBuilder result = new StringBuilder();
+                    result.append("LWO:").append(classID).append("@").append(objectID).append("@").append(domain);
+                    return result.toString();
+                }
+            });
+    }
 
     /**
      * Creates a new LightweightMetaObject object.

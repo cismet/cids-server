@@ -10,12 +10,14 @@
 package de.cismet.cids.server.ws.rest;
 
 import Sirius.server.localserver.method.MethodMap;
+import Sirius.server.middleware.types.AbstractAttributeRepresentationFormater;
 import Sirius.server.middleware.types.HistoryObject;
 import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.Link;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.Node;
+import Sirius.server.middleware.types.StringPatternFormater;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 import Sirius.server.newuser.UserGroup;
@@ -64,6 +66,10 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+import java.util.ArrayList;
+import java.util.Formatter;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
@@ -462,6 +468,114 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
 
         return className;
+    }
+
+    /**
+     *
+     * @param cidsBean
+     * @param domain
+     * @param user
+     * @return
+     */
+    protected LightweightMetaObject lightweightMetaObjectFromCidsBean(
+            final CidsBean cidsBean,
+            final String domain,
+            final User user) {
+
+        LightweightMetaObject lwo;
+        final int subClassId = this.classKeyCache.getClassIdForClassName(
+                domain, cidsBean.getCidsBeanInfo().getClassKey());
+
+        if (subClassId != -1) {
+            lwo = this.lightweightMetaObjectFromCidsBean(
+                    cidsBean,
+                    subClassId,
+                    domain,
+                    user,
+                    null,
+                    null);
+        } else {
+            LOG.warn("cannot create LightweightMetaObject for class '"
+                    + cidsBean.getCidsBeanInfo().getClassKey() + "', class key not found. "
+                    + "Returning null!");
+            lwo = null;
+        }
+
+        return lwo;
+    }
+
+    /**
+     *
+     * @param cidsBean
+     * @param classId
+     * @param domain
+     * @param user
+     * @param representationFields
+     * @param representationFormater
+     * @return
+     */
+    protected LightweightMetaObject lightweightMetaObjectFromCidsBean(
+            final CidsBean cidsBean,
+            final int classId,
+            final String domain,
+            final User user,
+            final String[] representationFields,
+            final AbstractAttributeRepresentationFormater representationFormater
+    ) {
+        final int objectId = cidsBean.getPrimaryKeyValue();
+        final LinkedHashMap<String, Object> lmoAttributes = new LinkedHashMap<String, Object>();
+
+        if (representationFields != null && representationFields.length > 0) {
+            for (final String propertyName : representationFields) {
+                final Object property = cidsBean.getProperty(propertyName);
+                if (property != null && Collection.class.isAssignableFrom(property.getClass())) {
+                    LOG.debug("filling LightweightMetaObject property array '" + propertyName + "'");
+                    final ArrayList<LightweightMetaObject> subLwos
+                            = new ArrayList<LightweightMetaObject>(((Collection) property).size());
+                    final Iterator cidsBeanIerator = ((Collection) property).iterator();
+
+                    while (cidsBeanIerator.hasNext()) {
+                        final Object object = cidsBeanIerator.next();
+                        if (object != null && CidsBean.class.isAssignableFrom(object.getClass())) {
+                            final CidsBean subCidsBean = (CidsBean) object;
+                            final LightweightMetaObject subLwo
+                                    = this.lightweightMetaObjectFromCidsBean(subCidsBean, domain, user);
+                            subLwos.add(subLwo);
+                        } else {
+                            LOG.warn("entry '" + object + "' of array attribute '" + propertyName
+                                    + "' is not a cids bean, entry is ignored in LightweightMetaObject!");
+                        }
+                    }
+
+                    lmoAttributes.put(propertyName, subLwos);
+
+                } else if (property != null && CidsBean.class.isAssignableFrom(property.getClass())) {
+                    LOG.debug("filling LightweightMetaObject property array '" + propertyName + "'");
+                    final CidsBean subCidsBean = (CidsBean) property;
+                    final LightweightMetaObject subLwo
+                            = this.lightweightMetaObjectFromCidsBean(subCidsBean, domain, user);
+                    lmoAttributes.put(propertyName, subLwo);
+                } else {
+                    lmoAttributes.put(propertyName, property);
+                }
+            }
+        }
+        // TODO: fixme
+        lmoAttributes.put(cidsBean.getPrimaryKeyFieldname(), cidsBean.getPrimaryKeyValue());
+
+        final LightweightMetaObject lightweightMetaObject
+                = new LightweightMetaObject(
+                        classId,
+                        objectId,
+                        domain,
+                        user,
+                        lmoAttributes);
+
+        if (representationFormater != null) {
+            lightweightMetaObject.setFormater(representationFormater);
+        }
+
+        return lightweightMetaObject;
     }
 
     // </editor-fold>
@@ -907,8 +1021,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
         // Tools | Templates.
     }
 
-    /** 
-     * Retrieves a Meta data object referenced by a symbolic pointer to the MIS 
+    /**
+     * Retrieves a Meta data object referenced by a symbolic pointer to the MIS
      * objctId@classID@domain from this pointer.
      * <br>
      * <br>
@@ -919,12 +1033,12 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * </a>
      * </code>
      *
-     * @param   user       user token
-     * @param   objectId  symbolic pointer to the meta object
-     * @param   classId   class of the meta object
-     * @param   domain    domain where the meta object is hosted
+     * @param user user token
+     * @param objectId symbolic pointer to the meta object
+     * @param classId class of the meta object
+     * @param domain domain where the meta object is hosted
      * @return
-     * @throws RemoteException 
+     * @throws RemoteException
      */
     @Override
     public MetaObject getMetaObject(final User user, final int objectId, final int classId, final String domain)
@@ -941,13 +1055,13 @@ public class RESTfulInterfaceConnector implements CallServerService {
         builder = this.createMediaTypeHeaders(builder);
 
         LOG.debug("getMetaObject '" + objectId + "@" + classId + "@" + domain
-                + "' ("+domain+"."+className+") for user '" + user + "' :" + webResource.toString());
+                + "' (" + domain + "." + className + ") for user '" + user + "' :" + webResource.toString());
 
         try {
             final ObjectNode objectNode = builder.get(ObjectNode.class);
             if (objectNode == null || objectNode.size() == 0) {
                 LOG.error("could not find meta object  '" + objectId + "@" + classId + "@" + domain
-                        + "' ("+domain+"."+className+") for user '" + user + "'");
+                        + "' (" + domain + "." + className + ") for user '" + user + "'");
                 return null;
             }
 
@@ -956,8 +1070,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 cidsBean = CidsBean.createNewCidsBeanFromJSON(false, objectNode.toString());
             } catch (Exception ex) {
                 final String message = "could not deserialize cids bean from object node  '"
-                        + objectId + "@" + classId + "@" + domain 
-                        + "' ("+domain+"."+className+") for user '" + user + "': "
+                        + objectId + "@" + classId + "@" + domain
+                        + "' (" + domain + "." + className + ") for user '" + user + "': "
                         + ex.getMessage();
                 LOG.error(message, ex);
                 throw new RemoteException(message, ex);
@@ -968,13 +1082,13 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 return metaObject;
             } else {
                 LOG.error("could not find meta object  '" + objectId + "@" + classId + "@" + domain
-                        + "' ("+domain+"."+className+") for user '" + user + "'");
+                        + "' (" + domain + "." + className + ") for user '" + user + "'");
                 return null;
             }
         } catch (UniformInterfaceException ue) {
             final Status status = ue.getResponse().getClientResponseStatus();
             final String message = "could not get meta object '" + objectId + "@" + classId + "@" + domain
-                    + "' ("+domain+"."+className+") for user '" + user + "': "
+                    + "' (" + domain + "." + className + ") for user '" + user + "': "
                     + status.getReasonPhrase();
 
             LOG.error(message, ue);
@@ -982,10 +1096,26 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
     }
 
+    /**
+     * Creates a new meta object and returns the resulting instance.
+     * <br>
+     * <br>
+     * <strong>Example REST Call:</strong><br>
+     * <code>
+     * curl --user username@SWITCHON:password -H "Content-Type: application/json" -X POST
+     * -d "{$self:'/SWITCHON.contact/31337'}" http://localhost:8890/SWITCHON.contact
+     * </code>
+     *
+     * @param user user token
+     * @param metaObject the new meta object to be created
+     * @param domain domain of the meta object
+     * @return the remotely created meta object (resulting instance)
+     * @throws RemoteException if any remote error occurs
+     */
     @Override
     public MetaObject insertMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        
+
         final int classId = metaObject.getClassID();
         final String className = this.getClassNameForClassId(user, domain, classId);
 
@@ -998,14 +1128,14 @@ public class RESTfulInterfaceConnector implements CallServerService {
         builder = this.createMediaTypeHeaders(builder);
 
         LOG.debug("insertMetaObject for class '" + classId + "@" + domain
-                + "' ("+domain+"."+className+") for user '" + user + "' :" + webResource.toString());
+                + "' (" + domain + "." + className + ") for user '" + user + "' :" + webResource.toString());
 
         try {
             final ObjectNode objectNode = builder.post(ObjectNode.class,
                     metaObject.getBean().toJSONString(true));
             if (objectNode == null || objectNode.size() == 0) {
                 LOG.error("could not insert meta object for class '" + classId + "@" + domain
-                        + "' ("+domain+"."+className+") for user '" + user + "': newly inserted meta object could not be found");
+                        + "' (" + domain + "." + className + ") for user '" + user + "': newly inserted meta object could not be found");
                 return null;
             }
 
@@ -1014,7 +1144,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 cidsBean = CidsBean.createNewCidsBeanFromJSON(false, objectNode.toString());
             } catch (Exception ex) {
                 final String message = "could not deserialize cids bean from object node for class '"
-                        + classId + "@" + domain + "' ("+domain+"."+className+") for user '" + user + "': "
+                        + classId + "@" + domain + "' (" + domain + "." + className + ") for user '" + user + "': "
                         + ex.getMessage();
                 LOG.error(message, ex);
                 throw new RemoteException(message, ex);
@@ -1025,13 +1155,13 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 return newMetaObject;
             } else {
                 LOG.error("could not insert meta object for class '" + classId + "@" + domain
-                        + "' ("+domain+"."+className+") for user '" + user + "': newly inserted meta object could not be found");
+                        + "' (" + domain + "." + className + ") for user '" + user + "': newly inserted meta object could not be found");
                 return null;
             }
         } catch (UniformInterfaceException ue) {
             final Status status = ue.getResponse().getClientResponseStatus();
             final String message = "could not insert meta object for class  '" + classId + "@" + domain
-                    + "' ("+domain+"."+className+") for user '" + user + "': "
+                    + "' (" + domain + "." + className + ") for user '" + user + "': "
                     + status.getReasonPhrase();
 
             LOG.error(message, ue);
@@ -1045,6 +1175,22 @@ public class RESTfulInterfaceConnector implements CallServerService {
         // Tools | Templates.
     }
 
+    /**
+     * Updates an existing meta object.
+     * <br>
+     * <br>
+     * <strong>Example REST Call:</strong><br>
+     * <code>
+     * curl --user username@SWITCHON:password -H "Content-Type: application/json" -X PUT
+     * -d "{$self:'/SWITCHON.contact/31337'}" http://localhost:8890/SWITCHON.contact/31337
+     * </code>
+     *
+     * @param user user token
+     * @param metaObject the meta object to be updated
+     * @param domain domain of the meta object
+     * @return status code (1 == successful)
+     * @throws RemoteException RemoteException if any remote error occurs
+     */
     @Override
     public int updateMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
@@ -1061,7 +1207,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         builder = this.createMediaTypeHeaders(builder);
 
         LOG.debug("updateMetaObject '" + objectId + "@" + classId + "@" + domain
-                + "' ("+domain+"."+className+") for user '" + user + "' :" + webResource.toString());
+                + "' (" + domain + "." + className + ") for user '" + user + "' :" + webResource.toString());
 
         try {
             builder.put(ObjectNode.class, metaObject.getBean().toJSONString(true));
@@ -1069,7 +1215,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         } catch (UniformInterfaceException ue) {
             final Status status = ue.getResponse().getClientResponseStatus();
             final String message = "could not update meta object '" + objectId + "@" + classId + "@" + domain
-                    + "' ("+domain+"."+className+") for user '" + user + "': "
+                    + "' (" + domain + "." + className + ") for user '" + user + "': "
                     + status.getReasonPhrase();
 
             LOG.error(message, ue);
@@ -1077,6 +1223,40 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
     }
 
+    /**
+     * insertion, deletion or update of meta data according to the query returns
+     * how many object's are effected.
+     *
+     * @param user user token
+     * @param query sql query (update, insert, delete)
+     * @param domain domain where the query is to be executed
+     *
+     * @return how many data sets are affected
+     *
+     * @throws RemoteException server error (eg bad sql)
+     */
+    @Override
+    public int update(final User user, final String query, final String domain) throws RemoteException {
+        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
+        // Tools | Templates.
+    }
+
+    /**
+     * Deletes a meta object.
+     * <br>
+     * <br>
+     * <strong>Example REST Call:</strong><br>
+     * <code>
+     * curl --user username@SWITCHON:password -X DELETE http://localhost:8890/switchon.contact/31337
+     * </code>
+     *
+     *
+     * @param user user token
+     * @param metaObject the meta object to be deleted
+     * @param domain the domain of the meta object
+     * @return status code (1 == successful)
+     * @throws RemoteException if any remote error occurs
+     */
     @Override
     public int deleteMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
@@ -1092,7 +1272,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         builder = this.createMediaTypeHeaders(builder);
 
         LOG.debug("deleteMetaObject '" + objectId + "@" + classId + "@" + domain
-                + "' ("+domain+"."+className+") for user '" + user + "' :" + webResource.toString());
+                + "' (" + domain + "." + className + ") for user '" + user + "' :" + webResource.toString());
 
         try {
             builder.delete(ObjectNode.class);
@@ -1100,7 +1280,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         } catch (UniformInterfaceException ue) {
             final Status status = ue.getResponse().getClientResponseStatus();
             final String message = "could not delete meta object '" + objectId + "@" + classId + "@" + domain
-                    + "' ("+domain+"."+className+") for user '" + user + "': "
+                    + "' (" + domain + "." + className + ") for user '" + user + "': "
                     + status.getReasonPhrase();
 
             LOG.error(message, ue);
@@ -1108,27 +1288,157 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
     }
 
+    /**
+     * Returns all LightweightMetaObject of the class specified by classId. If
+     * The LightweightMetaObjects returned by this method contain only the
+     * fields (attributes) specified by the representationFields String Array.
+     * The to string representation {@link LightweightMetaObject#toString()} of
+     * the LightweightMetaObject is built from the representationFields and
+     * formatted according to the {@link Formatter} representationPattern (e.g.
+     * "%1$2s").
+     *
+     * @param classId legacy class id of the LightweightMetaObjects
+     * @param user user token
+     * @param representationFields files of the LightweightMetaObject
+     * @param representationPattern the format pattern {@link Formatter}
+     * @return Array of LightweightMetaObjects or null
+     * @throws RemoteException if any remote error occurs
+     */
     @Override
     public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classId,
             final User user,
             final String[] representationFields,
             final String representationPattern) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+
+        final String domain = user.getDomain();
+        final String className = this.getClassNameForClassId(user, domain, classId);
+        final AbstractAttributeRepresentationFormater representationFormater;
+        final LightweightMetaObject[] lightweightMetaObjects;
+        final int representationFieldsLength
+                = representationFields != null ? representationFields.length : 0;
+
+        // needed for object id (primary key)
+        final MetaClass metaClass = this.getClass(user, classId, domain);
+
+        final MultivaluedMap queryParameters = this.createUserParameters(user);
+        queryParameters.add("deduplicate", "true");
+        queryParameters.add("level", "1");
+
+        final StringBuilder fieldsParameter = new StringBuilder();
+        fieldsParameter.append(metaClass.getPrimaryKey().toLowerCase());
+        if (representationFieldsLength > 0) {
+            for (String representationField : representationFields) {
+                fieldsParameter.append(',');
+                fieldsParameter.append(representationField);
+            }
+        }
+        queryParameters.add("fields", fieldsParameter.toString());
+
+        final WebResource webResource = this.createWebResource(ENTITIES_API)
+                .path(domain + "." + className)
+                .queryParams(queryParameters);
+        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        builder = this.createMediaTypeHeaders(builder);
+
+        LOG.debug("getAllLightweightMetaObjectsForClass for class '" + classId + "@" + domain
+                + "' (" + domain + "." + className + ") for user '" + user
+                + "' with " + representationFieldsLength + " representation fields:"
+                + webResource.toString());
+
+        try {
+            final GenericCollectionResource<ObjectNode> objectNodes
+                    = builder.get(new GenericType<GenericCollectionResource<ObjectNode>>() {
+                    });
+
+            if (objectNodes == null || objectNodes.get$collection() == null
+                    || objectNodes.get$collection().isEmpty()) {
+                LOG.error("could not find any lightweight meta objects for class '" + classId + "@" + domain
+                        + "' (" + domain + "." + className + ") for user '" + user
+                        + "' with " + representationFieldsLength + " representation fields.");
+                return null;
+            }
+
+            if (representationPattern != null) {
+                //LOG.warn("ignoring representation pattern '"+representationPattern+"'");
+                representationFormater = new StringPatternFormater(representationPattern, representationFields);
+            } else {
+                representationFormater = null;
+            }
+
+            LOG.debug("found " + objectNodes.get$collection().size()
+                    + " lightweight meta objects for class '" + classId + "@" + domain
+                    + "' (" + domain + "." + className + ") for user '" + user
+                    + "' with " + representationFieldsLength
+                    + " representation fields. Performing conversion to cids legacy meta objects.");
+
+            lightweightMetaObjects = new LightweightMetaObject[objectNodes.get$collection().size()];
+            int i = 0;
+            for (ObjectNode objectNode : objectNodes.get$collection()) {
+                final CidsBean cidsBean;
+                try {
+                    cidsBean = CidsBean.createNewCidsBeanFromJSON(false, objectNode.toString());
+                } catch (Exception ex) {
+                    final String message = "could not deserialize cids beans from object nodes for class '" + classId + "@" + domain
+                            + "' (" + domain + "." + className + ") for user '" + user
+                            + "' with " + representationFieldsLength + " representation fields: "
+                            + ex.getMessage();
+                    LOG.error(message, ex);
+                    throw new RemoteException(message, ex);
+                }
+
+                if (cidsBean != null) {
+                    final LightweightMetaObject lightweightMetaObject
+                            = this.lightweightMetaObjectFromCidsBean(
+                                    cidsBean,
+                                    classId,
+                                    domain,
+                                    user,
+                                    representationFields,
+                                    representationFormater);
+                    lightweightMetaObjects[i] = lightweightMetaObject;
+                    i++;
+
+                } else {
+                    LOG.error("could not find lightweight meta objects for class '" + classId + "@" + domain
+                            + "' (" + domain + "." + className + ") for user '" + user
+                            + "' with " + representationFieldsLength + " representation fields.");
+                    return null;
+                }
+            }
+        } catch (UniformInterfaceException ue) {
+            final Status status = ue.getResponse().getClientResponseStatus();
+            final String message = "could not get lightweight meta object for class '" + classId + "@" + domain
+                    + "' (" + domain + "." + className + ") for user '" + user
+                    + "' with " + representationFieldsLength + " representation fields: "
+                    + status.getReasonPhrase();
+
+            LOG.error(message, ue);
+            throw new RemoteException(message, ue);
+        }
+
+        return lightweightMetaObjects;
     }
 
-    @Override
-    public int update(final User user, final String query, final String domain) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
-    }
-
+    /**
+     * Returns all LightweightMetaObject of the class specified by classId. If
+     * The LightweightMetaObjects returned by this method contain only the
+     * fields (attributes) specified by the representationFields String Array.
+     *
+     * @param classId legacy class id of the LightweightMetaObjects
+     * @param user user token
+     * @param representationFields files of the LightweightMetaObject
+     * @return Array of LightweightMetaObjects or null
+     * @throws RemoteException if any remote error occurs
+     * @see #getAllLightweightMetaObjectsForClass(int,
+     * Sirius.server.newuser.User, java.lang.String[], java.lang.String)
+     */
     @Override
     public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classId,
             final User user,
             final String[] representationFields) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName() + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+
+        return this.getAllLightweightMetaObjectsForClass(classId, user,
+                representationFields, null);
     }
 
     @Override
@@ -1541,7 +1851,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <p>
      * This operation is not supported anymore in the cids REST API, it throws
      * an Unsupported Operation Exception!</p>
-     * 
+     *
      * @param user parameter is ignored
      * @param queryId parameter is ignored
      * @param typeId parameter is ignored
@@ -1572,7 +1882,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <p>
      * This operation is not supported anymore in the cids REST API, it throws
      * an Unsupported Operation Exception!</p>
-     * 
+     *
      * @param user parameter is ignored
      * @param queryId parameter is ignored
      * @param paramkey parameter is ignored
