@@ -41,6 +41,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -158,6 +159,8 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
         }
 
         try {
+            final Collection<String> fullListColl = new LinkedList<String>();
+
             final MultiMap fullListMap = new MultiMap();
             final MultiMap addListMap = new MultiMap();
             final MultiMap updateListMap = new MultiMap();
@@ -207,6 +210,7 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
                                         CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_REMOVE_SUFFIX);
                                 listMap = removeListMap;
                             } else {
+                                fullListColl.add(fieldName);
                                 refersToList = fieldName;
                                 listMap = fullListMap;
                             }
@@ -331,7 +335,7 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
                 }
             }
 
-            for (final String listName : (Set<String>)fullListMap.keySet()) {
+            for (final String listName : fullListColl) {
                 final List<CidsBean> origColl = cb.getBeanCollectionProperty(listName);
 
                 // each object from the json list collection that not exists
@@ -344,35 +348,39 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
                 // objects from the json list, the remaing objects are all the objects
                 // that have to be removed from the original collection. (because they dont
                 // have be found in the json collection).
-                final List<CidsBean> toRemoveColl = new ArrayList<CidsBean>(origColl);
+                if (fullListMap.get(listName) == null) {
+                    origColl.clear();
+                } else {
+                    final List<CidsBean> toRemoveColl = new ArrayList<CidsBean>(origColl);
 
-                final HashMap<CidsBean, Integer> toUpdateMap = new HashMap<CidsBean, Integer>();
+                    final HashMap<CidsBean, Integer> toUpdateMap = new HashMap<CidsBean, Integer>();
 
-                // processing the objects of the json list
-                for (final CidsBean bean : (Collection<CidsBean>)fullListMap.get(listName)) {
-                    final int indexOf = toRemoveColl.indexOf(bean);
-                    if (indexOf < 0) { // not found in the original collection
-                        toAddColl.add(bean);
-                    } else {           // found => update & remove from toRemove (yes, thats right
-                                       // !)
-                        toUpdateMap.put(bean, indexOf);
-                        toRemoveColl.remove(bean);
+                    // processing the objects of the json list
+                    for (final CidsBean bean : (Collection<CidsBean>)fullListMap.get(listName)) {
+                        final int indexOf = toRemoveColl.indexOf(bean);
+                        if (indexOf < 0) { // not found in the original collection
+                            toAddColl.add(bean);
+                        } else {           // found => update & remove from toRemove (yes, thats right
+                                           // !)
+                            toUpdateMap.put(bean, indexOf);
+                            toRemoveColl.remove(bean);
+                        }
                     }
+
+                    // here happens all the changes to the original list collection
+
+                    // - add
+                    origColl.addAll(toAddColl);
+
+                    // - update
+                    for (final CidsBean toUpdateBean : toUpdateMap.keySet()) {
+                        final Integer indexOf = toUpdateMap.get(toUpdateBean);
+                        origColl.set(indexOf, toUpdateBean);
+                    }
+
+                    // - remove
+                    origColl.removeAll(toRemoveColl);
                 }
-
-                // here happens all the changes to the original list collection
-
-                // - add
-                origColl.addAll(toAddColl);
-
-                // - update
-                for (final CidsBean toUpdateBean : toUpdateMap.keySet()) {
-                    final Integer indexOf = toUpdateMap.get(toUpdateBean);
-                    origColl.set(indexOf, toUpdateBean);
-                }
-
-                // - remove
-                origColl.removeAll(toRemoveColl);
             }
 
             // ignore the patch tags if patch is not enabled
