@@ -1,10 +1,12 @@
-/***************************************************
-*
-* cismet GmbH, Saarbruecken, Germany
-*
-*              ... and it just works.
-*
-****************************************************/
+/**
+ * *************************************************
+ *
+ * cismet GmbH, Saarbruecken, Germany
+ * 
+* ... and it just works.
+ * 
+***************************************************
+ */
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -12,9 +14,17 @@
  */
 package de.cismet.cids.server.api.types.legacy;
 
-
+import Sirius.server.middleware.types.LightweightMetaObject;
+import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.middleware.types.MetaObject;
+import Sirius.server.middleware.types.Node;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import de.cismet.cids.base.types.Type;
+import de.cismet.cids.dynamics.CidsBean;
+import de.cismet.cids.server.api.types.CidsClass;
+import de.cismet.cids.server.api.types.CidsNode;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.log4j.Logger;
@@ -42,36 +52,37 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-
 import de.cismet.cids.server.api.types.SearchInfo;
 import de.cismet.cids.server.api.types.SearchParameter;
+import de.cismet.cids.server.api.types.SearchParameterInfo;
 import de.cismet.cids.server.api.types.SearchParameters;
 import de.cismet.cids.server.search.CidsServerSearch;
+import de.cismet.cids.server.search.LookupableServerSearch;
+import java.lang.reflect.ParameterizedType;
 
 /**
- * DOCUMENT ME!
+ * Helper Methods for dealing with CidsServerSearch and and SearchInfo.
  *
- * @author   Pascal Dihé
- * @version  $Revision$, $Date$
+ * @author Pascal Dihé
+ * @version $Revision$, $Date$
  */
 public class ServerSearchFactory {
 
     //~ Static fields/initializers ---------------------------------------------
-
     private static final transient Logger LOG = Logger.getLogger(ServerSearchFactory.class);
 
     private static ServerSearchFactory factory = null;
 
     //~ Instance fields --------------------------------------------------------
-
-    private final HashMap<String, Class<? extends CidsServerSearch>> serverSearchClassMap =
-        new HashMap<String, Class<? extends CidsServerSearch>>();
+    private final HashMap<String, Class<? extends CidsServerSearch>> serverSearchClassMap
+            = new HashMap<String, Class<? extends CidsServerSearch>>();
     private final HashMap<String, SearchInfo> serverSearchInfoMap = new HashMap<String, SearchInfo>();
+
+    private final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
 
     private boolean cacheFilled = false;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new ServerSearchFactory object.
      */
@@ -80,11 +91,10 @@ public class ServerSearchFactory {
     }
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      */
     public static final ServerSearchFactory getFactory() {
         if (factory == null) {
@@ -95,66 +105,129 @@ public class ServerSearchFactory {
     }
 
     /**
-     * DOCUMENT ME!
+     * Inspects a CidsServerSearch Instance and tries to automatically serive a
+     * proper SearchInfo object.
+     *
+     * @param cidsServerSearch server search to be inspected
+     * @return search info or null if the inspection fails
+     */
+    public SearchInfo SearchInfoFromCidsServerSearch(CidsServerSearch cidsServerSearch) {
+
+        try {
+            final Class<? extends CidsServerSearch> serverSearchClass = cidsServerSearch.getClass();
+            LOG.info("processing CidsServerSearch '" + serverSearchClass.getName() + "'");
+
+            final Set<Method> setters = ReflectionUtils.getAllMethods(
+                    serverSearchClass,
+                    ReflectionUtils.withModifier(Modifier.PUBLIC),
+                    ReflectionUtils.withPrefix("set"));
+            final Set<Method> settersParent = ReflectionUtils.getAllMethods(
+                    CidsServerSearch.class,
+                    ReflectionUtils.withModifier(Modifier.PUBLIC),
+                    ReflectionUtils.withPrefix("set"));
+            final Collection<String> setterParentNames = new ArrayList<String>();
+            for (final Method setterParent : settersParent) {
+                setterParentNames.add(setterParent.getName());
+            }
+
+            final SearchInfo searchInfo = new SearchInfo();
+            final String searchKey = serverSearchClass.getSimpleName();
+            final LinkedList<SearchParameterInfo> searchParameterInfos
+                    = new LinkedList<SearchParameterInfo>();
+            Class<?> resultCollectionClass = Object.class;
+
+            for (final Method setter : setters) {
+                if (!setterParentNames.contains(setter.getName())) {
+                    if (setter.getParameterCount() == 1) {
+                        final SearchParameterInfo searchParameterInfo = new SearchParameterInfo();
+                        final String paramName = setter.getName().split("set")[1];
+                        final Class paramClass = setter.getParameterTypes()[0];
+                        final Type paramType = Type.typeForJavaClass(paramClass);
+
+                        searchParameterInfo.setKey(paramName);
+                        searchParameterInfo.setType(paramType);
+                        searchParameterInfo.setArray(paramClass.isArray());
+
+                        if (paramType == Type.JAVA_CLASS || paramType == Type.JAVA_COLLECTION
+                                || paramType == Type.JAVA_SERIALIZABLE || paramType == Type.UNDEFINED) {
+                            searchParameterInfo.setAdditionalTypeInfo(paramClass.getName());
+                        }
+
+                        searchParameterInfos.add(searchParameterInfo);
+                    } else {
+                        LOG.warn("the setter operation '" + setter.getName() + "' is not supported,"
+                                + "since it expects " + setter.getParameterCount() + " parameters.");
+                    }
+                }
+            }
+
+            try {
+                final Method performServerSearch = serverSearchClass.getMethod("performServerSearch");
+                final java.lang.reflect.Type returnType = performServerSearch.getGenericReturnType();
+                final ParameterizedType collectionType = (ParameterizedType) returnType;
+                resultCollectionClass = (Class<?>) collectionType.getActualTypeArguments()[0];
+                LOG.debug("generic result collection type of CidsServerSearch '"
+                        + searchKey + "' is '" + resultCollectionClass.getName() + "'");
+            } catch (final Exception ex) {
+                LOG.warn("could not determine collection type of CidsServerSearch '"
+                        + searchKey + "': " + ex.getMessage(), ex);
+            }
+
+            final SearchParameterInfo returnParameterInfo = new SearchParameterInfo();
+            returnParameterInfo.setKey("return");
+            returnParameterInfo.setType(Type.JAVA_COLLECTION);
+            returnParameterInfo.setAdditionalTypeInfo(resultCollectionClass.getName());
+
+            searchInfo.setKey(searchKey);
+            searchInfo.setName(serverSearchClass.getSimpleName());
+            searchInfo.setDescription("legacy cidsServerSearch");
+            searchInfo.setParameterDescription(searchParameterInfos);
+            searchInfo.setResultDescription(returnParameterInfo);
+
+            return searchInfo;
+        } catch (Throwable t) {
+            LOG.error("could not inspect CidsServerSearch '"
+                    + cidsServerSearch.getClass().getName() + "': " + t.getMessage(),
+                    t);
+        }
+
+        return null;
+    }
+
+    /**
+     * Lookups all available Cids Server Search, collects the respective Search
+     * Infos and adds it to the cache.
      */
     private void fillCache() {
         if (cacheFilled) {
             LOG.warn("ServerSearchCache already filled");
         }
 
-        final Collection<? extends CidsServerSearch> subTypes = Lookup.getDefault().lookupAll(CidsServerSearch.class);
-        LOG.info("loading " + subTypes.size() + " CidsServerSearches");
-        for (final CidsServerSearch subType : subTypes) {
-            try {
-                final Class<? extends CidsServerSearch> serverSearchClass = subType.getClass();
-                LOG.info("processing CidsServerSearche '" + serverSearchClass.getName() + "'");
-                final Set<Method> setters = ReflectionUtils.getAllMethods(
-                        serverSearchClass,
-                        ReflectionUtils.withModifier(Modifier.PUBLIC),
-                        ReflectionUtils.withPrefix("set"));
-                final Set<Method> settersParent = ReflectionUtils.getAllMethods(
-                        CidsServerSearch.class,
-                        ReflectionUtils.withModifier(Modifier.PUBLIC),
-                        ReflectionUtils.withPrefix("set"));
-                final Collection<String> setterParentNames = new ArrayList<String>();
-                for (final Method setterParent : settersParent) {
-                    setterParentNames.add(setterParent.getName());
-                }
+        final Collection<? extends LookupableServerSearch> lookupableServerSearches = Lookup.getDefault().lookupAll(LookupableServerSearch.class);
+        final Collection<? extends CidsServerSearch> cidsServerSearches = Lookup.getDefault().lookupAll(CidsServerSearch.class);
 
-                final SearchInfo searchInfo = new SearchInfo();
-                final String searchKey = serverSearchClass.getSimpleName();
+        LOG.info("loading " + lookupableServerSearches.size() + " Lookupable Server Search and trying to inspect "
+                + cidsServerSearches.size() + "cids Server Searches");
 
-                final HashMap<String, String> serverSearchParamMap = new HashMap<String, String>();
-                for (final Method setter : setters) {
-                    if (!setterParentNames.contains(setter.getName())) {
-                        final Class[] paramTypes = setter.getParameterTypes();
-                        for (int index = 0; index < paramTypes.length; index++) {
-                            final Class paramTyp = paramTypes[index];
-                            final String paramName = setter.getName().split("set")[1];
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("processing CidsServerSearch '" + serverSearchClass.getName()
-                                            + "' parameter '" + paramName + "'");
-                            }
-                            if (paramTypes.length > 1) {
-                                serverSearchParamMap.put(paramName + "[" + index + "]", paramTyp.getName());
-                            } else {
-                                serverSearchParamMap.put(paramName, paramTyp.getName());
-                            }
-                        }
-                    }
-                }
+        for (final LookupableServerSearch lookupableServerSearch : lookupableServerSearches) {
+            final SearchInfo searchInfo = lookupableServerSearch.getSearchInfo();
+            final Class serverSearchClass = lookupableServerSearch.getClass();
+            final String searchKey = searchInfo.getKey();
 
-                searchInfo.setKey(searchKey);
-                searchInfo.setName(serverSearchClass.getSimpleName());
-                searchInfo.setDescription("legacy cidsServerSearch");
-                searchInfo.setParameterDescription(serverSearchParamMap);
+            LOG.debug("adding Lookupable Server Search '" + searchKey + "'");
+            this.serverSearchClassMap.put(searchKey, serverSearchClass);
+            this.serverSearchInfoMap.put(searchKey, searchInfo);
+        }
 
+        for (final CidsServerSearch cidsServerSearch : cidsServerSearches) {
+            final SearchInfo searchInfo = this.SearchInfoFromCidsServerSearch(cidsServerSearch);
+
+            if (searchInfo != null) {
+                final Class serverSearchClass = cidsServerSearch.getClass();
+                final String searchKey = searchInfo.getKey();
+                LOG.debug("adding Cids Server Search '" + searchKey + "'");
                 this.serverSearchClassMap.put(searchKey, serverSearchClass);
                 this.serverSearchInfoMap.put(searchKey, searchInfo);
-            } catch (Throwable t) {
-                LOG.error("could not process CidsServerSearch '"
-                            + subType.getClass().getName() + "': " + t.getMessage(),
-                    t);
             }
         }
 
@@ -162,11 +235,12 @@ public class ServerSearchFactory {
     }
 
     /**
-     * DOCUMENT ME!
+     * Tries to find a cached SearchInfo object of the specified cids server
+     * search
      *
-     * @param   searchKey  DOCUMENT ME!
+     * @param searchKey the search key (e.g.java class name) of the search
      *
-     * @return  DOCUMENT ME!
+     * @return SearchInfo instance or null
      */
     public SearchInfo getServerSearchInfo(final String searchKey) {
         if (!this.serverSearchInfoMap.containsKey(searchKey)) {
@@ -177,20 +251,21 @@ public class ServerSearchFactory {
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns all cached ServerSearchInfos.
      *
-     * @return  DOCUMENT ME!
+     * @return ServerSearchInfo Collection
      */
     public List<SearchInfo> getServerSearchInfos() {
         return new LinkedList<SearchInfo>(this.serverSearchInfoMap.values());
     }
 
     /**
-     * DOCUMENT ME!
+     * Tries to find a cached CidsServerSearch class for the specified cids
+     * server search key
      *
-     * @param   searchKey  DOCUMENT ME!
+     * @param searchKey key (e.g. class name) of the server search
      *
-     * @return  DOCUMENT ME!
+     * @return CidsServerSearch Class or null
      */
     public Class<? extends CidsServerSearch> getServerSearchClass(final String searchKey) {
         if (!this.serverSearchClassMap.containsKey(searchKey)) {
@@ -201,14 +276,15 @@ public class ServerSearchFactory {
     }
 
     /**
-     * DOCUMENT ME!
+     * Populates an instance of a CidsServerSearch with parameters from the
+     * searchParameters object.
      *
-     * @param   searchInfo        DOCUMENT ME!
-     * @param   searchParameters  DOCUMENT ME!
+     * @param searchInfo meta information about a the CidsServerSearch
+     * @param searchParameters search parameters that are set in the instance
      *
-     * @return  DOCUMENT ME!
+     * @return CidsServerSearch with parameters
      *
-     * @throws  Exception  DOCUMENT ME!
+     * @throws Exception if a parameter could not be set
      */
     public CidsServerSearch serverSearchInstanceFromSearchParameters(
             final SearchInfo searchInfo,
@@ -221,7 +297,7 @@ public class ServerSearchFactory {
 
         if (searchClass == null) {
             final String message = "could not create instance of cids server search '"
-                        + searchInfo.getKey() + "': server search class not found!";
+                    + searchInfo.getKey() + "': server search class not found!";
             LOG.error(message);
             throw new Exception(message);
         }
@@ -230,75 +306,67 @@ public class ServerSearchFactory {
 
         if (cidsServerSearch == null) {
             final String message = "could not create instance of cids server search '"
-                        + searchInfo.getKey() + "': server search instance could not be created";
+                    + searchInfo.getKey() + "': server search instance could not be created";
             LOG.error(message);
             throw new Exception(message);
         }
         if (LOG.isDebugEnabled()) {
             LOG.debug("setting " + searchParameters.size() + " search parameters of cids server search '"
-                        + searchInfo.getKey() + "'");
+                    + searchInfo.getKey() + "'");
         }
         for (final SearchParameter searchParameter : searchParameters) {
             final String paramKey = searchParameter.getKey();
-            final String paramClassName = searchInfo.getParameterDescription().get(paramKey);
-            if (paramClassName == null) {
+            final SearchParameterInfo searchParameterInfo = searchInfo.getSearchParameterInfo(paramKey);
+            if (searchParameterInfo == null) {
                 final String message = "could not create instance of cids server search '"
-                            + searchInfo.getKey() + "': server search parameter '"
-                            + paramKey + " 'could not be found created";
+                        + searchInfo.getKey() + "': server search parameter '"
+                        + paramKey + " ' could not be found!";
                 LOG.error(message);
                 throw new Exception(message);
             }
 
-            final Class paramClass = ClassUtils.getClass(paramClassName);
+            String paramClassName;
             final Object paramValue;
-            final String rawParamValue = searchParameter.getValue();
 
-            if (paramClass.isPrimitive()) {
-                if (paramClass.equals(byte.class)) {
-                    paramValue = Byte.valueOf(rawParamValue);
-                } else if (paramClass.equals(short.class)) {
-                    paramValue = Short.valueOf(rawParamValue);
-                } else if (paramClass.equals(int.class)) {
-                    paramValue = Integer.valueOf(rawParamValue);
-                } else if (paramClass.equals(long.class)) {
-                    paramValue = Long.valueOf(rawParamValue);
-                } else if (paramClass.equals(float.class)) {
-                    paramValue = Float.valueOf(rawParamValue);
-                } else if (paramClass.equals(double.class)) {
-                    paramValue = Double.valueOf(rawParamValue);
-                } else if (paramClass.equals(boolean.class)) {
-                    paramValue = Boolean.valueOf(rawParamValue);
-                } else if (paramClass.equals(char.class)) {
-                    paramValue = rawParamValue.toCharArray()[0];
+            if (searchParameterInfo.getType() == Type.ENTITY
+                    || searchParameterInfo.getType() == Type.ENTITY_INFO
+                    || searchParameterInfo.getType() == Type.NODE) {
+
+                // FIXME: if required, handle MetaObject, MetaClass and MetaNode
+                // in custom serializer / deserilaitzer implementation of
+                // SearchParameter.class
+                final String message = "The Search Parameter '" + searchParameterInfo.getKey()
+                        + "' (" + searchParameterInfo.getType().name() + ") of the cids server search '"
+                        + searchInfo.getKey() + " is a MetaObject, MetaClass or MetaNode and currently not supported by automatic serialization.";
+                LOG.error(message);
+                throw new IllegalArgumentException(message);
+            } else if (searchParameterInfo.getType() == Type.JAVA_SERIALIZABLE
+                    || searchParameterInfo.getType() == Type.JAVA_CLASS) {
+                if (searchParameterInfo.getAdditionalTypeInfo() != null) {
+                    paramClassName = searchParameterInfo.getAdditionalTypeInfo();
                 } else {
-                    LOG.warn("unsupported primitive search parameter class '" + paramClassName
-                                + " setting search parameter value to null");
-                    paramValue = null; // should not be possible
+                    final String message = "could not create instance of cids server search '"
+                            + searchInfo.getKey() + "': java type search parameter '"
+                            + paramKey + " ' is unknown!";
+                    LOG.error(message);
+                    throw new Exception(message);
                 }
             } else {
-                if (paramClass.equals(Byte.class)) {
-                    paramValue = Byte.valueOf(rawParamValue);
-                } else if (paramClass.equals(Short.class)) {
-                    paramValue = Short.valueOf(rawParamValue);
-                } else if (paramClass.equals(Integer.class)) {
-                    paramValue = Integer.valueOf(rawParamValue);
-                } else if (paramClass.equals(Long.class)) {
-                    paramValue = Long.valueOf(rawParamValue);
-                } else if (paramClass.equals(Float.class)) {
-                    paramValue = Float.valueOf(rawParamValue);
-                } else if (paramClass.equals(Double.class)) {
-                    paramValue = Double.valueOf(rawParamValue);
-                } else if (paramClass.equals(Boolean.class)) {
-                    paramValue = Boolean.valueOf(rawParamValue);
-                } else if (paramClass.equals(Character.class)) {
-                    paramValue = rawParamValue.toCharArray()[0];
-                } else if (paramClass.equals(String.class)) {
-                    paramValue = rawParamValue;
-                } else {
-                    LOG.warn("unsupported search parameter class '" + paramClassName
-                                + " setting search parameter '" + rawParamValue + "' from Base64 encoded String!");
-                    paramValue = fromString(rawParamValue);
-                }
+                paramClassName = searchParameterInfo.getType().getJavaType();
+            }
+
+            if (searchParameterInfo.isArray()) {
+                paramClassName += "[]";
+            }
+
+            final Class paramClass = ClassUtils.getClass(paramClassName);
+
+            if (searchParameterInfo.getType() == Type.JAVA_SERIALIZABLE) {
+                LOG.debug("deserializing binary parameter '" + searchInfo.getKey() + "'");
+                paramValue = fromBase64String(searchParameter.getValue().toString());
+
+            } else {
+                paramValue = searchParameter.getValue();
             }
 
             cidsServerSearch.getClass().getMethod("set" + paramKey, paramClass).invoke(cidsServerSearch, paramValue);
@@ -308,14 +376,15 @@ public class ServerSearchFactory {
     }
 
     /**
-     * DOCUMENT ME!
+     * Extracts Search Parameters from a CidsServerSearch Search object. Needs
+     * the respective SearchInfo and SearcParameterInfo to do so.
      *
-     * @param   searchKey         DOCUMENT ME!
-     * @param   cidsServerSearch  DOCUMENT ME!
+     * @param searchKey DOCUMENT ME!
+     * @param cidsServerSearch DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      *
-     * @throws  Exception  DOCUMENT ME!
+     * @throws Exception DOCUMENT ME!
      */
     public SearchParameters searchParametersFromServerSearchInstance(
             final String searchKey,
@@ -331,43 +400,42 @@ public class ServerSearchFactory {
         final SearchParameters searchParameters = new SearchParameters();
         final LinkedList<SearchParameter> searchParametersList = new LinkedList<SearchParameter>();
         searchParameters.setList(searchParametersList);
-        for (final String parameterName : searchInfo.getParameterDescription().keySet()) {
+        for (final SearchParameterInfo searchParameterInfo : searchInfo.getParameterDescription()) {
             try {
                 final Object parameterValue = cidsServerSearch.getClass()
-                            .getMethod("get" + parameterName)
-                            .invoke(cidsServerSearch);
+                        .getMethod("get" + searchParameterInfo.getKey())
+                        .invoke(cidsServerSearch);
                 if (parameterValue != null) {
-                    final Class paramClass = parameterValue.getClass();
-                    final SearchParameter searchParameter = new SearchParameter();
-                    searchParameter.setKey(parameterName);
-
-                    if (paramClass.isPrimitive()
-                                || paramClass.equals(Byte.class)
-                                || paramClass.equals(Short.class)
-                                || paramClass.equals(Integer.class)
-                                || paramClass.equals(Long.class)
-                                || paramClass.equals(Float.class)
-                                || paramClass.equals(Double.class)
-                                || paramClass.equals(Boolean.class)
-                                || paramClass.equals(Character.class)
-                                || paramClass.equals(String.class)) {
-                        searchParameter.setValue(String.valueOf(parameterValue));
+                    final String jsonString;
+                    if (searchParameterInfo.getType().isPrimitive()) {
+                        jsonString = mapper.writeValueAsString(parameterValue);
                     } else {
-                        LOG.warn("unsupported search parameter class '" + paramClass.getName()
-                                    + " setting search parameter '" + parameterName + "' to Base64 encoded String!");
-                        searchParameter.setValue(toString(parameterValue));
+                        // TODO: check for other types that require special treatment, 
+                        // e.g. cids bean, node and meta object 
+                        LOG.debug("serializing search parameter '" + searchParameterInfo.getKey() + "' from class '"
+                                + searchParameterInfo.getType() + "' (" + parameterValue.getClass().getSimpleName() + ")");
+
+                        if (searchParameterInfo.getType() == Type.JAVA_SERIALIZABLE) {
+                            jsonString = toBase64String(parameterValue);
+                        } else {
+                            jsonString = mapper.writeValueAsString(parameterValue);
+                        }
                     }
+
+                    final SearchParameter searchParameter = new SearchParameter();
+                    searchParameter.setKey(searchParameterInfo.getKey());
+                    searchParameter.setKey(jsonString);
 
                     searchParametersList.add(searchParameter);
                 } else {
-                    LOG.warn("could not get parameter '" + parameterName
-                                + "' from cids server search instance '" + searchKey
-                                + "': parameter is null -> ignoring SearchParameter");
+                    LOG.warn("could not get parameter '" + searchParameterInfo.getKey()
+                            + "' from cids server search instance '" + searchKey
+                            + "': parameter is null -> ignoring SearchParameter");
                 }
             } catch (Exception ex) {
-                final String message = "could not get parameter '" + parameterName
-                            + "' from cids server search instance '" + searchKey
-                            + "': " + ex.getMessage();
+                final String message = "could not get parameter '" + searchParameterInfo.getKey()
+                        + "' from cids server search instance '" + searchKey
+                        + "': " + ex.getMessage();
                 LOG.error(message);
                 throw new Exception(message, ex);
             }
@@ -377,21 +445,277 @@ public class ServerSearchFactory {
     }
 
     /**
+     * Converts a ObjectNode search result collection to the respective Java
+     * Objects. Support MetaClass, MetaObject, MetaNode by default and tries to
+     * deserialize binry (Base 64 encoded) and jackson serialized objects.<br>
+     * <strong>Warning:</strong><br> Does not support automatic deserialization
+     * of LightWightMetaObjects! A helper method for LightWightMetaObject
+     * deserialization is available at 
+     * {@link CidsBeanFactory# lightweightMetaObjectFromCidsBean(de.cismet.cids.dynamics.CidsBean, int, java.lang.String, Sirius.server.newuser.User, de.cismet.cids.server.api.types.legacy.ClassNameCache)}
+     *
+     * @param objectNodes JSON object nodes to be converted
+     * @param searchInfo meta information needed for the type conversion
+     * @return collection of converted java object
+     * @throws Exception if any error occurs during the conversion
+     */
+    public Collection resultCollectionfromObjectNodes(
+            final List<ObjectNode> objectNodes, final SearchInfo searchInfo) throws Exception {
+
+        final Collection resultCollection = new LinkedList();
+        int i = 0;
+        boolean isMetaClass = searchInfo.getResultDescription().getType() == Type.ENTITY_INFO;
+        boolean isMetaObject = searchInfo.getResultDescription().getType() == Type.ENTITY;
+        boolean isLightWightMetaObject = searchInfo.getResultDescription().getType() == Type.ENTITY_REFERENCE;
+        boolean isMetaNode = searchInfo.getResultDescription().getType() == Type.NODE;
+        boolean isBinaryObject = searchInfo.getResultDescription().getType() == Type.JAVA_SERIALIZABLE;
+        final String returnTypeName = searchInfo.getResultDescription().getAdditionalTypeInfo();
+        final String searchKey = searchInfo.getKey();
+
+        for (final ObjectNode objectNode : objectNodes) {
+            i++;
+            if (isMetaClass) {
+                try {
+                    final CidsClass cidsClass = this.mapper.treeToValue(objectNode, CidsClass.class);
+                    final MetaClass metaClass = CidsClassFactory.getFactory().legacyCidsClassFromRestCidsClass(cidsClass);
+                    resultCollection.add(metaClass);
+                } catch (Exception ex) {
+                    final String message = "could not convert result item #"
+                            + i + " of cids custom server search '" + searchInfo.getKey()
+                            + "' to MetaClass: " + ex.getMessage();
+                    LOG.error(message);
+                    throw new Exception(message, ex);
+                }
+            } else if (isMetaNode) {
+                try {
+                    final CidsNode cidsNode = this.mapper.treeToValue(objectNode, CidsNode.class);
+                    final Node metaNode = CidsNodeFactory.getFactory().legacyCidsNodeFromRestCidsNode(cidsNode);
+                    resultCollection.add(metaNode);
+                } catch (Exception ex) {
+                    final String message = "could not convert result item #"
+                            + i + " of cids custom server search '" + searchKey
+                            + "' to Node: " + ex.getMessage();
+                    LOG.error(message, ex);
+                    throw new Exception(message, ex);
+                }
+            } else if (isMetaObject || isLightWightMetaObject) {
+                try {
+                    final CidsBean cidsBean = CidsBean.createNewCidsBeanFromJSON(false, objectNode.toString());
+                    final MetaObject metaObject = cidsBean.getMetaObject();
+                    resultCollection.add(metaObject);
+                } catch (Exception ex) {
+                    final String message = "could not convert result item #"
+                            + i + " of cids custom server search '" + searchKey
+                            + "' to MetaObject: " + ex.getMessage();
+                    LOG.error(message);
+                    throw new Exception(message, ex);
+                }
+            } else if (isBinaryObject) {
+                try {
+//                        LOG.warn("returned collection of custom server search '" + searchKey 
+//                                + "' contains binary serialized objects. Performing binary deserialization to java class "
+//                        + returnTypeName);
+
+                    final Object resultObject = ServerSearchFactory.fromBase64String(objectNode.asText());
+                    resultCollection.add(resultObject);
+                } catch (Exception ex) {
+                    final String message = "binary deserialization of result item #"
+                            + i + " of cids custom server search '" + searchKey
+                            + "' to '" + returnTypeName + "' failed: " + ex.getMessage();
+                    LOG.error(message);
+                    throw new Exception(message, ex);
+                }
+            } else {
+                try {
+//                        LOG.warn("returned collection of custom server search '" + searchKey 
+//                                + "' contains custom java objects. Performing Jackson deserialization to java class "
+//                        + returnTypeName);
+
+                    final Class returnTypeClass = ClassUtils.getClass(returnTypeName);
+                    final Object resultObject = mapper.treeToValue(objectNode, returnTypeClass);
+                    resultCollection.add(resultObject);
+                } catch (Exception ex) {
+                    final String message = "Jackson deserialization of result item #"
+                            + i + " of cids custom server search '" + searchKey
+                            + "' to '" + returnTypeName + "' failed: " + ex.getMessage();
+                    LOG.error(message);
+                    throw new Exception(message, ex);
+                }
+            }
+        }
+
+        if (i > 0) {
+            if (isMetaClass) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(i + " meta classes (entity info) found and converted by cids server search '" + searchKey + "'");
+                }
+            }
+            if (isMetaObject) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(i + " meta objects (entities) found and converted by cids server search '" + searchKey + "'");
+                }
+            } else if (isLightWightMetaObject) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.warn(i + "LightWightMetaObject (entities references) returned by cids server search '"
+                            + searchKey + "' are not supported by this method and have been converted to MetaObjects! "
+                            + "Please use CidsBeanFactory#lightweightMetaObjectFromCidsBean instead.");
+                }
+            } else if (isMetaNode) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(i + " nodes found and converted by cids server search '" + searchKey + "'");
+                }
+            } else if (isBinaryObject) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.warn(i + " binary serialized objects of type '"
+                            + returnTypeName
+                            + "' found and converted by cids server search '" + searchKey + "'");
+                }
+            } else {
+                if (LOG.isDebugEnabled()) {
+                    LOG.warn(i + "Jackson serialized objects of type '"
+                            + returnTypeName
+                            + "' found and converted by cids server search '" + searchKey + "'");
+                }
+            }
+        }
+
+        return resultCollection;
+    }
+
+    /**
+     * Converts a java.lang.Object collection search result to JSON Objects
+     * (ObjectNodes). Supports MetaClass, MetaObject, MetaNode by default and
+     * tries to serialize binary (Base 64 encoded) and plain java objects.<br>
+     * <strong>Warning:</strong><br> Does not support automatic serialization of
+     * LightWightMetaObjects! A helper method for LightWightMetaObject to
+     * CidsBean serialization is available at
+     * {@link CidsBeanFactory#cidsBeanFromLightweightMetaObject(Sirius.server.middleware.types.LightweightMetaObject, Sirius.server.middleware.types.MetaClass) )}
+     *
+     * @param searchResults
+     * @param searchInfo
+     * @param classNameCache
+     * @return
+     * @throws Exception
+     */
+    public List<ObjectNode> objectNodesFromResultCollection(
+            final Collection searchResults,
+            final SearchInfo searchInfo,
+            final ClassNameCache classNameCache) throws Exception {
+
+        final List<ObjectNode> objectNodes = new LinkedList<ObjectNode>();
+        int i = 0;
+        boolean isMetaClass = searchInfo.getResultDescription().getType() == Type.ENTITY_INFO;
+        boolean isMetaObject = searchInfo.getResultDescription().getType() == Type.ENTITY;
+        boolean isLightWightMetaObject = searchInfo.getResultDescription().getType() == Type.ENTITY_REFERENCE;
+        boolean isMetaNode = searchInfo.getResultDescription().getType() == Type.NODE;
+        boolean isBinaryObject = searchInfo.getResultDescription().getType() == Type.JAVA_SERIALIZABLE;
+        final String searchKey = searchInfo.getKey();
+
+        for (final Object searchResult : searchResults) {
+            final ObjectNode objectNode;
+            if (isMetaClass) {
+                if (MetaClass.class.isAssignableFrom(searchResult.getClass())) {
+                    final MetaClass metaClass = (MetaClass) searchResult;
+                    final CidsClass cidsClass = CidsClassFactory.getFactory()
+                            .restCidsClassFromLegacyCidsClass(metaClass);
+                    objectNode = (ObjectNode) mapper.convertValue(cidsClass, ObjectNode.class);
+                } else {
+                    final String message = "cannot convert search result item #"
+                            + i + " to MetaClass, wrong result type:'"
+                            + searchResult.getClass().getSimpleName() + "' ";
+                    LOG.error(message);
+                    throw new Exception(message);
+                }
+            } else if (isMetaObject || isLightWightMetaObject) {
+                if (MetaObject.class.isAssignableFrom(searchResult.getClass())) {
+                    final MetaObject metaObject = (MetaObject) searchResult;
+                    final CidsBean cidsBean = metaObject.getBean();
+                    objectNode = (ObjectNode) mapper.reader().readTree(cidsBean.toJSONString(false));
+                } else {
+                    final String message = "cannot convert search result item #"
+                            + i + " to MetaObject, wrong result type:'"
+                            + searchResult.getClass().getSimpleName() + "' ";
+                    LOG.error(message);
+                    throw new Exception(message);
+                }
+            } else if (isMetaNode) {
+                if (Node.class.isAssignableFrom(searchResult.getClass())) {
+                    final Node legacyNode = (Node) searchResult;
+                    final String className = classNameCache.getClassNameForClassId(legacyNode.getDomain(), legacyNode.getClassId());
+                    final CidsNode cidsNode = CidsNodeFactory.getFactory()
+                            .restCidsNodeFromLegacyCidsNode(legacyNode, className);
+                    objectNode = (ObjectNode) mapper.convertValue(cidsNode, ObjectNode.class);
+                } else {
+                    final String message = "cannot convert search result item #"
+                            + i + " to MetaNode, wrong result type:'"
+                            + searchResult.getClass().getSimpleName() + "' ";
+                    LOG.error(message);
+                    throw new Exception(message);
+                }
+            } else if (isBinaryObject) {
+                final String stringRepresentation = toBase64String(searchResult);
+                objectNode = (ObjectNode) mapper.convertValue(stringRepresentation, ObjectNode.class);
+            } else {
+                objectNode = (ObjectNode) mapper.convertValue(searchResult, ObjectNode.class);
+            }
+
+            objectNodes.add(objectNode);
+            i++;
+        }
+
+        if (i > 0) {
+            if (isMetaClass) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(i + " meta classes (entity info) found and converted by cids server search '"
+                            + searchKey + "'");
+                }
+            } else if (isMetaObject) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(i + " meta objects (entities) found and converted by cids server search '" + searchKey
+                            + "'");
+                }
+            } else if (isLightWightMetaObject) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.warn(i + "LightWightMetaObject (entities references) returned by cids server search '"
+                            + searchKey + "' converted to full entities! "
+                            + "Please use CidsBeanFactory#cidsBeanFromLightweightMetaObject instead.");
+                }
+            } else if (isMetaNode) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(i + " nodes found and converted by cids server search '" + searchKey + "'");
+                }
+            } else if (isBinaryObject) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.warn(i + "  java objects found and binary serialized by cids server search '" + searchKey + "'");
+                }
+            } else {
+                LOG.warn(i + " java objects of type '"
+                        + searchResults.iterator().next().getClass().getName()
+                        + "' found and converted by cids server search '" + searchKey + "'");
+            }
+        }
+        return objectNodes;
+    }
+
+    /**
      * Write the object to a Base64 string.
      *
-     * @param   object  o DOCUMENT ME!
+     * @param object o DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      *
-     * @throws  IOException  DOCUMENT ME!
+     * @throws IOException DOCUMENT ME!
      */
-    private static String toString(final Object object) throws IOException {
-        if (object.getClass().isAssignableFrom(Serializable.class)) {
-            final Serializable serializable = (Serializable)object;
+    private static String toBase64String(final Object object) throws IOException {
+        if (object.getClass().isAssignableFrom(Serializable.class
+        )) {
+            final Serializable serializable = (Serializable) object;
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             final ObjectOutputStream oos = new ObjectOutputStream(baos);
+
             oos.writeObject(serializable);
+
             oos.close();
+
             return Base64.encodeBytes(baos.toByteArray());
         } else {
             LOG.warn("object of type '" + object.getClass() + "' is not serializable, returning null!");
@@ -402,14 +726,14 @@ public class ServerSearchFactory {
     /**
      * DOCUMENT ME!
      *
-     * @param   s  DOCUMENT ME!
+     * @param s DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return DOCUMENT ME!
      *
-     * @throws  IOException             DOCUMENT ME!
-     * @throws  ClassNotFoundException  DOCUMENT ME!
+     * @throws IOException DOCUMENT ME!
+     * @throws ClassNotFoundException DOCUMENT ME!
      */
-    private static Object fromString(final String s) throws IOException, ClassNotFoundException {
+    private static Object fromBase64String(final String s) throws IOException, ClassNotFoundException {
         final byte[] data = Base64.decode(s);
         final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
         final Object o = ois.readObject();

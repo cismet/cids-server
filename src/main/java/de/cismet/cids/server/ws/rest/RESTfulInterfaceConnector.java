@@ -84,6 +84,7 @@ import de.cismet.cids.server.api.types.CidsClass;
 import de.cismet.cids.server.api.types.CidsNode;
 import de.cismet.cids.server.api.types.GenericCollectionResource;
 import de.cismet.cids.server.api.types.SearchParameters;
+import de.cismet.cids.server.api.types.legacy.CidsBeanFactory;
 import de.cismet.cids.server.api.types.legacy.CidsClassFactory;
 import de.cismet.cids.server.api.types.legacy.CidsNodeFactory;
 import de.cismet.cids.server.api.types.legacy.ClassNameCache;
@@ -509,122 +510,6 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
 
         return className;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   cidsBean  DOCUMENT ME!
-     * @param   domain    DOCUMENT ME!
-     * @param   user      DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    protected LightweightMetaObject lightweightMetaObjectFromCidsBean(
-            final CidsBean cidsBean,
-            final String domain,
-            final User user) {
-        LightweightMetaObject lwo;
-        final int subClassId = this.classKeyCache.getClassIdForClassName(
-                domain,
-                cidsBean.getCidsBeanInfo().getClassKey());
-
-        if (subClassId != -1) {
-            lwo = this.lightweightMetaObjectFromCidsBean(
-                    cidsBean,
-                    subClassId,
-                    domain,
-                    user,
-                    null,
-                    null);
-        } else {
-            LOG.warn("cannot create LightweightMetaObject for class '"
-                        + cidsBean.getCidsBeanInfo().getClassKey() + "', class key not found. "
-                        + "Returning null!");
-            lwo = null;
-        }
-
-        return lwo;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   cidsBean                DOCUMENT ME!
-     * @param   classId                 DOCUMENT ME!
-     * @param   domain                  DOCUMENT ME!
-     * @param   user                    DOCUMENT ME!
-     * @param   representationFields    DOCUMENT ME!
-     * @param   representationFormater  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    protected LightweightMetaObject lightweightMetaObjectFromCidsBean(
-            final CidsBean cidsBean,
-            final int classId,
-            final String domain,
-            final User user,
-            final String[] representationFields,
-            final AbstractAttributeRepresentationFormater representationFormater) {
-        final int objectId = cidsBean.getPrimaryKeyValue();
-        final LinkedHashMap<String, Object> lmoAttributes = new LinkedHashMap<String, Object>();
-        lmoAttributes.put(cidsBean.getPrimaryKeyFieldname(), cidsBean.getPrimaryKeyValue());
-
-        if ((representationFields != null) && (representationFields.length > 0)) {
-            for (final String propertyName : representationFields) {
-                final Object property = cidsBean.getProperty(propertyName);
-                if ((property != null) && Collection.class.isAssignableFrom(property.getClass())) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("filling LightweightMetaObject property array '" + propertyName + "'");
-                    }
-                    final ArrayList<LightweightMetaObject> subLwos = new ArrayList<LightweightMetaObject>(
-                            ((Collection)property).size());
-                    final Iterator cidsBeanIerator = ((Collection)property).iterator();
-
-                    while (cidsBeanIerator.hasNext()) {
-                        final Object object = cidsBeanIerator.next();
-                        if ((object != null) && CidsBean.class.isAssignableFrom(object.getClass())) {
-                            final CidsBean subCidsBean = (CidsBean)object;
-                            final LightweightMetaObject subLwo = this.lightweightMetaObjectFromCidsBean(
-                                    subCidsBean,
-                                    domain,
-                                    user);
-                            subLwos.add(subLwo);
-                        } else {
-                            LOG.warn("entry '" + object + "' of array attribute '" + propertyName
-                                        + "' is not a cids bean, entry is ignored in LightweightMetaObject!");
-                        }
-                    }
-
-                    lmoAttributes.put(propertyName, subLwos);
-                } else if ((property != null) && CidsBean.class.isAssignableFrom(property.getClass())) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("filling LightweightMetaObject object property '" + propertyName + "'");
-                    }
-                    final CidsBean subCidsBean = (CidsBean)property;
-                    final LightweightMetaObject subLwo = this.lightweightMetaObjectFromCidsBean(
-                            subCidsBean,
-                            domain,
-                            user);
-                    lmoAttributes.put(propertyName, subLwo);
-                } else {
-                    lmoAttributes.put(propertyName, property);
-                }
-            }
-        }
-
-        final LightweightMetaObject lightweightMetaObject = new LightweightMetaObject(
-                classId,
-                objectId,
-                domain,
-                user,
-                lmoAttributes);
-
-        if (representationFormater != null) {
-            lightweightMetaObject.setFormater(representationFormater);
-        }
-
-        return lightweightMetaObject;
     }
 
     // </editor-fold>
@@ -2376,6 +2261,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 // LOG.warn("ignoring representation pattern '"+representationPattern+"'");
                 representationFormater = new StringPatternFormater(representationPattern, representationFields);
             } else {
+                // let the CidsBeanFactory handle the toString formatting if
+                // CidsBeanFactory.LEGACY_DISPLAY_NAME is present
                 representationFormater = null;
             }
             if (LOG.isDebugEnabled()) {
@@ -2403,13 +2290,15 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 }
 
                 if (cidsBean != null) {
-                    final LightweightMetaObject lightweightMetaObject = this.lightweightMetaObjectFromCidsBean(
+                    final LightweightMetaObject lightweightMetaObject 
+                            = CidsBeanFactory.getFactory().lightweightMetaObjectFromCidsBean(
                             cidsBean,
                             classId,
                             domain,
                             user,
                             representationFields,
-                            representationFormater);
+                            representationFormater,
+                            this.classKeyCache);
                     lightweightMetaObjects[i] = lightweightMetaObject;
                     i++;
                 } else {
