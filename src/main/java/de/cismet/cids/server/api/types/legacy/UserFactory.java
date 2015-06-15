@@ -1,12 +1,10 @@
-/**
- * *************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- * 
-* ... and it just works.
- * 
-***************************************************
- */
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.cids.server.api.types.legacy;
 
 import Sirius.server.newuser.UserGroup;
@@ -17,28 +15,44 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * A factory class for converting between legacy cids types and REST/JSON types.
- * TODO: Integrate into <strong>cids-server-rest-types project</strong>!
+ * A factory class for converting between legacy cids types and REST/JSON types. TODO: Integrate into <strong>
+ * cids-server-rest-types project</strong>!
  *
- * @author Pascal Dihé
+ * @author   Pascal Dihé
+ * @version  $Revision$, $Date$
  */
 public class UserFactory {
 
-    private final static transient Logger LOG = Logger.getLogger(UserFactory.class);
-    private final static UserFactory factory = new UserFactory();
+    //~ Static fields/initializers ---------------------------------------------
 
+    private static final transient Logger LOG = Logger.getLogger(UserFactory.class);
+    private static final UserFactory factory = new UserFactory();
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new UserFactory object.
+     */
     private UserFactory() {
     }
 
-    public final static UserFactory getFactory() {
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static final UserFactory getFactory() {
         return factory;
     }
 
     /**
-     * Transforms a cids legacy user object into a cids rest API user object
+     * Transforms a cids legacy user object into a cids rest API user object.
      *
-     * @param cidsUser the cids legacy user object to be converted
-     * @return the converted  cids rest API user object
+     * @param   cidsUser  the cids legacy user object to be converted
+     *
+     * @return  the converted cids rest API user object
      */
     public de.cismet.cids.server.api.types.User restUserFromLegacyUser(final Sirius.server.newuser.User cidsUser) {
         final de.cismet.cids.server.api.types.User restUser = new de.cismet.cids.server.api.types.User();
@@ -57,16 +71,17 @@ public class UserFactory {
     }
 
     /**
-     * Transforms a cids rest API user object into a cids legacy user object
+     * Transforms a cids rest API user object into a cids legacy user object.
      *
-     * @param restUser the cids rest API user object to be converted
-     * @return the converted  cids legacy user object
+     * @param   restUser  the cids rest API user object to be converted
+     *
+     * @return  the converted cids legacy user object
      */
     public Sirius.server.newuser.User cidsUserFromRestUser(final de.cismet.cids.server.api.types.User restUser) {
-        final Sirius.server.newuser.User cidsUser
-                = new Sirius.server.newuser.User(-1,
-                        restUser.getUser(),
-                        restUser.getDomain());
+        final Sirius.server.newuser.User cidsUser = new Sirius.server.newuser.User(
+                -1,
+                restUser.getUser(),
+                restUser.getDomain());
 
         final Collection<UserGroup> cidsUserGroups = new ArrayList<UserGroup>();
 

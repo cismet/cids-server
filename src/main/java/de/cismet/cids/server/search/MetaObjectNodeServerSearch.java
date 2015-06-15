@@ -14,9 +14,9 @@ import java.util.Collection;
 /**
  * DOCUMENT ME!
  *
- * @author   martin.scholl@cismet.de
- * @version  $Revision$, $Date$
- * @deprecated use LookupableServerSearch instead
+ * @author      martin.scholl@cismet.de
+ * @version     $Revision$, $Date$
+ * @deprecated  use LookupableServerSearch instead
  */
 public interface MetaObjectNodeServerSearch extends CidsServerSearch {
 

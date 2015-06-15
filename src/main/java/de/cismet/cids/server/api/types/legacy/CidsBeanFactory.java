@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -10,33 +17,41 @@ import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
-import de.cismet.cids.dynamics.CidsBean;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import org.apache.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import org.apache.log4j.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import de.cismet.cids.dynamics.CidsBean;
 
 /**
- * Factory with help method for converting between LightweightMetaObjects and
- * cids Beans.
+ * Factory with help method for converting between LightweightMetaObjects and cids Beans.
  *
- * @author Pascal Dihé
+ * @author   Pascal Dihé
+ * @version  $Revision$, $Date$
  */
 public class CidsBeanFactory {
 
     //~ Static fields/initializers ---------------------------------------------
-    /**
-     * toString Property of CidsBean representing a serialized
-     * LightweightMetaObject.
-     */
-    public final static String LEGACY_DISPLAY_NAME = "$legacyDisplayName";
+
+    /** toString Property of CidsBean representing a serialized LightweightMetaObject. */
+    public static final String LEGACY_DISPLAY_NAME = "$legacyDisplayName";
+    private static final Pattern CLASSKEY_PATTERN = Pattern.compile("^/([^/]*)/");
+    private static final Pattern OBJECTID_PATTERN = Pattern.compile("([^/?]+)(?=/?(?:$|\\?))");
 
     private static final transient Logger LOG = Logger.getLogger(CidsBeanFactory.class);
     private static final CidsBeanFactory factory = new CidsBeanFactory();
 
     //~ Constructors -----------------------------------------------------------
+
     /**
      * Creates a new CidsClassFactory object.
      */
@@ -44,21 +59,22 @@ public class CidsBeanFactory {
     }
 
     //~ Methods ----------------------------------------------------------------
+
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     public static final CidsBeanFactory getFactory() {
         return factory;
     }
 
     /**
-     * Tries to derive LightweightMetaObject representation fields from a
-     * cidsBean instance
+     * Tries to derive LightweightMetaObject representation fields from a cidsBean instance.
      *
-     * @param cidsBean
-     * @return String array of representationFields (may be empty)
+     * @param   cidsBean  DOCUMENT ME!
+     *
+     * @return  String array of representationFields (may be empty)
      */
     public String[] representationFieldsFromCidsBean(final CidsBean cidsBean) {
         final LinkedList<String> representationFields = new LinkedList<String>();
@@ -75,12 +91,12 @@ public class CidsBeanFactory {
     /**
      * Helper Method for creating sub .
      *
-     * @param cidsBean DOCUMENT ME!
-     * @param domain DOCUMENT ME!
-     * @param user DOCUMENT ME!
-     * @param classNameCache
+     * @param   cidsBean        DOCUMENT ME!
+     * @param   domain          DOCUMENT ME!
+     * @param   user            DOCUMENT ME!
+     * @param   classNameCache  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     protected LightweightMetaObject childLightweightMetaObjectFromCidsBean(
             final CidsBean cidsBean,
@@ -103,8 +119,8 @@ public class CidsBeanFactory {
                     classNameCache);
         } else {
             LOG.warn("cannot create LightweightMetaObject for class '"
-                    + cidsBean.getCidsBeanInfo().getClassKey() + "', class key not found. "
-                    + "Returning null!");
+                        + cidsBean.getCidsBeanInfo().getClassKey() + "', class key not found. "
+                        + "Returning null!");
             lwo = null;
         }
 
@@ -112,17 +128,16 @@ public class CidsBeanFactory {
     }
 
     /**
-     * Convenience Method that automatically derives the LWMO representation
-     * fields from the CidsBean and assumes that a
-     * {@link DummyRepresentationFormater} can be created based on the
-     * {@link #LEGACY_DISPLAY_NAME} property.
+     * Convenience Method that automatically derives the LWMO representation fields from the CidsBean and assumes that a
+     * {@link DummyRepresentationFormater} can be created based on the {@link #LEGACY_DISPLAY_NAME} property.
      *
-     * @param cidsBean
-     * @param classId
-     * @param domain
-     * @param user
-     * @param classNameCache
-     * @return
+     * @param   cidsBean        DOCUMENT ME!
+     * @param   classId         DOCUMENT ME!
+     * @param   domain          DOCUMENT ME!
+     * @param   user            DOCUMENT ME!
+     * @param   classNameCache  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      */
     public LightweightMetaObject lightweightMetaObjectFromCidsBean(
             final CidsBean cidsBean,
@@ -130,7 +145,6 @@ public class CidsBeanFactory {
             final String domain,
             final User user,
             final ClassNameCache classNameCache) {
-
         final String[] representationFields = this.representationFieldsFromCidsBean(cidsBean);
         return this.lightweightMetaObjectFromCidsBean(
                 cidsBean,
@@ -145,15 +159,15 @@ public class CidsBeanFactory {
     /**
      * Transforms a CidsBean into a LightweightMetaObject.
      *
-     * @param cidsBean DOCUMENT ME!
-     * @param classId DOCUMENT ME!
-     * @param domain DOCUMENT ME!
-     * @param user DOCUMENT ME!
-     * @param representationFields DOCUMENT ME!
-     * @param representationFormater DOCUMENT ME!
-     * @param classNameCache
+     * @param   cidsBean                DOCUMENT ME!
+     * @param   classId                 DOCUMENT ME!
+     * @param   domain                  DOCUMENT ME!
+     * @param   user                    DOCUMENT ME!
+     * @param   representationFields    DOCUMENT ME!
+     * @param   representationFormater  DOCUMENT ME!
+     * @param   classNameCache          DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     public LightweightMetaObject lightweightMetaObjectFromCidsBean(
             final CidsBean cidsBean,
@@ -175,13 +189,13 @@ public class CidsBeanFactory {
                         LOG.debug("filling LightweightMetaObject property array '" + propertyName + "'");
                     }
                     final ArrayList<LightweightMetaObject> subLwos = new ArrayList<LightweightMetaObject>(
-                            ((Collection) property).size());
-                    final Iterator cidsBeanIerator = ((Collection) property).iterator();
+                            ((Collection)property).size());
+                    final Iterator cidsBeanIerator = ((Collection)property).iterator();
 
                     while (cidsBeanIerator.hasNext()) {
                         final Object object = cidsBeanIerator.next();
                         if ((object != null) && CidsBean.class.isAssignableFrom(object.getClass())) {
-                            final CidsBean subCidsBean = (CidsBean) object;
+                            final CidsBean subCidsBean = (CidsBean)object;
                             final LightweightMetaObject subLwo = this.childLightweightMetaObjectFromCidsBean(
                                     subCidsBean,
                                     domain,
@@ -190,7 +204,7 @@ public class CidsBeanFactory {
                             subLwos.add(subLwo);
                         } else {
                             LOG.warn("entry '" + object + "' of array attribute '" + propertyName
-                                    + "' is not a cids bean, entry is ignored in LightweightMetaObject!");
+                                        + "' is not a cids bean, entry is ignored in LightweightMetaObject!");
                         }
                     }
 
@@ -199,7 +213,7 @@ public class CidsBeanFactory {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("filling LightweightMetaObject object property '" + propertyName + "'");
                     }
-                    final CidsBean subCidsBean = (CidsBean) property;
+                    final CidsBean subCidsBean = (CidsBean)property;
                     final LightweightMetaObject subLwo = this.childLightweightMetaObjectFromCidsBean(
                             subCidsBean,
                             domain,
@@ -222,35 +236,38 @@ public class CidsBeanFactory {
         if (representationFormater != null) {
             lightweightMetaObject.setFormater(representationFormater);
         } else if (this.isLightweightMetaObject(cidsBean)) {
-            LOG.debug(LEGACY_DISPLAY_NAME + " property set in cids bean, creating DummyRepresentationFormater");
-            lightweightMetaObject.setFormater(new DummyRepresentationFormater(cidsBean.getProperty(LEGACY_DISPLAY_NAME).toString()));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(LEGACY_DISPLAY_NAME + " property set in cids bean, creating DummyRepresentationFormater");
+            }
+            lightweightMetaObject.setFormater(new DummyRepresentationFormater(
+                    cidsBean.getProperty(LEGACY_DISPLAY_NAME).toString()));
         }
 
         return lightweightMetaObject;
     }
 
     /**
-     * Creates a LightweightMetaObject from a CidsBean
-     * 
-     * @param lightweightMetaObject
-     * @param metaClass
-     * @return 
+     * Creates a LightweightMetaObject from a CidsBean.
+     *
+     * @param   lightweightMetaObject  DOCUMENT ME!
+     * @param   metaClass              DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      */
-    public CidsBean cidsBeanFromLightweightMetaObject(
-            LightweightMetaObject lightweightMetaObject,
-            MetaClass metaClass) {
-
+    public CidsBean cidsBeanFromLightweightMetaObject(final LightweightMetaObject lightweightMetaObject,
+            final MetaClass metaClass) {
         final MetaObject metaObject = metaClass.getEmptyInstance();
         metaObject.setID(lightweightMetaObject.getObjectID());
         final CidsBean cidsBean = metaObject.getBean();
 
-        for (String attributeName : lightweightMetaObject.getKnownAttributeNames()) {
+        for (final String attributeName : lightweightMetaObject.getKnownAttributeNames()) {
             final Object value = lightweightMetaObject.getLWAttribute(attributeName);
             try {
                 cidsBean.setProperty(attributeName, value);
             } catch (Exception ex) {
                 LOG.warn("could not set attribute '" + attributeName + "' of LightweightMetaObject '"
-                        + lightweightMetaObject + "' to CidsBean: " + ex.getMessage(), ex);
+                            + lightweightMetaObject + "' to CidsBean: " + ex.getMessage(),
+                    ex);
             }
         }
 
@@ -258,39 +275,117 @@ public class CidsBeanFactory {
             cidsBean.setProperty(LEGACY_DISPLAY_NAME, lightweightMetaObject.toString());
         } catch (Exception ex) {
             LOG.warn("could not toStringRepresentation of LightweightMetaObject '"
-                    + lightweightMetaObject + "' to CidsBean: " + ex.getMessage(), ex);
+                        + lightweightMetaObject + "' to CidsBean: " + ex.getMessage(),
+                ex);
         }
-        
+
         return cidsBean;
     }
 
     /**
-     * Helper Method for checking if a cids bean is a potential
-     * LightweightMetaObject. Note: This method relies on meta information
-     * ($properties) of the cids bean!
+     * Helper Method for checking if a cids bean is a potential LightweightMetaObject. Note: This method relies on meta
+     * information ($properties) of the cids bean!
      *
-     * @param cidsBean
-     * @return
+     * @param   cidsBean  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      */
     public boolean isLightweightMetaObject(final CidsBean cidsBean) {
-        return cidsBean.getProperty(LEGACY_DISPLAY_NAME) != null
-                && !cidsBean.getProperty(LEGACY_DISPLAY_NAME).toString().isEmpty();
+        return (cidsBean.getProperty(LEGACY_DISPLAY_NAME) != null)
+                    && !cidsBean.getProperty(LEGACY_DISPLAY_NAME).toString().isEmpty();
+    }
+
+    /**
+     * Returns the parsed class name from the $self or $ref properties of the object or throws an error, if the
+     * properties are not found or invalid.<br>
+     * <strong>Copied from LegacyEntityCore in cids-server-rest-legacy</strong>
+     *
+     * @param   jsonObject  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Error  DOCUMENT ME!
+     */
+    public String getClassKey(final ObjectNode jsonObject) {
+        if (jsonObject.get("$self") != null) {
+            final Matcher matcher = CLASSKEY_PATTERN.matcher(jsonObject.get("$self").asText());
+            if (matcher.find()) {
+                return matcher.group(1);
+            } else {
+                throw new Error("Object with malformed self reference: " + jsonObject.get("$self"));
+            }
+        } else if (jsonObject.get("$ref") != null) {
+            final Matcher matcher = CLASSKEY_PATTERN.matcher(jsonObject.get("$ref").asText());
+            if (matcher.find()) {
+                return matcher.group(1);
+            } else {
+                throw new Error("Object with malformed reference: " + jsonObject.get("$ref"));
+            }
+        } else {
+            throw new Error("Object without (self) reference is invalid!");
+        }
+    }
+
+    /**
+     * Returns the value of the object property 'id' or tries to extract the id from the $self or $ref properties.
+     * Returns -1 if no id is found.<br>
+     * <strong>Copied from LegacyEntityCore in cids-server-rest-legacy</strong>
+     *
+     * @param   jsonObject  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Error  DOCUMENT ME!
+     */
+    public String getObjectId(final ObjectNode jsonObject) {
+        if (jsonObject.get("id") != null) {
+            return jsonObject.get("id").asText();
+        } else if (jsonObject.get("$self") != null) {
+            final Matcher matcher = OBJECTID_PATTERN.matcher(jsonObject.get("$self").asText());
+            if (matcher.find()) {
+                return matcher.group(1);
+            } else {
+                throw new Error("Object with malformed self reference: " + jsonObject.get("$ref"));
+            }
+        } else if (jsonObject.get("$ref") != null) {
+            final Matcher matcher = OBJECTID_PATTERN.matcher(jsonObject.get("$ref").asText());
+            if (matcher.find()) {
+                return matcher.group(1);
+            } else {
+                throw new Error("Object with malformed reference: " + jsonObject.get("$ref"));
+            }
+        }
+        {
+            return "-1";
+        }
     }
 }
 
 /**
- * DummyRepresentationFormater that does not perform any formatting by itself
- * bur returns an already formated string for the toString Method.
+ * DummyRepresentationFormater that does not perform any formatting by itself bur returns an already formated string for
+ * the toString Method.
  *
- * @author Pascal Dihé
+ * @author   Pascal Dihé
+ * @version  $Revision$, $Date$
  */
 class DummyRepresentationFormater extends AbstractAttributeRepresentationFormater {
 
+    //~ Instance fields --------------------------------------------------------
+
     final String formattedToString;
 
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new DummyRepresentationFormater object.
+     *
+     * @param  formattedToString  DOCUMENT ME!
+     */
     DummyRepresentationFormater(final String formattedToString) {
         this.formattedToString = formattedToString;
     }
+
+    //~ Methods ----------------------------------------------------------------
 
     @Override
     public String getRepresentation() {

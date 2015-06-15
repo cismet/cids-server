@@ -1,24 +1,20 @@
-/**
- * *************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- * 
-* ... and it just works.
- * 
-***************************************************
- */
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.cids.server.api.types.configkeys;
 
 import de.cismet.cids.base.types.Key;
 
 /**
- * <strong>Code copied from package de.cismet.cids.server.data.configkeys
- * (cids-server-rest project)</strong>
- * TODO: Integrate into <strong>cids-server-rest-types project</strong>!
+ * <strong>Code copied from package de.cismet.cids.server.data.configkeys (cids-server-rest project)</strong> TODO:
+ * Integrate into <strong>cids-server-rest-types project</strong>!
  *
- * @author thorsten
- * @version $Revision$, $Date$
+ * @author   thorsten
+ * @version  $Revision$, $Date$
  */
-public interface CidsClassConfigurationKey
-        extends Key {
+public interface CidsClassConfigurationKey extends Key {
 }

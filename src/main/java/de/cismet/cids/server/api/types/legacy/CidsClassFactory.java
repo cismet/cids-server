@@ -140,7 +140,7 @@ public class CidsClassFactory {
         configurationAttribute = configurationAttributes.remove(configurationKey);
         if (configurationAttribute != null) {
             if (Sirius.util.image.Image.class.isAssignableFrom(configurationAttribute.getClass())) {
-                icon = (Sirius.util.image.Image) configurationAttribute;
+                icon = (Sirius.util.image.Image)configurationAttribute;
             } else {
                 final String message = "cannot restore MetaClass.icon from configuration attribute '"
                             + configurationKey + "' = '" + configurationAttribute
@@ -168,7 +168,7 @@ public class CidsClassFactory {
         configurationAttribute = configurationAttributes.remove(configurationKey);
         if (configurationAttribute != null) {
             if (Sirius.util.image.Image.class.isAssignableFrom(configurationAttribute.getClass())) {
-                objectIcon = (Sirius.util.image.Image) configurationAttribute;
+                objectIcon = (Sirius.util.image.Image)configurationAttribute;
             } else {
                 final String message = "cannot restore MetaClass.objectIcon from configuration attribute '"
                             + configurationKey + "' = '" + configurationAttribute
@@ -790,7 +790,7 @@ public class CidsClassFactory {
         boolean booleanValue = false;
         if (configurationAttribute != null) {
             if (Boolean.class.isAssignableFrom(configurationAttribute.getClass())) {
-                booleanValue = ((Boolean) configurationAttribute);
+                booleanValue = ((Boolean)configurationAttribute);
             } else {
                 LOG.warn("cannot restore boolean MetaClass." + attributeName + " from configuration attribute '"
                             + configurationKey + "': unexpected configuration attribute class '"
@@ -833,7 +833,7 @@ public class CidsClassFactory {
 
         if (configurationAttribute != null) {
             if (Integer.class.isAssignableFrom(configurationAttribute.getClass())) {
-                intValue = ((Integer) configurationAttribute);
+                intValue = ((Integer)configurationAttribute);
             } else {
                 LOG.warn("cannot restore '" + attributeName + "' from configuration attribute '"
                             + configurationKey + "': unexpected configuration attribute class '"
@@ -866,11 +866,11 @@ public class CidsClassFactory {
      * @return  DOCUMENT ME!
      */
     protected Policy createPolicy(String policyName) {
-        if (policyName == null || policyName.isEmpty() || 
-                (!policyName.equalsIgnoreCase("DEFAULT")
-                    && !policyName.equalsIgnoreCase("STANDARD")
-                    && !policyName.equalsIgnoreCase("SECURE")
-                    && !policyName.equalsIgnoreCase("WIKI"))) {
+        if ((policyName == null) || policyName.isEmpty()
+                    || (!policyName.equalsIgnoreCase("DEFAULT")
+                        && !policyName.equalsIgnoreCase("STANDARD")
+                        && !policyName.equalsIgnoreCase("SECURE")
+                        && !policyName.equalsIgnoreCase("WIKI"))) {
             LOG.warn("policy '" + policyName + "' is currently not supported, setting to default 'SECURE'");
             policyName = "SECURE";
         }

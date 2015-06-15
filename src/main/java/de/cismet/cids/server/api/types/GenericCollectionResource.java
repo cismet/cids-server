@@ -1,12 +1,10 @@
-/**
- * *************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- * 
-* ... and it just works.
- * 
-***************************************************
- */
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.cids.server.api.types;
 
 import lombok.EqualsAndHashCode;
@@ -20,29 +18,23 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Generic Collection Resource for arbitrary $collection objects
+ * Generic Collection Resource for arbitrary $collection objects. <strong>Code copied from
+ * de.cismet.cids.server.api.types.CollectionResource for feature branch #100</strong> TODO: Integrate into
+ * cids-server-rest-types project!
  *
- * <strong>Code copied from de.cismet.cids.server.api.types.CollectionResource
- * for feature branch #100</strong>
- * TODO: Integrate into cids-server-rest-types project!
+ * @param    <C>  the type of the members of the collection
  *
- * @author Pascal Dihé
- * @version 1.0
- * @param <C> the type of the members of the collection
+ * @author   Pascal Dihé
+ * @version  1.0
  */
 // NOTE: by default lombok ignores all $ vars and @Data does not support "of"
 @XmlRootElement
 @NoArgsConstructor
-@ToString(of
-        = {
-            "$self", "$offset", "$limit", "$first", "$previous", "$next", "$last", "$collection"}
-)
-@EqualsAndHashCode(
-        of
-        = {
-            "$self", "$offset", "$limit", "$first", "$previous", "$next", "$last", "$collection"}
-)
+@ToString(of = { "$self", "$offset", "$limit", "$first", "$previous", "$next", "$last", "$collection" })
+@EqualsAndHashCode(of = { "$self", "$offset", "$limit", "$first", "$previous", "$next", "$last", "$collection" })
 public class GenericCollectionResource<C> {
+
+    //~ Instance fields --------------------------------------------------------
 
     @Getter
     @Setter
@@ -69,20 +61,27 @@ public class GenericCollectionResource<C> {
     @Setter
     private List<C> $collection;
 
+    //~ Constructors -----------------------------------------------------------
+
     /**
      * Creates a new CollectionResource object.
      *
-     * @param $self DOCUMENT ME!
-     * @param $offset DOCUMENT ME!
-     * @param $limit DOCUMENT ME!
-     * @param $first DOCUMENT ME!
-     * @param $previous DOCUMENT ME!
-     * @param $next DOCUMENT ME!
-     * @param $last DOCUMENT ME!
-     * @param $collection DOCUMENT ME!
+     * @param  $self        DOCUMENT ME!
+     * @param  $offset      DOCUMENT ME!
+     * @param  $limit       DOCUMENT ME!
+     * @param  $first       DOCUMENT ME!
+     * @param  $previous    DOCUMENT ME!
+     * @param  $next        DOCUMENT ME!
+     * @param  $last        DOCUMENT ME!
+     * @param  $collection  DOCUMENT ME!
      */
-    public GenericCollectionResource(final String $self, final int $offset, final int $limit, final String $first,
-            final String $previous, final String $next, final String $last,
+    public GenericCollectionResource(final String $self,
+            final int $offset,
+            final int $limit,
+            final String $first,
+            final String $previous,
+            final String $next,
+            final String $last,
             final List<C> $collection) {
         this.$self = $self;
         this.$offset = $offset;

@@ -157,7 +157,7 @@ public class CidsNodeFactory {
         final boolean dynamic = legacyNode.isDynamic();
 
         if (MetaObjectNode.class.isAssignableFrom(legacyNode.getClass())) {
-            final MetaObjectNode metaObjectNode = (MetaObjectNode) legacyNode;
+            final MetaObjectNode metaObjectNode = (MetaObjectNode)legacyNode;
             if (className == null) {
                 LOG.warn("className == null, trying to derive class name from object node '" + name + "' (" + id + ")");
                 if ((metaObjectNode.getObject() != null) && (metaObjectNode.getObject().getMetaClass() != null)) {

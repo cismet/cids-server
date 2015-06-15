@@ -158,7 +158,7 @@ public class CatalogueServiceImpl {
             return result;
         } catch (Exception e) {
             if (logger != null) {
-                logger.error(e,e);
+                logger.error(e, e);
             }
             throw new RemoteException(e.getMessage(), e);
         }

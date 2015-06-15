@@ -26,10 +26,9 @@ import Sirius.server.search.store.Info;
 import Sirius.server.search.store.QueryData;
 
 import Sirius.util.image.Image;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 
@@ -47,6 +46,9 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import org.apache.log4j.Logger;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+
 import java.rmi.RemoteException;
 
 import java.security.KeyManagementException;
@@ -58,10 +60,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Formatter;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -76,6 +75,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
 
+import de.cismet.cids.base.types.Type;
+
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.CallServerService;
@@ -83,6 +84,7 @@ import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.api.types.CidsClass;
 import de.cismet.cids.server.api.types.CidsNode;
 import de.cismet.cids.server.api.types.GenericCollectionResource;
+import de.cismet.cids.server.api.types.SearchInfo;
 import de.cismet.cids.server.api.types.SearchParameters;
 import de.cismet.cids.server.api.types.legacy.CidsBeanFactory;
 import de.cismet.cids.server.api.types.legacy.CidsClassFactory;
@@ -91,12 +93,10 @@ import de.cismet.cids.server.api.types.legacy.ClassNameCache;
 import de.cismet.cids.server.api.types.legacy.ServerSearchFactory;
 import de.cismet.cids.server.api.types.legacy.UserFactory;
 import de.cismet.cids.server.search.CidsServerSearch;
+import de.cismet.cids.server.search.LookupableServerSearch;
 import de.cismet.cids.server.ws.SSLConfig;
 
 import de.cismet.netutil.Proxy;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import org.openide.util.Exceptions;
 
 /**
  * This is the common CallServerService implementation for interacting with the cids Pure REST API and for translating
@@ -969,7 +969,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
         if (!this.classKeyCache.isDomainCached(domain)) {
             LOG.info("class key cache does not contain class ids for domain '" + domain
-                        + "', need to fill teche first!");
+                        + "', need to fill the cache first!");
             this.getClasses(user, domain);
         }
 
@@ -1489,36 +1489,35 @@ public class RESTfulInterfaceConnector implements CallServerService {
     }
 
     /**
-     * DOCUMENT ME!
+     * Performs a remote server search by submitting a <i>parameterized</i> CidsServerSearch instance. If the
+     * CidsServerSearch does not implement the {@link LookupableServerSearch} interface, the {@link ServerSearchFactory}
+     * tries to automatically generate a {@link SearchInfo} object hat is required by the REST Search API.<br>
+     * <strong>Example REST Call:</strong><br>
+     * <code>curl --user username@SWITCHON:password -H "Content-Type: application/json" -X POST -d
+     * "{""list"":[{""key"":""Query"",""value"":""keyword:\\""soil\\"" limit:\\""5\\"""" }]}"
+     * http://localhost:8890/searches/SWITCHON.de.cismet.cids.custom.switchon.search.server.MetaObjectUniversalSearchStatement/results
+     * </code>
      *
-     * @param <T>
-     * @param   user          DOCUMENT ME!
-     * @param   serverSearch  DOCUMENT ME!
+     * @param   user          The user performing the request
+     * @param   serverSearch  The CidsServerSearch instance
      *
-     * @return  DOCUMENT ME!
+     * @return  Untyped Collection of results
      *
-     * @throws  RemoteException  DOCUMENT ME!
+     * @throws  RemoteException  if any remote error occurs
      */
     @Override
-    //public <T> Collection<T> customServerSearch(final User user, final CidsServerSearch serverSearch) throws RemoteException {
     public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) throws RemoteException {
-        final String searchKey = serverSearch.getClass().getSimpleName();
-        final String domain = user.getDomain();
-        final GenericCollectionResource<ObjectNode> searchResults;
-        Class<?> resultCollectionType = Object.class;
-        
-        try {
-            final Method performServerSearch = serverSearch.getClass().getMethod("performServerSearch");
-            final java.lang.reflect.Type returnType = performServerSearch.getGenericReturnType();
-            final ParameterizedType collectionType = (ParameterizedType)returnType;
-            resultCollectionType = (Class<?>) collectionType.getActualTypeArguments()[0];
-            LOG.debug("generic result collection type of CidsServerSearch '" 
-                    + searchKey + "' is '" + resultCollectionType.getName() + "'");
-        } catch (final Exception ex) {
-            LOG.warn("could not determine collection type of CidsServerSearch '" 
-                    + searchKey + "': " + ex.getMessage(), ex);
+        final String searchKey = serverSearch.getClass().getName();
+        final SearchInfo searchInfo = ServerSearchFactory.getFactory().getServerSearchInfo(searchKey);
+
+        if ((searchInfo == null)) {
+            final String message = "could not find cids server search  '" + searchKey + "'";
+            LOG.error(message);
+            throw new RemoteException(message);
         }
 
+        final String domain = user.getDomain();
+        final GenericCollectionResource<ObjectNode> searchResults;
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         final WebResource webResource = this.createWebResource(SEARCH_API)
                     .path(user.getDomain() + "." + searchKey + SEARCH_API_RESULTS)
@@ -1553,96 +1552,56 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 LOG.debug("found " + searchResults.get$collection().size()
                             + " search results. performing conversion to legacy objects.");
             }
-            
-            final Collection resultCollection = new LinkedList();
-            int i = 0;
-            boolean isMetaClass = false;
-            boolean isMetaObject = false;
-            boolean isMetaNode = false;
-            for (final ObjectNode objectNode : searchResults.get$collection()) {
-                i++;
-                if(Sirius.server.localserver._class.Class.class.isAssignableFrom(resultCollectionType)
-                        || (objectNode.has("configuration") || objectNode.has("attributes"))) {
-                    isMetaClass = true;
+
+            if (searchInfo.getResultDescription().getType() == Type.ENTITY_REFERENCE) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("search result of cids server search '"
+                                + searchKey + "' is a LightweightMetaObject, need to perform custom conversion");
+                }
+
+                final Collection<LightweightMetaObject> resultCollection = new LinkedList<LightweightMetaObject>();
+
+                for (final ObjectNode objectNode : searchResults.get$collection()) {
+                    final CidsBean cidsBean;
                     try {
-                        final CidsClass cidsClass = MAPPER.treeToValue(objectNode, CidsClass.class);
-                        final MetaClass metaClass = CidsClassFactory.getFactory().legacyCidsClassFromRestCidsClass(cidsClass);
-                        resultCollection.add(metaClass);
+                        cidsBean = CidsBean.createNewCidsBeanFromJSON(false, objectNode.toString());
+                        final String className = CidsBeanFactory.getFactory().getClassKey(objectNode);
+                        final int classId = classKeyCache.getClassIdForClassName(domain, className);
+                        final LightweightMetaObject lightweightMetaObject = CidsBeanFactory.getFactory()
+                                    .lightweightMetaObjectFromCidsBean(
+                                        cidsBean,
+                                        classId,
+                                        domain,
+                                        user,
+                                        classKeyCache);
+                        resultCollection.add(lightweightMetaObject);
                     } catch (Exception ex) {
-                        final String message = "could not convert result item #" 
-                                + i  + " of cids custom server search '" + searchKey 
-                                + "' to MetaClass: " + ex.getMessage();
-                        LOG.error(message);
-                        throw new RemoteException(message, ex);
-                    }
-                } else if( Node.class.isAssignableFrom(resultCollectionType)
-                        ||(objectNode.has("clientSort") || objectNode.has("leaf") || objectNode.has("dynamic"))) {
-                    isMetaNode = true;
-                    try {
-                        final CidsNode cidsNode = MAPPER.treeToValue(objectNode, CidsNode.class);
-                        final Node metaNode = CidsNodeFactory.getFactory().legacyCidsNodeFromRestCidsNode(cidsNode);
-                        resultCollection.add(metaNode);
-                    } catch (Exception ex) {
-                        final String message = "could not convert result item #" 
-                                + i  + " of cids custom server search '" + searchKey 
-                                + "' to Node: " + ex.getMessage();
+                        final String message =
+                            "could not deserialize cids bean from object node to create LightweightMetaObject: "
+                                    + ex.getMessage();
                         LOG.error(message, ex);
                         throw new RemoteException(message, ex);
                     }
-                } 
-                // FIXME: better detection of objects!
-                else if(MetaObject.class.isAssignableFrom(resultCollectionType)
-                        || (objectNode.has("$self")  
-                        && objectNode.get("$self").asText().lastIndexOf('/') > objectNode.get("$self").asText().lastIndexOf('.'))) {
-                    isMetaObject = true;
-                    try {
-                        final CidsBean cidsBean = CidsBean.createNewCidsBeanFromJSON(false, objectNode.toString());
-                        final MetaObject metaObject = cidsBean.getMetaObject();
-                        resultCollection.add(metaObject);
-                    } catch (Exception ex) {
-                        final String message = "could not convert result item #" 
-                                + i  + " of cids custom server search '" + searchKey 
-                                + "' to MetaObject: " + ex.getMessage();
-                        LOG.error(message);
-                        throw new RemoteException(message, ex);
-                    }
-                } else {
-                    try {
-                        
-                        final Object resultObject = MAPPER.treeToValue(objectNode, resultCollectionType);
-                        resultCollection.add(resultObject);
-                    } catch (Exception ex) {
-                        final String message = "could not convert result item #" 
-                                + i  + " of cids custom server search '" + searchKey 
-                                + "' to '"+resultCollectionType.getName()+"': " + ex.getMessage();
-                        LOG.error(message);
-                        throw new RemoteException(message, ex);
-                    }
+                }
+                return resultCollection;
+            } else {
+                try {
+                    final Collection resultCollection = ServerSearchFactory.getFactory()
+                                .resultCollectionfromObjectNodes(
+                                    searchResults.get$collection(),
+                                    searchInfo);
+                    return resultCollection;
+                } catch (Exception ex) {
+                    final String message = "could not perform converison of result collection of customServerSearch '"
+                                + searchKey
+                                + "' for user '"
+                                + user
+                                + ": "
+                                + ex.getMessage();
+                    LOG.error(message, ex);
+                    throw new RemoteException(message, ex);
                 }
             }
-            
-            if(i > 0) {
-                if (isMetaClass) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(i + " meta classes (entity info) found and converted by cids server search '" + searchKey + "'");
-                    }
-                }
-                if (isMetaObject) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(i + " meta objects (entities) found and converted by cids server search '" + searchKey + "'");
-                    }
-                } else if (isMetaNode) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(i + " nodes found and converted by cids server search '" + searchKey + "'");
-                    }
-                } else {
-                    LOG.warn(i + " generic objects of type '"
-                                + resultCollectionType
-                                + "' found and converted by cids server search '" + searchKey + "'");
-                }
-            }
-
-            return resultCollection;
         } else {
             LOG.warn("customServerSearch '" + searchKey + "' for user '" + user
                         + "' with " + searchParameters.getList().size()
@@ -1664,7 +1623,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     public String[] getDomains() throws RemoteException {
         // TODO: Implement method in Nodes API or remove
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+        final String message = "The method '"
+                    + Thread.currentThread().getStackTrace()[1].getMethodName()
                     + "' is not yet supported by the cids REST API!";
         LOG.error(message);
         throw new UnsupportedOperationException(message);
@@ -1717,7 +1677,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
     public boolean changePassword(final User user, final String oldPassword, final String newPassword)
             throws RemoteException, UserException {
         // TODO:  Implement Method in Users API or remove.
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+        final String message = "The method '"
+                    + Thread.currentThread().getStackTrace()[1].getMethodName()
                     + "' is not yet supported by the Users REST API!";
         LOG.error(message);
         throw new UnsupportedOperationException(message);
@@ -1765,8 +1726,12 @@ public class RESTfulInterfaceConnector implements CallServerService {
             this.removeBasicAuthString(cidsUser);
 
             final Status status = ue.getResponse().getClientResponseStatus();
-            final String message = "login of user '" + userName + "' at domain '" + userLsName
-                        + "' failed: " + status.toString();
+            final String message = "login of user '"
+                        + userName
+                        + "' at domain '"
+                        + userLsName
+                        + "' failed: "
+                        + status.toString();
             LOG.error(message, ue);
             if (LOG.isDebugEnabled()) {
                 LOG.debug(ue.getResponse().getEntity(String.class));
@@ -1794,7 +1759,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     public Vector getUserGroupNames() throws RemoteException {
         // TODO:  Implement Method in Users API or remove.
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+        final String message = "The method '"
+                    + Thread.currentThread().getStackTrace()[1].getMethodName()
                     + "' is not yet supported by the Users REST API!";
         LOG.error(message);
         throw new UnsupportedOperationException(message);
@@ -1817,7 +1783,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     public Vector getUserGroupNames(final String userName, final String lsHome) throws RemoteException {
         // TODO:  Implement Method in Users API or remove.
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+        final String message = "The method '"
+                    + Thread.currentThread().getStackTrace()[1].getMethodName()
                     + "' is not yet supported by the Users REST API!";
         LOG.error(message);
         throw new UnsupportedOperationException(message);
@@ -1840,7 +1807,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     public String getConfigAttr(final User user, final String key) throws RemoteException {
         // TODO: Implement ConfigAttributes API.
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+        final String message = "The method '"
+                    + Thread.currentThread().getStackTrace()[1].getMethodName()
                     + "' is not yet supported by the ConfigAttributes REST API!";
         LOG.error(message);
         throw new UnsupportedOperationException(message);
@@ -1861,7 +1829,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     public boolean hasConfigAttr(final User user, final String key) throws RemoteException {
         // TODO: Implement ConfigAttributes API.
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
+        final String message = "The method '"
+                    + Thread.currentThread().getStackTrace()[1].getMethodName()
                     + "' is not yet supported by the ConfigAttributes REST API!";
         LOG.error(message);
         throw new UnsupportedOperationException(message);
@@ -1957,8 +1926,18 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 cidsBean = CidsBean.createNewCidsBeanFromJSON(false, objectNode.toString());
             } catch (Exception ex) {
                 final String message = "could not deserialize cids bean from object node  '"
-                            + objectId + "@" + classId + "@" + domain
-                            + "' (" + domain + "." + className + ") for user '" + user + "': "
+                            + objectId
+                            + "@"
+                            + classId
+                            + "@"
+                            + domain
+                            + "' ("
+                            + domain
+                            + "."
+                            + className
+                            + ") for user '"
+                            + user
+                            + "': "
                             + ex.getMessage();
                 LOG.error(message, ex);
                 throw new RemoteException(message, ex);
@@ -1974,8 +1953,19 @@ public class RESTfulInterfaceConnector implements CallServerService {
             }
         } catch (UniformInterfaceException ue) {
             final Status status = ue.getResponse().getClientResponseStatus();
-            final String message = "could not get meta object '" + objectId + "@" + classId + "@" + domain
-                        + "' (" + domain + "." + className + ") for user '" + user + "': "
+            final String message = "could not get meta object '"
+                        + objectId
+                        + "@"
+                        + classId
+                        + "@"
+                        + domain
+                        + "' ("
+                        + domain
+                        + "."
+                        + className
+                        + ") for user '"
+                        + user
+                        + "': "
                         + status.getReasonPhrase();
 
             LOG.error(message, ue);
@@ -2034,7 +2024,16 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 cidsBean = CidsBean.createNewCidsBeanFromJSON(false, objectNode.toString());
             } catch (Exception ex) {
                 final String message = "could not deserialize cids bean from object node for class '"
-                            + classId + "@" + domain + "' (" + domain + "." + className + ") for user '" + user + "': "
+                            + classId
+                            + "@"
+                            + domain
+                            + "' ("
+                            + domain
+                            + "."
+                            + className
+                            + ") for user '"
+                            + user
+                            + "': "
                             + ex.getMessage();
                 LOG.error(message, ex);
                 throw new RemoteException(message, ex);
@@ -2051,8 +2050,17 @@ public class RESTfulInterfaceConnector implements CallServerService {
             }
         } catch (UniformInterfaceException ue) {
             final Status status = ue.getResponse().getClientResponseStatus();
-            final String message = "could not insert meta object for class  '" + classId + "@" + domain
-                        + "' (" + domain + "." + className + ") for user '" + user + "': "
+            final String message = "could not insert meta object for class  '"
+                        + classId
+                        + "@"
+                        + domain
+                        + "' ("
+                        + domain
+                        + "."
+                        + className
+                        + ") for user '"
+                        + user
+                        + "': "
                         + status.getReasonPhrase();
 
             LOG.error(message, ue);
@@ -2109,8 +2117,19 @@ public class RESTfulInterfaceConnector implements CallServerService {
             return 1;
         } catch (UniformInterfaceException ue) {
             final Status status = ue.getResponse().getClientResponseStatus();
-            final String message = "could not update meta object '" + objectId + "@" + classId + "@" + domain
-                        + "' (" + domain + "." + className + ") for user '" + user + "': "
+            final String message = "could not update meta object '"
+                        + objectId
+                        + "@"
+                        + classId
+                        + "@"
+                        + domain
+                        + "' ("
+                        + domain
+                        + "."
+                        + className
+                        + ") for user '"
+                        + user
+                        + "': "
                         + status.getReasonPhrase();
 
             LOG.error(message, ue);
@@ -2177,8 +2196,19 @@ public class RESTfulInterfaceConnector implements CallServerService {
             return 1;
         } catch (UniformInterfaceException ue) {
             final Status status = ue.getResponse().getClientResponseStatus();
-            final String message = "could not delete meta object '" + objectId + "@" + classId + "@" + domain
-                        + "' (" + domain + "." + className + ") for user '" + user + "': "
+            final String message = "could not delete meta object '"
+                        + objectId
+                        + "@"
+                        + classId
+                        + "@"
+                        + domain
+                        + "' ("
+                        + domain
+                        + "."
+                        + className
+                        + ") for user '"
+                        + user
+                        + "': "
                         + status.getReasonPhrase();
 
             LOG.error(message, ue);
@@ -2194,10 +2224,13 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * this method contain only the fields (attributes) specified by the representationFields String Array. The to
      * string representation {@link LightweightMetaObject#toString()} of the LightweightMetaObject is built from the
      * representationFields and formatted according to the {@link Formatter} representationPattern (e.g. "%1$2s").
+     * <br>
+     * <strong>Example REST Call:</strong><br>
+     * <code><a href="http://localhost:8890/SWITCHON.CONTACT?level=1&fields=name,email">http://localhost:8890/SWITCHON.CONTACT?level=1&fields=name,email</a></code>
      *
      * @param   classId                legacy class id of the LightweightMetaObjects
      * @param   user                   user token
-     * @param   representationFields   files of the LightweightMetaObject
+     * @param   representationFields   fields of the LightweightMetaObject
      * @param   representationPattern  the format pattern {@link Formatter}
      *
      * @return  Array of LightweightMetaObjects or null
@@ -2280,25 +2313,41 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 try {
                     cidsBean = CidsBean.createNewCidsBeanFromJSON(false, objectNode.toString());
                 } catch (Exception ex) {
-                    final String message = "could not deserialize cids beans from object nodes for class '" + classId
-                                + "@" + domain
-                                + "' (" + domain + "." + className + ") for user '" + user
-                                + "' with " + representationFieldsLength + " representation fields: "
+                    final String message = "could not deserialize cids beans from object nodes for class '"
+                                + classId
+                                + "@"
+                                + domain
+                                + "' ("
+                                + domain
+                                + "."
+                                + className
+                                + ") for user '"
+                                + user
+                                + "' with "
+                                + representationFieldsLength
+                                + " representation fields: "
                                 + ex.getMessage();
                     LOG.error(message, ex);
                     throw new RemoteException(message, ex);
                 }
 
+                // ensure that classKeyCache is initialized for CidsBeanFactory;
+                if (!classKeyCache.isDomainCached(domain)) {
+                    LOG.warn("class name cache not initialized yet for domain '" + domain
+                                + "', need to fill the cache NOW!");
+                    this.getClasses(user, domain);
+                }
+
                 if (cidsBean != null) {
-                    final LightweightMetaObject lightweightMetaObject 
-                            = CidsBeanFactory.getFactory().lightweightMetaObjectFromCidsBean(
-                            cidsBean,
-                            classId,
-                            domain,
-                            user,
-                            representationFields,
-                            representationFormater,
-                            this.classKeyCache);
+                    final LightweightMetaObject lightweightMetaObject = CidsBeanFactory.getFactory()
+                                .lightweightMetaObjectFromCidsBean(
+                                    cidsBean,
+                                    classId,
+                                    domain,
+                                    user,
+                                    representationFields,
+                                    representationFormater,
+                                    this.classKeyCache);
                     lightweightMetaObjects[i] = lightweightMetaObject;
                     i++;
                 } else {
@@ -2310,9 +2359,19 @@ public class RESTfulInterfaceConnector implements CallServerService {
             }
         } catch (UniformInterfaceException ue) {
             final Status status = ue.getResponse().getClientResponseStatus();
-            final String message = "could not get lightweight meta object for class '" + classId + "@" + domain
-                        + "' (" + domain + "." + className + ") for user '" + user
-                        + "' with " + representationFieldsLength + " representation fields: "
+            final String message = "could not get lightweight meta object for class '"
+                        + classId
+                        + "@"
+                        + domain
+                        + "' ("
+                        + domain
+                        + "."
+                        + className
+                        + ") for user '"
+                        + user
+                        + "' with "
+                        + representationFieldsLength
+                        + " representation fields: "
                         + status.getReasonPhrase();
 
             LOG.error(message, ue);

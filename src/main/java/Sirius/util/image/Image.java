@@ -7,9 +7,10 @@
 ****************************************************/
 package Sirius.util.image;
 
-import java.io.*;
 import lombok.Data;
 import lombok.NonNull;
+
+import java.io.*;
 
 /**
  * DOCUMENT ME!
@@ -19,10 +20,12 @@ import lombok.NonNull;
 @Data
 public class Image implements java.io.Serializable {
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    private final static transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(Image.class);
+    private static final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(Image.class);
     /////////////////members//////////////////////////////////
+
+    //~ Instance fields --------------------------------------------------------
 
     private byte[] imageData;
     private String name;

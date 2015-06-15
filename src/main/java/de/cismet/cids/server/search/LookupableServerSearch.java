@@ -7,32 +7,36 @@
 ****************************************************/
 package de.cismet.cids.server.search;
 
-import de.cismet.cids.server.api.types.SearchInfo;
 import java.util.Collection;
+
+import de.cismet.cids.server.api.types.SearchInfo;
 
 /**
  * A Lookupable Server Search that provides SearchInfo and typed collection search results.
- * 
- * @author Pascal Dihé
+ *
+ * @author   Pascal Dihé
+ * @version  $Revision$, $Date$
  */
 public interface LookupableServerSearch extends CidsServerSearch {
-    
+
+    //~ Methods ----------------------------------------------------------------
+
     /**
-     * Returns SearchInfo describing the parameters and return type of the
-     * ServerSearch instance.
-     * 
-     * @return SearchInfo of the Search instance
+     * Returns SearchInfo describing the parameters and return type of the ServerSearch instance.
+     *
+     * @return  SearchInfo of the Search instance
      */
-    public SearchInfo getSearchInfo();
-    
-    
+    SearchInfo getSearchInfo();
+
     /**
      * Performs a search on the server.
-     * 
-     * @param <T> type of the result collection
-     * @return results of the search
-     * @throws SearchException if any error occours
-     * @see CidsServerSearch#performServerSearch() 
+     *
+     * @return  results of the search
+     *
+     * @throws  SearchException  if any error occours
+     *
+     * @see     CidsServerSearch#performServerSearch()
      */
-    <T> Collection<T> performServerSearch() throws SearchException;
+    @Override
+    Collection performServerSearch() throws SearchException;
 }
