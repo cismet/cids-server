@@ -94,6 +94,7 @@ import de.cismet.cids.server.api.types.legacy.ServerSearchFactory;
 import de.cismet.cids.server.api.types.legacy.UserFactory;
 import de.cismet.cids.server.search.CidsServerSearch;
 import de.cismet.cids.server.search.LookupableServerSearch;
+import de.cismet.cids.server.search.builtin.legacy.LightweightMetaObjectsByQuerySearch;
 import de.cismet.cids.server.ws.SSLConfig;
 
 import de.cismet.netutil.Proxy;
@@ -1562,18 +1563,15 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 final Collection<LightweightMetaObject> resultCollection = new LinkedList<LightweightMetaObject>();
 
                 for (final ObjectNode objectNode : searchResults.get$collection()) {
-                    final CidsBean cidsBean;
                     try {
-                        cidsBean = CidsBean.createNewCidsBeanFromJSON(false, objectNode.toString());
-                        final String className = CidsBeanFactory.getFactory().getClassKey(objectNode);
-                        final int classId = classKeyCache.getClassIdForClassName(domain, className);
+                        final String classKey = CidsBeanFactory.getFactory().getClassKey(objectNode);
+                        final int classId = classKeyCache.getClassIdForClassKey(classKey);
                         final LightweightMetaObject lightweightMetaObject = CidsBeanFactory.getFactory()
-                                    .lightweightMetaObjectFromCidsBean(
-                                        cidsBean,
+                                    .lightweightMetaObjectFromObjectNode(
+                                        objectNode,
                                         classId,
                                         domain,
-                                        user,
-                                        classKeyCache);
+                                        user);
                         resultCollection.add(lightweightMetaObject);
                     } catch (Exception ex) {
                         final String message =
@@ -2223,8 +2221,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * Returns all LightweightMetaObject of the class specified by classId. If The LightweightMetaObjects returned by
      * this method contain only the fields (attributes) specified by the representationFields String Array. The to
      * string representation {@link LightweightMetaObject#toString()} of the LightweightMetaObject is built from the
-     * representationFields and formatted according to the {@link Formatter} representationPattern (e.g. "%1$2s").
-     * <br>
+     * representationFields and formatted according to the {@link Formatter} representationPattern (e.g. "%1$2s").<br>
      * <strong>Example REST Call:</strong><br>
      * <code><a href="http://localhost:8890/SWITCHON.CONTACT?level=1&fields=name,email">http://localhost:8890/SWITCHON.CONTACT?level=1&fields=name,email</a></code>
      *
@@ -2413,9 +2410,24 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final String query,
             final String[] representationFields,
             final String representationPattern) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + " is not supported yet: " + query); // To change body of generated methods, choose
-        // Tools | Templates.
+        LOG.warn("delegating getLightweightMetaObjectsByQuery for class + '"
+                    + classId + "' with query '" + query + "' to legacy custom server search!");
+
+        final LightweightMetaObjectsByQuerySearch lightweightMetaObjectsByQuerySearch =
+            new LightweightMetaObjectsByQuerySearch();
+
+        lightweightMetaObjectsByQuerySearch.setDomain(user.getDomain());
+        lightweightMetaObjectsByQuerySearch.setClassId(classId);
+        lightweightMetaObjectsByQuerySearch.setQuery(query);
+        lightweightMetaObjectsByQuerySearch.setRepresentationFields(representationFields);
+        lightweightMetaObjectsByQuerySearch.setRepresentationPattern(representationPattern);
+
+        final Collection lwmoCollection = this.customServerSearch(user, lightweightMetaObjectsByQuerySearch);
+
+        final LightweightMetaObject[] lightweightMetaObjects = (LightweightMetaObject[])lwmoCollection.toArray(
+                new LightweightMetaObject[lwmoCollection.size()]);
+
+        return lightweightMetaObjects;
     }
 
     @Override
@@ -2423,9 +2435,12 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final User user,
             final String query,
             final String[] representationFields) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + " is not supported yet: " + query); // To change body of generated methods, choose
-        // Tools | Templates.
+        return this.getLightweightMetaObjectsByQuery(
+                classId,
+                user,
+                query,
+                representationFields,
+                null);
     }
 
     @Override

@@ -18,6 +18,9 @@ import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.apache.log4j.Logger;
@@ -27,6 +30,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,6 +54,10 @@ public class CidsBeanFactory {
     private static final transient Logger LOG = Logger.getLogger(CidsBeanFactory.class);
     private static final CidsBeanFactory factory = new CidsBeanFactory();
 
+    //~ Instance fields --------------------------------------------------------
+
+    private final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -72,15 +80,17 @@ public class CidsBeanFactory {
     /**
      * Tries to derive LightweightMetaObject representation fields from a cidsBean instance.
      *
-     * @param   cidsBean  DOCUMENT ME!
+     * @param       cidsBean  DOCUMENT ME!
      *
-     * @return  String array of representationFields (may be empty)
+     * @return      String array of representationFields (may be empty)
+     *
+     * @deprecated  not suitable to reliably determine representation fields
      */
-    public String[] representationFieldsFromCidsBean(final CidsBean cidsBean) {
+    private String[] representationFieldsFromCidsBean(final CidsBean cidsBean) {
         final LinkedList<String> representationFields = new LinkedList<String>();
 
         for (final String propertyName : cidsBean.getPropertyNames()) {
-            if (propertyName.indexOf('$') != 0) {
+            if ((propertyName.indexOf('$') != 0) && (cidsBean.getProperty(propertyName) != null)) {
                 representationFields.add(propertyName);
             }
         }
@@ -89,7 +99,7 @@ public class CidsBeanFactory {
     }
 
     /**
-     * Helper Method for creating sub .
+     * Helper Method for creating sub LightweightMetaObject.
      *
      * @param   cidsBean        DOCUMENT ME!
      * @param   domain          DOCUMENT ME!
@@ -128,16 +138,19 @@ public class CidsBeanFactory {
     }
 
     /**
-     * Convenience Method that automatically derives the LWMO representation fields from the CidsBean and assumes that a
-     * {@link DummyRepresentationFormater} can be created based on the {@link #LEGACY_DISPLAY_NAME} property.
+     * Convenience Method that automatically tries to derive the LWMO representation fields from the CidsBean and
+     * assumes that a {@link DummyRepresentationFormater} can be created based on the {@link #LEGACY_DISPLAY_NAME}
+     * property.
      *
-     * @param   cidsBean        DOCUMENT ME!
-     * @param   classId         DOCUMENT ME!
-     * @param   domain          DOCUMENT ME!
-     * @param   user            DOCUMENT ME!
-     * @param   classNameCache  DOCUMENT ME!
+     * @param       cidsBean        DOCUMENT ME!
+     * @param       classId         DOCUMENT ME!
+     * @param       domain          DOCUMENT ME!
+     * @param       user            DOCUMENT ME!
+     * @param       classNameCache  DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return      DOCUMENT ME!
+     *
+     * @deprecated  not suitable to reliably determine representation fields!
      */
     public LightweightMetaObject lightweightMetaObjectFromCidsBean(
             final CidsBean cidsBean,
@@ -154,6 +167,93 @@ public class CidsBeanFactory {
                 representationFields,
                 null,
                 classNameCache);
+    }
+
+    /**
+     * Tries to derive LightweightMetaObject representation fields from a ObjectNode instance.
+     *
+     * @param   objectNode  DOCUMENT ME!
+     * @param   classId     DOCUMENT ME!
+     * @param   domain      DOCUMENT ME!
+     * @param   user        DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public LightweightMetaObject lightweightMetaObjectFromObjectNode(
+            final ObjectNode objectNode,
+            final int classId,
+            final String domain,
+            final User user) {
+        final LinkedHashMap<String, Object> lmoAttributes = new LinkedHashMap<String, Object>();
+        final int objectId = Integer.parseInt(CidsBeanFactory.getFactory().getObjectId(objectNode));
+        // lmoAttributes.put(metaClass.getPrimaryKey(), objectId);
+        // FIXME: assuming that primary key is always ID!
+        lmoAttributes.put("ID", objectId);
+
+        final Iterator<Map.Entry<String, JsonNode>> propertiesIterator = objectNode.fields();
+        while (propertiesIterator.hasNext()) {
+            final Map.Entry<String, JsonNode> configEntry = propertiesIterator.next();
+            final String propertyName = configEntry.getKey();
+            final JsonNode propertyNode = configEntry.getValue();
+
+            if (propertyName.indexOf('$') != 0) {
+                try {
+                    if (propertyNode.isArray()) {
+                        LOG.warn("unexpected JSON Attribute array. expecting string value for node '" + propertyName
+                                    + "', ignoring node!");
+                        final Object value = mapper.treeToValue(propertyNode, Object.class);
+                        lmoAttributes.put(propertyName, value);
+                    } else if (propertyNode.isObject()) {
+                        LOG.warn("unexpected JSON Attribute object node. Expecting string value for node '"
+                                    + propertyName
+                                    + "' but actual value is: \n" + propertyNode.toString());
+                        final Object value = mapper.treeToValue(propertyNode, Object.class);
+                        lmoAttributes.put(propertyName, value);
+                    } else if (propertyNode.isTextual()) {
+                        lmoAttributes.put(propertyName, propertyNode.textValue());
+                    } else if (propertyNode.isBinary()) {
+                        lmoAttributes.put(propertyName, propertyNode.binaryValue());
+                    } else if (propertyNode.isInt()) {
+                        lmoAttributes.put(propertyName, propertyNode.intValue());
+                    } else if (propertyNode.isBigInteger()) {
+                        lmoAttributes.put(propertyName, propertyNode.bigIntegerValue());
+                    } else if (propertyNode.isLong()) {
+                        lmoAttributes.put(propertyName, propertyNode.longValue());
+                    } else if (propertyNode.isBoolean()) {
+                        lmoAttributes.put(propertyName, propertyNode.booleanValue());
+                    } else {
+                        LOG.warn("unknown type of JSON configuration Attribute '" + propertyName
+                                    + "': \n" + propertyNode.toString());
+                        final Object value = mapper.treeToValue(propertyNode, Object.class);
+                        lmoAttributes.put(propertyName, value);
+                    }
+                } catch (Throwable t) {
+                    final String message = "could not set property '" + propertyName
+                                + "' of lightweight Meta Object: '" + t.getMessage()
+                                + "', setting value to null!";
+                    LOG.error(message, t);
+                    lmoAttributes.put(propertyName, null);
+                }
+            }
+        }
+
+        final LightweightMetaObject lightweightMetaObject = new LightweightMetaObject(
+                classId,
+                objectId,
+                domain,
+                user,
+                lmoAttributes);
+
+        if (objectNode.has(LEGACY_DISPLAY_NAME)) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(LEGACY_DISPLAY_NAME + " property set in cids bean, creating DummyRepresentationFormater");
+            }
+
+            lightweightMetaObject.setFormater(new DummyRepresentationFormater(
+                    objectNode.get(LEGACY_DISPLAY_NAME).asText()));
+        }
+
+        return lightweightMetaObject;
     }
 
     /**
@@ -249,10 +349,12 @@ public class CidsBeanFactory {
     /**
      * Creates a LightweightMetaObject from a CidsBean.
      *
-     * @param   lightweightMetaObject  DOCUMENT ME!
-     * @param   metaClass              DOCUMENT ME!
+     * @param       lightweightMetaObject  DOCUMENT ME!
+     * @param       metaClass              DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return      DOCUMENT ME!
+     *
+     * @deprecated  unable to reliably determine the representation fields
      */
     public CidsBean cidsBeanFromLightweightMetaObject(final LightweightMetaObject lightweightMetaObject,
             final MetaClass metaClass) {
@@ -283,12 +385,41 @@ public class CidsBeanFactory {
     }
 
     /**
+     * Derives an ObjectNode (~CidsBean) from a LightweightMetaObject instance.
+     *
+     * @param   lightweightMetaObject  DOCUMENT ME!
+     * @param   className              DOCUMENT ME!
+     * @param   domain                 DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public ObjectNode objectNodeFromLightweightMetaObject(final LightweightMetaObject lightweightMetaObject,
+            final String className,
+            final String domain) {
+        final String selfReference = "/" + domain + "." + className + "/" + lightweightMetaObject.getId();
+        final ObjectNode objectNode = this.mapper.createObjectNode();
+
+        objectNode.put("$self", selfReference);
+        objectNode.put(LEGACY_DISPLAY_NAME, lightweightMetaObject.toString());
+
+        for (final String attributeName : lightweightMetaObject.getKnownAttributeNames()) {
+            final Object value = lightweightMetaObject.getLWAttribute(attributeName);
+            final JsonNode jsonNode = mapper.valueToTree(value);
+            objectNode.put(attributeName, jsonNode);
+        }
+
+        return objectNode;
+    }
+
+    /**
      * Helper Method for checking if a cids bean is a potential LightweightMetaObject. Note: This method relies on meta
      * information ($properties) of the cids bean!
      *
-     * @param   cidsBean  DOCUMENT ME!
+     * @param       cidsBean  DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return      DOCUMENT ME!
+     *
+     * @deprecated  DOCUMENT ME!
      */
     public boolean isLightweightMetaObject(final CidsBean cidsBean) {
         return (cidsBean.getProperty(LEGACY_DISPLAY_NAME) != null)

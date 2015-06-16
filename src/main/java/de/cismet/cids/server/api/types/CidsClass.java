@@ -121,8 +121,12 @@ public class CidsClass implements Key {
         final int domainSeparator = classKey.lastIndexOf('.');
         final String domain;
         if ((domainSeparator > 3) && (classKey.length() > (domainSeparator + 1))) {
-            // ignore trailing /
-            domain = classKey.substring(1, domainSeparator);
+            // ignore trailing only if present
+            if (classKey.indexOf("/") == 0) {
+                domain = classKey.substring(1, domainSeparator);
+            } else {
+                domain = classKey.substring(0, domainSeparator);
+            }
         } else {
             LOG.error("invalid class key provided: '" + classKey
                         + "', expected $self reference: '/DOMAIN.CLASSNAME'");

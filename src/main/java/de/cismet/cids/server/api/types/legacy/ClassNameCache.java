@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import de.cismet.cids.server.api.types.CidsClass;
+
 /**
  * Helper Class for maintaining a class name cache that stores the mappings from legacy meta class id to a class name
  * (MetaClass.tableName) that is needed to construct the $self reference (/domain/tableName).of the REST Cids Class.
@@ -90,6 +92,15 @@ public class ClassNameCache {
      * @return  name (table name) of the legacy meta class or null if the id or domain is not cached
      */
     public String getClassNameForClassId(final String domain, final int classId) {
+        if (classId == -1) {
+            final String message = "cannot perform lookup for class with id '" + classId
+                        + "' at domain '" + domain + "', invalid class id provided.";
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(message);
+            }
+            return null;
+        }
+
         return this.getClassNameForClassId(domain, Integer.toString(classId));
     }
 
@@ -102,6 +113,15 @@ public class ClassNameCache {
      * @return  name (table name) of the legacy meta class or null if the id or domain is not cached
      */
     public String getClassNameForClassId(final String domain, final String classId) {
+        if (classId.equals("-1")) {
+            final String message = "cannot perform lookup for class with id '" + classId
+                        + "' at domain '" + domain + "', invalid class id provided.";
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(message);
+            }
+            return null;
+        }
+
         if (!this.isDomainCached(domain)) {
             LOG.error("class name cache does not contain class ids for domain '" + domain
                         + "', need to fill the cache first!");
@@ -124,6 +144,24 @@ public class ClassNameCache {
 
         final String className = classNameMap.get(classId);
         return className;
+    }
+
+    /**
+     * Convenience method that returns the id of a legacy meta class with the specified class key (tablename.domain).
+     *
+     * @param   classKey  the class key, e.g. SWITCHON.RESOURCE
+     *
+     * @return  classId or -1
+     */
+    public int getClassIdForClassKey(final String classKey) {
+        final String className = CidsClass.nameFromKey(classKey);
+        final String domain = CidsClass.domainFromKey(classKey);
+
+        if ((className != null) && (domain != null)) {
+            return this.getClassIdForClassName(domain, className);
+        }
+
+        return -1;
     }
 
     /**

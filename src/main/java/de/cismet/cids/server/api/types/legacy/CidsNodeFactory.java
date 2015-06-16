@@ -153,11 +153,13 @@ public class CidsNodeFactory {
         final String policy = legacyNode.getPermissions().getPolicy().getName();
         final int classId = legacyNode.getClassId();
         final String objectKey;
+        final int objectId;
         final String classKey;
         final boolean dynamic = legacyNode.isDynamic();
 
         if (MetaObjectNode.class.isAssignableFrom(legacyNode.getClass())) {
             final MetaObjectNode metaObjectNode = (MetaObjectNode)legacyNode;
+            objectId = metaObjectNode.getObjectId();
             if (className == null) {
                 LOG.warn("className == null, trying to derive class name from object node '" + name + "' (" + id + ")");
                 if ((metaObjectNode.getObject() != null) && (metaObjectNode.getObject().getMetaClass() != null)) {
@@ -166,7 +168,7 @@ public class CidsNodeFactory {
             }
 
             if ((className != null) && (domain != null)) {
-                objectKey = "/" + domain + "." + className + "/" + ((MetaObjectNode)legacyNode).getObjectId();
+                objectKey = "/" + domain + "." + className + "/" + metaObjectNode.getObjectId();
             } else {
                 objectKey = null;
                 LOG.error("could not set object key of object node '" + name + "' (" + id
@@ -176,6 +178,7 @@ public class CidsNodeFactory {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("node '" + name + "' (" + id + ") is no meta object node -> class node or pure node");
             }
+            objectId = -1;
             objectKey = null;
         }
 
@@ -211,7 +214,8 @@ public class CidsNodeFactory {
                 iconFactory,
                 policy,
                 artificialId,
-                classId);
+                classId,
+                objectId);
 
         return cidsNode;
     }

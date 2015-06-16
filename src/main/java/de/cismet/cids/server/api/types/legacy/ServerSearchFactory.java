@@ -12,7 +12,6 @@
  */
 package de.cismet.cids.server.api.types.legacy;
 
-import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.Node;
@@ -28,7 +27,10 @@ import org.openide.util.Lookup;
 
 import org.postgresql.util.Base64;
 
-import org.reflections.ReflectionUtils;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -38,15 +40,15 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import de.cismet.cids.base.types.Type;
 
@@ -121,54 +123,36 @@ public class ServerSearchFactory {
             final Class<? extends CidsServerSearch> serverSearchClass = cidsServerSearch.getClass();
             LOG.info("processing CidsServerSearch '" + serverSearchClass.getName() + "'");
 
-            final Set<Method> setters = ReflectionUtils.getAllMethods(
-                    serverSearchClass,
-                    ReflectionUtils.withModifier(Modifier.PUBLIC),
-                    ReflectionUtils.withPrefix("set"));
-            final Set<Method> settersParent = ReflectionUtils.getAllMethods(
-                    CidsServerSearch.class,
-                    ReflectionUtils.withModifier(Modifier.PUBLIC),
-                    ReflectionUtils.withPrefix("set"));
-            final Collection<String> setterParentNames = new ArrayList<String>();
-            for (final Method setterParent : settersParent) {
-                setterParentNames.add(setterParent.getName());
-            }
+            final Map<String, Class> searchParameters = this.findSearchParameters(cidsServerSearch.getClass());
 
             final SearchInfo searchInfo = new SearchInfo();
             final String searchKey = serverSearchClass.getName();
             final LinkedList<SearchParameterInfo> searchParameterInfos = new LinkedList<SearchParameterInfo>();
             Class<?> resultCollectionClass = Object.class;
 
-            // Process the setters
-            for (final Method setter : setters) {
-                if (!setterParentNames.contains(setter.getName())) {
-                    if (setter.getParameterCount() == 1) {
-                        final SearchParameterInfo searchParameterInfo = new SearchParameterInfo();
-                        final String paramName = setter.getName().split("set")[1];
-                        final Class paramClass = setter.getParameterTypes()[0];
-                        final Type paramType = Type.typeForJavaClass(paramClass);
+            // Process the parameters
+            for (final String paramName : searchParameters.keySet()) {
+                final SearchParameterInfo searchParameterInfo = new SearchParameterInfo();
+                final Class paramClass = searchParameters.get(paramName);
+                final Type paramType = Type.typeForJavaClass(paramClass);
 
-                        searchParameterInfo.setKey(paramName);
-                        searchParameterInfo.setType(paramType);
-                        searchParameterInfo.setArray(paramClass.isArray());
+                searchParameterInfo.setKey(paramName);
+                searchParameterInfo.setType(paramType);
+                searchParameterInfo.setArray(paramClass.isArray());
 
-                        if ((paramType == Type.JAVA_CLASS)
-                                    || (paramType == Type.JAVA_SERIALIZABLE)
-                                    || (paramType == Type.UNDEFINED)) {
-                            searchParameterInfo.setAdditionalTypeInfo(paramClass.getName());
-                        }
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("adding search parameter '" + paramName + "' of class '"
-                                        + paramClass.getSimpleName() + " and type '" + paramType + "'");
-                        }
-                        searchParameterInfos.add(searchParameterInfo);
-                    } else {
-                        LOG.warn("the setter operation '" + setter.getName() + "' is not supported,"
-                                    + "since it expects " + setter.getParameterCount() + " parameters.");
-                    }
+                if ((paramType == Type.JAVA_CLASS)
+                            || (paramType == Type.JAVA_SERIALIZABLE)
+                            || (paramType == Type.UNDEFINED)) {
+                    searchParameterInfo.setAdditionalTypeInfo(paramClass.getName());
                 }
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("adding search parameter '" + paramName + "' of class '"
+                                + paramClass.getName() + "' and Type '" + paramType + "'");
+                }
+                searchParameterInfos.add(searchParameterInfo);
             }
 
+            // process the return type
             try {
                 final Method performServerSearch = serverSearchClass.getMethod("performServerSearch");
                 final java.lang.reflect.Type returnType = performServerSearch.getGenericReturnType();
@@ -246,16 +230,19 @@ public class ServerSearchFactory {
             if (searchInfo != null) {
                 final Class serverSearchClass = cidsServerSearch.getClass();
                 final String searchKey = searchInfo.getKey();
-                
-                if(!this.serverSearchInfoMap.containsKey(searchKey)) {
+
+                if (!this.serverSearchInfoMap.containsKey(searchKey)) {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("adding Cids Server Search '" + searchKey + "'");
                     }
                     this.serverSearchClassMap.put(searchKey, serverSearchClass);
                     this.serverSearchInfoMap.put(searchKey, searchInfo);
                 } else {
-                    LOG.debug("Cids Server Search '" + searchKey + "' already registered by Lookupable Server Search.");
-                }  
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Cids Server Search '" + searchKey
+                                    + "' already registered by Lookupable Server Search.");
+                    }
+                }
             }
         }
 
@@ -327,6 +314,15 @@ public class ServerSearchFactory {
             throw new Exception(message);
         }
 
+        final Map<String, Method> parameterWriteMethods = this.findSearchParameterWriteMethods(searchClass);
+
+        if (parameterWriteMethods.size() != searchParameters.size()) {
+            LOG.warn("number of introspected search parameters (" + parameterWriteMethods.size()
+                        + ") of cids server search '" + searchInfo.getKey()
+                        + "' does not match number of search parameters (" + searchParameters.size()
+                        + ") provided by the client");
+        }
+
         final CidsServerSearch cidsServerSearch = searchClass.newInstance();
 
         if (cidsServerSearch == null) {
@@ -339,6 +335,7 @@ public class ServerSearchFactory {
             LOG.debug("setting " + searchParameters.size() + " search parameters of cids server search '"
                         + searchInfo.getKey() + "'");
         }
+
         for (final SearchParameter searchParameter : searchParameters) {
             final String paramKey = searchParameter.getKey();
             final SearchParameterInfo searchParameterInfo = searchInfo.getSearchParameterInfo(paramKey);
@@ -385,25 +382,62 @@ public class ServerSearchFactory {
                 paramClassName += "[]";
             }
 
-            final Class paramClass = ClassUtils.getClass(paramClassName);
-            if (searchParameterInfo.getType() == Type.JAVA_SERIALIZABLE) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("deserializing binary parameter '" + searchInfo.getKey() + "'");
+            try {
+                final Class paramClass = ClassUtils.getClass(paramClassName);
+                if (searchParameterInfo.getType() == Type.JAVA_SERIALIZABLE) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("deserializing binary parameter '" + searchInfo.getKey() + "'");
+                    }
+                    paramValue = fromBase64String(searchParameter.getValue().toString());
+                } else if (searchParameterInfo.isArray()) {
+                    // jackson created a collection, not an array!
+                    if (Collection.class.isInstance(searchParameter.getValue())) {
+                        paramValue = Arrays.copyOf(((Collection)searchParameter.getValue()).toArray(),
+                                ((Collection)searchParameter.getValue()).size(),
+                                paramClass);
+                    } else {
+                        final String message = "Search Parameter Type Missmatch: Type of parameter '"
+                                    + paramKey + "' specified in search parameter info as '" + paramClassName
+                                    + "' is an array, but actual value is not a Collection but of type '"
+                                    + searchParameter.getValue().getClass().getName() + "'";
+                        LOG.error(message);
+                        throw new IllegalArgumentException(message);
+                    }
+                } else {
+                    // jackson took already care about the deserialization
+                    paramValue = searchParameter.getValue();
+                    if (!paramClass.isPrimitive() && !paramClass.equals(paramValue.getClass())) {
+                        LOG.warn("Search Parameter Type Missmatch: Type of parameter '"
+                                    + paramKey + "' specified in search parameter info as '" + paramClassName
+                                    + "' does not match type '" + paramValue.getClass().getName()
+                                    + "' of actual value.");
+                    }
                 }
-                paramValue = fromBase64String(searchParameter.getValue().toString());
-            } else {
-                // jackson took already care about the deserialization
-                paramValue = searchParameter.getValue();
-                if (!paramClass.isPrimitive() && !paramClass.equals(paramValue.getClass())) {
-                    LOG.warn("Search Parameter Type Missmatch: Type of parameter '"
-                                + paramKey + "' specified in search parameter info as '" + paramClass.getName()
-                                + "' does not match type '" + paramValue.getClass().getName()
-                                + "' of actual value.");
-                }
-            }
 
-            // FIXME: should not fail when parameter name is all lowercase
-            cidsServerSearch.getClass().getMethod("set" + paramKey, paramClass).invoke(cidsServerSearch, paramValue);
+                // ensure compatilbility with old clients that use uppercase property names
+                final String paramPropertyName = Introspector.decapitalize(paramKey);
+                if (parameterWriteMethods.containsKey(paramPropertyName)) {
+                    final Method writeMethod = parameterWriteMethods.get(paramPropertyName);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("setting parameter '" + paramPropertyName + "' of actual type '"
+                                    + paramValue.getClass() + "', reported type '"
+                                    + paramClassName + "' (" + paramClass.getName() + ") and set method type '"
+                                    + writeMethod.getGenericParameterTypes()[0] + "' to value: " + paramValue);
+                    }
+                    writeMethod.invoke(cidsServerSearch, paramValue);
+                } else {
+                    LOG.error("the cids server search '" + searchInfo.getKey() + "' parameter '" + paramPropertyName
+                                + "' of actual type '" + paramValue.getClass() + "' and reported type '"
+                                + paramClassName + "' (" + paramClass.getName()
+                                + ") could not be set since the corresponding set method does not exist!");
+                }
+            } catch (final Throwable t) {
+                final String message = "The cids server search '" + searchInfo.getKey() + "' parameter '" + paramKey
+                            + "' of reported type '"
+                            + paramClassName + "' could not be set: " + t.getMessage();
+                LOG.error(message, t);
+                throw new Exception(message, t);
+            }
         }
 
         return cidsServerSearch;
@@ -426,6 +460,8 @@ public class ServerSearchFactory {
             final CidsServerSearch cidsServerSearch) throws Exception {
         // final String searchKey = cidsServerSearch.getClass().getName();
         final SearchInfo searchInfo = ServerSearchFactory.getFactory().getServerSearchInfo(searchKey);
+        final Map<String, Method> parameterReadMethods = this.findSearchParameterReadMethods(
+                cidsServerSearch.getClass());
 
         if (searchInfo == null) {
             final String message = "could not find cids server search  '" + searchKey + "'";
@@ -450,11 +486,25 @@ public class ServerSearchFactory {
                 throw new IllegalArgumentException(message);
             }
 
+            final String paramKey = searchParameterInfo.getKey();
+
             try {
-                // FIXME: should not fail when parameter name is all lowercase
-                Object parameterValue = cidsServerSearch.getClass()
-                            .getMethod("get" + searchParameterInfo.getKey())
-                            .invoke(cidsServerSearch);
+                final String paramPropertyName = Introspector.decapitalize(paramKey);
+                Object parameterValue = null;
+                if (parameterReadMethods.containsKey(paramPropertyName)) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("reading parameter '" + paramPropertyName + "' of reported type '"
+                                    + searchParameterInfo.getType() + "'");
+                    }
+                    final Method readMethod = parameterReadMethods.get(paramPropertyName);
+                    parameterValue = readMethod.invoke(cidsServerSearch);
+                } else {
+                    LOG.error("the cids server search '" + searchInfo.getKey() + "' parameter '" + paramPropertyName
+                                + "' of reported type '"
+                                + searchParameterInfo.getType()
+                                + "' could not be get since the corresponding get method does not exist!");
+                }
+
                 if (parameterValue != null) {
                     if (searchParameterInfo.getType() == Type.JAVA_SERIALIZABLE) {
                         if (LOG.isDebugEnabled()) {
@@ -475,14 +525,14 @@ public class ServerSearchFactory {
                 } else {
                     LOG.warn("could not get parameter '" + searchParameterInfo.getKey()
                                 + "' from cids server search instance '" + searchKey
-                                + "': parameter is null -> ignoring SearchParameter");
+                                + "': parameter is null -> ignoring the SearchParameter");
                 }
-            } catch (Exception ex) {
+            } catch (Throwable t) {
                 final String message = "could not get parameter '" + searchParameterInfo.getKey()
                             + "' from cids server search instance '" + searchKey
-                            + "': " + ex.getMessage();
+                            + "': " + t.getMessage();
                 LOG.error(message);
-                throw new Exception(message, ex);
+                throw new Exception(message, t);
             }
         }
 
@@ -746,6 +796,81 @@ public class ServerSearchFactory {
             }
         }
         return objectNodes;
+    }
+
+    /**
+     * Helper method that introspects a CidsServerSearch Class and returns a map with all readable and writable
+     * properties that correspond to the search parameters.
+     *
+     * @param   <C>                DOCUMENT ME!
+     * @param   serverSearchClass  server search class to be introspected
+     *
+     * @return  map with property names and their classes
+     *
+     * @throws  IntrospectionException  if the server search class could not be introspected
+     */
+    public <C extends CidsServerSearch> Map<String, Class> findSearchParameters(final Class<C> serverSearchClass)
+            throws IntrospectionException {
+        final Map<String, Class> propertiesMap = new LinkedHashMap<String, Class>();
+        final BeanInfo beanInfo = Introspector.getBeanInfo(serverSearchClass, serverSearchClass.getSuperclass());
+        for (final PropertyDescriptor propertyDescritor : beanInfo.getPropertyDescriptors()) {
+            if ((propertyDescritor.getReadMethod() != null)
+                        && (propertyDescritor.getWriteMethod() != null)) {
+                propertiesMap.put(propertyDescritor.getName(), propertyDescritor.getPropertyType());
+            }
+        }
+
+        return propertiesMap;
+    }
+
+    /**
+     * Helper method that introspects a CidsServerSearch Class and returns a map with all read methods for all readable
+     * and writable properties that correspond to the search parameters.
+     *
+     * @param   <C>                Class that extends CidsServerSearch
+     * @param   serverSearchClass  server search class to be introspected
+     *
+     * @return  map with property names and their read methods
+     *
+     * @throws  IntrospectionException  if the server search class could not be introspected
+     */
+    public <C extends CidsServerSearch> Map<String, Method> findSearchParameterReadMethods(
+            final Class<C> serverSearchClass) throws IntrospectionException {
+        final Map<String, Method> readMethods = new LinkedHashMap<String, Method>();
+        final BeanInfo beanInfo = Introspector.getBeanInfo(serverSearchClass, serverSearchClass.getSuperclass());
+        for (final PropertyDescriptor propertyDescritor : beanInfo.getPropertyDescriptors()) {
+            if ((propertyDescritor.getReadMethod() != null)
+                        && (propertyDescritor.getWriteMethod() != null)) {
+                readMethods.put(propertyDescritor.getName(), propertyDescritor.getReadMethod());
+            }
+        }
+
+        return readMethods;
+    }
+
+    /**
+     * Helper method that introspects a CidsServerSearch Class and returns a map with all write methods for all readable
+     * and writable properties that correspond to the search parameters.
+     *
+     * @param   <C>                Class that extends CidsServerSearch
+     * @param   serverSearchClass  server search class to be introspected
+     *
+     * @return  map with property names and their write methods
+     *
+     * @throws  IntrospectionException  if the server search class could not be introspected
+     */
+    public <C extends CidsServerSearch> Map<String, Method> findSearchParameterWriteMethods(
+            final Class<C> serverSearchClass) throws IntrospectionException {
+        final Map<String, Method> writeMethods = new LinkedHashMap<String, Method>();
+        final BeanInfo beanInfo = Introspector.getBeanInfo(serverSearchClass, serverSearchClass.getSuperclass());
+        for (final PropertyDescriptor propertyDescritor : beanInfo.getPropertyDescriptors()) {
+            if ((propertyDescritor.getReadMethod() != null)
+                        && (propertyDescritor.getWriteMethod() != null)) {
+                writeMethods.put(propertyDescritor.getName(), propertyDescritor.getWriteMethod());
+            }
+        }
+
+        return writeMethods;
     }
 
     /**

@@ -90,6 +90,14 @@ public class CidsNode implements Key {
     @JsonProperty("LEGACY_CLASS_ID")
     private int classId;
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @deprecated  DOCUMENT ME!
+     */
+    @JsonProperty("LEGACY_OBJECT_ID")
+    private int objectId = -1;
+
     //~ Methods ----------------------------------------------------------------
 
     /**
@@ -131,12 +139,12 @@ public class CidsNode implements Key {
      *
      * @deprecated  DOCUMENT ME!
      */
-    @JsonProperty("LEGACY_OBJECT_ID")
     public int getObjectId() {
-        if ((this.objectKey != null) && (this.objectKey.lastIndexOf('/') != -1)) {
+        if ((this.objectId == -1)
+                    && (this.objectKey != null)
+                    && (this.objectKey.lastIndexOf('/') != -1)) {
             try {
-                final int objectId = Integer.parseInt(this.objectKey.substring(this.objectKey.lastIndexOf('/') + 1));
-                return objectId;
+                this.objectId = Integer.parseInt(this.objectKey.substring(this.objectKey.lastIndexOf('/') + 1));
             } catch (Exception ex) {
                 LOG.error("could not get object id from object key '" + this.objectKey
                             + "' for node '" + this.name + "' (" + this.id + "): "
@@ -144,10 +152,13 @@ public class CidsNode implements Key {
                     ex);
             }
         } else {
-            LOG.warn("could not get object id from object key '" + this.objectKey
-                        + "' for node '" + this.name + "' (" + this.id + ")");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("could not get object id from object key '" + this.objectKey
+                            + "' for node '" + this.name + "' (" + this.id + ")");
+            }
+            this.objectId = -1;
         }
 
-        return -1;
+        return this.objectId;
     }
 }
