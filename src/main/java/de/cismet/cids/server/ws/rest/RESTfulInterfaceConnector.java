@@ -14,6 +14,7 @@ import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.Link;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
+import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.middleware.types.Node;
 import Sirius.server.middleware.types.StringPatternFormater;
 import Sirius.server.newuser.User;
@@ -95,6 +96,8 @@ import de.cismet.cids.server.api.types.legacy.UserFactory;
 import de.cismet.cids.server.search.CidsServerSearch;
 import de.cismet.cids.server.search.LookupableServerSearch;
 import de.cismet.cids.server.search.builtin.legacy.LightweightMetaObjectsByQuerySearch;
+import de.cismet.cids.server.search.builtin.legacy.MetaObjectNodesByQuerySearch;
+import de.cismet.cids.server.search.builtin.legacy.MetaObjectsByQuerySearch;
 import de.cismet.cids.server.ws.SSLConfig;
 
 import de.cismet.netutil.Proxy;
@@ -601,7 +604,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      */
     @Override
     public Node[] getRoots(final User user) throws RemoteException {
-        return this.getRoots(user, "local");
+        return this.getRoots(user, user.getDomain());
     }
 
     /**
@@ -620,7 +623,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * taggroup.name;" http://localhost:8890/nodes/SWITCHON/children?limit=100&offset=0&role=all</code>
      *
      * @param   node  the legacy node that contains either a valid node id or a dynamic children statements
-     * @param   user  DOCUMENT ME!
+     * @param   user  user performing the request
      *
      * @return  child nodes as legacy node array
      *
@@ -714,6 +717,21 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
     }
 
+    /**
+     * TODO: Implement method in Nodes API or remove
+     *
+     * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
+     * Exception!</p>
+     *
+     * @param   node    TODO
+     * @param   parent  TODO
+     * @param   user    TODO
+     *
+     * @return  TODO
+     *
+     * @throws  RemoteException                TODO
+     * @throws  UnsupportedOperationException  Unsupported Operation
+     */
     @Override
     public Node addNode(final Node node, final Link parent, final User user) throws RemoteException {
         // TODO: Implement method in Nodes API or remove
@@ -726,13 +744,16 @@ public class RESTfulInterfaceConnector implements CallServerService {
     /**
      * TODO: Implement method in Nodes API or remove
      *
+     * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
+     * Exception!</p>
+     *
      * @param   node  TODO
      * @param   user  TODO
      *
      * @return  TODO
      *
      * @throws  RemoteException                TODO
-     * @throws  UnsupportedOperationException  DOCUMENT ME!
+     * @throws  UnsupportedOperationException  always thrown
      */
     @Override
     public boolean deleteNode(final Node node, final User user) throws RemoteException {
@@ -746,6 +767,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
     /**
      * TODO: Implement method in Nodes API or remove
      *
+     * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
+     * Exception!</p>
+     *
      * @param   from  TODO
      * @param   to    TODO
      * @param   user  TODO
@@ -753,7 +777,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @return  TODO
      *
      * @throws  RemoteException                TODO
-     * @throws  UnsupportedOperationException  DOCUMENT ME!
+     * @throws  UnsupportedOperationException  Unsupported Operation
      */
     @Override
     public boolean addLink(final Node from, final Node to, final User user) throws RemoteException {
@@ -767,6 +791,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
     /**
      * TODO: Implement method in Nodes API or remove
      *
+     * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
+     * Exception!</p>
+     *
      * @param   from  TODO
      * @param   to    TODO
      * @param   user  TODO
@@ -774,7 +801,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @return  TODO
      *
      * @throws  RemoteException                TODO
-     * @throws  UnsupportedOperationException  DOCUMENT ME!
+     * @throws  UnsupportedOperationException  always thrown
      */
     @Override
     public boolean deleteLink(final Node from, final Node to, final User user) throws RemoteException {
@@ -853,51 +880,54 @@ public class RESTfulInterfaceConnector implements CallServerService {
     }
 
     /**
-     * <strong>Unsupported Operation.</strong>
+     * Performs a search for MetaObjectNodes by SQL Query. The query has to generate a result set that contains the
+     * columns classId and objectId.<br>
+     * <br>
+     * <strong>Note</strong>: This method is delegated to the cids custom server search
+     * {@link MetaObjectNodesByQuerySearch} and thus deprecated.
      *
-     * <p>This operation is not supported anymore in the cids REST API, it should not be called and throws an
-     * UnsupportedOperationException when invoked by the client!</p>
+     * @param       user   user performing the request
+     * @param       query  SQL query that returns classId and objectId
      *
-     * @param       usr    UnsupportedOperation
-     * @param       query  UnsupportedOperation
+     * @return      Array of meta object nodes or empty array
      *
-     * @return      UnsupportedOperation
+     * @throws      RemoteException  if any remote error occurs
      *
-     * @throws      RemoteException                UnsupportedOperation
-     * @throws      UnsupportedOperationException  DOCUMENT ME!
-     *
-     * @deprecated  UnsupportedOperation
+     * @deprecated  should be replaced by custom search
      */
     @Override
-    public Node[] getMetaObjectNode(final User usr, final String query) throws RemoteException {
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + "' is deprecated and not supported by Nodes REST API!";
-        LOG.error(message);
-        throw new UnsupportedOperationException(message);
+    public Node[] getMetaObjectNode(final User user, final String query) throws RemoteException {
+        LOG.warn("delegating getMetaObjectNodes(String query, ...) with query '"
+                    + query + "' to legacy custom server search!");
+
+        final MetaObjectNodesByQuerySearch metaObjectNodesByQuerySearch = new MetaObjectNodesByQuerySearch();
+
+        metaObjectNodesByQuerySearch.setDomain(user.getDomain());
+        metaObjectNodesByQuerySearch.setQuery(query);
+
+        final Collection metaObjectNodeCollection = this.customServerSearch(user, metaObjectNodesByQuerySearch);
+
+        final MetaObjectNode[] metaObjectNodes = (MetaObjectNode[])metaObjectNodeCollection.toArray(
+                new MetaObjectNode[metaObjectNodeCollection.size()]);
+
+        return metaObjectNodes;
     }
 
     /**
-     * <strong>Unsupported Operation.</strong>
+     * See {@link #getMetaObjectNode(Sirius.server.newuser.User, java.lang.String) }.
      *
-     * <p>This operation is not supported anymore in the cids REST API, it should not be called and throws an
-     * UnsupportedOperationException when invoked by the client!</p>
+     * @param       user   user performing the request
+     * @param       query  SQL query that returns classId and objectId
      *
-     * @param       user   UnsupportedOperation
-     * @param       query  UnsupportedOperation
+     * @return      Array of meta object nodes or empty array
      *
-     * @return      UnsupportedOperation
+     * @throws      RemoteException  if any remote error occurs
      *
-     * @throws      RemoteException                UnsupportedOperation
-     * @throws      UnsupportedOperationException  DOCUMENT ME!
-     *
-     * @deprecated  UnsupportedOperation
+     * @deprecated  should be replaced by custom search
      */
     @Override
     public Node[] getMetaObjectNode(final User user, final Query query) throws RemoteException {
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + "' is deprecated and not supported by Nodes REST API!";
-        LOG.error(message);
-        throw new UnsupportedOperationException(message);
+        return this.getMetaObjectNode(user, query.getStatement());
     }
 
     /**
@@ -911,7 +941,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @throws      RemoteException  is never thrown
      *
-     * @deprecated  UnsupportedOperation
+     * @deprecated  ClassTreeNodes no longer supported
      */
     @Override
     public Node[] getClassTreeNodes(final User user) throws RemoteException {
@@ -934,7 +964,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @throws      RemoteException  is never thrown
      *
-     * @deprecated  UnsupportedOperation
+     * @deprecated  ClassTreeNodes no longer supported
      */
     @Override
     public Node[] getClassTreeNodes(final User user, final String domain) throws RemoteException {
@@ -958,9 +988,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   classId  legacy id of the class
      * @param   domain   domain of the class
      *
-     * @return  DOCUMENT ME!
+     * @return  MetaClass matching the ID
      *
-     * @throws  RemoteException  DOCUMENT ME!
+     * @throws  RemoteException  if any remote error occurs
      */
     @Override
     public MetaClass getClass(final User user, final int classId, final String domain) throws RemoteException {
@@ -997,9 +1027,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   tableName  name of the class
      * @param   domain     domain of the class
      *
-     * @return  DOCUMENT ME!
+     * @return  MetaClass matching the (table)name
      *
-     * @throws  RemoteException  DOCUMENT ME!
+     * @throws  RemoteException  if any remote error occurs
      */
     @Override
     public MetaClass getClassByTableName(final User user, final String tableName, final String domain)
@@ -1277,7 +1307,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @return      UnsupportedOperationException
      *
      * @throws      RemoteException                never thrown
-     * @throws      UnsupportedOperationException  DOCUMENT ME!
+     * @throws      UnsupportedOperationException  always thrown
      *
      * @deprecated  Unsupported Operation
      */
@@ -1308,7 +1338,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @return      UnsupportedOperationException
      *
      * @throws      RemoteException                never thrown
-     * @throws      UnsupportedOperationException  DOCUMENT ME!
+     * @throws      UnsupportedOperationException  Unsupported Operation
      *
      * @deprecated  Unsupported Operation
      */
@@ -1342,7 +1372,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @return      UnsupportedOperationException
      *
      * @throws      RemoteException                never thrown
-     * @throws      UnsupportedOperationException  DOCUMENT ME!
+     * @throws      UnsupportedOperationException  Unsupported Operation
      *
      * @deprecated  Unsupported Operation
      */
@@ -1433,7 +1463,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @throws      RemoteException  never thrown
      *
-     * @deprecated  DOCUMENT ME!
+     * @deprecated  >Unsupported Operation
      */
     @Override
     public HashMap getSearchOptions(final User user) throws RemoteException {
@@ -1456,7 +1486,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @throws      RemoteException  never thrown
      *
-     * @deprecated  DOCUMENT ME!
+     * @deprecated  Unsupported Operation
      */
     @Override
     public HashMap getSearchOptions(final User user, final String domain) throws RemoteException {
@@ -1611,16 +1641,19 @@ public class RESTfulInterfaceConnector implements CallServerService {
     // </editor-fold>
     // <editor-fold desc="INFRASTRUCTURE API (NEW)" defaultstate="collapsed">
     /**
-     * TODO: To be implemented in cids REST API
+     * TODO: To be implemented in cids REST Infrastructure API.
+     *
+     * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
+     * Exception!</p>
      *
      * @return  list with domain names
      *
      * @throws  RemoteException                if any remote error occurs
-     * @throws  UnsupportedOperationException  DOCUMENT ME!
+     * @throws  UnsupportedOperationException  always thrown
      */
     @Override
     public String[] getDomains() throws RemoteException {
-        // TODO: Implement method in Nodes API or remove
+        // TODO: Implement method in INFRASTRUCTURE API or remove
         final String message = "The method '"
                     + Thread.currentThread().getStackTrace()[1].getMethodName()
                     + "' is not yet supported by the cids REST API!";
@@ -1628,35 +1661,92 @@ public class RESTfulInterfaceConnector implements CallServerService {
         throw new UnsupportedOperationException(message);
     }
 
+    /**
+     * TODO: To be implemented in cids REST Infrastructure API
+     *
+     * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
+     * Exception!</p>
+     *
+     * @param       domain  name of the domain
+     *
+     * @return      TODO
+     *
+     * @throws      RemoteException                if any remote error occurs
+     * @throws      UnsupportedOperationException  DOCUMENT ME!
+     *
+     * @deprecated  should not return binary images!
+     */
     @Override
-    public Image[] getDefaultIcons(final String lsName) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+    public Image[] getDefaultIcons(final String domain) throws RemoteException {
+        // TODO: Implement method in INFRASTRUCTURE API or remove
+        final String message = "The method '"
+                    + Thread.currentThread().getStackTrace()[1].getMethodName()
+                    + "' is not yet supported by the cids REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
+    /**
+     * TODO: To be implemented in cids REST Infrastructure API
+     *
+     * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
+     * Exception!</p>
+     *
+     * @return      TODO
+     *
+     * @throws      RemoteException                if any remote error occurs
+     * @throws      UnsupportedOperationException  DOCUMENT ME!
+     *
+     * @deprecated  should not return binary images!
+     */
     @Override
     public Image[] getDefaultIcons() throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        // TODO: Implement method in INFRASTRUCTURE API or remove
+        final String message = "The method '"
+                    + Thread.currentThread().getStackTrace()[1].getMethodName()
+                    + "' is not yet supported by the cids REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
+    /**
+     * TODO: To be implemented in cids REST Infrastructure API
+     *
+     * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
+     * Exception!</p>
+     *
+     * @param   classId   TODO
+     * @param   objectId  TODO
+     * @param   domain    TODO
+     * @param   user      TODO
+     * @param   elements  TODO
+     *
+     * @return  TODO
+     *
+     * @throws  RemoteException                TODO
+     * @throws  UnsupportedOperationException  DOCUMENT ME!
+     */
     @Override
     public HistoryObject[] getHistory(final int classId,
             final int objectId,
             final String domain,
             final User user,
             final int elements) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        // TODO: Implement method in INFRASTRUCTURE API or remove
+        final String message = "The method '"
+                    + Thread.currentThread().getStackTrace()[1].getMethodName()
+                    + "' is not yet supported by the cids REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
     // </editor-fold>
     // <editor-fold desc="USERS API" defaultstate="collapsed">
     /**
      * TODO: Implement Method in Users API or remove.<br>
+     *
+     * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
+     * Exception!</p>
      *
      * <p>See <a href="https://github.com/cismet/cids-server/issues/103">
      * https://github.com/cismet/cids-server/issues/103</a></p>
@@ -1691,10 +1781,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   userName         user name
      * @param   password         password of the users
      *
-     * @return  DOCUMENT ME!
+     * @return  legacy user object
      *
-     * @throws  RemoteException  DOCUMENT ME!
-     * @throws  UserException    DOCUMENT ME!
+     * @throws  RemoteException  if any remote error occours
+     * @throws  UserException    if the login fails
      */
     @Override
     public User getUser(final String userGroupLsName,
@@ -1794,13 +1884,16 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * TODO: Implement ConfigAttributes API. See <a href="https://github.com/cismet/cids-server/issues/118">
      * https://github.com/cismet/cids-server/issues/118</a>
      *
+     * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
+     * Exception!</p>
+     *
      * @param   user  TODO
      * @param   key   TODO
      *
      * @return  UnsupportedOperationException
      *
-     * @throws  RemoteException                TODO
-     * @throws  UnsupportedOperationException  DOCUMENT ME!
+     * @throws  RemoteException                if any remote error occurs
+     * @throws  UnsupportedOperationException  Implement ConfigAttributes API
      */
     @Override
     public String getConfigAttr(final User user, final String key) throws RemoteException {
@@ -1850,32 +1943,98 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
     //</editor-fold>
     // <editor-fold desc="ENTITIES API" defaultstate="collapsed">
+
+    /**
+     * See
+     * {@link #getLightweightMetaObjectsByQuery(int, Sirius.server.newuser.User, java.lang.String, java.lang.String[]) }.
+     *
+     * @param       user   user performing the request
+     * @param       query  SQL query to select meta objects
+     *
+     * @return      Array of meta objects or empty array
+     *
+     * @throws      RemoteException  if any remote error occurs
+     *
+     * @see         #getMetaObject(Sirius.server.newuser.User, java.lang.String, java.lang.String)
+     * @deprecated  should be replaced by custom search
+     */
     @Override
-    public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + " is not supported yet: " + query); // To change body of generated methods, choose
-        // Tools | Templates.
+    public MetaObject[] getMetaObject(final User user, final String query) throws RemoteException {
+        return this.getMetaObject(user, query, user.getDomain());
     }
 
+    /**
+     * Performs a search for MetaObjects by SQL Query. The query has to generate a result set that contains the columns
+     * classId and objectId.<br>
+     * <br>
+     * <strong>Note</strong>: This method is delegated to the cids custom server search {@link MetaObjectsByQuerySearch}
+     * and thus deprecated.
+     *
+     * @param       user    user performing the request
+     * @param       query   SQL query that returns classId and objectId
+     * @param       domain  DOCUMENT ME!
+     *
+     * @return      Array of meta objects or empty array
+     *
+     * @throws      RemoteException  if any remote error occurs
+     *
+     * @deprecated  should be replaced by custom search
+     */
     @Override
-    public MetaObject[] getMetaObject(final User usr, final String query, final String domain) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + " is not supported yet:" + query); // To change body of generated methods, choose
-        // Tools | Templates.
+    public MetaObject[] getMetaObject(final User user, final String query, final String domain) throws RemoteException {
+        LOG.warn("delegating getMetaObject(String query, ...) with query '"
+                    + query + "' to legacy custom server search!");
+
+        final MetaObjectsByQuerySearch metaObjectsByQuerySearch = new MetaObjectsByQuerySearch();
+
+        metaObjectsByQuerySearch.setDomain(user.getDomain());
+        metaObjectsByQuerySearch.setQuery(query);
+
+        final Collection metaObjectCollection = this.customServerSearch(user, metaObjectsByQuerySearch);
+
+        final MetaObject[] metaObjects = (MetaObject[])metaObjectCollection.toArray(
+                new MetaObject[metaObjectCollection.size()]);
+
+        return metaObjects;
     }
 
+    /**
+     * See
+     * {@link #getLightweightMetaObjectsByQuery(int, Sirius.server.newuser.User, java.lang.String, java.lang.String[]) }.
+     *
+     * @param       user   user performing the request
+     * @param       query  SQL query to select meta objects
+     *
+     * @return      Array of meta objects or empty array
+     *
+     * @throws      RemoteException  if any remote error occurs
+     *
+     * @see         #getMetaObject(Sirius.server.newuser.User, java.lang.String, java.lang.String)
+     * @deprecated  should be replaced by custom search
+     */
     @Override
-    public MetaObject[] getMetaObject(final User usr, final Query query) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + " is not supported yet: " + query.toString()); // To change body of generated methods, choose
-        // Tools | Templates.
+    public MetaObject[] getMetaObject(final User user, final Query query) throws RemoteException {
+        return this.getMetaObject(user, query.getStatement());
     }
 
+    /**
+     * See
+     * {@link #getLightweightMetaObjectsByQuery(int, Sirius.server.newuser.User, java.lang.String, java.lang.String[]) }.
+     *
+     * @param       user    user performing the request
+     * @param       query   SQL query to select meta objects
+     * @param       domain  domain to perform the query
+     *
+     * @return      Array of meta objects or empty array
+     *
+     * @throws      RemoteException  if any remote error occurs
+     *
+     * @see         #getMetaObject(Sirius.server.newuser.User, java.lang.String, java.lang.String)
+     * @deprecated  should be replaced by custom search
+     */
     @Override
-    public MetaObject[] getMetaObject(final User usr, final Query query, final String domain) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + " is not supported yet: " + query.toString()); // To change body of generated methods, choose
-        // Tools | Templates.
+    public MetaObject[] getMetaObject(final User user, final Query query, final String domain) throws RemoteException {
+        return this.getMetaObject(user, query.getStatement(), domain);
     }
 
     /**
@@ -2141,14 +2300,16 @@ public class RESTfulInterfaceConnector implements CallServerService {
     /**
      * insertion, deletion or update of meta data according to the query returns how many object's are effected.
      *
-     * @param   user    user token
-     * @param   query   sql query (update, insert, delete)
-     * @param   domain  domain where the query is to be executed
+     * @param       user    user token
+     * @param       query   sql query (update, insert, delete)
+     * @param       domain  domain where the query is to be executed
      *
-     * @return  how many data sets are affected
+     * @return      how many data sets are affected
      *
-     * @throws  RemoteException                server error (eg bad sql)
-     * @throws  UnsupportedOperationException  DOCUMENT ME!
+     * @throws      RemoteException                server error (eg bad sql)
+     * @throws      UnsupportedOperationException  DOCUMENT ME!
+     *
+     * @deprecated  no update by SQL query !
      */
     @Override
     public int update(final User user, final String query, final String domain) throws RemoteException {
@@ -2404,6 +2565,25 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 representationFields, null);
     }
 
+    /**
+     * Performs a Search for LightweightMetaObjects by Query.<br>
+     * <strong>Note:</strong> This operation is delegated to the
+     * {@link #customServerSearch(Sirius.server.newuser.User, de.cismet.cids.server.search.CidsServerSearch)} operation
+     * and implemented by {@link LightweightMetaObjectsByQuerySearch}
+     *
+     * @param       classId                class id of LWMOs
+     * @param       user                   user performing the request
+     * @param       query                  query to search for LWMO. Has to select at lest the primary key (ID) of the
+     *                                     Meta Object
+     * @param       representationFields   must match fields in query
+     * @param       representationPattern  string format pattern for toStrin Operation
+     *
+     * @return      Array of LWMOs or empty array
+     *
+     * @throws      RemoteException  if any error occurs
+     *
+     * @deprecated  should be replaced by custom search
+     */
     @Override
     public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
             final User user,
@@ -2430,6 +2610,24 @@ public class RESTfulInterfaceConnector implements CallServerService {
         return lightweightMetaObjects;
     }
 
+    /**
+     * Performs a Search for LightweightMetaObjects by Query.<br>
+     * <strong>Note:</strong> This operation is delegated to the
+     * {@link #customServerSearch(Sirius.server.newuser.User, de.cismet.cids.server.search.CidsServerSearch)} operation
+     * and implemented by {@link LightweightMetaObjectsByQuerySearch}
+     *
+     * @param       classId               class id of LWMOs
+     * @param       user                  user performing the request
+     * @param       query                 query to search for LWMO. Has to select at lest the primary key (ID) of the
+     *                                    Meta Object
+     * @param       representationFields  must match fields in query
+     *
+     * @return      Array of LWMOs or empty array
+     *
+     * @throws      RemoteException  if any error occurs
+     *
+     * @deprecated  should be replaced by custom search
+     */
     @Override
     public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
             final User user,
@@ -2443,9 +2641,22 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 null);
     }
 
+    /**
+     * Gets a new empty instance (MetaObject) of the specified MetaClass.<br>
+     * <br>
+     * <strong>Example REST Call:</strong><br>
+     * <code><a href="http://localhost:8890/SWITCHON.RESOURCE/emptyInstance">http://localhost:8890/SWITCHON.RESOURCE/emptyInstance</a></code>
+     *
+     * @param   user       user performing the request
+     * @param   metaClass  class of the new object
+     *
+     * @return  new meta object of class
+     *
+     * @throws  RemoteException  if any remote error occurs
+     */
     @Override
-    public MetaObject getInstance(final User user, final MetaClass c) throws RemoteException {
-        return c.getEmptyInstance();
+    public MetaObject getInstance(final User user, final MetaClass metaClass) throws RemoteException {
+        return metaClass.getEmptyInstance();
     }
 
     // </editor-fold>

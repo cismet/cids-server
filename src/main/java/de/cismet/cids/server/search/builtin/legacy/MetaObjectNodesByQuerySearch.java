@@ -8,7 +8,9 @@
 package de.cismet.cids.server.search.builtin.legacy;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
-import Sirius.server.middleware.types.LightweightMetaObject;
+import Sirius.server.middleware.types.MetaObject;
+import Sirius.server.middleware.types.MetaObjectNode;
+import Sirius.server.middleware.types.Node;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -33,17 +35,17 @@ import de.cismet.cids.server.search.LookupableServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
 /**
- * Builtin Legacy Search to delegate the operation getLightweightMetaObjectsByQuery to the cids Pure REST Search API.
+ * Builtin Legacy Search to delegate the operation getMetaObjectNodes(String query, ...) the cids Pure REST Search API.
  *
  * @author   Pascal Dihé
  * @version  $Revision$, $Date$
  */
 @ServiceProvider(service = LookupableServerSearch.class)
-public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearch implements LookupableServerSearch {
+public class MetaObjectNodesByQuerySearch extends AbstractCidsServerSearch implements LookupableServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger LOG = Logger.getLogger(LightweightMetaObjectsByQuerySearch.class);
+    private static final Logger LOG = Logger.getLogger(MetaObjectNodesByQuerySearch.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -54,28 +56,19 @@ public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearc
     private String domain;
     @Getter
     @Setter
-    private int classId;
-    @Getter
-    @Setter
     private String query;
-    @Getter
-    @Setter
-    private String[] representationFields;
-    @Getter
-    @Setter
-    private String representationPattern;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Creates a new LightweightMetaObjectsByQuerySearch object.
+     * Creates a new MetaObjectNodesByQuerySearch object.
      */
-    public LightweightMetaObjectsByQuerySearch() {
+    public MetaObjectNodesByQuerySearch() {
         searchInfo = new SearchInfo();
         searchInfo.setKey(this.getClass().getName());
         searchInfo.setName(this.getClass().getSimpleName());
         searchInfo.setDescription(
-            "Builtin Legacy Search to delegate the operation getLightweightMetaObjectsByQuery to the cids Pure REST Search API.");
+            "Builtin Legacy Search to delegate the operation getMetaObjectNodes(String query, ...) to the cids Pure REST Search API.");
 
         final List<SearchParameterInfo> parameterDescription = new LinkedList<SearchParameterInfo>();
         SearchParameterInfo searchParameterInfo;
@@ -86,25 +79,9 @@ public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearc
         parameterDescription.add(searchParameterInfo);
 
         searchParameterInfo = new SearchParameterInfo();
-        searchParameterInfo.setKey("classId");
-        searchParameterInfo.setType(Type.INTEGER);
-        parameterDescription.add(searchParameterInfo);
-
-        searchParameterInfo = new SearchParameterInfo();
         searchParameterInfo.setKey("query");
         searchParameterInfo.setDescription(
-            "the query must generate a result set with columns legacy objectId and all specified representationFields");
-        searchParameterInfo.setType(Type.STRING);
-        parameterDescription.add(searchParameterInfo);
-
-        searchParameterInfo = new SearchParameterInfo();
-        searchParameterInfo.setKey("representationFields");
-        searchParameterInfo.setType(Type.STRING);
-        searchParameterInfo.setArray(true);
-        parameterDescription.add(searchParameterInfo);
-
-        searchParameterInfo = new SearchParameterInfo();
-        searchParameterInfo.setKey("representationPattern");
+            "the query must generate a result set with columns legacy classId and legacy objectId");
         searchParameterInfo.setType(Type.STRING);
         parameterDescription.add(searchParameterInfo);
 
@@ -113,7 +90,7 @@ public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearc
         final SearchParameterInfo resultParameterInfo = new SearchParameterInfo();
         resultParameterInfo.setKey("return");
         resultParameterInfo.setArray(true);
-        resultParameterInfo.setType(Type.ENTITY_REFERENCE);
+        resultParameterInfo.setType(Type.NODE);
         searchInfo.setResultDescription(resultParameterInfo);
     }
 
@@ -123,39 +100,25 @@ public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearc
     public Collection performServerSearch() throws SearchException {
         final MetaService metaService = (MetaService)this.getActiveLocalServers().get(this.getDomain());
         if (metaService == null) {
-            final String message = "Lightweight Meta Objects By Query Search "
+            final String message = "Meta Object Nodes By Query Search "
                         + "could not connect ot MetaService @domain '" + this.domain + "'";
             LOG.error(message);
             throw new SearchException(message);
         }
         if (LOG.isDebugEnabled()) {
-            LOG.debug("performing search for Lightweight Meta Objects for class '"
-                        + this.classId + "' with query '" + this.getQuery() + "'");
+            LOG.debug("performing search for Meta Object Nodes By Query with query '"
+                        + this.getQuery() + "'");
         }
         try {
-            final LightweightMetaObject[] lightWightMetaObjects;
+            final Node[] metaObjectNodes = metaService.getMetaObjectNode(this.getUser(), this.getQuery());
 
-            if ((this.representationPattern != null) && !this.representationPattern.isEmpty()) {
-                lightWightMetaObjects = metaService.getLightweightMetaObjectsByQuery(
-                        classId,
-                        this.getUser(),
-                        query,
-                        representationFields,
-                        representationPattern);
-            } else {
-                lightWightMetaObjects = metaService.getLightweightMetaObjectsByQuery(
-                        classId,
-                        this.getUser(),
-                        query,
-                        representationFields);
-            }
             if (LOG.isDebugEnabled()) {
-                LOG.debug(lightWightMetaObjects.length + " Lightweight Meta Objects found");
+                LOG.debug(metaObjectNodes.length + " Meta Object Nodes found.");
             }
-            return Arrays.asList(lightWightMetaObjects);
+            return Arrays.asList(metaObjectNodes);
         } catch (RemoteException ex) {
-            final String message = "could not perform Lightweight Meta Objects By Query Search for class '"
-                        + this.classId + "' with query '" + this.getQuery() + "': " + ex.getMessage();
+            final String message = "could not perform Meta Object Nodes By Query Search with query '"
+                        + this.getQuery() + "': " + ex.getMessage();
             LOG.error(message, ex);
             throw new SearchException(message, ex);
         }
