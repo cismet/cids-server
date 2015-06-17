@@ -279,7 +279,7 @@ public class SearchResult implements java.io.Serializable {
             filter.add(new Integer(classIds[i]));
         }
 
-        filterSet = true;
+        filterSet = !filter.isEmpty();
     }
 
     /**
