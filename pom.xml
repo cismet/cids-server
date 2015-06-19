@@ -143,6 +143,16 @@
             <artifactId>reflections</artifactId>
             <version>0.9.9-RC2</version>
         </dependency>
+        <dependency>
+            <groupId>com.sun.jersey.contribs</groupId>
+            <artifactId>jersey-multipart</artifactId>
+            <version>1.9.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jvnet</groupId>
+            <artifactId>mimepull</artifactId>
+            <version>1.6</version>
+        </dependency>
     </dependencies>
 
     <build>

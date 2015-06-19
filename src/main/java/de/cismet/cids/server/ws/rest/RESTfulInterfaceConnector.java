@@ -42,13 +42,20 @@ import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
+import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.core.util.Base64;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
+import com.sun.jersey.multipart.FormDataBodyPart;
+import com.sun.jersey.multipart.FormDataMultiPart;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
+import org.openide.util.Exceptions;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 
 import java.rmi.RemoteException;
 
@@ -57,10 +64,10 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Formatter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Vector;
@@ -82,9 +89,11 @@ import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.api.types.ActionTask;
 import de.cismet.cids.server.api.types.CidsClass;
 import de.cismet.cids.server.api.types.CidsNode;
 import de.cismet.cids.server.api.types.GenericCollectionResource;
+import de.cismet.cids.server.api.types.GenericResourceWithContentType;
 import de.cismet.cids.server.api.types.SearchInfo;
 import de.cismet.cids.server.api.types.SearchParameters;
 import de.cismet.cids.server.api.types.legacy.CidsBeanFactory;
@@ -119,6 +128,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
     public static final String NODES_API = "nodes";
     public static final String SEARCH_API = "searches";
     public static final String SEARCH_API_RESULTS = "/results";
+    public static final String ACTIONS_API = "actions";
+    public static final String ACTIONS_API_TASKS = "/tasks";
 
     private static final transient Logger LOG = Logger.getLogger(RESTfulInterfaceConnector.class);
     private static final int TIMEOUT = 10000;
@@ -2228,11 +2239,29 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
     }
 
+    /**
+     * <strong>Unsupported Operation.</strong>
+     *
+     * <p>This operation is not supported anymore in the cids REST API, it throws an UnsupportedOperationException!</p>
+     *
+     * @param       user    DOCUMENT ME!
+     * @param       query   DOCUMENT ME!
+     * @param       domain  DOCUMENT ME!
+     *
+     * @return      DOCUMENT ME!
+     *
+     * @throws      RemoteException                DOCUMENT ME!
+     * @throws      UnsupportedOperationException  always thrown
+     *
+     * @deprecated  update by SQL query not supported anymore
+     */
     @Override
     public int insertMetaObject(final User user, final Query query, final String domain) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final String message = "The method '"
+                    + Thread.currentThread().getStackTrace()[1].getMethodName()
+                    + "' is deprecated and not supported by the cids REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
     /**
@@ -2298,7 +2327,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
     }
 
     /**
-     * insertion, deletion or update of meta data according to the query returns how many object's are effected.
+     * <strong>Unsupported Operation.</strong>
+     *
+     * <p>This operation is not supported anymore in the cids REST API, it throws an UnsupportedOperationException!</p>
      *
      * @param       user    user token
      * @param       query   sql query (update, insert, delete)
@@ -2307,15 +2338,17 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @return      how many data sets are affected
      *
      * @throws      RemoteException                server error (eg bad sql)
-     * @throws      UnsupportedOperationException  DOCUMENT ME!
+     * @throws      UnsupportedOperationException  always thrown
      *
      * @deprecated  no update by SQL query !
      */
     @Override
     public int update(final User user, final String query, final String domain) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final String message = "The method '"
+                    + Thread.currentThread().getStackTrace()[1].getMethodName()
+                    + "' is deprecated and not supported by the cids REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
     }
 
     /**
@@ -2661,15 +2694,129 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
     // </editor-fold>
     // <editor-fold desc="ACTIONS API" defaultstate="collapsed">
+
+    /**
+     * Executes a remote task in the context of the server.<br>
+     * <br>
+     * <strong>Example REST Call:</strong><br>
+     * <code>curl --user admin@SWITCHON:cismet<br>
+     * -F "taskparams"="{""actionKey"": ""downloadFile"",""description"": ""Download a remote
+     * file"" };type=application/json"<br>
+     * -F "file"="filetodownload;text/plain"<br>
+     * http://localhost:8890/actions/SWITCHON.downloadFile/tasks?role=all^&resultingInstanceType=result</code>
+     *
+     * @param   user      user performing the request
+     * @param   taskname  name of the task to be performed
+     * @param   domain    domain of the server / task
+     * @param   body      body parameter of the task, e.g. byte[]
+     * @param   params    0...n action parameters
+     *
+     * @return  result of the task, e.g. byte[]
+     *
+     * @throws  RemoteException  if the task execution fails
+     */
     @Override
     public Object executeTask(final User user,
             final String taskname,
-            final String taskdomain,
+            final String domain,
             final Object body,
             final ServerActionParameter... params) throws RemoteException {
-        throw new UnsupportedOperationException(Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + " is not supported yet."); // To change body of generated methods, choose
-        // Tools | Templates.
+        final GenericResourceWithContentType taskResult;
+        final ActionTask actionTask = new ActionTask();
+        final Map<String, Object> actionParameters = new LinkedHashMap();
+        for (final ServerActionParameter param : params) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("processing ServerActionParameter '" + param.toString() + "'");
+            }
+            actionParameters.put(param.getKey(), param.getValue());
+        }
+
+        actionTask.setActionKey(taskname);
+        actionTask.setParameters(actionParameters);
+
+        final MultivaluedMap queryParameters = this.createUserParameters(user);
+        queryParameters.add("resultingInstanceType", "result");
+        final WebResource webResource = this.createWebResource(ACTIONS_API)
+                    .path(domain + "." + taskname + ACTIONS_API_TASKS)
+                    .queryParams(queryParameters);
+        final WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("executeTask '" + taskname
+                        + "' for user '" + user + "' and domain '"
+                        + domain + "' with " + params.length + " Server Action Parameters: "
+                        + webResource.toString());
+        }
+
+        builder.type(MediaType.MULTIPART_FORM_DATA_TYPE).accept(MediaType.APPLICATION_JSON_TYPE);
+
+        FormDataMultiPart multiPartData = new FormDataMultiPart();
+        try {
+            // taskparams lowercase !!!!!
+            multiPartData = multiPartData.field(
+                    "taskparams",
+                    MAPPER.writeValueAsString(actionTask),
+                    MediaType.APPLICATION_JSON_TYPE);
+        } catch (IOException ex) {
+            final String message = "could not serialize action task '"
+                        + taskname
+                        + "' for user '"
+                        + user
+                        + "' and domain '"
+                        + domain
+                        + "' with "
+                        + params.length
+                        + "': "
+                        + ex.getMessage();
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        }
+
+        if (body != null) {
+            try {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("creating Multi Part Form Data '" + MediaType.APPLICATION_OCTET_STREAM_TYPE + "'");
+                }
+                final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                final ObjectOutputStream oos = new ObjectOutputStream(bos);
+                oos.writeObject(body);
+                final byte[] bodyBytes = bos.toByteArray();
+
+//                final FormDataBodyPart formDataBodyPart = new FormDataBodyPart(
+//                        "file",
+//                        bodyBytes,
+//                        MediaType.APPLICATION_OCTET_STREAM_TYPE);
+//
+//                multiPartData.bodyPart(formDataBodyPart);
+
+                multiPartData = multiPartData.field("file", bodyBytes,
+                        MediaType.APPLICATION_OCTET_STREAM_TYPE);
+            } catch (Throwable t) {
+                final String message = "could not create binary attachment of action task '"
+                            + taskname
+                            + "' for user '"
+                            + user
+                            + "' and domain '"
+                            + domain
+                            + "' with "
+                            + params.length
+                            + "': "
+                            + t.getMessage();
+                LOG.error(message, t);
+                throw new RemoteException(message, t);
+            }
+        }
+
+        taskResult = builder.post(GenericResourceWithContentType.class, multiPartData);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("executeTask '" + taskname
+                        + "' for user '" + user + "' and domain '"
+                        + domain + "' with " + params.length
+                        + "' Server Action Parameters returned result of type '"
+                        + taskResult.getContentType() + "'");
+        }
+
+        return taskResult.getRes();
     }
 
     // </editor-fold>
