@@ -225,23 +225,33 @@ public class ServerSearchFactory {
         }
 
         for (final CidsServerSearch cidsServerSearch : cidsServerSearches) {
-            final SearchInfo searchInfo = this.searchInfoFromCidsServerSearch(cidsServerSearch);
-
-            if (searchInfo != null) {
-                final Class serverSearchClass = cidsServerSearch.getClass();
-                final String searchKey = searchInfo.getKey();
-
-                if (!this.serverSearchInfoMap.containsKey(searchKey)) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("adding Cids Server Search '" + searchKey + "'");
+            final String searchKey = cidsServerSearch.getClass().getName();
+            if (!this.serverSearchInfoMap.containsKey(searchKey)) {
+                final SearchInfo searchInfo = this.searchInfoFromCidsServerSearch(cidsServerSearch);
+                if (searchInfo != null) {
+                    final Class serverSearchClass = cidsServerSearch.getClass();
+                    if (!searchKey.equals(searchInfo.getKey())) {
+                        LOG.warn("search key missmatch: '" + searchKey
+                                    + "' != '" + searchInfo.getKey() + "'!");
                     }
-                    this.serverSearchClassMap.put(searchKey, serverSearchClass);
-                    this.serverSearchInfoMap.put(searchKey, searchInfo);
-                } else {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Cids Server Search '" + searchKey
-                                    + "' already registered by Lookupable Server Search.");
+
+                    if (!this.serverSearchInfoMap.containsKey(cidsServerSearch.getClass().getName())) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("adding Cids Server Search '" + searchKey + "'");
+                        }
+                        this.serverSearchClassMap.put(searchKey, serverSearchClass);
+                        this.serverSearchInfoMap.put(searchKey, searchInfo);
+                    } else {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Cids Server Search '" + searchKey
+                                        + "' already registered by Lookupable Server Search.");
+                        }
                     }
+                }
+            } else {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Cids Server Search '" + cidsServerSearch.getClass().getName()
+                                + "' already registered by Lookupable Server Search.");
                 }
             }
         }

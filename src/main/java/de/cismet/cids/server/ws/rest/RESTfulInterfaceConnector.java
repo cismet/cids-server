@@ -1592,7 +1592,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
                     && (searchResults.get$collection().size() > 0)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("found " + searchResults.get$collection().size()
-                            + " search results. performing conversion to legacy objects.");
+                            + " search results. performing conversion to legacy objects of type '"
+                            + searchInfo.getResultDescription().getType().name() + "'");
             }
 
             if (searchInfo.getResultDescription().getType() == Type.ENTITY_REFERENCE) {
@@ -2700,8 +2701,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <br>
      * <strong>Example REST Call:</strong><br>
      * <code>curl --user admin@SWITCHON:cismet<br>
-     * -F "taskparams"="{""actionKey"": ""downloadFile"",""description"": ""Download a remote
-     * file"" };type=application/json"<br>
+     * -F "taskparams"="{""actionKey"": ""downloadFile"",""description"": ""Download a remote file""
+     * };type=application/json"<br>
      * -F "file"="filetodownload;text/plain"<br>
      * http://localhost:8890/actions/SWITCHON.downloadFile/tasks?role=all^&resultingInstanceType=result</code>
      *

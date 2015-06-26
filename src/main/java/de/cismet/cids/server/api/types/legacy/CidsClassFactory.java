@@ -15,7 +15,12 @@ import Sirius.server.newuser.permission.Policy;
 
 import Sirius.util.image.Image;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import org.apache.log4j.Logger;
+
+import java.io.IOException;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -139,8 +144,8 @@ public class CidsClassFactory {
         configurationKey = ClassConfig.Key.LEGACY_CLASS_ICON.name();
         configurationAttribute = configurationAttributes.remove(configurationKey);
         if (configurationAttribute != null) {
-            if (Sirius.util.image.Image.class.isAssignableFrom(configurationAttribute.getClass())) {
-                icon = (Sirius.util.image.Image)configurationAttribute;
+            if (JsonNode.class.isAssignableFrom(configurationAttribute.getClass())) {
+                icon = this.deserializeSiriusImage(configurationKey, (JsonNode)configurationAttribute);
             } else {
                 final String message = "cannot restore MetaClass.icon from configuration attribute '"
                             + configurationKey + "' = '" + configurationAttribute
@@ -167,8 +172,8 @@ public class CidsClassFactory {
         configurationKey = ClassConfig.Key.LEGACY_OBJECT_ICON.name();
         configurationAttribute = configurationAttributes.remove(configurationKey);
         if (configurationAttribute != null) {
-            if (Sirius.util.image.Image.class.isAssignableFrom(configurationAttribute.getClass())) {
-                objectIcon = (Sirius.util.image.Image)configurationAttribute;
+            if (JsonNode.class.isAssignableFrom(configurationAttribute.getClass())) {
+                objectIcon = this.deserializeSiriusImage(configurationKey, (JsonNode)configurationAttribute);
             } else {
                 final String message = "cannot restore MetaClass.objectIcon from configuration attribute '"
                             + configurationKey + "' = '" + configurationAttribute
@@ -1387,5 +1392,46 @@ public class CidsClassFactory {
         if ((cidsAttribute != null) && (flagKey != null) && isSet) {
             cidsAttribute.setConfigFlag(flagKey);
         }
+    }
+
+    /**
+     * Legacy helper operation for deserializing binary icons distributed by legacy cids server.
+     *
+     * @param       configKey   DOCUMENT ME!
+     * @param       configNode  DOCUMENT ME!
+     *
+     * @return      DOCUMENT ME!
+     *
+     * @deprecated  DOCUMENT ME!
+     */
+    private Image deserializeSiriusImage(final String configKey, final JsonNode configNode) {
+        final Image image = new Image();
+        if (configNode.isObject()) {
+            final ObjectNode objectNode = (ObjectNode)configNode;
+            if (objectNode.has("name")) {
+                image.setName(objectNode.get("name").asText());
+            }
+
+            if (objectNode.has("description")) {
+                image.setDescription(objectNode.get("description").asText());
+            }
+
+            if (objectNode.has("imageData")) {
+                try {
+                    image.setImageData(objectNode.get("imageData").binaryValue());
+                } catch (IOException ex) {
+                    LOG.error("cannot deserialize binary image data for '" + configKey + "':"
+                                + ex.getMessage(), ex);
+                }
+            } else {
+                LOG.warn("no binary image data available for '" + configKey + "': "
+                            + image.getName());
+            }
+        } else {
+            LOG.warn("cannot deserialize '" + ClassConfig.Key.LEGACY_CLASS_ICON
+                        + "', not an object: " + configNode.toString());
+        }
+
+        return image;
     }
 }
