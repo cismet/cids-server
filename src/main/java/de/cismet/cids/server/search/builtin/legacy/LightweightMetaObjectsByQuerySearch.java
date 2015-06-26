@@ -29,7 +29,7 @@ import de.cismet.cids.base.types.Type;
 import de.cismet.cids.server.api.types.SearchInfo;
 import de.cismet.cids.server.api.types.SearchParameterInfo;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
-import de.cismet.cids.server.search.LookupableServerSearch;
+import de.cismet.cids.server.search.RestApiCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
 /**
@@ -38,8 +38,8 @@ import de.cismet.cids.server.search.SearchException;
  * @author   Pascal Dihé
  * @version  $Revision$, $Date$
  */
-@ServiceProvider(service = LookupableServerSearch.class)
-public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearch implements LookupableServerSearch {
+@ServiceProvider(service = RestApiCidsServerSearch.class)
+public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearch implements RestApiCidsServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
 

@@ -17,7 +17,7 @@ import de.cismet.cids.server.api.types.SearchInfo;
  * @author   Pascal Dihé
  * @version  $Revision$, $Date$
  */
-public interface LookupableServerSearch extends CidsServerSearch {
+public interface RestApiCidsServerSearch extends CidsServerSearch {
 
     //~ Methods ----------------------------------------------------------------
 

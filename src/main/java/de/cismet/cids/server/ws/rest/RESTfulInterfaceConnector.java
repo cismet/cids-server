@@ -103,7 +103,7 @@ import de.cismet.cids.server.api.types.legacy.ClassNameCache;
 import de.cismet.cids.server.api.types.legacy.ServerSearchFactory;
 import de.cismet.cids.server.api.types.legacy.UserFactory;
 import de.cismet.cids.server.search.CidsServerSearch;
-import de.cismet.cids.server.search.LookupableServerSearch;
+import de.cismet.cids.server.search.RestApiCidsServerSearch;
 import de.cismet.cids.server.search.builtin.legacy.LightweightMetaObjectsByQuerySearch;
 import de.cismet.cids.server.search.builtin.legacy.MetaObjectNodesByQuerySearch;
 import de.cismet.cids.server.search.builtin.legacy.MetaObjectsByQuerySearch;
@@ -1532,7 +1532,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
     /**
      * Performs a remote server search by submitting a <i>parameterized</i> CidsServerSearch instance. If the
-     * CidsServerSearch does not implement the {@link LookupableServerSearch} interface, the {@link ServerSearchFactory}
+     * CidsServerSearch does not implement the {@link RestApiCidsServerSearch} interface, the {@link ServerSearchFactory}
      * tries to automatically generate a {@link SearchInfo} object hat is required by the REST Search API.<br>
      * <strong>Example REST Call:</strong><br>
      * <code>curl --user username@SWITCHON:password -H "Content-Type: application/json" -X POST -d

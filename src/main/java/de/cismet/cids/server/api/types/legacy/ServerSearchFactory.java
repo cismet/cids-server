@@ -61,7 +61,7 @@ import de.cismet.cids.server.api.types.SearchParameter;
 import de.cismet.cids.server.api.types.SearchParameterInfo;
 import de.cismet.cids.server.api.types.SearchParameters;
 import de.cismet.cids.server.search.CidsServerSearch;
-import de.cismet.cids.server.search.LookupableServerSearch;
+import de.cismet.cids.server.search.RestApiCidsServerSearch;
 
 /**
  * Helper Methods for dealing with CidsServerSearch and and SearchInfo.
@@ -205,15 +205,15 @@ public class ServerSearchFactory {
             LOG.warn("ServerSearchCache already filled");
         }
 
-        final Collection<? extends LookupableServerSearch> lookupableServerSearches = Lookup.getDefault()
-                    .lookupAll(LookupableServerSearch.class);
+        final Collection<? extends RestApiCidsServerSearch> lookupableServerSearches = Lookup.getDefault()
+                    .lookupAll(RestApiCidsServerSearch.class);
         final Collection<? extends CidsServerSearch> cidsServerSearches = Lookup.getDefault()
                     .lookupAll(CidsServerSearch.class);
 
         LOG.info("loading " + lookupableServerSearches.size() + " Lookupable Server Search and trying to inspect "
                     + cidsServerSearches.size() + " cids Server Searches");
 
-        for (final LookupableServerSearch lookupableServerSearch : lookupableServerSearches) {
+        for (final RestApiCidsServerSearch lookupableServerSearch : lookupableServerSearches) {
             final SearchInfo searchInfo = lookupableServerSearch.getSearchInfo();
             final Class serverSearchClass = lookupableServerSearch.getClass();
             final String searchKey = searchInfo.getKey();
