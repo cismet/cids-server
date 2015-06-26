@@ -32,6 +32,16 @@
         <developerConnection>scm:git:git@github.com:cismet/cids-server.git</developerConnection>
         <url>https://github.com/cismet/cids-server</url>
     </scm>
+    
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/cismet/cids-server/issues</url>
+    </issueManagement>
+    
+    <properties>
+        <jersey.version>1.17.1</jersey.version>
+        <jackson.version>2.2.2</jackson.version>
+    </properties>
 
     <repositories>
         <repository>
@@ -79,12 +89,12 @@
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-server</artifactId>
-            <version>1.9.1</version>
+            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.jersey.contribs</groupId>
             <artifactId>jersey-apache-client</artifactId>
-            <version>1.9.1</version>
+            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mortbay.jetty</groupId>
@@ -131,7 +141,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
-            <version>2.1.3</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -146,7 +156,7 @@
         <dependency>
             <groupId>com.sun.jersey.contribs</groupId>
             <artifactId>jersey-multipart</artifactId>
-            <version>1.9.1</version>
+            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jvnet</groupId>
