@@ -375,13 +375,15 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
                     // - update
                     for (final CidsBean toUpdateBean : toUpdateMap.keySet()) {
                         final Integer indexOf = toUpdateMap.get(toUpdateBean);
-                        origColl.set(indexOf, toUpdateBean);
+                        origColl.remove(indexOf.intValue());
+                        origColl.add(toUpdateBean);
+//                        origColl.set(indexOf, toUpdateBean);
                     }
 
                     // - remove
                     origColl.removeAll(toRemoveColl);
                 }
-            }
+                }
 
             // ignore the patch tags if patch is not enabled
             if (isPatchEnabled()) {
