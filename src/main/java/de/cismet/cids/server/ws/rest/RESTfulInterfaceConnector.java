@@ -408,7 +408,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         // }
 
         if (user.getUserGroup() != null) {
-            queryParams.add("role", user.getUserGroup());
+            queryParams.add("role", user.getUserGroup().getName());
         }
 
         return queryParams;
