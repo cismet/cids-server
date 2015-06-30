@@ -1532,8 +1532,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
     /**
      * Performs a remote server search by submitting a <i>parameterized</i> CidsServerSearch instance. If the
-     * CidsServerSearch does not implement the {@link RestApiCidsServerSearch} interface, the {@link ServerSearchFactory}
-     * tries to automatically generate a {@link SearchInfo} object hat is required by the REST Search API.<br>
+     * CidsServerSearch does not implement the {@link RestApiCidsServerSearch} interface, the
+     * {@link ServerSearchFactory} tries to automatically generate a {@link SearchInfo} object hat is required by the
+     * REST Search API.<br>
      * <strong>Example REST Call:</strong><br>
      * <code>curl --user username@SWITCHON:password -H "Content-Type: application/json" -X POST -d
      * "{""list"":[{""key"":""Query"",""value"":""keyword:\\""soil\\"" limit:\\""5\\"""" }]}"
@@ -2443,6 +2444,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         queryParameters.add("deduplicate", "true");
         queryParameters.add("level", "1");
+        queryParameters.add("limit", String.valueOf(Integer.MAX_VALUE));
 
         final StringBuilder fieldsParameter = new StringBuilder();
         // fieldsParameter.append(metaClass.getPrimaryKey().toLowerCase());
