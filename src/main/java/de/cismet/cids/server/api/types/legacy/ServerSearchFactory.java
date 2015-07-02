@@ -17,6 +17,7 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.Node;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -557,15 +558,15 @@ public class ServerSearchFactory {
      * deserialization is available at
      * {@link CidsBeanFactory# lightweightMetaObjectFromCidsBean(de.cismet.cids.dynamics.CidsBean, int, java.lang.String, Sirius.server.newuser.User, de.cismet.cids.server.api.types.legacy.ClassNameCache)}
      *
-     * @param   objectNodes  JSON object nodes to be converted
-     * @param   searchInfo   meta information needed for the type conversion
+     * @param   jsonNodes   JSON object nodes to be converted
+     * @param   searchInfo  meta information needed for the type conversion
      *
      * @return  collection of converted java object
      *
      * @throws  Exception  if any error occurs during the conversion
      */
-    public Collection resultCollectionfromObjectNodes(
-            final List<ObjectNode> objectNodes,
+    public Collection resultCollectionfromJsonNodes(
+            final List<JsonNode> jsonNodes,
             final SearchInfo searchInfo) throws Exception {
         final Collection resultCollection = new LinkedList();
         int i = 0;
@@ -577,11 +578,11 @@ public class ServerSearchFactory {
         final String returnTypeName = searchInfo.getResultDescription().getAdditionalTypeInfo();
         final String searchKey = searchInfo.getKey();
 
-        for (final ObjectNode objectNode : objectNodes) {
+        for (final JsonNode jsonNode : jsonNodes) {
             i++;
             if (isMetaClass) {
                 try {
-                    final CidsClass cidsClass = this.mapper.treeToValue(objectNode, CidsClass.class);
+                    final CidsClass cidsClass = this.mapper.treeToValue(jsonNode, CidsClass.class);
                     final MetaClass metaClass = CidsClassFactory.getFactory()
                                 .legacyCidsClassFromRestCidsClass(cidsClass);
                     resultCollection.add(metaClass);
@@ -594,7 +595,7 @@ public class ServerSearchFactory {
                 }
             } else if (isMetaNode) {
                 try {
-                    final CidsNode cidsNode = this.mapper.treeToValue(objectNode, CidsNode.class);
+                    final CidsNode cidsNode = this.mapper.treeToValue(jsonNode, CidsNode.class);
                     final Node metaNode = CidsNodeFactory.getFactory().legacyCidsNodeFromRestCidsNode(cidsNode);
                     resultCollection.add(metaNode);
                 } catch (Exception ex) {
@@ -606,7 +607,7 @@ public class ServerSearchFactory {
                 }
             } else if (isMetaObject || isLightWightMetaObject) {
                 try {
-                    final CidsBean cidsBean = CidsBean.createNewCidsBeanFromJSON(false, objectNode.toString());
+                    final CidsBean cidsBean = CidsBean.createNewCidsBeanFromJSON(false, jsonNode.toString());
                     final MetaObject metaObject = cidsBean.getMetaObject();
                     resultCollection.add(metaObject);
                 } catch (Exception ex) {
@@ -622,7 +623,7 @@ public class ServerSearchFactory {
 //                                + "' contains binary serialized objects. Performing binary deserialization to java class "
 //                        + returnTypeName);
 
-                    final Object resultObject = ServerSearchFactory.fromBase64String(objectNode.asText());
+                    final Object resultObject = ServerSearchFactory.fromBase64String(jsonNode.asText());
                     resultCollection.add(resultObject);
                 } catch (Exception ex) {
                     final String message = "binary deserialization of result item #"
@@ -638,7 +639,7 @@ public class ServerSearchFactory {
 //                        + returnTypeName);
 
                     final Class returnTypeClass = ClassUtils.getClass(returnTypeName);
-                    final Object resultObject = mapper.treeToValue(objectNode, returnTypeClass);
+                    final Object resultObject = mapper.treeToValue(jsonNode, returnTypeClass);
                     resultCollection.add(resultObject);
                 } catch (Exception ex) {
                     final String message = "Jackson deserialization of result item #"
@@ -707,11 +708,11 @@ public class ServerSearchFactory {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public List<ObjectNode> objectNodesFromResultCollection(
+    public List<JsonNode> jsonNodesFromResultCollection(
             final Collection searchResults,
             final SearchInfo searchInfo,
             final ClassNameCache classNameCache) throws Exception {
-        final List<ObjectNode> objectNodes = new LinkedList<ObjectNode>();
+        final List<JsonNode> jsonNodes = new LinkedList<JsonNode>();
         int i = 0;
         final boolean isMetaClass = searchInfo.getResultDescription().getType() == Type.ENTITY_INFO;
         final boolean isMetaObject = searchInfo.getResultDescription().getType() == Type.ENTITY;
@@ -721,13 +722,13 @@ public class ServerSearchFactory {
         final String searchKey = searchInfo.getKey();
 
         for (final Object searchResult : searchResults) {
-            final ObjectNode objectNode;
+            final JsonNode jsonNode;
             if (isMetaClass) {
                 if (MetaClass.class.isAssignableFrom(searchResult.getClass())) {
                     final MetaClass metaClass = (MetaClass)searchResult;
                     final CidsClass cidsClass = CidsClassFactory.getFactory()
                                 .restCidsClassFromLegacyCidsClass(metaClass);
-                    objectNode = (ObjectNode)mapper.convertValue(cidsClass, ObjectNode.class);
+                    jsonNode = (ObjectNode)mapper.convertValue(cidsClass, ObjectNode.class);
                 } else {
                     final String message = "cannot convert search result item #"
                                 + i + " to MetaClass, wrong result type:'"
@@ -739,7 +740,7 @@ public class ServerSearchFactory {
                 if (MetaObject.class.isAssignableFrom(searchResult.getClass())) {
                     final MetaObject metaObject = (MetaObject)searchResult;
                     final CidsBean cidsBean = metaObject.getBean();
-                    objectNode = (ObjectNode)mapper.reader().readTree(cidsBean.toJSONString(false));
+                    jsonNode = (ObjectNode)mapper.reader().readTree(cidsBean.toJSONString(false));
                 } else {
                     final String message = "cannot convert search result item #"
                                 + i + " to MetaObject, wrong result type:'"
@@ -754,7 +755,7 @@ public class ServerSearchFactory {
                             legacyNode.getClassId());
                     final CidsNode cidsNode = CidsNodeFactory.getFactory()
                                 .restCidsNodeFromLegacyCidsNode(legacyNode, className);
-                    objectNode = (ObjectNode)mapper.convertValue(cidsNode, ObjectNode.class);
+                    jsonNode = (ObjectNode)mapper.convertValue(cidsNode, ObjectNode.class);
                 } else {
                     final String message = "cannot convert search result item #"
                                 + i + " to MetaNode, wrong result type:'"
@@ -764,12 +765,12 @@ public class ServerSearchFactory {
                 }
             } else if (isBinaryObject) {
                 final String stringRepresentation = toBase64String(searchResult);
-                objectNode = (ObjectNode)mapper.convertValue(stringRepresentation, ObjectNode.class);
+                jsonNode = (ObjectNode)mapper.convertValue(stringRepresentation, ObjectNode.class);
             } else {
-                objectNode = (ObjectNode)mapper.convertValue(searchResult, ObjectNode.class);
+                jsonNode = mapper.convertValue(searchResult, JsonNode.class);
             }
 
-            objectNodes.add(objectNode);
+            jsonNodes.add(jsonNode);
             i++;
         }
 
@@ -796,16 +797,18 @@ public class ServerSearchFactory {
                 }
             } else if (isBinaryObject) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.warn(i + "  java objects found and binary serialized by cids server search '" + searchKey
+                    LOG.debug(i + "  java objects found and binary serialized by cids server search '" + searchKey
                                 + "'");
                 }
             } else {
-                LOG.warn(i + " java objects of type '"
-                            + searchResults.iterator().next().getClass().getName()
-                            + "' found and converted by cids server search '" + searchKey + "'");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(i + " java objects of type '"
+                                + searchResults.iterator().next().getClass().getName()
+                                + "' found and converted by cids server search '" + searchKey + "'");
+                }
             }
         }
-        return objectNodes;
+        return jsonNodes;
     }
 
     /**

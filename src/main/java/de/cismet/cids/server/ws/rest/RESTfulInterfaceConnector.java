@@ -29,6 +29,7 @@ import Sirius.server.search.store.QueryData;
 import Sirius.util.image.Image;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
@@ -42,16 +43,11 @@ import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
-import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.core.util.Base64;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
-import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-
-import org.openide.util.Exceptions;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -1560,7 +1556,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
 
         final String domain = user.getDomain();
-        final GenericCollectionResource<ObjectNode> searchResults;
+        final GenericCollectionResource<JsonNode> searchResults;
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         final WebResource webResource = this.createWebResource(SEARCH_API)
                     .path(user.getDomain() + "." + searchKey + SEARCH_API_RESULTS)
@@ -1586,7 +1582,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
             throw new RemoteException(message, ex);
         }
 
-        searchResults = builder.post(new GenericType<GenericCollectionResource<ObjectNode>>() {
+        searchResults = builder.post(new GenericType<GenericCollectionResource<JsonNode>>() {
                 }, searchParameters);
 
         if ((searchResults != null) && (searchResults.get$collection() != null)
@@ -1605,17 +1601,26 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
                 final Collection<LightweightMetaObject> resultCollection = new LinkedList<LightweightMetaObject>();
 
-                for (final ObjectNode objectNode : searchResults.get$collection()) {
+                for (final JsonNode jsonNode : searchResults.get$collection()) {
                     try {
-                        final String classKey = CidsBeanFactory.getFactory().getClassKey(objectNode);
-                        final int classId = classKeyCache.getClassIdForClassKey(classKey);
-                        final LightweightMetaObject lightweightMetaObject = CidsBeanFactory.getFactory()
-                                    .lightweightMetaObjectFromObjectNode(
-                                        objectNode,
-                                        classId,
-                                        domain,
-                                        user);
-                        resultCollection.add(lightweightMetaObject);
+                        if (jsonNode.isObject()) {
+                            final ObjectNode objectNode = (ObjectNode)jsonNode;
+                            final String classKey = CidsBeanFactory.getFactory().getClassKey(objectNode);
+                            final int classId = classKeyCache.getClassIdForClassKey(classKey);
+                            final LightweightMetaObject lightweightMetaObject = CidsBeanFactory.getFactory()
+                                        .lightweightMetaObjectFromObjectNode(
+                                            objectNode,
+                                            classId,
+                                            domain,
+                                            user);
+                            resultCollection.add(lightweightMetaObject);
+                        } else {
+                            final String message = "could not deserialize cids bean from "
+                                        + "object node to create LightweightMetaObject: JsonNode '"
+                                        + jsonNode + "' is no ObjectNode!";
+                            LOG.error(message);
+                            throw new RemoteException(message);
+                        }
                     } catch (Exception ex) {
                         final String message =
                             "could not deserialize cids bean from object node to create LightweightMetaObject: "
@@ -1628,7 +1633,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
             } else {
                 try {
                     final Collection resultCollection = ServerSearchFactory.getFactory()
-                                .resultCollectionfromObjectNodes(
+                                .resultCollectionfromJsonNodes(
                                     searchResults.get$collection(),
                                     searchInfo);
                     return resultCollection;
