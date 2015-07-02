@@ -98,23 +98,29 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
      */
     private static Geometry fromEwkt(final String ewkt) {
         final int skIndex = ewkt.indexOf(';');
-        if (skIndex > 0) {
-            final String sridKV = ewkt.substring(0, skIndex);
-            final int eqIndex = sridKV.indexOf('=');
 
-            if (eqIndex > 0) {
-                final int srid = Integer.parseInt(sridKV.substring(eqIndex + 1));
-                final String wkt = ewkt.substring(skIndex + 1);
-                try {
-                    final Geometry geom = new WKTReader(new GeometryFactory()).read(wkt);
-                    geom.setSRID(srid);
-                    return geom;
-                } catch (final ParseException ex) {
-                    return null;
-                }
-            }
+        final String wkt;
+        final int srid;
+
+        final String sridKV = ewkt.substring(0, skIndex);
+        if (skIndex > 0) {
+            final int eqIndex = sridKV.indexOf('=');
+            wkt = ewkt.substring(skIndex + 1);
+            srid = Integer.parseInt(sridKV.substring(eqIndex + 1));
+        } else {
+            wkt = ewkt;
+            srid = -1;
         }
-        return null;
+
+        try {
+            final Geometry geom = new WKTReader(new GeometryFactory()).read(wkt);
+            if (srid >= 0) {
+                geom.setSRID(srid);
+            }
+            return geom;
+        } catch (final ParseException ex) {
+            return null;
+        }
     }
 
     /**
@@ -383,7 +389,7 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
                     // - remove
                     origColl.removeAll(toRemoveColl);
                 }
-                }
+            }
 
             // ignore the patch tags if patch is not enabled
             if (isPatchEnabled()) {
