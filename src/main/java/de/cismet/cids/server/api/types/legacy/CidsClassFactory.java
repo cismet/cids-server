@@ -16,7 +16,6 @@ import Sirius.server.newuser.permission.Policy;
 import Sirius.util.image.Image;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.apache.log4j.Logger;
 
@@ -1407,7 +1406,7 @@ public class CidsClassFactory {
     private Image deserializeSiriusImage(final String configKey, final JsonNode configNode) {
         final Image image = new Image();
         if (configNode.isObject()) {
-            final ObjectNode objectNode = (ObjectNode)configNode;
+            final JsonNode objectNode = (JsonNode)configNode;
             if (objectNode.has("name")) {
                 image.setName(objectNode.get("name").asText());
             }
