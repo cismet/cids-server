@@ -408,7 +408,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         // }
 
         if (user.getUserGroup() != null) {
-            queryParams.add("role", user.getUserGroup());
+            queryParams.add("role", user.getUserGroup().getName());
         }
 
         return queryParams;
@@ -2443,7 +2443,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         queryParameters.add("deduplicate", "true");
-        queryParameters.add("level", "1");
+        queryParameters.add("level",
+            String.valueOf((representationFieldsLength > 0) ? 1 : 0));
         queryParameters.add("limit", String.valueOf(Integer.MAX_VALUE));
 
         final StringBuilder fieldsParameter = new StringBuilder();
