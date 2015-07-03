@@ -19,7 +19,6 @@ import Sirius.server.middleware.types.Node;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.log4j.Logger;
@@ -728,7 +727,7 @@ public class ServerSearchFactory {
                     final MetaClass metaClass = (MetaClass)searchResult;
                     final CidsClass cidsClass = CidsClassFactory.getFactory()
                                 .restCidsClassFromLegacyCidsClass(metaClass);
-                    jsonNode = (ObjectNode)mapper.convertValue(cidsClass, ObjectNode.class);
+                    jsonNode = mapper.convertValue(cidsClass, JsonNode.class);
                 } else {
                     final String message = "cannot convert search result item #"
                                 + i + " to MetaClass, wrong result type:'"
@@ -740,7 +739,7 @@ public class ServerSearchFactory {
                 if (MetaObject.class.isAssignableFrom(searchResult.getClass())) {
                     final MetaObject metaObject = (MetaObject)searchResult;
                     final CidsBean cidsBean = metaObject.getBean();
-                    jsonNode = (ObjectNode)mapper.reader().readTree(cidsBean.toJSONString(false));
+                    jsonNode = mapper.reader().readTree(cidsBean.toJSONString(false));
                 } else {
                     final String message = "cannot convert search result item #"
                                 + i + " to MetaObject, wrong result type:'"
@@ -755,7 +754,7 @@ public class ServerSearchFactory {
                             legacyNode.getClassId());
                     final CidsNode cidsNode = CidsNodeFactory.getFactory()
                                 .restCidsNodeFromLegacyCidsNode(legacyNode, className);
-                    jsonNode = (ObjectNode)mapper.convertValue(cidsNode, ObjectNode.class);
+                    jsonNode = mapper.convertValue(cidsNode, JsonNode.class);
                 } else {
                     final String message = "cannot convert search result item #"
                                 + i + " to MetaNode, wrong result type:'"
@@ -765,7 +764,7 @@ public class ServerSearchFactory {
                 }
             } else if (isBinaryObject) {
                 final String stringRepresentation = toBase64String(searchResult);
-                jsonNode = (ObjectNode)mapper.convertValue(stringRepresentation, ObjectNode.class);
+                jsonNode = mapper.convertValue(stringRepresentation, JsonNode.class);
             } else {
                 jsonNode = mapper.convertValue(searchResult, JsonNode.class);
             }

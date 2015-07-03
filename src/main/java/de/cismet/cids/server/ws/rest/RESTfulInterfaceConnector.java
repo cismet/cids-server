@@ -1608,7 +1608,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
                             final String classKey = CidsBeanFactory.getFactory().getClassKey(objectNode);
                             final int classId = classKeyCache.getClassIdForClassKey(classKey);
                             final LightweightMetaObject lightweightMetaObject = CidsBeanFactory.getFactory()
-                                        .lightweightMetaObjectFromObjectNode(
+                                        .lightweightMetaObjectFromJsonNode(
                                             objectNode,
                                             classId,
                                             domain,
@@ -2089,7 +2089,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
 
         try {
-            final ObjectNode objectNode = builder.get(ObjectNode.class);
+            final JsonNode objectNode = builder.get(ObjectNode.class);
             if ((objectNode == null) || (objectNode.size() == 0)) {
                 LOG.error("could not find meta object  '" + objectId + "@" + classId + "@" + domain
                             + "' (" + domain + "." + className + ") for user '" + user + "'");
@@ -2185,7 +2185,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
 
         try {
-            final ObjectNode objectNode = builder.post(ObjectNode.class,
+            final JsonNode objectNode = builder.post(ObjectNode.class,
                     metaObject.getBean().toJSONString(true));
             if ((objectNode == null) || (objectNode.size() == 0)) {
                 LOG.error("could not insert meta object for class '" + classId + "@" + domain
@@ -2508,7 +2508,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
             lightweightMetaObjects = new LightweightMetaObject[objectNodes.get$collection().size()];
             int i = 0;
-            for (final ObjectNode objectNode : objectNodes.get$collection()) {
+            for (final JsonNode objectNode : objectNodes.get$collection()) {
                 final CidsBean cidsBean;
                 try {
                     cidsBean = CidsBean.createNewCidsBeanFromJSON(false, objectNode.toString());

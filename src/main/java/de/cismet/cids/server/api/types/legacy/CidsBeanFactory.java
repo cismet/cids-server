@@ -179,8 +179,8 @@ public class CidsBeanFactory {
      *
      * @return  DOCUMENT ME!
      */
-    public LightweightMetaObject lightweightMetaObjectFromObjectNode(
-            final ObjectNode objectNode,
+    public LightweightMetaObject lightweightMetaObjectFromJsonNode(
+            final JsonNode objectNode,
             final int classId,
             final String domain,
             final User user) {
@@ -393,7 +393,7 @@ public class CidsBeanFactory {
      *
      * @return  DOCUMENT ME!
      */
-    public ObjectNode objectNodeFromLightweightMetaObject(final LightweightMetaObject lightweightMetaObject,
+    public JsonNode jsonNodeFromLightweightMetaObject(final LightweightMetaObject lightweightMetaObject,
             final String className,
             final String domain) {
         final String selfReference = "/" + domain + "." + className + "/" + lightweightMetaObject.getId();
@@ -437,7 +437,7 @@ public class CidsBeanFactory {
      *
      * @throws  Error  DOCUMENT ME!
      */
-    public String getClassKey(final ObjectNode jsonObject) {
+    public String getClassKey(final JsonNode jsonObject) {
         if (jsonObject.get("$self") != null) {
             final Matcher matcher = CLASSKEY_PATTERN.matcher(jsonObject.get("$self").asText());
             if (matcher.find()) {
@@ -468,7 +468,7 @@ public class CidsBeanFactory {
      *
      * @throws  Error  DOCUMENT ME!
      */
-    public String getObjectId(final ObjectNode jsonObject) {
+    public String getObjectId(final JsonNode jsonObject) {
         if (jsonObject.get("id") != null) {
             return jsonObject.get("id").asText();
         } else if (jsonObject.get("$self") != null) {
