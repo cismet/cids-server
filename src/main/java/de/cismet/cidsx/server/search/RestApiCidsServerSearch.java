@@ -5,11 +5,14 @@
 *              ... and it just works.
 *
 ****************************************************/
-package de.cismet.cids.server.search;
+package de.cismet.cidsx.server.search;
 
 import java.util.Collection;
 
-import de.cismet.cids.server.api.types.SearchInfo;
+import de.cismet.cids.server.search.CidsServerSearch;
+import de.cismet.cids.server.search.SearchException;
+
+import de.cismet.cidsx.server.api.types.SearchInfo;
 
 /**
  * A Lookupable Server Search that provides SearchInfo and typed collection search results.

@@ -5,7 +5,7 @@
 *              ... and it just works.
 *
 ****************************************************/
-package de.cismet.cids.server.ws.rest;
+package de.cismet.cidsx.client.connector;
 
 import Sirius.server.localserver.method.MethodMap;
 import Sirius.server.middleware.types.AbstractAttributeRepresentationFormater;
@@ -79,31 +79,34 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
 
-import de.cismet.cids.base.types.Type;
-
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerActionParameter;
-import de.cismet.cids.server.api.types.ActionTask;
-import de.cismet.cids.server.api.types.CidsClass;
-import de.cismet.cids.server.api.types.CidsNode;
-import de.cismet.cids.server.api.types.GenericCollectionResource;
-import de.cismet.cids.server.api.types.GenericResourceWithContentType;
-import de.cismet.cids.server.api.types.SearchInfo;
-import de.cismet.cids.server.api.types.SearchParameters;
-import de.cismet.cids.server.api.types.legacy.CidsBeanFactory;
-import de.cismet.cids.server.api.types.legacy.CidsClassFactory;
-import de.cismet.cids.server.api.types.legacy.CidsNodeFactory;
-import de.cismet.cids.server.api.types.legacy.ClassNameCache;
-import de.cismet.cids.server.api.types.legacy.ServerSearchFactory;
-import de.cismet.cids.server.api.types.legacy.UserFactory;
 import de.cismet.cids.server.search.CidsServerSearch;
-import de.cismet.cids.server.search.RestApiCidsServerSearch;
-import de.cismet.cids.server.search.builtin.legacy.LightweightMetaObjectsByQuerySearch;
-import de.cismet.cids.server.search.builtin.legacy.MetaObjectNodesByQuerySearch;
-import de.cismet.cids.server.search.builtin.legacy.MetaObjectsByQuerySearch;
 import de.cismet.cids.server.ws.SSLConfig;
+import de.cismet.cids.server.ws.rest.CidsTrustManager;
+import de.cismet.cids.server.ws.rest.SSLHostnameVerifier;
+
+import de.cismet.cidsx.base.types.Type;
+
+import de.cismet.cidsx.server.api.types.ActionTask;
+import de.cismet.cidsx.server.api.types.CidsClass;
+import de.cismet.cidsx.server.api.types.CidsNode;
+import de.cismet.cidsx.server.api.types.GenericCollectionResource;
+import de.cismet.cidsx.server.api.types.GenericResourceWithContentType;
+import de.cismet.cidsx.server.api.types.SearchInfo;
+import de.cismet.cidsx.server.api.types.SearchParameters;
+import de.cismet.cidsx.server.api.types.legacy.CidsBeanFactory;
+import de.cismet.cidsx.server.api.types.legacy.CidsClassFactory;
+import de.cismet.cidsx.server.api.types.legacy.CidsNodeFactory;
+import de.cismet.cidsx.server.api.types.legacy.ClassNameCache;
+import de.cismet.cidsx.server.api.types.legacy.ServerSearchFactory;
+import de.cismet.cidsx.server.api.types.legacy.UserFactory;
+import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
+import de.cismet.cidsx.server.search.builtin.legacy.LightweightMetaObjectsByQuerySearch;
+import de.cismet.cidsx.server.search.builtin.legacy.MetaObjectNodesByQuerySearch;
+import de.cismet.cidsx.server.search.builtin.legacy.MetaObjectsByQuerySearch;
 
 import de.cismet.netutil.Proxy;
 
@@ -1825,8 +1828,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
         builder = this.createMediaTypeHeaders(builder);
 
         try {
-            final de.cismet.cids.server.api.types.User restUser = builder.get(
-                    de.cismet.cids.server.api.types.User.class);
+            final de.cismet.cidsx.server.api.types.User restUser = builder.get(
+                    de.cismet.cidsx.server.api.types.User.class);
             return UserFactory.getFactory().cidsUserFromRestUser(restUser);
         } catch (UniformInterfaceException ue) {
             this.removeBasicAuthString(cidsUser);

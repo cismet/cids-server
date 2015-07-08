@@ -5,7 +5,7 @@
 *              ... and it just works.
 *
 ****************************************************/
-package de.cismet.cids.server.api.types.legacy;
+package de.cismet.cidsx.server.api.types.legacy;
 
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
@@ -25,14 +25,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.cismet.cids.server.api.types.CidsAttribute;
-import de.cismet.cids.server.api.types.CidsClass;
-import de.cismet.cids.server.api.types.configkeys.AttributeConfig;
-import de.cismet.cids.server.api.types.configkeys.CidsAttributeConfigurationFlagKey;
-import de.cismet.cids.server.api.types.configkeys.CidsAttributeConfigurationKey;
-import de.cismet.cids.server.api.types.configkeys.CidsClassConfigurationFlagKey;
-import de.cismet.cids.server.api.types.configkeys.CidsClassConfigurationKey;
-import de.cismet.cids.server.api.types.configkeys.ClassConfig;
+import de.cismet.cidsx.server.api.types.CidsAttribute;
+import de.cismet.cidsx.server.api.types.CidsClass;
+import de.cismet.cidsx.server.api.types.configkeys.AttributeConfig;
+import de.cismet.cidsx.server.api.types.configkeys.CidsAttributeConfigurationFlagKey;
+import de.cismet.cidsx.server.api.types.configkeys.CidsAttributeConfigurationKey;
+import de.cismet.cidsx.server.api.types.configkeys.CidsClassConfigurationFlagKey;
+import de.cismet.cidsx.server.api.types.configkeys.CidsClassConfigurationKey;
+import de.cismet.cidsx.server.api.types.configkeys.ClassConfig;
 
 /**
  * A factory class for converting between legacy cids types and REST/JSON types. TODO: Integrate into <strong>

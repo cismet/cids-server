@@ -5,7 +5,7 @@
 *              ... and it just works.
 *
 ****************************************************/
-package de.cismet.cids.server.api.types.legacy;
+package de.cismet.cidsx.server.api.types.legacy;
 
 import Sirius.server.middleware.types.MetaNode;
 import Sirius.server.middleware.types.MetaObjectNode;
@@ -14,7 +14,7 @@ import Sirius.server.newuser.permission.Policy;
 
 import org.apache.log4j.Logger;
 
-import de.cismet.cids.server.api.types.CidsNode;
+import de.cismet.cidsx.server.api.types.CidsNode;
 
 /**
  * A factory class for converting between legacy cids types and REST/JSON types. TODO: Integrate into <strong>
@@ -59,7 +59,7 @@ public class CidsNodeFactory {
      * @throws  Exception  if any error occurs during the conversion
      */
     public Sirius.server.middleware.types.Node legacyCidsNodeFromRestCidsNode(
-            final de.cismet.cids.server.api.types.CidsNode cidsNode) throws Exception {
+            final de.cismet.cidsx.server.api.types.CidsNode cidsNode) throws Exception {
         final int id = (cidsNode.getId() != null) ? Integer.parseInt(cidsNode.getId()) : -1;
         final String name = cidsNode.getName();
         final String description = cidsNode.getDescription();
@@ -136,7 +136,7 @@ public class CidsNodeFactory {
      *
      * @return  the converted cids rest node
      */
-    public de.cismet.cids.server.api.types.CidsNode restCidsNodeFromLegacyCidsNode(
+    public de.cismet.cidsx.server.api.types.CidsNode restCidsNodeFromLegacyCidsNode(
             final Sirius.server.middleware.types.Node legacyNode,
             String className) {
         final String id = Integer.toString(legacyNode.getId());

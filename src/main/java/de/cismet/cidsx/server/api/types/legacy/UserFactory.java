@@ -5,7 +5,7 @@
 *              ... and it just works.
 *
 ****************************************************/
-package de.cismet.cids.server.api.types.legacy;
+package de.cismet.cidsx.server.api.types.legacy;
 
 import Sirius.server.newuser.UserGroup;
 
@@ -54,8 +54,8 @@ public class UserFactory {
      *
      * @return  the converted cids rest API user object
      */
-    public de.cismet.cids.server.api.types.User restUserFromLegacyUser(final Sirius.server.newuser.User cidsUser) {
-        final de.cismet.cids.server.api.types.User restUser = new de.cismet.cids.server.api.types.User();
+    public de.cismet.cidsx.server.api.types.User restUserFromLegacyUser(final Sirius.server.newuser.User cidsUser) {
+        final de.cismet.cidsx.server.api.types.User restUser = new de.cismet.cidsx.server.api.types.User();
 
         final Collection<String> userGroupNames = new ArrayList<String>();
 
@@ -77,7 +77,7 @@ public class UserFactory {
      *
      * @return  the converted cids legacy user object
      */
-    public Sirius.server.newuser.User cidsUserFromRestUser(final de.cismet.cids.server.api.types.User restUser) {
+    public Sirius.server.newuser.User cidsUserFromRestUser(final de.cismet.cidsx.server.api.types.User restUser) {
         final Sirius.server.newuser.User cidsUser = new Sirius.server.newuser.User(
                 -1,
                 restUser.getUser(),

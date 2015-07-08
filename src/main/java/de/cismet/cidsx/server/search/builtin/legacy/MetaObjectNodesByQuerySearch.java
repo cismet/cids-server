@@ -5,10 +5,12 @@
 *              ... and it just works.
 *
 ****************************************************/
-package de.cismet.cids.server.search.builtin.legacy;
+package de.cismet.cidsx.server.search.builtin.legacy;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObject;
+import Sirius.server.middleware.types.MetaObjectNode;
+import Sirius.server.middleware.types.Node;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -24,26 +26,27 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import de.cismet.cids.base.types.Type;
-
-import de.cismet.cids.server.api.types.SearchInfo;
-import de.cismet.cids.server.api.types.SearchParameterInfo;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
-import de.cismet.cids.server.search.RestApiCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
+import de.cismet.cidsx.base.types.Type;
+
+import de.cismet.cidsx.server.api.types.SearchInfo;
+import de.cismet.cidsx.server.api.types.SearchParameterInfo;
+import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
+
 /**
- * Builtin Legacy Search to delegate the operation getMetaObjects(String query, ...) the cids Pure REST Search API.
+ * Builtin Legacy Search to delegate the operation getMetaObjectNodes(String query, ...) the cids Pure REST Search API.
  *
  * @author   Pascal Dihé
  * @version  $Revision$, $Date$
  */
 @ServiceProvider(service = RestApiCidsServerSearch.class)
-public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implements RestApiCidsServerSearch {
+public class MetaObjectNodesByQuerySearch extends AbstractCidsServerSearch implements RestApiCidsServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger LOG = Logger.getLogger(MetaObjectsByQuerySearch.class);
+    private static final Logger LOG = Logger.getLogger(MetaObjectNodesByQuerySearch.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -59,14 +62,14 @@ public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implement
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Creates a new LightweightMetaObjectsByQuerySearch object.
+     * Creates a new MetaObjectNodesByQuerySearch object.
      */
-    public MetaObjectsByQuerySearch() {
+    public MetaObjectNodesByQuerySearch() {
         searchInfo = new SearchInfo();
         searchInfo.setKey(this.getClass().getName());
         searchInfo.setName(this.getClass().getSimpleName());
         searchInfo.setDescription(
-            "Builtin Legacy Search to delegate the operation getMetaObjects(String query, ...) to the cids Pure REST Search API.");
+            "Builtin Legacy Search to delegate the operation getMetaObjectNodes(String query, ...) to the cids Pure REST Search API.");
 
         final List<SearchParameterInfo> parameterDescription = new LinkedList<SearchParameterInfo>();
         SearchParameterInfo searchParameterInfo;
@@ -88,7 +91,7 @@ public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implement
         final SearchParameterInfo resultParameterInfo = new SearchParameterInfo();
         resultParameterInfo.setKey("return");
         resultParameterInfo.setArray(true);
-        resultParameterInfo.setType(Type.ENTITY);
+        resultParameterInfo.setType(Type.NODE);
         searchInfo.setResultDescription(resultParameterInfo);
     }
 
@@ -98,24 +101,24 @@ public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implement
     public Collection performServerSearch() throws SearchException {
         final MetaService metaService = (MetaService)this.getActiveLocalServers().get(this.getDomain());
         if (metaService == null) {
-            final String message = "Meta Objects By Query Search "
+            final String message = "Meta Object Nodes By Query Search "
                         + "could not connect ot MetaService @domain '" + this.domain + "'";
             LOG.error(message);
             throw new SearchException(message);
         }
         if (LOG.isDebugEnabled()) {
-            LOG.debug("performing search for Meta Objects By Query with query '"
+            LOG.debug("performing search for Meta Object Nodes By Query with query '"
                         + this.getQuery() + "'");
         }
         try {
-            final MetaObject[] metaObjects = metaService.getMetaObject(this.getUser(), this.getQuery());
+            final Node[] metaObjectNodes = metaService.getMetaObjectNode(this.getUser(), this.getQuery());
 
             if (LOG.isDebugEnabled()) {
-                LOG.debug(metaObjects.length + " Meta Objects found.");
+                LOG.debug(metaObjectNodes.length + " Meta Object Nodes found.");
             }
-            return Arrays.asList(metaObjects);
+            return Arrays.asList(metaObjectNodes);
         } catch (RemoteException ex) {
-            final String message = "could not perform Meta Objects By Query Search with query '"
+            final String message = "could not perform Meta Object Nodes By Query Search with query '"
                         + this.getQuery() + "': " + ex.getMessage();
             LOG.error(message, ex);
             throw new SearchException(message, ex);
