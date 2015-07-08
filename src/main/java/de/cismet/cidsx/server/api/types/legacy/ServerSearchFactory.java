@@ -10,7 +10,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.cismet.cids.server.api.types.legacy;
+package de.cismet.cidsx.server.api.types.legacy;
 
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
@@ -50,18 +50,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import de.cismet.cids.base.types.Type;
-
 import de.cismet.cids.dynamics.CidsBean;
 
-import de.cismet.cids.server.api.types.CidsClass;
-import de.cismet.cids.server.api.types.CidsNode;
-import de.cismet.cids.server.api.types.SearchInfo;
-import de.cismet.cids.server.api.types.SearchParameter;
-import de.cismet.cids.server.api.types.SearchParameterInfo;
-import de.cismet.cids.server.api.types.SearchParameters;
 import de.cismet.cids.server.search.CidsServerSearch;
-import de.cismet.cids.server.search.RestApiCidsServerSearch;
+
+import de.cismet.cidsx.base.types.Type;
+
+import de.cismet.cidsx.server.api.types.CidsClass;
+import de.cismet.cidsx.server.api.types.CidsNode;
+import de.cismet.cidsx.server.api.types.SearchInfo;
+import de.cismet.cidsx.server.api.types.SearchParameter;
+import de.cismet.cidsx.server.api.types.SearchParameterInfo;
+import de.cismet.cidsx.server.api.types.SearchParameters;
+import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
 
 /**
  * Helper Methods for dealing with CidsServerSearch and and SearchInfo.

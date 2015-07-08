@@ -5,7 +5,7 @@
 *              ... and it just works.
 *
 ****************************************************/
-package de.cismet.cids.server.api.types.legacy;
+package de.cismet.cidsx.server.api.types.legacy;
 
 import Sirius.server.middleware.types.MetaClass;
 
@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import de.cismet.cids.server.api.types.CidsClass;
+import de.cismet.cidsx.server.api.types.CidsClass;
 
 /**
  * Helper Class for maintaining a class name cache that stores the mappings from legacy meta class id to a class name
