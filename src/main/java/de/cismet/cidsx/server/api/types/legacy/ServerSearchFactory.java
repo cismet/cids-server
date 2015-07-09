@@ -875,7 +875,7 @@ public class ServerSearchFactory {
     public <C extends CidsServerSearch> Map<String, Method> findSearchParameterWriteMethods(
             final Class<C> serverSearchClass) throws IntrospectionException {
         final Map<String, Method> writeMethods = new LinkedHashMap<String, Method>();
-        final BeanInfo beanInfo = Introspector.getBeanInfo(serverSearchClass, serverSearchClass.getSuperclass());
+        final BeanInfo beanInfo = Introspector.getBeanInfo(serverSearchClass);
         for (final PropertyDescriptor propertyDescritor : beanInfo.getPropertyDescriptors()) {
             if ((propertyDescritor.getReadMethod() != null)
                         && (propertyDescritor.getWriteMethod() != null)) {
