@@ -11,7 +11,6 @@
  */
 package de.cismet.cids.dynamics;
 
-import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -31,6 +30,8 @@ import java.math.BigDecimal;
 
 import java.sql.Timestamp;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
 import de.cismet.cids.json.IntraObjectCacheJsonParser;
@@ -47,8 +48,6 @@ import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_INT;
 import static com.fasterxml.jackson.core.JsonToken.VALUE_STRING;
 import static com.fasterxml.jackson.core.JsonToken.VALUE_TRUE;
 
-import static de.cismet.cids.dynamics.CidsBean.mapper;
-
 /**
  * DOCUMENT ME!
  *
@@ -56,6 +55,11 @@ import static de.cismet.cids.dynamics.CidsBean.mapper;
  * @version  $Revision$, $Date$
  */
 public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
+            CidsBeanJsonDeserializer.class);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -77,25 +81,43 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
      */
     private static Geometry fromEwkt(final String ewkt) {
         final int skIndex = ewkt.indexOf(';');
+
+        final String wkt;
+        final int srid;
+
         if (skIndex > 0) {
             final String sridKV = ewkt.substring(0, skIndex);
             final int eqIndex = sridKV.indexOf('=');
-
-            if (eqIndex > 0) {
-                final int srid = Integer.parseInt(sridKV.substring(eqIndex + 1));
-                final String wkt = ewkt.substring(skIndex + 1);
-                try {
-                    final Geometry geom = new WKTReader(new GeometryFactory()).read(wkt);
-                    geom.setSRID(srid);
-                    return geom;
-                } catch (final ParseException ex) {
-                    return null;
-                }
-            }
+            wkt = ewkt.substring(skIndex + 1);
+            srid = Integer.parseInt(sridKV.substring(eqIndex + 1));
+        } else {
+            wkt = ewkt;
+            srid = -1;
         }
-        return null;
+
+        try {
+            final Geometry geom = new WKTReader(new GeometryFactory()).read(wkt);
+            if (srid >= 0) {
+                geom.setSRID(srid);
+            }
+            return geom;
+        } catch (final ParseException ex) {
+            return null;
+        }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   _jp  DOCUMENT ME!
+     * @param   dc   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  IOException              DOCUMENT ME!
+     * @throws  JsonProcessingException  DOCUMENT ME!
+     * @throws  RuntimeException         DOCUMENT ME!
+     */
     @Override
     public CidsBean deserialize(final JsonParser _jp, final DeserializationContext dc) throws IOException,
         JsonProcessingException {
@@ -114,161 +136,177 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
         try {
             while (jp.nextValue() != JsonToken.END_OBJECT) {
                 final String fieldName = jp.getCurrentName();
-                if (!cacheHit) {
-                    if ((!keySet && fieldName.equals(CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER))
-                                || fieldName.equals(CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER)) {
-                        key = jp.getText();
-                        final CidsBeanInfo bInfo = new CidsBeanInfo(key);
-                        keySet = true;
-                        if (isIntraObjectCacheEnabled() && jp.containsKey(key)) {
-                            cb = jp.get(key);
-                            cacheHit = true;
-                        } else {
-                            cb = CidsBean.createNewCidsBeanFromTableName(bInfo.getDomainKey(), bInfo.getClassKey()); // test
-                        }
+                if ((!keySet && fieldName.equals(CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER))
+                            || fieldName.equals(CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER)) {
+                    key = jp.getText();
+                    final CidsBeanInfo bInfo = new CidsBeanInfo(key);
+                    keySet = true;
+                    if (isIntraObjectCacheEnabled() && jp.containsKey(key)) {
+                        cb = jp.get(key);
+                        cacheHit = true;
                     } else {
-                        switch (jp.getCurrentToken()) {
-                            case START_ARRAY: {
-                                while (jp.nextValue() != JsonToken.END_ARRAY) {
-                                    final CidsBean arrayObject = jp.readValueAs(CidsBean.class);
+                        cb = CidsBean.createNewCidsBeanFromTableName(bInfo.getDomainKey(), bInfo.getClassKey()); // test
+                        cb.quiteSetProperty(cb.getPrimaryKeyFieldname().toLowerCase(),
+                            Integer.parseInt(bInfo.getObjectKey()));
+                    }
+                } else {
+                    switch (jp.getCurrentToken()) {
+                        case START_ARRAY: {
+                            final Collection<CidsBean> array = new ArrayList<CidsBean>();
+                            while (jp.nextValue() != JsonToken.END_ARRAY) {
+                                final CidsBean arrayObject = jp.readValueAs(CidsBean.class);
+                                if (arrayObject != null) {
                                     if (isIntraObjectCacheEnabled()) {
                                         jp.put(arrayObject.getCidsBeanInfo().getJsonObjectKey(), arrayObject);
                                     }
-                                    propValueMap.put(fieldName, arrayObject);
+                                    array.add(arrayObject);
                                 }
-                                // Clean up
-                                // No changed flags shall be true.
-                                // All statuses shall be NO_STATUS
-                                final ObjectAttribute oa = cb.getMetaObject().getAttributeByFieldName(fieldName);
-                                oa.setChanged(false);
-                                final MetaObject dummy = (MetaObject)oa.getValue();
-                                if (dummy != null) {
-                                    dummy.setChanged(false);
-                                    dummy.forceStatus(MetaObject.NO_STATUS);
-                                    dummy.setStatus(MetaObject.NO_STATUS);
-                                    final ObjectAttribute[] entries = dummy.getAttribs();
-                                    for (final ObjectAttribute entry : entries) {
-                                        entry.setChanged(false);
-                                        ((MetaObject)entry.getValue()).forceStatus(MetaObject.NO_STATUS);
-                                        ((MetaObject)entry.getValue()).setChanged(false);
-                                    }
+                            }
+                            propValueMap.put(fieldName, array);
+                            break;
+                        }
+
+                        case START_OBJECT: {
+                            final CidsBean subObject = jp.readValueAs(CidsBean.class);
+                            if (isIntraObjectCacheEnabled()) {
+                                jp.put(subObject.getCidsBeanInfo().getJsonObjectKey(), subObject);
+                            }
+                            propValueMap.put(fieldName, subObject);
+                            break;
+                        }
+
+                        case VALUE_NUMBER_FLOAT:
+                        case VALUE_NUMBER_INT: {
+                            try {
+                                final Class numberClass = BlacklistClassloading.forName(cb.getMetaObject()
+                                                .getAttributeByFieldName(
+                                                    fieldName).getMai().getJavaclassname());
+                                if (numberClass.equals(Integer.class)) {
+                                    final int i = jp.getIntValue();
+                                    propValueMap.put(fieldName, i);
+                                } else if (numberClass.equals(Long.class)) {
+                                    final long l = jp.getLongValue();
+                                    propValueMap.put(fieldName, l);
+                                } else if (numberClass.equals(Float.class)) {
+                                    final float f = jp.getFloatValue();
+                                    propValueMap.put(fieldName, f);
+                                } else if (numberClass.equals(Double.class)) {
+                                    final double d = jp.getDoubleValue();
+                                    propValueMap.put(fieldName, d);
+                                } else if (numberClass.equals(java.sql.Timestamp.class)) {
+                                    final Timestamp ts = new Timestamp(jp.getLongValue());
+                                    propValueMap.put(fieldName, ts);
+                                } else if (numberClass.equals(BigDecimal.class)) {
+                                    final BigDecimal bd = new BigDecimal(jp.getText());
+                                    propValueMap.put(fieldName, bd);
+                                } else {
+                                    throw new RuntimeException("no handler available for " + numberClass);
                                 }
-                                break;
+                            } catch (final Exception ex) {
+                                throw new RuntimeException("problem during processing of " + fieldName + ". value:"
+                                            + jp.getText(),
+                                    ex);
                             }
+                            break;
+                        }
 
-                            case START_OBJECT: {
-                                final CidsBean subObject = jp.readValueAs(CidsBean.class);
-                                if (isIntraObjectCacheEnabled()) {
-                                    jp.put(subObject.getCidsBeanInfo().getJsonObjectKey(), subObject);
-                                }
-                                propValueMap.put(fieldName, subObject);
-                                break;
-                            }
+                        case VALUE_NULL: {
+                            propValueMap.put(fieldName, null);
+                            break;
+                        }
 
-                            case VALUE_NUMBER_FLOAT:
-                            case VALUE_NUMBER_INT: {
-                                try {
-                                    final Class numberClass = BlacklistClassloading.forName(cb.getMetaObject()
-                                                    .getAttributeByFieldName(
-                                                        fieldName).getMai().getJavaclassname());
-                                    if (numberClass.equals(Integer.class)) {
-                                        final int i = jp.getIntValue();
-                                        propValueMap.put(fieldName, i);
-                                    } else if (numberClass.equals(Long.class)) {
-                                        final long l = jp.getLongValue();
-                                        propValueMap.put(fieldName, l);
-                                    } else if (numberClass.equals(Float.class)) {
-                                        final float f = jp.getFloatValue();
-                                        propValueMap.put(fieldName, f);
-                                    } else if (numberClass.equals(Double.class)) {
-                                        final double d = jp.getDoubleValue();
-                                        propValueMap.put(fieldName, d);
-                                    } else if (numberClass.equals(java.sql.Timestamp.class)) {
-                                        final Timestamp ts = new Timestamp(jp.getLongValue());
-                                        propValueMap.put(fieldName, ts);
-                                    } else if (numberClass.equals(BigDecimal.class)) {
-                                        final BigDecimal bd = new BigDecimal(jp.getText());
-                                        propValueMap.put(fieldName, bd);
-                                    } else {
-                                        throw new RuntimeException("no handler available for " + numberClass);
-                                    }
-                                } catch (final Exception ex) {
-                                    throw new RuntimeException("problem during processing of " + fieldName + ". value:"
-                                                + jp.getText(),
-                                        ex);
-                                }
-                                break;
-                            }
+                        case VALUE_TRUE: {
+                            propValueMap.put(fieldName, true);
+                            break;
+                        }
 
-                            case VALUE_NULL: {
-                                propValueMap.put(fieldName, null);
-                                break;
-                            }
+                        case VALUE_FALSE: {
+                            propValueMap.put(fieldName, false);
+                            break;
+                        }
 
-                            case VALUE_TRUE: {
-                                propValueMap.put(fieldName, true);
-                                break;
-                            }
+                        case VALUE_STRING: {
+                            propValueMap.put(fieldName, jp.getText());
+                            break;
+                        }
+                        case VALUE_EMBEDDED_OBJECT: {
+                            throw new UnsupportedOperationException("Not supported yet.");
+                        }
 
-                            case VALUE_FALSE: {
-                                propValueMap.put(fieldName, false);
-                                break;
-                            }
-
-                            case VALUE_STRING: {
-                                propValueMap.put(fieldName, jp.getText());
-                                break;
-                            }
-                            case VALUE_EMBEDDED_OBJECT: {
-                                throw new UnsupportedOperationException("Not supported yet.");
-                            }
-
-                            default: {
-                                throw new RuntimeException("unhandled case. This is a bad thing"); // NOI18N
-                            }
+                        default: {
+                            throw new RuntimeException("unhandled case. This is a bad thing (" + fieldName + ")"); // NOI18N
                         }
                     }
                 }
             }
 
-            if (cb == null) {
+            if (!keySet) {
                 throw new RuntimeException("Json-Object has to contain a "
                             + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER + "or a "
                             + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER); // NOI18N
             }
-            cb.getMetaObject().setID((cb.getPrimaryKeyValue() != null) ? (int)cb.getPrimaryKeyValue() : -1);
-            for (final String prop : propValueMap.keySet()) {
-                final Object value = propValueMap.get(prop);
+            if (!cacheHit && (cb != null)) {
+                for (final String prop : propValueMap.keySet()) {
+                    final Object value = propValueMap.get(prop);
 
-                if (value instanceof String) {
-                    final Class attrClass = BlacklistClassloading.forName(cb.getMetaObject().getAttributeByFieldName(
-                                prop).getMai().getJavaclassname());
-                    if (attrClass.equals(String.class)) {
-                        cb.quiteSetProperty(prop, (String)value);
-                    } else if (attrClass.equals(Geometry.class)) {
-                        try {
-                            cb.quiteSetProperty(prop, fromEwkt((String)value));
-                        } catch (Exception e) {
-                            throw new RuntimeException("problem during processing of " + prop + "("
-                                        + attrClass + "). value:"
-                                        + value,
-                                e);
+                    if (value instanceof String) {
+                        final Class attrClass = BlacklistClassloading.forName(cb.getMetaObject()
+                                        .getAttributeByFieldName(
+                                            prop).getMai().getJavaclassname());
+                        if (attrClass.equals(String.class)) {
+                            cb.quiteSetProperty(prop, (String)value);
+                        } else if (attrClass.equals(Geometry.class)) {
+                            try {
+                                cb.quiteSetProperty(prop, fromEwkt((String)value));
+                            } catch (Exception e) {
+                                throw new RuntimeException("problem during processing of " + prop + "("
+                                            + attrClass + "). value:"
+                                            + value,
+                                    e);
+                            }
+                        } else {
+                            try {
+                                cb.quiteSetProperty(prop, value);
+                            } catch (Exception e) {
+                                throw new RuntimeException("problem bei " + prop + "(" + attrClass + ")",
+                                    e);
+                            }
                         }
                     } else {
-                        try {
+                        if (value instanceof Collection) {
+                            cb.getBeanCollectionProperty(prop).addAll((Collection)value);
+
+                            // insert does not work for arrays if statii are not set
+                            // the status is important for updates of objects, but there
+                            // is an update deserializer for that => CidsBeanJsonUpdataDesirializer
+
+// // Clean up
+// // No changed flags shall be true.
+// // All statuses shall be NO_STATUS
+// final ObjectAttribute oa = cb.getMetaObject().getAttributeByFieldName(prop);
+// oa.setChanged(false);
+// final MetaObject dummy = (MetaObject)oa.getValue();
+// if (dummy != null) {
+// dummy.setChanged(false);
+// dummy.forceStatus(MetaObject.NO_STATUS);
+// dummy.setStatus(MetaObject.NO_STATUS);
+// final ObjectAttribute[] entries = dummy.getAttribs();
+// for (final ObjectAttribute entry : entries) {
+// entry.setChanged(false);
+// ((MetaObject)entry.getValue()).forceStatus(MetaObject.NO_STATUS);
+// ((MetaObject)entry.getValue()).setChanged(false);
+// }
+// }
+                        } else {
                             cb.quiteSetProperty(prop, value);
-                        } catch (Exception e) {
-                            throw new RuntimeException("problem bei " + prop + "(" + attrClass + ")",
-                                e);
                         }
                     }
-                } else {
-                    cb.quiteSetProperty(prop, value);
                 }
-            }
-            cb.getMetaObject().forceStatus(MetaObject.NO_STATUS);
-            if (isIntraObjectCacheEnabled()) {
-                jp.put(key, cb);
+                cb.getMetaObject().setID((cb.getPrimaryKeyValue() != null) ? (int)cb.getPrimaryKeyValue() : -1);
+                cb.getMetaObject().forceStatus(MetaObject.NO_STATUS);
+                if (isIntraObjectCacheEnabled()) {
+                    jp.put(key, cb);
+                }
             }
             return cb;
         } catch (Exception ex) {

@@ -629,7 +629,9 @@ public class CidsBean implements PropertyChangeListener {
      */
     void quiteSetProperty(final String name, final Object value) throws Exception {
         setProperty(name, value);
-        metaObject.getAttributeByFieldName(name).setChanged(false);
+        if (metaObject.getAttributeByFieldName(name) != null) {
+            metaObject.getAttributeByFieldName(name).setChanged(false);
+        }
     }
 
     /**
@@ -642,7 +644,9 @@ public class CidsBean implements PropertyChangeListener {
      */
     void setPropertyForceChanged(final String name, final Object value) throws Exception {
         setProperty(name, value);
-        metaObject.getAttributeByFieldName(name).setChanged(true);
+        if (metaObject.getAttributeByFieldName(name) != null) {
+            metaObject.getAttributeByFieldName(name).setChanged(true);
+        }
     }
 
     /**

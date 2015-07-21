@@ -1073,6 +1073,12 @@ public final class PersistenceManager extends Shutdown {
             }
             // set object's id
             mo.setID(rootPk);
+            try {
+                mo.getBean().setProperty(mo.getPrimaryKey().getName().toLowerCase(), rootPk);
+            } catch (final Exception ex) {
+                LOG.warn("id Property could not be set", ex);
+            }
+
             // initialis all array attributes with the value of the primary key
             mo.setArrayKey2PrimaryKey();
 

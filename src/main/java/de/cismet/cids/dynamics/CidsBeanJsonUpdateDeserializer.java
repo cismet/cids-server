@@ -41,6 +41,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -97,23 +98,29 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
      */
     private static Geometry fromEwkt(final String ewkt) {
         final int skIndex = ewkt.indexOf(';');
-        if (skIndex > 0) {
-            final String sridKV = ewkt.substring(0, skIndex);
-            final int eqIndex = sridKV.indexOf('=');
 
-            if (eqIndex > 0) {
-                final int srid = Integer.parseInt(sridKV.substring(eqIndex + 1));
-                final String wkt = ewkt.substring(skIndex + 1);
-                try {
-                    final Geometry geom = new WKTReader(new GeometryFactory()).read(wkt);
-                    geom.setSRID(srid);
-                    return geom;
-                } catch (final ParseException ex) {
-                    return null;
-                }
-            }
+        final String wkt;
+        final int srid;
+
+        final String sridKV = ewkt.substring(0, skIndex);
+        if (skIndex > 0) {
+            final int eqIndex = sridKV.indexOf('=');
+            wkt = ewkt.substring(skIndex + 1);
+            srid = Integer.parseInt(sridKV.substring(eqIndex + 1));
+        } else {
+            wkt = ewkt;
+            srid = -1;
         }
-        return null;
+
+        try {
+            final Geometry geom = new WKTReader(new GeometryFactory()).read(wkt);
+            if (srid >= 0) {
+                geom.setSRID(srid);
+            }
+            return geom;
+        } catch (final ParseException ex) {
+            return null;
+        }
     }
 
     /**
@@ -158,6 +165,8 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
         }
 
         try {
+            final Collection<String> fullListColl = new LinkedList<String>();
+
             final MultiMap fullListMap = new MultiMap();
             final MultiMap addListMap = new MultiMap();
             final MultiMap updateListMap = new MultiMap();
@@ -166,138 +175,137 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
             final HashMap<String, Object> propValueMap = new HashMap<String, Object>();
             while (jp.nextValue() != JsonToken.END_OBJECT) {
                 final String fieldName = jp.getCurrentName();
-                if (!cacheHit) {
-                    if ((!keySet && fieldName.equals(CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER))
-                                || fieldName.equals(CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER)) {
-                        key = jp.getText();
-                        final CidsBeanInfo bInfo = new CidsBeanInfo(key);
-                        keySet = true;
-                        if (isIntraObjectCacheEnabled() && jp.containsKey(key)) {
-                            cb = jp.get(key);
-                            cacheHit = true;
-                        } else {
-                            final int classId = getMetaService().getClassByTableName(
-                                        getUserContext().getUser(),
-                                        bInfo.getClassKey().toLowerCase(),
-                                        bInfo.getDomainKey())
-                                        .getId();
-                            final int objectId = Integer.parseInt(bInfo.getObjectKey());
-                            cb = getMetaService().getMetaObject(getUserContext().getUser(),
-                                        objectId,
-                                        classId,
-                                        bInfo.getDomainKey()).getBean();
-                        }
+                if ((!keySet && fieldName.equals(CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER))
+                            || fieldName.equals(CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER)) {
+                    key = jp.getText();
+                    final CidsBeanInfo bInfo = new CidsBeanInfo(key);
+                    keySet = true;
+                    if (isIntraObjectCacheEnabled() && jp.containsKey(key)) {
+                        cb = jp.get(key);
+                        cacheHit = true;
                     } else {
-                        switch (jp.getCurrentToken()) {
-                            case START_ARRAY: {
-                                final String refersToList;
-                                final MultiMap listMap;
-                                if (fieldName.endsWith(CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_ADD_SUFFIX)) {
-                                    refersToList = StringUtils.substringBeforeLast(
-                                            fieldName,
-                                            CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_ADD_SUFFIX);
-                                    listMap = addListMap;
-                                } else if (fieldName.endsWith(CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_UPDATE_SUFFIX)) {
-                                    refersToList = StringUtils.substringBeforeLast(
-                                            fieldName,
-                                            CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_UPDATE_SUFFIX);
-                                    listMap = updateListMap;
-                                } else if (fieldName.endsWith(CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_REMOVE_SUFFIX)) {
-                                    refersToList = StringUtils.substringBeforeLast(
-                                            fieldName,
-                                            CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_REMOVE_SUFFIX);
-                                    listMap = removeListMap;
-                                } else {
-                                    refersToList = fieldName;
-                                    listMap = fullListMap;
-                                }
-                                while (jp.nextValue() != JsonToken.END_ARRAY) {
-                                    final CidsBean arrayObject = jp.readValueAs(CidsBean.class);
-                                    if (isIntraObjectCacheEnabled()) {
-                                        jp.put(arrayObject.getCidsBeanInfo().getJsonObjectKey(), arrayObject);
-                                    }
-                                    listMap.put(refersToList, arrayObject);
-                                }
-
-                                break;
+                        final int classId = getMetaService().getClassByTableName(
+                                    getUserContext().getUser(),
+                                    bInfo.getClassKey().toLowerCase(),
+                                    bInfo.getDomainKey())
+                                    .getId();
+                        final int objectId = Integer.parseInt(bInfo.getObjectKey());
+                        cb = getMetaService().getMetaObject(getUserContext().getUser(),
+                                    objectId,
+                                    classId,
+                                    bInfo.getDomainKey()).getBean();
+                    }
+                } else {
+                    switch (jp.getCurrentToken()) {
+                        case START_ARRAY: {
+                            final String refersToList;
+                            final MultiMap listMap;
+                            if (fieldName.endsWith(CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_ADD_SUFFIX)) {
+                                refersToList = StringUtils.substringBeforeLast(
+                                        fieldName,
+                                        CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_ADD_SUFFIX);
+                                listMap = addListMap;
+                            } else if (fieldName.endsWith(CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_UPDATE_SUFFIX)) {
+                                refersToList = StringUtils.substringBeforeLast(
+                                        fieldName,
+                                        CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_UPDATE_SUFFIX);
+                                listMap = updateListMap;
+                            } else if (fieldName.endsWith(CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_REMOVE_SUFFIX)) {
+                                refersToList = StringUtils.substringBeforeLast(
+                                        fieldName,
+                                        CidsBeanInfo.JSON_CIDS_OBJECT_PATCH_REMOVE_SUFFIX);
+                                listMap = removeListMap;
+                            } else {
+                                fullListColl.add(fieldName);
+                                refersToList = fieldName;
+                                listMap = fullListMap;
                             }
-
-                            case START_OBJECT: {
-                                final CidsBean subObject = jp.readValueAs(CidsBean.class);
+                            while (jp.nextValue() != JsonToken.END_ARRAY) {
+                                final CidsBean arrayObject = jp.readValueAs(CidsBean.class);
                                 if (isIntraObjectCacheEnabled()) {
-                                    jp.put(subObject.getCidsBeanInfo().getJsonObjectKey(), subObject);
+                                    jp.put(arrayObject.getCidsBeanInfo().getJsonObjectKey(), arrayObject);
                                 }
-                                propValueMap.put(fieldName, subObject);
-                                break;
+                                listMap.put(refersToList, arrayObject);
                             }
 
-                            case VALUE_NUMBER_FLOAT:
-                            case VALUE_NUMBER_INT: {
-                                try {
-                                    final Class numberClass = BlacklistClassloading.forName(cb.getMetaObject()
-                                                    .getAttributeByFieldName(
-                                                        fieldName).getMai().getJavaclassname());
-                                    if (numberClass.equals(Integer.class)) {
-                                        final int i = jp.getIntValue();
-                                        propValueMap.put(fieldName, i);
-                                    } else if (numberClass.equals(Long.class)) {
-                                        final long l = jp.getLongValue();
-                                        propValueMap.put(fieldName, l);
-                                    } else if (numberClass.equals(Float.class)) {
-                                        final float f = jp.getFloatValue();
-                                        propValueMap.put(fieldName, f);
-                                    } else if (numberClass.equals(Double.class)) {
-                                        final double d = jp.getDoubleValue();
-                                        propValueMap.put(fieldName, d);
-                                    } else if (numberClass.equals(java.sql.Timestamp.class)) {
-                                        final Timestamp ts = new Timestamp(jp.getLongValue());
-                                        propValueMap.put(fieldName, ts);
-                                    } else if (numberClass.equals(BigDecimal.class)) {
-                                        final BigDecimal bd = new BigDecimal(jp.getText());
-                                        propValueMap.put(fieldName, bd);
-                                    } else {
-                                        throw new RuntimeException("no handler available for " + numberClass);
-                                    }
-                                } catch (Exception ex) {
-                                    throw new RuntimeException("problem during processing of " + fieldName + ". value:"
-                                                + jp.getText(),
-                                        ex);
+                            break;
+                        }
+
+                        case START_OBJECT: {
+                            final CidsBean subObject = jp.readValueAs(CidsBean.class);
+                            if (isIntraObjectCacheEnabled()) {
+                                jp.put(subObject.getCidsBeanInfo().getJsonObjectKey(), subObject);
+                            }
+                            propValueMap.put(fieldName, subObject);
+                            break;
+                        }
+
+                        case VALUE_NUMBER_FLOAT:
+                        case VALUE_NUMBER_INT: {
+                            try {
+                                final Class numberClass = BlacklistClassloading.forName(cb.getMetaObject()
+                                                .getAttributeByFieldName(
+                                                    fieldName).getMai().getJavaclassname());
+                                if (numberClass.equals(Integer.class)) {
+                                    final int i = jp.getIntValue();
+                                    propValueMap.put(fieldName, i);
+                                } else if (numberClass.equals(Long.class)) {
+                                    final long l = jp.getLongValue();
+                                    propValueMap.put(fieldName, l);
+                                } else if (numberClass.equals(Float.class)) {
+                                    final float f = jp.getFloatValue();
+                                    propValueMap.put(fieldName, f);
+                                } else if (numberClass.equals(Double.class)) {
+                                    final double d = jp.getDoubleValue();
+                                    propValueMap.put(fieldName, d);
+                                } else if (numberClass.equals(java.sql.Timestamp.class)) {
+                                    final Timestamp ts = new Timestamp(jp.getLongValue());
+                                    propValueMap.put(fieldName, ts);
+                                } else if (numberClass.equals(BigDecimal.class)) {
+                                    final BigDecimal bd = new BigDecimal(jp.getText());
+                                    propValueMap.put(fieldName, bd);
+                                } else {
+                                    throw new RuntimeException("no handler available for " + numberClass);
                                 }
-                                break;
+                            } catch (Exception ex) {
+                                throw new RuntimeException("problem during processing of " + fieldName + ". value:"
+                                            + jp.getText(),
+                                    ex);
                             }
+                            break;
+                        }
 
-                            case VALUE_NULL: {
-                                propValueMap.put(fieldName, null);
-                                break;
-                            }
+                        case VALUE_NULL: {
+                            propValueMap.put(fieldName, null);
+                            break;
+                        }
 
-                            case VALUE_TRUE: {
-                                propValueMap.put(fieldName, true);
-                                break;
-                            }
+                        case VALUE_TRUE: {
+                            propValueMap.put(fieldName, true);
+                            break;
+                        }
 
-                            case VALUE_FALSE: {
-                                propValueMap.put(fieldName, false);
-                                break;
-                            }
+                        case VALUE_FALSE: {
+                            propValueMap.put(fieldName, false);
+                            break;
+                        }
 
-                            case VALUE_STRING: {
-                                propValueMap.put(fieldName, jp.getText());
-                                break;
-                            }
-                            case VALUE_EMBEDDED_OBJECT: {
-                                throw new UnsupportedOperationException("Not supported yet.");
-                            }
+                        case VALUE_STRING: {
+                            propValueMap.put(fieldName, jp.getText());
+                            break;
+                        }
+                        case VALUE_EMBEDDED_OBJECT: {
+                            throw new UnsupportedOperationException("Not supported yet.");
+                        }
 
-                            default: {
-                                throw new RuntimeException("unhandled case. This is a bad thing"); // NOI18N
-                            }
+                        default: {
+                            throw new RuntimeException("unhandled case. This is a bad thing"); // NOI18N
                         }
                     }
                 }
             }
 
-            if (cb == null) {
+            if (!keySet) {
                 throw new RuntimeException("Json-Object has to contain a "
                             + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_IDENTIFIER + "or a "
                             + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER); // NOI18N
@@ -333,7 +341,7 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
                 }
             }
 
-            for (final String listName : (Set<String>)fullListMap.keySet()) {
+            for (final String listName : fullListColl) {
                 final List<CidsBean> origColl = cb.getBeanCollectionProperty(listName);
 
                 // each object from the json list collection that not exists
@@ -346,35 +354,41 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
                 // objects from the json list, the remaing objects are all the objects
                 // that have to be removed from the original collection. (because they dont
                 // have be found in the json collection).
-                final List<CidsBean> toRemoveColl = new ArrayList<CidsBean>(origColl);
+                if (fullListMap.get(listName) == null) {
+                    origColl.clear();
+                } else {
+                    final List<CidsBean> toRemoveColl = new ArrayList<CidsBean>(origColl);
 
-                final HashMap<CidsBean, Integer> toUpdateMap = new HashMap<CidsBean, Integer>();
+                    final HashMap<CidsBean, Integer> toUpdateMap = new HashMap<CidsBean, Integer>();
 
-                // processing the objects of the json list
-                for (final CidsBean bean : (Collection<CidsBean>)fullListMap.get(listName)) {
-                    final int indexOf = toRemoveColl.indexOf(bean);
-                    if (indexOf < 0) { // not found in the original collection
-                        toAddColl.add(bean);
-                    } else {           // found => update & remove from toRemove (yes, thats right
-                                       // !)
-                        toUpdateMap.put(bean, indexOf);
-                        toRemoveColl.remove(bean);
+                    // processing the objects of the json list
+                    for (final CidsBean bean : (Collection<CidsBean>)fullListMap.get(listName)) {
+                        final int indexOf = toRemoveColl.indexOf(bean);
+                        if (indexOf < 0) { // not found in the original collection
+                            toAddColl.add(bean);
+                        } else {           // found => update & remove from toRemove (yes, thats right
+                                           // !)
+                            toUpdateMap.put(bean, indexOf);
+                            toRemoveColl.remove(bean);
+                        }
                     }
+
+                    // here happens all the changes to the original list collection
+
+                    // - add
+                    origColl.addAll(toAddColl);
+
+                    // - update
+                    for (final CidsBean toUpdateBean : toUpdateMap.keySet()) {
+                        final Integer indexOf = toUpdateMap.get(toUpdateBean);
+                        origColl.remove(indexOf.intValue());
+                        origColl.add(toUpdateBean);
+//                        origColl.set(indexOf, toUpdateBean);
+                    }
+
+                    // - remove
+                    origColl.removeAll(toRemoveColl);
                 }
-
-                // here happens all the changes to the original list collection
-
-                // - add
-                origColl.addAll(toAddColl);
-
-                // - update
-                for (final CidsBean toUpdateBean : toUpdateMap.keySet()) {
-                    final Integer indexOf = toUpdateMap.get(toUpdateBean);
-                    origColl.set(indexOf, toUpdateBean);
-                }
-
-                // - remove
-                origColl.removeAll(toRemoveColl);
             }
 
             // ignore the patch tags if patch is not enabled
