@@ -70,18 +70,21 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
     }
 
     @Override
-    public String getVirtualTreeTopNodesStatement(final String implodedUserGroupIds) {
-        return "select "                                                                                                                                                                                        // NOI18N
-                    + "y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
-                    + "("                                                                                                                                                                                       // NOI18N
-                    + "select "                                                                                                                                                                                 // NOI18N
-                    + "n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  "                // NOI18N
-                    + "from "                                                                                                                                                                                   // NOI18N
-                    + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                               // NOI18N
-                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                              // NOI18N
-                    + "where "                                                                                                                                                                                  // NOI18N
-                    + "is_root=true and node_type<>'C' "                                                                                                                                                        // NOI18N
-                    + ") y "                                                                                                                                                                                    // NOI18N
+    public String getVirtualTreeTopNodesStatement(final boolean artificialIdSupported,
+            final String implodedUserGroupIds) {
+        return "select "                                                                                                                                                                                 // NOI18N
+                    + "y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class" // NOI18N
+                    + ((artificialIdSupported) ? ",artificial_id" : "")
+                    + " from ("                                                                                                                                                                          // NOI18N
+                    + "select "                                                                                                                                                                          // NOI18N
+                    + "n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  "         // NOI18N
+                    + ((artificialIdSupported) ? ",artificial_id" : "")
+                    + " from "                                                                                                                                                                           // NOI18N
+                    + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                        // NOI18N
+                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                       // NOI18N
+                    + "where "                                                                                                                                                                           // NOI18N
+                    + "is_root=true and node_type<>'C' "                                                                                                                                                 // NOI18N
+                    + ") y "                                                                                                                                                                             // NOI18N
                     + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and ug_id IN ("
                     + implodedUserGroupIds
                     + ") left outer join cs_permission pp on p.permission=pp.id ";
@@ -509,9 +512,29 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
 
     @Override
     public String getQueryEditorSearchStmt(final String tableName, final int classId, final String whereClause) {
-        return "SELECT "
+        return "SELECT "                                                   // NOI18N
                     + classId
-                    + " AS classid, tbl.id AS objectid, c.stringrep FROM "
+                    + " AS classid, tbl.id AS objectid, c.stringrep FROM " // NOI18N
+                    + tableName
+                    + " tbl "                                              // NOI18N
+                    + "LEFT OUTER JOIN cs_stringrepcache c "               // NOI18N
+                    + "       ON     ( "                                   // NOI18N
+                    + "                     c.class_id = "                 // NOI18N
+                    + classId
+                    + "              AND    c.object_id=tbl.id "           // NOI18N
+                    + "              ) WHERE "                             // NOI18N
+                    + whereClause;
+    }
+
+    @Override
+    public String getQueryEditorSearchPaginationStmt(final String tableName,
+            final int classId,
+            final String whereClause,
+            final int limit,
+            final int offset) {
+        return "SELECT * FROM (SELECT "
+                    + classId
+                    + " classid, tbl.id objectid, c.stringrep FROM "
                     + tableName
                     + " tbl "
                     + "LEFT OUTER JOIN cs_stringrepcache c "     // NOI18N
@@ -520,7 +543,11 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                     + classId                                    // NOI18N
                     + "              AND    c.object_id=tbl.id " // NOI18N
                     + "              ) WHERE "
-                    + whereClause;
+                    + whereClause
+                    + ") sub LIMIT "                             // NOI18N
+                    + limit
+                    + " OFFSET "                                 // NOI18N
+                    + offset;
     }
 
     @Override

@@ -57,11 +57,12 @@ public interface ServerSQLStatements extends DialectProvider {
     /**
      * DOCUMENT ME!
      *
-     * @param   implodedUserGroupIds  DOCUMENT ME!
+     * @param   artificialIdSupported  DOCUMENT ME!
+     * @param   implodedUserGroupIds   DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    String getVirtualTreeTopNodesStatement(String implodedUserGroupIds);
+    String getVirtualTreeTopNodesStatement(boolean artificialIdSupported, String implodedUserGroupIds);
 
     /**
      * DOCUMENT ME!
@@ -360,6 +361,19 @@ public interface ServerSQLStatements extends DialectProvider {
      * @return  DOCUMENT ME!
      */
     String getQueryEditorSearchStmt(String tableName, int classId, String whereClause);
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   tableName    DOCUMENT ME!
+     * @param   classId      DOCUMENT ME!
+     * @param   whereClause  DOCUMENT ME!
+     * @param   limit        DOCUMENT ME!
+     * @param   offset       DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    String getQueryEditorSearchPaginationStmt(String tableName, int classId, String whereClause, int limit, int offset);
 
     /**
      * DOCUMENT ME!

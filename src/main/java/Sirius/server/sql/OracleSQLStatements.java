@@ -72,18 +72,21 @@ public final class OracleSQLStatements implements ServerSQLStatements {
     }
 
     @Override
-    public String getVirtualTreeTopNodesStatement(final String implodedUserGroupIds) {
-        return "select "                                                                                                                                                                                        // NOI18N
-                    + "y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
-                    + "("                                                                                                                                                                                       // NOI18N
-                    + "select "                                                                                                                                                                                 // NOI18N
-                    + "n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  "                // NOI18N
-                    + "from "                                                                                                                                                                                   // NOI18N
-                    + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                               // NOI18N
-                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                              // NOI18N
-                    + "where "                                                                                                                                                                                  // NOI18N
-                    + "is_root='1' and node_type<>'C' "                                                                                                                                                         // NOI18N
-                    + ") y "                                                                                                                                                                                    // NOI18N
+    public String getVirtualTreeTopNodesStatement(final boolean artificialIdSupported,
+            final String implodedUserGroupIds) {
+        return "select "                                                                                                                                                                                 // NOI18N
+                    + "y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class" // NOI18N
+                    + ((artificialIdSupported) ? ",artificial_id" : "")
+                    + " from ("                                                                                                                                                                          // NOI18N
+                    + "select "                                                                                                                                                                          // NOI18N
+                    + "n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  "         // NOI18N
+                    + ((artificialIdSupported) ? ",artificial_id" : "")
+                    + " from "                                                                                                                                                                           // NOI18N
+                    + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                        // NOI18N
+                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                       // NOI18N
+                    + "where "                                                                                                                                                                           // NOI18N
+                    + "is_root='1' and node_type<>'C' "                                                                                                                                                  // NOI18N
+                    + ") y "                                                                                                                                                                             // NOI18N
                     + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and nvl(ug_id, '-1') IN ("
                     + implodedUserGroupIds
                     + ") left outer join cs_permission pp on p.permission=pp.id ";
@@ -541,6 +544,30 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                     + "              AND    c.object_id=tbl.id " // NOI18N
                     + "              ) WHERE "
                     + whereClause;
+    }
+
+    @Override
+    public String getQueryEditorSearchPaginationStmt(final String tableName,
+            final int classId,
+            final String whereClause,
+            final int limit,
+            final int offset) {
+        return "SELECT * FROM (SELECT "
+                    + classId
+                    + " classid, tbl.id objectid, c.stringrep FROM "
+                    + tableName
+                    + " tbl "
+                    + "LEFT OUTER JOIN cs_stringrepcache c "     // NOI18N
+                    + "       ON     ( "                         // NOI18N
+                    + "                     c.class_id = "
+                    + classId                                    // NOI18N
+                    + "              AND    c.object_id=tbl.id " // NOI18N
+                    + "              ) WHERE "
+                    + whereClause
+                    + ") sub WHERE rownum >= "
+                    + offset
+                    + " AND rownum <= "
+                    + (offset + limit);
     }
 
     @Override

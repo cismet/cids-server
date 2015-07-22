@@ -222,13 +222,13 @@ public class BeanFactory {
                             value = observableArrayElements;
                             addObservableListListener(observableArrayElements, bean, field);
                         }
+
+                        if (mc.getPrimaryKey().equalsIgnoreCase(field) && (value instanceof BigDecimal)) {
+                            // FIXME: this is probably not what we want
+                            value = ((BigDecimal)value).intValue();
+                        }
                         bean.setProperty(field, value);
                     }
-                    if (mc.getPrimaryKey().equalsIgnoreCase(field) && (value instanceof BigDecimal)) {
-                        // FIXME: this is probably not what we want
-                        value = ((BigDecimal)value).intValue();
-                    }
-                    bean.setProperty(field, value);
                 }
                 // bean.addPropertyChangeListener(metaObject);
                 bean.setMetaObject(metaObject);

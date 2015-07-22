@@ -626,9 +626,6 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     public Node[] getTopNodes(final User user) throws SQLException {
         final String implodedUserGroupIds = implodedUserGroupIds(user);
 
-        final String statement = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-        final String statement = getStatements(properties.getInteralDialect()).getTopNodesStatement(
-                implodedUserGroupIds); 
         boolean artificialIdSupported = false;
         ResultSet set = null;
         try {
@@ -640,27 +637,8 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             DBConnection.closeResultSets(set);
         }
 
-        final String statement = "select  distinct "                                  // NOI18N
-                    + "y.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission as perm_id,p.ug_id,pp.key as perm_key,y.policy,iconfactory,icon,derive_permissions_from_class"
-                    + ((artificialIdSupported) ? ",artificial_id" : "")
-                    + "  from "                                                       // NOI18N
-                    + "("                                                             // NOI18N
-                    + "select "                                                       // NOI18N
-                    + "n.id as id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name as url,iconfactory,icon,derive_permissions_from_class"
-                    + ((artificialIdSupported) ? ",artificial_id" : "")
-                    + "  "                                                            // NOI18N
-                    + "from "                                                         // NOI18N
-                    + "cs_cat_node as n left outer join url  on ( n.descr=url.id ) "  // NOI18N
-                    + "left outer join url_base as ub  on (url.url_base_id=ub.id)   " // NOI18N
-                    + "where "                                                        // NOI18N
-                    + "is_root=true and node_type<>'C' "                              // NOI18N
-                    + ") as y "                                                       // NOI18N
-                    + "left outer join cs_ug_cat_node_perm as p on p.cat_node_id=y.id and ug_id IN ("
-                    + implodedUserGroupIds
-                    + ") left outer join cs_permission as pp on p.permission=pp.id "; // NOI18N
-        final String statement = SQLTools.getStatements(properties.getInteralDialect())
-                    .getVirtualTreeTopNodesStatement(
-                        implodedUserGroupIds);
+        final String statement = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                    .getVirtualTreeTopNodesStatement(artificialIdSupported, implodedUserGroupIds);
 
         Statement stmt = null;
         ResultSet rs = null;

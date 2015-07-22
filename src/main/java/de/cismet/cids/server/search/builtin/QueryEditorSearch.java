@@ -5,13 +5,8 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.cismet.cids.server.search.builtin;
 
-import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.sql.DialectProvider;
@@ -40,21 +35,6 @@ import de.cismet.cids.server.search.SearchException;
 public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaObjectNodeServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
-
-    private static final String rawQuery = "SELECT {2} AS classid, tbl.id AS objectid, c.stringrep FROM {0} tbl "
-                + "LEFT OUTER JOIN cs_stringrepcache c "     // NOI18N
-                + "       ON     ( "                         // NOI18N
-                + "                     c.class_id ={2} "    // NOI18N
-                + "              AND    c.object_id=tbl.id " // NOI18N
-                + "              ) WHERE {1}";
-
-    private static final String rawQueryPagination =
-        "SELECT * FROM (SELECT {2} AS classid, tbl.id AS objectid, c.stringrep FROM {0} tbl "
-                + "LEFT OUTER JOIN cs_stringrepcache c "     // NOI18N
-                + "       ON     ( "                         // NOI18N
-                + "                     c.class_id ={2} "    // NOI18N
-                + "              AND    c.object_id=tbl.id " // NOI18N
-                + "              ) WHERE {1}) AS sub LIMIT {3} OFFSET {4}";
 
     private static final transient Logger LOG = Logger.getLogger(QueryEditorSearch.class);
 
@@ -118,14 +98,17 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
         final ArrayList<MetaObjectNode> metaObjects = new ArrayList<MetaObjectNode>();
         if (ms != null) {
             try {
-                final String query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
-                                    .getDialect())
-                            .getQueryEditorSearchStmt(metaClass, classId, whereClause);
-                final boolean paginationEnabled = limit
-                            >= 0;
-                final String query = (!paginationEnabled)
-                    ? MessageFormat.format(rawQuery, metaClass, whereClause, classId)
-                    : MessageFormat.format(rawQueryPagination, metaClass, whereClause, classId, limit, offset);
+                final boolean paginationEnabled = limit >= 0;
+
+                final String query;
+                if (paginationEnabled) {
+                    query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                                .getQueryEditorSearchPaginationStmt(metaClass, classId, whereClause, limit, offset);
+                } else {
+                    query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                                .getQueryEditorSearchStmt(metaClass, classId, whereClause);
+                }
+
                 LOG.info(query);
                 final ArrayList<ArrayList> results = ms.performCustomSearch(query);
 
@@ -145,12 +128,12 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
                 }
 
                 return metaObjects;
-            } catch (RemoteException ex) {
+            } catch (final RemoteException ex) {
                 LOG.error(ex.getMessage(), ex);
-                throw new SearchException("An error is occured, possibly an sql syntax error", ex);
+                throw new SearchException("An error is occured, possibly an sql syntax error", ex); // NOI18N
             }
         } else {
-            LOG.error("active local server not found"); // NOI18N
+            LOG.error("active local server not found");                                             // NOI18N
         }
 
         return metaObjects;
