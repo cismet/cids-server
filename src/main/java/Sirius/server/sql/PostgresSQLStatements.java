@@ -147,7 +147,7 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
         return
                 "SELECT "                                                                          // NOI18N
                     + "id_to id, "                                                              // NOI18N
-                    + "domain_to domain "                                                       // NOI18N
+                    + "domain_to \"domain\" "                                                       // NOI18N
                 + "FROM "                                                                          // NOI18N
                     + "cs_cat_link "                                                               // NOI18N
                 + "WHERE "                                                                         // NOI18N
@@ -453,50 +453,60 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                     + "%' "                                                                   // NOI18N
                     + "AND i.class_id IN "
                     + classesIn;
+
+        final Object[] objs = new Object[0];
+        final PreparableStatement ps;
         if (geoSql == null) {
-            return new PreparableStatement(sql, new int[0]);
+            ps = new PreparableStatement(sql, new int[0]);
         } else {
-            return new PreparableStatement("select distinct * from ("
+            ps = new PreparableStatement("select distinct * from ("
                             + sql
                             + ") as txt,(select distinct class_id as ocid,object_id as oid,stringrep from ("
                             + geoSql.getStatement()
                             + ")as y ) as geo where txt.ocid=geo.ocid and txt.oid=geo.oid",
                     new int[0]);
         }
+
+        ps.setObjects(objs);
+
+        return ps;
     }
 
     @Override
     public PreparableStatement getDefaultGeoSearchStmt(final String wkt, final String srid, final String classesIn) {
-        return new PreparableStatement("SELECT DISTINCT i.class_id , "                           // NOI18N
-                        + "                i.object_id, "                                        // NOI18N
-                        + "                s.stringrep "                                         // NOI18N
-                        + "FROM            geom g, "                                             // NOI18N
-                        + "                cs_attr_object_derived i "                            // NOI18N
-                        + "                LEFT OUTER JOIN cs_stringrepcache s "                 // NOI18N
-                        + "                ON              ( "                                   // NOI18N
-                        + "                                                s.class_id =i.class_id " // NOI18N
+        final PreparableStatement ps = new PreparableStatement("SELECT DISTINCT i.class_id , "       // NOI18N
+                        + "                i.object_id, "                                            // NOI18N
+                        + "                s.stringrep "                                             // NOI18N
+                        + "FROM            geom g, "                                                 // NOI18N
+                        + "                cs_attr_object_derived i "                                // NOI18N
+                        + "                LEFT OUTER JOIN cs_stringrepcache s "                     // NOI18N
+                        + "                ON              ( "                                       // NOI18N
+                        + "                                                s.class_id =i.class_id "  // NOI18N
                         + "                                AND             s.object_id=i.object_id " // NOI18N
-                        + "                                ) "                                   // NOI18N
-                        + "WHERE           i.attr_class_id = "                                   // NOI18N
-                        + "                ( SELECT cs_class.id "                                // NOI18N
-                        + "                FROM    cs_class "                                    // NOI18N
-                        + "                WHERE   cs_class.table_name::text = 'GEOM'::text "    // NOI18N
-                        + "                ) "                                                   // NOI18N
-                        + "AND             i.attr_object_id = g.id "                             // NOI18N
+                        + "                                ) "                                       // NOI18N
+                        + "WHERE           i.attr_class_id = "                                       // NOI18N
+                        + "                ( SELECT cs_class.id "                                    // NOI18N
+                        + "                FROM    cs_class "                                        // NOI18N
+                        + "                WHERE   cs_class.table_name::text = 'GEOM'::text "        // NOI18N
+                        + "                ) "                                                       // NOI18N
+                        + "AND             i.attr_object_id = g.id "                                 // NOI18N
                         + "AND i.class_id IN "
-                        + classesIn                                                              // NOI18N
+                        + classesIn                                                                  // NOI18N
                         + "AND geo_field && st_GeometryFromText('SRID="
                         + srid
                         + ";"
                         + wkt
-                        + "') "                                                                  // NOI18N
+                        + "') "                                                                      // NOI18N
                         + "AND st_intersects(geo_field,st_GeometryFromText('SRID="
                         + srid
                         + ";"
                         + wkt
-                        + "')) "                                                                 // NOI18N
+                        + "')) "                                                                     // NOI18N
                         + "ORDER BY        1,2,3",
                 new int[0]);
+        ps.setObjects(new Object[0]);
+
+        return ps;
     }
 
     @Override

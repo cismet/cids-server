@@ -371,7 +371,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                         if (psAttrString == null) {
                             psAttrString = connection.prepareStatement(SQLTools.getStatements(
                                         Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                                            .getIndexTriggerInsertAttrObjectStmt());
+                                            .getIndexTriggerInsertAttrStringStmt());
                         }
                         psAttrString.setInt(1, mo.getClassID());
                         psAttrString.setInt(2, mo.getID());
