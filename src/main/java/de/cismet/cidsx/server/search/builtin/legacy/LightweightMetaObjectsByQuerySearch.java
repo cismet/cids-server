@@ -48,23 +48,12 @@ public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearc
 
     //~ Instance fields --------------------------------------------------------
 
-    @Getter
-    private final SearchInfo searchInfo;
-    @Getter
-    @Setter
-    private String domain;
-    @Getter
-    @Setter
-    private int classId;
-    @Getter
-    @Setter
-    private String query;
-    @Getter
-    @Setter
-    private String[] representationFields;
-    @Getter
-    @Setter
-    private String representationPattern;
+    @Getter private final SearchInfo searchInfo;
+    @Getter @Setter private String domain;
+    @Getter @Setter private int classId;
+    @Getter @Setter private String query;
+    @Getter @Setter private String[] representationFields;
+    @Getter @Setter private String representationPattern;
 
     //~ Constructors -----------------------------------------------------------
 
