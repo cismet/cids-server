@@ -12,7 +12,7 @@ import Sirius.server.search.Query;
 
 import org.apache.log4j.Logger;
 
-import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
 
 import org.postgis.PGbox3d;
 import org.postgis.PGgeometry;
@@ -297,7 +297,15 @@ public final class DBConnection implements DBBackend {
      */
     private PreparedStatement prepareQuery(final String descriptor, final Object... parameters) throws SQLException {
         if (!internalQueries.containsKey(descriptor) || internalQueries.get(descriptor).isClosed()) {
-            final String stmt = NbBundle.getMessage(DBConnection.class, descriptor);
+            final String stmt = SQLTools.getStatement(this.getClass(),
+                    Lookup.getDefault().lookup(DialectProvider.class).getDialect(),
+                    descriptor);
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("statement for dialect: [dialect=" + dbc.getInternalDialect() + "|descriptor=" + descriptor
+                            + "|stmt=" + stmt + "]");
+            }
+
             final PreparedStatement ps = con.prepareStatement(stmt);
             ps.setPoolable(true);
             if (parameters.length == ps.getParameterMetaData().getParameterCount()) {

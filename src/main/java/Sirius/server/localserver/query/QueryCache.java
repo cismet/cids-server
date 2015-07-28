@@ -159,7 +159,7 @@ public class QueryCache {
             final Statement getQueryClassAssoc = con.createStatement();
 
             final ResultSet rs = getQueryClassAssoc.executeQuery(
-                    "SELECT d.name,query_id,ug_id from cs_query_ug_assoc as uga ,cs_domain as d , cs_ug as ug where uga.ug_id=ug.id and d.id=ug.domain"); // NOI18N
+                    "SELECT d.name,query_id,ug_id from cs_query_ug_assoc uga ,cs_domain d , cs_ug ug where uga.ug_id=ug.id and d.id=ug.domain"); // NOI18N
 
             // Vorsicht die Id ist nicht Systemweit eindeutig statt ug_id muss ug_name verwendet werden
             // dazu suche wo werden query permissions abgefragt
@@ -202,7 +202,7 @@ public class QueryCache {
             final Statement getLinks = con.createStatement();
 
             final ResultSet rs = getLinks.executeQuery(
-                    "SELECT id_from,id_to,d.name as domain_to,qfrom.name as fromName,qto.name as toName from cs_query_link as l,cs_query as qfrom,cs_query as qto,cs_domain as d where l.id_from = qfrom.id and l.id_to=qto.id and d.id=l.domain_to"); // NOI18N
+                    "SELECT id_from,id_to,d.name domain_to,qfrom.name fromName,qto.name toName from cs_query_link l,cs_query qfrom,cs_query qto,cs_domain d where l.id_from = qfrom.id and l.id_to=qto.id and d.id=l.domain_to"); // NOI18N
 
             int from = 0;
             int to = 0;
@@ -264,7 +264,7 @@ public class QueryCache {
             final Statement getSearchParameter = con.createStatement();
 
             final ResultSet rs = getSearchParameter.executeQuery(
-                    "SELECT qp.id as p_id,q.id as q_id,qp.param_key as p_key,qp.is_query_result as is_result,qp.query_position as pos,q.name as query_name, qp.descr as query_description from cs_query_parameter as qp,cs_query as q where q.id=qp.query_id"); // NOI18N
+                    "SELECT qp.id p_id,q.id q_id,qp.param_key p_key,qp.is_query_result is_result,qp.query_position pos,q.name query_name, qp.descr query_description from cs_query_parameter qp,cs_query q where q.id=qp.query_id"); // NOI18N
 
             int id = 0;
             int q_id = 0;

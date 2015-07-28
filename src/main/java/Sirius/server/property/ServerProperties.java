@@ -159,6 +159,10 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
 
     private static final transient Logger LOG = Logger.getLogger(ServerProperties.class);
 
+    //~ Instance fields --------------------------------------------------------
+
+    private String internalDialect;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -170,6 +174,8 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public ServerProperties(final InputStream inputStream) throws IOException {
         super(inputStream);
+
+        internalDialect = null;
     }
 
     /**
@@ -181,7 +187,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @throws  IOException            DOCUMENT ME!
      */
     public ServerProperties(final String configFile) throws FileNotFoundException, IOException {
-        super(new FileInputStream(configFile));
+        this(new FileInputStream(configFile));
     }
 
     /**
@@ -496,6 +502,25 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
 
             return "1099";
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getInteralDialect() {
+        if (internalDialect == null) {
+            try {
+                internalDialect = getString("internalDialect");                       // NOI18N
+            } catch (final MissingResourceException e) {
+                LOG.warn("error reading internalDialect property, using default", e); // NOI18N
+
+                internalDialect = "";
+            }
+        }
+
+        return internalDialect;
     }
 
     /**

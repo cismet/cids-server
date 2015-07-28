@@ -28,6 +28,8 @@ public class DBClassifier {
 
     protected String sqlDialect;
 
+    protected String internalDialect;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -85,15 +87,18 @@ public class DBClassifier {
      * @param  driver           DOCUMENT ME!
      * @param  noOfConnections  DOCUMENT ME!
      * @param  sqlDialect       DOCUMENT ME!
+     * @param  internalDialect  DOCUMENT ME!
      */
     public DBClassifier(final String url,
             final String login,
             final String pwd,
             final String driver,
             final int noOfConnections,
-            final String sqlDialect) {
+            final String sqlDialect,
+            final String internalDialect) {
         this(url, login, pwd, driver, noOfConnections);
         this.sqlDialect = sqlDialect;
+        this.internalDialect = internalDialect;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -200,5 +205,23 @@ public class DBClassifier {
      */
     public void setSqlDialect(final String sqlDialect) {
         this.sqlDialect = sqlDialect;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getInternalDialect() {
+        return internalDialect;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  internalDialect  DOCUMENT ME!
+     */
+    public void setInternalDialect(final String internalDialect) {
+        this.internalDialect = internalDialect;
     }
 }
