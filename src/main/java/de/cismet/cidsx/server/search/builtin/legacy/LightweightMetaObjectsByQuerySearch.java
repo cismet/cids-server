@@ -30,7 +30,7 @@ import de.cismet.cids.server.search.SearchException;
 import de.cismet.cidsx.base.types.Type;
 
 import de.cismet.cidsx.server.api.types.SearchInfo;
-import de.cismet.cidsx.server.api.types.SearchParameterInfo;
+import de.cismet.cidsx.server.api.types.ParameterInfo;
 import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
 
 /**
@@ -69,40 +69,40 @@ public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearc
         searchInfo.setDescription(
             "Builtin Legacy Search to delegate the operation getLightweightMetaObjectsByQuery to the cids Pure REST Search API.");
 
-        final List<SearchParameterInfo> parameterDescription = new LinkedList<SearchParameterInfo>();
-        SearchParameterInfo searchParameterInfo;
+        final List<ParameterInfo> parameterDescription = new LinkedList<ParameterInfo>();
+        ParameterInfo searchParameterInfo;
 
-        searchParameterInfo = new SearchParameterInfo();
+        searchParameterInfo = new ParameterInfo();
         searchParameterInfo.setKey("domain");
         searchParameterInfo.setType(Type.STRING);
         parameterDescription.add(searchParameterInfo);
 
-        searchParameterInfo = new SearchParameterInfo();
+        searchParameterInfo = new ParameterInfo();
         searchParameterInfo.setKey("classId");
         searchParameterInfo.setType(Type.INTEGER);
         parameterDescription.add(searchParameterInfo);
 
-        searchParameterInfo = new SearchParameterInfo();
+        searchParameterInfo = new ParameterInfo();
         searchParameterInfo.setKey("query");
         searchParameterInfo.setDescription(
             "the query must generate a result set with columns legacy objectId and all specified representationFields");
         searchParameterInfo.setType(Type.STRING);
         parameterDescription.add(searchParameterInfo);
 
-        searchParameterInfo = new SearchParameterInfo();
+        searchParameterInfo = new ParameterInfo();
         searchParameterInfo.setKey("representationFields");
         searchParameterInfo.setType(Type.STRING);
         searchParameterInfo.setArray(true);
         parameterDescription.add(searchParameterInfo);
 
-        searchParameterInfo = new SearchParameterInfo();
+        searchParameterInfo = new ParameterInfo();
         searchParameterInfo.setKey("representationPattern");
         searchParameterInfo.setType(Type.STRING);
         parameterDescription.add(searchParameterInfo);
 
         searchInfo.setParameterDescription(parameterDescription);
 
-        final SearchParameterInfo resultParameterInfo = new SearchParameterInfo();
+        final ParameterInfo resultParameterInfo = new ParameterInfo();
         resultParameterInfo.setKey("return");
         resultParameterInfo.setArray(true);
         resultParameterInfo.setType(Type.ENTITY_REFERENCE);

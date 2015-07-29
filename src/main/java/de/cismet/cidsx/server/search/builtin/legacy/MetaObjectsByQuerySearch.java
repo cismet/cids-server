@@ -30,7 +30,7 @@ import de.cismet.cids.server.search.SearchException;
 import de.cismet.cidsx.base.types.Type;
 
 import de.cismet.cidsx.server.api.types.SearchInfo;
-import de.cismet.cidsx.server.api.types.SearchParameterInfo;
+import de.cismet.cidsx.server.api.types.ParameterInfo;
 import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
 
 /**
@@ -64,15 +64,15 @@ public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implement
         searchInfo.setDescription(
             "Builtin Legacy Search to delegate the operation getMetaObjects(String query, ...) to the cids Pure REST Search API.");
 
-        final List<SearchParameterInfo> parameterDescription = new LinkedList<SearchParameterInfo>();
-        SearchParameterInfo searchParameterInfo;
+        final List<ParameterInfo> parameterDescription = new LinkedList<ParameterInfo>();
+        ParameterInfo searchParameterInfo;
 
-        searchParameterInfo = new SearchParameterInfo();
+        searchParameterInfo = new ParameterInfo();
         searchParameterInfo.setKey("domain");
         searchParameterInfo.setType(Type.STRING);
         parameterDescription.add(searchParameterInfo);
 
-        searchParameterInfo = new SearchParameterInfo();
+        searchParameterInfo = new ParameterInfo();
         searchParameterInfo.setKey("query");
         searchParameterInfo.setDescription(
             "the query must generate a result set with columns legacy classId and legacy objectId");
@@ -81,7 +81,7 @@ public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implement
 
         searchInfo.setParameterDescription(parameterDescription);
 
-        final SearchParameterInfo resultParameterInfo = new SearchParameterInfo();
+        final ParameterInfo resultParameterInfo = new ParameterInfo();
         resultParameterInfo.setKey("return");
         resultParameterInfo.setArray(true);
         resultParameterInfo.setType(Type.ENTITY);
