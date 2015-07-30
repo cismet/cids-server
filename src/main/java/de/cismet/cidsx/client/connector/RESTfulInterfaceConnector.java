@@ -1507,7 +1507,6 @@ public class RESTfulInterfaceConnector implements CallServerService {
         return new HashMap(0);
     }
 
-    @Override
     /**
      * <strong>Unsupported Operation</strong>
      * <p>
@@ -1521,6 +1520,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @throws RemoteException not thrown
      * @deprecated
      */
+    @Override
     public SearchResult search(final User user, final String[] classIds, final SearchOption[] searchOptions)
             throws RemoteException {
         final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()

@@ -61,11 +61,15 @@ public class Seeker {
             // to get classes from classIDs
             classCache = dbServer.getClassCache();
 
-            objectFactory = dbServer.getObjectFactory();
+            objectFactory = new ObjectFactory(conPool, classCache);
 
-            hierarchy = new ObjectHierarchy(conPool);
+            hierarchy = new ObjectHierarchy(conPool, dbServer.getProperties());
         } catch (Throwable e) {
-            logger.error(e);
+            logger.error("cannot initialise seeker", e);
+
+            if (e instanceof Error) {
+                throw (Error)e;
+            }
         }
     }
     // ---------------------------------------------------------------------------------------------------

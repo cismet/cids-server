@@ -20,7 +20,6 @@ import Sirius.server.sql.ExceptionHandler;
 
 import org.apache.log4j.Logger;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -49,7 +48,6 @@ public final class UserStore extends Shutdown {
     protected Vector memberships;
     // protected Hashtable membershipHash;// by userIDplusLsName
     protected ServerProperties properties;
-    protected PreparedStatement validateUser;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -158,11 +156,6 @@ public final class UserStore extends Shutdown {
 
             memberTable.close();
 
-            // prepare statement for validate user (called very often) :-)
-            final String valUser =
-                "select count(*) from cs_usr as u ,cs_ug as ug ,cs_ug_membership as m where u.id=m.usr_id and  ug.id = m.ug_id and trim(login_name) = ? and trim(ug.name) = ?"; // NOI18N
-            validateUser = conPool.getConnection().prepareStatement(valUser);
-
             addShutdown(new AbstractShutdownable() {
 
                     @Override
@@ -174,7 +167,6 @@ public final class UserStore extends Shutdown {
                         users.clear();
                         userGroups.clear();
                         memberships.clear();
-                        DBConnection.closeStatements(validateUser);
                     }
                 });
         } catch (java.lang.Exception e) {

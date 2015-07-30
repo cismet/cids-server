@@ -41,6 +41,7 @@ import Sirius.server.search.Seeker;
 import Sirius.server.search.store.Info;
 import Sirius.server.search.store.QueryData;
 import Sirius.server.sql.DBConnectionPool;
+import Sirius.server.sql.PreparableStatement;
 import Sirius.server.sql.SystemStatement;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -57,6 +58,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -65,6 +67,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.MissingResourceException;
+import java.util.Properties;
 
 import de.cismet.cids.objectextension.ObjectExtensionFactory;
 
@@ -841,17 +844,48 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         try {
             final Statement s = getConnectionPool().getDBConnection().getConnection().createStatement();
             final ResultSet rs = s.executeQuery(query);
-            final ArrayList<ArrayList> result = new ArrayList<ArrayList>();
-            while (rs.next()) {
-                final ArrayList row = new ArrayList();
-                for (int i = 0; i < rs.getMetaData().getColumnCount(); ++i) {
-                    row.add(rs.getObject(i + 1));
-                }
-                result.add(row);
-            }
+            final ArrayList<ArrayList> result = collectResults(rs);
+
             return result;
         } catch (Exception e) {
             final String msg = "Error during sql statement: " + query;
+            logger.error(msg, e);
+            throw new RemoteException(msg, e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   rs  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    public ArrayList<ArrayList> collectResults(final ResultSet rs) throws SQLException {
+        final ArrayList<ArrayList> result = new ArrayList<ArrayList>();
+        while (rs.next()) {
+            final ArrayList row = new ArrayList();
+            for (int i = 0; i < rs.getMetaData().getColumnCount(); ++i) {
+                row.add(rs.getObject(i + 1));
+            }
+            result.add(row);
+        }
+
+        return result;
+    }
+
+    @Override
+    public ArrayList<ArrayList> performCustomSearch(final PreparableStatement ps) throws RemoteException {
+        try {
+            final PreparedStatement stmt = ps.parameterise(getConnectionPool().getDBConnection().getConnection());
+            final ResultSet rs = stmt.executeQuery();
+            final ArrayList<ArrayList> result = collectResults(rs);
+
+            return result;
+        } catch (final Exception e) {
+            final String msg = "Error during sql statement: " + ps;
             logger.error(msg, e);
             throw new RemoteException(msg, e);
         }
@@ -1062,6 +1096,14 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
      * @throws  IllegalStateException  DOCUMENT ME!
      */
     public static void main(final String[] args) throws Throwable {
+        final Properties p = new Properties();
+        p.put("log4j.appender.Remote", "org.apache.log4j.net.SocketAppender"); // NOI18N
+        p.put("log4j.appender.Remote.remoteHost", "localhost");                // NOI18N
+        p.put("log4j.appender.Remote.port", "4445");                           // NOI18N
+        p.put("log4j.appender.Remote.locationInfo", "true");                   // NOI18N
+        p.put("log4j.rootLogger", "DEBUG,Remote");                             // NOI18N
+        org.apache.log4j.PropertyConfigurator.configure(p);
+
         // first of all register the default exception handler for all threads
         Thread.setDefaultUncaughtExceptionHandler(new DefaultServerExceptionHandler());
 
@@ -1119,6 +1161,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             System.out.println("Info :: <LS>  !!!LocalSERVER started!!!!");               // NOI18N
         } catch (Exception e) {
             System.err.println("Error while starting domainserver :: " + e.getMessage()); // NOI18N
+            e.printStackTrace();
             if (instance != null) {
                 instance.shutdown();
             }

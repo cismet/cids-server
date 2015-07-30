@@ -9,6 +9,9 @@ package de.cismet.cids.server.search.builtin;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
+import Sirius.server.sql.DialectProvider;
+import Sirius.server.sql.PreparableStatement;
+import Sirius.server.sql.SQLTools;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -91,29 +94,6 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
                 LOG.info("FullTextSearch started"); // NOI18N
             }
 
-            final String caseSensitiveI = (caseSensitive) ? "" : "I"; // Ein I vor LIKE macht die Suche case insensitive
-
-            final String geoPrefix = "\n select distinct * from ( "; // NOI18N
-
-            final String sql = ""                                                                // NOI18N
-                        + "SELECT DISTINCT i.class_id ocid,i.object_id as oid, c.stringrep "     // NOI18N
-                        + "FROM   cs_attr_string s, "                                            // NOI18N
-                        + "       cs_attr_object_derived i "                                     // NOI18N
-                        + "       LEFT OUTER JOIN cs_stringrepcache c "                          // NOI18N
-                        + "       ON     ( "                                                     // NOI18N
-                        + "                     c.class_id =i.class_id "                         // NOI18N
-                        + "              AND    c.object_id=i.object_id "                        // NOI18N
-                        + "              ) "                                                     // NOI18N
-                        + "WHERE  i.attr_class_id = s.class_id "                                 // NOI18N
-                        + "AND    i.attr_object_id=s.object_id "                                 // NOI18N
-                        + "AND    s.string_val " + caseSensitiveI + "like '%<cidsSearchText>%' " // NOI18N
-                        + "AND i.class_id IN <cidsClassesInStatement>";
-
-            final String geoMidFix = "\n ) as txt,(select distinct class_id as ocid,object_id as oid,stringrep from ("; // NOI18N
-
-            final String geoPostfix = "\n )as y ) as geo "                  // NOI18N
-                        + "\n where txt.ocid=geo.ocid and txt.oid=geo.oid"; // NOI18N
-
             // Deppensuche sequentiell
             final HashSet keyset = new HashSet(getActiveLocalServers().keySet());
 
@@ -127,24 +107,23 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
                 final MetaService ms = (MetaService)getActiveLocalServers().get(key);
                 final String classesInStatement = getClassesInSnippetsPerDomain().get((String)key);
                 if (classesInStatement != null) {
-                    String sqlStatement =
-                        sql.replaceAll("<cidsClassesInStatement>", classesInStatement) // NOI18N
-                        .replaceAll("<cidsSearchText>", searchText);                   // NOI18N
-
+                    PreparableStatement geoSql = null;
                     if (geometry != null) {
-                        final String geoSql = geoSearch.getSearchSql((String)key);
-                        if (geoSql != null) {
-                            sqlStatement = geoPrefix + sqlStatement + geoMidFix + geoSql + geoPostfix;
-                        }
+                        geoSql = geoSearch.getSearchSql((String)key);
                     }
+
+                    final PreparableStatement sqlStatement = SQLTools.getStatements(Lookup.getDefault().lookup(
+                                    DialectProvider.class).getDialect())
+                                .getDefaultFullTextSearchStmt(searchText, classesInStatement, geoSql, caseSensitive);
 
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(sqlStatement);
                     }
                     final ArrayList<ArrayList> result = ms.performCustomSearch(sqlStatement);
                     for (final ArrayList al : result) {
-                        final int cid = (Integer)al.get(0);
-                        final int oid = (Integer)al.get(1);
+                        // FIXME: yet another hack to circumvent odd type behaviour
+                        final int cid = ((Number)al.get(0)).intValue();
+                        final int oid = ((Number)al.get(1)).intValue();
                         String name = null;
                         try {
                             name = (String)al.get(2);

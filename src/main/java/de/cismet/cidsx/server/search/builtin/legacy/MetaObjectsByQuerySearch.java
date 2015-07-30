@@ -48,14 +48,9 @@ public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implement
 
     //~ Instance fields --------------------------------------------------------
 
-    @Getter
-    private final SearchInfo searchInfo;
-    @Getter
-    @Setter
-    private String domain;
-    @Getter
-    @Setter
-    private String query;
+    @Getter private final SearchInfo searchInfo;
+    @Getter @Setter private String domain;
+    @Getter @Setter private String query;
 
     //~ Constructors -----------------------------------------------------------
 

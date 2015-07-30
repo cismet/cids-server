@@ -16,8 +16,12 @@ import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
 import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DBConnectionPool;
+import Sirius.server.sql.DialectProvider;
+import Sirius.server.sql.SQLTools;
 
 import org.apache.log4j.Logger;
+
+import org.openide.util.Lookup;
 
 import java.io.Serializable;
 
@@ -50,33 +54,24 @@ public class PolicyHolder extends Shutdown implements Serializable {
      * Creates a new PolicyHolder object.
      *
      * @param   conPool  DOCUMENT ME!
+     * @param   dialect  DOCUMENT ME!
      *
      * @throws  ServerExitError  DOCUMENT ME!
      */
-    public PolicyHolder(final DBConnectionPool conPool) throws ServerExitError {
+    public PolicyHolder(final DBConnectionPool conPool, final String dialect) throws ServerExitError {
         final DBConnection con = conPool.getDBConnection();
         try {
             final ResultSet serverPolicies = con.getConnection()
                         .createStatement()
-                        .executeQuery(
-                            "SELECT "                                        // NOI18N
-                            + "cs_policy.id as policyid, "                   // NOI18N
-                            + "cs_policy.name,"                              // NOI18N
-                            + "cs_permission.id as permissionid,"            // NOI18N
-                            + "cs_permission.key,"                           // NOI18N
-                            + "default_value "                               // NOI18N
-                            + "FROM "                                        // NOI18N
-                            + "cs_permission,"                               // NOI18N
-                            + "cs_policy,"                                   // NOI18N
-                            + "cs_policy_rule "                              // NOI18N
-                            + "WHERE "                                       // NOI18N
-                            + "cs_policy_rule.permission= cs_permission.id " // NOI18N
-                            + "and cs_policy_rule.policy= cs_policy.id ");   // NOI18N
+                        .executeQuery(SQLTools.getStatements(
+                                Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                            .getPolicyHolderServerPoliciesStmt());
+
             if (serverPolicies == null) {
                 LOG.error(
                     "<LS> ERROR :: Serverpolicies could not be loaded. Fatal Error. Program exits"); // NOI18N
                 throw new ServerExitError(
-                    "Serverpolicies could not be loaded. Fatal Error. Program exits"); // NOI18N
+                    "Serverpolicies could not be loaded. Fatal Error. Program exits");               // NOI18N
             }
 
             while (serverPolicies.next()) {
