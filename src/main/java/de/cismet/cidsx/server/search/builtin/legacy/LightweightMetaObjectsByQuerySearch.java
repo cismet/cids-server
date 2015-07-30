@@ -29,8 +29,8 @@ import de.cismet.cids.server.search.SearchException;
 
 import de.cismet.cidsx.base.types.Type;
 
-import de.cismet.cidsx.server.api.types.SearchInfo;
 import de.cismet.cidsx.server.api.types.ParameterInfo;
+import de.cismet.cidsx.server.api.types.SearchInfo;
 import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
 
 /**
