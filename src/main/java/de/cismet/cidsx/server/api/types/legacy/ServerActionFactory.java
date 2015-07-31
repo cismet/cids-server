@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ClassUtils;
 import org.apache.log4j.Logger;
 
 import org.openide.util.Lookup;
@@ -18,11 +19,14 @@ import org.openide.util.Lookup;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.StringWriter;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+
+import javax.ws.rs.core.MediaType;
 
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
@@ -49,6 +53,8 @@ public class ServerActionFactory {
 
     private static ServerActionFactory factory = null;
 
+    private static final ObjectMapper MAPPER = new ObjectMapper(new JsonFactory());
+
     //~ Instance fields --------------------------------------------------------
 
     private final HashMap<String, Class<? extends ServerAction>> serverActionClassMap =
@@ -56,9 +62,10 @@ public class ServerActionFactory {
     private final HashMap<String, ServerAction> serverActionMap = new HashMap<String, ServerAction>();
     private final HashMap<String, ActionInfo> serverActionInfoMap = new HashMap<String, ActionInfo>();
 
-    private final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
-
     private boolean cacheFilled = false;
+
+    private final ParameterInfo defaultBodyDescription;
+    private final ParameterInfo defaultReturnDescription;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -66,6 +73,20 @@ public class ServerActionFactory {
      * Creates a new ServerActionFactory object.
      */
     private ServerActionFactory() {
+        defaultBodyDescription = new ParameterInfo();
+        defaultBodyDescription.setKey("body");
+        defaultBodyDescription.setDescription("Body Part Parameter (usually a file) of the Server Action.");
+        defaultBodyDescription.setType(Type.JAVA_SERIALIZABLE);
+        defaultBodyDescription.setMediaType(MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT);
+        defaultBodyDescription.setArray(false);
+
+        defaultReturnDescription = new ParameterInfo();
+        defaultBodyDescription.setDescription("Return value of the Server Action.");
+        defaultReturnDescription.setKey("return");
+        defaultReturnDescription.setType(Type.JAVA_SERIALIZABLE);
+        defaultReturnDescription.setMediaType(MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT);
+        defaultReturnDescription.setArray(false);
+
         this.fillCache();
     }
 
@@ -108,21 +129,8 @@ public class ServerActionFactory {
             // that's all. No information about parameters at classs level available!
             final LinkedList<ParameterInfo> actionParameterInfos = new LinkedList<ParameterInfo>();
 
-            // Default content type if none is specified or if the ServerAction does not
-            // is application/octet-stream.
-            final ParameterInfo bodyParameterInfo = new ParameterInfo();
-            bodyParameterInfo.setKey("body");
-            bodyParameterInfo.setType(Type.JAVA_SERIALIZABLE);
-            bodyParameterInfo.setMediaType(MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT);
-            bodyParameterInfo.setArray(false);
-
-            // Default content type if none is specified
-            // is application/x-java-object (binary serialized java object).
-            final ParameterInfo returnParameterInfo = new ParameterInfo();
-            returnParameterInfo.setKey("return");
-            returnParameterInfo.setType(Type.JAVA_SERIALIZABLE);
-            returnParameterInfo.setMediaType(MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT);
-            returnParameterInfo.setArray(false);
+            final ParameterInfo bodyParameterInfo = this.getDefaultBodyDescription();
+            final ParameterInfo returnParameterInfo = this.getDefaultReturnDescription();
 
             actionInfo.setActionKey(actionKey);
             actionInfo.setName(serverActionClass.getSimpleName());
@@ -330,23 +338,12 @@ public class ServerActionFactory {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public Object bodyObjectFromFileAttachment(final InputStream fileAttachement, ParameterInfo bodyDescription)
+    public Object bodyObjectFromFileAttachment(final InputStream fileAttachement, final ParameterInfo bodyDescription)
             throws Exception {
         final Object body;
 
-        if (bodyDescription == null) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "body description parameter is null, creating default description for JAVA_SERIALIZABLE object!");
-            }
-            bodyDescription = new ParameterInfo();
-            bodyDescription.setKey("body");
-            bodyDescription.setType(Type.JAVA_SERIALIZABLE);
-            bodyDescription.setArray(false);
-            bodyDescription.setMediaType(MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT);
-        }
-
-        if (bodyDescription.getMediaType().equalsIgnoreCase(MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT)) {
+        if (bodyDescription.getMediaType().toLowerCase().equalsIgnoreCase(
+                        MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("deserializing binary java object attachment");
             }
@@ -355,9 +352,27 @@ public class ServerActionFactory {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("successfully restored java object '" + body.getClass() + "' from binary input file");
             }
+        } else if (bodyDescription.getMediaType().equalsIgnoreCase(MediaType.APPLICATION_JSON)) {
+            Class javaClass = Object.class;
+            try {
+                if ((bodyDescription.getType() != null) && (bodyDescription.getAdditionalTypeInfo() != null)) {
+                    javaClass = ClassUtils.getClass(bodyDescription.getAdditionalTypeInfo());
+                }
+            } catch (ClassNotFoundException cne) {
+                LOG.warn("could not find java class for type '" + bodyDescription.getAdditionalTypeInfo() + "'", cne);
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("deserializing JSON attachment to Java Object '" + javaClass.getSimpleName() + "'");
+            }
+            body = MAPPER.readValue(fileAttachement, javaClass);
+        } else if (bodyDescription.getMediaType().toLowerCase().contains("text")) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("deserializing plain text attachment to String");
+            }
+            body = IOUtils.toString(fileAttachement, "UTF-8");
         } else {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("deserializing byte array attachment");
+                LOG.debug("deserializing byte array attachment from '" + bodyDescription.getMediaType() + "' resource");
             }
             body = IOUtils.toByteArray(fileAttachement);
             if (body != null) {
@@ -372,5 +387,27 @@ public class ServerActionFactory {
         }
 
         return body;
+    }
+
+    /**
+     * Generates a default body description, if neither the action implementation nor the client provide information
+     * about the content type of the body part.<br>
+     * The Default content type if none is specified is application/x-java-object (binary serialized java object).
+     *
+     * @return  DefaultBodyDescriptio
+     */
+    public ParameterInfo getDefaultBodyDescription() {
+        return defaultBodyDescription;
+    }
+
+    /**
+     * Generates a default return description, if the action implementation does not provide information about the
+     * content type of it's return value.<br>
+     * The Default content type if none is specified is application/x-java-object (binary serialized java object).
+     *
+     * @return  DefaultReturnDescription
+     */
+    public ParameterInfo getDefaultReturnDescription() {
+        return defaultReturnDescription;
     }
 }
