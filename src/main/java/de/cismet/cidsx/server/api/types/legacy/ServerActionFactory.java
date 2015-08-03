@@ -16,10 +16,8 @@ import org.apache.log4j.Logger;
 
 import org.openide.util.Lookup;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.io.StringWriter;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -366,10 +364,10 @@ public class ServerActionFactory {
             }
             body = MAPPER.readValue(fileAttachement, javaClass);
         } else if (bodyDescription.getMediaType().toLowerCase().contains("text")) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("deserializing plain text attachment to String");
-            }
             body = IOUtils.toString(fileAttachement, "UTF-8");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("deserializing plain text attachment to String: '" + body + "'");
+            }
         } else {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("deserializing byte array attachment from '" + bodyDescription.getMediaType() + "' resource");

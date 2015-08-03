@@ -22,6 +22,18 @@ import java.io.StringReader;
 import java.net.URL;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.ws.rs.core.MediaType;
+
+import de.cismet.cidsx.base.types.MediaTypes;
+import de.cismet.cidsx.base.types.Type;
+
+import de.cismet.cidsx.server.actions.RestApiCidsServerAction;
+import de.cismet.cidsx.server.api.types.ActionInfo;
+import de.cismet.cidsx.server.api.types.GenericResourceWithContentType;
+import de.cismet.cidsx.server.api.types.ParameterInfo;
 
 import de.cismet.commons.security.AccessHandler;
 import de.cismet.commons.security.exceptions.BadHttpStatusCodeException;
@@ -34,10 +46,12 @@ import de.cismet.commons.security.handler.SimpleHttpAccessHandler;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-@org.openide.util.lookup.ServiceProvider(service = ServerAction.class)
-public class HttpTunnelAction implements UserAwareServerAction {
+@org.openide.util.lookup.ServiceProvider(service = RestApiCidsServerAction.class)
+public class HttpTunnelAction implements RestApiCidsServerAction {
 
     //~ Static fields/initializers ---------------------------------------------
+
+    public static final String TASK_NAME = "httpTunnelAction";
 
     private static final transient org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
             HttpTunnelAction.class);
@@ -66,7 +80,81 @@ public class HttpTunnelAction implements UserAwareServerAction {
 
     private User user = null;
 
+
+    protected final ActionInfo actionInfo;
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new HttpTunnelAction object.
+     */
+    public HttpTunnelAction() {
+        actionInfo = new ActionInfo();
+        actionInfo.setName("HTTP Tunnel Action");
+        actionInfo.setActionKey(TASK_NAME);
+        actionInfo.setDescription("Tunnels a HTTP Request");
+
+        final List<ParameterInfo> parameterDescriptions = new LinkedList<ParameterInfo>();
+        ParameterInfo parameterDescription;
+
+        parameterDescription = new ParameterInfo();
+        parameterDescription.setKey(PARAMETER_TYPE.URL.name());
+        parameterDescription.setType(Type.JAVA_CLASS);
+        parameterDescription.setAdditionalTypeInfo(URL.class.getName());
+        parameterDescription.setDescription("REQUEST URL");
+        parameterDescriptions.add(parameterDescription);
+
+        parameterDescription = new ParameterInfo();
+        parameterDescription.setKey(PARAMETER_TYPE.METHOD.name());
+        parameterDescription.setType(Type.JAVA_CLASS);
+        parameterDescription.setAdditionalTypeInfo(AccessHandler.ACCESS_METHODS.class.getName());
+        parameterDescription.setDescription("REQUEST METHOD, e.g. GET");
+        parameterDescriptions.add(parameterDescription);
+
+        parameterDescription = new ParameterInfo();
+        parameterDescription.setKey(PARAMETER_TYPE.METHOD.name());
+        parameterDescription.setType(Type.JAVA_CLASS);
+        parameterDescription.setAdditionalTypeInfo(AccessHandler.ACCESS_METHODS.class.getName());
+        parameterDescription.setDescription("REQUEST METHOD, e.g. GET");
+        parameterDescriptions.add(parameterDescription);
+
+        parameterDescription = new ParameterInfo();
+        parameterDescription.setKey(PARAMETER_TYPE.OPTIONS.name());
+        parameterDescription.setType(Type.JAVA_CLASS);
+        parameterDescription.setAdditionalTypeInfo(HashMap.class.getName());
+        parameterDescription.setDescription("REQUEST OPTIONS");
+        parameterDescriptions.add(parameterDescription);
+
+        parameterDescription = new ParameterInfo();
+        parameterDescription.setKey(PARAMETER_TYPE.CREDENTIALS.name());
+        parameterDescription.setType(Type.JAVA_CLASS);
+        parameterDescription.setAdditionalTypeInfo(HashMap.class.getName());
+        parameterDescription.setDescription("REQUEST OPTIONS");
+        parameterDescriptions.add(parameterDescription);
+
+        actionInfo.setParameterDescription(parameterDescriptions);
+
+        final ParameterInfo bodyDescription = new ParameterInfo();
+        bodyDescription.setKey("body");
+        bodyDescription.setType(Type.STRING);
+        bodyDescription.setMediaType(MediaType.TEXT_PLAIN);
+        bodyDescription.setDescription("body is not used");
+        actionInfo.setBodyDescription(bodyDescription);
+
+        final ParameterInfo returnDescription = new ParameterInfo();
+        returnDescription.setKey("return");
+        returnDescription.setType(Type.BYTE);
+        returnDescription.setArray(true);
+        returnDescription.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
+        actionInfo.setResultDescription(returnDescription);
+    }
+
     //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public ActionInfo getActionInfo() {
+        return this.actionInfo;
+    }
 
     /**
      * DOCUMENT ME!
@@ -79,7 +167,7 @@ public class HttpTunnelAction implements UserAwareServerAction {
      * @throws  RuntimeException  DOCUMENT ME!
      */
     @Override
-    public Object execute(final Object body, final ServerActionParameter... params) {
+    public GenericResourceWithContentType execute(final Object body, final ServerActionParameter... params) {
         String request = "";
         URL url = null;
         try {
@@ -89,19 +177,31 @@ public class HttpTunnelAction implements UserAwareServerAction {
 
             for (final ServerActionParameter sap : params) {
                 if (sap != null) {
+                    final Object paramValue = sap.getValue();
                     if (sap.getKey().equals(PARAMETER_TYPE.URL.toString())) {
-                        url = (URL)sap.getValue();
+                        if (paramValue instanceof URL) {
+                            url = (URL)paramValue;
+                        } else {
+                            url = new URL(paramValue.toString());
+                        }
                     } else if (sap.getKey().equals(PARAMETER_TYPE.METHOD.toString())) {
-                        method = (AccessHandler.ACCESS_METHODS)sap.getValue();
+                        if (paramValue instanceof AccessHandler.ACCESS_METHODS) {
+                            method = (AccessHandler.ACCESS_METHODS)paramValue;
+                        } else {
+                            method = AccessHandler.ACCESS_METHODS.valueOf(paramValue.toString());
+                        }
                     } else if (sap.getKey().equals(PARAMETER_TYPE.REQUEST.toString())) {
-                        request = (String)sap.getValue();
+                        request = paramValue.toString();
                     } else if (sap.getKey().equals(PARAMETER_TYPE.OPTIONS.toString()) && (sap.getValue() != null)) {
-                        options = (HashMap<String, String>)sap.getValue();
+                        options = (HashMap)paramValue;
                     } else if (sap.getKey().equals(PARAMETER_TYPE.CREDENTIALS.toString()) && (sap.getValue() != null)) {
-                        credentials = (HashMap<String, String>)sap.getValue();
+                        credentials = (HashMap)paramValue;
+                    } else {
+                        LOG.warn("ignoring unsupported parameter '" + sap.getKey() + "'");
                     }
                 }
             }
+
             AccessHandler.ACCESS_METHODS notunnelmethod;
             if (method == AccessHandler.ACCESS_METHODS.GET_REQUEST) {
                 notunnelmethod = AccessHandler.ACCESS_METHODS.GET_REQUEST_NO_TUNNEL;
@@ -148,19 +248,23 @@ public class HttpTunnelAction implements UserAwareServerAction {
                 LOG.info(message);
             }
 
-            return result;
+             return new GenericResourceWithContentType(MediaType.APPLICATION_OCTET_STREAM, result);
         } catch (final BadHttpStatusCodeException badStatusCodeEx) {
             final String errorinfo = ("Problem during HttpTunnelAction(" + url + "=, request=" + request + ")");
             if (LOG.isDebugEnabled()) {
-                LOG.debug(errorinfo + "\n" + badStatusCodeEx.getMessage());
+                LOG.error(errorinfo + "\n" + badStatusCodeEx.getMessage(), badStatusCodeEx);
             }
             return null;
         } catch (final CannotReadFromURLException exception) {
-            return exception;
+            final String errorinfo = ("Problem during HttpTunnelAction(" + url + "=, request=" + request + ")");
+            if (LOG.isDebugEnabled()) {
+                LOG.error(errorinfo + "\n" + exception.getMessage(), exception);
+            }
+            return new GenericResourceWithContentType(MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT, exception);
         } catch (final Exception exception) {
             final String errorinfo = ("Problem during HttpTunnelAction(" + url + "=, request=" + request + ")");
             if (LOG.isDebugEnabled()) {
-                LOG.debug(errorinfo + "\n" + exception.getMessage());
+                LOG.error(errorinfo + "\n" + exception.getMessage(), exception);
             }
             throw new RuntimeException(errorinfo, exception);
         }
@@ -183,6 +287,6 @@ public class HttpTunnelAction implements UserAwareServerAction {
      */
     @Override
     public String getTaskName() {
-        return "httpTunnelAction";
+        return TASK_NAME;
     }
 }
