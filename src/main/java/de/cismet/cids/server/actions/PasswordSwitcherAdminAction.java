@@ -29,8 +29,8 @@ import de.cismet.cidsx.base.types.Type;
 
 import de.cismet.cidsx.server.actions.RestApiCidsServerAction;
 import de.cismet.cidsx.server.api.types.ActionInfo;
+import de.cismet.cidsx.server.api.types.ActionParameterInfo;
 import de.cismet.cidsx.server.api.types.GenericResourceWithContentType;
-import de.cismet.cidsx.server.api.types.ParameterInfo;
 
 /**
  * DOCUMENT ME!
@@ -77,14 +77,14 @@ public class PasswordSwitcherAdminAction implements UserAwareServerAction, RestA
         actionInfo.setActionKey(TASK_NAME);
         actionInfo.setDescription("Password Switcher Admin Action");
 
-        final List<ParameterInfo> parameterDescriptions = new LinkedList<ParameterInfo>();
-        ParameterInfo parameterDescription = new ParameterInfo();
+        final List<ActionParameterInfo> parameterDescriptions = new LinkedList<ActionParameterInfo>();
+        ActionParameterInfo parameterDescription = new ActionParameterInfo();
         parameterDescription.setKey(ParameterType.LOGIN_NAME.name());
         parameterDescription.setType(Type.STRING);
         parameterDescription.setDescription("Name of the user");
         parameterDescriptions.add(parameterDescription);
 
-        parameterDescription = new ParameterInfo();
+        parameterDescription = new ActionParameterInfo();
         parameterDescription.setKey(ParameterType.RECOVERY_TIMER.name());
         parameterDescription.setType(Type.INTEGER);
         parameterDescription.setDescription("Recovery Timer");
@@ -92,7 +92,7 @@ public class PasswordSwitcherAdminAction implements UserAwareServerAction, RestA
 
         actionInfo.setParameterDescription(parameterDescriptions);
 
-        final ParameterInfo returnDescription = new ParameterInfo();
+        final ActionParameterInfo returnDescription = new ActionParameterInfo();
         returnDescription.setKey("return");
         returnDescription.setType(Type.JAVA_SERIALIZABLE);
         returnDescription.setMediaType(MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT);

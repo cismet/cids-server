@@ -34,8 +34,8 @@ import de.cismet.cidsx.base.types.Type;
 
 import de.cismet.cidsx.server.actions.RestApiCidsServerAction;
 import de.cismet.cidsx.server.api.types.ActionInfo;
+import de.cismet.cidsx.server.api.types.ActionParameterInfo;
 import de.cismet.cidsx.server.api.types.ActionTask;
-import de.cismet.cidsx.server.api.types.ParameterInfo;
 
 /**
  * Helper Methods for dealing with ServerAction and and ActionInfo.
@@ -62,8 +62,8 @@ public class ServerActionFactory {
 
     private boolean cacheFilled = false;
 
-    private final ParameterInfo defaultBodyDescription;
-    private final ParameterInfo defaultReturnDescription;
+    private final ActionParameterInfo defaultBodyDescription;
+    private final ActionParameterInfo defaultReturnDescription;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -71,14 +71,14 @@ public class ServerActionFactory {
      * Creates a new ServerActionFactory object.
      */
     private ServerActionFactory() {
-        defaultBodyDescription = new ParameterInfo();
+        defaultBodyDescription = new ActionParameterInfo();
         defaultBodyDescription.setKey("body");
         defaultBodyDescription.setDescription("Body Part Parameter (usually a file) of the Server Action.");
         defaultBodyDescription.setType(Type.JAVA_SERIALIZABLE);
         defaultBodyDescription.setMediaType(MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT);
         defaultBodyDescription.setArray(false);
 
-        defaultReturnDescription = new ParameterInfo();
+        defaultReturnDescription = new ActionParameterInfo();
         defaultBodyDescription.setDescription("Return value of the Server Action.");
         defaultReturnDescription.setKey("return");
         defaultReturnDescription.setType(Type.JAVA_SERIALIZABLE);
@@ -125,10 +125,10 @@ public class ServerActionFactory {
                         + "information about parameter and return types available!";
 
             // that's all. No information about parameters at classs level available!
-            final LinkedList<ParameterInfo> actionParameterInfos = new LinkedList<ParameterInfo>();
+            final LinkedList<ActionParameterInfo> actionParameterInfos = new LinkedList<ActionParameterInfo>();
 
-            final ParameterInfo bodyParameterInfo = this.getDefaultBodyDescription();
-            final ParameterInfo returnParameterInfo = this.getDefaultReturnDescription();
+            final ActionParameterInfo bodyParameterInfo = this.getDefaultBodyDescription();
+            final ActionParameterInfo returnParameterInfo = this.getDefaultReturnDescription();
 
             actionInfo.setActionKey(actionKey);
             actionInfo.setName(serverActionClass.getSimpleName());
@@ -304,7 +304,7 @@ public class ServerActionFactory {
         if ((actionTask.getParameterDescription() != null) && !actionTask.getParameterDescription().isEmpty()) {
             for (int i = 0; i < actionParameters.length; i++) {
                 final ServerActionParameter actionParameter = actionParameters[i];
-                final ParameterInfo parameterInfo = actionTask.getActionParameterInfo(actionParameter.getKey());
+                final ActionParameterInfo parameterInfo = actionTask.getActionParameterInfo(actionParameter.getKey());
                 if ((parameterInfo != null) && (parameterInfo.getType() == Type.JAVA_SERIALIZABLE)) {
                     if (parameterInfo.getType() == Type.JAVA_SERIALIZABLE) {
                         if (LOG.isDebugEnabled()) {
@@ -336,8 +336,8 @@ public class ServerActionFactory {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public Object bodyObjectFromFileAttachment(final InputStream fileAttachement, final ParameterInfo bodyDescription)
-            throws Exception {
+    public Object bodyObjectFromFileAttachment(final InputStream fileAttachement,
+            final ActionParameterInfo bodyDescription) throws Exception {
         final Object body;
 
         if (bodyDescription.getMediaType().toLowerCase().equalsIgnoreCase(
@@ -394,7 +394,7 @@ public class ServerActionFactory {
      *
      * @return  DefaultBodyDescriptio
      */
-    public ParameterInfo getDefaultBodyDescription() {
+    public ActionParameterInfo getDefaultBodyDescription() {
         return defaultBodyDescription;
     }
 
@@ -405,7 +405,7 @@ public class ServerActionFactory {
      *
      * @return  DefaultReturnDescription
      */
-    public ParameterInfo getDefaultReturnDescription() {
+    public ActionParameterInfo getDefaultReturnDescription() {
         return defaultReturnDescription;
     }
 }

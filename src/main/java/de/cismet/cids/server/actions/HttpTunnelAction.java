@@ -32,8 +32,8 @@ import de.cismet.cidsx.base.types.Type;
 
 import de.cismet.cidsx.server.actions.RestApiCidsServerAction;
 import de.cismet.cidsx.server.api.types.ActionInfo;
+import de.cismet.cidsx.server.api.types.ActionParameterInfo;
 import de.cismet.cidsx.server.api.types.GenericResourceWithContentType;
-import de.cismet.cidsx.server.api.types.ParameterInfo;
 
 import de.cismet.commons.security.AccessHandler;
 import de.cismet.commons.security.exceptions.BadHttpStatusCodeException;
@@ -92,38 +92,38 @@ public class HttpTunnelAction implements RestApiCidsServerAction {
         actionInfo.setActionKey(TASK_NAME);
         actionInfo.setDescription("Tunnels a HTTP Request");
 
-        final List<ParameterInfo> parameterDescriptions = new LinkedList<ParameterInfo>();
-        ParameterInfo parameterDescription;
+        final List<ActionParameterInfo> parameterDescriptions = new LinkedList<ActionParameterInfo>();
+        ActionParameterInfo parameterDescription;
 
-        parameterDescription = new ParameterInfo();
+        parameterDescription = new ActionParameterInfo();
         parameterDescription.setKey(PARAMETER_TYPE.URL.name());
         parameterDescription.setType(Type.JAVA_CLASS);
         parameterDescription.setAdditionalTypeInfo(URL.class.getName());
         parameterDescription.setDescription("REQUEST URL");
         parameterDescriptions.add(parameterDescription);
 
-        parameterDescription = new ParameterInfo();
+        parameterDescription = new ActionParameterInfo();
         parameterDescription.setKey(PARAMETER_TYPE.METHOD.name());
         parameterDescription.setType(Type.JAVA_CLASS);
         parameterDescription.setAdditionalTypeInfo(AccessHandler.ACCESS_METHODS.class.getName());
         parameterDescription.setDescription("REQUEST METHOD, e.g. GET");
         parameterDescriptions.add(parameterDescription);
 
-        parameterDescription = new ParameterInfo();
+        parameterDescription = new ActionParameterInfo();
         parameterDescription.setKey(PARAMETER_TYPE.METHOD.name());
         parameterDescription.setType(Type.JAVA_CLASS);
         parameterDescription.setAdditionalTypeInfo(AccessHandler.ACCESS_METHODS.class.getName());
         parameterDescription.setDescription("REQUEST METHOD, e.g. GET");
         parameterDescriptions.add(parameterDescription);
 
-        parameterDescription = new ParameterInfo();
+        parameterDescription = new ActionParameterInfo();
         parameterDescription.setKey(PARAMETER_TYPE.OPTIONS.name());
         parameterDescription.setType(Type.JAVA_CLASS);
         parameterDescription.setAdditionalTypeInfo(HashMap.class.getName());
         parameterDescription.setDescription("REQUEST OPTIONS");
         parameterDescriptions.add(parameterDescription);
 
-        parameterDescription = new ParameterInfo();
+        parameterDescription = new ActionParameterInfo();
         parameterDescription.setKey(PARAMETER_TYPE.CREDENTIALS.name());
         parameterDescription.setType(Type.JAVA_CLASS);
         parameterDescription.setAdditionalTypeInfo(HashMap.class.getName());
@@ -132,7 +132,7 @@ public class HttpTunnelAction implements RestApiCidsServerAction {
 
         actionInfo.setParameterDescription(parameterDescriptions);
 
-        final ParameterInfo returnDescription = new ParameterInfo();
+        final ActionParameterInfo returnDescription = new ActionParameterInfo();
         returnDescription.setKey("return");
         returnDescription.setType(Type.BYTE);
         returnDescription.setArray(true);

@@ -25,8 +25,8 @@ import de.cismet.cidsx.base.types.Type;
 
 import de.cismet.cidsx.server.actions.RestApiCidsServerAction;
 import de.cismet.cidsx.server.api.types.ActionInfo;
+import de.cismet.cidsx.server.api.types.ActionParameterInfo;
 import de.cismet.cidsx.server.api.types.GenericResourceWithContentType;
-import de.cismet.cidsx.server.api.types.ParameterInfo;
 /**
  * DOCUMENT ME!
  *
@@ -73,22 +73,22 @@ public class DownloadFileAction implements RestApiCidsServerAction, MetaServiceS
         actionInfo.setActionKey(TASK_NAME);
         actionInfo.setDescription("Downloads a remote file from the server.");
 
-        final List<ParameterInfo> parameterDescriptions = new LinkedList<ParameterInfo>();
-        final ParameterInfo pathParameterDescription = new ParameterInfo();
+        final List<ActionParameterInfo> parameterDescriptions = new LinkedList<ActionParameterInfo>();
+        final ActionParameterInfo pathParameterDescription = new ActionParameterInfo();
         pathParameterDescription.setKey(PARAMETER_TYPE.FILEPATH.name());
         pathParameterDescription.setType(Type.STRING);
         pathParameterDescription.setDescription("Absolute local path of the file to be downloaded");
         parameterDescriptions.add(pathParameterDescription);
         actionInfo.setParameterDescription(parameterDescriptions);
 
-        final ParameterInfo bodyDescription = new ParameterInfo();
+        final ActionParameterInfo bodyDescription = new ActionParameterInfo();
         bodyDescription.setKey("body");
         bodyDescription.setType(Type.STRING);
         bodyDescription.setMediaType(MediaType.TEXT_PLAIN);
         bodyDescription.setDescription("Deprecated body parameter, use server action parameter 'filename' instead!");
         actionInfo.setBodyDescription(bodyDescription);
 
-        final ParameterInfo returnDescription = new ParameterInfo();
+        final ActionParameterInfo returnDescription = new ActionParameterInfo();
         returnDescription.setKey("return");
         returnDescription.setType(Type.BYTE);
         returnDescription.setMediaType(MediaType.WILDCARD);

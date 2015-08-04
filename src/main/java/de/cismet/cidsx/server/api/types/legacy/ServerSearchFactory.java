@@ -55,9 +55,9 @@ import de.cismet.cidsx.base.types.Type;
 
 import de.cismet.cidsx.server.api.types.CidsClass;
 import de.cismet.cidsx.server.api.types.CidsNode;
-import de.cismet.cidsx.server.api.types.ParameterInfo;
 import de.cismet.cidsx.server.api.types.SearchInfo;
 import de.cismet.cidsx.server.api.types.SearchParameter;
+import de.cismet.cidsx.server.api.types.SearchParameterInfo;
 import de.cismet.cidsx.server.api.types.SearchParameters;
 import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
 
@@ -125,12 +125,12 @@ public class ServerSearchFactory {
 
             final SearchInfo searchInfo = new SearchInfo();
             final String searchKey = serverSearchClass.getName();
-            final LinkedList<ParameterInfo> searchParameterInfos = new LinkedList<ParameterInfo>();
+            final LinkedList<SearchParameterInfo> searchParameterInfos = new LinkedList<SearchParameterInfo>();
             Class<?> resultCollectionClass = Object.class;
 
             // Process the parameters
             for (final String paramName : searchParameters.keySet()) {
-                final ParameterInfo searchParameterInfo = new ParameterInfo();
+                final SearchParameterInfo searchParameterInfo = new SearchParameterInfo();
                 final Class paramClass = searchParameters.get(paramName);
                 final Type paramType = Type.typeForJavaClass(paramClass);
 
@@ -166,7 +166,7 @@ public class ServerSearchFactory {
                     ex);
             }
 
-            final ParameterInfo returnParameterInfo = new ParameterInfo();
+            final SearchParameterInfo returnParameterInfo = new SearchParameterInfo();
             final Type paramType = Type.typeForJavaClass(resultCollectionClass);
             returnParameterInfo.setKey("return");
             returnParameterInfo.setType(paramType);
@@ -346,7 +346,7 @@ public class ServerSearchFactory {
 
         for (final SearchParameter searchParameter : searchParameters) {
             final String paramKey = searchParameter.getKey();
-            final ParameterInfo searchParameterInfo = searchInfo.getParameterInfo(paramKey);
+            final SearchParameterInfo searchParameterInfo = searchInfo.getParameterInfo(paramKey);
             if (searchParameterInfo == null) {
                 final String message = "could not create instance of cids server search '"
                             + searchInfo.getKey() + "': server search parameter '"
@@ -486,8 +486,8 @@ public class ServerSearchFactory {
 
     /**
      * Extracts Search Parameters from a CidsServerSearch Search object. Needs the respective SearchInfo and
-     * ParameterInfo to do so. <strong>Warning:</strong> Doesn't currently support MetaObject, MetaClass and MetaNode as
-     * they need special conversion before JSON serialization.
+     * SearchParameterInfo to do so. <strong>Warning:</strong> Doesn't currently support MetaObject, MetaClass and
+     * MetaNode as they need special conversion before JSON serialization.
      *
      * @param   searchKey         DOCUMENT ME!
      * @param   cidsServerSearch  DOCUMENT ME!
@@ -512,7 +512,7 @@ public class ServerSearchFactory {
         final SearchParameters searchParameters = new SearchParameters();
         final LinkedList<SearchParameter> searchParametersList = new LinkedList<SearchParameter>();
         searchParameters.setList(searchParametersList);
-        for (final ParameterInfo searchParameterInfo : searchInfo.getParameterDescription()) {
+        for (final SearchParameterInfo searchParameterInfo : searchInfo.getParameterDescription()) {
             // currently not supported as search parameters
             if ((searchParameterInfo.getType() == Type.ENTITY_REFERENCE)
                         || (searchParameterInfo.getType() == Type.ENTITY_INFO)
