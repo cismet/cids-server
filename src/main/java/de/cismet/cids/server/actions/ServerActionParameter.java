@@ -22,6 +22,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * DOCUMENT ME!
  *
+ * @param    <T>
+ *
  * @author   jruiz
  * @version  $Revision$, $Date$
  */

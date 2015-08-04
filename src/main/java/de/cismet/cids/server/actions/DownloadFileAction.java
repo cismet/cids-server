@@ -41,7 +41,20 @@ public class DownloadFileAction implements RestApiCidsServerAction, MetaServiceS
     protected static final Logger LOG = Logger.getLogger(DownloadFileAction.class);
 
     public static final String TASK_NAME = "downloadFile";
-    public static final String PARAMETER_NAME = "filepath";
+
+    //~ Enums ------------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public enum PARAMETER_TYPE {
+
+        //~ Enum constants -----------------------------------------------------
+
+        FILEPATH
+    }
 
     //~ Instance fields --------------------------------------------------------
 
@@ -62,7 +75,7 @@ public class DownloadFileAction implements RestApiCidsServerAction, MetaServiceS
 
         final List<ParameterInfo> parameterDescriptions = new LinkedList<ParameterInfo>();
         final ParameterInfo pathParameterDescription = new ParameterInfo();
-        pathParameterDescription.setKey(PARAMETER_NAME);
+        pathParameterDescription.setKey(PARAMETER_TYPE.FILEPATH.name());
         pathParameterDescription.setType(Type.STRING);
         pathParameterDescription.setDescription("Absolute local path of the file to be downloaded");
         parameterDescriptions.add(pathParameterDescription);
@@ -72,7 +85,7 @@ public class DownloadFileAction implements RestApiCidsServerAction, MetaServiceS
         bodyDescription.setKey("body");
         bodyDescription.setType(Type.STRING);
         bodyDescription.setMediaType(MediaType.TEXT_PLAIN);
-        bodyDescription.setDescription("Deprecated body parameter, suse serv action parameter 'filename' instead!");
+        bodyDescription.setDescription("Deprecated body parameter, use server action parameter 'filename' instead!");
         actionInfo.setBodyDescription(bodyDescription);
 
         final ParameterInfo returnDescription = new ParameterInfo();
@@ -101,7 +114,7 @@ public class DownloadFileAction implements RestApiCidsServerAction, MetaServiceS
             Path path = null;
             if (params.length > 0) {
                 for (final ServerActionParameter sap : params) {
-                    if (sap.getKey().equalsIgnoreCase(PARAMETER_NAME)) {
+                    if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.FILEPATH.name())) {
                         path = Paths.get(sap.getValue().toString());
                         break;
                     } else {
@@ -111,10 +124,10 @@ public class DownloadFileAction implements RestApiCidsServerAction, MetaServiceS
             }
 
             if (path == null) {
-                LOG.warn("client did not provide ServerActionParameter '" + PARAMETER_NAME + "'");
+                LOG.warn("client did not provide ServerActionParameter '" + PARAMETER_TYPE.FILEPATH.name() + "'");
                 if (body != null) {
                     path = Paths.get(body.toString());
-                    LOG.warn("client provided '" + PARAMETER_NAME + "' as body parameter!");
+                    LOG.warn("client provided '" + PARAMETER_TYPE.FILEPATH.name() + "' as body parameter!");
                 }
             }
 

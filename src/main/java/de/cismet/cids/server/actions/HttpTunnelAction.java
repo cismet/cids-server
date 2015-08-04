@@ -78,10 +78,8 @@ public class HttpTunnelAction implements RestApiCidsServerAction {
 
     //~ Instance fields --------------------------------------------------------
 
+
     private User user = null;
-
-
-    protected final ActionInfo actionInfo;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -134,13 +132,6 @@ public class HttpTunnelAction implements RestApiCidsServerAction {
 
         actionInfo.setParameterDescription(parameterDescriptions);
 
-        final ParameterInfo bodyDescription = new ParameterInfo();
-        bodyDescription.setKey("body");
-        bodyDescription.setType(Type.STRING);
-        bodyDescription.setMediaType(MediaType.TEXT_PLAIN);
-        bodyDescription.setDescription("body is not used");
-        actionInfo.setBodyDescription(bodyDescription);
-
         final ParameterInfo returnDescription = new ParameterInfo();
         returnDescription.setKey("return");
         returnDescription.setType(Type.BYTE);
@@ -178,26 +169,28 @@ public class HttpTunnelAction implements RestApiCidsServerAction {
             for (final ServerActionParameter sap : params) {
                 if (sap != null) {
                     final Object paramValue = sap.getValue();
-                    if (sap.getKey().equals(PARAMETER_TYPE.URL.toString())) {
+                    if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.URL.toString())) {
                         if (paramValue instanceof URL) {
                             url = (URL)paramValue;
                         } else {
                             url = new URL(paramValue.toString());
                         }
-                    } else if (sap.getKey().equals(PARAMETER_TYPE.METHOD.toString())) {
+                    } else if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.METHOD.toString())) {
                         if (paramValue instanceof AccessHandler.ACCESS_METHODS) {
                             method = (AccessHandler.ACCESS_METHODS)paramValue;
                         } else {
                             method = AccessHandler.ACCESS_METHODS.valueOf(paramValue.toString());
                         }
-                    } else if (sap.getKey().equals(PARAMETER_TYPE.REQUEST.toString())) {
+                    } else if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.REQUEST.toString())) {
                         request = paramValue.toString();
-                    } else if (sap.getKey().equals(PARAMETER_TYPE.OPTIONS.toString()) && (sap.getValue() != null)) {
+                    } else if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.OPTIONS.toString())
+                                && (sap.getValue() != null)) {
                         options = (HashMap)paramValue;
-                    } else if (sap.getKey().equals(PARAMETER_TYPE.CREDENTIALS.toString()) && (sap.getValue() != null)) {
+                    } else if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.CREDENTIALS.toString())
+                                && (sap.getValue() != null)) {
                         credentials = (HashMap)paramValue;
                     } else {
-                        LOG.warn("ignoring unsupported parameter '" + sap.getKey() + "'");
+                        LOG.warn("ignoring unsupported parameter '" + sap.getKey() + "' = " + paramValue);
                     }
                 }
             }

@@ -84,13 +84,13 @@ public class BandwidthTestAction extends DownloadFileAction {
         final GenericResourceWithContentType ret;
         if ("/".equals(s)) {
             final ServerActionParameter pathParameter = new ServerActionParameter(
-                    PARAMETER_NAME,
+                    PARAMETER_TYPE.FILEPATH.name(),
                     serverRespath
                             + filePath);
             ret = super.execute(null, pathParameter);
         } else {
             final ServerActionParameter pathParameter = new ServerActionParameter(
-                    PARAMETER_NAME,
+                    PARAMETER_TYPE.FILEPATH.name(),
                     serverRespath
                             + filePath.replace("/", s));
             ret = super.execute(null, pathParameter);

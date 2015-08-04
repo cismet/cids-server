@@ -21,13 +21,24 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import de.cismet.cidsx.base.types.MediaTypes;
+import de.cismet.cidsx.base.types.Type;
+
+import de.cismet.cidsx.server.actions.RestApiCidsServerAction;
+import de.cismet.cidsx.server.api.types.ActionInfo;
+import de.cismet.cidsx.server.api.types.GenericResourceWithContentType;
+import de.cismet.cidsx.server.api.types.ParameterInfo;
+
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-@org.openide.util.lookup.ServiceProvider(service = ServerAction.class)
-public class PasswordSwitcherAdminAction implements UserAwareServerAction {
+@org.openide.util.lookup.ServiceProvider(service = RestApiCidsServerAction.class)
+public class PasswordSwitcherAdminAction implements UserAwareServerAction, RestApiCidsServerAction {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -51,33 +62,88 @@ public class PasswordSwitcherAdminAction implements UserAwareServerAction {
 
     //~ Instance fields --------------------------------------------------------
 
+    protected final ActionInfo actionInfo;
+
     private User user;
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new PasswordSwitcherAdminAction object.
+     */
+    public PasswordSwitcherAdminAction() {
+        actionInfo = new ActionInfo();
+        actionInfo.setName("Password Switcher Admin Action");
+        actionInfo.setActionKey(TASK_NAME);
+        actionInfo.setDescription("Password Switcher Admin Action");
+
+        final List<ParameterInfo> parameterDescriptions = new LinkedList<ParameterInfo>();
+        ParameterInfo parameterDescription = new ParameterInfo();
+        parameterDescription.setKey(ParameterType.LOGIN_NAME.name());
+        parameterDescription.setType(Type.STRING);
+        parameterDescription.setDescription("Name of the user");
+        parameterDescriptions.add(parameterDescription);
+
+        parameterDescription = new ParameterInfo();
+        parameterDescription.setKey(ParameterType.RECOVERY_TIMER.name());
+        parameterDescription.setType(Type.INTEGER);
+        parameterDescription.setDescription("Recovery Timer");
+        parameterDescriptions.add(parameterDescription);
+
+        actionInfo.setParameterDescription(parameterDescriptions);
+
+        final ParameterInfo returnDescription = new ParameterInfo();
+        returnDescription.setKey("return");
+        returnDescription.setType(Type.JAVA_SERIALIZABLE);
+        returnDescription.setMediaType(MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT);
+        returnDescription.setDescription("Returns only exceptions.");
+        actionInfo.setResultDescription(returnDescription);
+    }
 
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public Object execute(final Object body, final ServerActionParameter... params) {
+    public GenericResourceWithContentType execute(final Object body, final ServerActionParameter... params) {
         String loginNameToSwitch = null;
         Integer recoveryTimer = null;
 
         for (final ServerActionParameter param : params) {
-            if (ParameterType.LOGIN_NAME.toString().equals(param.getKey().toString())) {
-                loginNameToSwitch = (String)param.getValue();
-            } else if (ParameterType.RECOVERY_TIMER.toString().equals(param.getKey().toString())) {
-                recoveryTimer = (Integer)param.getValue();
+            final Object paramValue = param.getValue();
+
+            if (ParameterType.LOGIN_NAME.name().equalsIgnoreCase(param.getKey())) {
+                loginNameToSwitch = paramValue.toString();
+            } else if (ParameterType.RECOVERY_TIMER.name().equalsIgnoreCase(param.getKey())) {
+                if (int.class.isAssignableFrom(paramValue.getClass())
+                            || Integer.class.isAssignableFrom(paramValue.getClass())) {
+                    recoveryTimer = (Integer)paramValue;
+                } else {
+                    recoveryTimer = Integer.parseInt(paramValue.toString());
+                }
+            } else {
+                LOG.warn("unsupported server action parameter '" + param.getKey()
+                            + "' = " + paramValue);
             }
         }
 
         if (loginNameToSwitch == null) {
-            return new Exception("Parameter '" + ParameterType.LOGIN_NAME.toString() + "' not set");
+            final Exception exception = new Exception("Parameter '" + ParameterType.LOGIN_NAME.toString()
+                            + "' not set");
+            LOG.error(exception.getMessage());
+            return new GenericResourceWithContentType(MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT, exception);
         }
+
         if (recoveryTimer == null) {
-            return new Exception("Parameter '" + ParameterType.RECOVERY_TIMER.toString() + "' not set");
+            final Exception exception = new Exception("Parameter '" + ParameterType.RECOVERY_TIMER.toString()
+                            + "' not set");
+            LOG.error(exception.getMessage());
+            return new GenericResourceWithContentType(MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT, exception);
         }
 
         try {
             if (!getUser().isAdmin()) {
-                return new Exception("Only admin Users are allowed to switch passwords !");
+                final Exception exception = new Exception("Only admin Users are allowed to switch passwords !");
+                LOG.error(exception.getMessage());
+                return new GenericResourceWithContentType(MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT, exception);
             }
 
             final Statement s = DomainServerImpl.getServerInstance()
@@ -93,11 +159,15 @@ public class PasswordSwitcherAdminAction implements UserAwareServerAction {
 
             ResultSet rs = s.executeQuery(stmts.getPasswordSwitcherAdminActionSelectUserStmt(loginNameToSwitch));
             if (!rs.next()) {
-                return new Exception("User '" + loginNameToSwitch + "' not found!");
+                final Exception exception = new Exception("User '" + loginNameToSwitch + "' not found!");
+                LOG.error(exception.getMessage());
+                return new GenericResourceWithContentType(MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT, exception);
             }
             rs = s.executeQuery(stmts.getPasswordSwitcherAdminActionSelectUserStmt(adminLogin));
             if (!rs.next()) {
-                return new Exception("User '" + adminLogin + "' not found!");
+                final Exception exception = new Exception("User '" + adminLogin + "' not found!");
+                LOG.error(exception.getMessage());
+                return new GenericResourceWithContentType(MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT, exception);
             }
 
             s.executeUpdate(stmts.getPasswordSwitcherAdminActionChangeAndBackupStmt(loginNameToSwitch, adminLogin));
@@ -111,7 +181,7 @@ public class PasswordSwitcherAdminAction implements UserAwareServerAction {
             return null;
         } catch (final SQLException ex) {
             LOG.error("error while executing sql statement", ex);
-            return new Exception(ex.getMessage(), ex);
+            return new GenericResourceWithContentType(MediaTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT, ex);
         }
     }
 
@@ -128,5 +198,10 @@ public class PasswordSwitcherAdminAction implements UserAwareServerAction {
     @Override
     public void setUser(final User user) {
         this.user = user;
+    }
+
+    @Override
+    public ActionInfo getActionInfo() {
+        return this.actionInfo;
     }
 }
