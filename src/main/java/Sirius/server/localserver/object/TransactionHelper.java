@@ -76,7 +76,6 @@ public class TransactionHelper {
      */
     void beginWork() throws SQLException {
         if (!workBegun) {
-            con.createStatement().execute("begin"); // NOI18N
             workBegun = true;
         }
     }

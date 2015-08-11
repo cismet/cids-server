@@ -93,10 +93,6 @@ public class UpdateToStringCacheTrigger extends AbstractDBAwareCidsTrigger {
                         }
                     }
                 });
-
-            final String sql = "insert into cs_stringrepcache (class_id,object_id,stringrep) values("
-                        + cidsBean.getMetaObject().getClassID() + "," + cidsBean
-                        .getMetaObject().getID() + ",'" + cidsBean.toString() + "');";
         }
     }
 

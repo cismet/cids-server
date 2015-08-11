@@ -7,9 +7,14 @@
 ****************************************************/
 package Sirius.server.localserver.object;
 
+import Sirius.server.property.ServerProperties;
 import Sirius.server.sql.DBConnectionPool;
+import Sirius.server.sql.DialectProvider;
+import Sirius.server.sql.SQLTools;
 
 import Sirius.util.collections.MultiMap;
+
+import org.openide.util.Lookup;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -38,23 +43,29 @@ public class ObjectHierarchy {
     protected DBConnectionPool conPool;
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
 
+    private final ServerProperties serverProperties;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new instance of ObjectHierarchy.
      *
      * @param   conPool  DOCUMENT ME!
+     * @param   props    DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public ObjectHierarchy(final DBConnectionPool conPool) throws Exception {
+    public ObjectHierarchy(final DBConnectionPool conPool, final ServerProperties props) throws Exception {
         this.conPool = conPool;
+        this.serverProperties = props;
         final Connection con = conPool.getDBConnection().getConnection();
 
         final Statement stmnt = con.createStatement();
         // schl\u00FCssel , vatertabellen name , Atrributname
-        final String initLookupTable =
-            "select  a.foreign_key_references_to as child,a.class_id as father,c.primary_key_field as pk,c.table_name,a.field_name, isarray  from cs_attr a,cs_class  c where a.foreign_key ='T' and  a.class_id = c.id   and a.indexed=true";
+
+        final String initLookupTable = SQLTools.getStatement(this.getClass(),
+                Lookup.getDefault().lookup(DialectProvider.class).getDialect(),
+                "initLookupTable");
         ResultSet rs = stmnt.executeQuery(initLookupTable);
 
         while (rs.next()) {
@@ -67,8 +78,12 @@ public class ObjectHierarchy {
 
             // konstruiere select string f\u00FCr Vaterobjekt mit Auswahlkriterium = Objektid des Attributes
 
-            final String value = "Select " + father + " as class_id ," + pk + " as object_id" + " from "
-                        + rs.getString("table_name") + " where " + rs.getString("field_name") + " = ";
+            final String value = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                        .getObjectHierarchyFatherStmt(
+                            father,
+                            pk,
+                            rs.getString("table_name"),
+                            rs.getString("field_name"));
             if (logger.isDebugEnabled()) {
                 logger.debug(" get Father key :: " + key + " value :: " + value); // NOI18N
             }
@@ -81,8 +96,9 @@ public class ObjectHierarchy {
 
         // init array stmns notwendig da array merkmal nicht der primary key ist
 
-        final String initArrayLookupTable =
-            "select cf.primary_key_field as father_pk,cc.primary_key_field as child_pk,a.array_key, a.foreign_key_references_to as child,a.class_id as father,cf.table_name as father_table, cc.table_name as child_table,a.field_name as attribute  from cs_attr a,cs_class  cf, cs_class cc where a.foreign_key ='T' and  a.class_id = cf.id and isarray ='T' and a.foreign_key_references_to =cc.id";
+        final String initArrayLookupTable = SQLTools.getStatement(this.getClass(),
+                Lookup.getDefault().lookup(DialectProvider.class).getDialect(),
+                "initArrayLookupTable");
 
         rs = stmnt.executeQuery(initArrayLookupTable);
 
@@ -96,13 +112,17 @@ public class ObjectHierarchy {
             final String father_table = rs.getString("father_table"); // NOI18N
             final String child_pk = rs.getString("child_pk");         // NOI18N
 
-            final String value = "Select " + father + " as class_id ," + father_pk + " as object_id"
-                        + " from "                                                                         // NOI18N
-                        + father_table
-                        + " where " + attribute + " in "
-                        + " (select " + arrayKey + " from " + child_table + " where  " + child_pk + " = "; // ? )
+            final String value = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                        .getObjectHierarchyFatherArrayStmt(
+                            father,
+                            father_pk,
+                            father_table,
+                            attribute,
+                            arrayKey,
+                            child_table,
+                            child_pk);
             if (logger.isDebugEnabled()) {
-                logger.debug(" get Array Father key :: " + key + " value :: " + value);                    // NOI18N
+                logger.debug(" get Array Father key :: " + key + " value :: " + value); // NOI18N
             }
 
             arrayFatherStmnts.put(key, value);

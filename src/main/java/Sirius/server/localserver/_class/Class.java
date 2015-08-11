@@ -13,9 +13,13 @@ import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.newuser.permission.PermissionHolder;
 import Sirius.server.newuser.permission.Policy;
+import Sirius.server.sql.DialectProvider;
+import Sirius.server.sql.SQLTools;
 
 import Sirius.util.Mapable;
 import Sirius.util.image.Image;
+
+import org.openide.util.Lookup;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -170,11 +174,12 @@ public class Class implements java.io.Serializable, Mapable {
 
         this.toString = toString;
 
-        this.getInstanceStmnt = "Select * from " + tableName + " where " + primaryKey + " = ?"; // NOI18N
+        this.getInstanceStmnt = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                    .getClassGetInstanceStmnt(tableName, primaryKey);
 
-        this.getDefaultInstanceStmnt = "Select * from " + tableName + " where " + primaryKey // NOI18N
-                    + " = (select min( "                                                     // NOI18N
-                    + primaryKey + ") from " + tableName + ")";                              // NOI18N
+        this.getDefaultInstanceStmnt = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                            .getDialect()).getClassGetDefaultInstanceStmnt(tableName, primaryKey);
+
         this.indexed = indexed;
     }
 

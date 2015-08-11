@@ -11,6 +11,7 @@ import Sirius.server.AbstractShutdownable;
 import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
 import Sirius.server.localserver.DBServer;
+import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.LightweightMetaObject;
@@ -18,6 +19,9 @@ import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.sql.DBConnection;
+import Sirius.server.sql.DialectProvider;
+import Sirius.server.sql.PreparableStatement;
+import Sirius.server.sql.SQLTools;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.mchange.v2.c3p0.DataSources;
@@ -28,14 +32,11 @@ import org.apache.log4j.Logger;
 
 import org.openide.util.Lookup;
 
-import org.postgis.PGgeometry;
-
 import java.beans.PropertyVetoException;
 
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Types;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,9 +47,7 @@ import de.cismet.cids.trigger.CidsTrigger;
 import de.cismet.cids.trigger.CidsTriggerKey;
 import de.cismet.cids.trigger.DBAwareCidsTrigger;
 
-import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
-
-import de.cismet.tools.CurrentStackTrace;
+import de.cismet.commons.utils.StackUtils;
 
 /**
  * DOCUMENT ME!
@@ -401,7 +400,10 @@ public final class PersistenceManager extends Shutdown {
                 // get primary Key from class
                 final String pk = c.getPrimaryKey();
                 // add tablename and whereclause to the delete statement
-                final String paramStmt = "DELETE FROM " + tableName + " WHERE " + pk + " = ?"; // NOI18N+
+
+                final String paramStmt = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                    .getDialect())
+                            .getPersistenceManagerDeleteFromStmt(tableName, pk);
 
                 if (LOG.isDebugEnabled()) {
                     final StringBuilder logMessage = new StringBuilder("Parameterized SQL: ");
@@ -462,7 +464,7 @@ public final class PersistenceManager extends Shutdown {
                             + mo.getID()
                             + "."                              // NOI18N
                             + mo.getClassKey(),
-                    new CurrentStackTrace());
+                    StackUtils.getDebuggingThrowable());
             }
             // TODO: shouldn't that return -1 or similar to indicate that nothing has been done?
             throw new SecurityException("not allowed to delete meta object"); // NOI18N
@@ -528,7 +530,9 @@ public final class PersistenceManager extends Shutdown {
             before = startPerformanceMeasurement();
             final String tableName = arrayMo.getMetaClass().getTableName();
             final String arrayKeyFieldName = arrayMo.getReferencingObjectAttribute().getMai().getArrayKeyFieldName();
-            final String paramStmt = "DELETE FROM " + tableName + " WHERE " + arrayKeyFieldName + " = ?"; // NOI18N+
+            final String paramStmt = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                .getDialect())
+                        .getPersistenceManagerDeleteFromStmt(tableName, arrayKeyFieldName);
 
             final TransactionHelper transactionHelper = local.get();
             stmt = transactionHelper.getConnection().prepareStatement(paramStmt);
@@ -608,18 +612,16 @@ public final class PersistenceManager extends Shutdown {
             stopPerformanceMeasurement("updateMetaObjectWithoutTransaction - beforeUpdateTriggers", mo, before);
 
             // variables for sql statement
-            final StringBuffer paramStmt = new StringBuffer("UPDATE "); // NOI18N
-            String sep = "";                                            // NOI18N
             // retrieve class object
             final MetaClass metaClass = dbServer.getClass(mo.getClassID());
-            // add table name and set clause
-            paramStmt.append(metaClass.getTableName()).append(" SET "); // NOI18N
             // retrieve object attributes
             final ObjectAttribute[] mAttr = mo.getAttribs();
             MemberAttributeInfo mai;
             // counts fields to update, if 0 no update will be done at all
             int updateCounter = 0;
+            final List<String> fieldNames = new ArrayList<String>();
             final ArrayList values = new ArrayList(mAttr.length);
+            final TransactionHelper transactionHelper = local.get();
             // iterate over all attributes
             for (int i = 0; i < mAttr.length; ++i) {
                 // if it is not changed, skip and proceed
@@ -697,26 +699,22 @@ public final class PersistenceManager extends Shutdown {
                     }
                 } else {
                     before = startPerformanceMeasurement();
-                    // TODO: try to convert JTS GEOMETRY to PGgeometry directly
                     if (PersistenceHelper.GEOMETRY.isAssignableFrom(value.getClass())) {
-                        valueToAdd = PostGisGeometryFactory.getPostGisCompliantDbString((Geometry)value);
+                        valueToAdd = SQLTools.getGeometryFactory(Lookup.getDefault().lookup(DialectProvider.class)
+                                            .getDialect()).getDbString((Geometry)value);
                     } else {
                         valueToAdd = value;
                     }
                     stopPerformanceMeasurement(
-                        "updateMetaObjectWithoutTransaction - getPostGisCompliantDbString",
+                        "updateMetaObjectWithoutTransaction - getDbObject",
                         mo,
                         before);
                 }
                 if (!mAttr[i].isVirtualOneToManyAttribute()) {
                     values.add(valueToAdd);
 
-                    // add update fieldname = ? and add value to valuelist
-                    paramStmt.append(sep).append(mai.getFieldName()).append(" = ?"); // NOI18N
+                    fieldNames.add(mai.getFieldName());
                     ++updateCounter;
-
-                    // comma between 'fieldname = ?, ' set in first iteration
-                    sep = ","; // NOI18N
                 }
             }
 
@@ -724,8 +722,24 @@ public final class PersistenceManager extends Shutdown {
                 PreparedStatement stmt = null;
                 try {
                     // statment done, just append the where clause using the object's primary key
-                    paramStmt.append(" WHERE ").append(metaClass.getPrimaryKey()).append(" = ?"); // NOI18N
                     values.add(Integer.valueOf(mo.getID()));
+
+                    PreparableStatement paramStmt = null;
+                    if (metaClass.getAttribs() != null) {
+                        for (final ClassAttribute ca : metaClass.getAttribs()) {
+                            if (ca.getName().equals("customUpdateStmt")) {
+                                paramStmt = PreparableStatement.fromString((String)ca.getValue());
+                                break;
+                            }
+                        }
+                    }
+                    if (paramStmt == null) {
+                        paramStmt = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                            .getDialect())
+                                    .getPersistenceManagerUpdateStmt(metaClass.getTableName(),
+                                            metaClass.getPrimaryKey(),
+                                            fieldNames.toArray(new String[fieldNames.size()]));
+                    }
 
                     if (LOG.isDebugEnabled()) {
                         final StringBuilder logMessage = new StringBuilder("Parameterized SQL: ");
@@ -745,9 +759,8 @@ public final class PersistenceManager extends Shutdown {
 
                     before = startPerformanceMeasurement();
 
-                    final TransactionHelper transactionHelper = local.get();
-                    stmt = transactionHelper.getConnection().prepareStatement(paramStmt.toString());
-                    parameteriseStatement(stmt, values);
+                    paramStmt.setObjects(values.toArray());
+                    stmt = paramStmt.parameterise(transactionHelper.getConnection());
                     stmt.executeUpdate();
                     stopPerformanceMeasurement("updateMetaObjectWithoutTransaction - executeUpdate", mo, before);
 
@@ -775,7 +788,7 @@ public final class PersistenceManager extends Shutdown {
                             + mo.getID()
                             + "."                                      // NOI18N
                             + mo.getClassKey(),
-                    new CurrentStackTrace());
+                    StackUtils.getDebuggingThrowable());
             }
             throw new SecurityException("not allowed to insert meta object"); // NOI18N
         }
@@ -798,9 +811,6 @@ public final class PersistenceManager extends Shutdown {
             final int type = metaData.getParameterType(i + 1);
             if (NULL.equals(values.get(i))) {
                 stmt.setNull(i + 1, type);
-            } else if (type == Types.OTHER) {
-                // assume PGgeometry as String
-                stmt.setObject(i + 1, new PGgeometry(String.valueOf(values.get(i))));
             } else {
                 stmt.setObject(i + 1, values.get(i), type);
             }
@@ -1049,10 +1059,8 @@ public final class PersistenceManager extends Shutdown {
             }
             stopPerformanceMeasurement("insertMetaObjectWithoutTransaction - beforeInsertTriggers", mo, before);
 
-            final StringBuffer paramSql = new StringBuffer("INSERT INTO "); // NOI18N
             // class of the new object
             final MetaClass metaClass = dbServer.getClass(mo.getClassID());
-            paramSql.append(metaClass.getTableName()).append(" ("); // NOI18N
 
             // retrieve new ID to be used as primarykey for the new object
             final int rootPk;
@@ -1073,13 +1081,20 @@ public final class PersistenceManager extends Shutdown {
             }
             // set object's id
             mo.setID(rootPk);
+            try {
+                mo.getBean().setProperty(mo.getPrimaryKey().getName().toLowerCase(), rootPk);
+            } catch (final Exception ex) {
+                LOG.warn("id Property could not be set", ex);
+            }
+
             // initialis all array attributes with the value of the primary key
             mo.setArrayKey2PrimaryKey();
 
             final ArrayList<MetaObject> virtual1toMChildren = new ArrayList<MetaObject>();
 
             final ArrayList values = new ArrayList(mAttr.length);
-            String sep = ""; // NOI18N
+            final List<String> fieldNames = new ArrayList<String>();
+            final TransactionHelper transactionHelper = local.get();
             // iterate all attributes to create insert statement
             for (int i = 0; i < mAttr.length; i++) {
                 // attribute value
@@ -1122,8 +1137,7 @@ public final class PersistenceManager extends Shutdown {
                     continue;
                 }
 
-                // add fieldname of this attribute to statement
-                paramSql.append(sep).append(mai.getFieldName());
+                fieldNames.add(mai.getFieldName());
                 if (!mAttr[i].referencesObject()) // does not reference object, so it does not have key
                 {
                     if (value == null) {
@@ -1131,14 +1145,15 @@ public final class PersistenceManager extends Shutdown {
                         values.add(persistenceHelper.getDefaultValue(mai, value));
                     } else {
                         before = startPerformanceMeasurement();
-                        // TODO: try to convert JTS GEOMETRY to PGgeometry directly
                         if (PersistenceHelper.GEOMETRY.isAssignableFrom(value.getClass())) {
-                            values.add(PostGisGeometryFactory.getPostGisCompliantDbString((Geometry)value));
+                            values.add(SQLTools.getGeometryFactory(
+                                    Lookup.getDefault().lookup(DialectProvider.class).getDialect()).getDbString(
+                                    (Geometry)value));
                         } else {
                             values.add(value);
                         }
                         stopPerformanceMeasurement(
-                            "insertMetaObjectWithoutTransaction - getPostGisCompliantDbString",
+                            "insertMetaObjectWithoutTransaction - getDbObject",
                             mo,
                             before);
                     }
@@ -1199,29 +1214,33 @@ public final class PersistenceManager extends Shutdown {
                         }
                     }
                 }
-
-                // after the first iteration set the seperator to comma
-                sep = ", "; // NOI18N
             }
-            // finalise param stmt
-            sep = "";                             // NOI18N
-            paramSql.append(") VALUES (");        // NOI18N
-            for (int i = 0; i < values.size(); ++i) {
-                paramSql.append(sep).append('?'); // NOI18N
-                sep = ", ";                       // NOI18N
-            }
-            paramSql.append(')');                 // NOI18N
 
             // set params and execute stmt
             PreparedStatement stmt = null;
             try {
                 before = startPerformanceMeasurement();
 
-                final TransactionHelper transactionHelper = local.get();
-                stmt = transactionHelper.getConnection().prepareStatement(paramSql.toString());
+                PreparableStatement paramStmt = null;
+                if (metaClass.getAttribs() != null) {
+                    for (final ClassAttribute ca : metaClass.getAttribs()) {
+                        if (ca.getName().equals("customInsertStmt")) {
+                            paramStmt = PreparableStatement.fromString((String)ca.getValue());
+                            break;
+                        }
+                    }
+                }
+                if (paramStmt == null) {
+                    paramStmt = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                                .getPersistenceManagerInsertStmt(metaClass.getTableName(),
+                                        fieldNames.toArray(new String[fieldNames.size()]));
+                }
+
+                paramStmt.setObjects(values.toArray());
+                stmt = paramStmt.parameterise(transactionHelper.getConnection());
                 if (LOG.isDebugEnabled()) {
                     final StringBuilder logMessage = new StringBuilder("Parameterized SQL: ");
-                    logMessage.append(paramSql);
+                    logMessage.append(paramStmt);
                     logMessage.append('\n');
                     final int i = 1;
                     for (final java.lang.Object value : values) {
@@ -1234,7 +1253,6 @@ public final class PersistenceManager extends Shutdown {
                     }
                     LOG.debug(logMessage.toString(), new Exception());
                 }
-                stmt = parameteriseStatement(stmt, values);
                 stmt.executeUpdate();
                 stopPerformanceMeasurement("insertMetaObjectWithoutTransaction - executeUpdate", mo, before);
 
@@ -1263,7 +1281,7 @@ public final class PersistenceManager extends Shutdown {
                             + mo.getID()
                             + "."                              // NOI18N
                             + mo.getClassKey(),                // NOI18N
-                    new CurrentStackTrace());
+                    StackUtils.getDebuggingThrowable());
             }
             throw new SecurityException("not allowed to insert meta object"); // NOI18N
         }
@@ -1314,7 +1332,9 @@ public final class PersistenceManager extends Shutdown {
      */
     private void fixMissingMetaClass(final MetaObject mo) {
         if (mo.getMetaClass() == null) {
-            mo.setMetaClass(new MetaClass(dbServer.getClassCache().getClass(mo.getClassID()), mo.getDomain()));
+            mo.setMetaClass(new MetaClass(
+                    dbServer.getClassCache().getClass(mo.getClassID()),
+                    mo.getDomain()));
         }
     }
 }

@@ -21,10 +21,15 @@ import Sirius.server.newuser.permission.Permission;
 import Sirius.server.newuser.permission.PermissionHolder;
 import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DBConnectionPool;
+import Sirius.server.sql.DialectProvider;
 import Sirius.server.sql.QueryParametrizer;
+import Sirius.server.sql.SQLTools;
 
 import org.apache.log4j.Logger;
 
+import org.openide.util.Lookup;
+
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -38,8 +43,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-
-import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
 
 import de.cismet.tools.CurrentStackTrace;
 
@@ -61,6 +64,7 @@ public final class ObjectFactory extends Shutdown {
     private DBConnectionPool conPool;
     private DatabaseMetaData dbMeta = null;
     private HashSet primaryKeys;
+    private final String dialect;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -73,6 +77,7 @@ public final class ObjectFactory extends Shutdown {
     public ObjectFactory(final DBConnectionPool conPool, final ClassCache classCache) {
         this.classCache = classCache;
         this.conPool = conPool;
+        this.dialect = Lookup.getDefault().lookup(DialectProvider.class).getDialect();
 
         try {
             this.dbMeta = conPool.getConnection().getMetaData();
@@ -449,10 +454,23 @@ public final class ObjectFactory extends Shutdown {
                                     LOG.debug("Class of attribute " + mai.getName() + " = null"); // NOI18N
                                 }
                             }
-                            if (attrValue instanceof org.postgis.PGgeometry)     // TODO assignable from machen
-                            // attrValue = de.cismet.tools.postgis.FeatureConverter.convert( (
-                            // (org.postgis.PGgeometry)attrValue).getGeometry());
-                            {
+                            if (attrValue instanceof Clob) {
+                                // we convert the clob to a string, otherwise the value is not serialisable out of the
+                                // box due to the direct connection to the database
+                                // TODO: handle overflows, i.e. clob too big
+                                final Clob clob = (Clob)attrValue;
+                                if (clob.length() <= Integer.valueOf(Integer.MAX_VALUE).longValue()) {
+                                    attrValue = clob.getSubString(1, Long.valueOf(clob.length()).intValue());
+                                } else {
+                                    throw new IllegalStateException(
+                                        "cannot handle clobs larger than Integer.MAX_VALUE: [class="
+                                                + c.getName()
+                                                + "|field="
+                                                + fieldName
+                                                + "]");
+                                }
+                            }
+                            if (SQLTools.getGeometryFactory(dialect).isGeometryObject(attrValue)) {
                                 if (LOG.isDebugEnabled()) {
                                     LOG.debug(
                                         "Converting in JTS: "
@@ -462,8 +480,7 @@ public final class ObjectFactory extends Shutdown {
                                                 + ")  = " // NOI18N
                                                 + attrValue);
                                 }
-                                attrValue = PostGisGeometryFactory.createJtsGeometry(
-                                        ((org.postgis.PGgeometry)attrValue).getGeometry());
+                                attrValue = SQLTools.getGeometryFactory(dialect).createGeometry(attrValue);
                             }
                             if (attrValue != null) {
                                 if (LOG.isDebugEnabled()) {
@@ -665,10 +682,8 @@ public final class ObjectFactory extends Shutdown {
                 c.getID());
         result.setDummy(true);
 
-        final String getObjectStmnt = "Select * from " + c.getTableName() + " where " // NOI18N
-                    + mai.getArrayKeyFieldName()
-                    + " = "                                                           // NOI18N
-                    + referenceKey;
+        final String getObjectStmnt = SQLTools.getStatements(dialect)
+                    .getObjectFactoryGetObjectStmt(c.getTableName(), mai.getArrayKeyFieldName(), referenceKey);
 
         Statement stmnt = null;
         ResultSet rs = null;
@@ -781,10 +796,11 @@ public final class ObjectFactory extends Shutdown {
 
         result.setDummy(true);
 
-        final String getObjectStmnt = "Select * from " + detailClass.getTableName() + " where " // NOI18N
-                    + maiBacklink.getFieldName()
-                    + " = "                                                                     // NOI18N
-                    + array_predicate;
+        final String getObjectStmnt = SQLTools.getStatements(dialect)
+                    .getObjectFactoryGetObjectStmt(
+                        detailClass.getTableName(),
+                        maiBacklink.getFieldName(),
+                        String.valueOf(array_predicate));
 
         Statement stmnt = null;
         ResultSet rs = null;
@@ -1040,12 +1056,8 @@ public final class ObjectFactory extends Shutdown {
         try {
             final UserGroup userGroup = user.getUserGroup();
             // check kann es Probleme bei nicht lokalen ugs geben?
-            final String attribPerm =
-                "select p.id as pid,p.key as key, u.ug_id as ug_id, u.attr_id as attr_id from cs_ug_attr_perm as u, cs_permission as p  where attr_id in (select id  from cs_attr where class_id ="
-                        + o.getClassID()
-                        + ") and u.permission = p.id and ug_id IN ("
-                        + implodedUserGroupIds
-                        + ")";
+            final String attribPerm = SQLTools.getStatements(dialect)
+                        .getObjectFactoryAttrPermStmt(o.getClassID(), implodedUserGroupIds);
 
             stmnt = conPool.getConnection().createStatement();
 

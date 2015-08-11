@@ -12,7 +12,10 @@ import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.sql.DBConnection;
+import Sirius.server.sql.DialectProvider;
+import Sirius.server.sql.SQLTools;
 
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 import java.sql.Connection;
@@ -44,61 +47,9 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
             "severe.incidence");
     private static final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(
             IndexTrigger.class);
-    public static final String NULL = "NULL";                                         // NOI18N
+    public static final String NULL = "NULL"; // NOI18N
     private static final transient org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
             IndexTrigger.class);
-    public static final String DEL_ATTR_STRING = "DELETE FROM cs_attr_string "        // NOI18N
-                + "WHERE class_id = ? AND object_id = ?";                             // NOI18N
-    public static final String DEL_ATTR_MAPPING = "DELETE FROM cs_attr_object "       // NOI18N
-                + "WHERE class_id = ? AND object_id = ?";                             // NOI18N
-    public static final String INS_ATTR_STRING = "INSERT INTO cs_attr_string "        // NOI18N
-                + "(class_id, object_id, attr_id, string_val) VALUES (?, ?, ?, ?)";   // NOI18N
-    public static final String INS_ATTR_MAPPING = "INSERT INTO cs_attr_object "       // NOI18N
-                + "(class_id, object_id, attr_class_id, attr_object_id) VALUES "      // NOI18N
-                + "(?, ?, ?, ?)";                                                     // NOI18N
-    public static final String UP_ATTR_STRING = "UPDATE cs_attr_string "              // NOI18N
-                + "SET string_val = ? "                                               // NOI18N
-                + "WHERE class_id = ? AND object_id = ? AND attr_id = ?";             // NOI18N
-    public static final String UP_ATTR_MAPPING = "UPDATE cs_attr_object "             // NOI18N
-                + "SET attr_object_id = ? "                                           // NOI18N
-                + "WHERE class_id = ? AND object_id = ? AND attr_class_id = ?";       // NOI18N
-    public static final String DEL_ATTR_MAPPING_ARRAY = "DELETE from cs_attr_object " // NOI18N
-                + "WHERE class_id = ? AND object_id = ? AND attr_class_id = ?";       // NOI18N
-    public static final String DEL_DERIVE_ATTR_MAPPING =
-        "delete from cs_attr_object_derived where class_id=? and object_id =?";
-    public static final String INS_DERIVE_ATTR_MAPPING = "insert into cs_attr_object_derived "
-                + " WITH recursive derived_index(xocid,xoid,ocid,oid,acid,aid,depth) AS "
-                + "( SELECT class_id, "
-                + "        object_id, "
-                + "        class_id , "
-                + "        object_id, "
-                + "        class_id , "
-                + "        object_id, "
-                + "        0 "
-                + "FROM    cs_attr_object "
-                + "WHERE   class_id=? "
-                + "AND     object_id =? "
-                + " "
-                + "UNION ALL "
-                + " "
-                + "SELECT di.xocid          , "
-                + "       di.xoid           , "
-                + "       aam.class_id      , "
-                + "       aam.object_id     , "
-                + "       aam.attr_class_id , "
-                + "       aam.attr_object_id, "
-                + "       di.depth+1 "
-                + "FROM   cs_attr_object aam, "
-                + "       derived_index di "
-                + "WHERE  aam.class_id =di.acid "
-                + "AND    aam.object_id=di.aid "
-                + ") "
-                + "SELECT DISTINCT xocid, "
-                + "                xoid , "
-                + "                acid , "
-                + "                aid "
-                + "FROM            derived_index "
-                + "ORDER BY        1,2,3,4 limit 1000000000;";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -240,21 +191,23 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
             return dependentBeans;
         }
 
-        final String query = "SELECT class_id FROM cs_attr WHERE foreign_key_references_to = "
-                    + ((-1) * mo.getClassID());
+        final String query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                    .getIndexTriggerSelectClassIdForeignKeyStmt((-1) * mo.getClassID());
         final ResultSet masterClasses = connection.createStatement().executeQuery(query);
 
         while (masterClasses.next()) {
             final int classId = masterClasses.getInt(1);
 
-            final String fieldQuery = "select field_name from cs_attr where class_id = " + mo.getClassID()
-                        + " and foreign_key_references_to = " + classId;
+            final String fieldQuery = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                .getDialect())
+                        .getIndexTriggerSelectFieldStmt(mo.getClassID(), classId);
             final ResultSet field = connection.createStatement().executeQuery(fieldQuery);
 
             if (field.next()) {
                 final String fieldName = field.getString(1);
-                final String idQuery = "select " + fieldName + " from " + mo.getMetaClass().getTableName()
-                            + " where id = " + mo.getID();
+                final String idQuery = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                    .getDialect())
+                            .getIndexTriggerSelectObjFieldStmt(fieldName, mo.getMetaClass().getTableName(), mo.getID());
                 final ResultSet oid = connection.createStatement().executeQuery(idQuery);
 
                 if (oid.next()) {
@@ -314,31 +267,39 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     // value
                     if (mai.isForeignKey()) {
                         if (mai.getForeignKeyClassId() < 0) {
-                            final String backreferenceQuery = "SELECT field_name FROM cs_attr WHERE class_id = "
-                                        + Math.abs(mai.getForeignKeyClassId()) + " AND foreign_key_references_to = "
-                                        + mai.getClassId() + " LIMIT 1";
+                            final String backreferenceQuery = SQLTools.getStatements(Lookup.getDefault().lookup(
+                                            DialectProvider.class).getDialect())
+                                        .getIndexTriggerSelectBackReferenceStmt(Math.abs(mai.getForeignKeyClassId()),
+                                            mai.getClassId());
                             final ResultSet backreferenceRs = connection.createStatement()
                                         .executeQuery(backreferenceQuery);
 
                             if (backreferenceRs.next()) {
                                 final String backreferenceField = backreferenceRs.getString(1);
                                 backreferenceRs.close();
-                                String query = "SELECT table_name FROM cs_class where id = "
-                                            + Math.abs(attr.getMai().getForeignKeyClassId());
+                                String query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                                    .getDialect())
+                                            .getIndexTriggerSelectTableNameByClassIdStmt(Math.abs(
+                                                    attr.getMai().getForeignKeyClassId()));
                                 final ResultSet rs = connection.createStatement().executeQuery(query);
 
                                 if (rs.next()) {
                                     final String foreignTableName = rs.getString(1);
-                                    query = "SELECT id as id FROM " + foreignTableName + " WHERE "
-                                                + backreferenceField
-                                                + " =  " + String.valueOf(mo.getID());
+                                    query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                                        .getDialect())
+                                                .getIndexTriggerSelectFKIdStmt(
+                                                        foreignTableName,
+                                                        backreferenceField,
+                                                        mo.getID());
 
                                     final ResultSet arrayList = connection.createStatement().executeQuery(query);
 
                                     while (arrayList.next()) {
                                         // lazily prepare the statement
                                         if (psAttrMap == null) {
-                                            psAttrMap = connection.prepareStatement(INS_ATTR_MAPPING);
+                                            psAttrMap = connection.prepareStatement(SQLTools.getStatements(
+                                                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                                                            .getIndexTriggerInsertAttrObjectStmt());
                                         }
                                         psAttrMap.setInt(1, mo.getClassID());
                                         psAttrMap.setInt(2, mo.getID());
@@ -355,22 +316,29 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                             }
                         } else if (mai.isArray()) {
                             attr.getTypeId();
-                            String query = "SELECT table_name FROM cs_class where id = "
-                                        + attr.getMai().getForeignKeyClassId();
+                            String query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                                .getDialect())
+                                        .getIndexTriggerSelectTableNameByClassIdStmt(attr.getMai()
+                                            .getForeignKeyClassId());
                             final ResultSet rs = connection.createStatement().executeQuery(query);
 
                             if (rs.next()) {
                                 final String foreignTableName = rs.getString(1);
-                                query = "SELECT id as id FROM " + foreignTableName + " WHERE "
-                                            + mai.getArrayKeyFieldName()
-                                            + " =  " + String.valueOf(mo.getID());
+                                query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                                    .getDialect())
+                                            .getIndexTriggerSelectFKIdStmt(
+                                                    foreignTableName,
+                                                    mai.getArrayKeyFieldName(),
+                                                    mo.getID());
 
                                 final ResultSet arrayList = connection.createStatement().executeQuery(query);
 
                                 while (arrayList.next()) {
                                     // lazily prepare the statement
                                     if (psAttrMap == null) {
-                                        psAttrMap = connection.prepareStatement(INS_ATTR_MAPPING);
+                                        psAttrMap = connection.prepareStatement(SQLTools.getStatements(
+                                                    Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                                                        .getIndexTriggerInsertAttrObjectStmt());
                                     }
                                     psAttrMap.setInt(1, mo.getClassID());
                                     psAttrMap.setInt(2, mo.getID());
@@ -385,7 +353,9 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                         } else {
                             // lazily prepare the statement
                             if (psAttrMap == null) {
-                                psAttrMap = connection.prepareStatement(INS_ATTR_MAPPING);
+                                psAttrMap = connection.prepareStatement(SQLTools.getStatements(
+                                            Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                                                .getIndexTriggerInsertAttrObjectStmt());
                             }
                             psAttrMap.setInt(1, mo.getClassID());
                             psAttrMap.setInt(2, mo.getID());
@@ -399,7 +369,9 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     } else {
                         // lazily prepare the statement
                         if (psAttrString == null) {
-                            psAttrString = connection.prepareStatement(INS_ATTR_STRING);
+                            psAttrString = connection.prepareStatement(SQLTools.getStatements(
+                                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                                            .getIndexTriggerInsertAttrStringStmt());
                         }
                         psAttrString.setInt(1, mo.getClassID());
                         psAttrString.setInt(2, mo.getID());
@@ -489,19 +461,26 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     if (mai.isForeignKey()) {
                         if (mai.isArray()) {
                             attr.getTypeId();
-                            String query = "SELECT table_name FROM cs_class where id = "
-                                        + attr.getMai().getForeignKeyClassId();
+                            String query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                                .getDialect())
+                                        .getIndexTriggerSelectTableNameByClassIdStmt(attr.getMai()
+                                            .getForeignKeyClassId());
                             final ResultSet rs = connection.createStatement().executeQuery(query);
 
                             if (rs.next()) {
                                 final String foreignTableName = rs.getString(1);
-                                query = "SELECT id as id FROM " + foreignTableName + " WHERE "
-                                            + mai.getArrayKeyFieldName()
-                                            + " =  " + String.valueOf(mo.getID());
+                                query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                                    .getDialect())
+                                            .getIndexTriggerSelectFKIdStmt(
+                                                    foreignTableName,
+                                                    mai.getArrayKeyFieldName(),
+                                                    mo.getID());
 
                                 final ResultSet arrayList = connection.createStatement().executeQuery(query);
                                 final PreparedStatement psAttrMapDelArray = connection.prepareStatement(
-                                        DEL_ATTR_MAPPING_ARRAY);
+                                        SQLTools.getStatements(
+                                            Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                                                    .getIndexTriggerDeleteAttrObjectArrayStmt());
 
                                 psAttrMapDelArray.setInt(1, mo.getClassID());
                                 psAttrMapDelArray.setInt(2, mo.getID());
@@ -512,7 +491,9 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                                 while (arrayList.next()) {
                                     // lazily prepare the statement
                                     if (psAttrMapArray == null) {
-                                        psAttrMapArray = connection.prepareStatement(INS_ATTR_MAPPING);
+                                        psAttrMapArray = connection.prepareStatement(SQLTools.getStatements(
+                                                    Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                                                        .getIndexTriggerInsertAttrObjectStmt());
                                     }
                                     psAttrMapArray.setInt(1, mo.getClassID());
                                     psAttrMapArray.setInt(2, mo.getID());
@@ -527,7 +508,9 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                         } else {
                             // lazily prepare the statement
                             if (psAttrMap == null) {
-                                psAttrMap = connection.prepareStatement(UP_ATTR_MAPPING);
+                                psAttrMap = connection.prepareStatement(SQLTools.getStatements(
+                                            Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                                                .getIndexTriggerUpdateAttrObjectStmt());
                             }
                             // if field represents a foreign key the attribute value
                             // is assumed to be a MetaObject
@@ -541,7 +524,9 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                             if (LOG.isDebugEnabled()) {
                                 final StringBuilder logMessage = new StringBuilder(
                                         "Parameterized SQL added to batch: ");
-                                logMessage.append(UP_ATTR_MAPPING);
+                                logMessage.append(SQLTools.getStatements(
+                                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                                            .getIndexTriggerUpdateAttrObjectStmt());
                                 logMessage.append('\n');
                                 logMessage.append("attr_obj_id: ");
                                 logMessage.append(String.valueOf((value == null) ? -1 : value.getID()));
@@ -557,7 +542,9 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     } else {
                         // lazily prepare the statement
                         if (psAttrString == null) {
-                            psAttrString = connection.prepareStatement(UP_ATTR_STRING);
+                            psAttrString = connection.prepareStatement(SQLTools.getStatements(
+                                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                                            .getIndexTriggerUpdateAttrStringStmt());
                         }
                         // interpret the fields value as a string
                         psAttrString.setString(1, (attr.getValue() == null) ? NULL : String.valueOf(attr.getValue()));
@@ -567,7 +554,9 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                         psAttrString.addBatch();
                         if (LOG.isDebugEnabled()) {
                             final StringBuilder logMessage = new StringBuilder("Parameterized SQL added to batch: ");
-                            logMessage.append(UP_ATTR_MAPPING);
+                            logMessage.append(SQLTools.getStatements(
+                                    Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                                        .getIndexTriggerUpdateAttrStringStmt());
                             logMessage.append('\n');
                             logMessage.append("attr_obj_id: ");
                             logMessage.append(String.valueOf(attr.getValue()));
@@ -655,8 +644,12 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
      */
     private void updateDerivedIndex(final Connection connection, final int classId, final int objectId)
             throws SQLException {
-        final PreparedStatement psDeleteAttrMapDerive = connection.prepareStatement(DEL_DERIVE_ATTR_MAPPING);
-        final PreparedStatement psInsertAttrMapDerive = connection.prepareStatement(INS_DERIVE_ATTR_MAPPING);
+        final PreparedStatement psDeleteAttrMapDerive = connection.prepareStatement(SQLTools.getStatements(
+                    Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                        .getIndexTriggerDeleteAttrObjectDerivedStmt());
+        final PreparedStatement psInsertAttrMapDerive = connection.prepareStatement(SQLTools.getStatements(
+                    Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                        .getIndexTriggerInsertAttrObjectDerivedStmt());
 
         psDeleteAttrMapDerive.setInt(1, classId);
         psDeleteAttrMapDerive.setInt(2, objectId);
@@ -696,9 +689,15 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
         PreparedStatement psAttrDerive = null;
         try {
             // prepare the update statements
-            psAttrString = connection.prepareStatement(DEL_ATTR_STRING);
-            psAttrMap = connection.prepareStatement(DEL_ATTR_MAPPING);
-            psAttrDerive = connection.prepareStatement(DEL_DERIVE_ATTR_MAPPING);
+            psAttrString = connection.prepareStatement(SQLTools.getStatements(
+                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                            .getIndexTriggerDeleteAttrStringObjectStmt());
+            psAttrMap = connection.prepareStatement(SQLTools.getStatements(
+                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                            .getIndexTriggerDeleteAttrObjectObjectStmt());
+            psAttrDerive = connection.prepareStatement(SQLTools.getStatements(
+                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                            .getIndexTriggerDeleteAttrObjectDerivedStmt());
             // set the appropriate param values
             psAttrString.setInt(1, mo.getClassID());
             psAttrString.setInt(2, mo.getID());
@@ -800,11 +799,11 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                         for (final CidsBeanInfo beanInfo : beansToUpdateTmp) {
                             connection.createStatement()
                                     .execute(
-                                        "select reindexpure("
-                                        + beanInfo.getClassId()
-                                        + ","
-                                        + beanInfo.getObjectId()
-                                        + ");");
+                                        SQLTools.getStatements(
+                                            Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                                            .getIndexTriggerSelectReindexPureStmt(
+                                                beanInfo.getClassId(),
+                                                beanInfo.getObjectId()));
                             updateDerivedIndex(connection, beanInfo.getClassId(), beanInfo.getObjectId());
                         }
                     } catch (SQLException sQLException) {

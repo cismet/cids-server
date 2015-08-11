@@ -11,12 +11,15 @@ import java.io.Serializable;
 
 import javax.ws.rs.core.MultivaluedMap;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * DOCUMENT ME!
  *
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
+@XmlRootElement
 public class ServerActionParameter<T> implements Serializable {
 
     //~ Instance fields --------------------------------------------------------
