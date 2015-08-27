@@ -199,12 +199,18 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
             DomainServerClassCache.getInstance().setAllClasses(dbServer.getClasses(), properties.getServerName());
 
-            scheduledManager = new ScheduledServerActionManager(
-                    this,
-                    dbServer.getActiveDBConnection(),
-                    userServer,
-                    serverInfo.getName());
-            scheduledManager.resumeAll();
+            if (ScheduledServerActionManager.isScheduledServerActionFeatureSupported(
+                            dbServer.getActiveDBConnection())) {
+                scheduledManager = new ScheduledServerActionManager(
+                        this,
+                        dbServer.getActiveDBConnection(),
+                        userServer,
+                        serverInfo.getName());
+                scheduledManager.resumeAll();
+            } else {
+                logger.info("scheduled server action feature is not supported by this server instance"); // NOI18N
+                scheduledManager = null;
+            }
 
             // initFrame();
         } catch (Throwable e) {
@@ -1237,17 +1243,23 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
             if (serverAction != null) {
                 if (serverAction instanceof ScheduledServerAction) {
-                    final String key = ((ScheduledServerAction)serverAction).createKey();
-                    try {
-                        return scheduledManager.scheduleAction(
-                                user,
-                                key,
-                                (ScheduledServerAction)serverAction,
-                                body,
-                                params);
-                    } catch (Exception ex) {
-                        logger.error("error whhile scheduling serveraction", ex);
-                        return null;
+                    if (ScheduledServerActionManager.isScheduledServerActionFeatureSupported(
+                                    dbServer.getActiveDBConnection())) {
+                        final String key = ((ScheduledServerAction)serverAction).createKey();
+                        try {
+                            return scheduledManager.scheduleAction(
+                                    user,
+                                    key,
+                                    (ScheduledServerAction)serverAction,
+                                    body,
+                                    params);
+                        } catch (Exception ex) {
+                            logger.error("error whhile scheduling serveraction", ex);
+                            return null;
+                        }
+                    } else {
+                        throw new UnsupportedOperationException(
+                            "this server instance does not support scheduled server action feature"); // NOI18N
                     }
                 } else {
                     return serverAction.execute(body, params);
