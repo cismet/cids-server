@@ -608,8 +608,10 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
 
     @Override
     public String getIndexTriggerInsertAttrObjectDerivedStmt() {
+        // instead of the union, the last condition (NOT (xocid = acid AND xoid = aid)) can be removed,
+        // to get the same result. But the postgres statement must have the same arguments as the oracle statement
         return "insert into cs_attr_object_derived "
-                    + " WITH recursive derived_index(xocid,xoid,ocid,oid,acid,aid,depth) AS "
+                    + " ((WITH recursive derived_index(xocid,xoid,ocid,oid,acid,aid,depth) AS "
                     + "( SELECT class_id, "
                     + "        object_id, "
                     + "        class_id , "
@@ -641,7 +643,9 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                     + "                aid "
                     + "FROM            derived_index "
                     + "WHERE NOT (xocid = acid AND xoid = aid)"
-                    + "ORDER BY        1,2,3,4 limit 1000000000;";
+                    + "ORDER BY        1,2,3,4 limit 1000000000)"
+                    + " union "
+                    + "  select ?, ?, ?, ?)";
     }
 
     @Override

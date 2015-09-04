@@ -655,6 +655,10 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
         psDeleteAttrMapDerive.setInt(2, objectId);
         psInsertAttrMapDerive.setInt(1, classId);
         psInsertAttrMapDerive.setInt(2, objectId);
+        psInsertAttrMapDerive.setInt(3, classId);
+        psInsertAttrMapDerive.setInt(4, objectId);
+        psInsertAttrMapDerive.setInt(5, classId);
+        psInsertAttrMapDerive.setInt(6, objectId);
         final int del = psDeleteAttrMapDerive.executeUpdate();
         final int ins = psInsertAttrMapDerive.executeUpdate();
         if (LOG.isDebugEnabled()) {

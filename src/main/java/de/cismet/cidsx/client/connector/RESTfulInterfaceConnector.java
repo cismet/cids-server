@@ -1508,17 +1508,21 @@ public class RESTfulInterfaceConnector implements CallServerService {
     }
 
     /**
-     * <strong>Unsupported Operation</strong>
-     * <p>
-     * This operation is not supported anymore in the cids REST API, it throws
-     * an UnsupportedOperationException Exception</p>
+     * <strong>Unsupported Operation.</strong>
      *
-     * @param user parameter is ignored
-     * @param classIds parameter is ignored
-     * @param searchOptions parameter is ignored
-     * @return UnsupportedOperationException
-     * @throws RemoteException not thrown
-     * @deprecated
+     * <p>This operation is not supported anymore in the cids REST API, it throws an UnsupportedOperationException
+     * Exception</p>
+     *
+     * @param       user           parameter is ignored
+     * @param       classIds       parameter is ignored
+     * @param       searchOptions  parameter is ignored
+     *
+     * @return      UnsupportedOperationException
+     *
+     * @throws      RemoteException                not thrown
+     * @throws      UnsupportedOperationException  DOCUMENT ME!
+     *
+     * @deprecated  DOCUMENT ME!
      */
     @Override
     public SearchResult search(final User user, final String[] classIds, final SearchOption[] searchOptions)
