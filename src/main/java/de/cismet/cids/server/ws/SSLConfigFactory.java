@@ -83,6 +83,39 @@ public final class SSLConfigFactory {
     /**
      * DOCUMENT ME!
      *
+     * @param   serverCertificateInputStream  DOCUMENT ME!
+     * @param   clientKeystorePath            DOCUMENT ME!
+     * @param   clientKeystorePW              DOCUMENT ME!
+     * @param   clientKeyPW                   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SSLConfigFactoryException  DOCUMENT ME!
+     */
+    public SSLConfig createClientConfig(final InputStream serverCertificateInputStream,
+            final String clientKeystorePath,
+            final char[] clientKeystorePW,
+            final char[] clientKeyPW) throws SSLConfigFactoryException {
+        final Certificate serverCert = createCertificateFromStream(
+                serverCertificateInputStream,
+                SSLConfig.CERTIFICATE_TYPE_X509);
+        final KeyStore serverKeystore = createKeystoreFromFile(null, null, SSLConfig.KEYSTORE_TYPE_JAVA);
+        try {
+            serverKeystore.setCertificateEntry("cids-server-jetty", serverCert);                  // NOI18N
+        } catch (final KeyStoreException ex) {
+            throw new SSLConfigFactoryException("cannot add server certificate to keystore", ex); // NOI18N
+        }
+
+        final KeyStore clientKeystore = createKeystoreFromFile(new File(clientKeystorePath),
+                clientKeystorePW,
+                SSLConfig.KEYSTORE_TYPE_JAVA);
+
+        return new SSLConfigImpl(serverKeystore, clientKeystore, null, clientKeyPW);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   serverCertIS  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
