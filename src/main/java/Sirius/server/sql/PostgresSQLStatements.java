@@ -415,8 +415,11 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
     @Override
     public String getPasswordSwitcherAdminActionChangeAndBackupStmt(final String loginNameToSwitch,
             final String loginNameToRead) {
-        return "UPDATE cs_usr SET last_password = password, password = "
-                    + "(SELECT password FROM cs_usr WHERE login_name = '"
+        return "UPDATE cs_usr SET last_salt = salt, last_pw_hash=pw_hash, salt = "
+                    + "(SELECT salt FROM cs_usr WHERE login_name = '"
+                    + loginNameToRead
+                    + "') , pw_hash = "
+                    + "(SELECT pw_hash FROM cs_usr WHERE login_name = '"
                     + loginNameToRead
                     + "') "
                     + "WHERE login_name = '"
@@ -426,9 +429,10 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
 
     @Override
     public String getPasswordSwitcherAdminActionRecoveryStmt(final String loginName) {
-        return "UPDATE cs_usr SET password = last_password, last_password = NULL WHERE login_name = '"
+        return
+            "UPDATE cs_usr SET salt=last_salt, pw_hash=last_pw_hash, last_salt = NULL, last_pw_hash = NULL WHERE login_name = '"
                     + loginName
-                    + "'";
+                    + "' and last_salt is not null and last_pw_hash is not null";
     }
 
     @Override
