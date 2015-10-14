@@ -220,7 +220,7 @@ public final class UserStore extends Shutdown {
         final java.lang.Object[] params = new java.lang.Object[3];
 
         params[0] = newPassword;
-        params[1] = user.getName().toLowerCase();
+        params[1] = user.getName();
         params[2] = oldPassword;
 
         if (conPool.submitInternalUpdate(DBConnection.DESC_CHANGE_USER_PASSWORD, params) > 0) {
@@ -258,8 +258,8 @@ public final class UserStore extends Shutdown {
             // TODO: should username and password be trimmed?
             result = conPool.submitInternalQuery(
                     DBConnection.DESC_VERIFY_USER_PW,
-                    user.getName().trim().toLowerCase(),
-                    password.trim().toLowerCase());
+                    user.getName(),
+                    password);
             return result.next() && (result.getInt(1) == 1);
         } finally {
             DBConnection.closeResultSets(result);

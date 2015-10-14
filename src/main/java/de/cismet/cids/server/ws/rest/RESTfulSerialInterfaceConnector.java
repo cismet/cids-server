@@ -171,7 +171,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      *
      * @param   sslConfig  DOCUMENT ME!
      *
-     * @throws  IllegalStateException  DOCUMENT ME!
+     * @throws  SSLInitializationException  IllegalStateException SSLInititializationException IllegalStateException
+     *                                      DOCUMENT ME!
      */
     private void initSSL(final SSLConfig sslConfig) {
         if (LOG.isInfoEnabled()) {
@@ -232,13 +233,15 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
             HttpsURLConnection.setDefaultHostnameVerifier(new SSLHostnameVerifier());
         } catch (final NoSuchAlgorithmException e) {
-            throw new IllegalStateException("system does not support SSL", e);            // NOI18N
+            throw new SSLInitializationException("system does not support SSL", e);            // NOI18N       (kmf ==
+                                                                                               // null) ? null :
+                                                                                               // kmf.getKeyManagers(),
         } catch (final KeyStoreException e) {
-            throw new IllegalStateException("system does not support java keystores", e); // NOI18N
+            throw new SSLInitializationException("system does not support java keystores", e); // NOI18N
         } catch (final KeyManagementException e) {
-            throw new IllegalStateException("ssl context init properly initialised", e);  // NOI18N
+            throw new SSLInitializationException("ssl context init properly initialised", e);  // NOI18N
         } catch (final UnrecoverableKeyException e) {
-            throw new IllegalStateException("cannot get key from keystore", e);           // NOI18N
+            throw new SSLInitializationException("cannot get key from keystore", e);           // NOI18N
         }
     }
 
