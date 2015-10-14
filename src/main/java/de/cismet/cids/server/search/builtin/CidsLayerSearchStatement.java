@@ -11,19 +11,24 @@
  */
 package de.cismet.cids.server.search.builtin;
 
-import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.newuser.User;
 
 import org.apache.log4j.Logger;
 
-import java.lang.reflect.Constructor;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import java.rmi.RemoteException;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
@@ -43,6 +48,22 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
 
     private static final Logger LOG = Logger.getLogger(CidsLayerSearchStatement.class);
 
+    private static final String selectFromView = "%s where geo_field && st_setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
+    private static final String selectFromViewExactly =
+        "%1$s where geo_field && st_setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d) and st_intersects(geo_field, st_setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d))";
+    private static final String selectAll = "%s";
+    private static final String selectCountFromView =
+        "Select count(*) from (%s where geo_field && st_setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)) as tmp";
+    private static final String selectTotalCountFromView = "Select count(*) from (%s) as tmp";
+    private static final String selectFromViewWithRestriction =
+        "%s where %s and geo_field && st_setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
+    private static final String selectFromViewExactlyWithRestriction =
+        "%1$s where %7$s and geo_field && st_setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d) and st_intersects(geo_field, st_setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d))";
+    private static final String selectAllWithRestriction = "%s WHERE %s";
+    private static final String selectCountFromViewWithRestriction =
+        "Select count(*) from (%s where %s and geo_field && st_setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)) as tmp";
+    private static final String selectTotalCountFromViewWithRestriction = "Select count(*) from (%s where %s) as tmp";
+
     //~ Instance fields --------------------------------------------------------
 
     double x1;
@@ -59,22 +80,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
     private String[] orderBy;
     private boolean exactSearch = false;
     private CidsLayerInfo layerInfo;
-
-    private final String selectFromView = "%s where geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
-    private final String selectFromViewExactly =
-        "%1$s where geo_field && setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d) and st_intersects(geo_field::GEOMETRY, setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d))";
-    private final String selectAll = "%s";
-    private final String selectCountFromView =
-        "Select count(*) from (%s where geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)) as tmp";
-    private final String selectTotalCountFromView = "Select count(*) from (%s) as tmp";
-    private final String selectFromViewWithRestriction =
-        "%s where %s and geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
-    private final String selectFromViewExactlyWithRestriction =
-        "%1$s where %7$s and geo_field && setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d) and st_intersects(geo_field::GEOMETRY, setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d))";
-    private final String selectAllWithRestriction = "%s WHERE %s";
-    private final String selectCountFromViewWithRestriction =
-        "Select count(*) from (%s where %s and geo_field && setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)) as tmp";
-    private final String selectTotalCountFromViewWithRestriction = "Select count(*) from (%s where %s) as tmp";
+    private boolean compressed = false;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -283,7 +289,33 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
             }
 
             LOG.info(queryString.toString());
-            final ArrayList<ArrayList> result = ms.performCustomSearch(queryString.toString());
+            ArrayList<ArrayList> result = ms.performCustomSearch(queryString.toString());
+
+            if (compressed) {
+                try {
+                    final ByteArrayOutputStream iout = new ByteArrayOutputStream();
+                    final ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                    final ObjectOutputStream oout = new ObjectOutputStream(iout);
+                    oout.writeObject(result);
+                    oout.flush();
+                    final GZIPOutputStream zstream = new GZIPOutputStream(bout);
+                    zstream.write(iout.toByteArray());
+                    zstream.finish();
+
+                    // FileOutputStream foutUncompressed = new FileOutputStream("/home/therter/tmp/uncomp.out");
+                    // foutUncompressed.write(iout.toByteArray());
+                    // foutUncompressed.close();
+                    //
+                    // FileOutputStream foutCompressed = new FileOutputStream("/home/therter/tmp/comp.out");
+                    // foutCompressed.write(bout.toByteArray());
+                    // foutCompressed.close();
+                    result = new ArrayList<ArrayList>();
+                    result.add(new ArrayList());
+                    result.get(0).add(bout.toByteArray());
+                } catch (Exception e) {
+                    LOG.error("error while compressing.-", e);
+                }
+            }
 
             return result;
         } catch (RemoteException ex) {
@@ -389,5 +421,44 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
      */
     public void setExactSearch(final boolean exactSearch) {
         this.exactSearch = exactSearch;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the compressed
+     */
+    public boolean isCompressed() {
+        return compressed;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  compressed  the compressed to set
+     */
+    public void setCompressed(final boolean compressed) {
+        this.compressed = compressed;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   result  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  IOException             DOCUMENT ME!
+     * @throws  ClassNotFoundException  DOCUMENT ME!
+     */
+    public static ArrayList<ArrayList> uncompressResult(final ArrayList<ArrayList> result) throws IOException,
+        ClassNotFoundException {
+        if (result.get(0).get(0) instanceof byte[]) {
+            final GZIPInputStream gzipIn = new GZIPInputStream(new ByteArrayInputStream((byte[])result.get(0).get(0)));
+            final ObjectInputStream uncompressedIn = new ObjectInputStream(gzipIn);
+            return (ArrayList<ArrayList>)uncompressedIn.readObject();
+        } else {
+            return result;
+        }
     }
 }
