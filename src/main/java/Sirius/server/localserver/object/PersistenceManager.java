@@ -1062,25 +1062,32 @@ public final class PersistenceManager extends Shutdown {
             // class of the new object
             final MetaClass metaClass = dbServer.getClass(mo.getClassID());
 
+            final ObjectAttribute[] mAttr = mo.getAttribs();
+
             // retrieve new ID to be used as primarykey for the new object
             final int rootPk;
-            try {
-                rootPk = persistenceHelper.getNextID(metaClass.getTableName(), metaClass.getPrimaryKey());
-            } catch (final SQLException ex) {
-                final String message = "cannot fetch next id for metaclass: " + metaClass; // NOI18N
-                LOG.error(message, ex);
-                throw new PersistenceException(message, ex);
+            if (mo.getID() < 0) {
+                try {
+                    rootPk = persistenceHelper.getNextID(metaClass.getTableName(), metaClass.getPrimaryKey());
+                } catch (final SQLException ex) {
+                    final String message = "cannot fetch next id for metaclass: " + metaClass; // NOI18N
+                    LOG.error(message, ex);
+                    throw new PersistenceException(message, ex);
+                }
+
+                // set the new primary key as value of the primary key attribute
+                for (final ObjectAttribute maybePK : mAttr) {
+                    if (maybePK.isPrimaryKey()) {
+                        maybePK.setValue(rootPk);
+                    }
+                }
+
+                // set object's id
+                mo.setID(rootPk);
+            } else {
+                rootPk = mo.getID();
             }
 
-            final ObjectAttribute[] mAttr = mo.getAttribs();
-            // set the new primary key as value of the primary key attribute
-            for (final ObjectAttribute maybePK : mAttr) {
-                if (maybePK.isPrimaryKey()) {
-                    maybePK.setValue(rootPk);
-                }
-            }
-            // set object's id
-            mo.setID(rootPk);
             try {
                 mo.getBean().setProperty(mo.getPrimaryKey().getName().toLowerCase(), rootPk);
             } catch (final Exception ex) {
@@ -1216,59 +1223,62 @@ public final class PersistenceManager extends Shutdown {
                 }
             }
 
-            // set params and execute stmt
-            PreparedStatement stmt = null;
-            try {
-                before = startPerformanceMeasurement();
+            if (!mo.isDummy()) {
+                // set params and execute stmt
+                PreparedStatement stmt = null;
+                try {
+                    before = startPerformanceMeasurement();
 
-                PreparableStatement paramStmt = null;
-                if (metaClass.getAttribs() != null) {
-                    for (final ClassAttribute ca : metaClass.getAttribs()) {
-                        if (ca.getName().equals("customInsertStmt")) {
-                            paramStmt = PreparableStatement.fromString((String)ca.getValue());
-                            break;
+                    PreparableStatement paramStmt = null;
+                    if (metaClass.getAttribs() != null) {
+                        for (final ClassAttribute ca : metaClass.getAttribs()) {
+                            if (ca.getName().equals("customInsertStmt")) {
+                                paramStmt = PreparableStatement.fromString((String)ca.getValue());
+                                break;
+                            }
                         }
                     }
-                }
-                if (paramStmt == null) {
-                    paramStmt = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                                .getPersistenceManagerInsertStmt(metaClass.getTableName(),
-                                        fieldNames.toArray(new String[fieldNames.size()]));
-                }
-
-                paramStmt.setObjects(values.toArray());
-                stmt = paramStmt.parameterise(transactionHelper.getConnection());
-                if (LOG.isDebugEnabled()) {
-                    final StringBuilder logMessage = new StringBuilder("Parameterized SQL: ");
-                    logMessage.append(paramStmt);
-                    logMessage.append('\n');
-                    final int i = 1;
-                    for (final java.lang.Object value : values) {
-                        if (i > 1) {
-                            logMessage.append("; ");
-                        }
-                        logMessage.append(i);
-                        logMessage.append(". parameter: ");
-                        logMessage.append(value.toString());
+                    if (paramStmt == null) {
+                        paramStmt = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                                            .getDialect())
+                                    .getPersistenceManagerInsertStmt(metaClass.getTableName(),
+                                            fieldNames.toArray(new String[fieldNames.size()]));
                     }
-                    LOG.debug(logMessage.toString(), new Exception());
-                }
-                stmt.executeUpdate();
-                stopPerformanceMeasurement("insertMetaObjectWithoutTransaction - executeUpdate", mo, before);
 
-                for (final MetaObject vChild : virtual1toMChildren) {
-                    insertMetaObjectArrayWithoutTransaction(user, vChild, rootPk);
-                }
+                    paramStmt.setObjects(values.toArray());
+                    stmt = paramStmt.parameterise(transactionHelper.getConnection());
+                    if (LOG.isDebugEnabled()) {
+                        final StringBuilder logMessage = new StringBuilder("Parameterized SQL: ");
+                        logMessage.append(paramStmt);
+                        logMessage.append('\n');
+                        final int i = 1;
+                        for (final java.lang.Object value : values) {
+                            if (i > 1) {
+                                logMessage.append("; ");
+                            }
+                            logMessage.append(i);
+                            logMessage.append(". parameter: ");
+                            logMessage.append(value.toString());
+                        }
+                        LOG.debug(logMessage.toString(), new Exception());
+                    }
+                    stmt.executeUpdate();
+                    stopPerformanceMeasurement("insertMetaObjectWithoutTransaction - executeUpdate", mo, before);
 
-                before = startPerformanceMeasurement();
-                for (final CidsTrigger ct : rightTriggers) {
-                    ct.afterInsert(mo.getBean(), user);
+                    for (final MetaObject vChild : virtual1toMChildren) {
+                        insertMetaObjectArrayWithoutTransaction(user, vChild, rootPk);
+                    }
+
+                    before = startPerformanceMeasurement();
+                    for (final CidsTrigger ct : rightTriggers) {
+                        ct.afterInsert(mo.getBean(), user);
+                    }
+                    stopPerformanceMeasurement("insertMetaObjectWithoutTransaction - afterInsertTriggers", mo, before);
+                } finally {
+                    before = startPerformanceMeasurement();
+                    DBConnection.closeStatements(stmt);
+                    stopPerformanceMeasurement("insertMetaObjectWithoutTransaction - closeStatements", mo, before);
                 }
-                stopPerformanceMeasurement("insertMetaObjectWithoutTransaction - afterInsertTriggers", mo, before);
-            } finally {
-                before = startPerformanceMeasurement();
-                DBConnection.closeStatements(stmt);
-                stopPerformanceMeasurement("insertMetaObjectWithoutTransaction - closeStatements", mo, before);
             }
 
             return rootPk;
