@@ -619,7 +619,7 @@ public final class OracleSQLStatements implements ServerSQLStatements {
     @Override
     public String getIndexTriggerInsertAttrObjectDerivedStmt() {
         return "insert into cs_attr_object_derived "
-                    + "SELECT "
+                    + "((SELECT "
                     + " CONNECT_BY_ROOT class_id xcid,"
                     + " CONNECT_BY_ROOT object_id xoid,"
                     + " attr_class_id acid,"
@@ -627,7 +627,9 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                     + "    FROM cs_attr_object"
                     + "    START WITH class_id = ? and object_id = ?"
                     + "    CONNECT BY (PRIOR attr_class_id = class_id AND PRIOR attr_object_id = object_id AND level < 1000)"
-                    + "    ORDER BY 1, 2, 3, 4";
+                    + "    ORDER BY 1, 2, 3, 4)"
+                    + " union"
+                    + "  select ?, ?, ?, ?)";
     }
 
     @Override

@@ -415,8 +415,11 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
     @Override
     public String getPasswordSwitcherAdminActionChangeAndBackupStmt(final String loginNameToSwitch,
             final String loginNameToRead) {
-        return "UPDATE cs_usr SET last_password = password, password = "
-                    + "(SELECT password FROM cs_usr WHERE login_name = '"
+        return "UPDATE cs_usr SET last_salt = salt, last_pw_hash=pw_hash, salt = "
+                    + "(SELECT salt FROM cs_usr WHERE login_name = '"
+                    + loginNameToRead
+                    + "') , pw_hash = "
+                    + "(SELECT pw_hash FROM cs_usr WHERE login_name = '"
                     + loginNameToRead
                     + "') "
                     + "WHERE login_name = '"
@@ -426,9 +429,10 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
 
     @Override
     public String getPasswordSwitcherAdminActionRecoveryStmt(final String loginName) {
-        return "UPDATE cs_usr SET password = last_password, last_password = NULL WHERE login_name = '"
+        return
+            "UPDATE cs_usr SET salt=last_salt, pw_hash=last_pw_hash, last_salt = NULL, last_pw_hash = NULL WHERE login_name = '"
                     + loginName
-                    + "'";
+                    + "' and last_salt is not null and last_pw_hash is not null";
     }
 
     @Override
@@ -608,8 +612,10 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
 
     @Override
     public String getIndexTriggerInsertAttrObjectDerivedStmt() {
+        // instead of the union, the last condition (NOT (xocid = acid AND xoid = aid)) can be removed,
+        // to get the same result. But the postgres statement must have the same arguments as the oracle statement
         return "insert into cs_attr_object_derived "
-                    + " WITH recursive derived_index(xocid,xoid,ocid,oid,acid,aid,depth) AS "
+                    + " ((WITH recursive derived_index(xocid,xoid,ocid,oid,acid,aid,depth) AS "
                     + "( SELECT class_id, "
                     + "        object_id, "
                     + "        class_id , "
@@ -641,7 +647,9 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                     + "                aid "
                     + "FROM            derived_index "
                     + "WHERE NOT (xocid = acid AND xoid = aid)"
-                    + "ORDER BY        1,2,3,4 limit 1000000000;";
+                    + "ORDER BY        1,2,3,4 limit 1000000000)"
+                    + " union "
+                    + "  select ?, ?, ?, ?)";
     }
 
     @Override

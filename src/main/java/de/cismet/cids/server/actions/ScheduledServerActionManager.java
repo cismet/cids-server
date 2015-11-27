@@ -112,6 +112,31 @@ public class ScheduledServerActionManager {
 
     /**
      * DOCUMENT ME!
+     *
+     * @param   dbConnection  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static boolean isScheduledServerActionFeatureSupported(final DBConnection dbConnection) {
+        boolean supported = false;
+        ResultSet rs = null;
+        try {
+            rs = dbConnection.submitInternalQuery(
+                    DBConnection.DESC_SUPPORTS_SCHEDULED_SERVER_ACTIONS,
+                    new Object[0]);
+
+            supported = rs.next() && rs.getString(1).equals("t");              // NOI18N
+        } catch (final SQLException ex) {
+            LOG.error("cannot check for scheduled server action support", ex); // NOI18N
+        } finally {
+            DBConnection.closeResultSets(rs);
+        }
+
+        return supported;
+    }
+
+    /**
+     * DOCUMENT ME!
      */
     public void resumeAll() {
         try {

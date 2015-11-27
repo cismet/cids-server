@@ -16,7 +16,7 @@ import java.util.Collection;
  *
  * @author      martin.scholl@cismet.de
  * @version     $Revision$, $Date$
- * @deprecated  use LookupableServerSearch instead
+ * @deprecated  use de.cismet.cidsx.server.search.RestApiCidsServerSearch instead
  */
 public interface MetaObjectNodeServerSearch extends CidsServerSearch {
 
