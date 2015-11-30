@@ -15,6 +15,7 @@ import Sirius.server.sql.SQLTools;
 
 import com.vividsolutions.jts.geom.Geometry;
 
+import org.apache.jackrabbit.webdav.search.SearchResource;
 import org.apache.log4j.Logger;
 
 import org.openide.util.Lookup;
@@ -26,6 +27,8 @@ import java.util.HashSet;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
+import de.cismet.cids.server.search.SearchResultListener;
+import de.cismet.cids.server.search.SearchResultListenerProvider;
 
 /**
  * DOCUMENT ME!
@@ -34,7 +37,7 @@ import de.cismet.cids.server.search.SearchException;
  * @version  $Revision$, $Date$
  */
 @ServiceProvider(service = GeoSearch.class)
-public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSearch {
+public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSearch, SearchResultListenerProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -44,6 +47,7 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
     //~ Instance fields --------------------------------------------------------
 
     private Geometry geometry;
+    private transient SearchResultListener searchResultListener;
 
     //~ Methods ----------------------------------------------------------------
 
@@ -134,5 +138,20 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
         }
 
         return aln;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  searchResultListener  DOCUMENT ME!
+     */
+    @Override
+    public void setSearchResultListener(final SearchResultListener searchResultListener) {
+        this.searchResultListener = searchResultListener;
+    }
+
+    @Override
+    public SearchResultListener getSearchResultListener() {
+        return searchResultListener;
     }
 }
