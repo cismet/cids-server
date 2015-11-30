@@ -26,6 +26,8 @@ import java.util.HashSet;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
+import de.cismet.cids.server.search.SearchResultListener;
+import de.cismet.cids.server.search.SearchResultListenerProvider;
 
 /**
  * DOCUMENT ME!
@@ -34,7 +36,8 @@ import de.cismet.cids.server.search.SearchException;
  * @version  $Revision$, $Date$
  */
 @ServiceProvider(service = FullTextSearch.class)
-public class DefaultFullTextSearch extends AbstractCidsServerSearch implements FullTextSearch {
+public class DefaultFullTextSearch extends AbstractCidsServerSearch implements FullTextSearch,
+    SearchResultListenerProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -43,6 +46,7 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
 
     //~ Instance fields --------------------------------------------------------
 
+    private transient SearchResultListener searchResultListener;
     private String searchText;
     private boolean caseSensitive;
     private Geometry geometry;
@@ -143,5 +147,20 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
             LOG.error("Problem during Fulltextsearch", e);                 // NOI18N
             throw new SearchException("Problem during Fulltextsearch", e); // NOI18N
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  searchResultListener  DOCUMENT ME!
+     */
+    @Override
+    public void setSearchResultListener(final SearchResultListener searchResultListener) {
+        this.searchResultListener = searchResultListener;
+    }
+
+    @Override
+    public SearchResultListener getSearchResultListener() {
+        return searchResultListener;
     }
 }
