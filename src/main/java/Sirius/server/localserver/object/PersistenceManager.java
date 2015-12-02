@@ -790,7 +790,7 @@ public final class PersistenceManager extends Shutdown {
                             + mo.getClassKey(),
                     StackUtils.getDebuggingThrowable());
             }
-            throw new SecurityException("not allowed to insert meta object"); // NOI18N
+            throw new SecurityException("not allowed to update meta object"); // NOI18N
         }
     }
 
