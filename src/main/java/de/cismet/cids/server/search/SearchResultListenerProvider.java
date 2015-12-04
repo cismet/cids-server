@@ -22,8 +22,13 @@ public interface SearchResultListenerProvider {
 
     //~ Methods ----------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  searchResultListener  DOCUMENT ME!
+     */
     void setSearchResultListener(SearchResultListener searchResultListener);
-    
+
     /**
      * DOCUMENT ME!
      *
