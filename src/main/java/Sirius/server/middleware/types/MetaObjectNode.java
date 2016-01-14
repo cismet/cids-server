@@ -9,6 +9,8 @@ package Sirius.server.middleware.types;
 
 import Sirius.server.newuser.permission.Policy;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import de.cismet.cids.dynamics.CidsBean;
@@ -24,6 +26,9 @@ public class MetaObjectNode extends Node implements Comparable {
 
     protected int objectId;
     protected volatile MetaObject theObject;
+
+    protected Geometry cashedGeometry;
+    protected String lightweightJson;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -57,23 +62,40 @@ public class MetaObjectNode extends Node implements Comparable {
             final String domain,
             final int objectId,
             final int classId) {
-        this(-1, null, null, domain, objectId, classId, true, Policy.createWIKIPolicy(), -1, null, true);
+        this(-1, null, null, domain, objectId, classId, true, Policy.createWIKIPolicy(), -1, null, true, null, null);
     }
 
     /**
      * Creates a new MetaObjectNode object.
      *
-     * @param  domain    DOCUMENT ME!
-     * @param  objectId  DOCUMENT ME!
-     * @param  classId   DOCUMENT ME!
-     * @param  name      DOCUMENT ME!
+     * @param  domain           DOCUMENT ME!
+     * @param  objectId         DOCUMENT ME!
+     * @param  classId          DOCUMENT ME!
+     * @param  name             DOCUMENT ME!
+     * @param  cashedGeometry   DOCUMENT ME!
+     * @param  lightweightJson  DOCUMENT ME!
      */
     public MetaObjectNode(
             final String domain,
             final int objectId,
             final int classId,
-            final String name) {
-        this(-1, name, null, domain, objectId, classId, true, Policy.createWIKIPolicy(), -1, null, true);
+            final String name,
+            final Geometry cashedGeometry,
+            final String lightweightJson) {
+        this(
+            -1,
+            name,
+            null,
+            domain,
+            objectId,
+            classId,
+            true,
+            Policy.createWIKIPolicy(),
+            -1,
+            null,
+            true,
+            cashedGeometry,
+            lightweightJson);
     }
 
     /**
@@ -125,6 +147,8 @@ public class MetaObjectNode extends Node implements Comparable {
      * @param  iconFactory                 DOCUMENT ME!
      * @param  icon                        DOCUMENT ME!
      * @param  derivePermissionsFromClass  DOCUMENT ME!
+     * @param  cashedGeometry              DOCUMENT ME!
+     * @param  lightweightJson             DOCUMENT ME!
      */
     public MetaObjectNode(final int id,
             final String name,
@@ -136,7 +160,9 @@ public class MetaObjectNode extends Node implements Comparable {
             final Policy policy,
             final int iconFactory,
             final String icon,
-            final boolean derivePermissionsFromClass) {
+            final boolean derivePermissionsFromClass,
+            final Geometry cashedGeometry,
+            final String lightweightJson) {
         this(
             id,
             name,
@@ -149,7 +175,9 @@ public class MetaObjectNode extends Node implements Comparable {
             iconFactory,
             icon,
             derivePermissionsFromClass,
-            null);
+            null,
+            cashedGeometry,
+            lightweightJson);
     }
 
     /**
@@ -167,6 +195,8 @@ public class MetaObjectNode extends Node implements Comparable {
      * @param  icon                        DOCUMENT ME!
      * @param  derivePermissionsFromClass  DOCUMENT ME!
      * @param  artificialId                DOCUMENT ME!
+     * @param  cashedGeometry              DOCUMENT ME!
+     * @param  lightweightJson             DOCUMENT ME!
      */
     public MetaObjectNode(final int id,
             final String name,
@@ -179,7 +209,9 @@ public class MetaObjectNode extends Node implements Comparable {
             final int iconFactory,
             final String icon,
             final boolean derivePermissionsFromClass,
-            final String artificialId) {
+            final String artificialId,
+            final Geometry cashedGeometry,
+            final String lightweightJson) {
         super(
             id,
             name,
@@ -194,6 +226,8 @@ public class MetaObjectNode extends Node implements Comparable {
 
         this.objectId = objectId;
         this.classId = classId;
+        this.cashedGeometry = cashedGeometry;
+        this.lightweightJson = lightweightJson;
     }
 
     //~ Methods ----------------------------------------------------------------

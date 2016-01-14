@@ -439,21 +439,22 @@ public final class OracleSQLStatements implements ServerSQLStatements {
             final PreparableStatement geoSql,
             final boolean caseSensitive) {
         // NOTE: lower of oracle and lower of java may behave differently
-        final String sql = "SELECT DISTINCT i.class_id ocid,i.object_id oid, c.stringrep " // NOI18N
-                    + "FROM   cs_attr_string s, "                                          // NOI18N
-                    + "       cs_attr_object_derived i "                                   // NOI18N
-                    + "       LEFT OUTER JOIN cs_stringrepcache c "                        // NOI18N
-                    + "       ON     ( "                                                   // NOI18N
-                    + "                     c.class_id =i.class_id "                       // NOI18N
-                    + "              AND    c.object_id=i.object_id "                      // NOI18N
-                    + "              ) "                                                   // NOI18N
-                    + "WHERE  i.attr_class_id = s.class_id "                               // NOI18N
-                    + "AND    i.attr_object_id=s.object_id "                               // NOI18N
+        final String sql =
+            "SELECT DISTINCT i.class_id ocid,i.object_id oid, c.stringrep,c.geometry,c.lightweight_json " // NOI18N
+                    + "FROM   cs_attr_string s, "                                                         // NOI18N
+                    + "       cs_attr_object_derived i "                                                  // NOI18N
+                    + "       LEFT OUTER JOIN cs_cache c "                                                // NOI18N
+                    + "       ON     ( "                                                                  // NOI18N
+                    + "                     c.class_id =i.class_id "                                      // NOI18N
+                    + "              AND    c.object_id=i.object_id "                                     // NOI18N
+                    + "              ) "                                                                  // NOI18N
+                    + "WHERE  i.attr_class_id = s.class_id "                                              // NOI18N
+                    + "AND    i.attr_object_id=s.object_id "                                              // NOI18N
                     + "AND    "
                     + (caseSensitive ? "" : "lower(")
                     + "s.string_val"
                     + (caseSensitive ? "" : ")")
-                    + " like ? "                                                           // NOI18N
+                    + " like ? "                                                                          // NOI18N
                     + "AND i.class_id IN "
                     + classesIn;
         final PreparableStatement ps;
@@ -494,10 +495,10 @@ public final class OracleSQLStatements implements ServerSQLStatements {
         final PreparableStatement ps = new PreparableStatement(
                 "SELECT DISTINCT i.class_id , "                                                      // NOI18N
                         + "                i.object_id, "                                            // NOI18N
-                        + "                s.stringrep "                                             // NOI18N
+                        + "                c.stringrep,c.geometry,c.lightweight_json "               // NOI18N
                         + "FROM            geom g, "                                                 // NOI18N
                         + "                cs_attr_object_derived i "                                // NOI18N
-                        + "                LEFT OUTER JOIN cs_stringrepcache s "                     // NOI18N
+                        + "                LEFT OUTER JOIN cs_cache c "                              // NOI18N
                         + "                ON              ( "                                       // NOI18N
                         + "                                                s.class_id =i.class_id "  // NOI18N
                         + "                                AND             s.object_id=i.object_id " // NOI18N
@@ -534,10 +535,10 @@ public final class OracleSQLStatements implements ServerSQLStatements {
     public String getQueryEditorSearchStmt(final String tableName, final int classId, final String whereClause) {
         return "SELECT "
                     + classId
-                    + " classid, tbl.id objectid, c.stringrep FROM "
+                    + " classid, tbl.id objectid, c.stringrep,c.geometry,c.lightweight_json FROM "
                     + tableName
                     + " tbl "
-                    + "LEFT OUTER JOIN cs_stringrepcache c "     // NOI18N
+                    + "LEFT OUTER JOIN cs_cache c "              // NOI18N
                     + "       ON     ( "                         // NOI18N
                     + "                     c.class_id = "
                     + classId                                    // NOI18N
@@ -554,10 +555,10 @@ public final class OracleSQLStatements implements ServerSQLStatements {
             final int offset) {
         return "SELECT * FROM (SELECT "
                     + classId
-                    + " classid, tbl.id objectid, c.stringrep FROM "
+                    + " classid, tbl.id objectid, c.stringrep,c.geometry,c.lightweight_json FROM "
                     + tableName
                     + " tbl "
-                    + "LEFT OUTER JOIN cs_stringrepcache c "     // NOI18N
+                    + "LEFT OUTER JOIN cs_cache c "              // NOI18N
                     + "       ON     ( "                         // NOI18N
                     + "                     c.class_id = "
                     + classId                                    // NOI18N

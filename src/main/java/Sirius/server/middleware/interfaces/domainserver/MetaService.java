@@ -23,6 +23,8 @@ import java.rmi.RemoteException;
 
 import java.util.ArrayList;
 
+import de.cismet.cids.server.search.QueryPostProcessor;
+
 /**
  * Interface for retrieving or modifying meta information sets.
  *
@@ -310,6 +312,18 @@ public interface MetaService extends Remote {
     /**
      * DOCUMENT ME!
      *
+     * @param   query  DOCUMENT ME!
+     * @param   qpp    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    ArrayList<ArrayList> performCustomSearch(String query, QueryPostProcessor qpp) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   ps  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -317,6 +331,18 @@ public interface MetaService extends Remote {
      * @throws  RemoteException  DOCUMENT ME!
      */
     ArrayList<ArrayList> performCustomSearch(PreparableStatement ps) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   ps   DOCUMENT ME!
+     * @param   qpp  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    ArrayList<ArrayList> performCustomSearch(PreparableStatement ps, QueryPostProcessor qpp) throws RemoteException;
 
     /**
      * @see  Sirius.server.middleware.interfaces.proxy.MetaService#getHistory(int, int, java.lang.String,

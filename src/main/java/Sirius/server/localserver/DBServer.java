@@ -91,7 +91,7 @@ public final class DBServer extends Shutdown implements java.io.Serializable {
             LOG.debug("DBServer connectionPool instantiated :: Instantiate PolicyHolder "); // NOI18N
         }
 
-        policyHolder = new PolicyHolder(connectionPool, properties.getInteralDialect());
+        policyHolder = new PolicyHolder(connectionPool, properties.getInternalDialect());
         if (LOG.isDebugEnabled()) {
             LOG.debug("DBServer PolicyHolder instantiated :: Instantiate ClassCache "); // NOI18N
         }

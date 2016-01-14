@@ -509,7 +509,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @return  DOCUMENT ME!
      */
-    public final String getInteralDialect() {
+    public final String getInternalDialect() {
         if (internalDialect == null) {
             try {
                 internalDialect = getString("internalDialect");                       // NOI18N

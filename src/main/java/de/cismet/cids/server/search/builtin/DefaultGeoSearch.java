@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
+import de.cismet.cids.server.search.QueryPostProcessor;
 import de.cismet.cids.server.search.SearchException;
 import de.cismet.cids.server.search.SearchResultListener;
 import de.cismet.cids.server.search.SearchResultListenerProvider;
@@ -112,7 +113,34 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
                         LOG.info("geosearch: " + sqlStatement); // NOI18N
                     }
 
-                    final ArrayList<ArrayList> result = ms.performCustomSearch(sqlStatement);
+                    final ArrayList<ArrayList> result = ms.performCustomSearch(
+                            sqlStatement,
+                            new QueryPostProcessor() {
+
+                                @Override
+                                public ArrayList<ArrayList> postProcess(final ArrayList<ArrayList> result) {
+                                    for (final ArrayList row : result) {
+                                        // Cashed Geometry
+                                        Geometry cashedGeometry = null;
+                                        try {
+                                            final Object cashedGeometryTester = row.get(3);
+
+                                            if (cashedGeometryTester != null) {
+                                                cashedGeometry = SQLTools.getGeometryFromResultSetObject(
+                                                        cashedGeometryTester);
+                                                row.set(3, cashedGeometry);
+                                            }
+                                        } catch (Exception e) {
+                                            if (LOG.isDebugEnabled()) {
+                                                LOG.debug(
+                                                    "cashedGeometry was not in the resultset. But this is normal for the most parts",
+                                                    e); // NOI18N
+                                            }
+                                        }
+                                    }
+                                    return result;
+                                }
+                            });
 
                     for (final ArrayList al : result) {
                         // FIXME: yet another hack to circumvent odd type behaviour
@@ -127,7 +155,25 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
                             }
                         }
 
-                        final MetaObjectNode mon = new MetaObjectNode((String)domainKey, oid, cid, name);
+                        // Cashed Geometry
+                        final Geometry cashedGeometry = (Geometry)al.get(3);
+
+                        // Lightweight Json
+                        String lightweightJson = null;
+                        try {
+                            final Object tester = al.get(4);
+                            if ((tester != null) && (tester instanceof String)) { // NOI18N
+                                lightweightJson = (String)tester;                 // NOI18N
+                            }
+                        } catch (Exception skip) {
+                        }
+
+                        final MetaObjectNode mon = new MetaObjectNode((String)domainKey,
+                                oid,
+                                cid,
+                                name,
+                                cashedGeometry,
+                                lightweightJson);
                         aln.add(mon);
                     }
                 }

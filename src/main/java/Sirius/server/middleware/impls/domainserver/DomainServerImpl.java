@@ -77,6 +77,7 @@ import de.cismet.cids.server.actions.ScheduledServerAction;
 import de.cismet.cids.server.actions.ScheduledServerActionManager;
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.search.QueryPostProcessor;
 import de.cismet.cids.server.ws.rest.RESTfulService;
 
 import de.cismet.cids.utils.ClassloadingHelper;
@@ -844,15 +845,22 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             throw new RemoteException(e.getMessage(), e);
         }
     }
-
     @Override
     public ArrayList<ArrayList> performCustomSearch(final String query) throws RemoteException {
+        return performCustomSearch(query, null);
+    }
+    @Override
+    public ArrayList<ArrayList> performCustomSearch(final String query, final QueryPostProcessor qpp)
+            throws RemoteException {
         try {
             final Statement s = getConnectionPool().getDBConnection().getConnection().createStatement();
             final ResultSet rs = s.executeQuery(query);
             final ArrayList<ArrayList> result = collectResults(rs);
-
-            return result;
+            if (qpp != null) {
+                return qpp.postProcess(result);
+            } else {
+                return result;
+            }
         } catch (Exception e) {
             final String msg = "Error during sql statement: " + query;
             logger.error(msg, e);
@@ -881,15 +889,23 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
         return result;
     }
-
     @Override
     public ArrayList<ArrayList> performCustomSearch(final PreparableStatement ps) throws RemoteException {
+        return performCustomSearch(ps, null);
+    }
+
+    @Override
+    public ArrayList<ArrayList> performCustomSearch(final PreparableStatement ps, final QueryPostProcessor qpp)
+            throws RemoteException {
         try {
             final PreparedStatement stmt = ps.parameterise(getConnectionPool().getDBConnection().getConnection());
             final ResultSet rs = stmt.executeQuery();
             final ArrayList<ArrayList> result = collectResults(rs);
-
-            return result;
+            if (qpp != null) {
+                return qpp.postProcess(result);
+            } else {
+                return result;
+            }
         } catch (final Exception e) {
             final String msg = "Error during sql statement: " + ps;
             logger.error(msg, e);
