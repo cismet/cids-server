@@ -12,6 +12,8 @@ import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.sql.DialectProvider;
 import Sirius.server.sql.SQLTools;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import org.apache.log4j.Logger;
 
 import org.openide.util.Lookup;
@@ -123,7 +125,40 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
                             LOG.trace("no name present for metaobjectnode", e); // NOI18N
                         }
                     }
-                    final MetaObjectNode mon = new MetaObjectNode(DOMAIN, oid, cid, name);
+                    // Cashed Geometry
+                    Geometry cashedGeometry = null;
+                    try {
+                        final Object cashedGeometryTester = al.get(3);
+
+                        if (cashedGeometryTester != null) {
+                            cashedGeometry = SQLTools.getGeometryFromResultSetObject(cashedGeometryTester);
+                        }
+                    } catch (Exception e) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug(
+                                "cashedGeometry was not in the resultset. But this is normal for the most parts",
+                                e); // NOI18N
+                        }
+                    }
+
+                    // Lightweight Json
+                    String lightweightJson = null;
+                    try {
+                        final Object tester = al.get(4);
+                        if ((tester != null) && (tester instanceof String)) { // NOI18N
+                            lightweightJson = (String)tester;                 // NOI18N
+                        }
+                    } catch (Exception skip) {
+                    }
+
+                    final MetaObjectNode mon = new MetaObjectNode(
+                            DOMAIN,
+                            oid,
+                            cid,
+                            name,
+                            cashedGeometry,
+                            lightweightJson); // TODO: Check4CashedGeomAndLightweightJson
+
                     metaObjects.add(mon);
                 }
 

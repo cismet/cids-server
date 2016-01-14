@@ -189,7 +189,9 @@ public class Seeker {
                         ph.getPolicy(),
                         -1,
                         null,
-                        true);
+                        true,
+                        null,
+                        null); // TODO: Check4CashedGeomAndLightweightJson
                 // Thorsten Rechte request
                 objectNode.setPermissions(ph);
 

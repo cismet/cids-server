@@ -440,21 +440,22 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
             final String classesIn,
             final PreparableStatement geoSql,
             final boolean caseSensitive) {
-        final String sql = "SELECT DISTINCT i.class_id ocid,i.object_id as oid, c.stringrep " // NOI18N
-                    + "FROM   cs_attr_string s, "                                             // NOI18N
-                    + "       cs_attr_object_derived i "                                      // NOI18N
-                    + "       LEFT OUTER JOIN cs_stringrepcache c "                           // NOI18N
-                    + "       ON     ( "                                                      // NOI18N
-                    + "                     c.class_id =i.class_id "                          // NOI18N
-                    + "              AND    c.object_id=i.object_id "                         // NOI18N
-                    + "              ) "                                                      // NOI18N
-                    + "WHERE  i.attr_class_id = s.class_id "                                  // NOI18N
-                    + "AND    i.attr_object_id=s.object_id "                                  // NOI18N
+        final String sql =
+            "SELECT DISTINCT i.class_id ocid,i.object_id as oid, c.stringrep,c.geometry,c.lightweight_json " // NOI18N
+                    + "FROM   cs_attr_string s, "                                                            // NOI18N
+                    + "       cs_attr_object_derived i "                                                     // NOI18N
+                    + "       LEFT OUTER JOIN cs_cache c "                                                   // NOI18N
+                    + "       ON     ( "                                                                     // NOI18N
+                    + "                     c.class_id =i.class_id "                                         // NOI18N
+                    + "              AND    c.object_id=i.object_id "                                        // NOI18N
+                    + "              ) "                                                                     // NOI18N
+                    + "WHERE  i.attr_class_id = s.class_id "                                                 // NOI18N
+                    + "AND    i.attr_object_id=s.object_id "                                                 // NOI18N
                     + "AND    s.string_val "
                     + (caseSensitive ? "" : "i")
                     + "like '%"
                     + searchText
-                    + "%' "                                                                   // NOI18N
+                    + "%' "                                                                                  // NOI18N
                     + "AND i.class_id IN "
                     + classesIn;
 
@@ -480,10 +481,10 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
     public PreparableStatement getDefaultGeoSearchStmt(final String wkt, final String srid, final String classesIn) {
         final PreparableStatement ps = new PreparableStatement("SELECT DISTINCT i.class_id , "       // NOI18N
                         + "                i.object_id, "                                            // NOI18N
-                        + "                s.stringrep "                                             // NOI18N
+                        + "                c.stringrep,c.geometry,c.lightweight_json "               // NOI18N
                         + "FROM            geom g, "                                                 // NOI18N
                         + "                cs_attr_object_derived i "                                // NOI18N
-                        + "                LEFT OUTER JOIN cs_stringrepcache s "                     // NOI18N
+                        + "                LEFT OUTER JOIN cs_cache c "                              // NOI18N
                         + "                ON              ( "                                       // NOI18N
                         + "                                                s.class_id =i.class_id "  // NOI18N
                         + "                                AND             s.object_id=i.object_id " // NOI18N
@@ -526,17 +527,17 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
 
     @Override
     public String getQueryEditorSearchStmt(final String tableName, final int classId, final String whereClause) {
-        return "SELECT "                                                   // NOI18N
+        return "SELECT "                                                                                 // NOI18N
                     + classId
-                    + " AS classid, tbl.id AS objectid, c.stringrep FROM " // NOI18N
+                    + " AS classid, tbl.id AS objectid, c.stringrep,c.geometry,c.lightweight_json FROM " // NOI18N
                     + tableName
-                    + " tbl "                                              // NOI18N
-                    + "LEFT OUTER JOIN cs_stringrepcache c "               // NOI18N
-                    + "       ON     ( "                                   // NOI18N
-                    + "                     c.class_id = "                 // NOI18N
+                    + " tbl "                                                                            // NOI18N
+                    + "LEFT OUTER JOIN cs_cache c "                                                      // NOI18N
+                    + "       ON     ( "                                                                 // NOI18N
+                    + "                     c.class_id = "                                               // NOI18N
                     + classId
-                    + "              AND    c.object_id=tbl.id "           // NOI18N
-                    + "              ) WHERE "                             // NOI18N
+                    + "              AND    c.object_id=tbl.id "                                         // NOI18N
+                    + "              ) WHERE "                                                           // NOI18N
                     + whereClause;
     }
 
@@ -548,10 +549,10 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
             final int offset) {
         return "SELECT * FROM (SELECT "
                     + classId
-                    + " classid, tbl.id objectid, c.stringrep FROM "
+                    + " classid, tbl.id objectid, c.stringrep,c.geometry,c.lightweight_json FROM "
                     + tableName
                     + " tbl "
-                    + "LEFT OUTER JOIN cs_stringrepcache c "     // NOI18N
+                    + "LEFT OUTER JOIN cs_cache c "              // NOI18N
                     + "       ON     ( "                         // NOI18N
                     + "                     c.class_id = "
                     + classId                                    // NOI18N
