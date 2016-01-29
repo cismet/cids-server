@@ -303,6 +303,7 @@ public class ClassloadingHelper {
         FEATURE_RENDERER("featurerenderer", "FeatureRenderer", "featurerenderer"),            // NOI18N
         ACTION_PROVIDER("objectactions", "ActionsProvider", "actionsprovider"),               // NOI18N
         PERMISSION_PROVIDER("permissions", "PermissionProvider", "permissionprovider"),       // NOI18N
+        NODE_PERMISSION_PROVIDER("nodepermissions", "NodePermissionProvider", "nodepermissionprovider"),       // NOI18N
         CUSTOM_BEAN("beans", "CustomBean", "custombean");                                     // NOI18N
 
         //~ Instance fields ----------------------------------------------------
