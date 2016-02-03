@@ -13,9 +13,9 @@ import Sirius.server.middleware.types.HistoryObject;
 import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
+import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.middleware.types.Node;
 import Sirius.server.newuser.User;
-import Sirius.server.search.Query;
 import Sirius.server.sql.PreparableStatement;
 
 import java.rmi.Remote;
@@ -56,19 +56,8 @@ public interface MetaService extends Remote {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    Node[] getMetaObjectNode(User usr, String query) throws RemoteException;
+    MetaObjectNode[] getMetaObjectNode(User usr, String query) throws RemoteException;
 
-    /**
-     * retrieves Meta data objects with meta data matching query (Search).
-     *
-     * @param   usr    DOCUMENT ME!
-     * @param   query  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    Node[] getMetaObjectNode(User usr, Query query) throws RemoteException;
     /**
      * retrieves Meta data objects with meta data matching query (Search) Query not yet defined but will be MetaSQL.
      *
@@ -82,20 +71,7 @@ public interface MetaService extends Remote {
     MetaObject[] getMetaObject(User usr, String query) throws RemoteException;
 
     /**
-     * retrieves Meta data objects with meta data matching query (Search).
-     *
-     * @param   usr    DOCUMENT ME!
-     * @param   query  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    MetaObject[] getMetaObject(User usr, Query query) throws RemoteException;
-    /**
-     * -*-*-*-*-*-*-*-*-*-*-*-*-* MetaJDBC Zeugs *-*-*-*-*-*-*-*-*-*-*-*- ??? public MetaObject getMetaObject(User usr,
-     * String query) throws RemoteException; retrieves a Meta data object referenced by a symbolic pointer to the MIS
-     * XXX New Method XXX MetaObject ersetzt Object
+     * DOCUMENT ME!
      *
      * @param   usr       DOCUMENT ME!
      * @param   objectID  DOCUMENT ME!
@@ -117,17 +93,7 @@ public interface MetaService extends Remote {
      * @throws  RemoteException  DOCUMENT ME!
      */
     MetaObject insertMetaObject(User user, MetaObject metaObject) throws RemoteException;
-    /**
-     * inserts metaObject in the MIS XXX NEW Method XXX.
-     *
-     * @param   user   DOCUMENT ME!
-     * @param   query  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    int insertMetaObject(User user, Query query) throws RemoteException;
+
     /**
      * updates metaObject in the MIS XXX New Method XXX.
      *

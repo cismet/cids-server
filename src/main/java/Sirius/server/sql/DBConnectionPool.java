@@ -11,7 +11,6 @@ import Sirius.server.AbstractShutdownable;
 import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
 import Sirius.server.property.ServerProperties;
-import Sirius.server.search.Query;
 
 import org.apache.log4j.Logger;
 
@@ -378,11 +377,6 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
     }
 
     @Override
-    public ResultSet submitQuery(final Query q) throws SQLException {
-        return getDBConnection().submitQuery(q);
-    }
-
-    @Override
     public int submitUpdate(final String descriptor, final Object... parameters) throws SQLException {
         return getDBConnection().submitUpdate(descriptor, parameters);
     }
@@ -390,11 +384,6 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
     @Override
     public int submitUpdate(final int sqlID, final Object... parameters) throws SQLException {
         return getDBConnection().submitUpdate(sqlID, parameters);
-    }
-
-    @Override
-    public int submitUpdate(final Query q) throws SQLException {
-        return getDBConnection().submitUpdate(q);
     }
 
     /**

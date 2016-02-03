@@ -16,7 +16,6 @@ import Sirius.server.localserver.DBServer;
 import Sirius.server.localserver.history.HistoryException;
 import Sirius.server.localserver.history.HistoryServer;
 import Sirius.server.localserver.method.MethodMap;
-import Sirius.server.localserver.query.QueryCache;
 import Sirius.server.localserver.query.querystore.Store;
 import Sirius.server.localserver.tree.NodeReferenceList;
 import Sirius.server.localserver.user.UserStore;
@@ -28,21 +27,15 @@ import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.Link;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
+import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.middleware.types.Node;
 import Sirius.server.naming.NameServer;
 import Sirius.server.newuser.User;
-import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.UserServer;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.registry.Registry;
-import Sirius.server.search.Query;
-import Sirius.server.search.SearchResult;
-import Sirius.server.search.Seeker;
-import Sirius.server.search.store.Info;
-import Sirius.server.search.store.QueryData;
 import Sirius.server.sql.DBConnectionPool;
 import Sirius.server.sql.PreparableStatement;
-import Sirius.server.sql.SystemStatement;
 
 import org.apache.log4j.PropertyConfigurator;
 
@@ -91,8 +84,6 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     MetaService,
     SystemService,
     UserService,
-    QueryStore,
-    SearchService,
     ActionService { // ActionListener
 
     //~ Static fields/initializers ---------------------------------------------
@@ -112,10 +103,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     // history server of a localserver
     protected HistoryServer historyServer;
     // executing the searchservice
-    protected Seeker seeker;
     // for storing and loading prdefinded queries
     protected Store queryStore;
-    protected QueryCache queryCache;
     // references to the Registry
     protected NameServer nameServer;
     protected UserServer userServer;
@@ -157,12 +146,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
             userstore = dbServer.getUserStore();
 
-            seeker = new Seeker(dbServer);
-
             queryStore = new Store(dbServer.getActiveDBConnection().getConnection(), properties);
-
-            // All executable queries
-            queryCache = new QueryCache(dbServer.getActiveDBConnection(), properties.getServerName());
 
             System.out.println("\n<LS> DBConnection: " + dbServer.getActiveDBConnection().getURL() + "\n"); // NOI18N
 
@@ -492,29 +476,42 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public MetaObject getMetaObject(final User usr, final int objectID, final int classID) throws RemoteException {
         return getObject(usr, objectID + "@" + classID); // NOI18N
     }
+// Query not yet defined but will be MetaSQL
 
-    // retrieves Meta data objects with meta data matching query (Search)
     @Override
-    public MetaObject[] getMetaObject(final User usr, final Query query) throws RemoteException {
-        try {
-            // user spaeter erweitern
-            return seeker.search(query, new int[0], usr, 0).getObjects();
-        } catch (Throwable e) {
-            if (logger != null) {
-                logger.error(e, e);
-            }
-            throw new RemoteException(e.getMessage(), e);
+    public MetaObjectNode[] getMetaObjectNode(final User usr, final String query) throws RemoteException {
+        final String domain = usr.getDomain();
+        final ArrayList<ArrayList> result = this.performCustomSearch(query);
+        final MetaObjectNode[] ret = new MetaObjectNode[result.size()];
+        int i = 0;
+        for (final ArrayList row : result) {
+            ret[i] = new MetaObjectNode(domain, (Integer)row.get(1), (Integer)row.get(0));
+            i++;
         }
+        return ret;
+//        return getMetaObjectNode(
+//                usr,
+//                new Query(new SystemStatement(true, -1, "", false, SearchResult.NODE, query), usr.getDomain())); // NOI18N
+            // throw new UnsupportedOperationException("not implemented ");
     }
-    // retrieves Meta data objects with meta data matching query (Search)
 
     @Override
     public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
-        final MetaObject[] o = getMetaObject(
-                usr,
-                new Query(new SystemStatement(true, -1, "", false, SearchResult.OBJECT, query), usr.getDomain())); // NOI18N
+        final MetaObjectNode[] nodes = (MetaObjectNode[])(getMetaObjectNode(usr, query));
+        final MetaObject[] ret = new MetaObject[nodes.length];
+        int i = 0;
+        for (final MetaObjectNode n : nodes) {
+            ret[i] = getMetaObject(usr, n.getObjectId(), n.getClassId());
+            i++;
+        }
+        return ret;
+//        final MetaObject[] o = getMetaObject(
+//                usr,
+//                new Query(new SystemStatement(true, -1, "", false, SearchResult.OBJECT, query), usr.getDomain())); // NOI18N
+//
+//        return o;
 
-        return o;
+        // throw new UnsupportedOperationException("not implemented ");
     }
 
     @Override
@@ -536,20 +533,6 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         } catch (Throwable e) {
             if (logger != null) {
                 logger.error(e.getMessage(), e);
-            }
-            throw new RemoteException(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public int insertMetaObject(final User user, final Query query) throws RemoteException {
-        try {
-            // pfusch ...
-            final SearchResult searchResult = this.search(user, null, query);
-            return Integer.valueOf(searchResult.getResult().toString()).intValue();
-        } catch (Throwable e) {
-            if (logger != null) {
-                logger.error(e, e);
             }
             throw new RemoteException(e.getMessage(), e);
         }
@@ -626,29 +609,6 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 logger.error(e, e);
             }
             throw new RemoteException("<LS> ", e);                       // NOI18N
-        }
-    }
-
-    // retrieves Meta data objects with meta data matching query (Search)
-    // Query not yet defined but will be MetaSQL
-    @Override
-    public Node[] getMetaObjectNode(final User usr, final String query) throws RemoteException {
-        return getMetaObjectNode(
-                usr,
-                new Query(new SystemStatement(true, -1, "", false, SearchResult.NODE, query), usr.getDomain())); // NOI18N
-    }
-
-    // retrieves Meta data objects with meta data matching query (Search)
-    @Override
-    public Node[] getMetaObjectNode(final User usr, final Query query) throws RemoteException {
-        try {
-            // user sp\u00E4ter erweitern
-            return seeker.search(query, new int[0], usr, 0).getNodes();
-        } catch (Throwable e) {
-            if (logger != null) {
-                logger.error(e, e);
-            }
-            throw new RemoteException(e.getMessage(), e);
         }
     }
 
@@ -747,108 +707,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     }
 
     @Override
-    public boolean delete(final int id) throws RemoteException {
-        return queryStore.delete(id);
-    }
-
-    @Override
-    public QueryData getQuery(final int id) throws RemoteException {
-        return queryStore.getQuery(id);
-    }
-
-    @Override
-    public Info[] getQueryInfos(final UserGroup userGroup) throws RemoteException {
-        return queryStore.getQueryInfos(userGroup);
-    }
-
-    @Override
-    public Info[] getQueryInfos(final User user) throws RemoteException {
-        return queryStore.getQueryInfos(user);
-    }
-
-    @Override
-    public boolean storeQuery(final User user, final QueryData data) throws RemoteException {
-        return queryStore.storeQuery(user, data);
-    }
-
-    // add single query root and leaf returns a query_id
-    @Override
-    public int addQuery(final String name,
-            final String description,
-            final String statement,
-            final int resultType,
-            final char isUpdate,
-            final char isBatch,
-            final char isRoot,
-            final char isUnion) throws RemoteException {
-        try {
-            return queryCache.addQuery(name, description, statement, resultType, isUpdate, isBatch, isRoot, isUnion);
-        } catch (Throwable e) {
-            logger.error(e, e);
-            throw new RemoteException("addQuery error", e); // NOI18N
-        }
-    }
-
-    @Override
-    public int addQuery(final String name, final String description, final String statement) throws RemoteException {
-        try {
-            return queryCache.addQuery(name, description, statement);
-        } catch (Throwable e) {
-            logger.error(e, e);
-            throw new RemoteException("addQuery error", e); // NOI18N
-        }
-    }
-
-    @Override
-    public boolean addQueryParameter(final int queryId,
-            final int typeId,
-            final String paramkey,
-            final String description,
-            final char isQueryResult,
-            final int queryPosition) throws RemoteException {
-        try {
-            return queryCache.addQueryParameter(queryId, typeId, paramkey, description, isQueryResult, queryPosition);
-        } catch (Throwable e) {
-            logger.error(e, e);
-            throw new RemoteException("addQuery error", e); // NOI18N
-        }
-    }
-
-    // position set in order of the addition
-    @Override
-    public boolean addQueryParameter(final int queryId, final String paramkey, final String description)
-            throws RemoteException {
-        try {
-            return queryCache.addQueryParameter(queryId, paramkey, description);
-        } catch (Throwable e) {
-            logger.error(e, e);
-            throw new RemoteException("addQuery error", e); // NOI18N
-        }
-    }
-
-    @Override
-    public HashMap getSearchOptions(final User user) throws RemoteException {
-        final HashMap r = queryCache.getSearchOptions();
-        if (logger.isDebugEnabled()) {
-            logger.debug("in Domainserverimpl :: " + r); // NOI18N
-        }
-        return r;
-    }
-
-    @Override
-    public SearchResult search(final User user, final int[] classIds, final Query query) throws RemoteException {
-        try {
-            // user sp\u00E4ter erweitern
-            return seeker.search(query, classIds, user, 0);
-        } catch (Throwable e) {
-            logger.error(e, e);
-            throw new RemoteException(e.getMessage(), e);
-        }
-    }
-    @Override
     public ArrayList<ArrayList> performCustomSearch(final String query) throws RemoteException {
         return performCustomSearch(query, null);
     }
+
     @Override
     public ArrayList<ArrayList> performCustomSearch(final String query, final QueryPostProcessor qpp)
             throws RemoteException {
@@ -889,6 +751,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
         return result;
     }
+
     @Override
     public ArrayList<ArrayList> performCustomSearch(final PreparableStatement ps) throws RemoteException {
         return performCustomSearch(ps, null);
@@ -1065,15 +928,11 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             userstore = null;
 
             // executing the searchservice
-            seeker = null;
-
             // this servers configuration
             properties = null;
 
             // for storing and loading prdefinded queries
             queryStore = null;
-
-            queryCache = null;
 
             System.gc();
         } catch (final Exception t) {

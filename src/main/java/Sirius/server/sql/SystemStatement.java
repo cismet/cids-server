@@ -11,11 +11,11 @@
  * Created on 21. November 2003, 18:19
  */
 package Sirius.server.sql;
-import Sirius.server.search.searchparameter.*;
 
 import Sirius.util.collections.MultiMap;
 
-import java.util.*;
+import de.cismet.cidsx.server.api.types.SearchParameter;
+
 /**
  * DOCUMENT ME!
  *

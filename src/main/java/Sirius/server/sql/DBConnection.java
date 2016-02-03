@@ -8,7 +8,6 @@
 package Sirius.server.sql;
 
 import Sirius.server.ServerExitError;
-import Sirius.server.search.Query;
 
 import org.apache.log4j.Logger;
 
@@ -376,53 +375,6 @@ public final class DBConnection implements DBBackend {
     }
 
     @Override
-    public ResultSet submitQuery(final Query q) throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("submitQuery: " + q.getKey() + ", batch: " + q.isBatch()); // NOI18N
-        }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("query object :: " + q);                                   // NOI18N
-        }
-        final Collection tmp = q.getParameterList();
-
-        final Comparable[] params = (Comparable[])tmp.toArray(new Comparable[tmp.size()]);
-
-        Sorter.quickSort(params);
-
-        if (q.getQueryIdentifier().getName().equals("")) { // NOI18N
-            return submitQuery(q.getQueryIdentifier().getQueryId(), (Object[])params);
-        } else {
-            return submitQuery(q.getQueryIdentifier().getName(), (Object[])params);
-        }
-    }
-
-    @Override
-    public int submitUpdate(final Query q) throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("submitUpdate: " + q.getKey() + ", batch: " + q.isBatch()); // NOI18N
-        }
-
-        final Collection tmp = q.getParameterList();
-        final Comparable[] params = (Comparable[])tmp.toArray(new Comparable[tmp.size()]);
-
-        Sorter.quickSort(params);
-
-        if (q.isBatch()) {
-            if (q.getQueryIdentifier().getName().equals("")) { // NOI18N
-                return submitUpdateBatch(q.getQueryIdentifier().getQueryId(), params);
-            } else {
-                return submitUpdateBatch(q.getQueryIdentifier().getName(), params);
-            }
-        } else {
-            if (q.getQueryIdentifier().getName().equals("")) { // NOI18N
-                return submitUpdate(q.getQueryIdentifier().getQueryId(), (Object[])params);
-            } else {
-                return submitUpdate(q.getQueryIdentifier().getName(), (Object[])params);
-            }
-        }
-    }
-
-    @Override
     public int submitUpdate(final String descriptor, final Object... parameters) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("submitUpdate: " + descriptor); // NOI18N
@@ -515,39 +467,6 @@ public final class DBConnection implements DBBackend {
      */
     public StatementCache getStatementCache() {
         return cache;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   q  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  SQLException  DOCUMENT ME!
-     */
-    public ResultSet executeQuery(final Query q) throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("executeQuery: " + q.getKey() + ", batch: " + q.isBatch()); // NOI18N
-        }
-
-        if (q.getStatement() == null) { // sql aus dem cache
-            return submitQuery(q);
-        } else {
-            String sqlStmnt = q.getStatement();
-
-            final Collection tmp = q.getParameterList();
-            final Comparable[] params = (Comparable[])tmp.toArray(new Comparable[tmp.size()]);
-            Sorter.quickSort(params);
-            sqlStmnt = QueryParametrizer.parametrize(sqlStmnt, params);
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("INFO executeQuery :: " + sqlStmnt); // NOI18N
-            }
-
-            // TODO: how to deal with the opened resources
-            return (con.createStatement()).executeQuery(sqlStmnt);
-        }
     }
 
     /**
