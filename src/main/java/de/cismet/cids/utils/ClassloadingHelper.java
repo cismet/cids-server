@@ -293,18 +293,18 @@ public class ClassloadingHelper {
 
         //~ Enum constants -----------------------------------------------------
 
-        ICON_FACTORY("treeicons", "IconFactory", "iconfactory"),                              // NOI18N
-        EXTENSION_FACTORY("extensionfactories", "ExtensionFactory", "extensionfactory"),      // NOI18N
-        RENDERER("objectrenderer", "Renderer", "renderer"),                                   // NOI18N
-        AGGREGATION_RENDERER("objectrenderer", "AggregationRenderer", "aggregationrenderer"), // NOI18N
-        TO_STRING_CONVERTER("tostringconverter", "ToStringConverter", "tostringconverter"),   // NOI18N
-        EDITOR("objecteditors", "Editor", "editor"),                                          // NOI18N
-        ATTRIBUTE_EDITOR("objecteditors", "AttributeEditor", "attributeeditor"),              // NOI18N
-        FEATURE_RENDERER("featurerenderer", "FeatureRenderer", "featurerenderer"),            // NOI18N
-        ACTION_PROVIDER("objectactions", "ActionsProvider", "actionsprovider"),               // NOI18N
-        PERMISSION_PROVIDER("permissions", "PermissionProvider", "permissionprovider"),       // NOI18N
-        NODE_PERMISSION_PROVIDER("nodepermissions", "NodePermissionProvider", "nodepermissionprovider"),       // NOI18N
-        CUSTOM_BEAN("beans", "CustomBean", "custombean");                                     // NOI18N
+        ICON_FACTORY("treeicons", "IconFactory", "iconfactory"),                                         // NOI18N
+        EXTENSION_FACTORY("extensionfactories", "ExtensionFactory", "extensionfactory"),                 // NOI18N
+        RENDERER("objectrenderer", "Renderer", "renderer"),                                              // NOI18N
+        AGGREGATION_RENDERER("objectrenderer", "AggregationRenderer", "aggregationrenderer"),            // NOI18N
+        TO_STRING_CONVERTER("tostringconverter", "ToStringConverter", "tostringconverter"),              // NOI18N
+        EDITOR("objecteditors", "Editor", "editor"),                                                     // NOI18N
+        ATTRIBUTE_EDITOR("objecteditors", "AttributeEditor", "attributeeditor"),                         // NOI18N
+        FEATURE_RENDERER("featurerenderer", "FeatureRenderer", "featurerenderer"),                       // NOI18N
+        ACTION_PROVIDER("objectactions", "ActionsProvider", "actionsprovider"),                          // NOI18N
+        PERMISSION_PROVIDER("permissions", "PermissionProvider", "permissionprovider"),                  // NOI18N
+        NODE_PERMISSION_PROVIDER("nodepermissions", "NodePermissionProvider", "nodepermissionprovider"), // NOI18N
+        CUSTOM_BEAN("beans", "CustomBean", "custombean");                                                // NOI18N
 
         //~ Instance fields ----------------------------------------------------
 
