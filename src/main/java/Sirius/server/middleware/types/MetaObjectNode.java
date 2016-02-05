@@ -7,6 +7,7 @@
 ****************************************************/
 package Sirius.server.middleware.types;
 
+import Sirius.server.middleware.impls.domainserver.DomainServerClassCache;
 import Sirius.server.newuser.permission.Policy;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -14,6 +15,10 @@ import com.vividsolutions.jts.geom.Geometry;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import de.cismet.cids.dynamics.CidsBean;
+
+import de.cismet.cids.nodepermissions.CustomNodePermissionProvider;
+
+import de.cismet.cids.utils.ClassloadingHelper;
 
 /**
  * DOCUMENT ME!
@@ -29,6 +34,7 @@ public class MetaObjectNode extends Node implements Comparable {
 
     protected Geometry cashedGeometry;
     protected String lightweightJson;
+    private final transient org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(this.getClass());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -228,6 +234,14 @@ public class MetaObjectNode extends Node implements Comparable {
         this.classId = classId;
         this.cashedGeometry = cashedGeometry;
         this.lightweightJson = lightweightJson;
+
+//        Class nodePermissonProviderClass=ClassloadingHelper.getDynamicClass(DomainServerClassCache.getInstance().getMetaClass(classId), ClassloadingHelper.CLASS_TYPE.NODE_PERMISSION_PROVIDER);
+//        if (nodePermissonProviderClass!=null){
+//            CustomNodePermissionProvider permissionProvider=(CustomNodePermissionProvider)nodePermissonProviderClass.newInstance();
+//            permissionProvider.setObjectNode(this);
+//            permissionProvider.getCustomReadPermissionDecisionforUser(u)
+//        }
+//        LOG.fatal(classId + "->" + DomainServerClassCache.getInstance().getMetaClass(classId).getTableName());
     }
 
     //~ Methods ----------------------------------------------------------------
