@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
+import de.cismet.cids.nodepermissions.NoNodePermissionProvidedException;
+
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.QueryPostProcessor;
 import de.cismet.cids.server.search.SearchException;
@@ -103,6 +105,7 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
             final HashSet keyset = new HashSet(getActiveLocalServers().keySet());
 
             final ArrayList<MetaObjectNode> aln = new ArrayList<MetaObjectNode>();
+            final ArrayList<MetaObjectNode> filtered = new ArrayList<MetaObjectNode>();
 
             if (geometry != null) {
                 geoSearch.setClassesInSnippetsPerDomain(getClassesInSnippetsPerDomain());
@@ -178,17 +181,27 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
                         } catch (Exception skip) {
                         }
 
-                        final MetaObjectNode mon = new MetaObjectNode((String)key,
-                                oid,
-                                cid,
-                                name,
-                                cashedGeometry,
-                                lightweightJson);
-                        aln.add(mon);
+                        try {
+                            final MetaObjectNode mon = new MetaObjectNode((String)key,
+                                    getUser(),
+                                    oid,
+                                    cid,
+                                    name,
+                                    cashedGeometry,
+                                    lightweightJson);
+                            aln.add(mon);
+                        } catch (NoNodePermissionProvidedException noNodePermissionProvidedException) {
+                            filtered.add(noNodePermissionProvidedException.getMon());
+                        }
                     }
                 }
             }
-
+            if (filtered.size() > 0) {
+                LOG.info(filtered.size() + " Objcets filtered");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(filtered.size() + " Objcets filtered\n" + filtered.toString());
+                }
+            }
             return aln;
         } catch (final Exception e) {
             LOG.error("Problem during Fulltextsearch", e);                 // NOI18N

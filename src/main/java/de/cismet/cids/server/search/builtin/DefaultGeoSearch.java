@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
+import de.cismet.cids.nodepermissions.NoNodePermissionProvidedException;
+
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.QueryPostProcessor;
 import de.cismet.cids.server.search.SearchException;
@@ -96,6 +98,7 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
     @Override
     public Collection<MetaObjectNode> performServerSearch() throws SearchException {
         final ArrayList<MetaObjectNode> aln = new ArrayList<MetaObjectNode>();
+        final ArrayList<MetaObjectNode> filtered = new ArrayList<MetaObjectNode>();
         try {
             if (LOG.isInfoEnabled()) {
                 LOG.info("geosearch started"); // NOI18N
@@ -167,22 +170,31 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
                             }
                         } catch (Exception skip) {
                         }
-
-                        final MetaObjectNode mon = new MetaObjectNode((String)domainKey,
-                                oid,
-                                cid,
-                                name,
-                                cashedGeometry,
-                                lightweightJson);
-                        aln.add(mon);
+                        try {
+                            final MetaObjectNode mon = new MetaObjectNode((String)domainKey,
+                                    getUser(),
+                                    oid,
+                                    cid,
+                                    name,
+                                    cashedGeometry,
+                                    lightweightJson);
+                            aln.add(mon);
+                        } catch (NoNodePermissionProvidedException noNodePermissionProvidedException) {
+                            filtered.add(noNodePermissionProvidedException.getMon());
+                        }
                     }
                 }
             }
         } catch (final Exception e) {
-            LOG.error("Problem during GEOSEARCH", e);                 // NOI18N
-            throw new SearchException("Problem during GEOSEARCH", e); // NOI18N
+            LOG.error("Problem during GEOSEARCH", e);                             // NOI18N
+            throw new SearchException("Problem during GEOSEARCH", e);             // NOI18N
         }
-
+        if (filtered.size() > 0) {
+            LOG.info(filtered.size() + " Objcets filtered");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(filtered.size() + " Objcets filtered\n" + filtered.toString());
+            }
+        }
         return aln;
     }
 

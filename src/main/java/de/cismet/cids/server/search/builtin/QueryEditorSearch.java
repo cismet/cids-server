@@ -23,6 +23,8 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import de.cismet.cids.nodepermissions.NoNodePermissionProvidedException;
+
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
 import de.cismet.cids.server.search.SearchException;
@@ -98,6 +100,7 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
     public Collection<MetaObjectNode> performServerSearch() throws SearchException {
         final MetaService ms = (MetaService)getActiveLocalServers().get(DOMAIN);
         final ArrayList<MetaObjectNode> metaObjects = new ArrayList<MetaObjectNode>();
+        final ArrayList<MetaObjectNode> filtered = new ArrayList<MetaObjectNode>();
         if (ms != null) {
             try {
                 final boolean paginationEnabled = limit >= 0;
@@ -151,17 +154,27 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
                     } catch (Exception skip) {
                     }
 
-                    final MetaObjectNode mon = new MetaObjectNode(
-                            DOMAIN,
-                            oid,
-                            cid,
-                            name,
-                            cashedGeometry,
-                            lightweightJson); // TODO: Check4CashedGeomAndLightweightJson
+                    try {
+                        final MetaObjectNode mon = new MetaObjectNode(
+                                DOMAIN,
+                                getUser(),
+                                oid,
+                                cid,
+                                name,
+                                cashedGeometry,
+                                lightweightJson); // TODO: Check4CashedGeomAndLightweightJson
 
-                    metaObjects.add(mon);
+                        metaObjects.add(mon);
+                    } catch (NoNodePermissionProvidedException noNodePermissionProvidedException) {
+                        filtered.add(noNodePermissionProvidedException.getMon());
+                    }
                 }
-
+                if (filtered.size() > 0) {
+                    LOG.info(filtered.size() + " Objcets filtered");
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(filtered.size() + " Objcets filtered\n" + filtered.toString());
+                    }
+                }
                 return metaObjects;
             } catch (final RemoteException ex) {
                 LOG.error(ex.getMessage(), ex);
