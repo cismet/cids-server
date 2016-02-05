@@ -13,6 +13,7 @@
 package de.cismet.cids.nodepermissions;
 
 import Sirius.server.middleware.types.MetaObjectNode;
+import Sirius.server.newuser.User;
 
 /**
  * DOCUMENT ME!
@@ -36,5 +37,10 @@ public abstract class AbstractCustomNodePermissionProvider implements CustomNode
     @Override
     public void setObjectNode(final MetaObjectNode mon) {
         this.mon = mon;
+    }
+
+    @Override
+    public boolean getCustomWritePermissionDecisionforUser(final User u) {
+        return true;
     }
 }
