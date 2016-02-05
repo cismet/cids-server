@@ -367,4 +367,22 @@ public class MetaObjectNode extends Node implements Comparable {
 
         return objectId == ((MetaObjectNode)other).objectId;
     }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Geometry getCashedGeometry() {
+        return cashedGeometry;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getLightweightJson() {
+        return lightweightJson;
+    }
 }
