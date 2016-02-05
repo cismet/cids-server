@@ -8,15 +8,19 @@
 package Sirius.server.middleware.types;
 
 import Sirius.server.middleware.impls.domainserver.DomainServerClassCache;
+import Sirius.server.newuser.User;
 import Sirius.server.newuser.permission.Policy;
 
 import com.vividsolutions.jts.geom.Geometry;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import org.openide.util.Exceptions;
+
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.nodepermissions.CustomNodePermissionProvider;
+import de.cismet.cids.nodepermissions.NoNodePermissionProvidedException;
 
 import de.cismet.cids.utils.ClassloadingHelper;
 
@@ -105,6 +109,60 @@ public class MetaObjectNode extends Node implements Comparable {
     }
 
     /**
+     * Creates a new MetaObjectNode object.
+     *
+     * @param   domain           DOCUMENT ME!
+     * @param   usr              DOCUMENT ME!
+     * @param   objectId         DOCUMENT ME!
+     * @param   classId          DOCUMENT ME!
+     * @param   name             DOCUMENT ME!
+     * @param   cashedGeometry   DOCUMENT ME!
+     * @param   lightweightJson  DOCUMENT ME!
+     *
+     * @throws  NoNodePermissionProvidedException  DOCUMENT ME!
+     */
+    public MetaObjectNode(
+            final String domain,
+            final User usr,
+            final int objectId,
+            final int classId,
+            final String name,
+            final Geometry cashedGeometry,
+            final String lightweightJson) throws NoNodePermissionProvidedException {
+        this(
+            -1,
+            name,
+            null,
+            domain,
+            objectId,
+            classId,
+            true,
+            Policy.createWIKIPolicy(),
+            -1,
+            null,
+            true,
+            cashedGeometry,
+            lightweightJson);
+        final Class nodePermissonProviderClass = ClassloadingHelper.getDynamicClass(DomainServerClassCache.getInstance()
+                        .getMetaClass(classId),
+                ClassloadingHelper.CLASS_TYPE.NODE_PERMISSION_PROVIDER);
+        if (nodePermissonProviderClass != null) {
+            try {
+                final CustomNodePermissionProvider permissionProvider = (CustomNodePermissionProvider)
+                    nodePermissonProviderClass.newInstance();
+                permissionProvider.setObjectNode(this);
+                if (!permissionProvider.getCustomReadPermissionDecisionforUser(usr)) {
+                    throw new NoNodePermissionProvidedException(this);
+                }
+            } catch (InstantiationException ex) {
+                throw new NoNodePermissionProvidedException(this, ex);
+            } catch (IllegalAccessException ex) {
+                throw new NoNodePermissionProvidedException(this, ex);
+            }
+        }
+    }
+
+    /**
      * -----------------------------------------------
      *
      * @param  id                          DOCUMENT ME!
@@ -137,53 +195,6 @@ public class MetaObjectNode extends Node implements Comparable {
             objectId = -1;
             classId = -1;
         }
-    }
-
-    /**
-     * Creates a new MetaObjectNode object.
-     *
-     * @param  id                          DOCUMENT ME!
-     * @param  name                        DOCUMENT ME!
-     * @param  description                 DOCUMENT ME!
-     * @param  domain                      DOCUMENT ME!
-     * @param  objectId                    DOCUMENT ME!
-     * @param  classId                     DOCUMENT ME!
-     * @param  isLeaf                      DOCUMENT ME!
-     * @param  policy                      DOCUMENT ME!
-     * @param  iconFactory                 DOCUMENT ME!
-     * @param  icon                        DOCUMENT ME!
-     * @param  derivePermissionsFromClass  DOCUMENT ME!
-     * @param  cashedGeometry              DOCUMENT ME!
-     * @param  lightweightJson             DOCUMENT ME!
-     */
-    public MetaObjectNode(final int id,
-            final String name,
-            final String description,
-            final String domain,
-            final int objectId,
-            final int classId,
-            final boolean isLeaf,
-            final Policy policy,
-            final int iconFactory,
-            final String icon,
-            final boolean derivePermissionsFromClass,
-            final Geometry cashedGeometry,
-            final String lightweightJson) {
-        this(
-            id,
-            name,
-            description,
-            domain,
-            objectId,
-            classId,
-            isLeaf,
-            policy,
-            iconFactory,
-            icon,
-            derivePermissionsFromClass,
-            null,
-            cashedGeometry,
-            lightweightJson);
     }
 
     /**
@@ -234,14 +245,53 @@ public class MetaObjectNode extends Node implements Comparable {
         this.classId = classId;
         this.cashedGeometry = cashedGeometry;
         this.lightweightJson = lightweightJson;
+    }
 
-//        Class nodePermissonProviderClass=ClassloadingHelper.getDynamicClass(DomainServerClassCache.getInstance().getMetaClass(classId), ClassloadingHelper.CLASS_TYPE.NODE_PERMISSION_PROVIDER);
-//        if (nodePermissonProviderClass!=null){
-//            CustomNodePermissionProvider permissionProvider=(CustomNodePermissionProvider)nodePermissonProviderClass.newInstance();
-//            permissionProvider.setObjectNode(this);
-//            permissionProvider.getCustomReadPermissionDecisionforUser(u)
-//        }
-//        LOG.fatal(classId + "->" + DomainServerClassCache.getInstance().getMetaClass(classId).getTableName());
+    /**
+     * Creates a new MetaObjectNode object.
+     *
+     * @param  id                          DOCUMENT ME!
+     * @param  name                        DOCUMENT ME!
+     * @param  description                 DOCUMENT ME!
+     * @param  domain                      DOCUMENT ME!
+     * @param  objectId                    DOCUMENT ME!
+     * @param  classId                     DOCUMENT ME!
+     * @param  isLeaf                      DOCUMENT ME!
+     * @param  policy                      DOCUMENT ME!
+     * @param  iconFactory                 DOCUMENT ME!
+     * @param  icon                        DOCUMENT ME!
+     * @param  derivePermissionsFromClass  DOCUMENT ME!
+     * @param  cashedGeometry              DOCUMENT ME!
+     * @param  lightweightJson             DOCUMENT ME!
+     */
+    private MetaObjectNode(final int id,
+            final String name,
+            final String description,
+            final String domain,
+            final int objectId,
+            final int classId,
+            final boolean isLeaf,
+            final Policy policy,
+            final int iconFactory,
+            final String icon,
+            final boolean derivePermissionsFromClass,
+            final Geometry cashedGeometry,
+            final String lightweightJson) {
+        this(
+            id,
+            name,
+            description,
+            domain,
+            objectId,
+            classId,
+            isLeaf,
+            policy,
+            iconFactory,
+            icon,
+            derivePermissionsFromClass,
+            null,
+            cashedGeometry,
+            lightweightJson);
     }
 
     //~ Methods ----------------------------------------------------------------
