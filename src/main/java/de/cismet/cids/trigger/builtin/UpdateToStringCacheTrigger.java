@@ -46,7 +46,7 @@ public class UpdateToStringCacheTrigger extends AbstractDBAwareCidsTrigger {
                     protected Integer doInBackground() throws Exception {
                         return getDbServer().getActiveDBConnection()
                                     .submitInternalUpdate(
-                                        DBConnection.DESC_DELETE_STRINGREPCACHEENTRY,
+                                        DBConnection.DESC_DELETE_CACHEENTRY,
                                         cidsBean.getMetaObject().getClassID(),
                                         cidsBean.getMetaObject().getID());
                     }
@@ -75,7 +75,7 @@ public class UpdateToStringCacheTrigger extends AbstractDBAwareCidsTrigger {
                         if ((name != null) && !name.equals("")) {
                             return getDbServer().getActiveDBConnection()
                                         .submitInternalUpdate(
-                                            DBConnection.DESC_INSERT_STRINGREPCACHEENTRY,
+                                            DBConnection.DESC_INSERT_CACHEENTRY,
                                             cidsBean.getMetaObject().getClassID(),
                                             cidsBean.getMetaObject().getID(),
                                             name);
@@ -108,14 +108,14 @@ public class UpdateToStringCacheTrigger extends AbstractDBAwareCidsTrigger {
                             if ((name == null) || name.equals("")) {
                                 getDbServer().getActiveDBConnection()
                                         .submitInternalUpdate(
-                                            DBConnection.DESC_DELETE_STRINGREPCACHEENTRY,
+                                            DBConnection.DESC_DELETE_CACHEENTRY,
                                             cidsBean.getMetaObject().getClassID(),
                                             cidsBean.getMetaObject().getID());
                                 return 0;
                             } else {
                                 return getDbServer().getActiveDBConnection()
                                             .submitInternalUpdate(
-                                                DBConnection.DESC_UPDATE_STRINGREPCACHEENTRY,
+                                                DBConnection.DESC_UPDATE_CACHEENTRY,
                                                 name,
                                                 cidsBean.getMetaObject().getClassID(),
                                                 cidsBean.getMetaObject().getID());
@@ -123,12 +123,12 @@ public class UpdateToStringCacheTrigger extends AbstractDBAwareCidsTrigger {
                         } catch (SQLException e) {
                             getDbServer().getActiveDBConnection()
                                     .submitInternalUpdate(
-                                        DBConnection.DESC_DELETE_STRINGREPCACHEENTRY,
+                                        DBConnection.DESC_DELETE_CACHEENTRY,
                                         cidsBean.getMetaObject().getClassID(),
                                         cidsBean.getMetaObject().getID());
                             return getDbServer().getActiveDBConnection()
                                         .submitInternalUpdate(
-                                            DBConnection.DESC_INSERT_STRINGREPCACHEENTRY,
+                                            DBConnection.DESC_INSERT_CACHEENTRY,
                                             cidsBean.getMetaObject().getClassID(),
                                             cidsBean.getMetaObject().getID(),
                                             cidsBean.toString());
