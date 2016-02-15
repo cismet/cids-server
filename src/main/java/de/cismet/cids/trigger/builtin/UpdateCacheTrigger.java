@@ -28,12 +28,11 @@ import de.cismet.cids.trigger.CidsTriggerKey;
  * @version  $Revision$, $Date$
  */
 @ServiceProvider(service = CidsTrigger.class)
-public class UpdateToStringCacheTrigger extends AbstractDBAwareCidsTrigger {
+public class UpdateCacheTrigger extends AbstractDBAwareCidsTrigger {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(
-            UpdateToStringCacheTrigger.class);
+    private static final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(UpdateCacheTrigger.class);
 
     //~ Methods ----------------------------------------------------------------
 
@@ -78,7 +77,9 @@ public class UpdateToStringCacheTrigger extends AbstractDBAwareCidsTrigger {
                                             DBConnection.DESC_INSERT_CACHEENTRY,
                                             cidsBean.getMetaObject().getClassID(),
                                             cidsBean.getMetaObject().getID(),
-                                            name);
+                                            name,
+                                            null, //Geometry
+                                            null);//lightweight JSON
                         } else {
                             return 0;
                         }
@@ -117,6 +118,8 @@ public class UpdateToStringCacheTrigger extends AbstractDBAwareCidsTrigger {
                                             .submitInternalUpdate(
                                                 DBConnection.DESC_UPDATE_CACHEENTRY,
                                                 name,
+                                                null, //Geometry
+                                                null,//lightweight JSON
                                                 cidsBean.getMetaObject().getClassID(),
                                                 cidsBean.getMetaObject().getID());
                             }
@@ -131,7 +134,9 @@ public class UpdateToStringCacheTrigger extends AbstractDBAwareCidsTrigger {
                                             DBConnection.DESC_INSERT_CACHEENTRY,
                                             cidsBean.getMetaObject().getClassID(),
                                             cidsBean.getMetaObject().getID(),
-                                            cidsBean.toString());
+                                            cidsBean.toString(),
+                                            null, //Geometry
+                                            null);//lightweight JSON
                         }
                     }
 
