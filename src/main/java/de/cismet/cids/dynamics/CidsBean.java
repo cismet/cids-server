@@ -1230,4 +1230,15 @@ public class CidsBean implements PropertyChangeListener {
     protected void setJsonSerializerParams(final IntraObjectCacheJsonParams jsonSerializerParams) {
         this.jsonSerializerParams = jsonSerializerParams;
     }
+    
+    
+    public Geometry getGeometry() {
+        return null;
+    }
+    
+    public String getLightweightJsonRepresentation() {
+        return null;
+    }
+    
+    
 }
