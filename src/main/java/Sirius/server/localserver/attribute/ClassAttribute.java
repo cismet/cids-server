@@ -23,11 +23,11 @@ public class ClassAttribute extends Attribute implements java.io.Serializable {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    public static final String HISTORY_ENABLED = "history_enabled";       // NOI18N
-    public static final String HISTORY_OPTION_ANONYMOUS = "anonymous";    // NOI18N
-    public static final String CACHE_ENABLED = "cache"; // NOI18N
-    public static final String TO_STRING_CACHE_ENABLED = "tostringcache"; // NOI18N
-    public static final String GEOMETRY_CACHE_ENABLED = "geometrycache"; // NOI18N
+    public static final String HISTORY_ENABLED = "history_enabled";                 // NOI18N
+    public static final String HISTORY_OPTION_ANONYMOUS = "anonymous";              // NOI18N
+    public static final String CACHE_ENABLED = "cache";                             // NOI18N
+    public static final String TO_STRING_CACHE_ENABLED = "tostringcache";           // NOI18N
+    public static final String GEOMETRY_CACHE_ENABLED = "geometrycache";            // NOI18N
     public static final String LIGHTWEIGHT_JSON_CACHE_ENABLED = "lightweightcache"; // NOI18N
 
     private static final transient Logger LOG = Logger.getLogger(ClassAttribute.class);
