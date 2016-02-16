@@ -304,6 +304,7 @@ public class ClassloadingHelper {
         ACTION_PROVIDER("objectactions", "ActionsProvider", "actionsprovider"),                          // NOI18N
         PERMISSION_PROVIDER("permissions", "PermissionProvider", "permissionprovider"),                  // NOI18N
         NODE_PERMISSION_PROVIDER("nodepermissions", "NodePermissionProvider", "nodepermissionprovider"), // NOI18N
+        LIGHTWEIGHT_REPRESANTATION_PROVIDER("lightweightrepresentations", "LightweightRepresentationProvider", "lightweightrepresentationprovider"), // NOI18N
         CUSTOM_BEAN("beans", "CustomBean", "custombean");                                                // NOI18N
 
         //~ Instance fields ----------------------------------------------------
