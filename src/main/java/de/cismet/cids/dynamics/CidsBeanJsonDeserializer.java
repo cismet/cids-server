@@ -5,10 +5,6 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.cismet.cids.dynamics;
 
 import Sirius.server.middleware.types.MetaObject;
@@ -102,6 +98,10 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
             }
             return geom;
         } catch (final ParseException ex) {
+            if (LOG.isDebugEnabled()) {
+                LOG.error(ex.getMessage(), ex);
+            }
+
             return null;
         }
     }
@@ -141,7 +141,7 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                     key = jp.getText();
                     final CidsBeanInfo bInfo = new CidsBeanInfo(key);
                     keySet = true;
-                    if (isIntraObjectCacheEnabled() && jp.containsKey(key)) {
+                    if (isIntraObjectCacheEnabled() && jp.containsKey(key) && !key.equals("-1")) {
                         cb = jp.get(key);
                         cacheHit = true;
                     } else {
@@ -156,7 +156,7 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                             while (jp.nextValue() != JsonToken.END_ARRAY) {
                                 final CidsBean arrayObject = jp.readValueAs(CidsBean.class);
                                 if (arrayObject != null) {
-                                    if (isIntraObjectCacheEnabled()) {
+                                    if (isIntraObjectCacheEnabled() && (arrayObject.getPrimaryKeyValue() != -1)) {
                                         jp.put(arrayObject.getCidsBeanInfo().getJsonObjectKey(), arrayObject);
                                     }
                                     array.add(arrayObject);
@@ -168,7 +168,7 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
 
                         case START_OBJECT: {
                             final CidsBean subObject = jp.readValueAs(CidsBean.class);
-                            if (isIntraObjectCacheEnabled()) {
+                            if (isIntraObjectCacheEnabled() && (subObject.getPrimaryKeyValue() != -1)) {
                                 jp.put(subObject.getCidsBeanInfo().getJsonObjectKey(), subObject);
                             }
                             propValueMap.put(fieldName, subObject);
@@ -304,7 +304,7 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                 }
                 cb.getMetaObject().setID((cb.getPrimaryKeyValue() != null) ? (int)cb.getPrimaryKeyValue() : -1);
                 cb.getMetaObject().forceStatus(MetaObject.NO_STATUS);
-                if (isIntraObjectCacheEnabled()) {
+                if (isIntraObjectCacheEnabled() && (cb.getPrimaryKeyValue() != -1)) {
                     jp.put(key, cb);
                 }
             }
