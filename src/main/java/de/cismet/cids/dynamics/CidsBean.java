@@ -57,6 +57,7 @@ import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
 
 import static de.cismet.cids.dynamics.CidsBean.mapper;
+import de.cismet.cids.feature.CacheGeometryProvider;
 
 /**
  * DOCUMENT ME!
@@ -1227,31 +1228,4 @@ public class CidsBean implements PropertyChangeListener {
         this.jsonSerializerParams = jsonSerializerParams;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public Geometry getGeometry() {
-        return null;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public String getLightweightJsonRepresentation() {
-        try {
-            final Class lrpClass = ClassloadingHelper.getDynamicClass(metaObject.getMetaClass(),
-                    ClassloadingHelper.CLASS_TYPE.LIGHTWEIGHT_REPRESANTATION_PROVIDER);
-            if (lrpClass != null) {
-                final LightweightRepresentationProvider lrp = (LightweightRepresentationProvider)lrpClass.newInstance();
-                return lrp.getLightweightrepresentation(this);
-            }
-        } catch (Exception e) {
-            LOG.error("Error in getLightweightJsonRepresentation", e);
-        }
-        return null;
-    }
 }
