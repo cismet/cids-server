@@ -243,10 +243,6 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
                 return message;
             }
 
-            if (!userIdMap.containsKey(message) && !userGroupIdMap.containsKey(message)) {
-                return message;
-            }
-
             // is user matching ?
             if (userIdMap.containsKey(message) && userIdMap.get(message).contains(user.getId())) {
                 return message;
