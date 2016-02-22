@@ -84,7 +84,7 @@ public class PublishCidsServerMessageAction implements ServerAction, UserAwareSe
             }
         }
 
-        CidsServerMessageManagerImpl.getInstance().publishMessage(message, category);
+        CidsServerMessageManagerImpl.getInstance().publishMessage(category, message);
 
         return null;
     }

@@ -12,8 +12,11 @@
  */
 package de.cismet.cids.server.messages;
 
+import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
+
+import java.rmi.RemoteException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,6 +38,8 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
 
     //~ Static fields/initializers ---------------------------------------------
 
+    private static final transient org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
+            CidsServerMessageManagerImpl.class);
     private static CidsServerMessageManagerImpl INSTANCE;
 
     //~ Instance fields --------------------------------------------------------
@@ -77,45 +82,45 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
     /**
      * DOCUMENT ME!
      *
-     * @param  object    DOCUMENT ME!
      * @param  category  DOCUMENT ME!
+     * @param  object    DOCUMENT ME!
      */
     @Override
-    public void publishMessage(final Object object, final String category) {
-        CidsServerMessageManagerImpl.this.publishMessage(object, category, null, null);
+    public void publishMessage(final String category, final Object object) {
+        CidsServerMessageManagerImpl.this.publishMessage(category, object, null, null);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param  object                          DOCUMENT ME!
      * @param  category                        DOCUMENT ME!
+     * @param  object                          DOCUMENT ME!
      * @param  ids                             DOCUMENT ME!
      * @param  trueForUserIdsFalseForGroupIds  DOCUMENT ME!
      */
     @Override
-    public void publishMessage(final Object object,
-            final String category,
+    public void publishMessage(final String category,
+            final Object object,
             final Set<Integer> ids,
             final boolean trueForUserIdsFalseForGroupIds) {
         if (trueForUserIdsFalseForGroupIds) {
-            CidsServerMessageManagerImpl.this.publishMessage(object, category, ids, null);
+            CidsServerMessageManagerImpl.this.publishMessage(category, object, ids, null);
         } else {
-            CidsServerMessageManagerImpl.this.publishMessage(object, category, null, ids);
+            CidsServerMessageManagerImpl.this.publishMessage(category, object, null, ids);
         }
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param  object        DOCUMENT ME!
      * @param  category      DOCUMENT ME!
+     * @param  object        DOCUMENT ME!
      * @param  userGroupIds  DOCUMENT ME!
      * @param  userIds       DOCUMENT ME!
      */
     @Override
-    public void publishMessage(final Object object,
-            final String category,
+    public void publishMessage(final String category,
+            final Object object,
             final Set<Integer> userGroupIds,
             final Set<Integer> userIds) {
         final int newMessageId;
@@ -254,16 +259,25 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
                     // single group
 
                     return message;
-                } else {
-                    // all groups
-
-                    if (user.getPotentialUserGroups() != null) {
-                        for (final UserGroup userGroup : user.getPotentialUserGroups()) {
-                            if (userGroupIds.contains(userGroup.getId())) {
-                                return message;
-                            }
+                } else // all groups
+                if (user.getPotentialUserGroups() != null) {
+                    for (final UserGroup userGroup : user.getPotentialUserGroups()) {
+                        if (userGroupIds.contains(userGroup.getId())) {
+                            return message;
                         }
                     }
+                }
+            }
+
+            if (category != null) {
+                boolean csmChecked = false;
+                try {
+                    csmChecked = DomainServerImpl.getServerInstance().hasConfigAttr(user, "csm://" + category);
+                } catch (final RemoteException ex) {
+                    LOG.warn(ex, ex);
+                }
+                if (csmChecked) {
+                    return message;
                 }
             }
         }
