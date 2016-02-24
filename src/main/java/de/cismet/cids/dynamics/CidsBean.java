@@ -49,10 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import de.cismet.cids.feature.CacheGeometryProvider;
-
 import de.cismet.cids.json.IntraObjectCacheJsonParams;
-import de.cismet.cids.json.LightweightRepresentationProvider;
 
 import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.ClassloadingHelper;

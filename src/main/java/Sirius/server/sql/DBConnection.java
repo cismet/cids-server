@@ -33,10 +33,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import de.cismet.tools.Sorter;
 
 /**
- * DOCUMENT ME!
+ * :-) DOCUMENT ME!
  *
  * @author   Sascha Schlobinski
  * @author   mscholl
+ * @author   helllth
  * @version  1.1 refactored on 2011/01/13
  */
 
@@ -63,9 +64,12 @@ public final class DBConnection implements DBBackend {
     public static final String DESC_INSERT_HISTORY_ENTRY = "insert_history_entry";                             // NOI18N
     public static final String DESC_HAS_HISTORY = "has_history";                                               // NOI18N
     public static final String DESC_TABLE_HAS_COLUMN = "table_has_column";                                     // NOI18N
-    public static final String DESC_DELETE_CACHEENTRY = "delete_cacheentry";                                   // NOI18N
-    public static final String DESC_INSERT_CACHEENTRY = "insert_cacheentry";                                   // NOI18N
-    public static final String DESC_UPDATE_CACHEENTRY = "update_cacheentry";                                   // NOI18N
+    /** parameters to put in: class id, object id, */
+    public static final String DESC_DELETE_CACHEENTRY = "delete_cacheentry"; // NOI18N
+    /** parameters to put in: primary key field, object id, class id */
+    public static final String DESC_INSERT_CACHEENTRY = "insert_cacheentry"; // NOI18N
+    /** parameters to put in: primary key field, object id, object id, class id */
+    public static final String DESC_UPDATE_CACHEENTRY = "update_cacheentry";   // NOI18N
 
     public static final String DESC_GET_ALL_USERGROUPS = "get_all_usergroups";                               // NOI18N
     public static final String DESC_GET_ALL_CLASSES = "get_all_classes";                                     // NOI18N

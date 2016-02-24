@@ -10,27 +10,17 @@ package de.cismet.cids.trigger.builtin;
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.newuser.User;
 import Sirius.server.sql.DBConnection;
-import Sirius.server.sql.DialectProvider;
-import Sirius.server.sql.SQLTools;
 
-import com.vividsolutions.jts.geom.Geometry;
-
-import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import de.cismet.cids.dynamics.CidsBean;
 
-import de.cismet.cids.feature.CacheGeometryProvider;
-
-import de.cismet.cids.json.LightweightRepresentationProvider;
-
 import de.cismet.cids.trigger.AbstractDBAwareCidsTrigger;
 import de.cismet.cids.trigger.CidsTrigger;
 import de.cismet.cids.trigger.CidsTriggerKey;
-
-import de.cismet.cids.utils.ClassloadingHelper;
 
 /**
  * DOCUMENT ME!
@@ -50,7 +40,7 @@ public class UpdateCacheTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void afterDelete(final CidsBean cidsBean, final User user) {
-        if (isAnyCacheEnabled(cidsBean)) {
+        if (isCacheEnabled(cidsBean)) {
             de.cismet.tools.CismetThreadPool.execute(new javax.swing.SwingWorker<Integer, Void>() {
 
                     @Override
@@ -76,25 +66,23 @@ public class UpdateCacheTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void afterInsert(final CidsBean cidsBean, final User user) {
-        if (isAnyCacheEnabled(cidsBean)) {
-            de.cismet.tools.CismetThreadPool.execute(new javax.swing.SwingWorker<Integer, Void>() {
+        if (isCacheEnabled(cidsBean)) {
+            de.cismet.tools.CismetThreadPool.execute(new javax.swing.SwingWorker<ResultSet, Void>() {
 
                     @Override
-                    protected Integer doInBackground() throws Exception {
+                    protected ResultSet doInBackground() throws Exception {
                         return getDbServer().getActiveDBConnection()
-                                    .submitInternalUpdate(
+                                    .submitInternalQuery(
                                         DBConnection.DESC_INSERT_CACHEENTRY,
-                                        cidsBean.getMetaObject().getClassID(),
+                                        cidsBean.getPrimaryKeyFieldname(),
                                         cidsBean.getMetaObject().getID(),
-                                        getToStringCacheValue(cidsBean),
-                                        getGeometryDBObjectCacheValue(cidsBean, getDbServer().getActiveDBConnection()),
-                                        getLightweightJsonCacheValue(cidsBean));
+                                        cidsBean.getMetaObject().getClassID());
                     }
 
                     @Override
                     protected void done() {
                         try {
-                            final Integer result = get();
+                            final ResultSet result = get();
                         } catch (Exception e) {
                             log.error("Exception in Background Thread: afterInsert", e);
                         }
@@ -105,11 +93,11 @@ public class UpdateCacheTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void afterUpdate(final CidsBean cidsBean, final User user) {
-        if (isAnyCacheEnabled(cidsBean)) {
-            de.cismet.tools.CismetThreadPool.execute(new javax.swing.SwingWorker<Integer, Void>() {
+        if (isCacheEnabled(cidsBean)) {
+            de.cismet.tools.CismetThreadPool.execute(new javax.swing.SwingWorker<ResultSet, Void>() {
 
                     @Override
-                    protected Integer doInBackground() throws Exception {
+                    protected ResultSet doInBackground() throws Exception {
                         try {
                             final String name = cidsBean.toString();
                             if ((name == null) || name.equals("")) {
@@ -118,18 +106,15 @@ public class UpdateCacheTrigger extends AbstractDBAwareCidsTrigger {
                                             DBConnection.DESC_DELETE_CACHEENTRY,
                                             cidsBean.getMetaObject().getClassID(),
                                             cidsBean.getMetaObject().getID());
-                                return 0;
+                                return null;
                             } else {
                                 return getDbServer().getActiveDBConnection()
-                                            .submitInternalUpdate(
+                                            .submitInternalQuery(
                                                 DBConnection.DESC_UPDATE_CACHEENTRY,
-                                                getToStringCacheValue(cidsBean),
-                                                getGeometryDBObjectCacheValue(
-                                                    cidsBean,
-                                                    getDbServer().getActiveDBConnection()), // Geometry
-                                                getLightweightJsonCacheValue(cidsBean), // lightweight JSON
-                                                cidsBean.getMetaObject().getClassID(),
-                                                cidsBean.getMetaObject().getID());
+                                                cidsBean.getPrimaryKeyFieldname(),
+                                                cidsBean.getMetaObject().getID(),
+                                                cidsBean.getMetaObject().getID(),
+                                                cidsBean.getMetaObject().getClassID());
                             }
                         } catch (SQLException e) {
                             getDbServer().getActiveDBConnection()
@@ -138,22 +123,18 @@ public class UpdateCacheTrigger extends AbstractDBAwareCidsTrigger {
                                         cidsBean.getMetaObject().getClassID(),
                                         cidsBean.getMetaObject().getID());
                             return getDbServer().getActiveDBConnection()
-                                        .submitInternalUpdate(
+                                        .submitInternalQuery(
                                             DBConnection.DESC_INSERT_CACHEENTRY,
-                                            cidsBean.getMetaObject().getClassID(),
+                                            cidsBean.getPrimaryKeyFieldname(),
                                             cidsBean.getMetaObject().getID(),
-                                            getToStringCacheValue(cidsBean),
-                                            getGeometryDBObjectCacheValue(
-                                                cidsBean,
-                                                getDbServer().getActiveDBConnection()), // Geometry
-                                            getLightweightJsonCacheValue(cidsBean)); // lightweight JSON
+                                            cidsBean.getMetaObject().getClassID());
                         }
                     }
 
                     @Override
                     protected void done() {
                         try {
-                            final Integer result = get();
+                            final ResultSet result = get();
                         } catch (Exception e) {
                             log.error("Exception in Background Thread: afterUpdate", e);
                         }
@@ -201,122 +182,6 @@ public class UpdateCacheTrigger extends AbstractDBAwareCidsTrigger {
     private static boolean isCacheEnabled(final CidsBean cidsBean) {
         return (cidsBean.getMetaObject().getMetaClass().getClassAttribute(ClassAttribute.CACHE_ENABLED)
                         != null);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   cidsBean  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private static boolean isToStringCacheEnabled(final CidsBean cidsBean) {
-        return (cidsBean.getMetaObject().getMetaClass().getClassAttribute(ClassAttribute.TO_STRING_CACHE_ENABLED)
-                        != null);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   cidsBean  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private static boolean isGeometryCacheEnabled(final CidsBean cidsBean) {
-        return (cidsBean.getMetaObject().getMetaClass().getClassAttribute(ClassAttribute.GEOMETRY_CACHE_ENABLED)
-                        != null);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   cidsBean  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private static boolean isLightweightJsonCacheEnabled(final CidsBean cidsBean) {
-        return (cidsBean.getMetaObject().getMetaClass().getClassAttribute(ClassAttribute.LIGHTWEIGHT_JSON_CACHE_ENABLED)
-                        != null);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   cidsBean  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private static boolean isAnyCacheEnabled(final CidsBean cidsBean) {
-        return isCacheEnabled(cidsBean) || isToStringCacheEnabled(cidsBean) || isGeometryCacheEnabled(cidsBean)
-                    || isLightweightJsonCacheEnabled(cidsBean);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   cidsBean  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private static String getToStringCacheValue(final CidsBean cidsBean) {
-        if (isToStringCacheEnabled(cidsBean)) {
-            final String name = cidsBean.toString();
-            if ((name != null) && !name.equals("")) {
-                return name;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   cidsBean  DOCUMENT ME!
-     * @param   con       DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private static Object getGeometryDBObjectCacheValue(final CidsBean cidsBean, final DBConnection con) {
-        if (isGeometryCacheEnabled(cidsBean)) {
-            try {
-                final Class cgpClass = ClassloadingHelper.getDynamicClass(cidsBean.getMetaObject().getMetaClass(),
-                        ClassloadingHelper.CLASS_TYPE.CACHE_GEOMETRY_PROVIDER);
-                if (cgpClass != null) {
-                    final CacheGeometryProvider cgp = (CacheGeometryProvider)cgpClass.newInstance();
-                    final Geometry cachedGeom = cgp.getCacheGeometry(cidsBean);
-
-                    return SQLTools.getGeometryFactory(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                                .getDbObject(cachedGeom, con.getConnection());
-                }
-            } catch (Exception e) {
-                log.error("Exception in Background Thread: getGeometryDBObjectCacheValue", e);
-            }
-        }
-        return null;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   cidsBean  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private static String getLightweightJsonCacheValue(final CidsBean cidsBean) {
-        if (isLightweightJsonCacheEnabled(cidsBean)) {
-            try {
-                final Class lrpClass = ClassloadingHelper.getDynamicClass(cidsBean.getMetaObject().getMetaClass(),
-                        ClassloadingHelper.CLASS_TYPE.LIGHTWEIGHT_REPRESANTATION_PROVIDER);
-                if (lrpClass != null) {
-                    final LightweightRepresentationProvider lrp = (LightweightRepresentationProvider)
-                        lrpClass.newInstance();
-                    return lrp.getLightweightrepresentation(cidsBean);
-                }
-            } catch (Exception e) {
-                log.error("Error in getLightweightJsonRepresentation", e);
-            }
-        }
-        return null;
     }
 
     @Override
