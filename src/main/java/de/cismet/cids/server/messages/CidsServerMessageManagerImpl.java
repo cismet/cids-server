@@ -50,8 +50,8 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
     private final Collection<CidsServerMessageManagerListener> listeners =
         new LinkedList<CidsServerMessageManagerListener>();
 
-    private final Map<CidsServerMessage, Set> userIdMap = new HashMap<CidsServerMessage, Set>();
-    private final Map<CidsServerMessage, Set> userGroupIdMap = new HashMap<CidsServerMessage, Set>();
+    private final Map<CidsServerMessage, Set> userKeyMap = new HashMap<CidsServerMessage, Set>();
+    private final Map<CidsServerMessage, Set> userGroupKeyMap = new HashMap<CidsServerMessage, Set>();
     private final CidsServerMessageManagerListenerHandler listenerHandler =
         new CidsServerMessageManagerListenerHandler();
 
@@ -93,36 +93,36 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
     /**
      * DOCUMENT ME!
      *
-     * @param  category                        DOCUMENT ME!
-     * @param  object                          DOCUMENT ME!
-     * @param  ids                             DOCUMENT ME!
-     * @param  trueForUserIdsFalseForGroupIds  DOCUMENT ME!
+     * @param  category                          DOCUMENT ME!
+     * @param  object                            DOCUMENT ME!
+     * @param  keys                              DOCUMENT ME!
+     * @param  trueForUserKeysFalseForGroupKeys  DOCUMENT ME!
      */
     @Override
     public void publishMessage(final String category,
             final Object object,
-            final Set<Integer> ids,
-            final boolean trueForUserIdsFalseForGroupIds) {
-        if (trueForUserIdsFalseForGroupIds) {
-            CidsServerMessageManagerImpl.this.publishMessage(category, object, ids, null);
+            final Set keys,
+            final boolean trueForUserKeysFalseForGroupKeys) {
+        if (trueForUserKeysFalseForGroupKeys) {
+            CidsServerMessageManagerImpl.this.publishMessage(category, object, keys, null);
         } else {
-            CidsServerMessageManagerImpl.this.publishMessage(category, object, null, ids);
+            CidsServerMessageManagerImpl.this.publishMessage(category, object, null, keys);
         }
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param  category      DOCUMENT ME!
-     * @param  object        DOCUMENT ME!
-     * @param  userGroupIds  DOCUMENT ME!
-     * @param  userIds       DOCUMENT ME!
+     * @param  category       DOCUMENT ME!
+     * @param  object         DOCUMENT ME!
+     * @param  userGroupKeys  DOCUMENT ME!
+     * @param  userKeys       DOCUMENT ME!
      */
     @Override
     public void publishMessage(final String category,
             final Object object,
-            final Set<Integer> userGroupIds,
-            final Set<Integer> userIds) {
+            final Set userGroupKeys,
+            final Set userKeys) {
         final int newMessageId;
 
         synchronized (this) {
@@ -131,12 +131,12 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
 
         final CidsServerMessage message = new CidsServerMessage(newMessageId, object, category, new Date());
 
-        if (userIds != null) {
-            userIdMap.put(message, new HashSet<Integer>(userIds));
+        if ((userKeys != null) && !userKeys.isEmpty()) {
+            userKeyMap.put(message, new HashSet(userKeys));
         }
 
-        if (userGroupIds != null) {
-            userGroupIdMap.put(message, new HashSet<Integer>(userGroupIds));
+        if ((userGroupKeys != null) && !userGroupKeys.isEmpty()) {
+            userGroupKeyMap.put(message, new HashSet(userGroupKeys));
         }
 
         putMessage(category, message);
@@ -244,22 +244,26 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
             }
 
             // is user matching ?
-            if (userIdMap.containsKey(message) && userIdMap.get(message).contains(user.getId())) {
+            if (userKeyMap.containsKey(message) && (userKeyMap.get(message) != null)
+                        && userKeyMap.get(message).contains(user.getKey())) {
                 return message;
             }
 
             // is group matching ?
-            if (userGroupIdMap.containsKey(message)) {
-                final Set<Integer> userGroupIds = userGroupIdMap.get(message);
-                if (userGroupIds.contains(user.getUserGroup().getId())) {
-                    // single group
-
-                    return message;
-                } else // all groups
-                if (user.getPotentialUserGroups() != null) {
-                    for (final UserGroup userGroup : user.getPotentialUserGroups()) {
-                        if (userGroupIds.contains(userGroup.getId())) {
-                            return message;
+            if (userGroupKeyMap.containsKey(message)) {
+                final Set userGroupKeys = userGroupKeyMap.get(message);
+                if (userGroupKeys != null) {
+                    if (userGroupKeys.contains(user.getUserGroup().getKey())) {
+                        // single group
+                        return message;
+                    } else {
+                        // all groups
+                        if (user.getPotentialUserGroups() != null) {
+                            for (final UserGroup userGroup : user.getPotentialUserGroups()) {
+                                if (userGroupKeys.contains(userGroup.getKey())) {
+                                    return message;
+                                }
+                            }
                         }
                     }
                 }

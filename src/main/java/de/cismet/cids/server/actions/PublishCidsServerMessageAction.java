@@ -13,6 +13,9 @@ package de.cismet.cids.server.actions;
 
 import Sirius.server.newuser.User;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import de.cismet.cids.server.messages.CidsServerMessageManagerImpl;
 
 /**
@@ -42,7 +45,7 @@ public class PublishCidsServerMessageAction implements ServerAction, UserAwareSe
 
         //~ Enum constants -----------------------------------------------------
 
-        MESSAGE, CATEGORY
+        MESSAGE, CATEGORY, USER, USERGROUP
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -74,17 +77,23 @@ public class PublishCidsServerMessageAction implements ServerAction, UserAwareSe
         String message = null;
         String category = null;
 
+        final Set userGroupKeys = new HashSet();
+        final Set userKeys = new HashSet();
         for (final ServerActionParameter sap : params) {
             if (sap != null) {
                 if (sap.getKey().equals(ParameterType.MESSAGE.toString())) {
                     message = (String)sap.getValue();
                 } else if (sap.getKey().equals(ParameterType.CATEGORY.toString())) {
                     category = (String)sap.getValue();
+                } else if (sap.getKey().equals(ParameterType.USERGROUP.toString())) {
+                    userGroupKeys.add(sap.getValue());
+                } else if (sap.getKey().equals(ParameterType.USER.toString())) {
+                    userKeys.add(sap.getValue());
                 }
             }
         }
 
-        CidsServerMessageManagerImpl.getInstance().publishMessage(category, message);
+        CidsServerMessageManagerImpl.getInstance().publishMessage(category, message, userGroupKeys, userKeys);
 
         return null;
     }
