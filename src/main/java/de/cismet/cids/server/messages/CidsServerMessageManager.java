@@ -38,28 +38,28 @@ public interface CidsServerMessageManager {
     /**
      * DOCUMENT ME!
      *
-     * @param  category                        DOCUMENT ME!
-     * @param  object                          DOCUMENT ME!
-     * @param  ids                             DOCUMENT ME!
-     * @param  trueForUserIdsFalseForGroupIds  DOCUMENT ME!
+     * @param  category                         DOCUMENT ME!
+     * @param  object                           DOCUMENT ME!
+     * @param  ids                              DOCUMENT ME!
+     * @param  trueForUserKeysFalseForGroupIds  DOCUMENT ME!
      */
     void publishMessage(final String category,
             final Object object,
-            final Set<Integer> ids,
-            final boolean trueForUserIdsFalseForGroupIds);
+            final Set ids,
+            final boolean trueForUserKeysFalseForGroupIds);
 
     /**
      * DOCUMENT ME!
      *
-     * @param  category      DOCUMENT ME!
-     * @param  object        DOCUMENT ME!
-     * @param  userGroupIds  DOCUMENT ME!
-     * @param  userIds       DOCUMENT ME!
+     * @param  category       DOCUMENT ME!
+     * @param  object         DOCUMENT ME!
+     * @param  userGroupKeys  DOCUMENT ME!
+     * @param  userKeys       DOCUMENT ME!
      */
     void publishMessage(final String category,
             final Object object,
-            final Set<Integer> userGroupIds,
-            final Set<Integer> userIds);
+            final Set userGroupKeys,
+            final Set userKeys);
 
     /**
      * DOCUMENT ME!
