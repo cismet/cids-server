@@ -32,7 +32,19 @@ public class CidsServerMessage implements Serializable {
     //~ Instance fields --------------------------------------------------------
 
     private final Integer id;
-    private final Object message;
+    private final Object content;
     private final String category;
     private final Date timestamp;
+
+    //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public boolean equals(final Object obj) {
+        return id.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }
