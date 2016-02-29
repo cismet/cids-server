@@ -20,11 +20,6 @@ import Sirius.server.middleware.types.StringPatternFormater;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 import Sirius.server.newuser.UserGroup;
-import Sirius.server.search.Query;
-import Sirius.server.search.SearchOption;
-import Sirius.server.search.SearchResult;
-import Sirius.server.search.store.Info;
-import Sirius.server.search.store.QueryData;
 
 import Sirius.util.image.Image;
 
@@ -924,23 +919,6 @@ public class RESTfulInterfaceConnector implements CallServerService {
     }
 
     /**
-     * See {@link #getMetaObjectNode(Sirius.server.newuser.User, java.lang.String) }.
-     *
-     * @param       user   user performing the request
-     * @param       query  SQL query that returns classId and objectId
-     *
-     * @return      Array of meta object nodes or empty array
-     *
-     * @throws      RemoteException  if any remote error occurs
-     *
-     * @deprecated  should be replaced by custom search
-     */
-    @Override
-    public Node[] getMetaObjectNode(final User user, final Query query) throws RemoteException {
-        return this.getMetaObjectNode(user, query.getStatement());
-    }
-
-    /**
      * <strong>Unsupported Operation.</strong>
      *
      * <p>This operation is not supported anymore in the cids REST API, it returns an empty result!</p>
@@ -1207,460 +1185,6 @@ public class RESTfulInterfaceConnector implements CallServerService {
         LOG.warn(message);
         // throw new UnsupportedOperationException(message);
         return new MethodMap();
-    }
-
-    // </editor-fold>
-    // <editor-fold desc="QUERIES (DEPRECATED)" defaultstate="collapsed">
-    /**
-     * <strong>Unsupported Operation.</strong>
-     *
-     * <p>This operation is not supported anymore in the cids REST API, it throws an Unsupported Operation
-     * Exception!</p>
-     *
-     * @param       user  parameter is ignored
-     * @param       data  parameter is ignored
-     *
-     * @return      UnsupportedOperationException
-     *
-     * @throws      RemoteException                never thrown
-     * @throws      UnsupportedOperationException  DOCUMENT ME!
-     *
-     * @deprecated  Unsupported Operation
-     */
-    @Override
-    public boolean storeQuery(final User user, final QueryData data) throws RemoteException {
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + "' is deprecated and not supported by the cids REST API!";
-        LOG.error(message);
-        throw new UnsupportedOperationException(message);
-    }
-
-    /**
-     * <strong>Unsupported Operation.</strong>
-     *
-     * <p>This operation is not supported anymore in the cids REST API, it throws an Unsupported Operation
-     * Exception!</p>
-     *
-     * @param       user  parameter is ignored
-     *
-     * @return      UnsupportedOperationException
-     *
-     * @throws      RemoteException                never thrown
-     * @throws      UnsupportedOperationException  DOCUMENT ME!
-     *
-     * @deprecated  Unsupported Operation
-     */
-    @Override
-    public Info[] getQueryInfos(final User user) throws RemoteException {
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + "' is deprecated and not supported by the cids REST API!";
-        LOG.error(message);
-        throw new UnsupportedOperationException(message);
-    }
-
-    /**
-     * <strong>Unsupported Operation.</strong>
-     *
-     * <p>This operation is not supported anymore in the cids REST API, it throws an Unsupported Operation
-     * Exception!</p>
-     *
-     * @param       userGroup  parameter is ignored
-     *
-     * @return      UnsupportedOperationException
-     *
-     * @throws      RemoteException                never thrown
-     * @throws      UnsupportedOperationException  DOCUMENT ME!
-     *
-     * @deprecated  Unsupported Operation
-     */
-    @Override
-    public Info[] getQueryInfos(final UserGroup userGroup) throws RemoteException {
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + "' is deprecated and not supported by the cids REST API!";
-        LOG.error(message);
-        throw new UnsupportedOperationException(message);
-    }
-
-    /**
-     * <strong>Unsupported Operation.</strong>
-     *
-     * <p>This operation is not supported anymore in the cids REST API, it throws an Unsupported Operation
-     * Exception!</p>
-     *
-     * @param       id      parameter is ignored
-     * @param       domain  parameter is ignored
-     *
-     * @return      UnsupportedOperationException
-     *
-     * @throws      RemoteException                never thrown
-     * @throws      UnsupportedOperationException  DOCUMENT ME!
-     *
-     * @deprecated  Unsupported Operation
-     */
-    @Override
-    public QueryData getQuery(final int id, final String domain) throws RemoteException {
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + "' is deprecated and not supported by the cids REST API!";
-        LOG.error(message);
-        throw new UnsupportedOperationException(message);
-    }
-
-    /**
-     * <strong>Unsupported Operation.</strong>
-     *
-     * <p>This operation is not supported anymore in the cids REST API, it throws an Unsupported Operation
-     * Exception!</p>
-     *
-     * @param       id      parameter is ignored
-     * @param       domain  parameter is ignored
-     *
-     * @return      UnsupportedOperationException
-     *
-     * @throws      RemoteException                never thrown
-     * @throws      UnsupportedOperationException  always thrown
-     *
-     * @deprecated  Unsupported Operation
-     */
-    @Override
-    public boolean delete(final int id, final String domain) throws RemoteException {
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + "' is deprecated and not supported by the cids REST API!";
-        LOG.error(message);
-        throw new UnsupportedOperationException(message);
-    }
-
-    /**
-     * <strong>Unsupported Operation.</strong>
-     *
-     * <p>This operation is not supported anymore in the cids REST API, it throws an Unsupported Operation
-     * Exception!</p>
-     *
-     * @param       user         parameter is ignored
-     * @param       name         parameter is ignored
-     * @param       description  parameter is ignored
-     * @param       statement    parameter is ignored
-     * @param       resultType   parameter is ignored
-     * @param       isUpdate     parameter is ignored
-     * @param       isBatch      parameter is ignored
-     * @param       isRoot       parameter is ignored
-     * @param       isUnion      parameter is ignored
-     *
-     * @return      UnsupportedOperationException
-     *
-     * @throws      RemoteException                never thrown
-     * @throws      UnsupportedOperationException  Unsupported Operation
-     *
-     * @deprecated  Unsupported Operation
-     */
-    @Override
-    public int addQuery(final User user,
-            final String name,
-            final String description,
-            final String statement,
-            final int resultType,
-            final char isUpdate,
-            final char isBatch,
-            final char isRoot,
-            final char isUnion) throws RemoteException {
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + "' is deprecated and not supported by the cids REST API!";
-        LOG.error(message);
-        throw new UnsupportedOperationException(message);
-    }
-
-    /**
-     * <strong>Unsupported Operation.</strong>
-     *
-     * <p>This operation is not supported anymore in the cids REST API, it throws an Unsupported Operation
-     * Exception!</p>
-     *
-     * @param       user         parameter is ignored
-     * @param       name         parameter is ignored
-     * @param       description  parameter is ignored
-     * @param       statement    parameter is ignored
-     *
-     * @return      UnsupportedOperationException
-     *
-     * @throws      RemoteException                never thrown
-     * @throws      UnsupportedOperationException  Unsupported Operation
-     *
-     * @deprecated  Unsupported Operation
-     */
-    @Override
-    public int addQuery(final User user, final String name, final String description, final String statement)
-            throws RemoteException {
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + "' is deprecated and not supported by the cids REST API!";
-        LOG.error(message);
-        throw new UnsupportedOperationException(message);
-    }
-
-    /**
-     * <strong>Unsupported Operation.</strong>
-     *
-     * <p>This operation is not supported anymore in the cids REST API, it throws an Unsupported Operation
-     * Exception!</p>
-     *
-     * @param       user           parameter is ignored
-     * @param       queryId        parameter is ignored
-     * @param       typeId         parameter is ignored
-     * @param       paramkey       parameter is ignored
-     * @param       description    parameter is ignored
-     * @param       isQueryResult  parameter is ignored
-     * @param       queryPosition  parameter is ignored
-     *
-     * @return      UnsupportedOperationException
-     *
-     * @throws      RemoteException                never thrown
-     * @throws      UnsupportedOperationException  DOCUMENT ME!
-     *
-     * @deprecated  Unsupported Operation
-     */
-    @Override
-    public boolean addQueryParameter(final User user,
-            final int queryId,
-            final int typeId,
-            final String paramkey,
-            final String description,
-            final char isQueryResult,
-            final int queryPosition) throws RemoteException {
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + "' is deprecated and not supported by the cids REST API!";
-        LOG.error(message);
-        throw new UnsupportedOperationException(message);
-    }
-
-    /**
-     * <strong>Unsupported Operation.</strong>
-     *
-     * <p>This operation is not supported anymore in the cids REST API, it throws an Unsupported Operation
-     * Exception!</p>
-     *
-     * @param                                user         parameter is ignored
-     * @param                                queryId      parameter is ignored
-     * @param                                paramkey     parameter is ignored
-     * @param                                description  parameter is ignored
-     *
-     * @return                               DOCUMENT ME!
-     *
-     * @throws                               RemoteException                never thrown
-     * @throws                               UnsupportedOperationException  DOCUMENT ME!
-     *
-     * @deprecated                           Unsupported Operation
-     * @returnUnsupportedOperationException  DOCUMENT ME!
-     */
-    @Override
-    public boolean addQueryParameter(final User user,
-            final int queryId,
-            final String paramkey,
-            final String description) throws RemoteException {
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + "' is deprecated and not supported by the cids REST API!";
-        LOG.error(message);
-        throw new UnsupportedOperationException(message);
-    }
-
-    // </editor-fold>
-    // <editor-fold desc="SEARCH API" defaultstate="collapsed">
-    /**
-     * <strong>Unsupported Operation.</strong>
-     *
-     * <p>This operation is not supported anymore in the cids REST API, it returns an empty result!</p>
-     *
-     * @param       user  parameter is ignored
-     *
-     * @return      <strong>empty</strong> HashMap;
-     *
-     * @throws      RemoteException  never thrown
-     *
-     * @deprecated  >Unsupported Operation
-     */
-    @Override
-    public HashMap getSearchOptions(final User user) throws RemoteException {
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + "' is deprecated and not supported by cids REST API! -> returns empty result";
-        LOG.warn(message);
-        // throw new UnsupportedOperationException(message);
-        return new HashMap(0);
-    }
-
-    /**
-     * <strong>Unsupported Operation.</strong>
-     *
-     * <p>This operation is not supported anymore in the cids REST API, it returns an empty result!</p>
-     *
-     * @param       user    parameter is ignored
-     * @param       domain  parameter is ignored
-     *
-     * @return      <strong>empty</strong> HashMap;
-     *
-     * @throws      RemoteException  never thrown
-     *
-     * @deprecated  Unsupported Operation
-     */
-    @Override
-    public HashMap getSearchOptions(final User user, final String domain) throws RemoteException {
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + "' is deprecated and not supported by cids REST API! -> returns empty result";
-        LOG.warn(message);
-        // throw new UnsupportedOperationException(message);
-        return new HashMap(0);
-    }
-
-    /**
-     * <strong>Unsupported Operation.</strong>
-     *
-     * <p>This operation is not supported anymore in the cids REST API, it throws an UnsupportedOperationException
-     * Exception</p>
-     *
-     * @param       user           parameter is ignored
-     * @param       classIds       parameter is ignored
-     * @param       searchOptions  parameter is ignored
-     *
-     * @return      UnsupportedOperationException
-     *
-     * @throws      RemoteException                not thrown
-     * @throws      UnsupportedOperationException  DOCUMENT ME!
-     *
-     * @deprecated  DOCUMENT ME!
-     */
-    @Override
-    public SearchResult search(final User user, final String[] classIds, final SearchOption[] searchOptions)
-            throws RemoteException {
-        final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + "' is deprecated and not supported by cids REST API!";
-        LOG.error(message);
-        throw new UnsupportedOperationException(message);
-    }
-
-    /**
-     * Performs a remote server search by submitting a <i>parameterized</i> CidsServerSearch instance. If the
-     * CidsServerSearch does not implement the {@link RestApiCidsServerSearch} interface, the
-     * {@link ServerSearchFactory} tries to automatically generate a {@link SearchInfo} object hat is required by the
-     * REST Search API.<br>
-     * <strong>Example REST Call:</strong><br>
-     * <code>curl --user username@SWITCHON:password -H "Content-Type: application/json" -X POST -d
-     * "{""list"":[{""key"":""Query"",""value"":""keyword:\\""soil\\"" limit:\\""5\\"""" }]}"
-     * http://localhost:8890/searches/SWITCHON.de.cismet.cids.custom.switchon.search.server.MetaObjectUniversalSearchStatement/results
-     * </code>
-     *
-     * @param   user          The user performing the request
-     * @param   serverSearch  The CidsServerSearch instance
-     *
-     * @return  Untyped Collection of results
-     *
-     * @throws  RemoteException  if any remote error occurs
-     */
-    @Override
-    public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) throws RemoteException {
-        final String searchKey = serverSearch.getClass().getName();
-        final SearchInfo searchInfo = ServerSearchFactory.getFactory().getServerSearchInfo(searchKey);
-
-        if ((searchInfo == null)) {
-            final String message = "could not find cids server search  '" + searchKey + "'";
-            LOG.error(message);
-            throw new RemoteException(message);
-        }
-
-        final String domain = user.getDomain();
-        final GenericCollectionResource<JsonNode> searchResults;
-        final MultivaluedMap queryParameters = this.createUserParameters(user);
-        final WebResource webResource = this.createWebResource(SEARCH_API)
-                    .path(user.getDomain() + "." + searchKey + SEARCH_API_RESULTS)
-                    .queryParams(queryParameters);
-        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
-        builder = this.createMediaTypeHeaders(builder);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("customServerSearch '" + searchKey
-                        + "' for user '" + user + "' and domain '"
-                        + domain + "': " + webResource.toString());
-        }
-
-        final SearchParameters searchParameters;
-
-        try {
-            searchParameters = ServerSearchFactory.getFactory()
-                        .searchParametersFromServerSearchInstance(searchKey, serverSearch);
-        } catch (Exception ex) {
-            final String message = "could not perform customServerSearch '" + searchKey
-                        + "' for user '" + user + "', error during creation of search parameters:"
-                        + ex.getMessage();
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        }
-
-        searchResults = builder.post(new GenericType<GenericCollectionResource<JsonNode>>() {
-                }, searchParameters);
-
-        if ((searchResults != null) && (searchResults.get$collection() != null)
-                    && (searchResults.get$collection().size() > 0)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("found " + searchResults.get$collection().size()
-                            + " search results. performing conversion to legacy objects of type '"
-                            + searchInfo.getResultDescription().getType().name() + "'");
-            }
-
-            if (searchInfo.getResultDescription().getType() == Type.ENTITY_REFERENCE) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("search result of cids server search '"
-                                + searchKey + "' is a LightweightMetaObject, need to perform custom conversion");
-                }
-
-                final Collection<LightweightMetaObject> resultCollection = new LinkedList<LightweightMetaObject>();
-
-                for (final JsonNode jsonNode : searchResults.get$collection()) {
-                    try {
-                        if (jsonNode.isObject()) {
-                            final ObjectNode objectNode = (ObjectNode)jsonNode;
-                            final String classKey = CidsBeanFactory.getFactory().getClassKey(objectNode);
-                            final int classId = classKeyCache.getClassIdForClassKey(classKey);
-                            final LightweightMetaObject lightweightMetaObject = CidsBeanFactory.getFactory()
-                                        .lightweightMetaObjectFromJsonNode(
-                                            objectNode,
-                                            classId,
-                                            domain,
-                                            user);
-                            resultCollection.add(lightweightMetaObject);
-                        } else {
-                            final String message = "could not deserialize cids bean from "
-                                        + "object node to create LightweightMetaObject: JsonNode '"
-                                        + jsonNode + "' is no ObjectNode!";
-                            LOG.error(message);
-                            throw new RemoteException(message);
-                        }
-                    } catch (Exception ex) {
-                        final String message =
-                            "could not deserialize cids bean from object node to create LightweightMetaObject: "
-                                    + ex.getMessage();
-                        LOG.error(message, ex);
-                        throw new RemoteException(message, ex);
-                    }
-                }
-                return resultCollection;
-            } else {
-                try {
-                    final Collection resultCollection = ServerSearchFactory.getFactory()
-                                .resultCollectionfromJsonNodes(
-                                    searchResults.get$collection(),
-                                    searchInfo);
-                    return resultCollection;
-                } catch (Exception ex) {
-                    final String message = "could not perform converison of result collection of customServerSearch '"
-                                + searchKey
-                                + "' for user '"
-                                + user
-                                + ": "
-                                + ex.getMessage();
-                    LOG.error(message, ex);
-                    throw new RemoteException(message, ex);
-                }
-            }
-        } else {
-            LOG.warn("customServerSearch '" + searchKey + "' for user '" + user
-                        + "' with " + searchParameters.getList().size()
-                        + " search parameters did not return any results");
-            return new LinkedList();
-        }
     }
 
     // </editor-fold>
@@ -1966,6 +1490,138 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
     //~ Methods ----------------------------------------------------------------
 
+    /**
+     * Performs a remote server search by submitting a <i>parameterized</i> CidsServerSearch instance. If the
+     * CidsServerSearch does not implement the {@link RestApiCidsServerSearch} interface, the
+     * {@link ServerSearchFactory} tries to automatically generate a {@link SearchInfo} object hat is required by the
+     * REST Search API.<br>
+     * <strong>Example REST Call:</strong><br>
+     * <code>curl --user username@SWITCHON:password -H "Content-Type: application/json" -X POST -d
+     * "{""list"":[{""key"":""Query"",""value"":""keyword:\\""soil\\"" limit:\\""5\\"""" }]}"
+     * http://localhost:8890/searches/SWITCHON.de.cismet.cids.custom.switchon.search.server.MetaObjectUniversalSearchStatement/results
+     * </code>
+     *
+     * @param   user          The user performing the request
+     * @param   serverSearch  The CidsServerSearch instance
+     *
+     * @return  Untyped Collection of results
+     *
+     * @throws  RemoteException  if any remote error occurs
+     */
+    @Override
+    public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) throws RemoteException {
+        final String searchKey = serverSearch.getClass().getName();
+        final SearchInfo searchInfo = ServerSearchFactory.getFactory().getServerSearchInfo(searchKey);
+
+        if ((searchInfo == null)) {
+            final String message = "could not find cids server search  '" + searchKey + "'";
+            LOG.error(message);
+            throw new RemoteException(message);
+        }
+
+        final String domain = user.getDomain();
+        final GenericCollectionResource<JsonNode> searchResults;
+        final MultivaluedMap queryParameters = this.createUserParameters(user);
+        final WebResource webResource = this.createWebResource(SEARCH_API)
+                    .path(user.getDomain() + "." + searchKey + SEARCH_API_RESULTS)
+                    .queryParams(queryParameters);
+        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        builder = this.createMediaTypeHeaders(builder);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("customServerSearch '" + searchKey
+                        + "' for user '" + user + "' and domain '"
+                        + domain + "': " + webResource.toString());
+        }
+
+        final SearchParameters searchParameters;
+
+        try {
+            searchParameters = ServerSearchFactory.getFactory()
+                        .searchParametersFromServerSearchInstance(searchKey, serverSearch);
+        } catch (Exception ex) {
+            final String message = "could not perform customServerSearch '" + searchKey
+                        + "' for user '" + user + "', error during creation of search parameters:"
+                        + ex.getMessage();
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        }
+
+        searchResults = builder.post(new GenericType<GenericCollectionResource<JsonNode>>() {
+                }, searchParameters);
+
+        if ((searchResults != null) && (searchResults.get$collection() != null)
+                    && (searchResults.get$collection().size() > 0)) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("found " + searchResults.get$collection().size()
+                            + " search results. performing conversion to legacy objects of type '"
+                            + searchInfo.getResultDescription().getType().name() + "'");
+            }
+
+            if (searchInfo.getResultDescription().getType() == Type.ENTITY_REFERENCE) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("search result of cids server search '"
+                                + searchKey + "' is a LightweightMetaObject, need to perform custom conversion");
+                }
+
+                final Collection<LightweightMetaObject> resultCollection = new LinkedList<LightweightMetaObject>();
+
+                for (final JsonNode jsonNode : searchResults.get$collection()) {
+                    try {
+                        if (jsonNode.isObject()) {
+                            final ObjectNode objectNode = (ObjectNode)jsonNode;
+                            final String classKey = CidsBeanFactory.getFactory().getClassKey(objectNode);
+                            final int classId = classKeyCache.getClassIdForClassKey(classKey);
+                            final LightweightMetaObject lightweightMetaObject = CidsBeanFactory.getFactory()
+                                        .lightweightMetaObjectFromJsonNode(
+                                            objectNode,
+                                            classId,
+                                            domain,
+                                            user);
+                            resultCollection.add(lightweightMetaObject);
+                        } else {
+                            final String message = "could not deserialize cids bean from "
+                                        + "object node to create LightweightMetaObject: JsonNode '"
+                                        + jsonNode + "' is no ObjectNode!";
+                            LOG.error(message);
+                            throw new RemoteException(message);
+                        }
+                    } catch (Exception ex) {
+                        final String message =
+                            "could not deserialize cids bean from object node to create LightweightMetaObject: "
+                                    + ex.getMessage();
+                        LOG.error(message, ex);
+                        throw new RemoteException(message, ex);
+                    }
+                }
+                return resultCollection;
+            } else {
+                try {
+                    final Collection resultCollection = ServerSearchFactory.getFactory()
+                                .resultCollectionfromJsonNodes(
+                                    searchResults.get$collection(),
+                                    searchInfo);
+                    return resultCollection;
+                } catch (Exception ex) {
+                    final String message = "could not perform converison of result collection of customServerSearch '"
+                                + searchKey
+                                + "' for user '"
+                                + user
+                                + ": "
+                                + ex.getMessage();
+                    LOG.error(message, ex);
+                    throw new RemoteException(message, ex);
+                }
+            }
+        } else {
+            LOG.warn("customServerSearch '" + searchKey + "' for user '" + user
+                        + "' with " + searchParameters.getList().size()
+                        + " search parameters did not return any results");
+            return new LinkedList();
+        }
+    }
+
+    // </editor-fold>
+
     //</editor-fold>
     // <editor-fold desc="ENTITIES API" defaultstate="collapsed">
 
@@ -2021,45 +1677,6 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 new MetaObject[metaObjectCollection.size()]);
 
         return metaObjects;
-    }
-
-    /**
-     * See
-     * {@link #getLightweightMetaObjectsByQuery(int, Sirius.server.newuser.User, java.lang.String, java.lang.String[]) }.
-     *
-     * @param       user   user performing the request
-     * @param       query  SQL query to select meta objects
-     *
-     * @return      Array of meta objects or empty array
-     *
-     * @throws      RemoteException  if any remote error occurs
-     *
-     * @see         #getMetaObject(Sirius.server.newuser.User, java.lang.String, java.lang.String)
-     * @deprecated  should be replaced by custom search
-     */
-    @Override
-    public MetaObject[] getMetaObject(final User user, final Query query) throws RemoteException {
-        return this.getMetaObject(user, query.getStatement());
-    }
-
-    /**
-     * See
-     * {@link #getLightweightMetaObjectsByQuery(int, Sirius.server.newuser.User, java.lang.String, java.lang.String[]) }.
-     *
-     * @param       user    user performing the request
-     * @param       query   SQL query to select meta objects
-     * @param       domain  domain to perform the query
-     *
-     * @return      Array of meta objects or empty array
-     *
-     * @throws      RemoteException  if any remote error occurs
-     *
-     * @see         #getMetaObject(Sirius.server.newuser.User, java.lang.String, java.lang.String)
-     * @deprecated  should be replaced by custom search
-     */
-    @Override
-    public MetaObject[] getMetaObject(final User user, final Query query, final String domain) throws RemoteException {
-        return this.getMetaObject(user, query.getStatement(), domain);
     }
 
     /**
@@ -2251,31 +1868,6 @@ public class RESTfulInterfaceConnector implements CallServerService {
             }
             throw new RemoteException(message, ue);
         }
-    }
-
-    /**
-     * <strong>Unsupported Operation.</strong>
-     *
-     * <p>This operation is not supported anymore in the cids REST API, it throws an UnsupportedOperationException!</p>
-     *
-     * @param       user    DOCUMENT ME!
-     * @param       query   DOCUMENT ME!
-     * @param       domain  DOCUMENT ME!
-     *
-     * @return      DOCUMENT ME!
-     *
-     * @throws      RemoteException                DOCUMENT ME!
-     * @throws      UnsupportedOperationException  always thrown
-     *
-     * @deprecated  update by SQL query not supported anymore
-     */
-    @Override
-    public int insertMetaObject(final User user, final Query query, final String domain) throws RemoteException {
-        final String message = "The method '"
-                    + Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + "' is deprecated and not supported by the cids REST API!";
-        LOG.error(message);
-        throw new UnsupportedOperationException(message);
     }
 
     /**

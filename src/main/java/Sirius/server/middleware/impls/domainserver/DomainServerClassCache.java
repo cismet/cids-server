@@ -29,6 +29,7 @@ public class DomainServerClassCache {
 
     private HashMap allClassesById = null;
     private HashMap allClassesByTableName = null;
+    private String domain = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -63,6 +64,7 @@ public class DomainServerClassCache {
      * @param  domain      DOCUMENT ME!
      */
     public void setAllClasses(final MetaClass[] classArray, final String domain) {
+        this.domain = domain;
         this.allClassesById = MetaClassUtils.getClassHashtable(classArray, domain);
         this.allClassesByTableName = MetaClassUtils.getClassByTableNameHashtable(classArray);
     }
@@ -72,7 +74,7 @@ public class DomainServerClassCache {
      *
      * @return  DOCUMENT ME!
      */
-    HashMap getAllClasses() {
+    public HashMap getAllClasses() {
         return allClassesById;
     }
 
@@ -83,7 +85,7 @@ public class DomainServerClassCache {
      *
      * @return  DOCUMENT ME!
      */
-    MetaClass getMetaClass(final String tableName) {
+    public MetaClass getMetaClass(final String tableName) {
         return (MetaClass)allClassesByTableName.get(tableName);
     }
 
@@ -94,7 +96,7 @@ public class DomainServerClassCache {
      *
      * @return  DOCUMENT ME!
      */
-    MetaClass getMetaClass(final int classId) {
-        return (MetaClass)allClassesById.get(classId);
+    public MetaClass getMetaClass(final int classId) {
+        return (MetaClass)allClassesById.get(domain + classId);
     }
 }

@@ -12,25 +12,14 @@
  */
 package Sirius.server.middleware.impls.proxy;
 
-import Sirius.server.Server;
-import Sirius.server.ServerType;
 import Sirius.server.middleware.interfaces.proxy.ActionService;
 import Sirius.server.naming.NameServer;
 import Sirius.server.newuser.User;
-import Sirius.server.search.QueryExecuter;
-
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-
-import java.io.*;
 
 import java.rmi.RemoteException;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
-import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
 
 /**

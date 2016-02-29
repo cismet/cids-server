@@ -7,10 +7,6 @@
 ****************************************************/
 package Sirius.server.search.store;
 
-import Sirius.server.newuser.*;
-
-import java.io.*;
-
 /**
  * Repraesentiert ein Such-Profil.*
  *

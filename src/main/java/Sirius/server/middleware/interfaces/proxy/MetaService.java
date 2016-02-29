@@ -7,12 +7,16 @@
 ****************************************************/
 package Sirius.server.middleware.interfaces.proxy;
 
-import Sirius.server.localserver.method.*;
-import Sirius.server.middleware.types.*;
-import Sirius.server.newuser.*;
-import Sirius.server.search.*;
+import Sirius.server.localserver.method.MethodMap;
+import Sirius.server.middleware.types.HistoryObject;
+import Sirius.server.middleware.types.LightweightMetaObject;
+import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.middleware.types.MetaObject;
+import Sirius.server.middleware.types.Node;
+import Sirius.server.newuser.User;
 
-import java.rmi.*;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
 /**
  * Interface for retrieving or modifying meta information sets.
@@ -62,18 +66,6 @@ public interface MetaService extends Remote {
 
     // retrieves Meta data objects with meta data matching query (Search)
 
-    /**
-     * retrieves Meta data objects with meta data matching query (Search).
-     *
-     * @param   usr    user token
-     * @param   query  query object (search) to retrieve a meta object's node representation
-     *
-     * @return  Node representation of a meta object
-     *
-     * @throws  RemoteException  server error
-     */
-    Node[] getMetaObjectNode(User usr, Query query) throws RemoteException;
-
     // retrieves Meta data objects with meta data matching query (Search)
     // Query not yet defined but will be MetaSQL
     /**
@@ -101,41 +93,8 @@ public interface MetaService extends Remote {
      */
     MetaObject[] getMetaObject(User usr, String query, String domain) throws RemoteException;
 
-    // retrieves Meta data objects with meta data matching query (Search)
-
-    /**
-     * retrieves Meta data objects with meta data matching query (Search).
-     *
-     * @param   usr    user token
-     * @param   query  Query object (search)
-     *
-     * @return  Metaobjects matching to the query
-     *
-     * @throws  RemoteException  server error (eg bad query)
-     */
-    MetaObject[] getMetaObject(User usr, Query query) throws RemoteException;
-
     /**
      * DOCUMENT ME!
-     *
-     * @param   usr     DOCUMENT ME!
-     * @param   query   DOCUMENT ME!
-     * @param   domain  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    MetaObject[] getMetaObject(User usr, Query query, String domain) throws RemoteException;
-
-    /*-*-*-*-*-*-*-*-*-*-*-*-*-* MetaJDBC Zeugs *-*-*-*-*-*-*-*-*-*-*-*-*/
-
-    // retrieves a Meta data object  referenced by a symbolic pointer to the MIS
-
-    // MetaObject ersetzt Object
-    /**
-     * retrieves a Meta data object referenced by a symbolic pointer to the MIS objctId@classID@domain form this
-     * pointer.
      *
      * @param   usr       user token
      * @param   objectID  symbolic pointer to the meta object
@@ -162,23 +121,6 @@ public interface MetaService extends Remote {
      * @throws  RemoteException  server error
      */
     MetaObject insertMetaObject(User user, MetaObject metaObject, String domain) throws RemoteException;
-
-    // inserts metaObject in the MIS
-
-    /**
-     * inserts metaObject in the MIS, can be used to execute SQL queries on a domainserver.
-     *
-     * @param   user    user token
-     * @param   query   query efecting an insert (update or delete is possible but not recommended)
-     * @param   domain  domain where the meta object is to be hosted
-     *
-     * @return  whether the meta object was inserted successfully
-     *
-     * @throws  RemoteException  server error
-     */
-    int insertMetaObject(User user, Query query, String domain) throws RemoteException;
-
-    // updates metaObject in the MIS
 
     /**
      * updates metaObject in the MIS, the meta objects current attribute values will replace the values in the MIS.
