@@ -10,29 +10,35 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.cismet.cids.server.search;
+package de.cismet.cids.nodepermissions;
+
+import Sirius.server.newuser.User;
 
 /**
  * DOCUMENT ME!
  *
- * @author   jruiz
+ * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public interface SearchResultListenerProvider {
+public interface CustomNodePermissionProvider extends ObjectNodeStore {
 
     //~ Methods ----------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      *
-     * @param  searchResultListener  DOCUMENT ME!
-     */
-    void setSearchResultListener(SearchResultListener searchResultListener);
-
-    /**
-     * DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    SearchResultListener getSearchResultListener();
+    // don't know if this is needed (to be discussed)
+    boolean getCustomWritePermissionDecisionforUser(final User u);
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   u  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    boolean getCustomReadPermissionDecisionforUser(final User u);
 }

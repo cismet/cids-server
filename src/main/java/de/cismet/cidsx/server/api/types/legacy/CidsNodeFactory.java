@@ -95,7 +95,9 @@ public class CidsNodeFactory {
                     iconFactory,
                     icon,
                     derivePermissionsFromClass,
-                    artificialId);
+                    artificialId,
+                    null,
+                    null); // TODO: Check4CashedGeomAndLightweightJson
             // FIXME: creation of class tree nodes disbaled! how to determine if a cids node shall be converted to class
             // tree node or simple tree node? } else if (cidsNode.getClassKey() != null &&
             // !cidsNode.getClassKey().isEmpty()) { LOG.debug("node '" + cidsNode.getName() + "' (" + cidsNode.getId() +

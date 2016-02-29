@@ -8,7 +8,6 @@
 package Sirius.server.sql;
 
 import Sirius.server.Shutdownable;
-import Sirius.server.search.Query;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -138,20 +137,6 @@ public interface DBBackend extends Shutdownable {
      * This operation shall throw a <code>SQLException</code> if the {@link Shutdownable#shutdown()} has already been
      * called.
      *
-     * @param   q  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  SQLException  DOCUMENT ME!
-     */
-    ResultSet submitQuery(final Query q) throws SQLException;
-
-    /**
-     * DOCUMENT ME!<br/>
-     * <br/>
-     * This operation shall throw a <code>SQLException</code> if the {@link Shutdownable#shutdown()} has already been
-     * called.
-     *
      * @param   descriptor  DOCUMENT ME!
      * @param   parameters  DOCUMENT ME!
      *
@@ -175,18 +160,4 @@ public interface DBBackend extends Shutdownable {
      * @throws  SQLException  DOCUMENT ME!
      */
     int submitUpdate(final int sqlID, final Object... parameters) throws SQLException;
-
-    /**
-     * DOCUMENT ME!<br/>
-     * <br/>
-     * This operation shall throw a <code>SQLException</code> if the {@link Shutdownable#shutdown()} has already been
-     * called.
-     *
-     * @param   q  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  SQLException  DOCUMENT ME!
-     */
-    int submitUpdate(final Query q) throws SQLException;
 }

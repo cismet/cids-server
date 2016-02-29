@@ -10,29 +10,24 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.cismet.cids.server.search;
+package de.cismet.cids.nodepermissions;
+
+import Sirius.server.middleware.types.MetaObjectNode;
 
 /**
  * DOCUMENT ME!
  *
- * @author   jruiz
+ * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public interface SearchResultListenerProvider {
+public interface ObjectNodeStore extends ObjectNodeProvider {
 
     //~ Methods ----------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      *
-     * @param  searchResultListener  DOCUMENT ME!
+     * @param  mon  DOCUMENT ME!
      */
-    void setSearchResultListener(SearchResultListener searchResultListener);
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    SearchResultListener getSearchResultListener();
+    void setObjectNode(MetaObjectNode mon);
 }

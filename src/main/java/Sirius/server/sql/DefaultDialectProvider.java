@@ -27,7 +27,7 @@ public final class DefaultDialectProvider implements DialectProvider {
         if (DomainServerImpl.getServerProperties() == null) {
             return null;
         } else {
-            return DomainServerImpl.getServerProperties().getInteralDialect();
+            return DomainServerImpl.getServerProperties().getInternalDialect();
         }
     }
 }

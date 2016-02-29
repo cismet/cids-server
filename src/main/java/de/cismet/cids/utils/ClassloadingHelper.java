@@ -76,7 +76,7 @@ public class ClassloadingHelper {
      * value is expected to be csv. The property must be defined in a {@link #CL_PROPERTIES} file if it shall be used by
      * the <code>ClassloadingHelper</code> to create candidate names.
      */
-    public static final String CL_PROP_ALT_DOMAINS = "classloading.alternativeDomains";     // NOI18N
+    public static final String CL_PROP_ALT_DOMAINS = "classloading.alternativeDomains";                 // NOI18N
     /**
      * The property 'classloading.domainClassTypeOrder' which can be used to specify the desired order during candidate
      * class name build. Valid values are:<br/>
@@ -118,7 +118,6 @@ public class ClassloadingHelper {
 
         // NOTE: we don't cache the properties needed to fill the cache as they are only needed at cache buildup and
         // thus we don't want to waste the memory for the whole application and use some extra IO at startup instead
-
         ALT_DOMAIN_CACHE = new PurgingCache<String, List<String>>(new Calculator<String, List<String>>() {
 
                     @Override
@@ -293,17 +292,23 @@ public class ClassloadingHelper {
 
         //~ Enum constants -----------------------------------------------------
 
-        ICON_FACTORY("treeicons", "IconFactory", "iconfactory"),                              // NOI18N
-        EXTENSION_FACTORY("extensionfactories", "ExtensionFactory", "extensionfactory"),      // NOI18N
-        RENDERER("objectrenderer", "Renderer", "renderer"),                                   // NOI18N
-        AGGREGATION_RENDERER("objectrenderer", "AggregationRenderer", "aggregationrenderer"), // NOI18N
-        TO_STRING_CONVERTER("tostringconverter", "ToStringConverter", "tostringconverter"),   // NOI18N
-        EDITOR("objecteditors", "Editor", "editor"),                                          // NOI18N
-        ATTRIBUTE_EDITOR("objecteditors", "AttributeEditor", "attributeeditor"),              // NOI18N
-        FEATURE_RENDERER("featurerenderer", "FeatureRenderer", "featurerenderer"),            // NOI18N
-        ACTION_PROVIDER("objectactions", "ActionsProvider", "actionsprovider"),               // NOI18N
-        PERMISSION_PROVIDER("permissions", "PermissionProvider", "permissionprovider"),       // NOI18N
-        CUSTOM_BEAN("beans", "CustomBean", "custombean");                                     // NOI18N
+        ICON_FACTORY("treeicons", "IconFactory", "iconfactory"),                                         // NOI18N
+        EXTENSION_FACTORY("extensionfactories", "ExtensionFactory", "extensionfactory"),                 // NOI18N
+        RENDERER("objectrenderer", "Renderer", "renderer"),                                              // NOI18N
+        AGGREGATION_RENDERER("objectrenderer", "AggregationRenderer", "aggregationrenderer"),            // NOI18N
+        TO_STRING_CONVERTER("tostringconverter", "ToStringConverter", "tostringconverter"),              // NOI18N
+        EDITOR("objecteditors", "Editor", "editor"),                                                     // NOI18N
+        ATTRIBUTE_EDITOR("objecteditors", "AttributeEditor", "attributeeditor"),                         // NOI18N
+        FEATURE_RENDERER("featurerenderer", "FeatureRenderer", "featurerenderer"),                       // NOI18N
+        ACTION_PROVIDER("objectactions", "ActionsProvider", "actionsprovider"),                          // NOI18N
+        PERMISSION_PROVIDER("permissions", "PermissionProvider", "permissionprovider"),                  // NOI18N
+        NODE_PERMISSION_PROVIDER("nodepermissions", "NodePermissionProvider", "nodepermissionprovider"), // NOI18N
+        LIGHTWEIGHT_REPRESANTATION_PROVIDER(
+            "lightweightrepresentations",
+            "LightweightRepresentationProvider",
+            "lightweightrepresentationprovider"),                                                        // NOI18N
+        CACHE_GEOMETRY_PROVIDER("cachegeometries", "CacheGeometryProvider", "cachegeometryprovider"),    // NOI18N
+        CUSTOM_BEAN("beans", "CustomBean", "custombean");                                                // NOI18N
 
         //~ Instance fields ----------------------------------------------------
 
@@ -952,7 +957,6 @@ public class ClassloadingHelper {
                 final MC_CT_Struct mcct = (MC_CT_Struct)obj;
 
                 // this class is for strict internal use only, omitting null checks
-
                 return this.metaClass.getKey().equals(mcct.metaClass.getKey()) || classType.equals(mcct.classType);
             } else {
                 return false;

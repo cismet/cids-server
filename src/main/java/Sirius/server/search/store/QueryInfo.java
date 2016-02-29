@@ -11,7 +11,8 @@
  * Created on 13. November 2003, 20:45
  */
 package Sirius.server.search.store;
-import java.util.*;
+
+import java.util.HashSet;
 
 /**
  * DOCUMENT ME!
