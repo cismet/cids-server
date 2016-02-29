@@ -122,13 +122,6 @@ public class CidsBean implements PropertyChangeListener {
     String pkFieldName = null;
     HashMap<String, CidsBean> intraObjectCache = new HashMap<String, CidsBean>();
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   o  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
     private CustomBeanPermissionProvider customPermissionProvider;
 
     //~ Methods ----------------------------------------------------------------
