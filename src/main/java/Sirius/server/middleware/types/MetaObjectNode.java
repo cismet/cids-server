@@ -143,23 +143,23 @@ public class MetaObjectNode extends Node implements Comparable {
             true,
             cashedGeometry,
             lightweightJson);
-        final Class nodePermissonProviderClass = ClassloadingHelper.getDynamicClass(DomainServerClassCache.getInstance()
-                        .getMetaClass(classId),
-                ClassloadingHelper.CLASS_TYPE.NODE_PERMISSION_PROVIDER);
-        if (nodePermissonProviderClass != null) {
-            try {
-                final CustomNodePermissionProvider permissionProvider = (CustomNodePermissionProvider)
-                    nodePermissonProviderClass.newInstance();
-                permissionProvider.setObjectNode(this);
-                if (!permissionProvider.getCustomReadPermissionDecisionforUser(usr)) {
-                    throw new NoNodePermissionProvidedException(this);
-                }
-            } catch (InstantiationException ex) {
-                throw new NoNodePermissionProvidedException(this, ex);
-            } catch (IllegalAccessException ex) {
-                throw new NoNodePermissionProvidedException(this, ex);
-            }
-        }
+//        final Class nodePermissonProviderClass = ClassloadingHelper.getDynamicClass(DomainServerClassCache.getInstance()
+//                        .getMetaClass(classId),
+//                ClassloadingHelper.CLASS_TYPE.NODE_PERMISSION_PROVIDER);
+//        if (nodePermissonProviderClass != null) {
+//            try {
+//                final CustomNodePermissionProvider permissionProvider = (CustomNodePermissionProvider)
+//                    nodePermissonProviderClass.newInstance();
+//                permissionProvider.setObjectNode(this);
+//                if (!permissionProvider.getCustomReadPermissionDecisionforUser(usr)) {
+//                    throw new NoNodePermissionProvidedException(this);
+//                }
+//            } catch (InstantiationException ex) {
+//                throw new NoNodePermissionProvidedException(this, ex);
+//            } catch (IllegalAccessException ex) {
+//                throw new NoNodePermissionProvidedException(this, ex);
+//            }
+//        }
     }
 
     /**
