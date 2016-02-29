@@ -12,6 +12,8 @@ import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.sql.DialectProvider;
 import Sirius.server.sql.SQLTools;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import org.apache.log4j.Logger;
 
 import org.openide.util.Lookup;
@@ -20,6 +22,8 @@ import java.rmi.RemoteException;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
+import de.cismet.cids.nodepermissions.NoNodePermissionProvidedException;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
@@ -96,6 +100,7 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
     public Collection<MetaObjectNode> performServerSearch() throws SearchException {
         final MetaService ms = (MetaService)getActiveLocalServers().get(DOMAIN);
         final ArrayList<MetaObjectNode> metaObjects = new ArrayList<MetaObjectNode>();
+        final ArrayList<MetaObjectNode> filtered = new ArrayList<MetaObjectNode>();
         if (ms != null) {
             try {
                 final boolean paginationEnabled = limit >= 0;
@@ -123,10 +128,53 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
                             LOG.trace("no name present for metaobjectnode", e); // NOI18N
                         }
                     }
-                    final MetaObjectNode mon = new MetaObjectNode(DOMAIN, oid, cid, name);
-                    metaObjects.add(mon);
-                }
+                    // Cashed Geometry
+                    Geometry cashedGeometry = null;
+                    try {
+                        final Object cashedGeometryTester = al.get(3);
 
+                        if (cashedGeometryTester != null) {
+                            cashedGeometry = SQLTools.getGeometryFromResultSetObject(cashedGeometryTester);
+                        }
+                    } catch (Exception e) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug(
+                                "cashedGeometry was not in the resultset. But this is normal for the most parts",
+                                e); // NOI18N
+                        }
+                    }
+
+                    // Lightweight Json
+                    String lightweightJson = null;
+                    try {
+                        final Object tester = al.get(4);
+                        if ((tester != null) && (tester instanceof String)) { // NOI18N
+                            lightweightJson = (String)tester;                 // NOI18N
+                        }
+                    } catch (Exception skip) {
+                    }
+
+                    try {
+                        final MetaObjectNode mon = new MetaObjectNode(
+                                DOMAIN,
+                                getUser(),
+                                oid,
+                                cid,
+                                name,
+                                cashedGeometry,
+                                lightweightJson); // TODO: Check4CashedGeomAndLightweightJson
+
+                        metaObjects.add(mon);
+                    } catch (NoNodePermissionProvidedException noNodePermissionProvidedException) {
+                        filtered.add(noNodePermissionProvidedException.getMon());
+                    }
+                }
+                if (filtered.size() > 0) {
+                    LOG.info(filtered.size() + " Objcets filtered");
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(filtered.size() + " Objcets filtered\n" + filtered.toString());
+                    }
+                }
                 return metaObjects;
             } catch (final RemoteException ex) {
                 LOG.error(ex.getMessage(), ex);

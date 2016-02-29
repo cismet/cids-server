@@ -6,6 +6,7 @@
 *
 ****************************************************/
 package Sirius.server.localserver.tree;
+
 import Sirius.server.AbstractShutdownable;
 import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
@@ -27,12 +28,15 @@ import Sirius.server.sql.DBConnectionPool;
 import Sirius.server.sql.DialectProvider;
 import Sirius.server.sql.SQLTools;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import org.apache.log4j.Logger;
 
 import org.openide.util.Lookup;
 
 import java.rmi.RemoteException;
 
+import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -140,7 +144,6 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         }
 
         // select remote child links
-
         final String remoteChildren = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
                             .getDialect())
                     .getVirtualTreeRemoteChildrenStmt(properties.getServerName().trim(), nodeId);
@@ -873,6 +876,29 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                 }
             }
 
+            // Cashed Geometry
+            Geometry cashedGeometry = null;
+            try {
+                final Object cashedGeometryTester = nodeTable.getObject("cashedGeometry"); // NOI18N
+
+                if (cashedGeometryTester != null) {
+                    cashedGeometry = SQLTools.getGeometryFromResultSetObject(cashedGeometryTester);
+                }
+            } catch (Exception e) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("cashedGeometry was not in the resultset. But this is normal for the most parts", e); // NOI18N
+                }
+            }
+
+            // Lightweight Json
+            String lightweightJson = null;
+            try {
+                if (nodeTable.getObject("lightweightJson") != null) {         // NOI18N
+                    lightweightJson = nodeTable.getString("lightweightJson"); // NOI18N
+                }
+            } catch (Exception skip) {
+            }
+
             if (policy == null) {
                 if ((c == (byte)'N') || (c == (byte)'n')) {
                     // Purenode
@@ -956,7 +982,9 @@ public class VirtualTree extends Shutdown implements AbstractTree {
                                 iconFactory,
                                 icon,
                                 derivePermissionsFromClass,
-                                artifical_id);
+                                artifical_id,
+                                cashedGeometry,
+                                lightweightJson);
                     } else if ((c == (byte)'C') || (c == (byte)'c')) {
                         tmp = new MetaClassNode(
                                 id,
