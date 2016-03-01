@@ -180,7 +180,7 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
                     key = jp.getText();
                     final CidsBeanInfo bInfo = new CidsBeanInfo(key);
                     keySet = true;
-                    if (isIntraObjectCacheEnabled() && jp.containsKey(key)) {
+                    if (isIntraObjectCacheEnabled() && jp.containsKey(key) && !key.equals("-1")) {
                         cb = jp.get(key);
                         cacheHit = true;
                     } else {
@@ -222,7 +222,7 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
                             }
                             while (jp.nextValue() != JsonToken.END_ARRAY) {
                                 final CidsBean arrayObject = jp.readValueAs(CidsBean.class);
-                                if (isIntraObjectCacheEnabled()) {
+                                if (isIntraObjectCacheEnabled() && (arrayObject.getPrimaryKeyValue() != -1)) {
                                     jp.put(arrayObject.getCidsBeanInfo().getJsonObjectKey(), arrayObject);
                                 }
                                 listMap.put(refersToList, arrayObject);
@@ -233,7 +233,7 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
 
                         case START_OBJECT: {
                             final CidsBean subObject = jp.readValueAs(CidsBean.class);
-                            if (isIntraObjectCacheEnabled()) {
+                            if (isIntraObjectCacheEnabled() && (subObject.getPrimaryKeyValue() != -1)) {
                                 jp.put(subObject.getCidsBeanInfo().getJsonObjectKey(), subObject);
                             }
                             propValueMap.put(fieldName, subObject);
@@ -438,7 +438,7 @@ public class CidsBeanJsonUpdateDeserializer extends StdDeserializer<CidsBean> {
                 }
             }
 
-            if (isIntraObjectCacheEnabled()) {
+            if (isIntraObjectCacheEnabled() && (cb.getPrimaryKeyValue() != -1)) {
                 jp.put(key, cb);
             }
             return cb;

@@ -13,6 +13,7 @@ import Sirius.server.sql.DBConnection;
 
 import org.openide.util.lookup.ServiceProvider;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import de.cismet.cids.dynamics.CidsBean;
@@ -28,12 +29,12 @@ import de.cismet.cids.trigger.CidsTriggerKey;
  * @version  $Revision$, $Date$
  */
 @ServiceProvider(service = CidsTrigger.class)
-public class UpdateToStringCacheTrigger extends AbstractDBAwareCidsTrigger {
+public class UpdateCacheTrigger extends AbstractDBAwareCidsTrigger {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(
-            UpdateToStringCacheTrigger.class);
+            UpdateCacheTrigger.class);
 
     //~ Methods ----------------------------------------------------------------
 
@@ -46,7 +47,7 @@ public class UpdateToStringCacheTrigger extends AbstractDBAwareCidsTrigger {
                     protected Integer doInBackground() throws Exception {
                         return getDbServer().getActiveDBConnection()
                                     .submitInternalUpdate(
-                                        DBConnection.DESC_DELETE_STRINGREPCACHEENTRY,
+                                        DBConnection.DESC_DELETE_CACHEENTRY,
                                         cidsBean.getMetaObject().getClassID(),
                                         cidsBean.getMetaObject().getID());
                     }
@@ -66,28 +67,22 @@ public class UpdateToStringCacheTrigger extends AbstractDBAwareCidsTrigger {
     @Override
     public void afterInsert(final CidsBean cidsBean, final User user) {
         if (isCacheEnabled(cidsBean)) {
-            de.cismet.tools.CismetThreadPool.execute(new javax.swing.SwingWorker<Integer, Void>() {
+            de.cismet.tools.CismetThreadPool.execute(new javax.swing.SwingWorker<ResultSet, Void>() {
 
                     @Override
-                    protected Integer doInBackground() throws Exception {
-                        final String name = cidsBean.toString();
-
-                        if ((name != null) && !name.equals("")) {
-                            return getDbServer().getActiveDBConnection()
-                                        .submitInternalUpdate(
-                                            DBConnection.DESC_INSERT_STRINGREPCACHEENTRY,
-                                            cidsBean.getMetaObject().getClassID(),
-                                            cidsBean.getMetaObject().getID(),
-                                            name);
-                        } else {
-                            return 0;
-                        }
+                    protected ResultSet doInBackground() throws Exception {
+                        return getDbServer().getActiveDBConnection()
+                                    .submitInternalQuery(
+                                        DBConnection.DESC_INSERT_CACHEENTRY,
+                                        cidsBean.getPrimaryKeyFieldname(),
+                                        cidsBean.getMetaObject().getID(),
+                                        cidsBean.getMetaObject().getClassID());
                     }
 
                     @Override
                     protected void done() {
                         try {
-                            final Integer result = get();
+                            final ResultSet result = get();
                         } catch (Exception e) {
                             log.error("Exception in Background Thread: afterInsert", e);
                         }
@@ -99,46 +94,47 @@ public class UpdateToStringCacheTrigger extends AbstractDBAwareCidsTrigger {
     @Override
     public void afterUpdate(final CidsBean cidsBean, final User user) {
         if (isCacheEnabled(cidsBean)) {
-            de.cismet.tools.CismetThreadPool.execute(new javax.swing.SwingWorker<Integer, Void>() {
+            de.cismet.tools.CismetThreadPool.execute(new javax.swing.SwingWorker<ResultSet, Void>() {
 
                     @Override
-                    protected Integer doInBackground() throws Exception {
+                    protected ResultSet doInBackground() throws Exception {
                         try {
                             final String name = cidsBean.toString();
                             if ((name == null) || name.equals("")) {
                                 getDbServer().getActiveDBConnection()
                                         .submitInternalUpdate(
-                                            DBConnection.DESC_DELETE_STRINGREPCACHEENTRY,
+                                            DBConnection.DESC_DELETE_CACHEENTRY,
                                             cidsBean.getMetaObject().getClassID(),
                                             cidsBean.getMetaObject().getID());
-                                return 0;
+                                return null;
                             } else {
                                 return getDbServer().getActiveDBConnection()
-                                            .submitInternalUpdate(
-                                                DBConnection.DESC_UPDATE_STRINGREPCACHEENTRY,
-                                                name,
-                                                cidsBean.getMetaObject().getClassID(),
-                                                cidsBean.getMetaObject().getID());
+                                            .submitInternalQuery(
+                                                DBConnection.DESC_UPDATE_CACHEENTRY,
+                                                cidsBean.getPrimaryKeyFieldname(),
+                                                cidsBean.getMetaObject().getID(),
+                                                cidsBean.getMetaObject().getID(),
+                                                cidsBean.getMetaObject().getClassID());
                             }
                         } catch (SQLException e) {
                             getDbServer().getActiveDBConnection()
                                     .submitInternalUpdate(
-                                        DBConnection.DESC_DELETE_STRINGREPCACHEENTRY,
+                                        DBConnection.DESC_DELETE_CACHEENTRY,
                                         cidsBean.getMetaObject().getClassID(),
                                         cidsBean.getMetaObject().getID());
                             return getDbServer().getActiveDBConnection()
-                                        .submitInternalUpdate(
-                                            DBConnection.DESC_INSERT_STRINGREPCACHEENTRY,
-                                            cidsBean.getMetaObject().getClassID(),
+                                        .submitInternalQuery(
+                                            DBConnection.DESC_INSERT_CACHEENTRY,
+                                            cidsBean.getPrimaryKeyFieldname(),
                                             cidsBean.getMetaObject().getID(),
-                                            cidsBean.toString());
+                                            cidsBean.getMetaObject().getClassID());
                         }
                     }
 
                     @Override
                     protected void done() {
                         try {
-                            final Integer result = get();
+                            final ResultSet result = get();
                         } catch (Exception e) {
                             log.error("Exception in Background Thread: afterUpdate", e);
                         }
@@ -184,19 +180,22 @@ public class UpdateToStringCacheTrigger extends AbstractDBAwareCidsTrigger {
      * @return  DOCUMENT ME!
      */
     private static boolean isCacheEnabled(final CidsBean cidsBean) {
-        return (cidsBean.getMetaObject().getMetaClass().getClassAttribute(ClassAttribute.TO_STRING_CACHE_ENABLED)
+        return (cidsBean.getMetaObject().getMetaClass().getClassAttribute(ClassAttribute.CACHE_ENABLED)
                         != null);
     }
 
     @Override
-    public void afterCommittedInsert(final CidsBean cidsBean, final User user) {
+    public void afterCommittedInsert(final CidsBean cidsBean,
+            final User user) {
     }
 
     @Override
-    public void afterCommittedUpdate(final CidsBean cidsBean, final User user) {
+    public void afterCommittedUpdate(final CidsBean cidsBean,
+            final User user) {
     }
 
     @Override
-    public void afterCommittedDelete(final CidsBean cidsBean, final User user) {
+    public void afterCommittedDelete(final CidsBean cidsBean,
+            final User user) {
     }
 }

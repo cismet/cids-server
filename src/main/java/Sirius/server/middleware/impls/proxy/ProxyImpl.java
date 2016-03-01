@@ -19,16 +19,10 @@ import Sirius.server.middleware.types.Node;
 import Sirius.server.naming.NameServer;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
-import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.UserServer;
 import Sirius.server.observ.RemoteObservable;
 import Sirius.server.observ.RemoteObserver;
 import Sirius.server.property.ServerProperties;
-import Sirius.server.search.Query;
-import Sirius.server.search.SearchOption;
-import Sirius.server.search.SearchResult;
-import Sirius.server.search.store.Info;
-import Sirius.server.search.store.QueryData;
 
 import Sirius.util.image.Image;
 
@@ -44,7 +38,6 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -417,47 +410,12 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node[] getMetaObjectNode(final User usr, final Query query) throws RemoteException {
-        return metaService.getMetaObjectNode(usr, query);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   usr    DOCUMENT ME!
-     * @param   query  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
     public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
         return metaService.getMetaObject(usr, query);
     }
 
     @Override
     public MetaObject[] getMetaObject(final User usr, final String query, final String domain) throws RemoteException {
-        return metaService.getMetaObject(usr, query, domain);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   usr    DOCUMENT ME!
-     * @param   query  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public MetaObject[] getMetaObject(final User usr, final Query query) throws RemoteException {
-        return metaService.getMetaObject(usr, query);
-    }
-
-    @Override
-    public MetaObject[] getMetaObject(final User usr, final Query query, final String domain) throws RemoteException {
         return metaService.getMetaObject(usr, query, domain);
     }
 
@@ -476,22 +434,6 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     public int deleteMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
         return metaService.deleteMetaObject(user, metaObject, domain);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user    DOCUMENT ME!
-     * @param   query   DOCUMENT ME!
-     * @param   domain  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public int insertMetaObject(final User user, final Query query, final String domain) throws RemoteException {
-        return metaService.insertMetaObject(user, query, domain);
     }
 
     /**
@@ -753,238 +695,6 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
         } catch (Exception e) {
             LOG.error("could not unregister as observer: " + this, e); // NOI18N
         }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   id      DOCUMENT ME!
-     * @param   domain  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public boolean delete(final int id, final String domain) throws RemoteException {
-        return queryStore.delete(id, domain);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   id      DOCUMENT ME!
-     * @param   domain  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public QueryData getQuery(final int id, final String domain) throws RemoteException {
-        return queryStore.getQuery(id, domain);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   userGroup  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public Info[] getQueryInfos(final UserGroup userGroup) throws RemoteException {
-        return queryStore.getQueryInfos(userGroup);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public Info[] getQueryInfos(final User user) throws RemoteException {
-        return queryStore.getQueryInfos(user);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user  DOCUMENT ME!
-     * @param   data  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public boolean storeQuery(final User user, final QueryData data) throws RemoteException {
-        return queryStore.storeQuery(user, data);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public HashMap getSearchOptions(final User user) throws RemoteException {
-        return searchService.getSearchOptions(user);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user    DOCUMENT ME!
-     * @param   domain  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public HashMap getSearchOptions(final User user, final String domain) throws RemoteException {
-        return searchService.getSearchOptions(user, domain);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user           DOCUMENT ME!
-     * @param   classIds       DOCUMENT ME!
-     * @param   searchOptions  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public SearchResult search(final User user, final String[] classIds, final SearchOption[] searchOptions)
-            throws RemoteException {
-        return searchService.search(user, classIds, searchOptions);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user         DOCUMENT ME!
-     * @param   name         DOCUMENT ME!
-     * @param   description  DOCUMENT ME!
-     * @param   statement    DOCUMENT ME!
-     * @param   resultType   DOCUMENT ME!
-     * @param   isUpdate     DOCUMENT ME!
-     * @param   isBatch      DOCUMENT ME!
-     * @param   isRoot       DOCUMENT ME!
-     * @param   isUnion      DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public int addQuery(
-            final User user,
-            final String name,
-            final String description,
-            final String statement,
-            final int resultType,
-            final char isUpdate,
-            final char isBatch,
-            final char isRoot,
-            final char isUnion) throws RemoteException {
-        return searchService.addQuery(
-                user,
-                name,
-                description,
-                statement,
-                resultType,
-                isUpdate,
-                isBatch,
-                isRoot,
-                isUnion);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user         DOCUMENT ME!
-     * @param   name         DOCUMENT ME!
-     * @param   description  DOCUMENT ME!
-     * @param   statement    DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public int addQuery(final User user, final String name, final String description, final String statement)
-            throws RemoteException {
-        return searchService.addQuery(user, name, description, statement);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user           DOCUMENT ME!
-     * @param   queryId        DOCUMENT ME!
-     * @param   typeId         DOCUMENT ME!
-     * @param   paramkey       DOCUMENT ME!
-     * @param   description    DOCUMENT ME!
-     * @param   isQueryResult  DOCUMENT ME!
-     * @param   queryPosition  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public boolean addQueryParameter(
-            final User user,
-            final int queryId,
-            final int typeId,
-            final String paramkey,
-            final String description,
-            final char isQueryResult,
-            final int queryPosition) throws RemoteException {
-        return searchService.addQueryParameter(
-                user,
-                queryId,
-                typeId,
-                paramkey,
-                description,
-                isQueryResult,
-                queryPosition);
-    }
-
-    /**
-     * position set in order of the addition.
-     *
-     * @param   user         DOCUMENT ME!
-     * @param   queryId      DOCUMENT ME!
-     * @param   paramkey     DOCUMENT ME!
-     * @param   description  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public boolean addQueryParameter(
-            final User user,
-            final int queryId,
-            final String paramkey,
-            final String description) throws RemoteException {
-        return searchService.addQueryParameter(user, queryId, paramkey, description);
     }
 
     /**

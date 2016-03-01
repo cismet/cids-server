@@ -10,7 +10,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.cismet.cids.server.search;
+package de.cismet.cids.server.messages;
+
+import java.util.EventListener;
 
 /**
  * DOCUMENT ME!
@@ -18,21 +20,14 @@ package de.cismet.cids.server.search;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public interface SearchResultListenerProvider {
+public interface CidsServerMessageManagerListener extends EventListener {
 
     //~ Methods ----------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      *
-     * @param  searchResultListener  DOCUMENT ME!
+     * @param  event  DOCUMENT ME!
      */
-    void setSearchResultListener(SearchResultListener searchResultListener);
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    SearchResultListener getSearchResultListener();
+    void messagePublished(final CidsServerMessageManagerListenerEvent event);
 }

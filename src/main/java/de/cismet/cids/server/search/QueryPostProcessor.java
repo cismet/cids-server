@@ -12,27 +12,26 @@
  */
 package de.cismet.cids.server.search;
 
+import java.io.Serializable;
+
+import java.util.ArrayList;
+
 /**
  * DOCUMENT ME!
  *
- * @author   jruiz
+ * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public interface SearchResultListenerProvider {
+public interface QueryPostProcessor extends Serializable {
 
     //~ Methods ----------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      *
-     * @param  searchResultListener  DOCUMENT ME!
-     */
-    void setSearchResultListener(SearchResultListener searchResultListener);
-
-    /**
-     * DOCUMENT ME!
+     * @param   result  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    SearchResultListener getSearchResultListener();
+    ArrayList<ArrayList> postProcess(ArrayList<ArrayList> result);
 }

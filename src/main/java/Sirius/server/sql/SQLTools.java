@@ -24,6 +24,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 
+import java.sql.Clob;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,6 +48,7 @@ public final class SQLTools {
 
     /** LOGGER. */
     private static final transient Logger LOG = Logger.getLogger(SQLTools.class);
+    private static final String DIALECT = Lookup.getDefault().lookup(DialectProvider.class).getDialect();
 
     //~ Instance fields --------------------------------------------------------
 
@@ -144,6 +147,40 @@ public final class SQLTools {
         }
 
         return gf;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   objectFromResultSet  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static Geometry getGeometryFromResultSetObject(Object objectFromResultSet) {
+        try {
+            if (objectFromResultSet != null) {
+                if (objectFromResultSet instanceof Clob) {
+                    // we convert the clob to a string, otherwise the value is not serialisable out of the
+                    // box due to the direct connection to the database
+                    // TODO: handle overflows, i.e. clob too big
+                    final Clob clob = (Clob)objectFromResultSet;
+                    if (clob.length() <= Integer.valueOf(Integer.MAX_VALUE).longValue()) {
+                        objectFromResultSet = clob.getSubString(1, Long.valueOf(clob.length()).intValue());
+                    } else {
+                        throw new IllegalStateException(
+                            "cannot handle clobs larger than Integer.MAX_VALUE)");
+                    }
+                }
+                if (SQLTools.getGeometryFactory(DIALECT).isGeometryObject(objectFromResultSet)) {
+                    return SQLTools.getGeometryFactory(DIALECT).createGeometry(objectFromResultSet);
+                }
+            }
+        } catch (Exception e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("cashedGeometry was not in the resultset. But this is normal for the most parts", e); // NOI18N
+            }
+        }
+        return null;
     }
 
     /**

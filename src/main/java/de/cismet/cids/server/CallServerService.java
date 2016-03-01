@@ -17,7 +17,6 @@ import Sirius.server.middleware.interfaces.proxy.*;
  */
 public interface CallServerService extends CatalogueService,
     MetaService,
-    QueryStore,
     SearchService,
     SystemService,
     UserService,

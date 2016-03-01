@@ -7,11 +7,22 @@
 ****************************************************/
 package Sirius.server.middleware.types;
 
+import Sirius.server.middleware.impls.domainserver.DomainServerClassCache;
+import Sirius.server.newuser.User;
 import Sirius.server.newuser.permission.Policy;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import org.openide.util.Exceptions;
+
 import de.cismet.cids.dynamics.CidsBean;
+
+import de.cismet.cids.nodepermissions.CustomNodePermissionProvider;
+import de.cismet.cids.nodepermissions.NoNodePermissionProvidedException;
+
+import de.cismet.cids.utils.ClassloadingHelper;
 
 /**
  * DOCUMENT ME!
@@ -24,6 +35,10 @@ public class MetaObjectNode extends Node implements Comparable {
 
     protected int objectId;
     protected volatile MetaObject theObject;
+
+    protected Geometry cashedGeometry;
+    protected String lightweightJson;
+    private final transient org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(this.getClass());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -57,23 +72,94 @@ public class MetaObjectNode extends Node implements Comparable {
             final String domain,
             final int objectId,
             final int classId) {
-        this(-1, null, null, domain, objectId, classId, true, Policy.createWIKIPolicy(), -1, null, true);
+        this(-1, null, null, domain, objectId, classId, true, Policy.createWIKIPolicy(), -1, null, true, null, null);
     }
 
     /**
      * Creates a new MetaObjectNode object.
      *
-     * @param  domain    DOCUMENT ME!
-     * @param  objectId  DOCUMENT ME!
-     * @param  classId   DOCUMENT ME!
-     * @param  name      DOCUMENT ME!
+     * @param  domain           DOCUMENT ME!
+     * @param  objectId         DOCUMENT ME!
+     * @param  classId          DOCUMENT ME!
+     * @param  name             DOCUMENT ME!
+     * @param  cashedGeometry   DOCUMENT ME!
+     * @param  lightweightJson  DOCUMENT ME!
      */
     public MetaObjectNode(
             final String domain,
             final int objectId,
             final int classId,
-            final String name) {
-        this(-1, name, null, domain, objectId, classId, true, Policy.createWIKIPolicy(), -1, null, true);
+            final String name,
+            final Geometry cashedGeometry,
+            final String lightweightJson) {
+        this(
+            -1,
+            name,
+            null,
+            domain,
+            objectId,
+            classId,
+            true,
+            Policy.createWIKIPolicy(),
+            -1,
+            null,
+            true,
+            cashedGeometry,
+            lightweightJson);
+    }
+
+    /**
+     * Creates a new MetaObjectNode object.
+     *
+     * @param   domain           DOCUMENT ME!
+     * @param   usr              DOCUMENT ME!
+     * @param   objectId         DOCUMENT ME!
+     * @param   classId          DOCUMENT ME!
+     * @param   name             DOCUMENT ME!
+     * @param   cashedGeometry   DOCUMENT ME!
+     * @param   lightweightJson  DOCUMENT ME!
+     *
+     * @throws  NoNodePermissionProvidedException  DOCUMENT ME!
+     */
+    public MetaObjectNode(
+            final String domain,
+            final User usr,
+            final int objectId,
+            final int classId,
+            final String name,
+            final Geometry cashedGeometry,
+            final String lightweightJson) throws NoNodePermissionProvidedException {
+        this(
+            -1,
+            name,
+            null,
+            domain,
+            objectId,
+            classId,
+            true,
+            Policy.createWIKIPolicy(),
+            -1,
+            null,
+            true,
+            cashedGeometry,
+            lightweightJson);
+//        final Class nodePermissonProviderClass = ClassloadingHelper.getDynamicClass(DomainServerClassCache.getInstance()
+//                        .getMetaClass(classId),
+//                ClassloadingHelper.CLASS_TYPE.NODE_PERMISSION_PROVIDER);
+//        if (nodePermissonProviderClass != null) {
+//            try {
+//                final CustomNodePermissionProvider permissionProvider = (CustomNodePermissionProvider)
+//                    nodePermissonProviderClass.newInstance();
+//                permissionProvider.setObjectNode(this);
+//                if (!permissionProvider.getCustomReadPermissionDecisionforUser(usr)) {
+//                    throw new NoNodePermissionProvidedException(this);
+//                }
+//            } catch (InstantiationException ex) {
+//                throw new NoNodePermissionProvidedException(this, ex);
+//            } catch (IllegalAccessException ex) {
+//                throw new NoNodePermissionProvidedException(this, ex);
+//            }
+//        }
     }
 
     /**
@@ -125,6 +211,9 @@ public class MetaObjectNode extends Node implements Comparable {
      * @param  iconFactory                 DOCUMENT ME!
      * @param  icon                        DOCUMENT ME!
      * @param  derivePermissionsFromClass  DOCUMENT ME!
+     * @param  artificialId                DOCUMENT ME!
+     * @param  cashedGeometry              DOCUMENT ME!
+     * @param  lightweightJson             DOCUMENT ME!
      */
     public MetaObjectNode(final int id,
             final String name,
@@ -136,20 +225,26 @@ public class MetaObjectNode extends Node implements Comparable {
             final Policy policy,
             final int iconFactory,
             final String icon,
-            final boolean derivePermissionsFromClass) {
-        this(
+            final boolean derivePermissionsFromClass,
+            final String artificialId,
+            final Geometry cashedGeometry,
+            final String lightweightJson) {
+        super(
             id,
             name,
-            description,
             domain,
-            objectId,
-            classId,
+            description,
             isLeaf,
             policy,
             iconFactory,
             icon,
             derivePermissionsFromClass,
-            null);
+            artificialId);
+
+        this.objectId = objectId;
+        this.classId = classId;
+        this.cashedGeometry = cashedGeometry;
+        this.lightweightJson = lightweightJson;
     }
 
     /**
@@ -166,9 +261,10 @@ public class MetaObjectNode extends Node implements Comparable {
      * @param  iconFactory                 DOCUMENT ME!
      * @param  icon                        DOCUMENT ME!
      * @param  derivePermissionsFromClass  DOCUMENT ME!
-     * @param  artificialId                DOCUMENT ME!
+     * @param  cashedGeometry              DOCUMENT ME!
+     * @param  lightweightJson             DOCUMENT ME!
      */
-    public MetaObjectNode(final int id,
+    private MetaObjectNode(final int id,
             final String name,
             final String description,
             final String domain,
@@ -179,21 +275,23 @@ public class MetaObjectNode extends Node implements Comparable {
             final int iconFactory,
             final String icon,
             final boolean derivePermissionsFromClass,
-            final String artificialId) {
-        super(
+            final Geometry cashedGeometry,
+            final String lightweightJson) {
+        this(
             id,
             name,
-            domain,
             description,
+            domain,
+            objectId,
+            classId,
             isLeaf,
             policy,
             iconFactory,
             icon,
             derivePermissionsFromClass,
-            artificialId);
-
-        this.objectId = objectId;
-        this.classId = classId;
+            null,
+            cashedGeometry,
+            lightweightJson);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -268,5 +366,23 @@ public class MetaObjectNode extends Node implements Comparable {
         }
 
         return objectId == ((MetaObjectNode)other).objectId;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Geometry getCashedGeometry() {
+        return cashedGeometry;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getLightweightJson() {
+        return lightweightJson;
     }
 }

@@ -122,13 +122,6 @@ public class CidsBean implements PropertyChangeListener {
     String pkFieldName = null;
     HashMap<String, CidsBean> intraObjectCache = new HashMap<String, CidsBean>();
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   o  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
     private CustomBeanPermissionProvider customPermissionProvider;
 
     //~ Methods ----------------------------------------------------------------
@@ -460,14 +453,12 @@ public class CidsBean implements PropertyChangeListener {
                 if (cbv.getMetaObject().getStatus() == MetaObject.TO_DELETE) {
                     cbv.getMetaObject().setStatus(MetaObject.MODIFIED);
                 }
-            } else {
-                if (((oldValue == null) && (value != null))
-                            || ((oldValue instanceof Geometry)
-                                && (System.identityHashCode(oldValue) != System.identityHashCode(value)))
-                            || ((oldValue != null) && !oldValue.equals(value))) {
-                    oa.setValue(value);
-                    realChanges = true;
-                }
+            } else if (((oldValue == null) && (value != null))
+                        || ((oldValue instanceof Geometry)
+                            && (System.identityHashCode(oldValue) != System.identityHashCode(value)))
+                        || ((oldValue != null) && !oldValue.equals(value))) {
+                oa.setValue(value);
+                realChanges = true;
             }
 
             if (LOG.isDebugEnabled()) {
@@ -475,12 +466,10 @@ public class CidsBean implements PropertyChangeListener {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("a property changed:" + metaObject.getDebugString()); // NOI18N
                     }
-                } else {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(
-                            "a property changed, but the content of the object was not changed. seams to be a caching or normalization move.:"
-                                    + metaObject.getDebugString());                     // NOI18N
-                    }
+                } else if (LOG.isDebugEnabled()) {
+                    LOG.debug(
+                        "a property changed, but the content of the object was not changed. seams to be a caching or normalization move.:"
+                                + metaObject.getDebugString());                         // NOI18N
                 }
             }
 
@@ -736,7 +725,6 @@ public class CidsBean implements PropertyChangeListener {
                             cb.getMetaObject().setReferencingObjectAttribute(entryToAddOA);
 
 //                            entryToAddOA.setValue(getMetaObject());
-
                         } else { // n-m Beziehung
                             // ArrayElement anlegen
                             final MetaClass zwischenTabellenKlasse = (MetaClass)(getMetaObject().getAllClasses()).get(
