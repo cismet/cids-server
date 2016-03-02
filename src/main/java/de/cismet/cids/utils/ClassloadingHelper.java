@@ -76,7 +76,7 @@ public class ClassloadingHelper {
      * value is expected to be csv. The property must be defined in a {@link #CL_PROPERTIES} file if it shall be used by
      * the <code>ClassloadingHelper</code> to create candidate names.
      */
-    public static final String CL_PROP_ALT_DOMAINS = "classloading.alternativeDomains";                 // NOI18N
+    public static final String CL_PROP_ALT_DOMAINS = "classloading.alternativeDomains";     // NOI18N
     /**
      * The property 'classloading.domainClassTypeOrder' which can be used to specify the desired order during candidate
      * class name build. Valid values are:<br/>
