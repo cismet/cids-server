@@ -97,7 +97,6 @@ public class CidsBean implements PropertyChangeListener {
         intraObjectCacheModule.addSerializer(new IntraObjectCacheEnabledCidsBeanJsonSerializer());
         intraObjectCacheModule.addDeserializer(CidsBean.class, new IntraObjectCacheEnabledCidsBeanJsonDeserializer());
         intraObjectCacheMapper.registerModule(intraObjectCacheModule);
-
     }
 
     //~ Instance fields --------------------------------------------------------
