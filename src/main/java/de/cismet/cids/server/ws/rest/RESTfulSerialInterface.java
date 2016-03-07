@@ -25,6 +25,9 @@ import java.io.IOException;
 
 import java.rmi.RemoteException;
 
+import java.util.Enumeration;
+import java.util.HashMap;
+
 import javax.servlet.http.HttpServletRequest;
 
 import javax.ws.rs.Consumes;
@@ -161,13 +164,19 @@ public final class RESTfulSerialInterface {
      * @throws  RemoteException  DOCUMENT ME!
      */
     @GET
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
+    @Path("/")
     public Response getTest(@Context final HttpServletRequest hsr) throws RemoteException {
         return Response.ok(
                     "<html><h3>I'm sorry, Dave. I'm afraid I can't do that.<br>"
                             + "This interface is not meant for browser traffic. "
                             + "I put the following info in our intrusion detection log ;-) </h3><hr><pre>"
+                            + "ADRESS:"
+                            + hsr.getLocalAddr()
+                            + "\n"
+                            + "NAME: "
+                            + hsr.getLocalName()
+                            + "\n"
                             + hsr.toString()
                             + "</pre>"
                             + "<hr><h3>Dave, this conversation can serve no purpose anymore. Goodbye</h3></html>")
