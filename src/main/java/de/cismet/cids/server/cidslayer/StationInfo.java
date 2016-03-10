@@ -27,6 +27,7 @@ public class StationInfo implements Serializable {
     private boolean fromStation;
     private String routeTable;
     private int lineId;
+    private String routePropertyName;
 //    private String stationPropertyName;
 
     //~ Constructors -----------------------------------------------------------
@@ -40,19 +41,22 @@ public class StationInfo implements Serializable {
     /**
      * Creates a new StationInfo object.
      *
-     * @param  stationLine  DOCUMENT ME!
-     * @param  fromStation  DOCUMENT ME!
-     * @param  routeTable   DOCUMENT ME!
-     * @param  lineId       DOCUMENT ME!
+     * @param  stationLine        DOCUMENT ME!
+     * @param  fromStation        DOCUMENT ME!
+     * @param  routeTable         DOCUMENT ME!
+     * @param  lineId             DOCUMENT ME!
+     * @param  routePropertyName  DOCUMENT ME!
      */
     public StationInfo(final boolean stationLine,
             final boolean fromStation,
             final String routeTable,
-            final int lineId) {
+            final int lineId,
+            final String routePropertyName) {
         this.stationLine = stationLine;
         this.fromStation = fromStation;
         this.routeTable = routeTable;
         this.lineId = lineId;
+        this.routePropertyName = routePropertyName;
 //        this.stationPropertyName = stationPropertyName;
     }
 
@@ -143,4 +147,22 @@ public class StationInfo implements Serializable {
 //    public void setStationPropertyName(String stationPropertyName) {
 //        this.stationPropertyName = stationPropertyName;
 //    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the routePropertyName
+     */
+    public String getRoutePropertyName() {
+        return routePropertyName;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  routePropertyName  the routePropertyName to set
+     */
+    public void setRoutePropertyName(final String routePropertyName) {
+        this.routePropertyName = routePropertyName;
+    }
 }
