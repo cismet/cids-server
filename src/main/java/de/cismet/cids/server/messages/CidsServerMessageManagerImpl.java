@@ -104,9 +104,9 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
             final Set keys,
             final boolean trueForUserKeysFalseForGroupKeys) {
         if (trueForUserKeysFalseForGroupKeys) {
-            CidsServerMessageManagerImpl.this.publishMessage(category, object, keys, null);
-        } else {
             CidsServerMessageManagerImpl.this.publishMessage(category, object, null, keys);
+        } else {
+            CidsServerMessageManagerImpl.this.publishMessage(category, object, keys, null);
         }
     }
 
