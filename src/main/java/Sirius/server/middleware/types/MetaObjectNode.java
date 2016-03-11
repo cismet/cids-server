@@ -7,15 +7,13 @@
 ****************************************************/
 package Sirius.server.middleware.types;
 
-import Sirius.server.middleware.impls.domainserver.DomainServerClassCache;
+import Sirius.server.MetaClassCache;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.permission.Policy;
 
 import com.vividsolutions.jts.geom.Geometry;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
-
-import org.openide.util.Exceptions;
 
 import de.cismet.cids.dynamics.CidsBean;
 
@@ -143,23 +141,24 @@ public class MetaObjectNode extends Node implements Comparable {
             true,
             cashedGeometry,
             lightweightJson);
-//        final Class nodePermissonProviderClass = ClassloadingHelper.getDynamicClass(DomainServerClassCache.getInstance()
-//                        .getMetaClass(classId),
-//                ClassloadingHelper.CLASS_TYPE.NODE_PERMISSION_PROVIDER);
-//        if (nodePermissonProviderClass != null) {
-//            try {
-//                final CustomNodePermissionProvider permissionProvider = (CustomNodePermissionProvider)
-//                    nodePermissonProviderClass.newInstance();
-//                permissionProvider.setObjectNode(this);
-//                if (!permissionProvider.getCustomReadPermissionDecisionforUser(usr)) {
-//                    throw new NoNodePermissionProvidedException(this);
-//                }
-//            } catch (InstantiationException ex) {
-//                throw new NoNodePermissionProvidedException(this, ex);
-//            } catch (IllegalAccessException ex) {
-//                throw new NoNodePermissionProvidedException(this, ex);
-//            }
-//        }
+
+        final Class nodePermissonProviderClass = ClassloadingHelper.getDynamicClass(MetaClassCache.getInstance()
+                        .getMetaClass(domain, classId),
+                ClassloadingHelper.CLASS_TYPE.NODE_PERMISSION_PROVIDER);
+        if (nodePermissonProviderClass != null) {
+            try {
+                final CustomNodePermissionProvider permissionProvider = (CustomNodePermissionProvider)
+                    nodePermissonProviderClass.newInstance();
+                permissionProvider.setObjectNode(this);
+                if (!permissionProvider.getCustomReadPermissionDecisionforUser(usr)) {
+                    throw new NoNodePermissionProvidedException(this);
+                }
+            } catch (InstantiationException ex) {
+                throw new NoNodePermissionProvidedException(this, ex);
+            } catch (IllegalAccessException ex) {
+                throw new NoNodePermissionProvidedException(this, ex);
+            }
+        }
     }
 
     /**
