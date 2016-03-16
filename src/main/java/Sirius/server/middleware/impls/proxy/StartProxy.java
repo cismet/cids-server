@@ -13,7 +13,6 @@ import Sirius.server.ServerExitError;
 import Sirius.server.ServerStatus;
 import Sirius.server.ServerType;
 import Sirius.server.Shutdown;
-import Sirius.server.middleware.interfaces.domainserver.DomainServerStartupHook;
 import Sirius.server.property.ServerProperties;
 
 import org.apache.log4j.Logger;
@@ -25,10 +24,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 
-import java.rmi.AlreadyBoundException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -332,21 +329,17 @@ public final class StartProxy {
     private ProxyImpl createAndBindProxy(final ServerProperties properties) throws ServerExitError {
         try {
             final ProxyImpl proxy = new ProxyImpl(properties);
-            Naming.bind("//" + siriusRegistryIP + ":" + serverInfo.getRMIPort() + "/callServer", proxy); // NOI18N
-
+            final String message = "<CS> INFO: Proxy/Callserver/Broker listening for RESTful requests on port: "
+                        + properties.getRestPort();
+            if (LOG.isInfoEnabled()) {
+                LOG.info(message);
+            }
+            System.out.println(message);
             return proxy;
         } catch (final RemoteException ex) {
             final String fatal = "cannot create callserver implementation"; // NOI18N
             LOG.fatal(fatal, ex);
             throw new ServerExitError(fatal, ex);
-        } catch (final AlreadyBoundException e) {
-            final String fatal = "cannot bind callserver";                  // NOI18N
-            LOG.fatal(fatal, e);
-            throw new ServerExitError(fatal, e);
-        } catch (final MalformedURLException e) {
-            final String fatal = "cannot bind callserver";                  // NOI18N
-            LOG.fatal(fatal, e);
-            throw new ServerExitError(fatal, e);
         }
     }
 
