@@ -486,8 +486,8 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                         + "                cs_attr_object_derived i "                                // NOI18N
                         + "                LEFT OUTER JOIN cs_cache c "                              // NOI18N
                         + "                ON              ( "                                       // NOI18N
-                        + "                                                s.class_id =i.class_id "  // NOI18N
-                        + "                                AND             s.object_id=i.object_id " // NOI18N
+                        + "                                                c.class_id =i.class_id "  // NOI18N
+                        + "                                AND             c.object_id=i.object_id " // NOI18N
                         + "                                ) "                                       // NOI18N
                         + "WHERE           i.attr_class_id = "                                       // NOI18N
                         + "                ( SELECT cs_class.id "                                    // NOI18N

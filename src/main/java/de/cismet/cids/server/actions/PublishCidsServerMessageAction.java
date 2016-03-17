@@ -45,7 +45,7 @@ public class PublishCidsServerMessageAction implements ServerAction, UserAwareSe
 
         //~ Enum constants -----------------------------------------------------
 
-        MESSAGE, CATEGORY, USER, USERGROUP
+        CATEGORY, USER, USERGROUP
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -74,16 +74,14 @@ public class PublishCidsServerMessageAction implements ServerAction, UserAwareSe
      */
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
-        String message = null;
+        final Object message = body;
         String category = null;
 
         final Set userGroupKeys = new HashSet();
         final Set userKeys = new HashSet();
         for (final ServerActionParameter sap : params) {
             if (sap != null) {
-                if (sap.getKey().equals(ParameterType.MESSAGE.toString())) {
-                    message = (String)sap.getValue();
-                } else if (sap.getKey().equals(ParameterType.CATEGORY.toString())) {
+                if (sap.getKey().equals(ParameterType.CATEGORY.toString())) {
                     category = (String)sap.getValue();
                 } else if (sap.getKey().equals(ParameterType.USERGROUP.toString())) {
                     userGroupKeys.add(sap.getValue());

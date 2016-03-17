@@ -74,9 +74,8 @@ public class UpdateCacheTrigger extends AbstractDBAwareCidsTrigger {
                         return getDbServer().getActiveDBConnection()
                                     .submitInternalQuery(
                                         DBConnection.DESC_INSERT_CACHEENTRY,
-                                        cidsBean.getPrimaryKeyFieldname(),
-                                        cidsBean.getMetaObject().getID(),
-                                        cidsBean.getMetaObject().getClassID());
+                                        cidsBean.getMetaObject().getClassID(),
+                                        cidsBean.getMetaObject().getID());
                     }
 
                     @Override
@@ -111,10 +110,8 @@ public class UpdateCacheTrigger extends AbstractDBAwareCidsTrigger {
                                 return getDbServer().getActiveDBConnection()
                                             .submitInternalQuery(
                                                 DBConnection.DESC_UPDATE_CACHEENTRY,
-                                                cidsBean.getPrimaryKeyFieldname(),
-                                                cidsBean.getMetaObject().getID(),
-                                                cidsBean.getMetaObject().getID(),
-                                                cidsBean.getMetaObject().getClassID());
+                                                cidsBean.getMetaObject().getClassID(),
+                                                cidsBean.getMetaObject().getID());
                             }
                         } catch (SQLException e) {
                             getDbServer().getActiveDBConnection()
@@ -125,9 +122,8 @@ public class UpdateCacheTrigger extends AbstractDBAwareCidsTrigger {
                             return getDbServer().getActiveDBConnection()
                                         .submitInternalQuery(
                                             DBConnection.DESC_INSERT_CACHEENTRY,
-                                            cidsBean.getPrimaryKeyFieldname(),
-                                            cidsBean.getMetaObject().getID(),
-                                            cidsBean.getMetaObject().getClassID());
+                                            cidsBean.getMetaObject().getClassID(),
+                                            cidsBean.getMetaObject().getID());
                         }
                     }
 
