@@ -7,6 +7,7 @@
 ****************************************************/
 package Sirius.server.middleware.impls.domainserver;
 
+import Sirius.server.MetaClassCache;
 import Sirius.server.Server;
 import Sirius.server.ServerExit;
 import Sirius.server.ServerExitError;
@@ -39,6 +40,7 @@ import Sirius.server.sql.PreparableStatement;
 
 import org.apache.log4j.PropertyConfigurator;
 
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import java.io.File;
@@ -84,7 +86,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     MetaService,
     SystemService,
     UserService,
-    ActionService { // ActionListener
+    ActionService,
+    InfoService { // ActionListener
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -182,7 +185,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 serverActionMap.put(serverAction.getTaskName(), serverAction);
             }
 
-            DomainServerClassCache.getInstance().setAllClasses(dbServer.getClasses(), properties.getServerName());
+            MetaClassCache.getInstance().setAllClasses(dbServer.getClasses(), properties.getServerName());
 
             if (ScheduledServerActionManager.isScheduledServerActionFeatureSupported(
                             dbServer.getActiveDBConnection())) {
@@ -213,6 +216,25 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
      */
     public static ServerProperties getServerProperties() {
         return properties;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public MetaClass[] getAllClassInformation() throws RemoteException {
+        try {
+            return dbServer.getClasses();
+        } catch (Throwable e) {
+            if (logger != null) {
+                logger.error("Error in getAllClassInformation()", e); // NOI18N
+            }
+            throw new RemoteException(e.getMessage(), e);
+        }
     }
 
     @Override

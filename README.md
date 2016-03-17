@@ -114,3 +114,6 @@ License
 =======
 
 cids-server is distributed under [LGPLv3](https://github.com/cismet/cids-server/blob/dev/LICENSE)
+
+:-)
+

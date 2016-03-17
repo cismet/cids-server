@@ -11,6 +11,7 @@
  */
 package Sirius.server.middleware.impls.domainserver;
 
+import Sirius.server.MetaClassCache;
 import Sirius.server.middleware.types.MetaClass;
 
 import java.util.HashMap;
@@ -45,16 +46,16 @@ public class DomainServerMetaClassService implements MetaClassCacheService {
 
     @Override
     public HashMap getAllClasses(final String domain) {
-        return DomainServerClassCache.getInstance().getAllClasses();
+        return MetaClassCache.getInstance().getAllClasses(domain);
     }
 
     @Override
     public MetaClass getMetaClass(final String domain, final String tableName) {
-        return DomainServerClassCache.getInstance().getMetaClass(tableName);
+        return MetaClassCache.getInstance().getMetaClass(domain, tableName);
     }
 
     @Override
     public MetaClass getMetaClass(final String domain, final int classId) {
-        return DomainServerClassCache.getInstance().getMetaClass(classId);
+        return MetaClassCache.getInstance().getMetaClass(domain, classId);
     }
 }

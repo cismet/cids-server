@@ -11,6 +11,8 @@
  */
 package de.cismet.cids.server.actions;
 
+import Sirius.server.newuser.User;
+
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.io.IOUtils;
 
@@ -33,7 +35,7 @@ import de.cismet.commons.security.handler.SimpleHttpAccessHandler;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = ServerAction.class)
-public class HttpTunnelAction implements ServerAction {
+public class HttpTunnelAction implements UserAwareServerAction {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -42,6 +44,9 @@ public class HttpTunnelAction implements ServerAction {
 
     public static String CREDENTIALS_USERNAME_KEY = "username";
     public static String CREDENTIALS_PASSWORD_KEY = "password";
+
+    private static final int BIG_SIZE_LOG_THRESHOLD = 104857600; // 100MB
+    private static final int MB = 1048576;                       // 100MB
 
     //~ Enums ------------------------------------------------------------------
 
@@ -56,6 +61,10 @@ public class HttpTunnelAction implements ServerAction {
 
         URL, REQUEST, METHOD, OPTIONS, CREDENTIALS
     }
+
+    //~ Instance fields --------------------------------------------------------
+
+    private User user = null;
 
     //~ Methods ----------------------------------------------------------------
 
@@ -132,6 +141,13 @@ public class HttpTunnelAction implements ServerAction {
                     options,
                     creds);
             final byte[] result = IOUtils.toByteArray(is);
+            if (true || ((result != null) && (result.length > BIG_SIZE_LOG_THRESHOLD))) {
+                final double size = ((double)result.length) / ((double)MB);
+                final String message = "BIG REQUEST: " + (Math.round(size * 100) / 100.0) + " MB from " + user + "\n"
+                            + url + request;
+                LOG.info(message);
+            }
+
             return result;
         } catch (final BadHttpStatusCodeException badStatusCodeEx) {
             final String errorinfo = ("Problem during HttpTunnelAction(" + url + "=, request=" + request + ")");
@@ -148,6 +164,16 @@ public class HttpTunnelAction implements ServerAction {
             }
             throw new RuntimeException(errorinfo, exception);
         }
+    }
+
+    @Override
+    public User getUser() {
+        return user;
+    }
+
+    @Override
+    public void setUser(final User user) {
+        this.user = user;
     }
 
     /**
