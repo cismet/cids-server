@@ -141,7 +141,7 @@ public class HttpTunnelAction implements UserAwareServerAction {
                     options,
                     creds);
             final byte[] result = IOUtils.toByteArray(is);
-            if (true || ((result != null) && (result.length > BIG_SIZE_LOG_THRESHOLD))) {
+            if (((result != null) && (result.length > BIG_SIZE_LOG_THRESHOLD))) {
                 final double size = ((double)result.length) / ((double)MB);
                 final String message = "BIG REQUEST: " + (Math.round(size * 100) / 100.0) + " MB from " + user + "\n"
                             + url + request;
