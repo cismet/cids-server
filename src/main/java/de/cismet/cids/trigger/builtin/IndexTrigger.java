@@ -403,9 +403,9 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     }
                     LOG.debug("cs_all_attr_mapping: inserted " + insertCount + " rows"); // NOI18N
                 }
-                if (mo.getMetaClass().isIndexed()) {
-                    updateDerivedIndex(connection, mo);
-                }
+            }
+            if (mo.getMetaClass().isIndexed()) {
+                updateDerivedIndex(connection, mo);
             }
         } catch (final SQLException e) {
             LOG.error(
