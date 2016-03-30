@@ -480,6 +480,7 @@ public class CidsBean implements PropertyChangeListener {
      * @param  referencingOA  DOCUMENT ME!
      */
     private void walkUpAndSetChangedAndModified(ObjectAttribute referencingOA) {
+        // FIXME: THIS IS MADNESSSSS!!!!!!!111
         while (referencingOA != null) {
             referencingOA.setChanged(true);
             final Sirius.server.localserver.object.Object parent = referencingOA.getParentObject();

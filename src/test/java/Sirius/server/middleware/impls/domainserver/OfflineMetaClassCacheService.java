@@ -14,17 +14,18 @@ import java.util.HashMap;
 import java.util.Scanner;
 import org.apache.log4j.Logger;
 
-
 /**
- * Offline Meta Class Cache Service initilaited with MetaClasses loadeded from 
+ * Offline Meta Class Cache Service initilaited with MetaClasses loadeded from
  * JSON CidsBeanInfo objects
- * 
+ *
  * @author Pascal Dihé <pascal.dihe@cismet.de>
  */
 @org.openide.util.lookup.ServiceProvider(
         service = MetaClassCacheService.class,
         supersedes = {"Sirius.server.middleware.impls.domainserver.DomainServerMetaClassService"})
 public class OfflineMetaClassCacheService implements MetaClassCacheService {
+
+    protected final static String CLASSES_JSON_PACKAGE = "de/cismet/cids/dynamics/classes/";
 
     protected final static HashMap<Integer, MetaClass> ALL_CLASSES_BY_ID = new HashMap<Integer, MetaClass>();
     protected final static HashMap<String, MetaClass> ALL_CLASSES_BY_TABLE_NAME = new HashMap<String, MetaClass>();
@@ -33,13 +34,13 @@ public class OfflineMetaClassCacheService implements MetaClassCacheService {
     protected static final ObjectMapper MAPPER = new ObjectMapper(new JsonFactory());
 
     public OfflineMetaClassCacheService() throws Exception {
-        
+
         if (ALL_CLASSES_BY_ID.isEmpty() && ALL_CLASSES_BY_TABLE_NAME.isEmpty()) {
             LOGGER.info("loading meta classes");
             final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             URL resources;
             try {
-                resources = classLoader.getResource("Sirius/server/middleware/impls/domainserver/");
+                resources = classLoader.getResource(CLASSES_JSON_PACKAGE);
             } catch (Exception ex) {
                 LOGGER.error("could not locate meta class json files: " + ex.getMessage(), ex);
                 throw ex;
@@ -47,11 +48,10 @@ public class OfflineMetaClassCacheService implements MetaClassCacheService {
 
             final Scanner scanner = new Scanner((InputStream) resources.getContent()).useDelimiter("\\n");
             while (scanner.hasNext()) {
-                final String jsonFile = "Sirius/server/middleware/impls/domainserver/" + scanner.next();
+                final String jsonFile = CLASSES_JSON_PACKAGE + scanner.next();
                 LOGGER.info("loading cids class from json file " + jsonFile);
                 try {
-                    
-                    
+
                     final CidsClass cidsClass = MAPPER.readValue(
                             new BufferedReader(
                                     new InputStreamReader(classLoader.getResourceAsStream(jsonFile))),
@@ -84,14 +84,14 @@ public class OfflineMetaClassCacheService implements MetaClassCacheService {
 
     @Override
     public HashMap<String, MetaClass> getAllClasses(final String domain) {
-        
+
         // this is madness!
         final HashMap<String, MetaClass> allClasses = new HashMap<String, MetaClass>();
-        for(Integer classId:ALL_CLASSES_BY_ID.keySet()) {
-            final String classKey = domain+classId;
+        for (Integer classId : ALL_CLASSES_BY_ID.keySet()) {
+            final String classKey = domain + classId;
             allClasses.put(classKey, ALL_CLASSES_BY_ID.get(classId));
         }
-        
+
         return allClasses;
     }
 

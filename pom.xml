@@ -79,7 +79,7 @@
         <dependency>
             <groupId>javassist</groupId>
             <artifactId>javassist</artifactId>
-            <version>3.9.0.GA</version>
+            <version>3.12.1.GA</version>
         </dependency>
         <dependency>
             <groupId>de.cismet.custom</groupId>
@@ -104,6 +104,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <version>4.12</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -152,6 +153,12 @@
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
             <version>0.9.9-RC2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.javassist</groupId>
+                    <artifactId>javassist</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.sun.jersey.contribs</groupId>
@@ -162,12 +169,6 @@
             <groupId>org.jvnet</groupId>
             <artifactId>mimepull</artifactId>
             <version>1.6</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.tngtech.java</groupId>
