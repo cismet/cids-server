@@ -480,12 +480,11 @@ public class CidsBean implements PropertyChangeListener {
      * @param  referencingOA  DOCUMENT ME!
      */
     private void walkUpAndSetChangedAndModified(ObjectAttribute referencingOA) {
-        // FIXME: THIS IS MADNESSSSS!!!!!!!111
         while (referencingOA != null) {
             referencingOA.setChanged(true);
             final Sirius.server.localserver.object.Object parent = referencingOA.getParentObject();
             parent.setStatus(MetaObject.MODIFIED); // funzt jetzt weil beim Erzeugen der Bean nochmals gesetzt (funzt
-            // nicht weil �ber den MetaObject Konstruktor eine neue Adresse
+            // nicht weil über den MetaObject Konstruktor eine neue Adresse
             // genutzt wird. Der andere Kram funktioniert aber, da die
             // gleichen ObjectAttributes genutzt werden.)
             referencingOA = parent.getReferencingObjectAttribute();

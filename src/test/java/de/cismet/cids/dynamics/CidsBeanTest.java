@@ -321,6 +321,7 @@ public class CidsBeanTest {
                         Mockito.verify(metaObjectSpy, Mockito.times(1)).getAttributeByFieldName("betreiber");
                         Mockito.verify(metaObjectSpy, Mockito.times(1)).setStatus(MetaObject.MODIFIED);
 
+                        Assert.assertTrue(metaObjectSpy.getStatus() == MetaObject.MODIFIED);
                         Assert.assertNotNull(metaObjectSpy.getAttributeByFieldName("betreiber").getValue());
                         Assert.assertTrue(MetaObject.class.isAssignableFrom(metaObjectSpy.getAttributeByFieldName("betreiber").getValue().getClass()));
                         Assert.assertEquals(betreiberBean.toJSONString(true), 
@@ -345,8 +346,9 @@ public class CidsBeanTest {
                 public void run() {
                     try {
                         // Mockito Spy Object: verify that a certain method has been called
-                        Mockito.verify(metaObjectSpy, Mockito.times(1)).setStatus(MetaObject.MODIFIED);
-
+                        Mockito.verify(metaObjectSpy, Mockito.never()).setStatus(Mockito.anyInt());
+                       
+                        Assert.assertTrue(metaObjectSpy.getStatus() == MetaObject.NO_STATUS);
                         Assert.assertEquals(betreiberBean.getProperty("name"), 
                                 ((MetaObject)metaObjectSpy.getAttributeByFieldName("betreiber").getValue()).getBean().getProperty("name"));
                         LOGGER.debug("testSetCidsBeanProperty passed: " + betreiberBean.getProperty("name"));
