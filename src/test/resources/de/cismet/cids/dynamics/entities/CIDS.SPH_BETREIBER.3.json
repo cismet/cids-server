@@ -42,7 +42,7 @@
             "$self": "/CIDS.SPH_SPIELHALLE/9",
             "id": 9,
             "geometrie": null,
-            "name": "GlÃ¼ckshalle",
+            "name": "Glückshalle",
             "typ": {
                 "$self": "/CIDS.SPH_TYP/3",
                 "id": 3,

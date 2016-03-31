@@ -196,4 +196,81 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
             }
         }
     }
+    
+    @Test
+    @UseDataProvider("getCidsBeans")
+    public void testSerializeUpdatedArrayProperty(CidsBean cidsBean) throws Throwable {
+
+        Assume.assumeTrue(cidsBean.getCidsBeanInfo().getClassKey().equalsIgnoreCase("SPH_SPIELHALLE"));
+
+        final LinkedList<Throwable> throwablesFromThread = new LinkedList<Throwable>();
+
+        try {
+
+            LOGGER.debug("testSerializeUpdatedArrayProperty: " + cidsBean.getPrimaryKeyValue());
+            final String cidsBeanJson = cidsBean.toJSONString(true);
+
+            final CidsBean updatedCidsBean = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
+
+            final MetaObject metaObjectSpy = Mockito.spy(updatedCidsBean.getMetaObject());
+            updatedCidsBean.setMetaObject(metaObjectSpy);
+
+            final Semaphore semaphore = new Semaphore(1);
+            final String name = "Tetris";
+
+            LOGGER.info("testSerializeUpdatedArrayProperty: " + name);
+            updatedCidsBean.setProperty("kategorien[0].name", name);
+
+            // wait for property change event!
+            EventQueue.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+
+                        //Mockito.verify(metaObjectSpy, Mockito.times(1)).getAttributeByFieldName("betreiber");
+                        //Mockito.verify(metaObjectSpy, Mockito.times(1)).setStatus(MetaObject.MODIFIED);
+                        Assert.assertTrue(metaObjectSpy.getStatus() == MetaObject.NO_STATUS);
+
+                        //Assert.assertNotNull(metaObjectSpy.getAttributeByFieldName("kategorien[0]").getValue());
+
+                        Assert.assertTrue(MetaObject.class.isAssignableFrom(metaObjectSpy.getAttributeByFieldName("kategorien").getValue().getClass()));
+
+                        Assert.assertEquals(((CidsBean) updatedCidsBean.getProperty("kategorien[0]")).toJSONString(true),
+                                ((CidsBean)((MetaObject)((MetaObject) metaObjectSpy.getAttributeByFieldName("kategorien").getValue()).getAttribs()[0].getValue()).getBean().getProperty("kategorie")).toJSONString(true));
+
+                        Assert.assertEquals(((CidsBean) updatedCidsBean.getProperty("kategorien[0]")).getProperty("name"),
+                                ((CidsBean)((MetaObject)((MetaObject) metaObjectSpy.getAttributeByFieldName("kategorien").getValue()).getAttribs()[0].getValue()).getBean().getProperty("kategorie")).getProperty("name"));
+
+                        Assert.assertEquals(MetaObject.MODIFIED,
+                                ((CidsBean)((MetaObject)((MetaObject) metaObjectSpy.getAttributeByFieldName("kategorien").getValue()).getAttribs()[0].getValue()).getBean().getProperty("kategorie")).getMetaObject().getStatus());
+
+                        LOGGER.debug("testSerializeUpdatedCidsBeanObject passed: "
+                                + ((CidsBean)updatedCidsBean.getProperty("kategorien[0]")).getProperty("name")
+                                + " (" + ((MetaObject) metaObjectSpy.getAttributeByFieldName("kategorien").getValue()).getStatus() + ")");
+
+                    } catch (Throwable t) {
+                        LOGGER.error(t.getMessage(), t);
+                        throwablesFromThread.add(t);
+                    } finally {
+                        semaphore.release();
+                    }
+                }
+            });
+            semaphore.acquire();
+
+            Assert.assertNotEquals(updatedCidsBean.toJSONString(true), cidsBeanJson);
+
+        } catch (AssertionError ae) {
+            LOGGER.error("testSerializeUpdatedCidsBean failed with: " + ae.getMessage());
+            throw ae;
+        } catch (Exception ex) {
+
+            LOGGER.error(ex.getMessage(), ex);
+            throw ex;
+        } finally {
+            if (!throwablesFromThread.isEmpty()) {
+                throw (throwablesFromThread.getLast());
+            }
+        }
+    }
 }

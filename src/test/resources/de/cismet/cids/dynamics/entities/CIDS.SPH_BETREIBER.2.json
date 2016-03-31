@@ -50,11 +50,11 @@
                 "id": 24,
                 "geo_field": "SRID=25832;POINT (374219.656230459 5676613.2131311)"
             },
-            "name": "GlÃ¼cks-Karl",
+            "name": "Glücks-Karl",
             "typ": {
                 "$self": "/CIDS.SPH_TYP/2",
                 "id": 2,
-                "name": "WettbÃ¼ro"
+                "name": "Wettbüro"
             },
             "hauptkategorie": {
                 "$self": "/CIDS.SPH_KATEGORIE/2",
@@ -90,12 +90,12 @@
             "hauptkategorie": {
                 "$self": "/CIDS.SPH_KATEGORIE/3",
                 "id": 3,
-                "name": "MÃ¼nzschieber"
+                "name": "Münzschieber"
             },
             "kategorien": [{
                     "$self": "/CIDS.SPH_KATEGORIE/3",
                     "id": 3,
-                    "name": "MÃ¼nzschieber"
+                    "name": "Münzschieber"
                 }, {
                     "$self": "/CIDS.SPH_KATEGORIE/5",
                     "id": 5,

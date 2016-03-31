@@ -33,7 +33,7 @@
                 }, {
                     "$self": "/CIDS.SPH_KATEGORIE/3",
                     "id": 3,
-                    "name": "MÃ¼nzschieber"
+                    "name": "Münzschieber"
                 }, {
                     "$self": "/CIDS.SPH_KATEGORIE/4",
                     "id": 4,
@@ -66,7 +66,7 @@
             "typ": {
                 "$self": "/CIDS.SPH_TYP/2",
                 "id": 2,
-                "name": "WettbÃ¼ro"
+                "name": "Wettbüro"
             },
             "hauptkategorie": null,
             "kategorien": [{
