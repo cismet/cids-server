@@ -1,0 +1,194 @@
+{
+    "$self": "/CIDS.SPH_SPIELHALLE/1",
+    "id": 1,
+    "geometrie": {
+        "$self": "/CIDS.GEOM/22",
+        "id": 22,
+        "geo_field": "SRID=25832;POINT (371361.303820079 5680834.91888317)"
+    },
+    "name": "Magic Spielhalle",
+    "typ": {
+        "$self": "/CIDS.SPH_TYP/1",
+        "id": 1,
+        "name": "Spielhalle"
+    },
+    "hauptkategorie": {
+        "$self": "/CIDS.SPH_KATEGORIE/1",
+        "id": 1,
+        "name": "Arcade"
+    },
+    "kategorien": [{
+            "$self": "/CIDS.SPH_KATEGORIE/1",
+            "id": 1,
+            "name": "Arcade"
+        }, {
+            "$self": "/CIDS.SPH_KATEGORIE/2",
+            "id": 2,
+            "name": "Lightgun"
+        }, {
+            "$self": "/CIDS.SPH_KATEGORIE/3",
+            "id": 3,
+            "name": "Münzschieber"
+        }, {
+            "$self": "/CIDS.SPH_KATEGORIE/4",
+            "id": 4,
+            "name": "einarmiger Bandit"
+        }, {
+            "$self": "/CIDS.SPH_KATEGORIE/5",
+            "id": 5,
+            "name": "3er Rolle"
+        }, {
+            "$self": "/CIDS.SPH_KATEGORIE/7",
+            "id": 7,
+            "name": "Flipper"
+        }],
+    "anzahl_sitzplaetze": 56,
+    "alkohol_ausschank": true,
+    "verbandsnummer": "qQYSFhBtnfEv",
+    "genehmigung_bis": "2017-03-24",
+    "letze_aenderung": 1458828543989,
+    "wgs84": null,
+    "betreiber": {
+        "$self": "/CIDS.SPH_BETREIBER/1",
+        "id": 1,
+        "name": "Betreibergesellschaft Lucky Button",
+        "zusatzinfo": "GmbH",
+        "spielhallen": [{
+                "$self": "/CIDS.SPH_SPIELHALLE/1",
+                "id": 1,
+                "geometrie": {
+                    "$self": "/CIDS.GEOM/22",
+                    "id": 22,
+                    "geo_field": "SRID=25832;POINT (371361.303820079 5680834.91888317)"
+                },
+                "name": "Magic Spielhalle",
+                "typ": {
+                    "$self": "/CIDS.SPH_TYP/1",
+                    "id": 1,
+                    "name": "Spielhalle"
+                },
+                "hauptkategorie": {
+                    "$self": "/CIDS.SPH_KATEGORIE/1",
+                    "id": 1,
+                    "name": "Arcade"
+                },
+                "kategorien": [{
+                        "$self": "/CIDS.SPH_KATEGORIE/1",
+                        "id": 1,
+                        "name": "Arcade"
+                    }, {
+                        "$self": "/CIDS.SPH_KATEGORIE/2",
+                        "id": 2,
+                        "name": "Lightgun"
+                    }, {
+                        "$self": "/CIDS.SPH_KATEGORIE/3",
+                        "id": 3,
+                        "name": "Münzschieber"
+                    }, {
+                        "$self": "/CIDS.SPH_KATEGORIE/4",
+                        "id": 4,
+                        "name": "einarmiger Bandit"
+                    }, {
+                        "$self": "/CIDS.SPH_KATEGORIE/5",
+                        "id": 5,
+                        "name": "3er Rolle"
+                    }, {
+                        "$self": "/CIDS.SPH_KATEGORIE/7",
+                        "id": 7,
+                        "name": "Flipper"
+                    }],
+                "anzahl_sitzplaetze": 56,
+                "alkohol_ausschank": true,
+                "verbandsnummer": "qQYSFhBtnfEv",
+                "genehmigung_bis": "2017-03-24",
+                "letze_aenderung": 1458828543989,
+                "wgs84": null,
+                "betreiber": null
+            }, {
+                "$self": "/CIDS.SPH_SPIELHALLE/5",
+                "id": 5,
+                "geometrie": {
+                    "$self": "/CIDS.GEOM/26",
+                    "id": 26,
+                    "geo_field": "SRID=25832;POINT (370415.285113837 5679176.46490886)"
+                },
+                "name": "Happy Winner Nowotny",
+                "typ": {
+                    "$self": "/CIDS.SPH_TYP/2",
+                    "id": 2,
+                    "name": "Wettbüro"
+                },
+                "hauptkategorie": null,
+                "kategorien": [{
+                        "$self": "/CIDS.SPH_KATEGORIE/4",
+                        "id": 4,
+                        "name": "einarmiger Bandit"
+                    }],
+                "anzahl_sitzplaetze": 2,
+                "alkohol_ausschank": null,
+                "verbandsnummer": "cNKZxLpIMXTr",
+                "genehmigung_bis": "2026-03-24",
+                "letze_aenderung": 1458828543992,
+                "wgs84": null,
+                "betreiber": null
+            }, {
+                "$self": "/CIDS.SPH_SPIELHALLE/6",
+                "id": 6,
+                "geometrie": {
+                    "$self": "/CIDS.GEOM/27",
+                    "id": 27,
+                    "geo_field": "SRID=25832;POINT (370401.35533071 5678949.48950753)"
+                },
+                "name": "Joker House",
+                "typ": null,
+                "hauptkategorie": {
+                    "$self": "/CIDS.SPH_KATEGORIE/5",
+                    "id": 5,
+                    "name": "3er Rolle"
+                },
+                "kategorien": [{
+                        "$self": "/CIDS.SPH_KATEGORIE/5",
+                        "id": 5,
+                        "name": "3er Rolle"
+                    }],
+                "anzahl_sitzplaetze": 23,
+                "alkohol_ausschank": null,
+                "verbandsnummer": "LbYWmfzEdQHP",
+                "genehmigung_bis": "2015-03-24",
+                "letze_aenderung": 1458828543993,
+                "wgs84": null,
+                "betreiber": null
+            }, {
+                "$self": "/CIDS.SPH_SPIELHALLE/7",
+                "id": 7,
+                "geometrie": {
+                    "$self": "/CIDS.GEOM/28",
+                    "id": 28,
+                    "geo_field": "SRID=25832;POINT (374055.841840938 5681654.00877408)"
+                },
+                "name": "Dark Room Lucky Punch",
+                "typ": {
+                    "$self": "/CIDS.SPH_TYP/3",
+                    "id": 3,
+                    "name": "Spielhalle mit Mehrfachkonzession"
+                },
+                "hauptkategorie": {
+                    "$self": "/CIDS.SPH_KATEGORIE/6",
+                    "id": 6,
+                    "name": "4er Rolle"
+                },
+                "kategorien": [{
+                        "$self": "/CIDS.SPH_KATEGORIE/6",
+                        "id": 6,
+                        "name": "4er Rolle"
+                    }],
+                "anzahl_sitzplaetze": 54,
+                "alkohol_ausschank": true,
+                "verbandsnummer": null,
+                "genehmigung_bis": "2012-03-24",
+                "letze_aenderung": 1458828543993,
+                "wgs84": null,
+                "betreiber": null
+            }]
+    }
+}
