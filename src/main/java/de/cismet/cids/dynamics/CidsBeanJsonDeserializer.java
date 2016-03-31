@@ -7,6 +7,7 @@
 ****************************************************/
 package de.cismet.cids.dynamics;
 
+import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -250,6 +251,12 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                     final Object value = propValueMap.get(prop);
 
                     if (value instanceof String) {
+                        final ObjectAttribute objectAttribute = cb.getMetaObject().getAttributeByFieldName(prop);
+                        if (objectAttribute == null) {
+                            throw new RuntimeException("unknow property '" + prop + "' in instance of "
+                                        + cb.getCidsBeanInfo());
+                        }
+
                         final Class attrClass = BlacklistClassloading.forName(cb.getMetaObject()
                                         .getAttributeByFieldName(
                                             prop).getMai().getJavaclassname());
