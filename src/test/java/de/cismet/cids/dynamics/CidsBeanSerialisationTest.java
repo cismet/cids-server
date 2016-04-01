@@ -1,16 +1,20 @@
 package de.cismet.cids.dynamics;
 
+import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
+import de.cismet.cids.utils.MetaClassCacheService;
 import java.awt.EventQueue;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.concurrent.Semaphore;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -247,6 +251,129 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
                         LOGGER.debug("testSerializeUpdatedCidsBeanObject passed: "
                                 + ((CidsBean)updatedCidsBean.getProperty("kategorien[0]")).getProperty("name")
                                 + " (" + ((MetaObject) metaObjectSpy.getAttributeByFieldName("kategorien").getValue()).getStatus() + ")");
+
+                    } catch (Throwable t) {
+                        LOGGER.error(t.getMessage(), t);
+                        throwablesFromThread.add(t);
+                    } finally {
+                        semaphore.release();
+                    }
+                }
+            });
+            semaphore.acquire();
+
+            Assert.assertNotEquals(updatedCidsBean.toJSONString(true), cidsBeanJson);
+
+        } catch (AssertionError ae) {
+            LOGGER.error("testSerializeUpdatedCidsBean failed with: " + ae.getMessage());
+            throw ae;
+        } catch (Exception ex) {
+
+            LOGGER.error(ex.getMessage(), ex);
+            throw ex;
+        } finally {
+            if (!throwablesFromThread.isEmpty()) {
+                throw (throwablesFromThread.getLast());
+            }
+        }
+    }
+    
+    @Test
+    @UseDataProvider("getCidsBeans")
+    public void testSerializeAddArrayElement(CidsBean cidsBean) throws Throwable {
+
+        Assume.assumeTrue(cidsBean.getCidsBeanInfo().getClassKey().equalsIgnoreCase("SPH_SPIELHALLE"));
+
+        final LinkedList<Throwable> throwablesFromThread = new LinkedList<Throwable>();
+
+        try {
+            LOGGER.debug("testSerializeAddArrayElement: " + cidsBean.getPrimaryKeyValue());
+
+            final String cidsBeanJson = cidsBean.toJSONString(true);
+
+            final CidsBean updatedCidsBean = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
+
+            final MetaObject metaObjectSpy = Mockito.spy(updatedCidsBean.getMetaObject());
+            updatedCidsBean.setMetaObject(metaObjectSpy);
+
+            final Semaphore semaphore = new Semaphore(1);
+            
+            final MetaClassCacheService classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
+            final CidsBean arrayEntryBean = classCacheService.getMetaClass("CIDS", "SPH_KATEGORIE").getEmptyInstance().getBean();
+            arrayEntryBean.setProperty("name", "Climbing for Dollars");
+            final int arrayElements = ((Collection)updatedCidsBean.getProperty("kategorien")).size();
+            updatedCidsBean.addCollectionElement("kategorien", arrayEntryBean);
+            
+
+            // wait for property change event!
+            EventQueue.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+
+                        // involed 2 times: collection listener and property listener
+                        Mockito.verify(metaObjectSpy, Mockito.times(2)).getAttributeByFieldName("kategorien");
+                        
+                        Assert.assertTrue(MetaObject.class.isAssignableFrom(metaObjectSpy.getAttributeByFieldName("kategorien").getValue().getClass()));
+
+                        Assert.assertTrue(Collection.class.isAssignableFrom(updatedCidsBean.getProperty("kategorien").getClass()));
+                        
+                        final Collection arrayCollection = ((Collection)updatedCidsBean.getProperty("kategorien"));
+                        Assert.assertTrue(arrayCollection.size() > arrayElements);
+                        
+                        Assert.assertEquals(
+                                ((CidsBean[])arrayCollection.toArray(new CidsBean[arrayCollection.size()]))[arrayCollection.size()-1].toJSONString(true),
+                                arrayEntryBean.toJSONString(true));
+                        
+                        final ObjectAttribute[] arrayArray = ((MetaObject) metaObjectSpy.getAttributeByFieldName("kategorien").getValue()).getAttribs();
+                        Assert.assertTrue(arrayArray.length > arrayElements);
+                        Assert.assertEquals(arrayArray.length, arrayCollection.size());
+                        
+                        Assert.assertEquals(
+                                ((CidsBean[])arrayCollection.toArray(new CidsBean[arrayCollection.size()]))[arrayCollection.size()-1].toJSONString(true),
+                                ((CidsBean)((CidsBean)((MetaObject) arrayArray[arrayArray.length-1].getValue()).getBean()).getProperty("kategorie")).toJSONString(true));
+
+                    } catch (Throwable t) {
+                        LOGGER.error(t.getMessage(), t);
+                        throwablesFromThread.add(t);
+                    } finally {
+                        semaphore.release();
+                    }
+                }
+            });
+            semaphore.acquire();
+            
+            Mockito.reset(metaObjectSpy);
+            final String name = "Klettern für Dollars";
+            final MetaObject subMetaObjectSpy = Mockito.spy(arrayEntryBean.getMetaObject());
+            arrayEntryBean.setMetaObject(subMetaObjectSpy);
+            updatedCidsBean.setProperty("kategorien["+(updatedCidsBean.getBeanCollectionProperty("kategorien").size()-1)+"].name", name);
+            
+            // wait for property change event!
+            EventQueue.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+
+                        Mockito.verify(metaObjectSpy, Mockito.never()).setStatus(Mockito.anyInt());
+                        Mockito.verify(subMetaObjectSpy, Mockito.times(1)).getAttributeByFieldName("name");
+                        Mockito.verify(subMetaObjectSpy, Mockito.times(1)).setStatus(MetaObject.MODIFIED);
+                        
+                        Assert.assertTrue(MetaObject.class.isAssignableFrom(metaObjectSpy.getAttributeByFieldName("kategorien").getValue().getClass()));
+
+                        Assert.assertTrue(Collection.class.isAssignableFrom(updatedCidsBean.getProperty("kategorien").getClass()));
+                        
+                        final Collection arrayCollection = ((Collection)updatedCidsBean.getProperty("kategorien"));
+                        Assert.assertTrue(arrayCollection.size() > arrayElements);
+                        
+                        Assert.assertEquals(
+                                ((CidsBean[])arrayCollection.toArray(new CidsBean[arrayCollection.size()]))[arrayCollection.size()-1].toJSONString(true),
+                                arrayEntryBean.toJSONString(true));
+                        
+                        final ObjectAttribute[] arrayArray = ((MetaObject) metaObjectSpy.getAttributeByFieldName("kategorien").getValue()).getAttribs();
+                        Assert.assertEquals(
+                                ((CidsBean[])arrayCollection.toArray(new CidsBean[arrayCollection.size()]))[arrayCollection.size()-1].toJSONString(true),
+                                ((CidsBean)((CidsBean)((MetaObject) arrayArray[arrayArray.length-1].getValue()).getBean()).getProperty("kategorie")).toJSONString(true));
 
                     } catch (Throwable t) {
                         LOGGER.error(t.getMessage(), t);
