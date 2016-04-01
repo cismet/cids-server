@@ -836,8 +836,10 @@ public class CidsBean implements PropertyChangeListener {
             final int index,
             final Object oldElement) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("listElementReplaced: " + this, new Exception());
+            LOG.warn("listElementReplaced: " + this, new Exception());
         }
+
+        // FIXME: implement or throw unsupported operation exception!
     }
 
     /**
