@@ -484,7 +484,7 @@ public class CidsBean implements PropertyChangeListener {
             referencingOA.setChanged(true);
             final Sirius.server.localserver.object.Object parent = referencingOA.getParentObject();
             parent.setStatus(MetaObject.MODIFIED); // funzt jetzt weil beim Erzeugen der Bean nochmals gesetzt (funzt
-            // nicht weil �ber den MetaObject Konstruktor eine neue Adresse
+            // nicht weil über den MetaObject Konstruktor eine neue Adresse
             // genutzt wird. Der andere Kram funktioniert aber, da die
             // gleichen ObjectAttributes genutzt werden.)
             referencingOA = parent.getReferencingObjectAttribute();
@@ -836,8 +836,10 @@ public class CidsBean implements PropertyChangeListener {
             final int index,
             final Object oldElement) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("listElementReplaced: " + this, new Exception());
+            LOG.warn("listElementReplaced: " + this, new Exception());
         }
+
+        // FIXME: implement or throw unsupported operation exception!
     }
 
     /**

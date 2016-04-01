@@ -1,0 +1,147 @@
+{
+    "$self": "/CIDS.SPH_SPIELHALLE/4",
+    "id": 4,
+    "geometrie": {
+        "$self": "/CIDS.GEOM/25",
+        "id": 25,
+        "geo_field": "SRID=25832;POINT (374269.560394419 5676560.27912855)"
+    },
+    "name": "Spielpalast",
+    "typ": {
+        "$self": "/CIDS.SPH_TYP/3",
+        "id": 3,
+        "name": "Spielhalle mit Mehrfachkonzession"
+    },
+    "hauptkategorie": {
+        "$self": "/CIDS.SPH_KATEGORIE/3",
+        "id": 3,
+        "name": "Münzschieber"
+    },
+    "kategorien": [{
+            "$self": "/CIDS.SPH_KATEGORIE/3",
+            "id": 3,
+            "name": "Münzschieber"
+        }, {
+            "$self": "/CIDS.SPH_KATEGORIE/5",
+            "id": 5,
+            "name": "3er Rolle"
+        }],
+    "anzahl_sitzplaetze": 12,
+    "alkohol_ausschank": null,
+    "verbandsnummer": "wXcrPWpFZKei",
+    "genehmigung_bis": "2016-03-24",
+    "letze_aenderung": 1458828543992,
+    "wgs84": null,
+    "betreiber": {
+        "$self": "/CIDS.SPH_BETREIBER/2",
+        "id": 2,
+        "name": "Betreibergesellschaft Washing Coins",
+        "zusatzinfo": "AG",
+        "spielhallen": [{
+                "$self": "/CIDS.SPH_SPIELHALLE/2",
+                "id": 2,
+                "geometrie": {
+                    "$self": "/CIDS.GEOM/23",
+                    "id": 23,
+                    "geo_field": "SRID=25832;POINT (375418.996250785 5681914.05249435)"
+                },
+                "name": "Spiel-in Meyer",
+                "typ": {
+                    "$self": "/CIDS.SPH_TYP/3",
+                    "id": 3,
+                    "name": "Spielhalle mit Mehrfachkonzession"
+                },
+                "hauptkategorie": {
+                    "$self": "/CIDS.SPH_KATEGORIE/1",
+                    "id": 1,
+                    "name": "Arcade"
+                },
+                "kategorien": [{
+                        "$self": "/CIDS.SPH_KATEGORIE/1",
+                        "id": 1,
+                        "name": "Arcade"
+                    }, {
+                        "$self": "/CIDS.SPH_KATEGORIE/5",
+                        "id": 5,
+                        "name": "3er Rolle"
+                    }, {
+                        "$self": "/CIDS.SPH_KATEGORIE/8",
+                        "id": 8,
+                        "name": "Roulette Automat"
+                    }],
+                "anzahl_sitzplaetze": 45,
+                "alkohol_ausschank": false,
+                "verbandsnummer": "mZkQnrCTpJHB",
+                "genehmigung_bis": "2018-03-24",
+                "letze_aenderung": 1458828543991,
+                "wgs84": null,
+                "betreiber": null
+            }, {
+                "$self": "/CIDS.SPH_SPIELHALLE/3",
+                "id": 3,
+                "geometrie": {
+                    "$self": "/CIDS.GEOM/24",
+                    "id": 24,
+                    "geo_field": "SRID=25832;POINT (374219.656230459 5676613.2131311)"
+                },
+                "name": "Glücks-Karl",
+                "typ": {
+                    "$self": "/CIDS.SPH_TYP/2",
+                    "id": 2,
+                    "name": "Wettbüro"
+                },
+                "hauptkategorie": {
+                    "$self": "/CIDS.SPH_KATEGORIE/2",
+                    "id": 2,
+                    "name": "Lightgun"
+                },
+                "kategorien": [{
+                        "$self": "/CIDS.SPH_KATEGORIE/2",
+                        "id": 2,
+                        "name": "Lightgun"
+                    }],
+                "anzahl_sitzplaetze": 10,
+                "alkohol_ausschank": true,
+                "verbandsnummer": "vgakjnhXCMoD",
+                "genehmigung_bis": "2019-03-24",
+                "letze_aenderung": 1458828543992,
+                "wgs84": null,
+                "betreiber": null
+            }, {
+                "$self": "/CIDS.SPH_SPIELHALLE/4",
+                "id": 4,
+                "geometrie": {
+                    "$self": "/CIDS.GEOM/25",
+                    "id": 25,
+                    "geo_field": "SRID=25832;POINT (374269.560394419 5676560.27912855)"
+                },
+                "name": "Spielpalast",
+                "typ": {
+                    "$self": "/CIDS.SPH_TYP/3",
+                    "id": 3,
+                    "name": "Spielhalle mit Mehrfachkonzession"
+                },
+                "hauptkategorie": {
+                    "$self": "/CIDS.SPH_KATEGORIE/3",
+                    "id": 3,
+                    "name": "Münzschieber"
+                },
+                "kategorien": [{
+                        "$self": "/CIDS.SPH_KATEGORIE/3",
+                        "id": 3,
+                        "name": "Münzschieber"
+                    }, {
+                        "$self": "/CIDS.SPH_KATEGORIE/5",
+                        "id": 5,
+                        "name": "3er Rolle"
+                    }],
+                "anzahl_sitzplaetze": 12,
+                "alkohol_ausschank": null,
+                "verbandsnummer": "wXcrPWpFZKei",
+                "genehmigung_bis": "2016-03-24",
+                "letze_aenderung": 1458828543992,
+                "wgs84": null,
+                "betreiber": null
+            }]
+    }
+}

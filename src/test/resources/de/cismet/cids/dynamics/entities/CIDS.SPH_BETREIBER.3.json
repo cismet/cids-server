@@ -1,0 +1,69 @@
+{
+    "$self": "/CIDS.SPH_BETREIBER/3",
+    "id": 3,
+    "name": "Betreibergruppe Fast Money",
+    "zusatzinfo": "Ltd.",
+    "spielhallen": [{
+            "$self": "/CIDS.SPH_SPIELHALLE/8",
+            "id": 8,
+            "geometrie": {
+                "$self": "/CIDS.GEOM/29",
+                "id": 29,
+                "geo_field": "SRID=25832;POINT (370739.298423511 5680987.92905223)"
+            },
+            "name": "Spielhalle Gewinner",
+            "typ": {
+                "$self": "/CIDS.SPH_TYP/1",
+                "id": 1,
+                "name": "Spielhalle"
+            },
+            "hauptkategorie": {
+                "$self": "/CIDS.SPH_KATEGORIE/7",
+                "id": 7,
+                "name": "Flipper"
+            },
+            "kategorien": [{
+                    "$self": "/CIDS.SPH_KATEGORIE/7",
+                    "id": 7,
+                    "name": "Flipper"
+                }, {
+                    "$self": "/CIDS.SPH_KATEGORIE/4",
+                    "id": 4,
+                    "name": "einarmiger Bandit"
+                }],
+            "anzahl_sitzplaetze": 100,
+            "alkohol_ausschank": null,
+            "verbandsnummer": "LbYWmfzEdQHP",
+            "genehmigung_bis": "2016-03-24",
+            "letze_aenderung": 1458828543993,
+            "wgs84": null,
+            "betreiber": null
+        }, {
+            "$self": "/CIDS.SPH_SPIELHALLE/9",
+            "id": 9,
+            "geometrie": null,
+            "name": "Glückshalle",
+            "typ": {
+                "$self": "/CIDS.SPH_TYP/3",
+                "id": 3,
+                "name": "Spielhalle mit Mehrfachkonzession"
+            },
+            "hauptkategorie": {
+                "$self": "/CIDS.SPH_KATEGORIE/8",
+                "id": 8,
+                "name": "Roulette Automat"
+            },
+            "kategorien": [{
+                    "$self": "/CIDS.SPH_KATEGORIE/8",
+                    "id": 8,
+                    "name": "Roulette Automat"
+                }],
+            "anzahl_sitzplaetze": 5,
+            "alkohol_ausschank": true,
+            "verbandsnummer": null,
+            "genehmigung_bis": "2016-03-24",
+            "letze_aenderung": 1458828543994,
+            "wgs84": null,
+            "betreiber": null
+        }]
+}
