@@ -84,8 +84,6 @@ public class OfflineMetaClassCacheService implements MetaClassCacheService {
 
     @Override
     public HashMap<String, MetaClass> getAllClasses(final String domain) {
-
-        // this is madness!
         final HashMap<String, MetaClass> allClasses = new HashMap<String, MetaClass>();
         for (Integer classId : ALL_CLASSES_BY_ID.keySet()) {
             final String classKey = domain + classId;
@@ -94,5 +92,4 @@ public class OfflineMetaClassCacheService implements MetaClassCacheService {
 
         return allClasses;
     }
-
 }
