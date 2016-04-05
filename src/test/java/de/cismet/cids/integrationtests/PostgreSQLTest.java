@@ -27,24 +27,20 @@ public class PostgreSQLTest {
 
     protected final static Logger LOGGER = Logger.getLogger(PostgreSQLTest.class);
 
-    static {
-        final Properties log4jProperties = new Properties();
-        log4jProperties.put("log4j.appender.Remote", "org.apache.log4j.net.SocketAppender");
-        log4jProperties.put("log4j.appender.Remote.remoteHost", "localhost");
-        log4jProperties.put("log4j.appender.Remote.port", "4445");
-        log4jProperties.put("log4j.appender.Remote.locationInfo", "true");
-        log4jProperties.put("log4j.rootLogger", "ALL,Remote");
-        org.apache.log4j.PropertyConfigurator.configure(log4jProperties);
-    }
-
+//    static {
+//        final Properties log4jProperties = new Properties();
+//        log4jProperties.put("log4j.appender.Remote", "org.apache.log4j.net.SocketAppender");
+//        log4jProperties.put("log4j.appender.Remote.remoteHost", "localhost");
+//        log4jProperties.put("log4j.appender.Remote.port", "4445");
+//        log4jProperties.put("log4j.appender.Remote.locationInfo", "true");
+//        log4jProperties.put("log4j.rootLogger", "ALL,Remote");
+//        org.apache.log4j.PropertyConfigurator.configure(log4jProperties);
+//    }
     @Rule
     public PostgreSQLContainer postgres = new PostgreSQLContainer();
 
     public PostgreSQLTest() {
         LOGGER.debug("initializing PostgreSQLContainer");
-        //postgres = new PostgreSQLContainer();
-        //postgres.start();
-        LOGGER.info("PostgreSQLTest initilaized with DB: " + postgres.getJdbcUrl());
     }
 
     @BeforeClass
@@ -63,25 +59,22 @@ public class PostgreSQLTest {
 
         LOGGER.debug("PostgreSQLTest activated");
 
-        try {
-            Class.forName("org.postgresql.Driver");
-
-        } catch (ClassNotFoundException e) {
-            LOGGER.error("org.postgresql.Driver not available", e);
-            throw e;
-        }
     }
 
     @Test
-    public void testConnection() throws SQLException {
+    public void testConnection() throws Exception {
 
         LOGGER.info("testConnection");
+        try {
+            Class.forName(postgres.getDriverClassName());
+
+        } catch (ClassNotFoundException e) {
+            LOGGER.error("JDBC Driver '" + postgres.getDriverClassName()
+                    + "' Driver not available", e);
+            throw e;
+        }
 
         try {
-
-//            Connection connection = DriverManager.getConnection(
-//                    postgres.getJdbcUrl(), postgres.getUsername(),
-//                    postgres.getPassword());
             Connection connection = postgres.createConnection("");
 
             final Statement statement = connection.createStatement();
@@ -97,6 +90,5 @@ public class PostgreSQLTest {
             throw e;
 
         }
-
     }
 }
