@@ -231,10 +231,10 @@
 
     <build>
         <testResources>
-        <testResource>
-            <directory>${user.home}/container-data</directory>
-        </testResource>
-    </testResources>
+            <testResource>
+                <directory>${de.cismet.cids.integrationtests.containerdata}</directory>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
