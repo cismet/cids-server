@@ -3,6 +3,7 @@ package de.cismet.cids.integrationtests;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
+import java.io.File;
 import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
@@ -12,6 +13,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TestRule;
+import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
 
 /**
@@ -35,7 +37,7 @@ public class UserServiceTest extends TestBase {
      * initcidsRefContainer() operation that checks if integration tests are
      * enabled.
      */
-    protected static GenericContainer cidsRefContainer = null;
+    protected static DockerComposeContainer dockerEnvironment = null;
 
     /**
      * This ClassRule is executed only once before any test run (@Test method)
@@ -62,12 +64,14 @@ public class UserServiceTest extends TestBase {
         } else {
 
             // create new PostgreSQLContainer
-            cidsRefContainer = new GenericContainer("cismet/cidsref:latest")
-                    .withExposedPorts(9986);
+            dockerEnvironment = new DockerComposeContainer(
+            new File("src/test/resources/de/cismet/cids/integrationtests/docker-compose.yml"))
+                    .withExposedService("docker_db_1", 5434)
+                    .withExposedService("docker_cidsref_1", 9986);
 
             // Important: return the container instance. Otherwise start/stop 
             // of the container is not called!
-            return cidsRefContainer;
+            return dockerEnvironment;
         }
     }
 
@@ -82,15 +86,15 @@ public class UserServiceTest extends TestBase {
         Assert.assertNotNull("TestEnvironment created", properties);
 
         // check container creation succeeded 
-        Assert.assertNotNull("cidsRefContainer sucessfully created", cidsRefContainer);
+        Assert.assertNotNull("cidsRefContainer sucessfully created", dockerEnvironment);
 
         // check if docker image started
-        Assert.assertTrue("cidsRefContainer is running", cidsRefContainer.isRunning());
+        Assert.assertTrue("cidsRefContainer is running", dockerEnvironment.isRunning());
 
         try {
             final String callserverUrl = TestEnvironment.getCallserverUrl(
-                    cidsRefContainer.getContainerIpAddress(),
-                    cidsRefContainer.getMappedPort(9986));
+                    dockerEnvironment.getServiceHost("docker_cidsref_1", 9986),
+                    dockerEnvironment.getServicePort("docker_cidsref_1", 9986));
 
             LOGGER.info("connection to cids reference docker legacy server: " + callserverUrl);
 
