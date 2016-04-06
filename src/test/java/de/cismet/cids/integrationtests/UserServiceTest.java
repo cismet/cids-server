@@ -14,7 +14,6 @@ import org.junit.Test;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TestRule;
 import org.testcontainers.containers.DockerComposeContainer;
-import org.testcontainers.containers.GenericContainer;
 
 /**
  * Simple PostgreSQLTest to check whether docker is properly installed and the
@@ -65,7 +64,7 @@ public class UserServiceTest extends TestBase {
 
             // create new PostgreSQLContainer
             dockerEnvironment = new DockerComposeContainer(
-            new File("src/test/resources/de/cismet/cids/integrationtests/docker-compose.yml"))
+                    new File("src/test/resources/de/cismet/cids/integrationtests/docker-compose.yml"))
                     .withExposedService("docker_db_1", 5434)
                     .withExposedService("docker_cidsref_1", 9986);
 
