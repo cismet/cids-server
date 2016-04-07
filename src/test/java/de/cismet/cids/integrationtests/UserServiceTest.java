@@ -5,6 +5,7 @@ import Sirius.server.newuser.UserException;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
 import java.io.File;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -13,6 +14,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TestRule;
+import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.DockerComposeContainer;
 
 /**
@@ -47,8 +49,9 @@ public class UserServiceTest extends TestBase {
      * @return GenericContainer or dummy ClassRule
      */
     @ClassRule
-    public static TestRule initcidsRefContainer() {
-        LOGGER.info("activating cids Integration Tests: " + !TestEnvironment.isIntegrationTestsDisabled());
+    public static TestRule initCidsRefContainer() {
+        LOGGER.info("initCidsRefContainer(): activating cids Integration Tests: "
+                + !TestEnvironment.isIntegrationTestsDisabled());
 
         // check if integration tests are enabled in current maven profile
         if (TestEnvironment.isIntegrationTestsDisabled()) {
@@ -65,8 +68,8 @@ public class UserServiceTest extends TestBase {
             // create new PostgreSQLContainer
             dockerEnvironment = new DockerComposeContainer(
                     new File("src/test/resources/de/cismet/cids/integrationtests/docker-compose.yml"))
-                    .withExposedService("docker_db_1", 5434)
-                    .withExposedService("docker_cidsref_1", 9986);
+                    .withExposedService("db_1", 5432)
+                    .withExposedService("cidsref_1", 9986);
 
             // Important: return the container instance. Otherwise start/stop 
             // of the container is not called!
@@ -74,29 +77,35 @@ public class UserServiceTest extends TestBase {
         }
     }
 
-    protected static RESTfulSerialInterfaceConnector connector = null;
-    protected static User user = null;
+    protected RESTfulSerialInterfaceConnector connector = null;
+    protected User user = null;
     protected static Properties properties = null;
 
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-
-        properties = TestEnvironment.getProperties();
-        Assert.assertNotNull("TestEnvironment created", properties);
-
-        // check container creation succeeded 
-        Assert.assertNotNull("cidsRefContainer sucessfully created", dockerEnvironment);
-
-        // check if docker image started
-        Assert.assertTrue("cidsRefContainer is running", dockerEnvironment.isRunning());
+    public UserServiceTest() throws Exception {
+        LOGGER.debug("UserServiceTest(): initializing UserServiceTest instance");
 
         try {
             final String callserverUrl = TestEnvironment.getCallserverUrl(
-                    dockerEnvironment.getServiceHost("docker_cidsref_1", 9986),
-                    dockerEnvironment.getServicePort("docker_cidsref_1", 9986));
+                    dockerEnvironment.getServiceHost("cidsref_1", 9986),
+                    dockerEnvironment.getServicePort("cidsref_1", 9986));
 
-            LOGGER.info("connection to cids reference docker legacy server: " + callserverUrl);
+            
 
+//            Unreliables.retryUntilTrue(30, TimeUnit.SECONDS, () -> {
+//                //noinspection CodeBlock2Expr
+//                return DOCKER_CLIENT_RATE_LIMITER.getWhenReady(() -> {
+//                    InspectContainerResponse inspectionResponse = dockerClient.inspectContainerCmd(containerId).exec();
+//                    return inspectionResponse.getState().isRunning();
+//                });
+//            });
+
+            if (!TestEnvironment.pingHost(dockerEnvironment.getServiceHost("cidsref_1", 9986), 
+                    dockerEnvironment.getServicePort("cidsref_1", 9986), 
+                    30*1000)) {
+                throw new Exception(callserverUrl + "did not answer after 30 seconds");
+            }
+            
+            LOGGER.info("connecting to cids reference docker legacy server: " + callserverUrl);
             connector = new RESTfulSerialInterfaceConnector(callserverUrl);
 
             user = connector.getUser(properties.getProperty("usergroupDomain", "CIDS_REF"),
@@ -112,6 +121,19 @@ public class UserServiceTest extends TestBase {
             LOGGER.error(e.getMessage(), e);
             throw e;
         }
+    }
+
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        LOGGER.debug("beforeClass(): cids Integration Tests activated, loading properties");
+        properties = TestEnvironment.getProperties();
+        Assert.assertNotNull("TestEnvironment created", properties);
+
+        // check container creation succeeded 
+        Assert.assertNotNull("cidsRefContainer sucessfully created", dockerEnvironment);
+
+        // check if docker image started
+        Assert.assertTrue("cidsRefContainer is running", dockerEnvironment.isRunning());
     }
 
     @Test

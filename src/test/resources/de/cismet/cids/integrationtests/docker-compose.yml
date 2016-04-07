@@ -1,12 +1,18 @@
 db:
   image: cismet/postgresql-postgis
   volumes:
-    - ~/container-data/cids_reference.sql:/data/dumps/cids_reference.sql
+     -  /c/Users/pd/container-data/cismet/postgresql-postgis/cids_reference.sql:/data/dumps/cids_reference.sql
+    #- ~/container-data/cismet/postgresql-postgis/cids_reference.sql:/data/dumps/cids_reference.sql
+  log_driver: "json-file"
 cidsref:
   image: cismet/cidsref
   links:
     - "db:db"
   volumes:
-    - ~/container-data/settings.xml:/data/import/settings.xml
-    - ~/container-data/pom.xml:/data/import/pom.xml
-    - ~/container-data/runtime.properties:/data/import/runtime.properties
+    - /c/Users/pd/container-data/settings.xml:/data/import/settings.xml
+    - /c/Users/pd/container-data/pom.xml:/data/import/pom.xml
+    - /c/Users/pd/container-data/runtime.properties:/data/import/runtime.properties
+    #- ~/container-data/settings.xml:/data/import/settings.xml
+    #- ~/container-data/pom.xml:/data/import/pom.xml
+    #- ~/container-data/runtime.properties:/data/import/runtime.properties
+  log_driver: "json-file"

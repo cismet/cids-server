@@ -4,6 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.junit.Assume;
@@ -66,5 +69,28 @@ public class TestEnvironment extends ExternalResource {
         }
 
         return localProperties;
+    }
+
+    public static boolean pingHost(String host, int port, int timeout) {
+        try {
+            final Socket socket = new Socket();
+            socket.connect(new InetSocketAddress(host, port), timeout);
+            socket.setSoTimeout(timeout);
+            PrintWriter pw = new PrintWriter(socket.getOutputStream());
+            pw.println("GET /callserver/binary HTTP/1.1");
+            pw.flush();
+            Logger.getLogger(TestEnvironment.class).debug(socket.getLocalSocketAddress());
+            //BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            final InputStream is = socket.getInputStream();
+            while (socket.getInputStream().read() != -1) {
+                //Logger.getLogger(TestEnvironment.class).debug(t);
+            }
+            is.close();
+            return true;
+        } catch (Throwable t) {
+            Logger.getLogger(TestEnvironment.class).error("ping " + host + ":" 
+                    + port + "fails after " + timeout + "ms: " + t.getMessage(), t);
+            return false; // Either timeout or unreachable or failed DNS lookup.
+        }
     }
 }
