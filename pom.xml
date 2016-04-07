@@ -18,8 +18,25 @@
         <jersey.version>1.17.1</jersey.version>
         <jackson.version>2.2.2</jackson.version>
     </properties>
+    
+    <profiles>
+        <!-- Activate profile to run integration tests against dockerized cids-server instance -->
+        <profile>
+            <id>integrationtests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <!-- enable integration tests (this flag is checked in JUnit Tests @ClassRule) -->
+                <de.cismet.cids.integrationtests.enabled>true</de.cismet.cids.integrationtests.enabled>
+                <!-- default base folder for docker volumens -->
+                <de.cismet.cids.integrationtests.containerdata>${user.home}/container-data</de.cismet.cids.integrationtests.containerdata>
+            </properties>
+        </profile>
+    </profiles>
+
     <name>${names.cids-server}</name>
-    <description>!!! description pending !!!</description>
+    <description>Server components of the cids system</description>
     <licenses>
         <license>
             <name>GNU Lesser General Public License</name>
@@ -204,8 +221,8 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <!-- windows: use 1.0.1-SNAPSHOT from https://github.com/v-schulz/testcontainers-java -->
-            <!--<version>1.0.1-SNAPSHOT</version>-->
+            <!-- windows: use 1.0.2-SNAPSHOT from https://github.com/v-schulz/testcontainers-java/tree/windows-support -->
+            <!--<version>1.0.2-SNAPSHOT</version>-->
             <version>1.0.2</version>
             <scope>test</scope>
         </dependency>
@@ -231,6 +248,14 @@
 
     <build>
         <testResources>
+            <!-- By default, Maven will look for test resources under src/test/resources -->
+            <!-- However, when specifying a potentionally non-existant resource directory (containerdata), this might fail -->
+            <!-- Therefore we have to explicitely specify the  default test resources directory here! -->
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+            <!-- add docker volumes base dir to classpath -->
+            <!-- only available in profile 'integrationtests', skipped if non-existant -->
             <testResource>
                 <directory>${de.cismet.cids.integrationtests.containerdata}</directory>
             </testResource>
@@ -255,6 +280,7 @@
                         <!-- this is only a pseudo-test for doing basic performance comparison -->
                         <exclude>**/RMIvsRESTTest.class</exclude>
                     </excludes>
+                    <!-- set system property for JUnit ClassRule -->
                     <systemPropertyVariables>
                             <de.cismet.cids.integrationtests.enabled>
                                 ${de.cismet.cids.integrationtests.enabled}
@@ -265,27 +291,27 @@
             <!-- 
                 rmic will most likely be not necessary any more and is thus
                 
-               DEPRECATED
-            -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>rmic-maven-plugin</artifactId>
-                <version>1.1</version>
-                <executions>
-                    <execution>
-                        <id>rmi-compilation</id>
-                        <goals>
-                            <goal>rmic</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <outputDirectory>${project.build.outputDirectory}</outputDirectory>
-                </configuration>
-            </plugin>
-        </plugins>
-        <finalName>cidsServer</finalName>
-    </build>
+                   DEPRECATED
+                -->
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>rmic-maven-plugin</artifactId>
+                    <version>1.1</version>
+                    <executions>
+                        <execution>
+                            <id>rmi-compilation</id>
+                            <goals>
+                                <goal>rmic</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                    </configuration>
+                </plugin>
+            </plugins>
+            <finalName>cidsServer</finalName>
+        </build>
 </project>
 
 

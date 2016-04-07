@@ -4,11 +4,11 @@ import java.util.Properties;
 
 /**
  * Heler class to initialize Log4j
- * 
+ *
  * @author Pascal Dihé <pascal.dihe@cismet.de>
  */
 public abstract class TestBase {
- 
+
     static {
         final Properties log4jProperties = new Properties();
         log4jProperties.put("log4j.appender.Remote", "org.apache.log4j.net.SocketAppender");

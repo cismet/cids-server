@@ -63,7 +63,7 @@ public class IntegrationBaseTest extends TestBase {
             try {
                 // create new PostgreSQLContainer
                 postgresContainer = new GenericContainer("cismet/postgresql-postgis:latest")
-                        .withExposedPorts(5434)
+                        .withExposedPorts(5432)
                         .withClasspathResourceMapping("cismet/postgresql-postgis/cids_reference.sql",
                                 "/data/dumps/cids_reference.sql", BindMode.READ_ONLY);
 
@@ -122,7 +122,7 @@ public class IntegrationBaseTest extends TestBase {
     @Test
     public void testConnection() throws Exception {
         LOGGER.info(postgresContainer.getContainerIpAddress());
-        LOGGER.info(postgresContainer.getMappedPort(5434));
+        LOGGER.info(postgresContainer.getMappedPort(5432));
     }
 
 }

@@ -12,7 +12,7 @@ import org.junit.rules.ExternalResource;
 /**
  * TestEnviroment Specification for providing access to system properties and
  * configurations that control the integration test behaviour.
- * 
+ *
  * Can be used as @ClassRule to skip tests if integration tests are disabled.
  *
  * @author Pascal Dihé <pascal.dihe@cismet.de>
@@ -21,7 +21,7 @@ public class TestEnvironment extends ExternalResource {
 
     public static final String INTEGRATION_TESTS_ENABLED = "de.cismet.cids.integrationtests.enabled";
     protected static volatile Properties properties = null;
-    
+
     public static boolean isIntegrationTestsEnabled() {
         //System.out.println(System.getProperty(INTEGRATION_TESTS_ENABLED));
         return "true".equalsIgnoreCase(System.getProperty(INTEGRATION_TESTS_ENABLED));
@@ -31,28 +31,27 @@ public class TestEnvironment extends ExternalResource {
         //System.out.println(System.getProperty(INTEGRATION_TESTS_ENABLED));
         return !"true".equalsIgnoreCase(System.getProperty(INTEGRATION_TESTS_ENABLED));
     }
-    
 
     @Override
     protected void before() throws Throwable {
         Logger.getLogger(TestEnvironment.class).info("activating cids Integration Tests: " + !TestEnvironment.isIntegrationTestsDisabled());
         Assume.assumeTrue(!TestEnvironment.isIntegrationTestsDisabled());
     }
-    
+
     public static String getCallserverUrl(final String containerIpAddress, final int mappedPort) {
         final String callserverUrl = "http://" + containerIpAddress
-                    + ":" + mappedPort + "/callserver/binary";
-        
+                + ":" + mappedPort + "/callserver/binary";
+
         return callserverUrl;
     }
-    
+
     public static Properties getProperties() {
         Properties localProperties = TestEnvironment.properties;
         if (localProperties == null) {
             synchronized (TestEnvironment.class) {
                 localProperties = TestEnvironment.properties;
                 if (localProperties == null) {
-                    
+
                     localProperties = new Properties();
                     try {
                         final InputStream propertyFile = TestEnvironment.class.getResourceAsStream("cidsRef.properties");
@@ -65,7 +64,7 @@ public class TestEnvironment extends ExternalResource {
                 }
             }
         }
-        
+
         return localProperties;
     }
 }

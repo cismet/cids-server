@@ -67,6 +67,8 @@ public class OfflineMetaClassCacheService implements MetaClassCacheService {
                 }
             }
 
+            LOGGER.info(ALL_CLASSES_BY_ID.size() + " meta classes loaded");
+
         } else {
             LOGGER.info("meta classes already loaded");
         }
