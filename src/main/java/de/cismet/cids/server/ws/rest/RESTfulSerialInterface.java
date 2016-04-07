@@ -21,10 +21,13 @@ import com.sun.jersey.core.util.Base64;
 
 import org.apache.log4j.Logger;
 
+import org.openide.util.Exceptions;
+
 import java.io.IOException;
 
 import java.rmi.RemoteException;
 
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 
@@ -157,6 +160,34 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param  hsr             DOCUMENT ME!
+     * @param  methodName      DOCUMENT ME!
+     * @param  user            DOCUMENT ME!
+     * @param  additionalInfo  DOCUMENT ME!
+     */
+    private void nameTheThread(final HttpServletRequest hsr,
+            final String methodName,
+            final String user,
+            final String additionalInfo) {
+        if (RESTfulService.isThreadNamingEnabled()) {
+            final long t = System.currentTimeMillis();
+            final String currentName = Thread.currentThread().getName();
+            final int indexOfAdditionalInfo = currentName.indexOf("[");
+            String rawName = currentName;
+            if (indexOfAdditionalInfo > 1) {
+                rawName = currentName.substring(0, indexOfAdditionalInfo - 1);
+            }
+
+            Thread.currentThread()
+                    .setName(rawName + " [@" + t + "," + new Date(t) + ", " + methodName + ", " + user + "@"
+                        + hsr.getLocalAddr() + ", " + additionalInfo
+                        + "]");
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   hsr  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -167,6 +198,12 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.TEXT_HTML)
     @Path("/")
     public Response getTest(@Context final HttpServletRequest hsr) throws RemoteException {
+        nameTheThread(hsr, "getTest", "noUser", "1000ms sleep");
+//        try {
+//            Thread.sleep(1000);
+//        } catch (InterruptedException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
         return Response.ok(
                     "<html><h3>I'm sorry, Dave. I'm afraid I can't do that.<br>"
                             + "This interface is not meant for browser traffic. "
@@ -176,6 +213,9 @@ public final class RESTfulSerialInterface {
                             + "\n"
                             + "NAME: "
                             + hsr.getLocalName()
+                            + "\n"
+                            // + "Threading Status:"
+                            // + RESTfulService.getThreadingStatus()
                             + "\n"
                             + hsr.toString()
                             + "</pre>"
