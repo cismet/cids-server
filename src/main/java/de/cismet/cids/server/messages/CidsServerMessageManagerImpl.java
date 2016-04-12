@@ -63,6 +63,7 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
      * Creates a new CidsServerMessageHandler object.
      */
     private CidsServerMessageManagerImpl() {
+        messageId = (int)((System.currentTimeMillis() / 1000) % Integer.MAX_VALUE);
     }
 
     //~ Methods ----------------------------------------------------------------
