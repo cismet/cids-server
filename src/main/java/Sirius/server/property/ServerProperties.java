@@ -152,7 +152,6 @@ import de.cismet.tools.PasswordEncrypter;
  * @author   Bernd Kiefer
  * @version  1.1 (schlob) *
  */
-
 public class ServerProperties extends java.util.PropertyResourceBundle {
 
     //~ Static fields/initializers ---------------------------------------------
@@ -211,6 +210,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
     public final String getServerResourcesBasePath() {
         return this.getString("cids.custom.server.resourcesBasePath");
     }
+
     /**
      * Liefert den Wert des Keys "serverName".
      *
@@ -305,6 +305,64 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final String getRestServerKeystore() {
         return getString("server.rest.keystore.server"); // NOI18N
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final boolean isRestThreadNamingEnabled() {
+        try {
+            return Boolean.valueOf(getString("server.rest.threadnaming.enable"));      // NOI18N
+        } catch (final MissingResourceException e) {
+            final String message = "server.rest.threadnaming.enable property not set"; // NOI18N
+            if (LOG.isInfoEnabled()) {
+                LOG.info(message, e);
+            }
+
+            return false;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final int getRestServerMaxThreads() {
+        try {
+            return Integer.valueOf(getString("server.rest.threads.max"));                        // NOI18N
+        } catch (final NumberFormatException e) {
+            final String message = "could not parse server.rest.threads.max value. default=255"; // NOI18N
+            LOG.warn(message, e);
+        } catch (final MissingResourceException e) {
+            final String message = "server.rest.threads.max property not set. default=255";      // NOI18N
+            if (LOG.isInfoEnabled()) {
+                LOG.info(message, e);
+            }
+        }
+        return 255;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final int getRestServerMinThreads() {
+        try {
+            return Integer.valueOf(getString("server.rest.threads.min"));                      // NOI18N
+        } catch (final NumberFormatException e) {
+            final String message = "could not parse server.rest.threads.min value. default=1"; // NOI18N
+            LOG.warn(message, e);
+        } catch (final MissingResourceException e) {
+            final String message = "server.rest.threads.min property not set. default=1";      // NOI18N
+            if (LOG.isInfoEnabled()) {
+                LOG.info(message, e);
+            }
+        }
+        return 1;
     }
 
     /**
@@ -540,6 +598,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
     public final String getServerPolicy() {
         return this.getString("serverPolicy"); // NOI18N
     }
+
     /**
      * DOCUMENT ME!
      *
@@ -548,6 +607,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
     public final String getClassNodePolicy() {
         return this.getString("classNodePolicy"); // NOI18N
     }
+
     /**
      * DOCUMENT ME!
      *
@@ -556,6 +616,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
     public final String getPureNodePolicy() {
         return this.getString("pureNodePolicy"); // NOI18N
     }
+
     /**
      * DOCUMENT ME!
      *
@@ -575,7 +636,6 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
     }
 
     /*  MetaJDBC-Treiber */
-
     /**
      * DOCUMENT ME!
      *
@@ -616,7 +676,6 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
     }
 
     /*  /MetaJDBC-Treiber */
-
     // ----------------------------------------------------------------------------------------------------------------------------
     /**
      * Liest alle defaultIcons aus dem defaultIconDirectory.
@@ -685,6 +744,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
 
         return stringArray;
     }
+
     /**
      * ---------------------------------------------------------------------------------------------------------------
      *

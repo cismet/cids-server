@@ -20,6 +20,7 @@ import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.security.SslSocketConnector;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
+import org.mortbay.thread.BoundedThreadPool;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +40,7 @@ public final class RESTfulService {
     private static RESTfulService instance;
 
     private static final int HEADER_BUFFER_SIZE = 512 * 1024; // = 512kb
+    private static boolean threadNamingEnabled = false;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -63,6 +65,14 @@ public final class RESTfulService {
 
         this.port = properties.getRestPort();
         server = new Server();
+        final BoundedThreadPool btp = new BoundedThreadPool();
+        System.out.println("<CS> INFO: min Jetty Threads set to:" + properties.getRestServerMinThreads());
+        System.out.println("<CS> INFO: max Jetty Threads set to:" + properties.getRestServerMaxThreads());
+
+        btp.setMinThreads(properties.getRestServerMinThreads());
+        btp.setMaxThreads(properties.getRestServerMaxThreads());
+        server.setThreadPool(btp);
+        threadNamingEnabled = properties.isRestThreadNamingEnabled();
         server.addConnector(getConnector(properties));
 
         final Context context = new Context(server, "/", Context.SESSIONS); // NOI18N
@@ -120,7 +130,6 @@ public final class RESTfulService {
                 throw new ServerExitError(message, e);
             }
         }
-
         connector.setPort(port);
         connector.setHeaderBufferSize(HEADER_BUFFER_SIZE);
 
@@ -182,5 +191,32 @@ public final class RESTfulService {
         } else {
             return -1;
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static boolean isThreadNamingEnabled() {
+        return threadNamingEnabled;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static String getThreadingStatus() {
+        final int threadCount = instance.server.getThreadPool().getThreads();
+        final int idleTC = instance.server.getThreadPool().getIdleThreads();
+        final HashMap<String, String> vals = new HashMap<String, String>();
+        if (instance.server.getThreadPool() instanceof BoundedThreadPool) {
+            vals.put("MaxThreads", ((BoundedThreadPool)instance.server.getThreadPool()).getMaxThreads() + "");
+            vals.put("MinThreads", ((BoundedThreadPool)instance.server.getThreadPool()).getMinThreads() + "");
+        }
+        final boolean isLowOnThreads = instance.server.getThreadPool().isLowOnThreads();
+        return idleTC + " of " + threadCount + " Threads are idle. AlertOnLowThreads:" + isLowOnThreads
+                    + " Additional Info: " + vals;
     }
 }
