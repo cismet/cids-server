@@ -226,6 +226,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr              DOCUMENT ME!
      * @param   userBytes        user DOCUMENT ME!
      * @param   domainNameBytes  DOCUMENT ME!
      *
@@ -237,7 +238,8 @@ public final class RESTfulSerialInterface {
     @Path("/getRootsByDomain")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getRootsByDomain(@FormParam(PARAM_USER) final String userBytes,
+    public Response getRootsByDomain(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_DOMAIN) final String domainNameBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -258,6 +260,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr        DOCUMENT ME!
      * @param   userBytes  user DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -268,7 +271,8 @@ public final class RESTfulSerialInterface {
     @Path("/getRoots")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getRoots(@FormParam(PARAM_USER) final String userBytes) throws RemoteException {
+    public Response getRoots(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
 
@@ -287,6 +291,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr        DOCUMENT ME!
      * @param   nodeBytes  node DOCUMENT ME!
      * @param   usrBytes   usr DOCUMENT ME!
      *
@@ -298,7 +303,8 @@ public final class RESTfulSerialInterface {
     @Path("/getChildren")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getChildren(@FormParam(PARAM_NODE) final String nodeBytes,
+    public Response getChildren(final HttpServletRequest hsr,
+            @FormParam(PARAM_NODE) final String nodeBytes,
             @FormParam(PARAM_USER) final String usrBytes) throws RemoteException {
         try {
             final Node node = Converter.deserialiseFromString(nodeBytes, Node.class);
@@ -319,6 +325,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr          DOCUMENT ME!
      * @param   nodeBytes    node DOCUMENT ME!
      * @param   parentBytes  DOCUMENT ME!
      * @param   userBytes    user DOCUMENT ME!
@@ -331,7 +338,8 @@ public final class RESTfulSerialInterface {
     @Path("/addNode")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response addNode(@FormParam(PARAM_NODE) final String nodeBytes,
+    public Response addNode(final HttpServletRequest hsr,
+            @FormParam(PARAM_NODE) final String nodeBytes,
             @FormParam(PARAM_LINK_PARENT) final String parentBytes,
             @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
@@ -354,6 +362,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr        DOCUMENT ME!
      * @param   nodeBytes  node DOCUMENT ME!
      * @param   userBytes  user DOCUMENT ME!
      *
@@ -365,7 +374,8 @@ public final class RESTfulSerialInterface {
     @Path("/deleteNode")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response deleteNode(@FormParam(PARAM_NODE) final String nodeBytes,
+    public Response deleteNode(final HttpServletRequest hsr,
+            @FormParam(PARAM_NODE) final String nodeBytes,
             @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final Node node = Converter.deserialiseFromString(nodeBytes, Node.class);
@@ -386,6 +396,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr        DOCUMENT ME!
      * @param   fromBytes  from DOCUMENT ME!
      * @param   toBytes    to DOCUMENT ME!
      * @param   userBytes  user DOCUMENT ME!
@@ -398,7 +409,8 @@ public final class RESTfulSerialInterface {
     @Path("/addLink")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response addLink(@FormParam(PARAM_NODE_FROM) final String fromBytes,
+    public Response addLink(final HttpServletRequest hsr,
+            @FormParam(PARAM_NODE_FROM) final String fromBytes,
             @FormParam(PARAM_NODE_TO) final String toBytes,
             @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
@@ -421,6 +433,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr        DOCUMENT ME!
      * @param   fromBytes  from DOCUMENT ME!
      * @param   toBytes    to DOCUMENT ME!
      * @param   userBytes  user DOCUMENT ME!
@@ -433,7 +446,8 @@ public final class RESTfulSerialInterface {
     @Path("/deleteLink")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response deleteLink(@FormParam(PARAM_NODE_FROM) final String fromBytes,
+    public Response deleteLink(final HttpServletRequest hsr,
+            @FormParam(PARAM_NODE_FROM) final String fromBytes,
             @FormParam(PARAM_NODE_TO) final String toBytes,
             @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
@@ -456,6 +470,8 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr  DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
@@ -463,7 +479,7 @@ public final class RESTfulSerialInterface {
     @POST
     @Path("/getDomains")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getDomains() throws RemoteException {
+    public Response getDomains(final HttpServletRequest hsr) throws RemoteException {
         try {
             return createResponse(callserver.getDomains());
         } catch (final IOException e) {
@@ -476,6 +492,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr          DOCUMENT ME!
      * @param   userBytes    usr DOCUMENT ME!
      * @param   nodeIDBytes  DOCUMENT ME!
      * @param   domainBytes  DOCUMENT ME!
@@ -488,7 +505,8 @@ public final class RESTfulSerialInterface {
     @Path("/getMetaObjectNodeByID")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMetaObjectNode(@FormParam(PARAM_USER) final String userBytes,
+    public Response getMetaObjectNode(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_NODE_ID) final String nodeIDBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
@@ -511,6 +529,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr         DOCUMENT ME!
      * @param   usrBytes    usr DOCUMENT ME!
      * @param   queryBytes  DOCUMENT ME!
      *
@@ -522,7 +541,8 @@ public final class RESTfulSerialInterface {
     @Path("/getMetaObjectNodeByString")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMetaObjectNodeByString(@FormParam(PARAM_USER) final String usrBytes,
+    public Response getMetaObjectNodeByString(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String usrBytes,
             @FormParam(PARAM_QUERY) final String queryBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(usrBytes, User.class);
@@ -543,6 +563,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr         DOCUMENT ME!
      * @param   usrBytes    usr DOCUMENT ME!
      * @param   queryBytes  DOCUMENT ME!
      *
@@ -554,7 +575,8 @@ public final class RESTfulSerialInterface {
     @Path("/getMetaObjectByString")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMetaObjectByString(@FormParam(PARAM_USER) final String usrBytes,
+    public Response getMetaObjectByString(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String usrBytes,
             @FormParam(PARAM_QUERY) final String queryBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(usrBytes, User.class);
@@ -575,6 +597,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr          DOCUMENT ME!
      * @param   usrBytes     DOCUMENT ME!
      * @param   queryBytes   DOCUMENT ME!
      * @param   domainBytes  DOCUMENT ME!
@@ -587,7 +610,8 @@ public final class RESTfulSerialInterface {
     @Path("/getMetaObjectByStringAndDomain")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMetaObjectByString(@FormParam(PARAM_USER) final String usrBytes,
+    public Response getMetaObjectByString(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String usrBytes,
             @FormParam(PARAM_QUERY) final String queryBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
@@ -610,6 +634,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr            DOCUMENT ME!
      * @param   userBytes      usr DOCUMENT ME!
      * @param   objectIDBytes  DOCUMENT ME!
      * @param   classIDBytes   DOCUMENT ME!
@@ -623,7 +648,8 @@ public final class RESTfulSerialInterface {
     @Path("/getMetaObjectByID")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMetaObject(@FormParam(PARAM_USER) final String userBytes,
+    public Response getMetaObject(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_OBJECT_ID) final String objectIDBytes,
             @FormParam(PARAM_CLASS_ID) final String classIDBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
@@ -648,6 +674,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr              DOCUMENT ME!
      * @param   userBytes        user DOCUMENT ME!
      * @param   metaObjectBytes  DOCUMENT ME!
      * @param   domainBytes      DOCUMENT ME!
@@ -660,7 +687,8 @@ public final class RESTfulSerialInterface {
     @Path("/insertMetaObject")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response insertMetaObject(@FormParam(PARAM_USER) final String userBytes,
+    public Response insertMetaObject(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_METAOBJECT) final String metaObjectBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
@@ -683,6 +711,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr              DOCUMENT ME!
      * @param   userBytes        user DOCUMENT ME!
      * @param   metaObjectBytes  DOCUMENT ME!
      * @param   domainBytes      DOCUMENT ME!
@@ -695,7 +724,8 @@ public final class RESTfulSerialInterface {
     @Path("/updateMetaObject")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response updateMetaObject(@FormParam(PARAM_USER) final String userBytes,
+    public Response updateMetaObject(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_METAOBJECT) final String metaObjectBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
@@ -718,6 +748,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr              DOCUMENT ME!
      * @param   userBytes        user DOCUMENT ME!
      * @param   metaObjectBytes  DOCUMENT ME!
      * @param   domainBytes      DOCUMENT ME!
@@ -730,7 +761,8 @@ public final class RESTfulSerialInterface {
     @Path("/deleteMetaObject")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response deleteMetaObject(@FormParam(PARAM_USER) final String userBytes,
+    public Response deleteMetaObject(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_METAOBJECT) final String metaObjectBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
@@ -753,6 +785,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr          DOCUMENT ME!
      * @param   userBytes    user DOCUMENT ME!
      * @param   queryBytes   DOCUMENT ME!
      * @param   domainBytes  DOCUMENT ME!
@@ -765,7 +798,8 @@ public final class RESTfulSerialInterface {
     @Path("/update")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response update(@FormParam(PARAM_USER) final String userBytes,
+    public Response update(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_QUERY) final String queryBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
@@ -788,6 +822,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr             DOCUMENT ME!
      * @param   userBytes       user DOCUMENT ME!
      * @param   metaClassBytes  c DOCUMENT ME!
      *
@@ -799,7 +834,8 @@ public final class RESTfulSerialInterface {
     @Path("/getInstance")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getInstance(@FormParam(PARAM_USER) final String userBytes,
+    public Response getInstance(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_METACLASS) final String metaClassBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -820,6 +856,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr             DOCUMENT ME!
      * @param   userBytes       user DOCUMENT ME!
      * @param   tableNameBytes  DOCUMENT ME!
      * @param   domainBytes     DOCUMENT ME!
@@ -832,7 +869,8 @@ public final class RESTfulSerialInterface {
     @Path("/getClassByTableName")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getClassByTableName(@FormParam(PARAM_USER) final String userBytes,
+    public Response getClassByTableName(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_TABLE_NAME) final String tableNameBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
@@ -855,6 +893,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr           DOCUMENT ME!
      * @param   userBytes     user DOCUMENT ME!
      * @param   classIdBytes  classID DOCUMENT ME!
      * @param   domainBytes   DOCUMENT ME!
@@ -867,7 +906,8 @@ public final class RESTfulSerialInterface {
     @Path("/getClassByID")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getClass(@FormParam(PARAM_USER) final String userBytes,
+    public Response getClass(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_CLASS_ID) final String classIdBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
@@ -890,6 +930,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr          DOCUMENT ME!
      * @param   userBytes    user DOCUMENT ME!
      * @param   domainBytes  DOCUMENT ME!
      *
@@ -901,7 +942,8 @@ public final class RESTfulSerialInterface {
     @Path("/getClasses")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getClasses(@FormParam(PARAM_USER) final String userBytes,
+    public Response getClasses(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -921,6 +963,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr        DOCUMENT ME!
      * @param   userBytes  user DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -931,7 +974,8 @@ public final class RESTfulSerialInterface {
     @Path("/getClassTreeNodesByUser")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getClassTreeNodes(@FormParam(PARAM_USER) final String userBytes) throws RemoteException {
+    public Response getClassTreeNodes(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
 
@@ -950,6 +994,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr          DOCUMENT ME!
      * @param   userBytes    user DOCUMENT ME!
      * @param   domainBytes  DOCUMENT ME!
      *
@@ -961,7 +1006,8 @@ public final class RESTfulSerialInterface {
     @Path("/getClassTreeNodesByDomain")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getClassTreeNodes(@FormParam(PARAM_USER) final String userBytes,
+    public Response getClassTreeNodes(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -982,6 +1028,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr        DOCUMENT ME!
      * @param   userBytes  user DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -992,7 +1039,8 @@ public final class RESTfulSerialInterface {
     @Path("/getMethodsByUser")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMethodsByUser(@FormParam(PARAM_USER) final String userBytes) throws RemoteException {
+    public Response getMethodsByUser(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
 
@@ -1011,6 +1059,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr                   DOCUMENT ME!
      * @param   userBytes             user DOCUMENT ME!
      * @param   localServerNameBytes  DOCUMENT ME!
      *
@@ -1022,7 +1071,8 @@ public final class RESTfulSerialInterface {
     @Path("/getMethodsByDomain")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMethods(@FormParam(PARAM_USER) final String userBytes,
+    public Response getMethods(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_LOCAL_SERVER_NAME) final String localServerNameBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -1043,6 +1093,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr                         DOCUMENT ME!
      * @param   classIdBytes                DOCUMENT ME!
      * @param   userBytes                   user DOCUMENT ME!
      * @param   representationFieldsBytes   DOCUMENT ME!
@@ -1056,7 +1107,7 @@ public final class RESTfulSerialInterface {
     @Path("/getAllLightweightMetaObjectsForClassByPattern")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getAllLightweightMetaObjectsForClassWithPattern(
+    public Response getAllLightweightMetaObjectsForClassWithPattern(final HttpServletRequest hsr,
             @FormParam(PARAM_CLASS_ID) final String classIdBytes,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_REP_FIELDS) final String representationFieldsBytes,
@@ -1090,6 +1141,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr                        DOCUMENT ME!
      * @param   classIdBytes               DOCUMENT ME!
      * @param   userBytes                  user DOCUMENT ME!
      * @param   representationFieldsBytes  DOCUMENT ME!
@@ -1102,7 +1154,8 @@ public final class RESTfulSerialInterface {
     @Path("/getAllLightweightMetaObjectsForClass")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getAllLightweightMetaObjectsForClass(@FormParam(PARAM_CLASS_ID) final String classIdBytes,
+    public Response getAllLightweightMetaObjectsForClass(final HttpServletRequest hsr,
+            @FormParam(PARAM_CLASS_ID) final String classIdBytes,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_REP_FIELDS) final String representationFieldsBytes) throws RemoteException {
         try {
@@ -1130,6 +1183,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr                         DOCUMENT ME!
      * @param   classIdBytes                DOCUMENT ME!
      * @param   userBytes                   user DOCUMENT ME!
      * @param   queryBytes                  DOCUMENT ME!
@@ -1144,7 +1198,8 @@ public final class RESTfulSerialInterface {
     @Path("/getLightweightMetaObjectsByQueryAndPattern")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getLightweightMetaObjectsByQueryAndPattern(@FormParam(PARAM_CLASS_ID) final String classIdBytes,
+    public Response getLightweightMetaObjectsByQueryAndPattern(final HttpServletRequest hsr,
+            @FormParam(PARAM_CLASS_ID) final String classIdBytes,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_QUERY) final String queryBytes,
             @FormParam(PARAM_REP_FIELDS) final String representationFieldsBytes,
@@ -1180,6 +1235,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr                        DOCUMENT ME!
      * @param   classIdBytes               DOCUMENT ME!
      * @param   userBytes                  user DOCUMENT ME!
      * @param   queryBytes                 DOCUMENT ME!
@@ -1193,7 +1249,8 @@ public final class RESTfulSerialInterface {
     @Path("/getLightweightMetaObjectsByQuery")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getLightweightMetaObjectsByQuery(@FormParam(PARAM_CLASS_ID) final String classIdBytes,
+    public Response getLightweightMetaObjectsByQuery(final HttpServletRequest hsr,
+            @FormParam(PARAM_CLASS_ID) final String classIdBytes,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_QUERY) final String queryBytes,
             @FormParam(PARAM_REP_FIELDS) final String representationFieldsBytes) throws RemoteException {
@@ -1224,6 +1281,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr          DOCUMENT ME!
      * @param   lsNameBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -1234,7 +1292,8 @@ public final class RESTfulSerialInterface {
     @Path("/getDefaultIconsByLSName")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getDefaultIconsByLSName(@FormParam(PARAM_LS_NAME) final String lsNameBytes) throws RemoteException {
+    public Response getDefaultIconsByLSName(final HttpServletRequest hsr,
+            @FormParam(PARAM_LS_NAME) final String lsNameBytes) throws RemoteException {
         try {
             final String lsName = Converter.deserialiseFromString(lsNameBytes, String.class);
 
@@ -1253,6 +1312,8 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr  DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
@@ -1260,7 +1321,7 @@ public final class RESTfulSerialInterface {
     @POST
     @Path("/getDefaultIcons")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getDefaultIcons() throws RemoteException {
+    public Response getDefaultIcons(final HttpServletRequest hsr) throws RemoteException {
         try {
             return createResponse(callserver.getDefaultIcons());
         } catch (final IOException e) {
@@ -1273,6 +1334,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr               DOCUMENT ME!
      * @param   userBytes         user DOCUMENT ME!
      * @param   oldPasswordBytes  DOCUMENT ME!
      * @param   newPasswordBytes  DOCUMENT ME!
@@ -1286,7 +1348,8 @@ public final class RESTfulSerialInterface {
     @Path("/changePassword")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response changePasswordGET(@FormParam(PARAM_USER) final String userBytes,
+    public Response changePasswordGET(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_OLD_PASSWORD) final String oldPasswordBytes,
             @FormParam(PARAM_NEW_PASSWORD) final String newPasswordBytes) throws RemoteException, UserException {
         try {
@@ -1353,6 +1416,8 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr  DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
@@ -1360,7 +1425,7 @@ public final class RESTfulSerialInterface {
     @POST
     @Path("/getUserGroupNames")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getUserGroupNames() throws RemoteException {
+    public Response getUserGroupNames(final HttpServletRequest hsr) throws RemoteException {
         try {
             return createResponse(callserver.getUserGroupNames());
         } catch (final IOException e) {
@@ -1373,6 +1438,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr          DOCUMENT ME!
      * @param   unameBytes   DOCUMENT ME!
      * @param   lsHomeBytes  DOCUMENT ME!
      *
@@ -1384,7 +1450,8 @@ public final class RESTfulSerialInterface {
     @Path("/getUserGroupNamesByUser")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getUserGroupNamesGET(@FormParam(PARAM_USERNAME) final String unameBytes,
+    public Response getUserGroupNamesGET(final HttpServletRequest hsr,
+            @FormParam(PARAM_USERNAME) final String unameBytes,
             @FormParam(PARAM_LS_HOME) final String lsHomeBytes) throws RemoteException {
         try {
             final String uname = Converter.deserialiseFromString(unameBytes, String.class);
@@ -1405,6 +1472,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr        DOCUMENT ME!
      * @param   userBytes  DOCUMENT ME!
      * @param   keyBytes   DOCUMENT ME!
      *
@@ -1416,7 +1484,8 @@ public final class RESTfulSerialInterface {
     @Path("/getConfigAttr")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getConfigAttr(@FormParam(PARAM_USER) final String userBytes,
+    public Response getConfigAttr(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_KEY) final String keyBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -1437,6 +1506,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr        DOCUMENT ME!
      * @param   userBytes  DOCUMENT ME!
      * @param   keyBytes   DOCUMENT ME!
      *
@@ -1448,7 +1518,8 @@ public final class RESTfulSerialInterface {
     @Path("/hasConfigAttr")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response hasConfigAttr(@FormParam(PARAM_USER) final String userBytes,
+    public Response hasConfigAttr(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_KEY) final String keyBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -1469,6 +1540,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr                      DOCUMENT ME!
      * @param   userBytes                DOCUMENT ME!
      * @param   customServerSearchBytes  DOCUMENT ME!
      *
@@ -1480,7 +1552,8 @@ public final class RESTfulSerialInterface {
     @Path("customServerSearch")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response customServerSearchPOST(@FormParam(PARAM_USER) final String userBytes,
+    public Response customServerSearchPOST(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_CUSTOM_SERVER_SEARCH) final String customServerSearchBytes) throws RemoteException {
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class);
@@ -1503,6 +1576,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr            DOCUMENT ME!
      * @param   classIdBytes   DOCUMENT ME!
      * @param   objectIdBytes  DOCUMENT ME!
      * @param   domainBytes    DOCUMENT ME!
@@ -1517,7 +1591,8 @@ public final class RESTfulSerialInterface {
     @Path("getHistory")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getHistoryPOST(@FormParam(PARAM_CLASS_ID) final String classIdBytes,
+    public Response getHistoryPOST(final HttpServletRequest hsr,
+            @FormParam(PARAM_CLASS_ID) final String classIdBytes,
             @FormParam(PARAM_OBJECT_ID) final String objectIdBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes,
             @FormParam(PARAM_USER) final String userBytes,
@@ -1544,6 +1619,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr               DOCUMENT ME!
      * @param   userBytes         DOCUMENT ME!
      * @param   taskdomainBytes   DOCUMENT ME!
      * @param   tasknameBytes     DOCUMENT ME!
@@ -1558,7 +1634,8 @@ public final class RESTfulSerialInterface {
     @Path("/executeTask")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.WILDCARD)
-    public Response executeTask(@FormParam(PARAM_USER) final String userBytes,
+    public Response executeTask(final HttpServletRequest hsr,
+            @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_DOMAIN) final String taskdomainBytes,
             @FormParam(PARAM_TASKNAME) final String tasknameBytes,
             @FormParam(PARAM_BODY) final String bodyBytes,
@@ -1599,6 +1676,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr         DOCUMENT ME!
      * @param   uriInfo     DOCUMENT ME!
      * @param   headers     DOCUMENT ME!
      * @param   authString  DOCUMENT ME!
@@ -1614,7 +1692,8 @@ public final class RESTfulSerialInterface {
     @Path("/executeTask/{taskname}@{taskdomain}")
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.WILDCARD)
-    public Response executeTaskWithPost(@Context final UriInfo uriInfo,
+    public Response executeTaskWithPost(final HttpServletRequest hsr,
+            @Context final UriInfo uriInfo,
             @Context final HttpHeaders headers,
             @HeaderParam("Authorization") final String authString,
             @PathParam("taskname") final String taskname,
@@ -1646,6 +1725,7 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr         DOCUMENT ME!
      * @param   uriInfo     DOCUMENT ME!
      * @param   headers     DOCUMENT ME!
      * @param   authString  DOCUMENT ME!
@@ -1659,12 +1739,13 @@ public final class RESTfulSerialInterface {
     @GET
     @Path("/executeTask/{taskname}@{taskdomain}")
     @Produces(MediaType.WILDCARD)
-    public Response executeTaskWithGet(@Context final UriInfo uriInfo,
+    public Response executeTaskWithGet(final HttpServletRequest hsr,
+            @Context final UriInfo uriInfo,
             @Context final HttpHeaders headers,
             @HeaderParam("Authorization") final String authString,
             @PathParam("taskname") final String taskname,
             @PathParam("taskdomain") final String taskdomain) throws RemoteException {
-        return executeTaskWithPost(uriInfo, headers, authString, taskname, taskdomain, null);
+        return executeTaskWithPost(hsr, uriInfo, headers, authString, taskname, taskdomain, null);
     }
 
     /**
