@@ -241,7 +241,7 @@ public final class RESTfulSerialInterface {
     @Path("/getRootsByDomain")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getRootsByDomain(final HttpServletRequest hsr,
+    public Response getRootsByDomain(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_DOMAIN) final String domainNameBytes) throws RemoteException {
         nameTheThread(hsr, "/getRootsByDomain", "[bytes]", "domain=[bytes]");
@@ -277,7 +277,7 @@ public final class RESTfulSerialInterface {
     @Path("/getRoots")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getRoots(final HttpServletRequest hsr,
+    public Response getRoots(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         nameTheThread(hsr, "/getRoots", "[bytes]");
 
@@ -312,7 +312,7 @@ public final class RESTfulSerialInterface {
     @Path("/getChildren")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getChildren(final HttpServletRequest hsr,
+    public Response getChildren(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_NODE) final String nodeBytes,
             @FormParam(PARAM_USER) final String usrBytes) throws RemoteException {
         nameTheThread(hsr, "/getChildren", "[bytes]", "node=[bytes]");
@@ -350,7 +350,7 @@ public final class RESTfulSerialInterface {
     @Path("/addNode")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response addNode(final HttpServletRequest hsr,
+    public Response addNode(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_NODE) final String nodeBytes,
             @FormParam(PARAM_LINK_PARENT) final String parentBytes,
             @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
@@ -388,7 +388,7 @@ public final class RESTfulSerialInterface {
     @Path("/deleteNode")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response deleteNode(final HttpServletRequest hsr,
+    public Response deleteNode(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_NODE) final String nodeBytes,
             @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         nameTheThread(hsr, "/deleteNode", "[bytes]", "node=[bytes]");
@@ -426,7 +426,7 @@ public final class RESTfulSerialInterface {
     @Path("/addLink")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response addLink(final HttpServletRequest hsr,
+    public Response addLink(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_NODE_FROM) final String fromBytes,
             @FormParam(PARAM_NODE_TO) final String toBytes,
             @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
@@ -473,7 +473,7 @@ public final class RESTfulSerialInterface {
     @Path("/deleteLink")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response deleteLink(final HttpServletRequest hsr,
+    public Response deleteLink(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_NODE_FROM) final String fromBytes,
             @FormParam(PARAM_NODE_TO) final String toBytes,
             @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
@@ -516,7 +516,7 @@ public final class RESTfulSerialInterface {
     @POST
     @Path("/getDomains")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getDomains(final HttpServletRequest hsr) throws RemoteException {
+    public Response getDomains(@Context final HttpServletRequest hsr) throws RemoteException {
         nameTheThread(hsr, "/getDomains", "anonymous");
         try {
             return createResponse(callserver.getDomains());
@@ -543,7 +543,7 @@ public final class RESTfulSerialInterface {
     @Path("/getMetaObjectNodeByID")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMetaObjectNode(final HttpServletRequest hsr,
+    public Response getMetaObjectNode(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_NODE_ID) final String nodeIDBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
@@ -581,7 +581,7 @@ public final class RESTfulSerialInterface {
     @Path("/getMetaObjectNodeByString")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMetaObjectNodeByString(final HttpServletRequest hsr,
+    public Response getMetaObjectNodeByString(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String usrBytes,
             @FormParam(PARAM_QUERY) final String queryBytes) throws RemoteException {
         nameTheThread(hsr, "/getMetaObjectNodeByString", "[bytes]", "query=[bytes]");
@@ -617,7 +617,7 @@ public final class RESTfulSerialInterface {
     @Path("/getMetaObjectByString")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMetaObjectByString(final HttpServletRequest hsr,
+    public Response getMetaObjectByString(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String usrBytes,
             @FormParam(PARAM_QUERY) final String queryBytes) throws RemoteException {
         nameTheThread(hsr, "/getMetaObjectByString", "[bytes]", "query=[bytes]");
@@ -654,7 +654,7 @@ public final class RESTfulSerialInterface {
     @Path("/getMetaObjectByStringAndDomain")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMetaObjectByString(final HttpServletRequest hsr,
+    public Response getMetaObjectByString(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String usrBytes,
             @FormParam(PARAM_QUERY) final String queryBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
@@ -701,7 +701,7 @@ public final class RESTfulSerialInterface {
     @Path("/getMetaObjectByID")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMetaObject(final HttpServletRequest hsr,
+    public Response getMetaObject(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_OBJECT_ID) final String objectIDBytes,
             @FormParam(PARAM_CLASS_ID) final String classIDBytes,
@@ -751,7 +751,7 @@ public final class RESTfulSerialInterface {
     @Path("/insertMetaObject")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response insertMetaObject(final HttpServletRequest hsr,
+    public Response insertMetaObject(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_METAOBJECT) final String metaObjectBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
@@ -797,7 +797,7 @@ public final class RESTfulSerialInterface {
     @Path("/updateMetaObject")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response updateMetaObject(final HttpServletRequest hsr,
+    public Response updateMetaObject(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_METAOBJECT) final String metaObjectBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
@@ -843,7 +843,7 @@ public final class RESTfulSerialInterface {
     @Path("/deleteMetaObject")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response deleteMetaObject(final HttpServletRequest hsr,
+    public Response deleteMetaObject(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_METAOBJECT) final String metaObjectBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
@@ -889,7 +889,7 @@ public final class RESTfulSerialInterface {
     @Path("/update")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response update(final HttpServletRequest hsr,
+    public Response update(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_QUERY) final String queryBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
@@ -927,7 +927,7 @@ public final class RESTfulSerialInterface {
     @Path("/getInstance")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getInstance(final HttpServletRequest hsr,
+    public Response getInstance(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_METACLASS) final String metaClassBytes) throws RemoteException {
         nameTheThread(hsr, "/getInstance", "[bytes]", "class=[bytes]");
@@ -964,7 +964,7 @@ public final class RESTfulSerialInterface {
     @Path("/getClassByTableName")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getClassByTableName(final HttpServletRequest hsr,
+    public Response getClassByTableName(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_TABLE_NAME) final String tableNameBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
@@ -1003,7 +1003,7 @@ public final class RESTfulSerialInterface {
     @Path("/getClassByID")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getClass(final HttpServletRequest hsr,
+    public Response getClass(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_CLASS_ID) final String classIdBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
@@ -1041,7 +1041,7 @@ public final class RESTfulSerialInterface {
     @Path("/getClasses")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getClasses(final HttpServletRequest hsr,
+    public Response getClasses(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         nameTheThread(hsr, "/getClasses", "[bytes]", "domain=[bytes]");
@@ -1075,7 +1075,7 @@ public final class RESTfulSerialInterface {
     @Path("/getClassTreeNodesByUser")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getClassTreeNodes(final HttpServletRequest hsr,
+    public Response getClassTreeNodes(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         nameTheThread(hsr, "/getClassTreeNodesByUser", "[bytes]");
         try {
@@ -1109,7 +1109,7 @@ public final class RESTfulSerialInterface {
     @Path("/getClassTreeNodesByDomain")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getClassTreeNodes(final HttpServletRequest hsr,
+    public Response getClassTreeNodes(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
         nameTheThread(hsr, "/getClassTreeNodesByDomain", "[bytes]", "domain=[bytes]");
@@ -1144,7 +1144,7 @@ public final class RESTfulSerialInterface {
     @Path("/getMethodsByUser")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMethodsByUser(final HttpServletRequest hsr,
+    public Response getMethodsByUser(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
         nameTheThread(hsr, "/getMethodsByUser", "[bytes]");
         try {
@@ -1178,7 +1178,7 @@ public final class RESTfulSerialInterface {
     @Path("/getMethodsByDomain")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMethods(final HttpServletRequest hsr,
+    public Response getMethods(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_LOCAL_SERVER_NAME) final String localServerNameBytes) throws RemoteException {
         nameTheThread(hsr, "/getMethodsByDomain", "[bytes]", "domain=[bytes]");
@@ -1216,7 +1216,7 @@ public final class RESTfulSerialInterface {
     @Path("/getAllLightweightMetaObjectsForClassByPattern")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getAllLightweightMetaObjectsForClassWithPattern(final HttpServletRequest hsr,
+    public Response getAllLightweightMetaObjectsForClassWithPattern(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_CLASS_ID) final String classIdBytes,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_REP_FIELDS) final String representationFieldsBytes,
@@ -1271,7 +1271,7 @@ public final class RESTfulSerialInterface {
     @Path("/getAllLightweightMetaObjectsForClass")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getAllLightweightMetaObjectsForClass(final HttpServletRequest hsr,
+    public Response getAllLightweightMetaObjectsForClass(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_CLASS_ID) final String classIdBytes,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_REP_FIELDS) final String representationFieldsBytes) throws RemoteException {
@@ -1317,7 +1317,7 @@ public final class RESTfulSerialInterface {
     @Path("/getLightweightMetaObjectsByQueryAndPattern")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getLightweightMetaObjectsByQueryAndPattern(final HttpServletRequest hsr,
+    public Response getLightweightMetaObjectsByQueryAndPattern(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_CLASS_ID) final String classIdBytes,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_QUERY) final String queryBytes,
@@ -1376,7 +1376,7 @@ public final class RESTfulSerialInterface {
     @Path("/getLightweightMetaObjectsByQuery")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getLightweightMetaObjectsByQuery(final HttpServletRequest hsr,
+    public Response getLightweightMetaObjectsByQuery(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_CLASS_ID) final String classIdBytes,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_QUERY) final String queryBytes,
@@ -1421,7 +1421,7 @@ public final class RESTfulSerialInterface {
     @Path("/getDefaultIconsByLSName")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getDefaultIconsByLSName(final HttpServletRequest hsr,
+    public Response getDefaultIconsByLSName(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_LS_NAME) final String lsNameBytes) throws RemoteException {
         nameTheThread(hsr, "/getDefaultIconsByLSName", "anonymous", "domain=[bytes]");
         try {
@@ -1452,7 +1452,7 @@ public final class RESTfulSerialInterface {
     @POST
     @Path("/getDefaultIcons")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getDefaultIcons(final HttpServletRequest hsr) throws RemoteException {
+    public Response getDefaultIcons(@Context final HttpServletRequest hsr) throws RemoteException {
         nameTheThread(hsr, "/getDefaultIcons", "anonymous");
         try {
             return createResponse(callserver.getDefaultIcons());
@@ -1480,7 +1480,7 @@ public final class RESTfulSerialInterface {
     @Path("/changePassword")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response changePasswordGET(final HttpServletRequest hsr,
+    public Response changePasswordGET(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_OLD_PASSWORD) final String oldPasswordBytes,
             @FormParam(PARAM_NEW_PASSWORD) final String newPasswordBytes) throws RemoteException, UserException {
@@ -1561,7 +1561,7 @@ public final class RESTfulSerialInterface {
     @POST
     @Path("/getUserGroupNames")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getUserGroupNames(final HttpServletRequest hsr) throws RemoteException {
+    public Response getUserGroupNames(@Context final HttpServletRequest hsr) throws RemoteException {
         nameTheThread(hsr, "/getUserGroupNames", "anonymous");
         try {
             return createResponse(callserver.getUserGroupNames());
@@ -1587,7 +1587,7 @@ public final class RESTfulSerialInterface {
     @Path("/getUserGroupNamesByUser")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getUserGroupNamesGET(final HttpServletRequest hsr,
+    public Response getUserGroupNamesGET(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USERNAME) final String unameBytes,
             @FormParam(PARAM_LS_HOME) final String lsHomeBytes) throws RemoteException {
         nameTheThread(hsr, "/getUserGroupNamesByUser", "[bytes]", "userdomain=[bytes]");
@@ -1623,7 +1623,7 @@ public final class RESTfulSerialInterface {
     @Path("/getConfigAttr")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getConfigAttr(final HttpServletRequest hsr,
+    public Response getConfigAttr(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_KEY) final String keyBytes) throws RemoteException {
         nameTheThread(hsr, "/getConfigAttr", "[bytes]", "key=[bytes]");
@@ -1659,7 +1659,7 @@ public final class RESTfulSerialInterface {
     @Path("/hasConfigAttr")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response hasConfigAttr(final HttpServletRequest hsr,
+    public Response hasConfigAttr(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_KEY) final String keyBytes) throws RemoteException {
         nameTheThread(hsr, "/hasConfigAttr", "[bytes]", "key=[bytes]");
@@ -1695,7 +1695,7 @@ public final class RESTfulSerialInterface {
     @Path("customServerSearch")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response customServerSearchPOST(final HttpServletRequest hsr,
+    public Response customServerSearchPOST(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_CUSTOM_SERVER_SEARCH) final String customServerSearchBytes) throws RemoteException {
         nameTheThread(hsr, "/customServerSearch", "[bytes]", "serverSearch=[bytes]");
@@ -1741,7 +1741,7 @@ public final class RESTfulSerialInterface {
     @Path("getHistory")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getHistoryPOST(final HttpServletRequest hsr,
+    public Response getHistoryPOST(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_CLASS_ID) final String classIdBytes,
             @FormParam(PARAM_OBJECT_ID) final String objectIdBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes,
@@ -1786,7 +1786,7 @@ public final class RESTfulSerialInterface {
     @Path("/executeTask")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.WILDCARD)
-    public Response executeTask(final HttpServletRequest hsr,
+    public Response executeTask(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_DOMAIN) final String taskdomainBytes,
             @FormParam(PARAM_TASKNAME) final String tasknameBytes,
@@ -1846,7 +1846,7 @@ public final class RESTfulSerialInterface {
     @Path("/executeTask/{taskname}@{taskdomain}")
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.WILDCARD)
-    public Response executeTaskWithPost(final HttpServletRequest hsr,
+    public Response executeTaskWithPost(@Context final HttpServletRequest hsr,
             @Context final UriInfo uriInfo,
             @Context final HttpHeaders headers,
             @HeaderParam("Authorization") final String authString,
@@ -1910,7 +1910,7 @@ public final class RESTfulSerialInterface {
     @GET
     @Path("/executeTask/{taskname}@{taskdomain}")
     @Produces(MediaType.WILDCARD)
-    public Response executeTaskWithGet(final HttpServletRequest hsr,
+    public Response executeTaskWithGet(@Context final HttpServletRequest hsr,
             @Context final UriInfo uriInfo,
             @Context final HttpHeaders headers,
             @HeaderParam("Authorization") final String authString,
