@@ -14,22 +14,17 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.Node;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
-import Sirius.server.newuser.UserGroup;
-import Sirius.server.search.store.QueryData;
 
 import com.sun.jersey.core.util.Base64;
 
 import org.apache.log4j.Logger;
 
-import org.openide.util.Exceptions;
 
 import java.io.IOException;
 
 import java.rmi.RemoteException;
 
 import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
