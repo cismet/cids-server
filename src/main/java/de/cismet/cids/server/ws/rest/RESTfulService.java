@@ -22,8 +22,13 @@ import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.thread.BoundedThreadPool;
 
+import java.lang.management.ManagementFactory;
+
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 /**
  * DOCUMENT ME!
@@ -79,6 +84,11 @@ public final class RESTfulService {
         context.addServlet(servlet, "/*");                                  // NOI18N
 
         try {
+            final MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+            final ObjectName name = new ObjectName("de.cismet.cids.rest.broker:type=RestMBean");
+            final RESTManagement restMB = new RESTManagement();
+            mbs.registerMBean(restMB, name);
+
             server.start();
         } catch (final Exception ex) {
             final String message = "could not create jetty web container on port: " + port; // NOI18N
@@ -200,6 +210,63 @@ public final class RESTfulService {
      */
     public static boolean isThreadNamingEnabled() {
         return threadNamingEnabled;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  threadNamingEnabled  DOCUMENT ME!
+     */
+    public static void setThreadNamingEnabled(final boolean threadNamingEnabled) {
+        RESTfulService.threadNamingEnabled = threadNamingEnabled;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  max  DOCUMENT ME!
+     */
+    public static void setMaxThreads(final int max) {
+        if (instance.server.getThreadPool() instanceof BoundedThreadPool) {
+            ((BoundedThreadPool)instance.server.getThreadPool()).setMaxThreads(max);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static int getMaxThreads() {
+        if (instance.server.getThreadPool() instanceof BoundedThreadPool) {
+            return ((BoundedThreadPool)instance.server.getThreadPool()).getMaxThreads();
+        } else {
+            return -1;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  min  DOCUMENT ME!
+     */
+    public static void setMinThreads(final int min) {
+        if (instance.server.getThreadPool() instanceof BoundedThreadPool) {
+            ((BoundedThreadPool)instance.server.getThreadPool()).setMinThreads(min);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static int getMinThreads() {
+        if (instance.server.getThreadPool() instanceof BoundedThreadPool) {
+            return ((BoundedThreadPool)instance.server.getThreadPool()).getMinThreads();
+        } else {
+            return -1;
+        }
     }
 
     /**
