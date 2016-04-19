@@ -30,7 +30,7 @@
                 <!-- enable integration tests (this flag is checked in JUnit Tests @ClassRule) -->
                 <de.cismet.cids.integrationtests.enabled>true</de.cismet.cids.integrationtests.enabled>
                 <!-- default base folder for docker volumens -->
-                <de.cismet.cids.integrationtests.containerdata>${user.home}/container-data</de.cismet.cids.integrationtests.containerdata>
+                <de.cismet.cids.integrationtests.docker.volumes>${user.home}/docker-volumes/cids-reference</de.cismet.cids.integrationtests.docker.volumes>
             </properties>
         </profile>
     </profiles>
@@ -223,7 +223,7 @@
             <artifactId>testcontainers</artifactId>
             <!-- windows: use 1.0.2-SNAPSHOT from https://github.com/v-schulz/testcontainers-java/tree/windows-support -->
             <!--<version>1.0.2-SNAPSHOT</version>-->
-            <version>1.0.2</version>
+            <version>1.0.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -249,7 +249,7 @@
     <build>
         <testResources>
             <!-- By default, Maven will look for test resources under src/test/resources -->
-            <!-- However, when specifying a potentionally non-existant resource directory (containerdata), this might fail -->
+            <!-- However, when specifying a potentionally non-existant resource directory (docker.volumes), this might fail -->
             <!-- Therefore we have to explicitely specify the  default test resources directory here! -->
             <testResource>
                 <directory>src/test/resources</directory>
@@ -257,7 +257,7 @@
             <!-- add docker volumes base dir to classpath -->
             <!-- only available in profile 'integrationtests', skipped if non-existant -->
             <testResource>
-                <directory>${de.cismet.cids.integrationtests.containerdata}</directory>
+                <directory>${de.cismet.cids.integrationtests.docker.volumes}</directory>
             </testResource>
         </testResources>
         <plugins>
@@ -277,6 +277,7 @@
                         <exclude>**/UserStoreTest.class</exclude>
                         <exclude>**/DBConnectionTest.class</exclude>
                         <exclude>**/RESTfulSerialInterfaceConnectorTest.class</exclude>
+                        <exclude>**/PostgreSQLTest.class</exclude>
                         <!-- this is only a pseudo-test for doing basic performance comparison -->
                         <exclude>**/RMIvsRESTTest.class</exclude>
                     </excludes>

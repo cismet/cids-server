@@ -1,16 +1,22 @@
 package de.cismet.cids.integrationtests;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.util.Properties;
+import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpMethodRetryHandler;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.log4j.Logger;
 import org.junit.Assume;
 import org.junit.rules.ExternalResource;
+import org.testcontainers.containers.DockerComposeContainer;
 
 /**
  * TestEnviroment Specification for providing access to system properties and
@@ -24,6 +30,18 @@ public class TestEnvironment extends ExternalResource {
 
     public static final String INTEGRATION_TESTS_ENABLED = "de.cismet.cids.integrationtests.enabled";
     protected static volatile Properties properties = null;
+    
+    public static final String INTEGRATIONBASE_CONTAINER = "cids_integrationtests_integrationbase_1";
+    public static final String SERVER_CONTAINER = "cids_integrationtests_server_1";
+    public static final String REST_SERVER_CONTAINER = "cids_integrationtests_server_rest_1";
+
+    public final static ExternalResource SKIP_INTEGRATION_TESTS = new ExternalResource() {
+        @Override
+        protected void before() throws Throwable {
+            // Important: this will skip the test *before* any docker image is started!
+            Assume.assumeTrue(false);
+        }
+    };
 
     public static boolean isIntegrationTestsEnabled() {
         //System.out.println(System.getProperty(INTEGRATION_TESTS_ENABLED));
@@ -71,26 +89,47 @@ public class TestEnvironment extends ExternalResource {
         return localProperties;
     }
 
-    public static boolean pingHost(String host, int port, int timeout) {
+    public static boolean pingHost(String host, int port, String path, int retries) {
         try {
-            final Socket socket = new Socket();
-            socket.connect(new InetSocketAddress(host, port), timeout);
-            socket.setSoTimeout(timeout);
-            PrintWriter pw = new PrintWriter(socket.getOutputStream());
-            pw.println("GET /callserver/binary HTTP/1.1");
-            pw.flush();
-            Logger.getLogger(TestEnvironment.class).debug(socket.getLocalSocketAddress());
-            //BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            final InputStream is = socket.getInputStream();
-            while (socket.getInputStream().read() != -1) {
-                //Logger.getLogger(TestEnvironment.class).debug(t);
-            }
-            is.close();
+            final String connectionUrl = "http://" + host + ":" + port + path;
+            Logger.getLogger(TestEnvironment.class).debug("ping service at url " + connectionUrl);
+            final HttpClient client = new HttpClient();
+            final HttpMethod method = new GetMethod(connectionUrl);
+            final HttpMethodRetryHandler retryHandler = new DefaultHttpMethodRetryHandler(retries, true);
+            final HttpMethodParams params = new HttpMethodParams();
+            params.setParameter(HttpMethodParams.RETRY_HANDLER, retryHandler);
+            method.setParams(params);
+
+            int statusCode = client.executeMethod(method);
+            method.releaseConnection();
+
             return true;
         } catch (Throwable t) {
-            Logger.getLogger(TestEnvironment.class).error("ping " + host + ":" 
-                    + port + "fails after " + timeout + "ms: " + t.getMessage(), t);
+            Logger.getLogger(TestEnvironment.class).error("ping " + host + ":"
+                    + port + "fails after " + retries + " retries: " + t.getMessage(), t);
             return false; // Either timeout or unreachable or failed DNS lookup.
         }
+    }
+
+    public static DockerComposeContainer createDefaultDockerEnvironment() throws Exception {
+        final String composeFile = System.getProperty("user.home")
+                + File.separator
+                + "docker-volumes" + File.separator
+                + "cids-integrationtests" + File.separator
+                + "docker-compose.yml";
+
+        final File file = new File(composeFile);
+        if (!file.exists()) {
+            final String message = "Docker Compose File for cids Integration Tests not found at default location: "
+                    + composeFile;
+            throw new FileNotFoundException(message);
+        }
+
+        DockerComposeContainer dockerEnvironment = new DockerComposeContainer(file)
+                .withExposedService(INTEGRATIONBASE_CONTAINER, 5434)
+                .withExposedService(SERVER_CONTAINER, 9986)
+                .withExposedService(REST_SERVER_CONTAINER, 8890);
+        
+        return dockerEnvironment;
     }
 }
