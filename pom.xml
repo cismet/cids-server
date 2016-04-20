@@ -310,7 +310,7 @@
                         <outputDirectory>${project.build.outputDirectory}</outputDirectory>
                     </configuration>
                 </plugin>
-            </plugins>
+        </plugins>
             <finalName>cidsServer</finalName>
         </build>
 </project>

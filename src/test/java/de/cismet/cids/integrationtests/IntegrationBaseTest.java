@@ -7,6 +7,7 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TestRule;
@@ -24,6 +25,7 @@ import org.testcontainers.containers.GenericContainer;
  *
  * @author Pascal Dihé <pascal.dihe@cismet.de>
  */
+@Ignore
 public class IntegrationBaseTest extends TestBase {
 
     protected final static Logger LOGGER = Logger.getLogger(IntegrationBaseTest.class);

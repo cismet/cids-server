@@ -4,12 +4,13 @@ import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 import static de.cismet.cids.integrationtests.TestEnvironment.SERVER_CONTAINER;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
+import java.rmi.RemoteException;
 import java.util.Properties;
+import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.testcontainers.containers.DockerComposeContainer;
@@ -47,7 +48,7 @@ public class UserServiceTest extends TestBase {
      */
     @ClassRule
     public static TestRule initCidsRefContainer() {
-        LOGGER.info("initCidsRefContainer(): activating cids Integration Tests: "
+        LOGGER.info("@ClassRule initCidsRefContainer(): activating cids Integration Tests: "
                 + !TestEnvironment.isIntegrationTestsDisabled());
 
         // check if integration tests are enabled in current maven profile
@@ -75,7 +76,7 @@ public class UserServiceTest extends TestBase {
     protected static Properties properties = null;
 
     public UserServiceTest() throws Exception {
-        LOGGER.debug("UserServiceTest(): initializing UserServiceTest instance");
+        LOGGER.debug("UserServiceTest(): initializing new UserServiceTest instance");
 
         try {
             final String brokerUrl = TestEnvironment.getCallserverUrl(
@@ -84,13 +85,6 @@ public class UserServiceTest extends TestBase {
                     dockerEnvironment.getServicePort(SERVER_CONTAINER,
                             Integer.parseInt(properties.getProperty("broker.port", "9986"))));
 
-//            Unreliables.retryUntilTrue(30, TimeUnit.SECONDS, () -> {
-//                //noinspection CodeBlock2Expr
-//                return DOCKER_CLIENT_RATE_LIMITER.getWhenReady(() -> {
-//                    InspectContainerResponse inspectionResponse = dockerClient.inspectContainerCmd(containerId).exec();
-//                    return inspectionResponse.getState().isRunning();
-//                });
-//            });
             if (!TestEnvironment.pingHost(
                     dockerEnvironment.getServiceHost(
                             SERVER_CONTAINER,
@@ -128,68 +122,157 @@ public class UserServiceTest extends TestBase {
 
         // check container creation succeeded 
         Assert.assertNotNull("cidsRefContainer sucessfully created", dockerEnvironment);
-
-        // check if docker image started
-        //Assert.assertTrue("cidsRefContainer is running", dockerEnvironment.isRunning());
     }
 
     @Test
     public void changePasswordSuccess() throws Exception {
         LOGGER.debug("testing changePasswordSuccess");
+        final String newPassword = "DADhejPYEDtym:8hej54umVEB0hag25y";
+        final String oldPassword = properties.getProperty("password", "cismet");
 
         Assert.assertNotNull("cidsRefContainer connection successfully established", connector);
         Assert.assertNotNull("user authenticated", user);
 
         Assert.assertTrue("password of user changed",
-                connector.changePassword(user,
-                        properties.getProperty("password", "cismet"),
-                        "DADhejPYEDtym:8hej54umVEB0hag25y"));
+                connector.changePassword(user, oldPassword, newPassword));
+
+        Assert.assertTrue("password of user changed",
+                connector.changePassword(user, newPassword, oldPassword));
+
+        LOGGER.info("changePasswordSuccess passed!");
     }
 
-    //@Test(expected = UserException.class)
+    @Test
     public void changePasswordError() throws Exception {
         LOGGER.debug("testing changePasswordError");
 
         Assert.assertNotNull("cidsRefContainer connection successfully established", connector);
         Assert.assertNotNull("user authenticated", user);
 
-        try {
-            connector.changePassword(user, "wrong_password",
-                    "DADhejPYEDtym:8hej54umVEB0hag25y");
-        } catch (Exception ex) {
-            LOGGER.debug(ex.getClass(), ex);
-            throw ex;
-        }
-
+        Assert.assertFalse(connector.changePassword(user, "wrong_password", "wrong_password"));
+        LOGGER.info("changePasswordError passed!");
     }
 
     @Test(expected = UserException.class)
-    @Ignore
-    public void getUserErrorPassword() throws Exception {
+    public void getUserPasswordError() throws Exception {
 
         LOGGER.debug("testing getUserErrorPassword");
 
         Assert.assertNotNull("cidsRefContainer connection successfully established", connector);
+        Assert.assertNotNull("user authenticated", user);
 
-        connector.getUser(properties.getProperty("usergroupDomain", "CIDS_REF"),
-                properties.getProperty("usergroup", "Administratoren"),
-                properties.getProperty("userDomain", "CIDS_REF"),
-                properties.getProperty("username", "admin"),
-                "wrong_password");
+        try {
+
+            connector.getUser(properties.getProperty("usergroupDomain", "CIDS_REF"),
+                    properties.getProperty("usergroup", "Administratoren"),
+                    properties.getProperty("userDomain", "CIDS_REF"),
+                    properties.getProperty("username", "admin"),
+                    "wrong_password");
+        } catch (UserException ex) {
+            LOGGER.debug(ex.getClass(), ex);
+            LOGGER.info("getUserErrorPassword passed!");
+            throw ex;
+        } catch (Exception ex) {
+            LOGGER.error(ex.getClass(), ex);
+            throw ex;
+        }
     }
 
     @Test(expected = UserException.class)
-    @Ignore
-    public void getUserErrorDomain() throws Exception {
+    public void getUserDomainError() throws Exception {
 
         LOGGER.debug("testing getUserErrorDomain");
 
         Assert.assertNotNull("cidsRefContainer connection successfully established", connector);
+        Assert.assertNotNull("user authenticated", user);
 
-        connector.getUser(properties.getProperty("usergroupDomain", "CIDS_REF"),
-                properties.getProperty("usergroup", "Administratoren"),
-                "WRONG_DOMAIN",
+        try {
+            connector.getUser(properties.getProperty("usergroupDomain", "CIDS_REF"),
+                    properties.getProperty("usergroup", "Administratoren"),
+                    "WRONG_DOMAIN",
+                    properties.getProperty("username", "admin"),
+                    properties.getProperty("password", "cismet"));
+        } catch (UserException ex) {
+            LOGGER.debug(ex.getClass(), ex);
+            LOGGER.info("getUserErrorDomain passed!");
+            throw ex;
+        } catch (Exception ex) {
+            LOGGER.error("getUserErrorDomain test failed", ex);
+            throw ex;
+        }
+    }
+
+    @Test
+    public void getDomains() throws Exception {
+        LOGGER.debug("testing getDomains");
+
+        Assert.assertNotNull("cidsRefContainer connection successfully established", connector);
+        Assert.assertNotNull("user authenticated", user);
+
+        final String domains[] = connector.getDomains();
+
+        Assert.assertTrue("one domain available", domains.length == 1);
+
+        Assert.assertEquals("domain matches from properties",
+                properties.getProperty("domain", "CIDS_REF"), domains[0]);
+
+        Assert.assertEquals("domain matches from user",
+                this.user.getDomain(), domains[0]);
+
+        LOGGER.info("getDomains test passed!");
+    }
+
+    @Test
+    public void getUserGroupNames() throws Exception {
+        LOGGER.debug("testing getUserGroupNames");
+
+        Assert.assertNotNull("cidsRefContainer connection successfully established", connector);
+        Assert.assertNotNull("user authenticated", user);
+
+        Vector userGroupNames = connector.getUserGroupNames();
+        Assert.assertTrue("user groups available on server", userGroupNames.size() > 0);
+
+        userGroupNames = connector.getUserGroupNames(
                 properties.getProperty("username", "admin"),
-                properties.getProperty("password", "cismet"));
+                properties.getProperty("userDomain", "CIDS_REF"));
+
+        Assert.assertTrue("user groups for user available on server", userGroupNames.size() > 0);
+
+        Assert.assertEquals("usergroup matches from properties",
+                properties.getProperty("usergroup", "Administratoren"),
+                ((String[]) userGroupNames.get(0))[0]);
+
+        Assert.assertEquals("usergroup matches from user",
+                this.user.getUserGroup().getName(),
+                ((String[]) userGroupNames.get(0))[0]);
+
+        Assert.assertEquals("usergroup domain matches from properties",
+                properties.getProperty("usergroupDomain", "CIDS_REF"),
+                ((String[]) userGroupNames.get(0))[1]);
+
+        Assert.assertEquals("usergroup domain matches from user",
+                this.user.getUserGroup().getDomain(),
+                ((String[]) userGroupNames.get(0))[1]);
+
+        LOGGER.info("getUserGroupNames test passed!");
+
+    }
+
+    @Test(expected = RemoteException.class)
+    public void getUserGroupNamesError() throws Exception {
+        LOGGER.debug("testing getUserGroupNamesError");
+
+        Assert.assertNotNull("cidsRefContainer connection successfully established", connector);
+        Assert.assertNotNull("user authenticated", user);
+
+        try {
+            final Vector userGroupNames = connector.getUserGroupNames(
+                    "does-not-exist",
+                    "does-not-exist");
+        } catch (RemoteException ex) {
+            LOGGER.debug(ex.getClass(), ex);
+            LOGGER.info("getUserGroupNamesError test passed!");
+            throw ex;
+        }
     }
 }
