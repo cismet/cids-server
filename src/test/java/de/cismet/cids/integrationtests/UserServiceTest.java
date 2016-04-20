@@ -258,21 +258,19 @@ public class UserServiceTest extends TestBase {
 
     }
 
-    @Test(expected = RemoteException.class)
+    @Test
     public void getUserGroupNamesError() throws Exception {
         LOGGER.debug("testing getUserGroupNamesError");
 
         Assert.assertNotNull("cidsRefContainer connection successfully established", connector);
         Assert.assertNotNull("user authenticated", user);
 
-        try {
-            final Vector userGroupNames = connector.getUserGroupNames(
-                    "does-not-exist",
-                    "does-not-exist");
-        } catch (RemoteException ex) {
-            LOGGER.debug(ex.getClass(), ex);
-            LOGGER.info("getUserGroupNamesError test passed!");
-            throw ex;
-        }
+        Vector userGroupNames = connector.getUserGroupNames(
+                "does-not-exist",
+                "does-not-exist");
+
+        Assert.assertTrue("no groups found for wrong user and domain",
+                userGroupNames.isEmpty());
+
     }
 }
