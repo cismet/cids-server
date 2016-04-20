@@ -71,12 +71,17 @@ public class UserServiceTest extends TestBase {
         }
     }
 
-    protected RESTfulSerialInterfaceConnector connector = null;
-    protected User user = null;
+    protected static RESTfulSerialInterfaceConnector connector = null;
+    protected static User user = null;
     protected static Properties properties = null;
 
-    public UserServiceTest() throws Exception {
-        LOGGER.debug("UserServiceTest(): initializing new UserServiceTest instance");
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        LOGGER.debug("beforeClass(): cids Integration Tests activated, loading properties");
+        Assert.assertNotNull("TestEnvironment created", properties);
+
+        // check container creation succeeded 
+        Assert.assertNotNull("cidsRefContainer sucessfully created", dockerEnvironment);
 
         try {
             final String brokerUrl = TestEnvironment.getCallserverUrl(
@@ -113,15 +118,6 @@ public class UserServiceTest extends TestBase {
             LOGGER.error(e.getMessage(), e);
             throw e;
         }
-    }
-
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        LOGGER.debug("beforeClass(): cids Integration Tests activated, loading properties");
-        Assert.assertNotNull("TestEnvironment created", properties);
-
-        // check container creation succeeded 
-        Assert.assertNotNull("cidsRefContainer sucessfully created", dockerEnvironment);
     }
 
     @Test
