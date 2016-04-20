@@ -61,6 +61,7 @@ public class UserServiceTest extends TestBase {
                 dockerEnvironment = TestEnvironment.createDefaultDockerEnvironment();
                 // Important: return the container instance. Otherwise start/stop
                 // of the container is not called!
+                properties = TestEnvironment.getProperties();
                 return dockerEnvironment;
             } catch (Exception ex) {
                 LOGGER.fatal("could not initialize docker interation test environment, integration tests disabled!", ex);
@@ -77,9 +78,11 @@ public class UserServiceTest extends TestBase {
         LOGGER.debug("UserServiceTest(): initializing UserServiceTest instance");
 
         try {
-            final String callserverUrl = TestEnvironment.getCallserverUrl(
-                    dockerEnvironment.getServiceHost(SERVER_CONTAINER, 9986),
-                    dockerEnvironment.getServicePort(SERVER_CONTAINER, 9986));
+            final String brokerUrl = TestEnvironment.getCallserverUrl(
+                    dockerEnvironment.getServiceHost(SERVER_CONTAINER,
+                            Integer.parseInt(properties.getProperty("broker.port", "9986"))),
+                    dockerEnvironment.getServicePort(SERVER_CONTAINER,
+                            Integer.parseInt(properties.getProperty("broker.port", "9986"))));
 
 //            Unreliables.retryUntilTrue(30, TimeUnit.SECONDS, () -> {
 //                //noinspection CodeBlock2Expr
@@ -88,17 +91,20 @@ public class UserServiceTest extends TestBase {
 //                    return inspectionResponse.getState().isRunning();
 //                });
 //            });
-
-            if (!TestEnvironment.pingHost(dockerEnvironment.getServiceHost(
-                    SERVER_CONTAINER, 9986), 
-                    dockerEnvironment.getServicePort(SERVER_CONTAINER, 9986), 
-                    "/callserver/binary",
+            if (!TestEnvironment.pingHost(
+                    dockerEnvironment.getServiceHost(
+                            SERVER_CONTAINER,
+                            Integer.parseInt(properties.getProperty("broker.port", "9986"))),
+                    dockerEnvironment.getServicePort(
+                            SERVER_CONTAINER,
+                            Integer.parseInt(properties.getProperty("broker.port", "9986"))),
+                    "/callserver/binary/getUserGroupNames",
                     12)) {
-                throw new Exception(callserverUrl + "did not answer after 12 retries");
+                throw new Exception(brokerUrl + "did not answer after 12 retries");
             }
-            
-            LOGGER.info("connecting to cids reference docker legacy server: " + callserverUrl);
-            connector = new RESTfulSerialInterfaceConnector(callserverUrl);
+
+            LOGGER.info("connecting to cids reference docker legacy server: " + brokerUrl);
+            connector = new RESTfulSerialInterfaceConnector(brokerUrl);
 
             user = connector.getUser(properties.getProperty("usergroupDomain", "CIDS_REF"),
                     properties.getProperty("usergroup", "Administratoren"),
@@ -118,7 +124,6 @@ public class UserServiceTest extends TestBase {
     @BeforeClass
     public static void beforeClass() throws Exception {
         LOGGER.debug("beforeClass(): cids Integration Tests activated, loading properties");
-        properties = TestEnvironment.getProperties();
         Assert.assertNotNull("TestEnvironment created", properties);
 
         // check container creation succeeded 

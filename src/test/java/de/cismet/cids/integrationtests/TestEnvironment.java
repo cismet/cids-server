@@ -12,6 +12,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpMethodRetryHandler;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.log4j.Logger;
 import org.junit.Assume;
@@ -30,7 +31,7 @@ public class TestEnvironment extends ExternalResource {
 
     public static final String INTEGRATION_TESTS_ENABLED = "de.cismet.cids.integrationtests.enabled";
     protected static volatile Properties properties = null;
-    
+
     public static final String INTEGRATIONBASE_CONTAINER = "cids_integrationtests_integrationbase_1";
     public static final String SERVER_CONTAINER = "cids_integrationtests_server_1";
     public static final String REST_SERVER_CONTAINER = "cids_integrationtests_server_rest_1";
@@ -75,7 +76,7 @@ public class TestEnvironment extends ExternalResource {
 
                     localProperties = new Properties();
                     try {
-                        final InputStream propertyFile = TestEnvironment.class.getResourceAsStream("cidsRef.properties");
+                        final InputStream propertyFile = TestEnvironment.class.getResourceAsStream("cidsIntegrationtests.properties");
                         final InputStreamReader isr = new InputStreamReader(propertyFile);
                         final BufferedReader br = new BufferedReader(isr);
                         localProperties.load(br);
@@ -89,24 +90,31 @@ public class TestEnvironment extends ExternalResource {
         return localProperties;
     }
 
-    public static boolean pingHost(String host, int port, String path, int retries) {
+    public static boolean pingHost(final String host, final int port, final String path, int retries) {
         try {
             final String connectionUrl = "http://" + host + ":" + port + path;
             Logger.getLogger(TestEnvironment.class).debug("ping service at url " + connectionUrl);
             final HttpClient client = new HttpClient();
-            final HttpMethod method = new GetMethod(connectionUrl);
+            final HttpMethod method = new PostMethod(connectionUrl);
             final HttpMethodRetryHandler retryHandler = new DefaultHttpMethodRetryHandler(retries, true);
             final HttpMethodParams params = new HttpMethodParams();
             params.setParameter(HttpMethodParams.RETRY_HANDLER, retryHandler);
             method.setParams(params);
 
             int statusCode = client.executeMethod(method);
-            method.releaseConnection();
+            while (statusCode != 200 && retries > 0) {
+                Logger.getLogger(TestEnvironment.class).warn("ping " + host + ":"
+                        + port + " return status code: " + statusCode + ", retrying " + retries + "x");
+                statusCode = client.executeMethod(method);
+                retries--;
+            }
 
-            return true;
+            method.releaseConnection();
+            return statusCode == 200;
+
         } catch (Throwable t) {
             Logger.getLogger(TestEnvironment.class).error("ping " + host + ":"
-                    + port + "fails after " + retries + " retries: " + t.getMessage(), t);
+                    + port + " fails after " + retries + " retries: " + t.getMessage(), t);
             return false; // Either timeout or unreachable or failed DNS lookup.
         }
     }
@@ -126,10 +134,13 @@ public class TestEnvironment extends ExternalResource {
         }
 
         DockerComposeContainer dockerEnvironment = new DockerComposeContainer(file)
-                .withExposedService(INTEGRATIONBASE_CONTAINER, 5434)
-                .withExposedService(SERVER_CONTAINER, 9986)
-                .withExposedService(REST_SERVER_CONTAINER, 8890);
-        
+                .withExposedService(INTEGRATIONBASE_CONTAINER,
+                        Integer.parseInt(getProperties().getProperty("integrationbase.port", "5434")))
+                .withExposedService(SERVER_CONTAINER,
+                        Integer.parseInt(getProperties().getProperty("broker.port", "9986")))
+                .withExposedService(REST_SERVER_CONTAINER,
+                        Integer.parseInt(getProperties().getProperty("restservice.port", "8890")));
+
         return dockerEnvironment;
     }
 }
