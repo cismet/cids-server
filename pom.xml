@@ -30,7 +30,7 @@
                 <!-- enable integration tests (this flag is checked in JUnit Tests @ClassRule) -->
                 <de.cismet.cids.integrationtests.enabled>true</de.cismet.cids.integrationtests.enabled>
                 <!-- default base folder for docker volumens -->
-                <de.cismet.cids.integrationtests.docker.volumes>${user.home}/docker-volumes/cids-reference</de.cismet.cids.integrationtests.docker.volumes>
+                <de.cismet.cids.integrationtests.docker.volumes>${user.home}/docker-volumes/cids-integrationtests</de.cismet.cids.integrationtests.docker.volumes>
             </properties>
         </profile>
     </profiles>

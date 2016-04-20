@@ -6,6 +6,7 @@ import java.sql.Statement;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -21,6 +22,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
  *
  * @author Pascal Dihé <pascal.dihe@cismet.de>
  */
+@Ignore
 public class PostgreSQLTest extends TestBase {
 
     protected final static Logger LOGGER = Logger.getLogger(PostgreSQLTest.class);

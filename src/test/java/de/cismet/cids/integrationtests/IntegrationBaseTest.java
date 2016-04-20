@@ -62,10 +62,10 @@ public class IntegrationBaseTest extends TestBase {
 
             try {
                 // create new PostgreSQLContainer
-                postgresContainer = new GenericContainer("cismet/postgresql-postgis:latest")
-                        .withExposedPorts(5432)
-                        .withClasspathResourceMapping("cismet/postgresql-postgis/cids_reference.sql",
-                                "/data/dumps/cids_reference.sql", BindMode.READ_ONLY);
+                postgresContainer = new GenericContainer("cismet/cids-integration-base:latest")
+                        .withExposedPorts(5434)
+                        .withClasspathResourceMapping("cids-integration-base/import/cids_reference.sql",
+                                "/import/cids-integration-base/cids_reference.sql", BindMode.READ_ONLY);
 
                 // Important: return the container instance. Otherwise start/stop 
                 // of the container is not called!
