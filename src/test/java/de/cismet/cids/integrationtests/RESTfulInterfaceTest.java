@@ -2,12 +2,11 @@ package de.cismet.cids.integrationtests;
 
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
-import Sirius.server.newuser.UserException;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import static de.cismet.cids.dynamics.AbstractCidsBeanDeserialisationTest.ENTITIES_JSON_PACKAGE;
 import de.cismet.cids.dynamics.CidsBean;
+import de.cismet.cids.dynamics.CidsBeanInfo;
 import static de.cismet.cids.integrationtests.TestEnvironment.REST_SERVER_CONTAINER;
 import static de.cismet.cids.integrationtests.TestEnvironment.SERVER_CONTAINER;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
@@ -17,25 +16,32 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.Vector;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.DockerComposeContainer;
 
 /**
- * CidsBean vs MetaObject Tests
+ * CidsBean vs MetaObject remote serialisation / deserialisation Tests
+ * <br>
+ * <strong>cids-server</strong>:<br>
+ * MetaObject | MetaObject<br>
+ * <br><br>
+ * <strong>cids-server-rest-legac</strong>:<br>
+ * MetaObject->CidsBean->JSON | JSON->CidsBean->MetaObject
  *
  * @author Pascal Dihé <pascal.dihe@cismet.de>
  */
 @RunWith(DataProviderRunner.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RESTfulInterfaceTest extends TestBase {
 
     protected final static Logger LOGGER = Logger.getLogger(RESTfulInterfaceTest.class);
@@ -47,6 +53,15 @@ public class RESTfulInterfaceTest extends TestBase {
      * enabled.
      */
     protected static DockerComposeContainer dockerEnvironment = null;
+
+    protected final static String ENTITIES_JSON_PACKAGE = "de/cismet/cids/integrationtests/entities";
+    protected final static ArrayList<String> CIDS_BEANS_JSON = new ArrayList<String>();
+
+    protected static RESTfulInterfaceConnector restConnector = null;
+    protected static RESTfulSerialInterfaceConnector legacyConnector = null;
+    protected static User user = null;
+    protected static Properties properties = null;
+    protected static boolean connectionFailed = false;
 
     /**
      * This ClassRule is executed only once before any test run (@Test method)
@@ -81,13 +96,6 @@ public class RESTfulInterfaceTest extends TestBase {
             }
         }
     }
-
-    protected static RESTfulInterfaceConnector restConnector = null;
-    protected static RESTfulSerialInterfaceConnector legacyConnector = null;
-    protected static User user = null;
-    protected static Properties properties = null;
-    protected static boolean connectionFailed = false;
-    protected final static ArrayList<String> CIDS_BEANS_JSON = new ArrayList<String>();
 
     /**
      * Static helper method for loading local cids beans instances.
@@ -238,7 +246,7 @@ public class RESTfulInterfaceTest extends TestBase {
 
     @Test
     @UseDataProvider("getCidsBeansJson")
-    public void getAndCompareMetaObjects(final String cidsBeanJson) throws Exception {
+    public void test01getAndCompareMetaObjects(final String cidsBeanJson) throws Exception {
         LOGGER.debug("testing getAndCompareMetaObjects");
 
         try {
@@ -260,15 +268,14 @@ public class RESTfulInterfaceTest extends TestBase {
                     metaObjectFromJson.getID(),
                     metaObjectFromJson.getClassID(), metaObjectFromJson.getDomain());
             final CidsBean cidsBeanFromRestServer = metaObjectFromRestServer.getBean();
-
             
-            Assert.assertEquals("class key from legacy server matches", 
-                    cidsBeanFromJson.getCidsBeanInfo().getClassKey(), 
-                    cidsBeanFromLegacyServer.getCidsBeanInfo().getClassKey());
-            Assert.assertEquals("class key from rest server matches", 
-                    cidsBeanFromJson.getCidsBeanInfo().getClassKey(), 
-                    cidsBeanFromRestServer.getCidsBeanInfo().getClassKey());
-
+            this.compareMetaObjects(metaObjectFromJson, 
+                    metaObjectFromLegacyServer, 
+                    metaObjectFromRestServer);
+            
+            this.compareCidsBeans(cidsBeanFromJson, 
+                    cidsBeanFromLegacyServer, 
+                    cidsBeanFromRestServer);
 
         } catch (AssertionError ae) {
             LOGGER.error("getAndCompareCidsBeans test failed with: " + ae.getMessage());
@@ -279,5 +286,181 @@ public class RESTfulInterfaceTest extends TestBase {
         }
 
         LOGGER.info("getAndCompareMetaObjects test passed");
+    }
+    
+    /**
+     * Helper method to compare remote / local meta objects
+     * 
+     * @param metaObjectFromJson
+     * @param metaObjectFromLegacyServer
+     * @param metaObjectFromRestServer
+     * @throws AssertionError 
+     */
+    protected void compareMetaObjects(final MetaObject metaObjectFromJson,
+            final MetaObject metaObjectFromLegacyServer,
+            final MetaObject metaObjectFromRestServer) throws AssertionError {
+
+        Assert.assertEquals("metaObject.getClassID() from legacy server matches",
+                metaObjectFromJson.getClassID(),
+                metaObjectFromLegacyServer.getClassID());
+        Assert.assertEquals("metaObject.getClassID() from rest server matches",
+                metaObjectFromJson.getClassID(),
+                metaObjectFromRestServer.getClassID());
+
+        Assert.assertEquals("metaObject.getClassKey() from legacy server matches",
+                metaObjectFromJson.getClassKey(),
+                metaObjectFromLegacyServer.getClassKey());
+        Assert.assertEquals("metaObject.getClassKey() from rest server matches",
+                metaObjectFromJson.getClassKey(),
+                metaObjectFromRestServer.getClassKey());
+
+        Assert.assertEquals("metaObject.getComplexEditor() from legacy server matches",
+                metaObjectFromJson.getComplexEditor(),
+                metaObjectFromLegacyServer.getComplexEditor());
+        Assert.assertEquals("metaObject.getComplexEditor() from rest server matches",
+                metaObjectFromJson.getComplexEditor(),
+                metaObjectFromRestServer.getComplexEditor());
+
+        Assert.assertEquals("metaObject.getDescription() from legacy server matches",
+                metaObjectFromJson.getDescription(),
+                metaObjectFromLegacyServer.getDescription());
+        Assert.assertEquals("metaObject.getDescription() from rest server matches",
+                metaObjectFromJson.getDescription(),
+                metaObjectFromRestServer.getDescription());
+
+        Assert.assertEquals("metaObject.getDomain() from legacy server matches",
+                metaObjectFromJson.getDomain(),
+                metaObjectFromLegacyServer.getDomain());
+        Assert.assertEquals("metaObject.getDomain() from rest server matches",
+                metaObjectFromJson.getDomain(),
+                metaObjectFromRestServer.getDomain());
+
+        Assert.assertEquals("metaObject.getEditor() from legacy server matches",
+                metaObjectFromJson.getEditor(),
+                metaObjectFromLegacyServer.getEditor());
+        Assert.assertEquals("metaObject.getEditor() from rest server matches",
+                metaObjectFromJson.getEditor(),
+                metaObjectFromRestServer.getEditor());
+
+        Assert.assertEquals("metaObject.getGroup() from legacy server matches",
+                metaObjectFromJson.getGroup(),
+                metaObjectFromLegacyServer.getGroup());
+        Assert.assertEquals("metaObject.getGroup() from rest server matches",
+                metaObjectFromJson.getGroup(),
+                metaObjectFromRestServer.getGroup());
+
+        Assert.assertEquals("metaObject.getID() from legacy server matches",
+                metaObjectFromJson.getID(),
+                metaObjectFromLegacyServer.getID());
+        Assert.assertEquals("metaObject.getID() from rest server matches",
+                metaObjectFromJson.getID(),
+                metaObjectFromRestServer.getID());
+
+        Assert.assertEquals("metaObject.getId() from legacy server matches",
+                metaObjectFromJson.getId(),
+                metaObjectFromLegacyServer.getId());
+        Assert.assertEquals("metaObject.getId() from rest server matches",
+                metaObjectFromJson.getId(),
+                metaObjectFromRestServer.getId());
+
+        Assert.assertEquals("metaObject.getKey() from legacy server matches",
+                metaObjectFromJson.getKey(),
+                metaObjectFromLegacyServer.getKey());
+        Assert.assertEquals("metaObject.getKey() from rest server matches",
+                metaObjectFromJson.getKey(),
+                metaObjectFromRestServer.getKey());
+
+        Assert.assertEquals("metaObject.getName() from legacy server matches",
+                metaObjectFromJson.getName(),
+                metaObjectFromLegacyServer.getName());
+        Assert.assertEquals("metaObject.getName() from rest server matches",
+                metaObjectFromJson.getName(),
+                metaObjectFromRestServer.getName());
+
+        Assert.assertEquals("metaObject.getPropertyString() from legacy server matches",
+                metaObjectFromJson.getPropertyString(),
+                metaObjectFromLegacyServer.getPropertyString());
+        Assert.assertEquals("metaObject.getPropertyString() from rest server matches",
+                metaObjectFromJson.getPropertyString(),
+                metaObjectFromRestServer.getPropertyString());
+
+        Assert.assertEquals("metaObject.getRenderer() from legacy server matches",
+                metaObjectFromJson.getRenderer(),
+                metaObjectFromLegacyServer.getRenderer());
+        Assert.assertEquals("metaObject.getRenderer() from rest server matches",
+                metaObjectFromJson.getRenderer(),
+                metaObjectFromRestServer.getRenderer());
+
+        Assert.assertEquals("metaObject.getSimpleEditor() from legacy server matches",
+                metaObjectFromJson.getSimpleEditor(),
+                metaObjectFromLegacyServer.getSimpleEditor());
+        Assert.assertEquals("metaObject.getSimpleEditor() from rest server matches",
+                metaObjectFromJson.getSimpleEditor(),
+                metaObjectFromRestServer.getSimpleEditor());
+
+        Assert.assertEquals("metaObject.getStatus() from legacy server matches",
+                metaObjectFromJson.getStatus(),
+                metaObjectFromLegacyServer.getStatus());
+        Assert.assertEquals("metaObject.getStatus() from rest server matches",
+                metaObjectFromJson.getStatus(),
+                metaObjectFromRestServer.getStatus());
+
+        Assert.assertEquals("metaObject.getStatusDebugString() from legacy server matches",
+                metaObjectFromJson.getStatusDebugString(),
+                metaObjectFromLegacyServer.getStatusDebugString());
+        Assert.assertEquals("metaObject.getStatusDebugString() from rest server matches",
+                metaObjectFromJson.getStatusDebugString(),
+                metaObjectFromRestServer.getStatusDebugString());
+    }
+
+    /**
+     * Helper method to compare remote / local cids beans
+     * 
+     * @param cidsBeanFromJson
+     * @param cidsBeanFromLegacyServer
+     * @param cidsBeanFromRestServer
+     * @throws AssertionError 
+     */
+    protected void compareCidsBeans(final CidsBean cidsBeanFromJson,
+            final CidsBean cidsBeanFromLegacyServer,
+            final CidsBean cidsBeanFromRestServer) throws AssertionError {
+
+        final CidsBeanInfo beanInfoFromJson = cidsBeanFromJson.getCidsBeanInfo();
+        final String cidsBeanJson = cidsBeanFromJson.toJSONString(true);
+
+        final CidsBeanInfo beanInfoFromLegacyServer = cidsBeanFromLegacyServer.getCidsBeanInfo();
+        final String cidsBeanJsonFromLegacyServer = cidsBeanFromLegacyServer.toJSONString(true);
+
+        final CidsBeanInfo beanInfoFromRestServer = cidsBeanFromRestServer.getCidsBeanInfo();
+        final String cidsBeanJsonFromRestServer = cidsBeanFromRestServer.toJSONString(true);
+
+        Assert.assertEquals("JsonObjectKey key from legacy server matches",
+                beanInfoFromJson.getJsonObjectKey(),
+                beanInfoFromLegacyServer.getClassKey());
+        Assert.assertEquals("JsonObjectKey key from rest server matches",
+                beanInfoFromJson.getClassKey(),
+                beanInfoFromRestServer.getJsonObjectKey());
+
+        Assert.assertEquals("JSON from legacy server matches",
+                cidsBeanJson,
+                cidsBeanJsonFromLegacyServer);
+        Assert.assertEquals("JSON from rest server matches",
+                cidsBeanJson,
+                cidsBeanJsonFromRestServer);
+
+        Assert.assertEquals("cidsBean.getMOString from legacy server matches",
+                cidsBeanFromJson.getMOString(),
+                cidsBeanFromLegacyServer.getMOString());
+        Assert.assertEquals("cidsBean.getMOString from rest server matches",
+                cidsBeanFromJson.getMOString(),
+                cidsBeanFromRestServer.getMOString());
+
+        Assert.assertEquals("cidsBean.toObjectString from legacy server matches",
+                cidsBeanFromJson.toObjectString(),
+                cidsBeanFromLegacyServer.toObjectString());
+        Assert.assertEquals("cidsBean.toObjectStringtoObjectString from rest server matches",
+                cidsBeanFromJson.toObjectString(),
+                cidsBeanFromRestServer.toObjectString());
+
     }
 }
