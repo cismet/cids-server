@@ -29,7 +29,31 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
         try {
             final CidsBean cidsBean = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
             LOGGER.debug("testDeserializeCidsBean: " + cidsBean.getPrimaryKeyValue());
+
+            // does not work: JSON in test resource sis formatted
             //Assert.assertEquals(cidsBean.toJSONString(true), cidsBeanJson);
+        } catch (AssertionError ae) {
+            LOGGER.error("testDeserializeCidsBean failed with: " + ae.getMessage());
+            throw ae;
+        } catch (Exception ex) {
+
+            LOGGER.error(ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
+    @Test
+    @Ignore
+    @UseDataProvider("getCidsBeansJson")
+    public void testDeserializeAndCompareCidsBean(final String cidsBeanJson) throws Exception {
+        try {
+            final CidsBean cidsBean = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
+            LOGGER.debug("testDeserializeAndCompareCidsBean: " + cidsBean.getPrimaryKeyValue());
+
+            Assert.assertEquals("serialized and deserialies strings do match",
+                    cidsBean.toJSONString(true).replaceAll("\\s+", "").replaceAll("\\n", "").replaceAll("\\r", "").replaceAll("\\t", ""),
+                    cidsBeanJson.replaceAll("\\s+", "").replaceAll("\\n", "").replaceAll("\\r", "").replaceAll("\\t", "").replaceAll("$ref", "$self"));
+
         } catch (AssertionError ae) {
             LOGGER.error("testDeserializeCidsBean failed with: " + ae.getMessage());
             throw ae;
@@ -47,7 +71,7 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
 
         try {
             final CidsBean cidsBean = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
-            Assume.assumeTrue(cidsBean.getCidsBeanInfo().getClassKey().equalsIgnoreCase("SPH_SPIELHALLE"));
+            //Assume.assumeTrue(cidsBean.getCidsBeanInfo().getClassKey().equalsIgnoreCase("SPH_SPIELHALLE"));
 
             LOGGER.debug("testDeserializeCidsBeanMetaObjectStatus: " + cidsBean.getPrimaryKeyValue());
 
