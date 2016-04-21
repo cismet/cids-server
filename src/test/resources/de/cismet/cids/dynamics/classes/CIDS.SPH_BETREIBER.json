@@ -1,5 +1,5 @@
 {
-      "$self": "/CIDS.SPH_BETREIBER",
+      "$self": "/CIDS_REF.SPH_BETREIBER",
       "configuration": {
         "LEGACY_ID": 8,
         "ATTRIBUTE_POLICY": "STANDARD",

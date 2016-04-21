@@ -2,8 +2,6 @@ package de.cismet.cids.integrationtests;
 
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
-import static de.cismet.cids.integrationtests.RESTfulInterfaceTest.connectionFailed;
-import static de.cismet.cids.integrationtests.TestEnvironment.REST_SERVER_CONTAINER;
 import static de.cismet.cids.integrationtests.TestEnvironment.SERVER_CONTAINER;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
 import java.util.Properties;
@@ -91,7 +89,7 @@ public class UserServiceTest extends TestBase {
                             Integer.parseInt(properties.getProperty("broker.port", "9986"))));
 
             // check connection to legacy broker
-            if (!TestEnvironment.pingHost(
+            if (!TestEnvironment.pingHostWithPost(
                     dockerEnvironment.getServiceHost(
                             SERVER_CONTAINER,
                             Integer.parseInt(properties.getProperty("broker.port", "9986"))),

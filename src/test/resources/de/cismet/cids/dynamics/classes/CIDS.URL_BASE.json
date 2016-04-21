@@ -1,5 +1,5 @@
 {
-      "$self": "/CIDS.URL_BASE",
+      "$self": "/CIDS_REF.URL_BASE",
       "configuration": {
         "LEGACY_ID": 3,
         "ATTRIBUTE_POLICY": "STANDARD",

@@ -1,5 +1,5 @@
 {
-      "$self": "/CIDS.GEOM",
+      "$self": "/CIDS_REF.GEOM",
       "configuration": {
         "LEGACY_ID": 1,
         "ATTRIBUTE_POLICY": "STANDARD",

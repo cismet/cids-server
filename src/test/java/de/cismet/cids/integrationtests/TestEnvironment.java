@@ -89,13 +89,27 @@ public class TestEnvironment extends ExternalResource {
 
         return localProperties;
     }
+    
+    public static boolean pingHostWithGet(final String host, final int port, final String path, int retries) {
+        final String connectionUrl = "http://" + host + ":" + port + path;
+        Logger.getLogger(TestEnvironment.class).debug("ping service with GET at url " + connectionUrl);
+        final HttpMethod method = new GetMethod(connectionUrl);
+        
+        return pingHost(method, host, port, path, retries);
+    }
+    
+    public static boolean pingHostWithPost(final String host, final int port, final String path, int retries) {
+        final String connectionUrl = "http://" + host + ":" + port + path;
+        Logger.getLogger(TestEnvironment.class).debug("ping service with POST at url " + connectionUrl);
+        final HttpMethod method = new PostMethod(connectionUrl);
+        
+        return pingHost(method, host, port, path, retries);
+    }
 
-    public static boolean pingHost(final String host, final int port, final String path, int retries) {
+    protected static boolean pingHost(final HttpMethod method, final String host, final int port, final String path, int retries) {
         try {
-            final String connectionUrl = "http://" + host + ":" + port + path;
-            Logger.getLogger(TestEnvironment.class).debug("ping service at url " + connectionUrl);
+            
             final HttpClient client = new HttpClient();
-            final HttpMethod method = new PostMethod(connectionUrl);
             final HttpMethodRetryHandler retryHandler = new DefaultHttpMethodRetryHandler(retries, true);
             final HttpMethodParams params = new HttpMethodParams();
             params.setParameter(HttpMethodParams.RETRY_HANDLER, retryHandler);

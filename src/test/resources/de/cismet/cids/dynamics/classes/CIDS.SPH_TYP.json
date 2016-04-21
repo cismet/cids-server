@@ -1,5 +1,5 @@
 {
-      "$self": "/CIDS.SPH_TYP",
+      "$self": "/CIDS_REF.SPH_TYP",
       "configuration": {
         "LEGACY_ID": 4,
         "ATTRIBUTE_POLICY": "STANDARD",
