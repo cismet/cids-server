@@ -4,7 +4,6 @@ import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 import static de.cismet.cids.integrationtests.TestEnvironment.SERVER_CONTAINER;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
-import java.rmi.RemoteException;
 import java.util.Properties;
 import java.util.Vector;
 import org.apache.log4j.Logger;
@@ -16,13 +15,8 @@ import org.junit.rules.TestRule;
 import org.testcontainers.containers.DockerComposeContainer;
 
 /**
- * Simple PostgreSQLTest to check whether docker is properly installed and the
- * docker postgres image can be started and queried.
+ * Remote Test for UserService using docker containers.
  *
- * Attention: Testcontainers is currently lacking windows support, see
- * https://github.com/testcontainers/testcontainers-java/issues/85 On windows
- * use the fork https://github.com/v-schulz/testcontainers-java
- * (1.0.1-SNAPSHOT)!
  *
  * @author Pascal Dihé <pascal.dihe@cismet.de>
  */
@@ -74,6 +68,7 @@ public class UserServiceTest extends TestBase {
     protected static RESTfulSerialInterfaceConnector connector = null;
     protected static User user = null;
     protected static Properties properties = null;
+    protected static boolean connectionFailed = false;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -82,6 +77,8 @@ public class UserServiceTest extends TestBase {
 
         // check container creation succeeded 
         Assert.assertNotNull("cidsRefContainer sucessfully created", dockerEnvironment);
+        
+        Assert.assertFalse(connectionFailed);
 
         try {
             final String brokerUrl = TestEnvironment.getCallserverUrl(
@@ -99,6 +96,7 @@ public class UserServiceTest extends TestBase {
                             Integer.parseInt(properties.getProperty("broker.port", "9986"))),
                     "/callserver/binary/getUserGroupNames",
                     12)) {
+                connectionFailed = true;
                 throw new Exception(brokerUrl + "did not answer after 12 retries");
             }
 
