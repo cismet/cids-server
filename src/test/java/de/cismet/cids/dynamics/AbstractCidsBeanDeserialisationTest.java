@@ -44,7 +44,7 @@ import org.junit.runners.MethodSorters;
 public abstract class AbstractCidsBeanDeserialisationTest {
 
     protected final static Logger LOGGER = Logger.getLogger(AbstractCidsBeanDeserialisationTest.class);
-    protected final static String ENTITIES_JSON_PACKAGE = "de/cismet/cids/dynamics/entities/";
+    public final static String ENTITIES_JSON_PACKAGE = "de/cismet/cids/dynamics/entities/";
     protected final static ArrayList<String> CIDS_BEANS_JSON = new ArrayList<String>();
 
        protected static void initCidsBeansJson() throws Exception {

@@ -1,30 +1,43 @@
 package de.cismet.cids.integrationtests;
 
+import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
-import static de.cismet.cids.integrationtests.RESTfulInterfaceTest.connectionFailed;
+import com.tngtech.java.junit.dataprovider.DataProvider;
+import com.tngtech.java.junit.dataprovider.DataProviderRunner;
+import com.tngtech.java.junit.dataprovider.UseDataProvider;
+import static de.cismet.cids.dynamics.AbstractCidsBeanDeserialisationTest.ENTITIES_JSON_PACKAGE;
+import de.cismet.cids.dynamics.CidsBean;
 import static de.cismet.cids.integrationtests.TestEnvironment.REST_SERVER_CONTAINER;
 import static de.cismet.cids.integrationtests.TestEnvironment.SERVER_CONTAINER;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
+import de.cismet.cidsx.client.connector.RESTfulInterfaceConnector;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.Vector;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+import org.junit.runner.RunWith;
 import org.testcontainers.containers.DockerComposeContainer;
 
 /**
- * Remote Test for UserService using docker containers.
- *
+ * CidsBean vs MetaObject Tests
  *
  * @author Pascal Dihé <pascal.dihe@cismet.de>
  */
-public class UserServiceTest extends TestBase {
+@RunWith(DataProviderRunner.class)
+public class RESTfulInterfaceTest extends TestBase {
 
-    protected final static Logger LOGGER = Logger.getLogger(UserServiceTest.class);
+    protected final static Logger LOGGER = Logger.getLogger(RESTfulInterfaceTest.class);
 
     /**
      * The static cids Reference Container is reused for all @test Methods! To
@@ -67,10 +80,12 @@ public class UserServiceTest extends TestBase {
         }
     }
 
-    protected static RESTfulSerialInterfaceConnector connector = null;
+    protected static RESTfulInterfaceConnector restConnector = null;
+    protected static RESTfulSerialInterfaceConnector legacyConnector = null;
     protected static User user = null;
     protected static Properties properties = null;
     protected static boolean connectionFailed = false;
+    protected final static ArrayList<String> CIDS_BEANS_JSON = new ArrayList<String>();
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -84,13 +99,14 @@ public class UserServiceTest extends TestBase {
                 connectionFailed);
 
         try {
+
             final String brokerUrl = TestEnvironment.getCallserverUrl(
                     dockerEnvironment.getServiceHost(SERVER_CONTAINER,
                             Integer.parseInt(properties.getProperty("broker.port", "9986"))),
                     dockerEnvironment.getServicePort(SERVER_CONTAINER,
                             Integer.parseInt(properties.getProperty("broker.port", "9986"))));
 
-            // check connection to legacy broker
+            // check connection to legacy server (broker f.k.a. callserver)
             if (!TestEnvironment.pingHost(
                     dockerEnvironment.getServiceHost(
                             SERVER_CONTAINER,
@@ -105,9 +121,57 @@ public class UserServiceTest extends TestBase {
             }
 
             LOGGER.info("connecting to cids reference docker legacy server: " + brokerUrl);
-            connector = new RESTfulSerialInterfaceConnector(brokerUrl);
+            legacyConnector = new RESTfulSerialInterfaceConnector(brokerUrl);
 
-            user = connector.getUser(properties.getProperty("usergroupDomain", "CIDS_REF"),
+            final String restServerUrl = "http://"
+                    + dockerEnvironment.getServiceHost(REST_SERVER_CONTAINER,
+                            Integer.parseInt(properties.getProperty("restservice.port", "8890")))
+                    + ":"
+                    + dockerEnvironment.getServicePort(REST_SERVER_CONTAINER,
+                            Integer.parseInt(properties.getProperty("restservice.port", "8890")))
+                    + "/";
+
+            if (!TestEnvironment.pingHost(
+                    dockerEnvironment.getServiceHost(
+                            REST_SERVER_CONTAINER,
+                            Integer.parseInt(properties.getProperty("restservice.port", "8890"))),
+                    dockerEnvironment.getServicePort(
+                            REST_SERVER_CONTAINER,
+                            Integer.parseInt(properties.getProperty("restservice.port", "8890"))),
+                    "/service/ping",
+                    6)) {
+                connectionFailed = true;
+                throw new Exception(brokerUrl + " did not answer after 6 retries");
+            }
+
+            LOGGER.info("connecting to cids reference docker rest server: " + restServerUrl);
+            restConnector = new RESTfulInterfaceConnector(restServerUrl);
+
+            // load local reference cids beans
+            final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+            URL resources;
+            resources = classLoader.getResource(ENTITIES_JSON_PACKAGE);
+
+            final Scanner scanner = new Scanner((InputStream) resources.getContent()).useDelimiter("\\n");
+            while (scanner.hasNext()) {
+                final String jsonFile = ENTITIES_JSON_PACKAGE + scanner.next();
+                LOGGER.info("loading cids entity from json file " + jsonFile);
+                try {
+
+                    final String entity = IOUtils.toString(classLoader.getResourceAsStream(jsonFile), "UTF-8");
+                    CIDS_BEANS_JSON.add(entity);
+
+                } catch (Exception ex) {
+                    LOGGER.error("could not load cids entities from url " + jsonFile, ex);
+                    throw ex;
+                }
+            }
+
+            LOGGER.info(CIDS_BEANS_JSON.size() + " CIDS_BEANS_JSON entities loaded");
+
+            // authenticate user
+            user = legacyConnector.getUser(properties.getProperty("usergroupDomain", "CIDS_REF"),
                     properties.getProperty("usergroup", "Administratoren"),
                     properties.getProperty("userDomain", "CIDS_REF"),
                     properties.getProperty("username", "admin"),
@@ -122,20 +186,71 @@ public class UserServiceTest extends TestBase {
         }
     }
 
+    @DataProvider
+    public final static String[] getCidsBeansJson() throws Exception {
+        return CIDS_BEANS_JSON.toArray(new String[CIDS_BEANS_JSON.size()]);
+    }
+
+    @Test
+    @UseDataProvider("getCidsBeans")
+    public void getAndCompareMetaObjects(final String cidsBeanJson) throws Exception {
+        LOGGER.debug("testing getAndCompareMetaObjects");
+
+        Assert.assertNotNull("cidsRefContainer connection successfully established", legacyConnector);
+        Assert.assertNotNull("user authenticated", user);
+
+        try {
+            final CidsBean cidsBeanFromJson = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
+            final MetaObject metaObjectFromJson = cidsBeanFromJson.getMetaObject();
+
+            LOGGER.debug("retrieving meta object "
+                    + cidsBeanFromJson.getCidsBeanInfo().getJsonObjectKey()
+                    + " from legacy server");
+            final MetaObject metaObjectFromLegacyServer = legacyConnector.getMetaObject(user,
+                    metaObjectFromJson.getID(),
+                    metaObjectFromJson.getClassID(), metaObjectFromJson.getDomain());
+            final CidsBean cidsBeanFromLegacyServer = metaObjectFromLegacyServer.getBean();
+
+            LOGGER.debug("retrieving meta object "
+                    + cidsBeanFromJson.getCidsBeanInfo().getJsonObjectKey()
+                    + " from rest server");
+            final MetaObject metaObjectFromRestServer = restConnector.getMetaObject(user,
+                    metaObjectFromJson.getID(),
+                    metaObjectFromJson.getClassID(), metaObjectFromJson.getDomain());
+            final CidsBean cidsBeanFromRestServer = metaObjectFromRestServer.getBean();
+
+            Assume.assumeTrue("cidsBeanFromJson.getCidsBeanInfo().getClassKey().equalsIgnoreCase(\"SPH_SPIELHALLE\")",
+                    cidsBeanFromJson.getCidsBeanInfo().getClassKey().equalsIgnoreCase("SPH_SPIELHALLE"));
+            Assume.assumeTrue("cidsBeanFromLegacyServer.getCidsBeanInfo().getClassKey().equalsIgnoreCase(\"SPH_SPIELHALLE\")",
+                    cidsBeanFromLegacyServer.getCidsBeanInfo().getClassKey().equalsIgnoreCase("SPH_SPIELHALLE"));
+            Assume.assumeTrue("cidsBeanFromRestServer.getCidsBeanInfo().getClassKey().equalsIgnoreCase(\"SPH_SPIELHALLE\")",
+                    cidsBeanFromRestServer.getCidsBeanInfo().getClassKey().equalsIgnoreCase("SPH_SPIELHALLE"));
+
+        } catch (AssertionError ae) {
+            LOGGER.error("getAndCompareCidsBeans test failed with: " + ae.getMessage());
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            throw ex;
+        }
+
+        LOGGER.info("getAndCompareMetaObjects test passed");
+    }
+
     @Test
     public void changePasswordSuccess() throws Exception {
         LOGGER.debug("testing changePasswordSuccess");
         final String newPassword = "DADhejPYEDtym:8hej54umVEB0hag25y";
         final String oldPassword = properties.getProperty("password", "cismet");
 
-        Assert.assertNotNull("cidsRefContainer connection successfully established", connector);
+        Assert.assertNotNull("cidsRefContainer connection successfully established", legacyConnector);
         Assert.assertNotNull("user authenticated", user);
 
         Assert.assertTrue("password of user changed",
-                connector.changePassword(user, oldPassword, newPassword));
+                legacyConnector.changePassword(user, oldPassword, newPassword));
 
         Assert.assertTrue("password of user changed",
-                connector.changePassword(user, newPassword, oldPassword));
+                legacyConnector.changePassword(user, newPassword, oldPassword));
 
         LOGGER.info("changePasswordSuccess passed!");
     }
@@ -144,10 +259,10 @@ public class UserServiceTest extends TestBase {
     public void changePasswordError() throws Exception {
         LOGGER.debug("testing changePasswordError");
 
-        Assert.assertNotNull("cidsRefContainer connection successfully established", connector);
+        Assert.assertNotNull("cidsRefContainer connection successfully established", legacyConnector);
         Assert.assertNotNull("user authenticated", user);
 
-        Assert.assertFalse(connector.changePassword(user, "wrong_password", "wrong_password"));
+        Assert.assertFalse(legacyConnector.changePassword(user, "wrong_password", "wrong_password"));
         LOGGER.info("changePasswordError passed!");
     }
 
@@ -156,12 +271,12 @@ public class UserServiceTest extends TestBase {
 
         LOGGER.debug("testing getUserErrorPassword");
 
-        Assert.assertNotNull("cidsRefContainer connection successfully established", connector);
+        Assert.assertNotNull("cidsRefContainer connection successfully established", legacyConnector);
         Assert.assertNotNull("user authenticated", user);
 
         try {
 
-            connector.getUser(properties.getProperty("usergroupDomain", "CIDS_REF"),
+            legacyConnector.getUser(properties.getProperty("usergroupDomain", "CIDS_REF"),
                     properties.getProperty("usergroup", "Administratoren"),
                     properties.getProperty("userDomain", "CIDS_REF"),
                     properties.getProperty("username", "admin"),
@@ -181,11 +296,11 @@ public class UserServiceTest extends TestBase {
 
         LOGGER.debug("testing getUserErrorDomain");
 
-        Assert.assertNotNull("cidsRefContainer connection successfully established", connector);
+        Assert.assertNotNull("cidsRefContainer connection successfully established", legacyConnector);
         Assert.assertNotNull("user authenticated", user);
 
         try {
-            connector.getUser(properties.getProperty("usergroupDomain", "CIDS_REF"),
+            legacyConnector.getUser(properties.getProperty("usergroupDomain", "CIDS_REF"),
                     properties.getProperty("usergroup", "Administratoren"),
                     "WRONG_DOMAIN",
                     properties.getProperty("username", "admin"),
@@ -204,10 +319,10 @@ public class UserServiceTest extends TestBase {
     public void getDomains() throws Exception {
         LOGGER.debug("testing getDomains");
 
-        Assert.assertNotNull("cidsRefContainer connection successfully established", connector);
+        Assert.assertNotNull("cidsRefContainer connection successfully established", legacyConnector);
         Assert.assertNotNull("user authenticated", user);
 
-        final String domains[] = connector.getDomains();
+        final String domains[] = legacyConnector.getDomains();
 
         Assert.assertTrue("one domain available", domains.length == 1);
 
@@ -224,13 +339,13 @@ public class UserServiceTest extends TestBase {
     public void getUserGroupNames() throws Exception {
         LOGGER.debug("testing getUserGroupNames");
 
-        Assert.assertNotNull("cidsRefContainer connection successfully established", connector);
+        Assert.assertNotNull("cidsRefContainer connection successfully established", legacyConnector);
         Assert.assertNotNull("user authenticated", user);
 
-        Vector userGroupNames = connector.getUserGroupNames();
+        Vector userGroupNames = legacyConnector.getUserGroupNames();
         Assert.assertTrue("user groups available on server", userGroupNames.size() > 0);
 
-        userGroupNames = connector.getUserGroupNames(
+        userGroupNames = legacyConnector.getUserGroupNames(
                 properties.getProperty("username", "admin"),
                 properties.getProperty("userDomain", "CIDS_REF"));
 
@@ -260,10 +375,10 @@ public class UserServiceTest extends TestBase {
     public void getUserGroupNamesError() throws Exception {
         LOGGER.debug("testing getUserGroupNamesError");
 
-        Assert.assertNotNull("cidsRefContainer connection successfully established", connector);
+        Assert.assertNotNull("cidsRefContainer connection successfully established", legacyConnector);
         Assert.assertNotNull("user authenticated", user);
 
-        Vector userGroupNames = connector.getUserGroupNames(
+        Vector userGroupNames = legacyConnector.getUserGroupNames(
                 "does-not-exist",
                 "does-not-exist");
 
