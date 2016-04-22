@@ -30,8 +30,18 @@ import org.junit.runners.MethodSorters;
 public abstract class AbstractCidsBeanDeserialisationTest {
 
     protected final static Logger LOGGER = Logger.getLogger(AbstractCidsBeanDeserialisationTest.class);
-    protected final static String UNFORMATED_ENTITIES = "de/cismet/cids/integrationtests/entities/";
-    protected final static String FORMATED_ENTITIES = "de/cismet/cids/dynamics/entities/";
+    /**
+     * Generated with deduplicate = false, omit null values = true and
+     * SerializationFeature.INDENT_OUTPUT = false
+     */
+    protected final static String UNFORMATTED_ENTITIES = "de/cismet/cids/integrationtests/entities/";
+
+    /**
+     * Generated with deduplicate = true, omit null values = true and
+     * SerializationFeature.INDENT_OUTPUT = true
+     */
+    protected final static String FORMATTED_ENTITIES = "de/cismet/cids/dynamics/entities/";
+
     protected final static ArrayList<String> CIDS_BEANS_JSON_FORMATTED = new ArrayList<String>();
     protected final static ArrayList<String> CIDS_BEANS_JSON_UNFORMATTED = new ArrayList<String>();
 
@@ -77,14 +87,15 @@ public abstract class AbstractCidsBeanDeserialisationTest {
         log4jProperties.put("log4j.appender.Remote.locationInfo", "true");
         log4jProperties.put("log4j.rootLogger", "ALL,Remote");
         org.apache.log4j.PropertyConfigurator.configure(log4jProperties);
-        
+
         CidsBean.intraObjectCacheMapper.disable(SerializationFeature.INDENT_OUTPUT);
         CidsBean.mapper.disable(SerializationFeature.INDENT_OUTPUT);
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
-
+        CidsBean.intraObjectCacheMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        CidsBean.mapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
 
     @Before
@@ -98,16 +109,16 @@ public abstract class AbstractCidsBeanDeserialisationTest {
     @DataProvider
     public final static String[] getCidsBeansJson() throws Exception {
         if (CIDS_BEANS_JSON_FORMATTED.isEmpty()) {
-            CIDS_BEANS_JSON_FORMATTED.addAll(initCidsBeansJson(FORMATED_ENTITIES));
+            CIDS_BEANS_JSON_FORMATTED.addAll(initCidsBeansJson(FORMATTED_ENTITIES));
         }
 
         return CIDS_BEANS_JSON_FORMATTED.toArray(new String[CIDS_BEANS_JSON_FORMATTED.size()]);
     }
-    
+
     @DataProvider
     public final static String[] getCidsBeansJsonUnformatted() throws Exception {
         if (CIDS_BEANS_JSON_UNFORMATTED.isEmpty()) {
-            CIDS_BEANS_JSON_UNFORMATTED.addAll(initCidsBeansJson(UNFORMATED_ENTITIES));
+            CIDS_BEANS_JSON_UNFORMATTED.addAll(initCidsBeansJson(UNFORMATTED_ENTITIES));
         }
 
         return CIDS_BEANS_JSON_UNFORMATTED.toArray(new String[CIDS_BEANS_JSON_UNFORMATTED.size()]);

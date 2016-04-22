@@ -31,7 +31,7 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
     public final static Object[][] getCidsBeans() throws Exception {
         if (CIDS_BEANS.isEmpty()) {
             if (CIDS_BEANS_JSON_FORMATTED.isEmpty()) {
-                CIDS_BEANS_JSON_FORMATTED.addAll(AbstractCidsBeanDeserialisationTest.initCidsBeansJson(FORMATED_ENTITIES));
+                CIDS_BEANS_JSON_FORMATTED.addAll(AbstractCidsBeanDeserialisationTest.initCidsBeansJson(FORMATTED_ENTITIES));
             }
 
             for (String cidsBeanJson : CIDS_BEANS_JSON_FORMATTED) {

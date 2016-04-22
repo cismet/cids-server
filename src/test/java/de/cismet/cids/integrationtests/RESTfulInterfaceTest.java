@@ -224,8 +224,8 @@ public class RESTfulInterfaceTest extends TestBase {
     }
 
     /**
-     * Unfortunately, this data provicer methos is called before the @ClassRule
-     * and before @BeforeClass! Therfore intitialisation of CidsBeans from JSON
+     * Unfortunately, this data provicer method is called before the @ClassRule
+     * and before @BeforeClass! Therefore intitialisation of CidsBeans from JSON
      * (located in test resources package) is delegated to initCidsBeansJson();
      *
      * @return
@@ -233,8 +233,17 @@ public class RESTfulInterfaceTest extends TestBase {
      */
     @DataProvider
     public final static String[] getCidsBeansJson() throws Exception {
-        initCidsBeansJson();
-        return CIDS_BEANS_JSON.toArray(new String[CIDS_BEANS_JSON.size()]);
+
+        if (TestEnvironment.isIntegrationTestsEnabled()) {
+            initCidsBeansJson();
+            return CIDS_BEANS_JSON.toArray(new String[CIDS_BEANS_JSON.size()]);
+        } else {
+            // UGLY HACK:
+            // return dummy array to avoid 'java.lang.IllegalArgumentException: 
+            // Could not create test methods using probably 'null' or 'empty' dataprovider'
+            // when tests are disabled.
+            return new String[]{"this string is never used but DataProviderRunner expects it"};
+        }
     }
 
     @Before
@@ -268,13 +277,13 @@ public class RESTfulInterfaceTest extends TestBase {
                     metaObjectFromJson.getID(),
                     metaObjectFromJson.getClassID(), metaObjectFromJson.getDomain());
             final CidsBean cidsBeanFromRestServer = metaObjectFromRestServer.getBean();
-            
-            this.compareMetaObjects(metaObjectFromJson, 
-                    metaObjectFromLegacyServer, 
+
+            this.compareMetaObjects(metaObjectFromJson,
+                    metaObjectFromLegacyServer,
                     metaObjectFromRestServer);
-            
-            this.compareCidsBeans(cidsBeanFromJson, 
-                    cidsBeanFromLegacyServer, 
+
+            this.compareCidsBeans(cidsBeanFromJson,
+                    cidsBeanFromLegacyServer,
                     cidsBeanFromRestServer);
 
         } catch (AssertionError ae) {
@@ -287,14 +296,14 @@ public class RESTfulInterfaceTest extends TestBase {
 
         LOGGER.info("getAndCompareMetaObjects test passed");
     }
-    
+
     /**
      * Helper method to compare remote / local meta objects
-     * 
+     *
      * @param metaObjectFromJson
      * @param metaObjectFromLegacyServer
      * @param metaObjectFromRestServer
-     * @throws AssertionError 
+     * @throws AssertionError
      */
     protected void compareMetaObjects(final MetaObject metaObjectFromJson,
             final MetaObject metaObjectFromLegacyServer,
@@ -386,7 +395,6 @@ public class RESTfulInterfaceTest extends TestBase {
 //        Assert.assertEquals("metaObject.getPropertyString() from rest server matches",
 //                metaObjectFromJson.getPropertyString(),
 //                metaObjectFromRestServer.getPropertyString());
-
         Assert.assertEquals("metaObject.getRenderer() from legacy server matches",
                 metaObjectFromJson.getRenderer(),
                 metaObjectFromLegacyServer.getRenderer());
@@ -419,11 +427,11 @@ public class RESTfulInterfaceTest extends TestBase {
 
     /**
      * Helper method to compare remote / local cids beans
-     * 
+     *
      * @param cidsBeanFromJson
      * @param cidsBeanFromLegacyServer
      * @param cidsBeanFromRestServer
-     * @throws AssertionError 
+     * @throws AssertionError
      */
     protected void compareCidsBeans(final CidsBean cidsBeanFromJson,
             final CidsBean cidsBeanFromLegacyServer,

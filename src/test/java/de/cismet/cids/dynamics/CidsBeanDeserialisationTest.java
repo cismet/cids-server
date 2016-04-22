@@ -4,8 +4,8 @@ import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
+import de.cismet.cids.json.IntraObjectCacheJsonParams;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -30,7 +30,8 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
             final CidsBean cidsBean = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
             //LOGGER.debug("testDeserializeCidsBean: " + cidsBean.getPrimaryKeyValue());
 
-            // does not work: JSON in test resource sis formatted
+            // does not work: JSON in test resource is formatted
+            // ->  testDeserializeAndCompareCidsBean
             //Assert.assertEquals(cidsBean.toJSONString(true), cidsBeanJson);
         } catch (AssertionError ae) {
             LOGGER.error("testDeserializeCidsBean failed with: " + ae.getMessage());
@@ -42,6 +43,12 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
         }
     }
 
+    /**
+     * Uses UNFORMATTED_ENTITIES for testing
+     * 
+     * @param cidsBeanJson
+     * @throws Exception 
+     */
     @Test
     @UseDataProvider("getCidsBeansJsonUnformatted")
     public void testDeserializeAndCompareCidsBean(final String cidsBeanJson) throws Exception {
@@ -49,9 +56,14 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
             final CidsBean cidsBean = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
             LOGGER.debug("testDeserializeAndCompareCidsBean: " + cidsBean.getPrimaryKeyValue());
 
+            
+            final IntraObjectCacheJsonParams params = new IntraObjectCacheJsonParams();
+            params.setCacheDuplicates(false);
+            params.setOmitNull(true);
+
             Assert.assertEquals("serialized and deserialies strings do match",
                     cidsBeanJson,
-                    cidsBean.toJSONString(false));
+                    cidsBean.toJSONString(params));
 
         } catch (AssertionError ae) {
             LOGGER.error("testDeserializeCidsBean failed with: " + ae.getMessage());
