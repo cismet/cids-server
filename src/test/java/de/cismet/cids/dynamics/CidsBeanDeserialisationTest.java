@@ -28,7 +28,7 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
     public void testDeserializeCidsBean(final String cidsBeanJson) throws Exception {
         try {
             final CidsBean cidsBean = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
-            LOGGER.debug("testDeserializeCidsBean: " + cidsBean.getPrimaryKeyValue());
+            //LOGGER.debug("testDeserializeCidsBean: " + cidsBean.getPrimaryKeyValue());
 
             // does not work: JSON in test resource sis formatted
             //Assert.assertEquals(cidsBean.toJSONString(true), cidsBeanJson);
@@ -43,16 +43,15 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
     }
 
     @Test
-    @Ignore
-    @UseDataProvider("getCidsBeansJson")
+    @UseDataProvider("getCidsBeansJsonUnformatted")
     public void testDeserializeAndCompareCidsBean(final String cidsBeanJson) throws Exception {
         try {
             final CidsBean cidsBean = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
             LOGGER.debug("testDeserializeAndCompareCidsBean: " + cidsBean.getPrimaryKeyValue());
 
             Assert.assertEquals("serialized and deserialies strings do match",
-                    cidsBean.toJSONString(true).replaceAll("\\s+", "").replaceAll("\\n", "").replaceAll("\\r", "").replaceAll("\\t", ""),
-                    cidsBeanJson.replaceAll("\\s+", "").replaceAll("\\n", "").replaceAll("\\r", "").replaceAll("\\t", "").replaceAll("$ref", "$self"));
+                    cidsBeanJson,
+                    cidsBean.toJSONString(false));
 
         } catch (AssertionError ae) {
             LOGGER.error("testDeserializeCidsBean failed with: " + ae.getMessage());

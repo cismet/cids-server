@@ -1,34 +1,20 @@
 package de.cismet.cids.dynamics;
 
-import Sirius.server.middleware.types.MetaClass;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import de.cismet.cidsx.server.api.types.CidsClass;
-import de.cismet.cidsx.server.api.types.legacy.CidsClassFactory;
-import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
@@ -44,44 +30,44 @@ import org.junit.runners.MethodSorters;
 public abstract class AbstractCidsBeanDeserialisationTest {
 
     protected final static Logger LOGGER = Logger.getLogger(AbstractCidsBeanDeserialisationTest.class);
-    public final static String ENTITIES_JSON_PACKAGE = "de/cismet/cids/dynamics/entities/";
-    protected final static ArrayList<String> CIDS_BEANS_JSON = new ArrayList<String>();
+    protected final static String UNFORMATED_ENTITIES = "de/cismet/cids/integrationtests/entities/";
+    protected final static String FORMATED_ENTITIES = "de/cismet/cids/dynamics/entities/";
+    protected final static ArrayList<String> CIDS_BEANS_JSON_FORMATTED = new ArrayList<String>();
+    protected final static ArrayList<String> CIDS_BEANS_JSON_UNFORMATTED = new ArrayList<String>();
 
-       protected static void initCidsBeansJson() throws Exception {
-        if (CIDS_BEANS_JSON.isEmpty()) {
-            final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            URL resources;
+    protected static ArrayList<String> initCidsBeansJson(final String entitiesPackage) throws Exception {
 
-            try {
-                resources = classLoader.getResource(ENTITIES_JSON_PACKAGE);
+        final ArrayList<String> cidsBeansJson = new ArrayList<String>();
+        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        URL resources;
 
-                final Scanner scanner = new Scanner((InputStream) resources.getContent()).useDelimiter("\\n");
-                while (scanner.hasNext()) {
-                    final String jsonFile = ENTITIES_JSON_PACKAGE + scanner.next();
-                    LOGGER.info("loading cids entity from json file " + jsonFile);
-                    try {
+        try {
+            resources = classLoader.getResource(entitiesPackage);
 
-                        final String entity = IOUtils.toString(classLoader.getResourceAsStream(jsonFile), "UTF-8");
-                        CIDS_BEANS_JSON.add(entity);
+            final Scanner scanner = new Scanner((InputStream) resources.getContent()).useDelimiter("\\n");
+            while (scanner.hasNext()) {
+                final String jsonFile = entitiesPackage + scanner.next();
+                LOGGER.info("loading cids entity from json file " + jsonFile);
+                try {
 
-                    } catch (Exception ex) {
-                        LOGGER.error("could not load cids entities from url " + jsonFile, ex);
-                        throw ex;
-                    }
+                    final String entity = IOUtils.toString(classLoader.getResourceAsStream(jsonFile), "UTF-8");
+                    cidsBeansJson.add(entity);
+
+                } catch (Exception ex) {
+                    LOGGER.error("could not load cids entities from url " + jsonFile, ex);
+                    throw ex;
                 }
-
-                LOGGER.info(CIDS_BEANS_JSON.size() + "CIDS_BEANS_JSON entities loaded");
-
-            } catch (Exception ex) {
-                LOGGER.error("could not locate entities json files: " + ex.getMessage(), ex);
-                throw ex;
             }
-        } else {
-            LOGGER.warn("CIDS_BEANS_JSON already initialised");
+
+            LOGGER.info(cidsBeansJson.size() + "CIDS_BEANS_JSON entities loaded");
+            return cidsBeansJson;
+
+        } catch (Exception ex) {
+            LOGGER.error("could not locate entities json files: " + ex.getMessage(), ex);
+            throw ex;
         }
     }
-    
-    
+
     @BeforeClass
     public static void setUpClass() throws Exception {
         final Properties log4jProperties = new Properties();
@@ -90,9 +76,10 @@ public abstract class AbstractCidsBeanDeserialisationTest {
         log4jProperties.put("log4j.appender.Remote.port", "4445");
         log4jProperties.put("log4j.appender.Remote.locationInfo", "true");
         log4jProperties.put("log4j.rootLogger", "ALL,Remote");
-        org.apache.log4j.PropertyConfigurator.configure(log4jProperties); 
+        org.apache.log4j.PropertyConfigurator.configure(log4jProperties);
         
-        initCidsBeansJson();
+        CidsBean.intraObjectCacheMapper.disable(SerializationFeature.INDENT_OUTPUT);
+        CidsBean.mapper.disable(SerializationFeature.INDENT_OUTPUT);
     }
 
     @AfterClass
@@ -110,7 +97,19 @@ public abstract class AbstractCidsBeanDeserialisationTest {
 
     @DataProvider
     public final static String[] getCidsBeansJson() throws Exception {
-        initCidsBeansJson();
-        return CIDS_BEANS_JSON.toArray(new String[CIDS_BEANS_JSON.size()]);
-    }   
+        if (CIDS_BEANS_JSON_FORMATTED.isEmpty()) {
+            CIDS_BEANS_JSON_FORMATTED.addAll(initCidsBeansJson(FORMATED_ENTITIES));
+        }
+
+        return CIDS_BEANS_JSON_FORMATTED.toArray(new String[CIDS_BEANS_JSON_FORMATTED.size()]);
+    }
+    
+    @DataProvider
+    public final static String[] getCidsBeansJsonUnformatted() throws Exception {
+        if (CIDS_BEANS_JSON_UNFORMATTED.isEmpty()) {
+            CIDS_BEANS_JSON_UNFORMATTED.addAll(initCidsBeansJson(UNFORMATED_ENTITIES));
+        }
+
+        return CIDS_BEANS_JSON_UNFORMATTED.toArray(new String[CIDS_BEANS_JSON_UNFORMATTED.size()]);
+    }
 }

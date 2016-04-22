@@ -30,11 +30,11 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
     @DataProvider
     public final static Object[][] getCidsBeans() throws Exception {
         if (CIDS_BEANS.isEmpty()) {
-            if (CIDS_BEANS_JSON.isEmpty()) {
-                AbstractCidsBeanDeserialisationTest.initCidsBeansJson();
+            if (CIDS_BEANS_JSON_FORMATTED.isEmpty()) {
+                CIDS_BEANS_JSON_FORMATTED.addAll(AbstractCidsBeanDeserialisationTest.initCidsBeansJson(FORMATED_ENTITIES));
             }
 
-            for (String cidsBeanJson : CIDS_BEANS_JSON) {
+            for (String cidsBeanJson : CIDS_BEANS_JSON_FORMATTED) {
                 final CidsBean cidsBean = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
                 CIDS_BEANS.add(cidsBean);
             }
@@ -659,17 +659,15 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
 //            Assert.assertEquals("Status of Dummay Array MetaObject is modified",
 //                                ((MetaObject) metaObjectSpy.getAttributeByFieldName("kategorien").getValue()).getStatus(),
 //                                MetaObject.NEW);
-
             final Semaphore semaphore = new Semaphore(1);
             final int arrayElements = ((Collection) updatedCidsBean.getProperty("kategorien")).size();
 
             final MetaClassCacheService classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
             final CidsBean arrayEntryBean = classCacheService.getMetaClass("CIDS", "SPH_KATEGORIE").getEmptyInstance().getBean();
             arrayEntryBean.setProperty("name", "Climbing for Dollars");
-            
+
             //FIXME: This does not work -> listElementReplaced not implemented in CidsBean
             //updatedCidsBean.getBeanCollectionProperty("kategorien").set(0, arrayEntryBean);
-            
             updatedCidsBean.getBeanCollectionProperty("kategorien").remove(0);
             updatedCidsBean.getBeanCollectionProperty("kategorien").add(0, arrayEntryBean);
 
@@ -696,7 +694,6 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
 //                        Assert.assertEquals("Status of Dummay Array MetaObject is modified",
 //                                MetaObject.NEW,
 //                                ((MetaObject) metaObjectSpy.getAttributeByFieldName("kategorien").getValue()).getStatus());
-
                         final ObjectAttribute[] arrayArray = ((MetaObject) metaObjectSpy.getAttributeByFieldName("kategorien").getValue()).getAttribs();
                         Assert.assertTrue("Array size of bean collection property and MetaObject dummy array object matches",
                                 arrayArray.length == arrayElements);
@@ -708,7 +705,6 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
 //                        Assert.assertEquals("CidsBean and MetaObject array entries are equal",
 //                                ((CidsBean[]) arrayCollection.toArray(new CidsBean[arrayCollection.size()]))[0].toJSONString(true),
 //                                ((CidsBean) ((CidsBean) ((MetaObject) arrayArray[0].getValue()).getBean()).getProperty("kategorie")).toJSONString(true));
-
                     } catch (Throwable t) {
                         LOGGER.error(t.getMessage(), t);
                         throwablesFromThread.add(t);
