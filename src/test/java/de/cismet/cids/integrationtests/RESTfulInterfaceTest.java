@@ -303,6 +303,110 @@ public class RESTfulInterfaceTest extends TestBase {
         LOGGER.info("getAndCompareMetaObjects test passed");
     }
 
+    @Test
+    @UseDataProvider("getCidsBeansJson")
+    public void test02updateAndCompareSimplePropertiesLegacy(final String cidsBeanJson) throws Exception {
+        LOGGER.debug("testing updateAndCompareSimpleProperties");
+
+        try {
+            final CidsBean cidsBeanFromJson = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
+            final MetaObject metaObjectFromJson = cidsBeanFromJson.getMetaObject();
+
+            LOGGER.debug("retrieving meta object "
+                    + cidsBeanFromJson.getCidsBeanInfo().getJsonObjectKey()
+                    + " from legacy server");
+            MetaObject metaObjectFromLegacyServer = legacyConnector.getMetaObject(user,
+                    metaObjectFromJson.getID(),
+                    metaObjectFromJson.getClassID(), metaObjectFromJson.getDomain());
+            CidsBean cidsBeanFromLegacyServer = metaObjectFromLegacyServer.getBean();
+
+            LOGGER.debug("retrieving meta object "
+                    + cidsBeanFromJson.getCidsBeanInfo().getJsonObjectKey()
+                    + " from rest server");
+            MetaObject metaObjectFromRestServer = restConnector.getMetaObject(user,
+                    metaObjectFromJson.getID(),
+                    metaObjectFromJson.getClassID(), metaObjectFromJson.getDomain());
+            CidsBean cidsBeanFromRestServer = metaObjectFromRestServer.getBean();
+
+            final long time = System.currentTimeMillis();
+            
+            cidsBeanFromJson.setProperty("name", "Lucky Casino");
+            cidsBeanFromLegacyServer.setProperty("name", "Lucky Casino");
+            cidsBeanFromRestServer.setProperty("name", "Lucky Casino");
+            
+            cidsBeanFromJson.setProperty("anzahl_sitzplaetze", 666);
+            cidsBeanFromLegacyServer.setProperty("anzahl_sitzplaetze", 666);
+            cidsBeanFromRestServer.setProperty("anzahl_sitzplaetze", 666);
+            
+            cidsBeanFromJson.setProperty("alkohol_ausschank", false);
+            cidsBeanFromLegacyServer.setProperty("alkohol_ausschank", false);
+            cidsBeanFromRestServer.setProperty("alkohol_ausschank", false);
+            
+            cidsBeanFromJson.setProperty("verbandsnummer", "QWERTZ");
+            cidsBeanFromLegacyServer.setProperty("verbandsnummer", "QWERTZ");
+            cidsBeanFromRestServer.setProperty("verbandsnummer", "QWERTZ");
+            
+            cidsBeanFromJson.setProperty("genehmigung_bis", new java.sql.Date(time));
+            cidsBeanFromLegacyServer.setProperty("genehmigung_bis", new java.sql.Date(time));
+            cidsBeanFromRestServer.setProperty("genehmigung_bis", new java.sql.Date(time));
+            
+            cidsBeanFromJson.setProperty("letze_aenderung", new java.sql.Timestamp(time));
+            cidsBeanFromLegacyServer.setProperty("letze_aenderung", new java.sql.Timestamp(time));
+            cidsBeanFromRestServer.setProperty("letze_aenderung", new java.sql.Timestamp(time));
+
+            this.compareCidsBeanProperties(cidsBeanFromJson,
+                    cidsBeanFromLegacyServer,
+                    cidsBeanFromRestServer);
+
+            this.compareAll(metaObjectFromJson,
+                    metaObjectFromLegacyServer,
+                    metaObjectFromRestServer,
+                    cidsBeanFromJson,
+                    cidsBeanFromLegacyServer,
+                    cidsBeanFromRestServer);
+            
+            LOGGER.debug("persisting meta object "
+                    + cidsBeanFromJson.getCidsBeanInfo().getJsonObjectKey()
+                    + " to legacy server");
+            cidsBeanFromLegacyServer.persist();
+            
+            LOGGER.debug("retrieving meta object "
+                    + cidsBeanFromJson.getCidsBeanInfo().getJsonObjectKey()
+                    + " from legacy server");
+            
+            metaObjectFromLegacyServer = legacyConnector.getMetaObject(user,
+                    metaObjectFromJson.getID(),
+                    metaObjectFromJson.getClassID(), metaObjectFromJson.getDomain());
+            cidsBeanFromLegacyServer = metaObjectFromLegacyServer.getBean();
+
+            LOGGER.debug("retrieving meta object "
+                    + cidsBeanFromJson.getCidsBeanInfo().getJsonObjectKey()
+                    + " from rest server");
+            metaObjectFromRestServer = restConnector.getMetaObject(user,
+                    metaObjectFromJson.getID(),
+                    metaObjectFromJson.getClassID(), metaObjectFromJson.getDomain());
+            cidsBeanFromRestServer = metaObjectFromRestServer.getBean();
+            
+            this.compareCidsBeanProperties(cidsBeanFromJson,
+                    cidsBeanFromLegacyServer,
+                    cidsBeanFromRestServer);
+
+            this.compareAll(metaObjectFromJson,
+                    metaObjectFromLegacyServer,
+                    metaObjectFromRestServer,
+                    cidsBeanFromJson,
+                    cidsBeanFromLegacyServer,
+                    cidsBeanFromRestServer);
+            
+        } catch (AssertionError ae) {
+            LOGGER.error("getAndCompareCidsBeans test failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during getAndCompareCidsBeans: " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
     protected void compareCidsBeanProperties(final CidsBean cidsBeanFromJson,
             final CidsBean cidsBeanFromLegacyServer,
             final CidsBean cidsBeanFromRestServer) {
