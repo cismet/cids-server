@@ -2,17 +2,23 @@ package de.cismet.cids.dynamics;
 
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import static de.cismet.cids.dynamics.AbstractCidsBeanDeserialisationTest.LOGGER;
 import de.cismet.cids.utils.MetaClassCacheService;
 import java.awt.EventQueue;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.concurrent.Semaphore;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.openide.util.Lookup;
@@ -729,6 +735,70 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
             if (!throwablesFromThread.isEmpty()) {
                 throw (throwablesFromThread.getLast());
             }
+        }
+    }
+
+    /**
+     * WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS does not work! Jackson Bug?!
+     *
+     * @throws Exception
+     * @throws AssertionError
+     */
+    @Test
+    @Ignore
+    public void testNanosecondsSerialization() throws Exception, AssertionError {
+
+        LOGGER.debug("testNanosecondsSerialization");
+
+        try {
+
+            final ObjectMapper MAPPER = new ObjectMapper();
+
+            MAPPER.enable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
+            MAPPER.enable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS);
+            MAPPER.configure(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS, true‌​);
+            MAPPER.configure(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS, true);
+
+            final MetaClassCacheService classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
+            final CidsBean cidsBean = classCacheService.getMetaClass("CIDS", "SPH_SPIELHALLE").getEmptyInstance().getBean();
+
+            final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            timestamp.setNanos(timestamp.getNanos() + 666666);
+
+            cidsBean.setProperty("letze_aenderung", timestamp);
+
+            final String objectJson = MAPPER.writerWithType(Timestamp.class).writeValueAsString(timestamp);
+            final JsonNode objectNode = MAPPER.readTree(objectJson);
+
+            final long deserializedNanos = objectNode.asLong();
+            Assert.assertEquals("Nanoseconds deserilaized from java.sql.timestamp",
+                    timestamp.getNanos(),
+                    deserializedNanos);
+
+            final String cidsBeanJson = cidsBean.toJSONString(true);
+            final CidsBean deserializedCidsBean = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
+            final Object deserializedProperty = deserializedCidsBean.getProperty("letze_aenderung");
+
+            Assert.assertNotNull("property letze_aenderung restored from CidsBean JSON",
+                    deserializedProperty);
+            Assert.assertTrue("property letze_aenderung deserialized as java.sql.Timestamp from CidsBean JSON",
+                    Timestamp.class.isAssignableFrom(deserializedProperty.getClass()));
+
+            final Timestamp deserializedTimestamp = (Timestamp) deserializedProperty;
+
+            Assert.assertEquals("Nanoseconds deserialized from java.sql.timestamp from CidsBean JSON",
+                    timestamp.getNanos(),
+                    deserializedTimestamp.getNanos());
+            Assert.assertEquals("java.sql.timestamp correctly deserialized from CidsBean JSON",
+                    timestamp, deserializedTimestamp);
+
+        } catch (AssertionError ae) {
+            LOGGER.error("testSerializeRemoveArrayElement failed with: " + ae.getMessage());
+
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            throw ex;
         }
     }
 }

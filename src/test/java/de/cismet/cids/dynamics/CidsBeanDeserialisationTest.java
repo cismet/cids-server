@@ -45,9 +45,9 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
 
     /**
      * Uses UNFORMATTED_ENTITIES for testing
-     * 
+     *
      * @param cidsBeanJson
-     * @throws Exception 
+     * @throws Exception
      */
     @Test
     @UseDataProvider("getCidsBeansJsonUnformatted")
@@ -56,7 +56,6 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
             final CidsBean cidsBean = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
             LOGGER.debug("testDeserializeAndCompareCidsBean: " + cidsBean.getPrimaryKeyValue());
 
-            
             final IntraObjectCacheJsonParams params = new IntraObjectCacheJsonParams();
             params.setCacheDuplicates(false);
             params.setOmitNull(true);
@@ -75,6 +74,12 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
         }
     }
 
+    /**
+     * Disabled. See #165
+     *
+     * @param cidsBeanJson
+     * @throws Exception
+     */
     @Test
     @UseDataProvider("getCidsBeansJson")
     @Ignore
