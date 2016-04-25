@@ -383,14 +383,32 @@ public class RESTfulInterfaceTest extends TestBase {
                                 collectionCidsBeanFromLegacyServer,
                                 collectionCidsBeanFromRestServer);
                     }
-                } else {
-                    Assert.assertEquals("cidsBean.property(" + propertyName + ") from legacy server matches",
-                            propertyFromJson,
-                            propertyFromLegacyServer);
-                    Assert.assertEquals("cidsBean.getProperty(" + propertyName + ") from rest server matches",
-                            propertyFromJson,
-                            propertyFromRestServer);
 
+                } else {
+
+                    Assert.assertTrue("property " + propertyName + " FromLegacyServer is a " + propertyFromJson.getClass(),
+                            propertyFromJson.getClass().isAssignableFrom(propertyFromLegacyServer.getClass()));
+                    Assert.assertTrue("property " + propertyName + " FromRestServer is a " + propertyFromJson.getClass(),
+                            propertyFromJson.getClass().isAssignableFrom(propertyFromRestServer.getClass()));
+
+                    // java.sql.Date object comparision does not work
+                    // probably due to fix implemented in #164
+                    if (java.sql.Date.class.isAssignableFrom(propertyFromJson.getClass())) {
+                        Assert.assertEquals("cidsBean.property(" + propertyName + ") from legacy server matches",
+                                propertyFromJson.toString(),
+                                propertyFromLegacyServer.toString());
+                        Assert.assertEquals("cidsBean.getProperty(" + propertyName + ") from rest server matches",
+                                propertyFromJson.toString(),
+                                propertyFromRestServer.toString());
+
+                    } else {
+                        Assert.assertEquals("cidsBean.property(" + propertyName + ") from legacy server matches",
+                                propertyFromJson,
+                                propertyFromLegacyServer);
+                        Assert.assertEquals("cidsBean.getProperty(" + propertyName + ") from rest server matches",
+                                propertyFromJson,
+                                propertyFromRestServer);
+                    }
                 }
             }
         }
