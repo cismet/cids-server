@@ -401,6 +401,16 @@ public class RESTfulInterfaceTest extends TestBase {
                                 propertyFromJson.toString(),
                                 propertyFromRestServer.toString());
 
+                        // java.sql.Timestamp object comparision does not work
+                        // nanoseconds not serialized despite of SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS
+                        // see also http://stackoverflow.com/questions/27847203/is-it-possible-to-use-jackson-with-nanoseconds-value
+                    } else if (java.sql.Timestamp.class.isAssignableFrom(propertyFromJson.getClass())) {
+                        Assert.assertEquals("cidsBean.property(" + propertyName + ") from legacy server matches",
+                                ((java.sql.Timestamp) propertyFromJson).getTime(),
+                                ((java.sql.Timestamp) propertyFromLegacyServer).getTime());
+                        Assert.assertEquals("cidsBean.getProperty(" + propertyName + ") from rest server matches",
+                                ((java.sql.Timestamp) propertyFromJson).getTime(),
+                                ((java.sql.Timestamp) propertyFromRestServer).getTime());
                     } else {
                         Assert.assertEquals("cidsBean.property(" + propertyName + ") from legacy server matches",
                                 propertyFromJson,
