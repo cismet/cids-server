@@ -1,5 +1,6 @@
 package de.cismet.cids.integrationtests;
 
+import Sirius.server.middleware.types.DefaultMetaObject;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import com.tngtech.java.junit.dataprovider.DataProvider;
@@ -14,6 +15,8 @@ import de.cismet.cidsx.client.connector.RESTfulInterfaceConnector;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.Scanner;
 import org.apache.commons.io.IOUtils;
@@ -238,7 +241,7 @@ public class RESTfulInterfaceTest extends TestBase {
             initCidsBeansJson();
             return CIDS_BEANS_JSON.toArray(new String[CIDS_BEANS_JSON.size()]);
         } else {
-            // UGLY HACK:
+            // UGLY HACK for DataProviderRunner compatibility:
             // return dummy array to avoid 'java.lang.IllegalArgumentException: 
             // Could not create test methods using probably 'null' or 'empty' dataprovider'
             // when tests are disabled.
@@ -278,23 +281,159 @@ public class RESTfulInterfaceTest extends TestBase {
                     metaObjectFromJson.getClassID(), metaObjectFromJson.getDomain());
             final CidsBean cidsBeanFromRestServer = metaObjectFromRestServer.getBean();
 
-            this.compareMetaObjects(metaObjectFromJson,
-                    metaObjectFromLegacyServer,
-                    metaObjectFromRestServer);
+            this.compareCidsBeanProperties(cidsBeanFromJson,
+                    cidsBeanFromLegacyServer,
+                    cidsBeanFromRestServer);
 
-            this.compareCidsBeans(cidsBeanFromJson,
+            this.compareAll(metaObjectFromJson,
+                    metaObjectFromLegacyServer,
+                    metaObjectFromRestServer,
+                    cidsBeanFromJson,
                     cidsBeanFromLegacyServer,
                     cidsBeanFromRestServer);
 
         } catch (AssertionError ae) {
-            LOGGER.error("getAndCompareCidsBeans test failed with: " + ae.getMessage());
+            LOGGER.error("getAndCompareCidsBeans test failed with: " + ae.getMessage(), ae);
             throw ae;
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage(), ex);
+            LOGGER.error("Unexpected error during getAndCompareCidsBeans: " + ex.getMessage(), ex);
             throw ex;
         }
 
         LOGGER.info("getAndCompareMetaObjects test passed");
+    }
+
+    protected void compareCidsBeanProperties(final CidsBean cidsBeanFromJson,
+            final CidsBean cidsBeanFromLegacyServer,
+            final CidsBean cidsBeanFromRestServer) {
+        for (final String propertyName : cidsBeanFromJson.getPropertyNames()) {
+            final Object propertyFromJson = cidsBeanFromJson.getProperty(propertyName);
+            final Object propertyFromLegacyServer = cidsBeanFromLegacyServer.getProperty(propertyName);
+            final Object propertyFromRestServer = cidsBeanFromRestServer.getProperty(propertyName);
+
+            if (propertyFromJson != null) {
+                Assert.assertNotNull("property " + propertyName + " FromLegacyServer is not null",
+                        propertyFromLegacyServer);
+                Assert.assertNotNull("property " + propertyName + " FromRestServer is not null",
+                        propertyFromRestServer);
+
+                if (CidsBean.class.isAssignableFrom(propertyFromJson.getClass())) {
+
+                    Assert.assertTrue("property " + propertyName + " FromLegacyServer is a CidsBean",
+                            CidsBean.class.isAssignableFrom(propertyFromLegacyServer.getClass()));
+                    Assert.assertTrue("property " + propertyName + " FromRestServer is a CidsBean",
+                            CidsBean.class.isAssignableFrom(propertyFromRestServer.getClass()));
+
+                    final CidsBean cidsBeanPropertyFromJson = (CidsBean) propertyFromJson;
+                    final CidsBean cidsBeanPropertyLegacyServer = (CidsBean) propertyFromLegacyServer;
+                    final CidsBean cidsBeanPropertyFromRestServer = (CidsBean) propertyFromRestServer;
+
+                    this.compareCidsBeans(cidsBeanPropertyFromJson,
+                            cidsBeanPropertyLegacyServer,
+                            cidsBeanPropertyFromRestServer);
+
+                    this.compareCidsBeanProperties(cidsBeanPropertyFromJson,
+                            cidsBeanPropertyLegacyServer,
+                            cidsBeanPropertyFromRestServer);
+                } else if (Collection.class.isAssignableFrom(propertyFromJson.getClass())
+                        && !((Collection) propertyFromJson).isEmpty()) {
+
+                    Assert.assertTrue("property " + propertyName + " FromLegacyServer is a CidsBean Collection",
+                            Collection.class.isAssignableFrom(propertyFromLegacyServer.getClass()));
+                    Assert.assertTrue("property " + propertyName + " FromRestServer is a CidsBean Collection",
+                            Collection.class.isAssignableFrom(propertyFromRestServer.getClass()));
+
+                    final Collection<CidsBean> cidsBeanCollectionPropertyFromJson
+                            = (Collection<CidsBean>) propertyFromJson;
+                    final Collection<CidsBean> cidsBeanCollectionPropertyFromLegacyServer
+                            = (Collection<CidsBean>) propertyFromLegacyServer;
+                    final Collection<CidsBean> cidsBeanCollectionPropertyFromRestServer
+                            = (Collection<CidsBean>) propertyFromRestServer;
+
+                    Assert.assertEquals("cidsBeanCollectionPropertyLegacyServer server matches size",
+                            cidsBeanCollectionPropertyFromJson.size(),
+                            cidsBeanCollectionPropertyFromLegacyServer.size());
+                    Assert.assertEquals("cidsBeanCollectionPropertyFromRestServer server matches size",
+                            cidsBeanCollectionPropertyFromJson.size(),
+                            cidsBeanCollectionPropertyFromRestServer.size());
+
+                    final Iterator<CidsBean> cidsBeanCollectionPropertyIteratorFromJson
+                            = cidsBeanCollectionPropertyFromJson.iterator();
+                    final Iterator<CidsBean> cidsBeanCollectionPropertyIteratorFromLegacyServer
+                            = cidsBeanCollectionPropertyFromLegacyServer.iterator();
+                    final Iterator<CidsBean> cidsBeanCollectionPropertyIteratorFromRestServer
+                            = cidsBeanCollectionPropertyFromRestServer.iterator();
+
+                    while (cidsBeanCollectionPropertyIteratorFromJson.hasNext()
+                            && cidsBeanCollectionPropertyIteratorFromLegacyServer.hasNext()
+                            && cidsBeanCollectionPropertyIteratorFromRestServer.hasNext()) {
+
+                        final CidsBean collectionCidsBeanFromJson
+                                = cidsBeanCollectionPropertyIteratorFromJson.next();
+                        final CidsBean collectionCidsBeanFromLegacyServer
+                                = cidsBeanCollectionPropertyIteratorFromLegacyServer.next();
+                        final CidsBean collectionCidsBeanFromRestServer
+                                = cidsBeanCollectionPropertyIteratorFromRestServer.next();
+
+                        this.compareCidsBeans(collectionCidsBeanFromJson,
+                                collectionCidsBeanFromLegacyServer,
+                                collectionCidsBeanFromRestServer);
+
+                        this.compareCidsBeanProperties(collectionCidsBeanFromJson,
+                                collectionCidsBeanFromLegacyServer,
+                                collectionCidsBeanFromRestServer);
+                    }
+                } else {
+                    Assert.assertEquals("cidsBean.property(" + propertyName + ") from legacy server matches",
+                            propertyFromJson,
+                            propertyFromLegacyServer);
+                    Assert.assertEquals("cidsBean.getProperty(" + propertyName + ") from rest server matches",
+                            propertyFromJson,
+                            propertyFromRestServer);
+
+                }
+            }
+        }
+    }
+
+    /**
+     * Compares getMetaObject vs getCidsBean vs MetaObject & CidsBeans retrieved
+     * from Legacy REST and Pure REST Servers and deserilaized from local JSON
+     * files.
+     *
+     * @param metaObjectFromJson
+     * @param metaObjectFromLegacyServer
+     * @param metaObjectFromRestServer
+     * @param cidsBeanFromJson
+     * @param cidsBeanFromLegacyServer
+     * @param cidsBeanFromRestServer
+     */
+    protected void compareAll(final MetaObject metaObjectFromJson,
+            final MetaObject metaObjectFromLegacyServer,
+            final MetaObject metaObjectFromRestServer,
+            final CidsBean cidsBeanFromJson,
+            final CidsBean cidsBeanFromLegacyServer,
+            final CidsBean cidsBeanFromRestServer) throws AssertionError {
+
+        LOGGER.debug("comparing MetaObjects");
+        this.compareMetaObjects(metaObjectFromJson,
+                metaObjectFromLegacyServer,
+                metaObjectFromRestServer);
+
+        LOGGER.debug("comparing CidsBeans");
+        this.compareCidsBeans(cidsBeanFromJson,
+                cidsBeanFromLegacyServer,
+                cidsBeanFromRestServer);
+
+        LOGGER.debug("comparing MetaObjects from CidsBean.getMetaObject()");
+        this.compareMetaObjects(cidsBeanFromJson.getMetaObject(),
+                cidsBeanFromLegacyServer.getMetaObject(),
+                cidsBeanFromRestServer.getMetaObject());
+
+        LOGGER.debug("comparing CidsBean from CidsBean.getMetaObject().getCidsBean()");
+        this.compareCidsBeans(cidsBeanFromJson.getMetaObject().getBean(),
+                cidsBeanFromLegacyServer.getMetaObject().getBean(),
+                cidsBeanFromRestServer.getMetaObject().getBean());
     }
 
     /**
@@ -455,35 +594,93 @@ public class RESTfulInterfaceTest extends TestBase {
                 beanInfoFromJson.getJsonObjectKey(),
                 beanInfoFromRestServer.getJsonObjectKey());
 
-        Assert.assertEquals("JSON from legacy server matches",
-                cidsBeanJson,
-                cidsBeanJsonFromLegacyServer);
-        Assert.assertEquals("JSON from rest server matches",
-                cidsBeanJson,
-                cidsBeanJsonFromRestServer);
-         
-            // ->  metaObject.getDebugString();
-            // FIXME: DebugStrings Strings do not match -> Array Helper Object Ids are lost after deserialization
-            // See Issue #165
-//        Assert.assertEquals("cidsBean.getMOString from legacy server matches",
-//                cidsBeanFromJson.getMOString(),
-//                cidsBeanFromLegacyServer.getMOString());
-//        Assert.assertEquals("cidsBean.getMOString from rest server matches",
-//                cidsBeanFromJson.getMOString(),
-//                cidsBeanFromRestServer.getMOString());
+        Assert.assertEquals("cidsBean.getPrimaryKeyFieldname() from legacy server matches",
+                cidsBeanFromJson.getPrimaryKeyFieldname(),
+                cidsBeanFromLegacyServer.getPrimaryKeyFieldname());
+        Assert.assertEquals("cidsBean.getPrimaryKeyFieldname from rest server matches",
+                cidsBeanFromJson.getPrimaryKeyFieldname(),
+                cidsBeanFromRestServer.getPrimaryKeyFieldname());
 
+        Assert.assertEquals("cidsBean.getPrimaryKeyValue() from legacy server matches",
+                cidsBeanFromJson.getPrimaryKeyValue(),
+                cidsBeanFromLegacyServer.getPrimaryKeyValue());
+        Assert.assertEquals("cidsBean.getPrimaryKeyValue from rest server matches",
+                cidsBeanFromJson.getPrimaryKeyValue(),
+                cidsBeanFromRestServer.getPrimaryKeyValue());
+
+        Assert.assertArrayEquals("cidsBean.getPropertyNames() from legacy server matches",
+                cidsBeanFromJson.getPropertyNames(),
+                cidsBeanFromLegacyServer.getPropertyNames());
+        Assert.assertArrayEquals("cidsBean.getPropertyNames from rest server matches",
+                cidsBeanFromJson.getPropertyNames(),
+                cidsBeanFromRestServer.getPropertyNames());
+
+        Assert.assertEquals("cidsBean.hasArtificialChangeFlag() from legacy server matches",
+                cidsBeanFromJson.hasArtificialChangeFlag(),
+                cidsBeanFromLegacyServer.hasArtificialChangeFlag());
+        Assert.assertEquals("cidsBean.hasArtificialChangeFlag from rest server matches",
+                cidsBeanFromJson.hasArtificialChangeFlag(),
+                cidsBeanFromRestServer.hasArtificialChangeFlag());
+
+        Assert.assertEquals("cidsBean.hasObjectReadPermission(user) from legacy server matches",
+                cidsBeanFromJson.hasObjectReadPermission(user),
+                cidsBeanFromLegacyServer.hasObjectReadPermission(user));
+        Assert.assertEquals("cidsBean.hasObjectReadPermission(user) from rest server matches",
+                cidsBeanFromJson.hasObjectReadPermission(user),
+                cidsBeanFromRestServer.hasObjectReadPermission(user));
+
+        Assert.assertEquals("cidsBean.hasObjectWritePermission(user) from legacy server matches",
+                cidsBeanFromJson.hasObjectWritePermission(user),
+                cidsBeanFromLegacyServer.hasObjectWritePermission(user));
+        Assert.assertEquals("cidsBean.hasObjectWritePermission(user) from rest server matches",
+                cidsBeanFromJson.hasObjectWritePermission(user),
+                cidsBeanFromRestServer.hasObjectWritePermission(user));
+
+        Assert.assertEquals("cidsBean.getHasWritePermission(user) from legacy server matches",
+                cidsBeanFromJson.getHasWritePermission(user),
+                cidsBeanFromLegacyServer.getHasWritePermission(user));
+        Assert.assertEquals("cidsBean.getHasWritePermission(user) from rest server matches",
+                cidsBeanFromJson.getHasWritePermission(user),
+                cidsBeanFromRestServer.getHasWritePermission(user));
+
+        // --> compareCidsBeanProperties()
+//        for (String property : cidsBeanFromJson.getPropertyNames()) {
+//            Assert.assertEquals("cidsBean.property(" + property + ") from legacy server matches",
+//                    cidsBeanFromJson.getProperty(property),
+//                    cidsBeanFromLegacyServer.getProperty(property));
+//            Assert.assertEquals("cidsBean.getProperty(" + property + ") from rest server matches",
+//                    cidsBeanFromJson.getProperty(property),
+//                    cidsBeanFromRestServer.getProperty(property));
+//        }
         Assert.assertEquals("cidsBean.toObjectString from legacy server matches",
                 cidsBeanFromJson.toObjectString(),
                 cidsBeanFromLegacyServer.toObjectString());
         Assert.assertEquals("cidsBean.toObjectStringtoObjectString from rest server matches",
                 cidsBeanFromJson.toObjectString(),
                 cidsBeanFromRestServer.toObjectString());
-        
+
         Assert.assertEquals("cidsBean.hashCode() from legacy server matches",
                 cidsBeanFromJson.hashCode(),
                 cidsBeanFromLegacyServer.hashCode());
-        Assert.assertEquals("cidsBean.toObjectStringtoObjectString from rest server matches",
+        Assert.assertEquals("cidsBean.hashCode from rest server matches",
                 cidsBeanFromJson.hashCode(),
                 cidsBeanFromRestServer.hashCode());
+
+        Assert.assertEquals("JSON from legacy server matches",
+                cidsBeanJson,
+                cidsBeanJsonFromLegacyServer);
+        Assert.assertEquals("JSON from rest server matches",
+                cidsBeanJson,
+                cidsBeanJsonFromRestServer);
+
+        // ->  metaObject.getDebugString();
+        // FIXME: DebugStrings Strings do not match -> Array Helper Object Ids are lost after deserialization
+        // See Issue #165
+//        Assert.assertEquals("cidsBean.getMOString from legacy server matches",
+//                cidsBeanFromJson.getMOString(),
+//                cidsBeanFromLegacyServer.getMOString());
+//        Assert.assertEquals("cidsBean.getMOString from rest server matches",
+//                cidsBeanFromJson.getMOString(),
+//                cidsBeanFromRestServer.getMOString());
     }
 }
