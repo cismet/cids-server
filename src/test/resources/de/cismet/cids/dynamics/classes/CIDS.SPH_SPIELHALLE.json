@@ -84,7 +84,7 @@
           "$self": "SPH_SPIELHALLE/kategorien",
           "LEGACY_ID": 21,
           "NAME": "kategorien",
-          "LEGACY_ARRAY_KEY_FIELD_NAME": "SPH_SPIELHALLE_reference",
+          "LEGACY_ARRAY_KEY_FIELD_NAME": "SPIELHALLE_reference",
           "LEGACY_JAVACLASS_NAME": "java.lang.Integer",
           "POSITION": 5,
           "LEGACY_REFERENCE_TYPE": 22,

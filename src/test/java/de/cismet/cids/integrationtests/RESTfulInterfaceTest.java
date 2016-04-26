@@ -585,81 +585,83 @@ public class RESTfulInterfaceTest extends TestBase {
     protected void compareMetaObjects(final MetaObject metaObjectFromJson,
             final MetaObject metaObjectFromLegacyServer,
             final MetaObject metaObjectFromRestServer) throws AssertionError {
+        
+        final int pk = metaObjectFromJson.getId();
 
-        Assert.assertEquals("metaObject.getClassID() from legacy server matches",
+        Assert.assertEquals("metaObject.getClassID() from legacy server matches ("+pk+")",
                 metaObjectFromJson.getClassID(),
                 metaObjectFromLegacyServer.getClassID());
-        Assert.assertEquals("metaObject.getClassID() from rest server matches",
+        Assert.assertEquals("metaObject.getClassID() from rest server matches ("+pk+")",
                 metaObjectFromJson.getClassID(),
                 metaObjectFromRestServer.getClassID());
 
-        Assert.assertEquals("metaObject.getClassKey() from legacy server matches",
+        Assert.assertEquals("metaObject.getClassKey() from legacy server matches ("+pk+")",
                 metaObjectFromJson.getClassKey(),
                 metaObjectFromLegacyServer.getClassKey());
-        Assert.assertEquals("metaObject.getClassKey() from rest server matches",
+        Assert.assertEquals("metaObject.getClassKey() from rest server matches ("+pk+")",
                 metaObjectFromJson.getClassKey(),
                 metaObjectFromRestServer.getClassKey());
 
-        Assert.assertEquals("metaObject.getComplexEditor() from legacy server matches",
+        Assert.assertEquals("metaObject.getComplexEditor() from legacy server matches ("+pk+")",
                 metaObjectFromJson.getComplexEditor(),
                 metaObjectFromLegacyServer.getComplexEditor());
-        Assert.assertEquals("metaObject.getComplexEditor() from rest server matches",
+        Assert.assertEquals("metaObject.getComplexEditor() from rest server matches ("+pk+")",
                 metaObjectFromJson.getComplexEditor(),
                 metaObjectFromRestServer.getComplexEditor());
 
-        Assert.assertEquals("metaObject.getDescription() from legacy server matches",
+        Assert.assertEquals("metaObject.getDescription() from legacy server matches ("+pk+")",
                 metaObjectFromJson.getDescription(),
                 metaObjectFromLegacyServer.getDescription());
-        Assert.assertEquals("metaObject.getDescription() from rest server matches",
+        Assert.assertEquals("metaObject.getDescription() from rest server matches ("+pk+")",
                 metaObjectFromJson.getDescription(),
                 metaObjectFromRestServer.getDescription());
 
-        Assert.assertEquals("metaObject.getDomain() from legacy server matches",
+        Assert.assertEquals("metaObject.getDomain() from legacy server matches ("+pk+")",
                 metaObjectFromJson.getDomain(),
                 metaObjectFromLegacyServer.getDomain());
-        Assert.assertEquals("metaObject.getDomain() from rest server matches",
+        Assert.assertEquals("metaObject.getDomain() from rest server matches ("+pk+")",
                 metaObjectFromJson.getDomain(),
                 metaObjectFromRestServer.getDomain());
 
-        Assert.assertEquals("metaObject.getEditor() from legacy server matches",
+        Assert.assertEquals("metaObject.getEditor() from legacy server matches ("+pk+")",
                 metaObjectFromJson.getEditor(),
                 metaObjectFromLegacyServer.getEditor());
-        Assert.assertEquals("metaObject.getEditor() from rest server matches",
+        Assert.assertEquals("metaObject.getEditor() from rest server matches ("+pk+")",
                 metaObjectFromJson.getEditor(),
                 metaObjectFromRestServer.getEditor());
 
-        Assert.assertEquals("metaObject.getGroup() from legacy server matches",
+        Assert.assertEquals("metaObject.getGroup() from legacy server matches ("+pk+")",
                 metaObjectFromJson.getGroup(),
                 metaObjectFromLegacyServer.getGroup());
-        Assert.assertEquals("metaObject.getGroup() from rest server matches",
+        Assert.assertEquals("metaObject.getGroup() from rest server matches ("+pk+")",
                 metaObjectFromJson.getGroup(),
                 metaObjectFromRestServer.getGroup());
 
-        Assert.assertEquals("metaObject.getID() from legacy server matches",
+        Assert.assertEquals("metaObject.getID() from legacy server matches ("+pk+")",
                 metaObjectFromJson.getID(),
                 metaObjectFromLegacyServer.getID());
-        Assert.assertEquals("metaObject.getID() from rest server matches",
+        Assert.assertEquals("metaObject.getID() from rest server matches ("+pk+")",
                 metaObjectFromJson.getID(),
                 metaObjectFromRestServer.getID());
 
-        Assert.assertEquals("metaObject.getId() from legacy server matches",
+        Assert.assertEquals("metaObject.getId() from legacy server matches ("+pk+")",
                 metaObjectFromJson.getId(),
                 metaObjectFromLegacyServer.getId());
-        Assert.assertEquals("metaObject.getId() from rest server matches",
+        Assert.assertEquals("metaObject.getId() from rest server matches ("+pk+")",
                 metaObjectFromJson.getId(),
                 metaObjectFromRestServer.getId());
 
-        Assert.assertEquals("metaObject.getKey() from legacy server matches",
+        Assert.assertEquals("metaObject.getKey() from legacy server matches ("+pk+")",
                 metaObjectFromJson.getKey(),
                 metaObjectFromLegacyServer.getKey());
-        Assert.assertEquals("metaObject.getKey() from rest server matches",
+        Assert.assertEquals("metaObject.getKey() from rest server matches ("+pk+")",
                 metaObjectFromJson.getKey(),
                 metaObjectFromRestServer.getKey());
 
-        Assert.assertEquals("metaObject.getName() from legacy server matches",
+        Assert.assertEquals("metaObject.getName() from legacy server matches ("+pk+")",
                 metaObjectFromJson.getName(),
                 metaObjectFromLegacyServer.getName());
-        Assert.assertEquals("metaObject.getName() from rest server matches",
+        Assert.assertEquals("metaObject.getName() from rest server matches ("+pk+")",
                 metaObjectFromJson.getName(),
                 metaObjectFromRestServer.getName());
 
@@ -667,39 +669,39 @@ public class RESTfulInterfaceTest extends TestBase {
         // See Issue #165
 //        LOGGER.debug(metaObjectFromJson.getPropertyString());
 //        LOGGER.debug(metaObjectFromLegacyServer.getPropertyString());
-//        Assert.assertEquals("metaObject.getPropertyString() from legacy server matches",
+//        Assert.assertEquals("metaObject.getPropertyString() from legacy server matches ("+pk+")",
 //                metaObjectFromJson.getPropertyString(),
 //                metaObjectFromLegacyServer.getPropertyString());
-//        Assert.assertEquals("metaObject.getPropertyString() from rest server matches",
+//        Assert.assertEquals("metaObject.getPropertyString() from rest server matches ("+pk+")",
 //                metaObjectFromJson.getPropertyString(),
 //                metaObjectFromRestServer.getPropertyString());
-        Assert.assertEquals("metaObject.getRenderer() from legacy server matches",
+        Assert.assertEquals("metaObject.getRenderer() from legacy server matches ("+pk+")",
                 metaObjectFromJson.getRenderer(),
                 metaObjectFromLegacyServer.getRenderer());
-        Assert.assertEquals("metaObject.getRenderer() from rest server matches",
+        Assert.assertEquals("metaObject.getRenderer() from rest server matches ("+pk+")",
                 metaObjectFromJson.getRenderer(),
                 metaObjectFromRestServer.getRenderer());
 
-        Assert.assertEquals("metaObject.getSimpleEditor() from legacy server matches",
+        Assert.assertEquals("metaObject.getSimpleEditor() from legacy server matches ("+pk+")",
                 metaObjectFromJson.getSimpleEditor(),
                 metaObjectFromLegacyServer.getSimpleEditor());
-        Assert.assertEquals("metaObject.getSimpleEditor() from rest server matches",
+        Assert.assertEquals("metaObject.getSimpleEditor() from rest server matches ("+pk+")",
                 metaObjectFromJson.getSimpleEditor(),
                 metaObjectFromRestServer.getSimpleEditor());
 
-        Assert.assertEquals("metaObject.getStatus() from legacy server matches",
+        Assert.assertEquals("metaObject.getStatus() from legacy server matches ("+pk+")",
                 metaObjectFromJson.getStatus(),
                 metaObjectFromLegacyServer.getStatus());
-        Assert.assertEquals("metaObject.getStatus() from rest server matches",
+        Assert.assertEquals("metaObject.getStatus() from rest server matches ("+pk+")",
                 metaObjectFromJson.getStatus(),
                 metaObjectFromRestServer.getStatus());
 
         // FIXME: DebugStrings Strings do not match -> Array Helper Object Ids are lost after deserialization
         // See Issue #165
-        //        Assert.assertEquals("metaObject.getStatusDebugString() from legacy server matches",
+        //        Assert.assertEquals("metaObject.getStatusDebugString() from legacy server matches ("+pk+")",
         //                metaObjectFromJson.getStatusDebugString(),
         //                metaObjectFromLegacyServer.getStatusDebugString());
-        //        Assert.assertEquals("metaObject.getStatusDebugString() from rest server matches",
+        //        Assert.assertEquals("metaObject.getStatusDebugString() from rest server matches ("+pk+")",
         //                metaObjectFromJson.getStatusDebugString(),
         //                metaObjectFromRestServer.getStatusDebugString());
     }
@@ -725,100 +727,102 @@ public class RESTfulInterfaceTest extends TestBase {
         final CidsBeanInfo beanInfoFromRestServer = cidsBeanFromRestServer.getCidsBeanInfo();
         final String cidsBeanJsonFromRestServer = cidsBeanFromRestServer.toJSONString(true);
 
-        Assert.assertEquals("JsonObjectKey key from legacy server matches",
+        final int pk = cidsBeanFromJson.getPrimaryKeyValue();
+        
+        Assert.assertEquals("JsonObjectKey key from legacy server matches ("+pk+")",
                 beanInfoFromJson.getJsonObjectKey(),
                 beanInfoFromLegacyServer.getJsonObjectKey());
-        Assert.assertEquals("JsonObjectKey key from rest server matches",
+        Assert.assertEquals("JsonObjectKey key from rest server matches ("+pk+")",
                 beanInfoFromJson.getJsonObjectKey(),
                 beanInfoFromRestServer.getJsonObjectKey());
 
-        Assert.assertEquals("cidsBean.getPrimaryKeyFieldname() from legacy server matches",
+        Assert.assertEquals("cidsBean.getPrimaryKeyFieldname() from legacy server matches ("+pk+")",
                 cidsBeanFromJson.getPrimaryKeyFieldname(),
                 cidsBeanFromLegacyServer.getPrimaryKeyFieldname());
-        Assert.assertEquals("cidsBean.getPrimaryKeyFieldname from rest server matches",
+        Assert.assertEquals("cidsBean.getPrimaryKeyFieldname from rest server matches ("+pk+")",
                 cidsBeanFromJson.getPrimaryKeyFieldname(),
                 cidsBeanFromRestServer.getPrimaryKeyFieldname());
 
-        Assert.assertEquals("cidsBean.getPrimaryKeyValue() from legacy server matches",
+        Assert.assertEquals("cidsBean.getPrimaryKeyValue() from legacy server matches ("+pk+")",
                 cidsBeanFromJson.getPrimaryKeyValue(),
                 cidsBeanFromLegacyServer.getPrimaryKeyValue());
-        Assert.assertEquals("cidsBean.getPrimaryKeyValue from rest server matches",
+        Assert.assertEquals("cidsBean.getPrimaryKeyValue from rest server matches ("+pk+")",
                 cidsBeanFromJson.getPrimaryKeyValue(),
                 cidsBeanFromRestServer.getPrimaryKeyValue());
 
-        Assert.assertArrayEquals("cidsBean.getPropertyNames() from legacy server matches",
+        Assert.assertArrayEquals("cidsBean.getPropertyNames() from legacy server matches ("+pk+")",
                 cidsBeanFromJson.getPropertyNames(),
                 cidsBeanFromLegacyServer.getPropertyNames());
-        Assert.assertArrayEquals("cidsBean.getPropertyNames from rest server matches",
+        Assert.assertArrayEquals("cidsBean.getPropertyNames from rest server matches ("+pk+")",
                 cidsBeanFromJson.getPropertyNames(),
                 cidsBeanFromRestServer.getPropertyNames());
 
-        Assert.assertEquals("cidsBean.hasArtificialChangeFlag() from legacy server matches",
+        Assert.assertEquals("cidsBean.hasArtificialChangeFlag() from legacy server matches ("+pk+")",
                 cidsBeanFromJson.hasArtificialChangeFlag(),
                 cidsBeanFromLegacyServer.hasArtificialChangeFlag());
-        Assert.assertEquals("cidsBean.hasArtificialChangeFlag from rest server matches",
+        Assert.assertEquals("cidsBean.hasArtificialChangeFlag from rest server matches ("+pk+")",
                 cidsBeanFromJson.hasArtificialChangeFlag(),
                 cidsBeanFromRestServer.hasArtificialChangeFlag());
 
-        Assert.assertEquals("cidsBean.hasObjectReadPermission(user) from legacy server matches",
+        Assert.assertEquals("cidsBean.hasObjectReadPermission(user) from legacy server matches ("+pk+")",
                 cidsBeanFromJson.hasObjectReadPermission(user),
                 cidsBeanFromLegacyServer.hasObjectReadPermission(user));
-        Assert.assertEquals("cidsBean.hasObjectReadPermission(user) from rest server matches",
+        Assert.assertEquals("cidsBean.hasObjectReadPermission(user) from rest server matches ("+pk+")",
                 cidsBeanFromJson.hasObjectReadPermission(user),
                 cidsBeanFromRestServer.hasObjectReadPermission(user));
 
-        Assert.assertEquals("cidsBean.hasObjectWritePermission(user) from legacy server matches",
+        Assert.assertEquals("cidsBean.hasObjectWritePermission(user) from legacy server matches ("+pk+")",
                 cidsBeanFromJson.hasObjectWritePermission(user),
                 cidsBeanFromLegacyServer.hasObjectWritePermission(user));
-        Assert.assertEquals("cidsBean.hasObjectWritePermission(user) from rest server matches",
+        Assert.assertEquals("cidsBean.hasObjectWritePermission(user) from rest server matches ("+pk+")",
                 cidsBeanFromJson.hasObjectWritePermission(user),
                 cidsBeanFromRestServer.hasObjectWritePermission(user));
 
         // Permission API not implemented in REST Server (cismet/cids-server-rest#50). Related integration tests disabled!
-//        Assert.assertEquals("cidsBean.getHasWritePermission(user) from legacy server matches",
+//        Assert.assertEquals("cidsBean.getHasWritePermission(user) from legacy server matches ("+pk+")",
 //                cidsBeanFromJson.getHasWritePermission(user),
 //                cidsBeanFromLegacyServer.getHasWritePermission(user));
-//        Assert.assertEquals("cidsBean.getHasWritePermission(user) from rest server matches",
+//        Assert.assertEquals("cidsBean.getHasWritePermission(user) from rest server matches ("+pk+")",
 //                cidsBeanFromJson.getHasWritePermission(user),
 //                cidsBeanFromRestServer.getHasWritePermission(user));
 
         // --> compareCidsBeanProperties()
 //        for (String property : cidsBeanFromJson.getPropertyNames()) {
-//            Assert.assertEquals("cidsBean.property(" + property + ") from legacy server matches",
+//            Assert.assertEquals("cidsBean.property(" + property + ") from legacy server matches ("+pk+")",
 //                    cidsBeanFromJson.getProperty(property),
 //                    cidsBeanFromLegacyServer.getProperty(property));
-//            Assert.assertEquals("cidsBean.getProperty(" + property + ") from rest server matches",
+//            Assert.assertEquals("cidsBean.getProperty(" + property + ") from rest server matches ("+pk+")",
 //                    cidsBeanFromJson.getProperty(property),
 //                    cidsBeanFromRestServer.getProperty(property));
 //        }
-        Assert.assertEquals("cidsBean.toObjectString from legacy server matches",
+        Assert.assertEquals("cidsBean.toObjectString from legacy server matches ("+pk+")",
                 cidsBeanFromJson.toObjectString(),
                 cidsBeanFromLegacyServer.toObjectString());
-        Assert.assertEquals("cidsBean.toObjectStringtoObjectString from rest server matches",
+        Assert.assertEquals("cidsBean.toObjectStringtoObjectString from rest server matches ("+pk+")",
                 cidsBeanFromJson.toObjectString(),
                 cidsBeanFromRestServer.toObjectString());
 
-        Assert.assertEquals("cidsBean.hashCode() from legacy server matches",
+        Assert.assertEquals("cidsBean.hashCode() from legacy server matches ("+pk+")",
                 cidsBeanFromJson.hashCode(),
                 cidsBeanFromLegacyServer.hashCode());
-        Assert.assertEquals("cidsBean.hashCode from rest server matches",
+        Assert.assertEquals("cidsBean.hashCode from rest server matches ("+pk+")",
                 cidsBeanFromJson.hashCode(),
                 cidsBeanFromRestServer.hashCode());
 
-        Assert.assertEquals("JSON from legacy server matches",
+        Assert.assertEquals("JSON from legacy server matches ("+pk+")",
                 cidsBeanJson,
                 cidsBeanJsonFromLegacyServer);
-        Assert.assertEquals("JSON from rest server matches",
+        Assert.assertEquals("JSON from rest server matches ("+pk+")",
                 cidsBeanJson,
                 cidsBeanJsonFromRestServer);
 
         // ->  metaObject.getDebugString();
         // FIXME: DebugStrings Strings do not match -> Array Helper Object Ids are lost after deserialization
         // See Issue #165
-//        Assert.assertEquals("cidsBean.getMOString from legacy server matches",
+//        Assert.assertEquals("cidsBean.getMOString from legacy server matches ("+pk+")",
 //                cidsBeanFromJson.getMOString(),
 //                cidsBeanFromLegacyServer.getMOString());
-//        Assert.assertEquals("cidsBean.getMOString from rest server matches",
+//        Assert.assertEquals("cidsBean.getMOString from rest server matches ("+pk+")",
 //                cidsBeanFromJson.getMOString(),
 //                cidsBeanFromRestServer.getMOString());
     }
