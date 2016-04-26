@@ -336,7 +336,8 @@ public class RESTfulInterfaceTest extends TestBase {
             final CidsBean cidsBeanFromJson = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
             final MetaObject metaObjectFromJson = cidsBeanFromJson.getMetaObject();
 
-            name = Arrays.asList(cidsBeanFromJson.getPropertyNames()).contains("name")
+            name = (Arrays.asList(cidsBeanFromJson.getPropertyNames()).contains("name")
+                    && cidsBeanFromJson.getProperty("name") != null)
                     ? cidsBeanFromJson.getProperty("name").toString()
                     : cidsBeanFromJson.getCidsBeanInfo().getObjectKey();
 
@@ -394,7 +395,8 @@ public class RESTfulInterfaceTest extends TestBase {
             final CidsBean cidsBeanFromJson = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
             final MetaObject metaObjectFromJson = cidsBeanFromJson.getMetaObject();
 
-            name = Arrays.asList(cidsBeanFromJson.getPropertyNames()).contains("name")
+            name = (Arrays.asList(cidsBeanFromJson.getPropertyNames()).contains("name")
+                    && cidsBeanFromJson.getProperty("name") != null)
                     ? cidsBeanFromJson.getProperty("name").toString()
                     : cidsBeanFromJson.getCidsBeanInfo().getObjectKey();
 
@@ -826,7 +828,8 @@ public class RESTfulInterfaceTest extends TestBase {
         final String cidsBeanJsonFromRestServer = cidsBeanFromRestServer.toJSONString(true);
 
         final int pk = cidsBeanFromJson.getPrimaryKeyValue();
-        final String name = Arrays.asList(cidsBeanFromJson.getPropertyNames()).contains("name")
+        final String name = (Arrays.asList(cidsBeanFromJson.getPropertyNames()).contains("name")
+                && cidsBeanFromJson.getProperty("name") != null)
                 ? cidsBeanFromJson.getProperty("name").toString()
                 : beanInfoFromJson.getJsonObjectKey();
 
