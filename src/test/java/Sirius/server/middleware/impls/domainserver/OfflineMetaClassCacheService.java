@@ -33,38 +33,35 @@ public class OfflineMetaClassCacheService implements MetaClassCacheService {
     protected final static Logger LOGGER = Logger.getLogger(OfflineMetaClassCacheService.class);
     protected static final ObjectMapper MAPPER = new ObjectMapper(new JsonFactory());
 
-    public OfflineMetaClassCacheService() throws Exception {
+    public OfflineMetaClassCacheService() {
 
         if (ALL_CLASSES_BY_ID.isEmpty() && ALL_CLASSES_BY_TABLE_NAME.isEmpty()) {
             LOGGER.info("loading meta classes");
-            final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            URL resources;
             try {
-                resources = classLoader.getResource(CLASSES_JSON_PACKAGE);
+                final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+                final URL resources = classLoader.getResource(CLASSES_JSON_PACKAGE);
+
+                final Scanner scanner = new Scanner((InputStream) resources.getContent()).useDelimiter("\\n");
+                while (scanner.hasNext()) {
+                    final String jsonFile = CLASSES_JSON_PACKAGE + scanner.next();
+                    LOGGER.info("loading cids class from json file " + jsonFile);
+                    try {
+
+                        final CidsClass cidsClass = MAPPER.readValue(
+                                new BufferedReader(
+                                        new InputStreamReader(classLoader.getResourceAsStream(jsonFile))),
+                                CidsClass.class);
+                        LOGGER.debug(cidsClass.getKey() + " deserialized");
+                        final MetaClass metaClass = CidsClassFactory.getFactory().legacyCidsClassFromRestCidsClass(cidsClass);
+                        ALL_CLASSES_BY_ID.put(metaClass.getId(), metaClass);
+                        ALL_CLASSES_BY_TABLE_NAME.put(metaClass.getTableName(), metaClass);
+
+                    } catch (Exception ex) {
+                        LOGGER.error("could not deserialize cids class from url " + jsonFile, ex);
+                    }
+                }
             } catch (Exception ex) {
                 LOGGER.error("could not locate meta class json files: " + ex.getMessage(), ex);
-                throw ex;
-            }
-
-            final Scanner scanner = new Scanner((InputStream) resources.getContent()).useDelimiter("\\n");
-            while (scanner.hasNext()) {
-                final String jsonFile = CLASSES_JSON_PACKAGE + scanner.next();
-                LOGGER.info("loading cids class from json file " + jsonFile);
-                try {
-
-                    final CidsClass cidsClass = MAPPER.readValue(
-                            new BufferedReader(
-                                    new InputStreamReader(classLoader.getResourceAsStream(jsonFile))),
-                            CidsClass.class);
-                    LOGGER.debug(cidsClass.getKey() + " deserialized");
-                    final MetaClass metaClass = CidsClassFactory.getFactory().legacyCidsClassFromRestCidsClass(cidsClass);
-                    ALL_CLASSES_BY_ID.put(metaClass.getId(), metaClass);
-                    ALL_CLASSES_BY_TABLE_NAME.put(metaClass.getTableName(), metaClass);
-
-                } catch (Exception ex) {
-                    LOGGER.error("could not deserialize cids class from url " + jsonFile, ex);
-                    throw ex;
-                }
             }
 
             LOGGER.info(ALL_CLASSES_BY_ID.size() + " meta classes loaded");
@@ -93,5 +90,17 @@ public class OfflineMetaClassCacheService implements MetaClassCacheService {
         }
 
         return allClasses;
+    }
+
+    private static final class LazyInitialiser {
+
+        private static final MetaClassCacheService INSTANCE = new OfflineMetaClassCacheService();
+
+        private LazyInitialiser() {
+        }
+    }
+
+    public static MetaClassCacheService getInstance() {
+        return LazyInitialiser.INSTANCE;
     }
 }
