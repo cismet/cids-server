@@ -145,7 +145,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 throw ex;
             }
         } else {
-            LOGGER.warn("CIDS_BEANS_JSON already initialised");
+            LOGGER.debug("CIDS_BEANS_JSON already initialised");
         }
     }
 
@@ -325,7 +325,6 @@ public class RESTfulInterfaceTest extends TestBase {
         LOGGER.info("testing getAndCompareMetaClasses (" + classId + ") passed!");
     }
 
-    @Ignore
     @Test
     @UseDataProvider("getCidsBeansJson")
     public void test01getAndCompareMetaObjects(final String cidsBeanJson) throws Exception {
@@ -337,7 +336,7 @@ public class RESTfulInterfaceTest extends TestBase {
             final CidsBean cidsBeanFromJson = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
             final MetaObject metaObjectFromJson = cidsBeanFromJson.getMetaObject();
 
-            name = cidsBeanFromJson.getProperty("name") != null
+            name = Arrays.asList(cidsBeanFromJson.getPropertyNames()).contains("name")
                     ? cidsBeanFromJson.getProperty("name").toString()
                     : cidsBeanFromJson.getCidsBeanInfo().getObjectKey();
 
@@ -380,24 +379,28 @@ public class RESTfulInterfaceTest extends TestBase {
         LOGGER.info("getAndCompareMetaObjects(" + name + ") test passed");
     }
 
-    @Ignore
     @Test
     @UseDataProvider("getCidsBeansJson")
     public void test02updateAndCompareSimplePropertiesLegacy(final String cidsBeanJson) throws Exception {
         LOGGER.debug("testing updateAndCompareSimpleProperties");
         String name = null;
 
+        // make sure that classes are up to date before trying to make updates
+        if (!OfflineMetaClassCacheService.getInstance().isOnline()) {
+            OfflineMetaClassCacheService.getInstance().updateFromServer(user, legacyConnector);
+        }
+
         try {
             final CidsBean cidsBeanFromJson = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
             final MetaObject metaObjectFromJson = cidsBeanFromJson.getMetaObject();
 
-            name = cidsBeanFromJson.getProperty("name") != null
+            name = Arrays.asList(cidsBeanFromJson.getPropertyNames()).contains("name")
                     ? cidsBeanFromJson.getProperty("name").toString()
                     : cidsBeanFromJson.getCidsBeanInfo().getObjectKey();
 
             LOGGER.debug("retrieving meta object "
                     + cidsBeanFromJson.getCidsBeanInfo().getJsonObjectKey()
-                    + " from legacy server");
+                    + " (" + cidsBeanFromJson.getProperty("name") + ") from legacy server");
             MetaObject metaObjectFromLegacyServer = legacyConnector.getMetaObject(user,
                     metaObjectFromJson.getID(),
                     metaObjectFromJson.getClassID(), metaObjectFromJson.getDomain());
@@ -405,7 +408,7 @@ public class RESTfulInterfaceTest extends TestBase {
 
             LOGGER.debug("retrieving meta object "
                     + cidsBeanFromJson.getCidsBeanInfo().getJsonObjectKey()
-                    + " from rest server");
+                    + " (" + cidsBeanFromJson.getProperty("name") + ") from rest server");
             MetaObject metaObjectFromRestServer = restConnector.getMetaObject(user,
                     metaObjectFromJson.getID(),
                     metaObjectFromJson.getClassID(), metaObjectFromJson.getDomain());
@@ -452,7 +455,7 @@ public class RESTfulInterfaceTest extends TestBase {
 
             LOGGER.info("persisting meta object "
                     + cidsBeanFromJson.getCidsBeanInfo().getJsonObjectKey()
-                    + " to legacy server");
+                    + " (" + cidsBeanFromJson.getProperty("name") + ") to legacy server");
 
             legacyConnector.updateMetaObject(user,
                     metaObjectFromJson,
@@ -463,7 +466,7 @@ public class RESTfulInterfaceTest extends TestBase {
             //final MetaObject persistedMetaObjectFromLegacyServer = persistedCidsBeanFromLegacyServer.getMetaObject();
             LOGGER.debug("retrieving meta object "
                     + cidsBeanFromJson.getCidsBeanInfo().getJsonObjectKey()
-                    + " from legacy server");
+                    + " (" + cidsBeanFromJson.getProperty("name") + ") from legacy server");
 
             metaObjectFromLegacyServer = legacyConnector.getMetaObject(user,
                     metaObjectFromJson.getID(),
@@ -472,7 +475,7 @@ public class RESTfulInterfaceTest extends TestBase {
 
             LOGGER.debug("retrieving meta object "
                     + cidsBeanFromJson.getCidsBeanInfo().getJsonObjectKey()
-                    + " from rest server");
+                    + " (" + cidsBeanFromJson.getProperty("name") + ") from rest server");
             metaObjectFromRestServer = restConnector.getMetaObject(user,
                     metaObjectFromJson.getID(),
                     metaObjectFromJson.getClassID(), metaObjectFromJson.getDomain());
@@ -823,14 +826,14 @@ public class RESTfulInterfaceTest extends TestBase {
         final String cidsBeanJsonFromRestServer = cidsBeanFromRestServer.toJSONString(true);
 
         final int pk = cidsBeanFromJson.getPrimaryKeyValue();
-        final String name = cidsBeanFromJson.getProperty("name") != null
+        final String name = Arrays.asList(cidsBeanFromJson.getPropertyNames()).contains("name")
                 ? cidsBeanFromJson.getProperty("name").toString()
-                : String.valueOf(pk);
+                : beanInfoFromJson.getJsonObjectKey();
 
-        Assert.assertEquals("JsonObjectKey key from legacy server matches (" + pk + ")",
+        Assert.assertEquals("cidsBean[" + name + "] JsonObjectKey key from legacy server matches (" + pk + ")",
                 beanInfoFromJson.getJsonObjectKey(),
                 beanInfoFromLegacyServer.getJsonObjectKey());
-        Assert.assertEquals("JsonObjectKey key from rest server matches (" + pk + ")",
+        Assert.assertEquals("cidsBean[" + name + "] JsonObjectKey key from rest server matches (" + pk + ")",
                 beanInfoFromJson.getJsonObjectKey(),
                 beanInfoFromRestServer.getJsonObjectKey());
 
@@ -906,10 +909,10 @@ public class RESTfulInterfaceTest extends TestBase {
                 cidsBeanFromJson.hashCode(),
                 cidsBeanFromRestServer.hashCode());
 
-        Assert.assertEquals("JSON from legacy server matches (" + pk + ")",
+        Assert.assertEquals("cidsBean[" + name + "] JSON from legacy server matches (" + pk + ")",
                 cidsBeanJson,
                 cidsBeanJsonFromLegacyServer);
-        Assert.assertEquals("JSON from rest server matches (" + pk + ")",
+        Assert.assertEquals("cidsBean[" + name + "] JSON from rest server matches (" + pk + ")",
                 cidsBeanJson,
                 cidsBeanJsonFromRestServer);
 

@@ -63,6 +63,8 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
             Assert.assertEquals("serialized and deserialies strings do match",
                     cidsBeanJson,
                     cidsBean.toJSONString(params));
+            
+            LOGGER.info("testDeserializeAndCompareCidsBean: " + cidsBean.getPrimaryKeyValue() + " passed!");
 
         } catch (AssertionError ae) {
             LOGGER.error("testDeserializeCidsBean failed with: " + ae.getMessage());

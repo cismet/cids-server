@@ -1,8 +1,10 @@
 package Sirius.server.middleware.impls.domainserver;
 
 import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.newuser.User;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.utils.MetaClassCacheService;
 import de.cismet.cidsx.server.api.types.CidsClass;
 import de.cismet.cidsx.server.api.types.legacy.CidsClassFactory;
@@ -32,6 +34,8 @@ public class OfflineMetaClassCacheService implements MetaClassCacheService {
 
     protected final static Logger LOGGER = Logger.getLogger(OfflineMetaClassCacheService.class);
     protected static final ObjectMapper MAPPER = new ObjectMapper(new JsonFactory());
+
+    protected boolean online = false;
 
     public OfflineMetaClassCacheService() {
 
@@ -94,13 +98,55 @@ public class OfflineMetaClassCacheService implements MetaClassCacheService {
 
     private static final class LazyInitialiser {
 
-        private static final MetaClassCacheService INSTANCE = new OfflineMetaClassCacheService();
+        private static final OfflineMetaClassCacheService INSTANCE = new OfflineMetaClassCacheService();
 
         private LazyInitialiser() {
         }
     }
 
-    public static MetaClassCacheService getInstance() {
+    public static OfflineMetaClassCacheService getInstance() {
         return LazyInitialiser.INSTANCE;
+    }
+
+    /**
+     * Makes OfflineMetaClassCacheService to OnlineMetaClassCacheService when
+     * server connection is available.
+     *
+     * @param user
+     * @param connector
+     */
+    public void updateFromServer(final User user,
+            final CallServerService connector) {
+        int i = 0;
+        for (final MetaClass offlineMetaClass : ALL_CLASSES_BY_ID.values()) {
+            try {
+                final MetaClass onlineMetaClass = connector.getClass(user,
+                        offlineMetaClass.getID(),
+                        offlineMetaClass.getDomain());
+
+                if (onlineMetaClass != null) {
+                    if ((ALL_CLASSES_BY_ID.put(onlineMetaClass.getID(), onlineMetaClass) != null)
+                            && (ALL_CLASSES_BY_TABLE_NAME.put(onlineMetaClass.getTableName(), onlineMetaClass) != null)) {
+                        i++;
+                    }
+
+                }
+            } catch (Throwable t) {
+                LOGGER.error(t.getMessage(), t);
+            }
+        }
+
+        if (i == ALL_CLASSES_BY_ID.size()) {
+            LOGGER.info("OfflineMetaClassCacheService updated with " + i + " of "
+                    + ALL_CLASSES_BY_ID.size() + " MetaClasses from Server");
+            this.online = true;
+        } else {
+            LOGGER.warn("OfflineMetaClassCacheService updated with only " + i + " of "
+                    + ALL_CLASSES_BY_ID.size() + " MetaClasses from Server");
+        }
+    }
+
+    public boolean isOnline() {
+        return online;
     }
 }
