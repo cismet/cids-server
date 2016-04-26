@@ -247,11 +247,27 @@ public class RESTfulInterfaceTest extends TestBase {
     }
 
     @DataProvider
-    public final static MetaClass[] getMetaClasses() throws Exception {
+    public final static int[] getMetaClassIds() throws Exception {
 
-        final Collection<MetaClass> metaClasses = OfflineMetaClassCacheService.getInstance().getAllClasses(PROPERTIES.getProperty("userDomain", "CIDS_REF")).values();
+        if (TestEnvironment.isIntegrationTestsEnabled()) {
+            final Collection<MetaClass> metaClasses = OfflineMetaClassCacheService.getInstance().getAllClasses(PROPERTIES.getProperty("userDomain", "CIDS_REF")).values();
 
-        return metaClasses.toArray(new MetaClass[metaClasses.size()]);
+            // 'MetaClass' is not supported as parameter type of test methods. 
+            // Supported types are primitive types and their wrappers, case-sensitive 
+            // 'Enum' values, 'String's, and types having a single 'String' parameter constructor.
+            final int[] metaClassIds = new int[metaClasses.size()];
+            int i = 0;
+            for (MetaClass metaClass : metaClasses) {
+                metaClassIds[i] = metaClass.getId();
+                i++;
+            }
+
+            return metaClassIds;
+
+        } else {
+            return new int[]{-1};
+        }
+
     }
 
     @Before
@@ -263,8 +279,13 @@ public class RESTfulInterfaceTest extends TestBase {
 
     @Test
     @UseDataProvider("getCidsBeansJson")
-    public void test00getAndCompareMetaClasses(final MetaClass metaClassFromJson) throws Exception {
+    public void test00getAndCompareMetaClasses(final int classId) throws Exception {
         LOGGER.debug("testing getAndCompareMetaClasses");
+
+        final MetaClass metaClassFromJson
+                = OfflineMetaClassCacheService.getInstance().getMetaClass(
+                        PROPERTIES.getProperty("userDomain", "CIDS_REF"),
+                        classId);
 
         LOGGER.debug("retrieving meta class "
                 + metaClassFromJson.getKey()
