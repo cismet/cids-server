@@ -19,8 +19,10 @@ import de.cismet.cidsx.client.connector.RESTfulInterfaceConnector;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
@@ -31,6 +33,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
@@ -246,26 +249,39 @@ public class RESTfulInterfaceTest extends TestBase {
         }
     }
 
+    /**
+     * This is madness: @DataProviderClass does not support MetaClass, not
+     * Interger Arrays not Integer Lists:
+     * initializationError(de.cismet.cids.integrationtests.RESTfulInterfaceTest)
+     * Time elapsed: 0.005 sec java.lang.Exception: Dataprovider method
+     * 'getMetaClassIds' must either return Object[][], Object[], String[],
+     * List<List<Object>> or List<Object>
+     *
+     * has to return String[]
+     *
+     * @return String[]
+     * @throws Exception
+     */
     @DataProvider
-    public final static int[] getMetaClassIds() throws Exception {
+    public final static String[] getMetaClassIds() throws Exception {
 
         if (TestEnvironment.isIntegrationTestsEnabled()) {
-            final Collection<MetaClass> metaClasses = OfflineMetaClassCacheService.getInstance().getAllClasses(PROPERTIES.getProperty("userDomain", "CIDS_REF")).values();
+            final Collection<MetaClass> metaClasses
+                    = OfflineMetaClassCacheService.getInstance().getAllClasses(PROPERTIES.getProperty("userDomain", "CIDS_REF")).values();
 
             // 'MetaClass' is not supported as parameter type of test methods. 
             // Supported types are primitive types and their wrappers, case-sensitive 
             // 'Enum' values, 'String's, and types having a single 'String' parameter constructor.
-            final int[] metaClassIds = new int[metaClasses.size()];
+            final String[] metaClassIds = new String[metaClasses.size()];
             int i = 0;
             for (MetaClass metaClass : metaClasses) {
-                metaClassIds[i] = metaClass.getId();
+                metaClassIds[i] = String.valueOf(metaClass.getId());
                 i++;
             }
-
             return metaClassIds;
 
         } else {
-            return new int[]{-1};
+            return new String[]{"-1"};
         }
 
     }
@@ -278,9 +294,10 @@ public class RESTfulInterfaceTest extends TestBase {
     }
 
     @Test
-    @UseDataProvider("getCidsBeansJson")
-    public void test00getAndCompareMetaClasses(final int classId) throws Exception {
-        LOGGER.debug("testing getAndCompareMetaClasses");
+    @UseDataProvider("getMetaClassIds")
+    public void test00getAndCompareMetaClasses(final Integer classId) throws Exception {
+
+        LOGGER.debug("testing getAndCompareMetaClasses (" + classId + ")");
 
         final MetaClass metaClassFromJson
                 = OfflineMetaClassCacheService.getInstance().getMetaClass(
@@ -294,6 +311,10 @@ public class RESTfulInterfaceTest extends TestBase {
         final MetaClass metaClassFromLegacyServer = legacyConnector.getClass(user,
                 metaClassFromJson.getID(), metaClassFromJson.getDomain());
 
+        LOGGER.debug("retrieving meta class "
+                + metaClassFromJson.getKey()
+                + " from rest server");
+
         final MetaClass metaClassFromRestServer = restConnector.getClass(user,
                 metaClassFromJson.getID(), metaClassFromJson.getDomain());
 
@@ -301,19 +322,22 @@ public class RESTfulInterfaceTest extends TestBase {
                 metaClassFromLegacyServer,
                 metaClassFromRestServer);
 
-        LOGGER.info("testing getAndCompareMetaClasses passed!");
+        LOGGER.info("testing getAndCompareMetaClasses (" + classId + ") passed!");
     }
 
+    @Ignore
     @Test
     @UseDataProvider("getCidsBeansJson")
     public void test01getAndCompareMetaObjects(final String cidsBeanJson) throws Exception {
         LOGGER.debug("testing getAndCompareMetaObjects");
 
+        String name = "";
+
         try {
             final CidsBean cidsBeanFromJson = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
             final MetaObject metaObjectFromJson = cidsBeanFromJson.getMetaObject();
 
-            String name = cidsBeanFromJson.getProperty("name") != null
+            name = cidsBeanFromJson.getProperty("name") != null
                     ? cidsBeanFromJson.getProperty("name").toString()
                     : cidsBeanFromJson.getCidsBeanInfo().getObjectKey();
 
@@ -346,26 +370,28 @@ public class RESTfulInterfaceTest extends TestBase {
                     cidsBeanFromRestServer);
 
         } catch (AssertionError ae) {
-            LOGGER.error("getAndCompareCidsBeans test failed with: " + ae.getMessage(), ae);
+            LOGGER.error("getAndCompareCidsBeans(" + name + ") test failed with: " + ae.getMessage(), ae);
             throw ae;
         } catch (Exception ex) {
-            LOGGER.error("Unexpected error during getAndCompareCidsBeans: " + ex.getMessage(), ex);
+            LOGGER.error("Unexpected error during getAndCompareCidsBeans(" + name + "): " + ex.getMessage(), ex);
             throw ex;
         }
 
-        LOGGER.info("getAndCompareMetaObjects test passed");
+        LOGGER.info("getAndCompareMetaObjects(" + name + ") test passed");
     }
 
+    @Ignore
     @Test
     @UseDataProvider("getCidsBeansJson")
     public void test02updateAndCompareSimplePropertiesLegacy(final String cidsBeanJson) throws Exception {
         LOGGER.debug("testing updateAndCompareSimpleProperties");
+        String name = null;
 
         try {
             final CidsBean cidsBeanFromJson = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
             final MetaObject metaObjectFromJson = cidsBeanFromJson.getMetaObject();
 
-            String name = cidsBeanFromJson.getProperty("name") != null
+            name = cidsBeanFromJson.getProperty("name") != null
                     ? cidsBeanFromJson.getProperty("name").toString()
                     : cidsBeanFromJson.getCidsBeanInfo().getObjectKey();
 
@@ -465,12 +491,14 @@ public class RESTfulInterfaceTest extends TestBase {
                     cidsBeanFromRestServer);
 
         } catch (AssertionError ae) {
-            LOGGER.error("getAndCompareCidsBeans test failed with: " + ae.getMessage(), ae);
+            LOGGER.error("updateAndCompareSimpleProperties(" + name + ") test failed with: " + ae.getMessage(), ae);
             throw ae;
         } catch (Exception ex) {
-            LOGGER.error("Unexpected error during getAndCompareCidsBeans: " + ex.getMessage(), ex);
+            LOGGER.error("Unexpected error during updateAndCompareSimpleProperties(" + name + ") : " + ex.getMessage(), ex);
             throw ex;
         }
+
+        LOGGER.info("updateAndCompareSimpleProperties(" + name + ") test passed!");
     }
 
     protected void compareCidsBeanProperties(final CidsBean cidsBeanFromJson,
