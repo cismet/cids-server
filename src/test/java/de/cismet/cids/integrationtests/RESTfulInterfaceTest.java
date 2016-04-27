@@ -401,7 +401,7 @@ public class RESTfulInterfaceTest extends TestBase {
 
         String name = String.valueOf(classId);
         LOGGER.debug("testing getAndCompareMetaClasses (" + name + ")");
-        
+
         try {
 
             final MetaClass metaClassFromJson
@@ -2110,13 +2110,6 @@ public class RESTfulInterfaceTest extends TestBase {
                 objectAttributeFromJson.getTypeId(),
                 objectAttributeFromLegacyServer.getTypeId());
 
-        // disable values comparision due to unkown behavbiour of Object.equals
-//        Assert.assertEquals("objectAttribute[" + name + "].getValue() from rest server matches (classId: " + pk + ")",
-//                objectAttributeFromJson.getValue(),
-//                objectAttributeFromRestServer.getValue());
-//        Assert.assertEquals("objectAttribute[" + name + "].getValue() from legacy server matches (classId: " + pk + ")",
-//                objectAttributeFromJson.getValue(),
-//                objectAttributeFromLegacyServer.getValue());
         Assert.assertEquals("objectAttribute[" + name + "].isArray() from rest server matches (classId: " + pk + ")",
                 objectAttributeFromJson.isArray(),
                 objectAttributeFromRestServer.isArray());
@@ -2209,35 +2202,57 @@ public class RESTfulInterfaceTest extends TestBase {
                     maiFromLegacyServer);
         }
 
-        if (objectAttributeFromJson.referencesObject()) {
-            final Object objectAttributeFromJsonValue = objectAttributeFromJson.getValue();
-            final Object objectAttributeFromLegacyServerValue = objectAttributeFromLegacyServer.getValue();
-            final Object objectAttributeFromRestServerValue = objectAttributeFromRestServer.getValue();
+        final Object objectAttributeFromJsonValue = objectAttributeFromJson.getValue();
+        final Object objectAttributeFromLegacyServerValue = objectAttributeFromLegacyServer.getValue();
+        final Object objectAttributeFromRestServerValue = objectAttributeFromRestServer.getValue();
 
-            if (objectAttributeFromJsonValue != null) {
+        if (objectAttributeFromJsonValue != null) {
+            Assert.assertNotNull("objectAttribute[" + name + "] value from legacy server is not null (classId: " + pk + ")",
+                    objectAttributeFromLegacyServerValue);
+            Assert.assertNotNull("objectAttribute[" + name + "] value from rest server is not null (classId: " + pk + ")",
+                    objectAttributeFromRestServerValue);
 
-                Assert.assertNotNull("objectAttribute[" + name + "] value from legacy server is not null (classId: " + pk + ")",
-                        objectAttributeFromLegacyServerValue);
-                Assert.assertNotNull("objectAttribute[" + name + "] value from rest server is not null (classId: " + pk + ")",
-                        objectAttributeFromRestServerValue);
+            final Class objectAttributeFromJsonValueClass = objectAttributeFromJsonValue.getClass();
+            final Class objectAttributeFromLegacyServerValueClass = objectAttributeFromLegacyServerValue.getClass();
+            final Class objectAttributeFromRestServerValueClass = objectAttributeFromRestServerValue.getClass();
 
+            Assert.assertEquals("objectAttribute[" + name + "] value from legacy server is a "
+                    + objectAttributeFromJsonValueClass.getSimpleName() + " (classId: " + pk + ")",
+                    objectAttributeFromJsonValueClass,
+                    objectAttributeFromLegacyServerValueClass);
+            Assert.assertEquals("objectAttribute[" + name + "] value from rest server is a "
+                    + objectAttributeFromJsonValueClass.getSimpleName() + " (classId: " + pk + ")",
+                    objectAttributeFromJsonValueClass,
+                    objectAttributeFromRestServerValueClass);
+
+            if (objectAttributeFromJson.referencesObject()) {
                 Assert.assertTrue("objectAttribute[" + name + "] value from json is a MetaObject (classId: " + pk + ")",
-                        MetaObject.class.isAssignableFrom(objectAttributeFromJsonValue.getClass()));
+                        MetaObject.class.isAssignableFrom(objectAttributeFromJsonValueClass));
                 Assert.assertTrue("objectAttribute[" + name + "] value from legacy server is a MetaObject (classId: " + pk + ")",
-                        MetaObject.class.isAssignableFrom(objectAttributeFromLegacyServerValue.getClass()));
-                Assert.assertNotNull("objectAttribute[" + name + "] value from rest server is a MetaObject (classId: " + pk + ")",
-                        MetaObject.class.isAssignableFrom(objectAttributeFromRestServerValue.getClass()));
+                        MetaObject.class.isAssignableFrom(objectAttributeFromLegacyServerValueClass));
+                Assert.assertTrue("objectAttribute[" + name + "] value from rest server is a MetaObject (classId: " + pk + ")",
+                        MetaObject.class.isAssignableFrom(objectAttributeFromRestServerValueClass));
 
                 this.compareMetaObjects(
                         (MetaObject) objectAttributeFromJsonValue,
                         (MetaObject) objectAttributeFromLegacyServerValue,
                         (MetaObject) objectAttributeFromRestServerValue);
-            } else {
-                Assert.assertNull("objectAttribute[" + name + "] value from legacy server is null (classId: " + pk + ")",
+
+            } else if (objectAttributeFromJsonValueClass.isPrimitive()) {
+                Assert.assertEquals("objectAttribute[" + name + "] value from legacy server matches (classId: " + pk + ")",
+                        objectAttributeFromJsonValue,
                         objectAttributeFromLegacyServerValue);
-                Assert.assertNull("objectAttribute[" + name + "] value from rest server is null (classId: " + pk + ")",
+                Assert.assertEquals("objectAttribute[" + name + "] value from rest server matches (classId: " + pk + ")",
+                        objectAttributeFromJsonValue,
                         objectAttributeFromRestServerValue);
+
+                // disable value comparision for non-primitives due to unkown behaviour of object.equals
             }
+        } else {
+            Assert.assertNull("objectAttribute[" + name + "] value from legacy server is null (classId: " + pk + ")",
+                    objectAttributeFromLegacyServerValue);
+            Assert.assertNull("objectAttribute[" + name + "] value from rest server is null (classId: " + pk + ")",
+                    objectAttributeFromRestServerValue);
         }
     }
 
@@ -2280,10 +2295,6 @@ public class RESTfulInterfaceTest extends TestBase {
                 objectAttributeFromLegacyServer.getTypeId(),
                 objectAttributeFromRestServer.getTypeId());
 
-        // comparing values disabled due to unpredicatable behaviour of object.equals
-//        Assert.assertEquals("objectAttribute[" + name + "].getValue() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-//                objectAttributeFromLegacyServer.getValue(),
-//                objectAttributeFromRestServer.getValue());
         Assert.assertEquals("objectAttribute[" + name + "].isArray() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
                 objectAttributeFromLegacyServer.isArray(),
                 objectAttributeFromRestServer.isArray());
@@ -2340,28 +2351,41 @@ public class RESTfulInterfaceTest extends TestBase {
                     maiFromRestServer);
         }
 
-        if (objectAttributeFromLegacyServer.referencesObject()) {
+        final Object objectAttributeFromLegacyServerValue = objectAttributeFromLegacyServer.getValue();
+        final Object objectAttributeFromRestServerValue = objectAttributeFromRestServer.getValue();
 
-            final Object objectAttributeFromLegacyServerValue = objectAttributeFromLegacyServer.getValue();
-            final Object objectAttributeFromRestServerValue = objectAttributeFromRestServer.getValue();
+        if (objectAttributeFromLegacyServerValue != null) {
+            Assert.assertNotNull("objectAttribute[" + name + "] value from rest server is not null (classId: " + pk + ")",
+                    objectAttributeFromRestServerValue);
 
-            if (objectAttributeFromLegacyServerValue != null) {
+            final Class objectAttributeFromLegacyServerValueClass = objectAttributeFromLegacyServerValue.getClass();
+            final Class objectAttributeFromRestServerValueClass = objectAttributeFromRestServerValue.getClass();
 
-                Assert.assertNotNull("objectAttribute[" + name + "] value from rest server is not null (classId: " + pk + ")",
-                        objectAttributeFromRestServerValue);
+            Assert.assertEquals("objectAttribute[" + name + "] value from rest server is a "
+                    + objectAttributeFromLegacyServerValueClass.getSimpleName() + " (classId: " + pk + ")",
+                    objectAttributeFromLegacyServerValueClass,
+                    objectAttributeFromRestServerValueClass);
 
+            if (objectAttributeFromLegacyServer.referencesObject()) {
                 Assert.assertTrue("objectAttribute[" + name + "] value from legacy server is a MetaObject (classId: " + pk + ")",
-                        MetaObject.class.isAssignableFrom(objectAttributeFromLegacyServerValue.getClass()));
-                Assert.assertNotNull("objectAttribute[" + name + "] value from rest server is a MetaObject (classId: " + pk + ")",
-                        MetaObject.class.isAssignableFrom(objectAttributeFromRestServerValue.getClass()));
+                        MetaObject.class.isAssignableFrom(objectAttributeFromLegacyServerValueClass));
+                Assert.assertTrue("objectAttribute[" + name + "] value from rest server is a MetaObject (classId: " + pk + ")",
+                        MetaObject.class.isAssignableFrom(objectAttributeFromRestServerValueClass));
 
                 this.compareMetaObjects(
                         (MetaObject) objectAttributeFromLegacyServerValue,
                         (MetaObject) objectAttributeFromRestServerValue);
-            } else {
-                Assert.assertNull("objectAttribute[" + name + "] value from rest server is null (classId: " + pk + ")",
+
+            } else if (objectAttributeFromLegacyServerValueClass.isPrimitive()) {
+                Assert.assertEquals("objectAttribute[" + name + "] value from rest server matches (classId: " + pk + ")",
+                        objectAttributeFromLegacyServerValue,
                         objectAttributeFromRestServerValue);
+
+                // disable value comparision for non-primitives due to unkown behaviour of object.equals
             }
+        } else {
+            Assert.assertNull("objectAttribute[" + name + "] value from rest server is null (classId: " + pk + ")",
+                    objectAttributeFromRestServerValue);
         }
     }
 
