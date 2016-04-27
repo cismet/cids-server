@@ -399,35 +399,46 @@ public class RESTfulInterfaceTest extends TestBase {
     @UseDataProvider("getMetaClassIds")
     public void test01getAndCompareMetaClasses(final Integer classId) throws Exception {
 
-        LOGGER.debug("testing getAndCompareMetaClasses (" + classId + ")");
+        String name = String.valueOf(classId);
+        LOGGER.debug("testing getAndCompareMetaClasses (" + name + ")");
+        
+        try {
 
-        final MetaClass metaClassFromJson
-                = OfflineMetaClassCacheService.getInstance().getMetaClass(
-                        PROPERTIES.getProperty("userDomain", "CIDS_REF"),
-                        classId);
+            final MetaClass metaClassFromJson
+                    = OfflineMetaClassCacheService.getInstance().getMetaClass(
+                            PROPERTIES.getProperty("userDomain", "CIDS_REF"),
+                            classId);
+            name = metaClassFromJson.getName();
 
-        LOGGER.debug("retrieving meta class "
-                + metaClassFromJson.getKey()
-                + " from legacy server");
+            LOGGER.debug("retrieving meta class "
+                    + metaClassFromJson.getKey()
+                    + " from legacy server");
 
-        final MetaClass metaClassFromLegacyServer = legacyConnector.getClass(user,
-                metaClassFromJson.getID(), metaClassFromJson.getDomain());
+            final MetaClass metaClassFromLegacyServer = legacyConnector.getClass(user,
+                    metaClassFromJson.getID(), metaClassFromJson.getDomain());
 
-        LOGGER.debug("retrieving meta class "
-                + metaClassFromJson.getKey()
-                + " from rest server");
+            LOGGER.debug("retrieving meta class "
+                    + metaClassFromJson.getKey()
+                    + " from rest server");
 
-        final MetaClass metaClassFromRestServer = restConnector.getClass(user,
-                metaClassFromJson.getID(), metaClassFromJson.getDomain());
+            final MetaClass metaClassFromRestServer = restConnector.getClass(user,
+                    metaClassFromJson.getID(), metaClassFromJson.getDomain());
 
-        this.compareMetaClasses(
-                metaClassFromLegacyServer,
-                metaClassFromRestServer);
+            this.compareMetaClasses(
+                    metaClassFromLegacyServer,
+                    metaClassFromRestServer);
 
-        this.compareMetaClasses(
-                metaClassFromJson,
-                metaClassFromLegacyServer,
-                metaClassFromRestServer);
+            this.compareMetaClasses(
+                    metaClassFromJson,
+                    metaClassFromLegacyServer,
+                    metaClassFromRestServer);
+        } catch (AssertionError ae) {
+            LOGGER.error("getAndCompareMetaClasses(" + name + ") test failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during getAndCompareMetaClasses(" + name + "): " + ex.getMessage(), ex);
+            throw ex;
+        }
 
         LOGGER.info("testing getAndCompareMetaClasses (" + classId + ") passed!");
     }
@@ -1844,11 +1855,11 @@ public class RESTfulInterfaceTest extends TestBase {
                 metaClassAttributeFromLegacyServer.getKey());
 
         Assert.assertEquals("metaClassAttribute[" + name + "].getPermissions().toString() from rest server matches (classId: " + pk + ")",
-                metaClassAttributeFromJson.getPermissions().toString(),
-                metaClassAttributeFromRestServer.getPermissions().toString());
+                metaClassAttributeFromJson.getPermissions().getPolicy().toString(),
+                metaClassAttributeFromRestServer.getPermissions().getPolicy().toString());
         Assert.assertEquals("metaClassAttribute[" + name + "].getPermissions().toString() from legacy server matches (classId: " + pk + ")",
-                metaClassAttributeFromJson.getPermissions().toString(),
-                metaClassAttributeFromLegacyServer.getPermissions().toString());
+                metaClassAttributeFromJson.getPermissions().getPolicy().toString(),
+                metaClassAttributeFromLegacyServer.getPermissions().getPolicy().toString());
 
         Assert.assertEquals("metaClassAttribute[" + name + "].getTypeID() from rest server matches (classId: " + pk + ")",
                 metaClassAttributeFromJson.getTypeID(),
@@ -1976,8 +1987,8 @@ public class RESTfulInterfaceTest extends TestBase {
                 metaClassAttributeFromRestServer.getKey());
 
         Assert.assertEquals("metaClassAttribute[" + name + "].getPermissions().toString() from rest legacy matches MetaClass from rest server  (classId: " + pk + ")",
-                metaClassAttributeFromLegacyServer.getPermissions().toString(),
-                metaClassAttributeFromRestServer.getPermissions().toString());
+                metaClassAttributeFromLegacyServer.getPermissions().getPolicy().toString(),
+                metaClassAttributeFromRestServer.getPermissions().getPolicy().toString());
 
         Assert.assertEquals("metaClassAttribute[" + name + "].getTypeID() from rest legacy matches MetaClass from rest server  (classId: " + pk + ")",
                 metaClassAttributeFromLegacyServer.getTypeID(),
@@ -2086,11 +2097,11 @@ public class RESTfulInterfaceTest extends TestBase {
                 objectAttributeFromLegacyServer.getKey());
 
         Assert.assertEquals("objectAttribute[" + name + "].getPermissions().toString() from rest server matches (classId: " + pk + ")",
-                objectAttributeFromJson.getPermissions().toString(),
-                objectAttributeFromRestServer.getPermissions().toString());
+                objectAttributeFromJson.getPermissions().getPolicy().toString(),
+                objectAttributeFromRestServer.getPermissions().getPolicy().toString());
         Assert.assertEquals("objectAttribute[" + name + "].getPermissions().toString() from legacy server matches (classId: " + pk + ")",
-                objectAttributeFromJson.getPermissions().toString(),
-                objectAttributeFromLegacyServer.getPermissions().toString());
+                objectAttributeFromJson.getPermissions().getPolicy().toString(),
+                objectAttributeFromLegacyServer.getPermissions().getPolicy().toString());
 
         Assert.assertEquals("objectAttribute[" + name + "].getTypeId() from rest server matches (classId: " + pk + ")",
                 objectAttributeFromJson.getTypeId(),
@@ -2262,8 +2273,8 @@ public class RESTfulInterfaceTest extends TestBase {
                 objectAttributeFromRestServer.getKey());
 
         Assert.assertEquals("objectAttribute[" + name + "].getPermissions().toString() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                objectAttributeFromLegacyServer.getPermissions().toString(),
-                objectAttributeFromRestServer.getPermissions().toString());
+                objectAttributeFromLegacyServer.getPermissions().getPolicy().toString(),
+                objectAttributeFromRestServer.getPermissions().getPolicy().toString());
 
         Assert.assertEquals("objectAttribute[" + name + "].getTypeId() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
                 objectAttributeFromLegacyServer.getTypeId(),
@@ -2504,7 +2515,7 @@ public class RESTfulInterfaceTest extends TestBase {
 
         Assert.assertEquals("memberAttributeInfo[" + name + "].isOptional() from rest server matches (" + pk + ")",
                 maiFromJson.isOptional(),
-                maiFromRestServer.isIndexed());
+                maiFromRestServer.isOptional());
         Assert.assertEquals("memberAttributeInfo[" + name + "].isOptional() from legacy server matches (" + pk + ")",
                 maiFromJson.isOptional(),
                 maiFromLegacyServer.isOptional());
@@ -2599,7 +2610,7 @@ public class RESTfulInterfaceTest extends TestBase {
 
         Assert.assertEquals("memberAttributeInfo[" + name + "].isOptional() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
                 maiFromLegacyServer.isOptional(),
-                maiFromRestServer.isIndexed());
+                maiFromRestServer.isOptional());
     }
 
     protected int countDbEntities(final String tableName) throws SQLException {
