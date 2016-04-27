@@ -18,16 +18,22 @@ import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
 import de.cismet.cidsx.client.connector.RESTfulInterfaceConnector;
 import java.io.InputStream;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -69,10 +75,12 @@ public class RESTfulInterfaceTest extends TestBase {
     protected final static ArrayList<String> CIDS_BEANS_JSON = new ArrayList<String>();
     protected static final Properties PROPERTIES = TestEnvironment.getProperties();
 
+    protected static Connection connection = null;
     protected static RESTfulInterfaceConnector restConnector = null;
     protected static RESTfulSerialInterfaceConnector legacyConnector = null;
     protected static User user = null;
     protected static boolean connectionFailed = false;
+    protected static Map<String, Integer> dbEntitiesCount = new HashMap<String, Integer>();
 
     /**
      * This ClassRule is executed only once before any test run (@Test method)
@@ -168,7 +176,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 connectionFailed);
 
         try {
-
+            // connect to Broker (legacy server) -------------------------------
             final String brokerUrl = TestEnvironment.getCallserverUrl(dockerEnvironment.getServiceHost(SERVER_CONTAINER,
                     Integer.parseInt(PROPERTIES.getProperty("broker.port", "9986"))),
                     dockerEnvironment.getServicePort(SERVER_CONTAINER,
@@ -188,6 +196,7 @@ public class RESTfulInterfaceTest extends TestBase {
             LOGGER.info("connecting to cids reference docker legacy server: " + brokerUrl);
             legacyConnector = new RESTfulSerialInterfaceConnector(brokerUrl);
 
+            // connect to REST server ------------------------------------------
             final String restServerUrl = "http://"
                     + dockerEnvironment.getServiceHost(REST_SERVER_CONTAINER,
                             Integer.parseInt(PROPERTIES.getProperty("restservice.port", "8890")))
@@ -219,10 +228,43 @@ public class RESTfulInterfaceTest extends TestBase {
 
             LOGGER.info("sucessfully authenticated cids user: " + user.toString());
 
+            // connect to integration base (postgred DB) -----------------------
+            final String integrationBaseUrl = "jdbc:postgresql://"
+                    + dockerEnvironment.getServiceHost(REST_SERVER_CONTAINER,
+                            Integer.parseInt(PROPERTIES.getProperty("integrationbase.port", "5434")))
+                    + ":"
+                    + dockerEnvironment.getServicePort(REST_SERVER_CONTAINER,
+                            Integer.parseInt(PROPERTIES.getProperty("integrationbase.port", "5434")))
+                    + PROPERTIES.getProperty("integrationbase.dbname", "cids_reference");
+
+            try {
+                Class.forName("org.postgresql.Driver");
+            } catch (ClassNotFoundException e) {
+                LOGGER.error("JDBC Driver 'org.postgresql.Driver' not available", e);
+                throw e;
+            }
+
+            LOGGER.info("connecting to cids reference integration base postgres db: " + integrationBaseUrl);
+            connection = DriverManager.getConnection(
+                    integrationBaseUrl,
+                    PROPERTIES.getProperty("integrationbase.username", "postgres"),
+                    PROPERTIES.getProperty("integrationbase.password", "postgres"));
+
         } catch (Exception e) {
 
             LOGGER.error(e.getMessage(), e);
             throw e;
+        }
+    }
+
+    @AfterClass
+    public static void afterClass() {
+        try {
+            if (connection != null) {
+                connection.close();
+            }
+        } catch (Exception ex) {
+            LOGGER.error("could not close DB connection", ex);
         }
     }
 
@@ -267,7 +309,8 @@ public class RESTfulInterfaceTest extends TestBase {
 
         if (TestEnvironment.isIntegrationTestsEnabled()) {
             final Collection<MetaClass> metaClasses
-                    = OfflineMetaClassCacheService.getInstance().getAllClasses(PROPERTIES.getProperty("userDomain", "CIDS_REF")).values();
+                    = OfflineMetaClassCacheService.getInstance().getAllClasses(
+                            PROPERTIES.getProperty("userDomain", "CIDS_REF")).values();
 
             // 'MetaClass' is not supported as parameter type of test methods. 
             // Supported types are primitive types and their wrappers, case-sensitive 
@@ -283,19 +326,76 @@ public class RESTfulInterfaceTest extends TestBase {
         } else {
             return new String[]{"-1"};
         }
+    }
 
+    @DataProvider
+    public final static String[] getMetaClassTableNames() throws Exception {
+
+        if (TestEnvironment.isIntegrationTestsEnabled()) {
+            final Collection<MetaClass> metaClasses
+                    = OfflineMetaClassCacheService.getInstance().getAllClasses(
+                            PROPERTIES.getProperty("userDomain", "CIDS_REF")).values();
+
+            final String[] metaClassTableNames = new String[metaClasses.size()];
+            int i = 0;
+            for (MetaClass metaClass : metaClasses) {
+                metaClassTableNames[i] = metaClass.getTableName();
+                i++;
+            }
+            return metaClassTableNames;
+
+        } else {
+            return new String[]{"THIS_TABLE_DOES_NOT_EXIST"};
+        }
     }
 
     @Before
-    public void beforeTest() {
-        Assert.assertNotNull("cids legacy server connection successfully established", legacyConnector);
-        Assert.assertNotNull("cids rest server connection successfully established", restConnector);
-        Assert.assertNotNull("user authenticated", user);
+    public void beforeTest() throws Exception {
+        try {
+            Assert.assertNotNull("cids integration base connection successfully established", connection);
+
+            Assert.assertTrue("cids integration base connection is still valid", connection.isValid(500));
+
+            Assert.assertNotNull("cids legacy server connection successfully established", legacyConnector);
+            Assert.assertNotNull("cids rest server connection successfully established", restConnector);
+            Assert.assertNotNull("user authenticated", user);
+        } catch (AssertionError ae) {
+            LOGGER.error("test initialisation failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (SQLException ex) {
+            LOGGER.error("Unexpected error during test initialisation: " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
+    @Test
+    @UseDataProvider("getMetaClassTableNames")
+    public void test00countDbEntities(final String tableName) throws Exception {
+        LOGGER.debug("testing countDbEntities(" + tableName + ")");
+
+        try {
+            final int count = this.countDbEntities(tableName);
+            Assert.assertTrue(tableName + " entities available in integration base",
+                    count > 0);
+            Assert.assertNull(tableName + " entities counted only once",
+                    dbEntitiesCount.put(tableName, count));
+
+        } catch (AssertionError ae) {
+            LOGGER.error("countDbEntities(" + tableName + ") test failed with: "
+                    + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during countDbEntities(" + tableName + "): "
+                    + ex.getMessage(), ex);
+            throw ex;
+        }
+
+        LOGGER.info("countDbEntities(" + tableName + ") test passed!");
     }
 
     @Test
     @UseDataProvider("getMetaClassIds")
-    public void test00getAndCompareMetaClasses(final Integer classId) throws Exception {
+    public void test01getAndCompareMetaClasses(final Integer classId) throws Exception {
 
         LOGGER.debug("testing getAndCompareMetaClasses (" + classId + ")");
 
@@ -327,7 +427,7 @@ public class RESTfulInterfaceTest extends TestBase {
 
     @Test
     @UseDataProvider("getCidsBeansJson")
-    public void test01getAndCompareMetaObjects(final String cidsBeanJson) throws Exception {
+    public void test02getAndCompareMetaObjects(final String cidsBeanJson) throws Exception {
         LOGGER.debug("testing getAndCompareMetaObjects");
 
         String name = "";
@@ -382,7 +482,7 @@ public class RESTfulInterfaceTest extends TestBase {
 
     @Test
     @UseDataProvider("getCidsBeansJson")
-    public void test02updateAndCompareSimplePropertiesLegacy(final String cidsBeanJson) throws Exception {
+    public void test03updateAndCompareSimplePropertiesLegacy(final String cidsBeanJson) throws Exception {
         LOGGER.debug("testing updateAndCompareSimpleProperties");
         String name = null;
 
@@ -504,6 +604,33 @@ public class RESTfulInterfaceTest extends TestBase {
         }
 
         LOGGER.info("updateAndCompareSimpleProperties(" + name + ") test passed!");
+    }
+
+    @Test
+    @UseDataProvider("getMetaClassTableNames")
+    public void test04countDbEntitiesAfterUpdate(final String tableName) throws Exception {
+        LOGGER.debug("testing countDbEntitiesAfterUpdate(" + tableName + ")");
+
+        try {
+            final int count = this.countDbEntities(tableName);
+            Assert.assertTrue(tableName + " entities available in integration base",
+                    count > 0);
+            Assert.assertTrue(tableName + " entities counted before",
+                    dbEntitiesCount.containsKey(tableName));
+            Assert.assertEquals(tableName + " entities count not changed after update",
+                    dbEntitiesCount.get(tableName).intValue(), count);
+
+        } catch (AssertionError ae) {
+            LOGGER.error("countDbEntitiesAfterUpdate(" + tableName + ") test failed with: "
+                    + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during countDbEntitiesAfterUpdate(" + tableName + "): "
+                    + ex.getMessage(), ex);
+            throw ex;
+        }
+
+        LOGGER.info("countDbEntitiesAfterUpdate(" + tableName + ") test passed!");
     }
 
     protected void compareCidsBeanProperties(final CidsBean cidsBeanFromJson,
@@ -1566,5 +1693,19 @@ public class RESTfulInterfaceTest extends TestBase {
         Assert.assertEquals("objectAttribute[" + name + "].getMai().isOptional() from legacy server matches (classId: " + pk + ")",
                 maiFromJson.isOptional(),
                 maiFromLegacyServer.isOptional());
+    }
+
+    protected int countDbEntities(final String tableName) throws SQLException {
+        final Statement countStatement = connection.createStatement();
+        final ResultSet resultSet = countStatement.executeQuery("SELECT count(*) FROM " + tableName);
+        int count = 0;
+        if (resultSet.next()) {
+            count = resultSet.getInt(1);
+        }
+
+        resultSet.close();
+        countStatement.close();
+
+        return count;
     }
 }

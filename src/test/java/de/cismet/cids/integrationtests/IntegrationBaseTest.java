@@ -94,31 +94,6 @@ public class IntegrationBaseTest extends TestBase {
         // check if docker image started
         Assert.assertTrue("postgresContainer is running", postgresContainer.isRunning());
 
-//        try {
-//            final String callserverUrl = TestEnvironment.getCallserverUrl(postgresContainer.getServiceHost("docker_cidsref_1", 9986),
-//                    postgresContainer.getServicePort("docker_cidsref_1", 9986));
-//
-//            
-//            
-//            
-//            
-//            LOGGER.info("connection to cids reference docker legacy server: " + callserverUrl);
-//
-//            connector = new RESTfulSerialInterfaceConnector(callserverUrl);
-//
-//            user = connector.getUser(properties.getProperty("usergroupDomain", "CIDS_REF"),
-//                    properties.getProperty("usergroup", "Administratoren"),
-//                    properties.getProperty("userDomain", "CIDS_REF"),
-//                    properties.getProperty("username", "admin"),
-//                    properties.getProperty("password", "cismet"));
-//
-//            LOGGER.info("sucessfully authenticated cids user: " + user.toString());
-//
-//        } catch (Exception e) {
-//
-//            LOGGER.error(e.getMessage(), e);
-//            throw e;
-//        }
     }
 
     @Test
