@@ -149,7 +149,7 @@ public class TestEnvironment extends ExternalResource {
 
         DockerComposeContainer dockerEnvironment = new DockerComposeContainer(file)
                 .withExposedService(INTEGRATIONBASE_CONTAINER,
-                        Integer.parseInt(getProperties().getProperty("integrationbase.port", "5434")))
+                        Integer.parseInt(getProperties().getProperty("integrationbase.port", "5432")))
                 .withExposedService(SERVER_CONTAINER,
                         Integer.parseInt(getProperties().getProperty("broker.port", "9986")))
                 .withExposedService(REST_SERVER_CONTAINER,

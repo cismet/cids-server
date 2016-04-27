@@ -65,7 +65,7 @@ public class IntegrationBaseTest extends TestBase {
             try {
                 // create new PostgreSQLContainer
                 postgresContainer = new GenericContainer("cismet/cids-integration-base:latest")
-                        .withExposedPorts(5434)
+                        .withExposedPorts(5432)
                         .withClasspathResourceMapping("cids-integration-base/import/cids_reference.sql",
                                 "/import/cids-integration-base/cids_reference.sql", BindMode.READ_ONLY);
 
