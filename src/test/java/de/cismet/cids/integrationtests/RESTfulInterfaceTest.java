@@ -775,6 +775,11 @@ public class RESTfulInterfaceTest extends TestBase {
                                 propertyFromRestServer);
                     }
                 }
+            } else {
+                Assert.assertNull("cidsBean[" + name + "].getProperty(" + propertyName + ") FromLegacyServer is null",
+                        propertyFromLegacyServer);
+                Assert.assertNull("cidsBean[" + name + "].getProperty(" + propertyName + ") FromRestServer is null",
+                        propertyFromRestServer);
             }
         }
     }
@@ -872,6 +877,11 @@ public class RESTfulInterfaceTest extends TestBase {
                                 propertyFromRestServer);
                     }
                 }
+            } else {
+                Assert.assertNull("cidsBean[" + name + "].getProperty(" + propertyName + ") FromLegacyServer is null",
+                        propertyFromLegacyServer);
+                Assert.assertNull("cidsBean[" + name + "].getProperty(" + propertyName + ") FromRestServer is null",
+                        propertyFromRestServer);
             }
         }
     }
@@ -1568,6 +1578,49 @@ public class RESTfulInterfaceTest extends TestBase {
                     pk);
         }
 
+        final Map<Object, MemberAttributeInfo> maisFromJson = metaClassFromJson.getMemberAttributeInfos();
+        final Map<Object, MemberAttributeInfo> maisFromLegacyServer = metaClassFromLegacyServer.getMemberAttributeInfos();
+        final Map<Object, MemberAttributeInfo> maisFromRestServer = metaClassFromRestServer.getMemberAttributeInfos();
+
+        Assert.assertEquals("metaClass[" + name + "].getMemberAttributeInfos().size() from rest server matches (" + pk + ")",
+                maisFromJson.size(),
+                maisFromRestServer.size());
+        Assert.assertEquals("metaClass[" + name + "].getMemberAttributeInfos().size() from legacy server matches (" + pk + ")",
+                maisFromJson.size(),
+                maisFromLegacyServer.size());
+
+        final Iterator<Object> maisFromJsonIterator = maisFromJson.keySet().iterator();
+        while (maisFromJsonIterator.hasNext()) {
+            final Object key = maisFromJsonIterator.next();
+
+            Assert.assertTrue("metaClass[" + name + "].getMemberAttributeInfo(" + key + ") from rest server matches (" + pk + ")",
+                    maisFromRestServer.containsKey(key));
+            Assert.assertTrue("metaClass[" + name + "].getMemberAttributeInfo(" + key + ") from legacy server matches (" + pk + ")",
+                    maisFromLegacyServer.containsKey(key));
+
+            final MemberAttributeInfo maiFromJson = maisFromJson.get(key);
+            final MemberAttributeInfo maiFromLegacyServer = maisFromLegacyServer.get(key);
+            final MemberAttributeInfo maiFromRestServer = maisFromRestServer.get(key);
+
+            if (maiFromJson != null) {
+                Assert.assertNotNull("objectAttribute[" + name + "] from rest server has MemberAttributeInfo (classId: " + pk + ")",
+                        maiFromRestServer);
+                Assert.assertNotNull("objectAttribute[" + name + "] from legacy server has MemberAttributeInfo (classId: " + pk + ")",
+                        maiFromLegacyServer);
+
+                this.compareMemberAttributeInfos(
+                        maiFromJson,
+                        maiFromLegacyServer,
+                        maiFromRestServer,
+                        pk);
+            } else {
+                Assert.assertNull("objectAttribute[" + name + "] from rest server has no MemberAttributeInfo (classId: " + pk + ")",
+                        maiFromRestServer);
+                Assert.assertNull("objectAttribute[" + name + "] from legacy server has no MemberAttributeInfo (classId: " + pk + ")",
+                        maiFromLegacyServer);
+            }
+        }
+
         final MetaObject metaObjectFromJson = metaClassFromJson.getEmptyInstance();
         final MetaObject metaObjectFromRestServer = metaClassFromRestServer.getEmptyInstance();
         final MetaObject metaObjectFromLegacyServer = metaClassFromLegacyServer.getEmptyInstance();
@@ -1692,6 +1745,37 @@ public class RESTfulInterfaceTest extends TestBase {
                     metaClassAttributesFromLegacyServer[i],
                     metaClassAttributesFromRestServer[i],
                     pk);
+        }
+
+        final Map<Object, MemberAttributeInfo> maisFromLegacyServer = metaClassFromLegacyServer.getMemberAttributeInfos();
+        final Map<Object, MemberAttributeInfo> maisFromRestServer = metaClassFromRestServer.getMemberAttributeInfos();
+
+        Assert.assertEquals("metaClass[" + name + "].getMemberAttributeInfos().size() from rest server matches getMemberAttributeInfos().size() from legacy server (" + pk + ")",
+                maisFromLegacyServer.size(),
+                maisFromRestServer.size());
+
+        final Iterator<Object> maisFromJsonIterator = maisFromLegacyServer.keySet().iterator();
+        while (maisFromJsonIterator.hasNext()) {
+            final Object key = maisFromJsonIterator.next();
+
+            Assert.assertTrue("metaClass[" + name + "].getMemberAttributeInfo(" + key + ") from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                    maisFromRestServer.containsKey(key));
+
+            final MemberAttributeInfo maiFromLegacyServer = maisFromLegacyServer.get(key);
+            final MemberAttributeInfo maiFromRestServer = maisFromRestServer.get(key);
+
+            if (maiFromLegacyServer != null) {
+                Assert.assertNotNull("objectAttribute[" + name + "] from legacy server has MemberAttributeInfo (classId: " + pk + ")",
+                        maiFromRestServer);
+
+                this.compareMemberAttributeInfos(
+                        maiFromLegacyServer,
+                        maiFromRestServer,
+                        pk);
+            } else {
+                Assert.assertNull("objectAttribute[" + name + "] from rest server has no MemberAttributeInfo (classId: " + pk + ")",
+                        maiFromRestServer);
+            }
         }
 
         final MetaObject metaObjectFromRestServer = metaClassFromRestServer.getEmptyInstance();
@@ -1948,6 +2032,7 @@ public class RESTfulInterfaceTest extends TestBase {
                     metaClassAttributeFromLegacyServerOptions.get(key),
                     metaClassAttributeFromRestServerOptions.get(key));
         }
+
     }
 
     protected void compareObjectAttributes(final ObjectAttribute objectAttributeFromJson,
@@ -2090,178 +2175,57 @@ public class RESTfulInterfaceTest extends TestBase {
                 objectAttributeFromJson.referencesObject(),
                 objectAttributeFromLegacyServer.referencesObject());
 
-        final MemberAttributeInfo maiFromLegacyServer = objectAttributeFromJson.getMai();
+        final MemberAttributeInfo maiFromJson = objectAttributeFromJson.getMai();
+        final MemberAttributeInfo maiFromLegacyServer = objectAttributeFromLegacyServer.getMai();
         final MemberAttributeInfo maiFromRestServer = objectAttributeFromRestServer.getMai();
 
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getArrayKeyFieldName from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getArrayKeyFieldName(),
-                maiFromRestServer.getArrayKeyFieldName());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getArrayKeyFieldName from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getArrayKeyFieldName(),
-                maiFromLegacyServer.getArrayKeyFieldName());
+        if (maiFromJson != null) {
+            Assert.assertNotNull("objectAttribute[" + name + "] from rest server has MemberAttributeInfo (classId: " + pk + ")",
+                    maiFromRestServer);
+            Assert.assertNotNull("objectAttribute[" + name + "] from legacy server has MemberAttributeInfo (classId: " + pk + ")",
+                    maiFromLegacyServer);
 
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getClassId() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getClassId(),
-                maiFromRestServer.getClassId());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getClassId() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getClassId(),
-                maiFromLegacyServer.getClassId());
+            this.compareMemberAttributeInfos(
+                    maiFromJson,
+                    maiFromLegacyServer,
+                    maiFromRestServer,
+                    pk);
+        } else {
+            Assert.assertNull("objectAttribute[" + name + "] from rest server has no MemberAttributeInfo (classId: " + pk + ")",
+                    maiFromRestServer);
+            Assert.assertNull("objectAttribute[" + name + "] from legacy server has no MemberAttributeInfo (classId: " + pk + ")",
+                    maiFromLegacyServer);
+        }
 
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getComplexEditor() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getComplexEditor(),
-                maiFromRestServer.getComplexEditor());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getComplexEditor() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getComplexEditor(),
-                maiFromLegacyServer.getComplexEditor());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getDefaultValue() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getDefaultValue(),
-                maiFromRestServer.getDefaultValue());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getDefaultValue() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getDefaultValue(),
-                maiFromLegacyServer.getDefaultValue());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getEditor() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getEditor(),
-                maiFromRestServer.getEditor());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getEditor() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getEditor(),
-                maiFromLegacyServer.getEditor());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getFieldName() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getFieldName(),
-                maiFromRestServer.getFieldName());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getFieldName() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getFieldName(),
-                maiFromLegacyServer.getFieldName());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getForeignKeyClassId() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getForeignKeyClassId(),
-                maiFromRestServer.getForeignKeyClassId());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getForeignKeyClassId() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getForeignKeyClassId(),
-                maiFromLegacyServer.getForeignKeyClassId());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getFromString() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getFromString(),
-                maiFromRestServer.getFromString());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getFromString() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getFromString(),
-                maiFromLegacyServer.getFromString());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getId() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getId(),
-                maiFromRestServer.getId());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getId() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getId(),
-                maiFromLegacyServer.getId());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getJavaclassname() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getJavaclassname(),
-                maiFromRestServer.getJavaclassname());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getJavaclassname() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getJavaclassname(),
-                maiFromLegacyServer.getJavaclassname());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getKey() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getKey(),
-                maiFromRestServer.getKey());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getKey() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getKey(),
-                maiFromLegacyServer.getKey());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getName() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getName(),
-                maiFromRestServer.getName());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getName() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getName(),
-                maiFromLegacyServer.getName());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getPosition() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getPosition(),
-                maiFromRestServer.getPosition());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getPosition() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getPosition(),
-                maiFromLegacyServer.getPosition());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getRenderer() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getRenderer(),
-                maiFromRestServer.getRenderer());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getRenderer() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getRenderer(),
-                maiFromLegacyServer.getRenderer());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getToString() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getToString(),
-                maiFromRestServer.getToString());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getToString() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getToString(),
-                maiFromLegacyServer.getToString());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getTypeId() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getTypeId(),
-                maiFromRestServer.getTypeId());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getTypeId() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.getTypeId(),
-                maiFromLegacyServer.getTypeId());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().isArray() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.isArray(),
-                maiFromRestServer.isArray());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().isArray() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.isArray(),
-                maiFromLegacyServer.isArray());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().isExtensionAttribute() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.isExtensionAttribute(),
-                maiFromRestServer.isExtensionAttribute());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().isExtensionAttribute() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.isExtensionAttribute(),
-                maiFromLegacyServer.isExtensionAttribute());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().isForeignKey() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.isForeignKey(),
-                maiFromRestServer.isForeignKey());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().isForeignKey() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.isForeignKey(),
-                maiFromLegacyServer.isForeignKey());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().isIndexed() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.isIndexed(),
-                maiFromRestServer.isIndexed());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().isIndexed() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.isIndexed(),
-                maiFromLegacyServer.isIndexed());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().isOptional() from rest server matches (classId: " + pk + ")",
-                maiFromLegacyServer.isOptional(),
-                maiFromRestServer.isIndexed());
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().isOptional() from legacy server matches (classId: " + pk + ")",
-                maiFromLegacyServer.isOptional(),
-                maiFromLegacyServer.isOptional());
-
-        if (objectAttributeFromJson.referencesObject()
-                && objectAttributeFromJson.getValue() != null) {
+        if (objectAttributeFromJson.referencesObject()) {
             final Object objectAttributeFromJsonValue = objectAttributeFromJson.getValue();
             final Object objectAttributeFromLegacyServerValue = objectAttributeFromLegacyServer.getValue();
             final Object objectAttributeFromRestServerValue = objectAttributeFromRestServer.getValue();
 
-            Assert.assertNotNull("objectAttribute[" + name + "] value from legacy server is not null (classId: " + pk + ")",
-                    objectAttributeFromLegacyServerValue);
-            Assert.assertNotNull("objectAttribute[" + name + "] value from rest server is not null (classId: " + pk + ")",
-                    objectAttributeFromRestServerValue);
+            if (objectAttributeFromJsonValue != null) {
 
-            Assert.assertTrue("objectAttribute[" + name + "] value from json is a MetaObject (classId: " + pk + ")",
-                    MetaObject.class.isAssignableFrom(objectAttributeFromJsonValue.getClass()));
-            Assert.assertTrue("objectAttribute[" + name + "] value from legacy server is a MetaObject (classId: " + pk + ")",
-                    MetaObject.class.isAssignableFrom(objectAttributeFromLegacyServerValue.getClass()));
-            Assert.assertNotNull("objectAttribute[" + name + "] value from rest server is a MetaObject (classId: " + pk + ")",
-                    MetaObject.class.isAssignableFrom(objectAttributeFromRestServerValue.getClass()));
+                Assert.assertNotNull("objectAttribute[" + name + "] value from legacy server is not null (classId: " + pk + ")",
+                        objectAttributeFromLegacyServerValue);
+                Assert.assertNotNull("objectAttribute[" + name + "] value from rest server is not null (classId: " + pk + ")",
+                        objectAttributeFromRestServerValue);
 
-            this.compareMetaObjects(
-                    (MetaObject) objectAttributeFromJsonValue,
-                    (MetaObject) objectAttributeFromLegacyServerValue,
-                    (MetaObject) objectAttributeFromRestServerValue);
+                Assert.assertTrue("objectAttribute[" + name + "] value from json is a MetaObject (classId: " + pk + ")",
+                        MetaObject.class.isAssignableFrom(objectAttributeFromJsonValue.getClass()));
+                Assert.assertTrue("objectAttribute[" + name + "] value from legacy server is a MetaObject (classId: " + pk + ")",
+                        MetaObject.class.isAssignableFrom(objectAttributeFromLegacyServerValue.getClass()));
+                Assert.assertNotNull("objectAttribute[" + name + "] value from rest server is a MetaObject (classId: " + pk + ")",
+                        MetaObject.class.isAssignableFrom(objectAttributeFromRestServerValue.getClass()));
+
+                this.compareMetaObjects(
+                        (MetaObject) objectAttributeFromJsonValue,
+                        (MetaObject) objectAttributeFromLegacyServerValue,
+                        (MetaObject) objectAttributeFromRestServerValue);
+            } else {
+                Assert.assertNull("objectAttribute[" + name + "] value from legacy server is null (classId: " + pk + ")",
+                        objectAttributeFromLegacyServerValue);
+                Assert.assertNull("objectAttribute[" + name + "] value from rest server is null (classId: " + pk + ")",
+                        objectAttributeFromRestServerValue);
+            }
         }
     }
 
@@ -2304,6 +2268,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 objectAttributeFromLegacyServer.getTypeId(),
                 objectAttributeFromRestServer.getTypeId());
 
+        // comparing values disabled due to unpredicatable behaviour of object.equals
 //        Assert.assertEquals("objectAttribute[" + name + "].getValue() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
 //                objectAttributeFromLegacyServer.getValue(),
 //                objectAttributeFromRestServer.getValue());
@@ -2347,111 +2312,293 @@ public class RESTfulInterfaceTest extends TestBase {
                 objectAttributeFromLegacyServer.referencesObject(),
                 objectAttributeFromRestServer.referencesObject());
 
-        final MemberAttributeInfo maiFromRestServer = objectAttributeFromRestServer.getMai();
         final MemberAttributeInfo maiFromLegacyServer = objectAttributeFromLegacyServer.getMai();
+        final MemberAttributeInfo maiFromRestServer = objectAttributeFromRestServer.getMai();
 
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getArrayKeyFieldName from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.getArrayKeyFieldName(),
-                maiFromRestServer.getArrayKeyFieldName());
+        if (maiFromLegacyServer != null) {
+            Assert.assertNotNull("objectAttribute[" + name + "] from rest server has MemberAttributeInfo (classId: " + pk + ")",
+                    maiFromRestServer);
 
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getClassId() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.getClassId(),
-                maiFromRestServer.getClassId());
+            this.compareMemberAttributeInfos(
+                    maiFromLegacyServer,
+                    maiFromRestServer,
+                    pk);
+        } else {
+            Assert.assertNull("objectAttribute[" + name + "] from rest server has no MemberAttributeInfo (classId: " + pk + ")",
+                    maiFromRestServer);
+        }
 
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getComplexEditor() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.getComplexEditor(),
-                maiFromRestServer.getComplexEditor());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getDefaultValue() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.getDefaultValue(),
-                maiFromRestServer.getDefaultValue());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getEditor() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.getEditor(),
-                maiFromRestServer.getEditor());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getFieldName() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.getFieldName(),
-                maiFromRestServer.getFieldName());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getForeignKeyClassId() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.getForeignKeyClassId(),
-                maiFromRestServer.getForeignKeyClassId());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getFromString() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.getFromString(),
-                maiFromRestServer.getFromString());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getId() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.getId(),
-                maiFromRestServer.getId());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getJavaclassname() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.getJavaclassname(),
-                maiFromRestServer.getJavaclassname());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getKey() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.getKey(),
-                maiFromRestServer.getKey());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getName() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.getName(),
-                maiFromRestServer.getName());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getPosition() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.getPosition(),
-                maiFromRestServer.getPosition());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getRenderer() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.getRenderer(),
-                maiFromRestServer.getRenderer());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getToString() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.getToString(),
-                maiFromRestServer.getToString());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().getTypeId() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.getTypeId(),
-                maiFromRestServer.getTypeId());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().isArray() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.isArray(),
-                maiFromRestServer.isArray());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().isExtensionAttribute() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.isExtensionAttribute(),
-                maiFromRestServer.isExtensionAttribute());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().isForeignKey() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.isForeignKey(),
-                maiFromRestServer.isForeignKey());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().isIndexed() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.isIndexed(),
-                maiFromRestServer.isIndexed());
-
-        Assert.assertEquals("objectAttribute[" + name + "].getMai().isOptional() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-                maiFromLegacyServer.isOptional(),
-                maiFromRestServer.isIndexed());
-
-        if (objectAttributeFromLegacyServer.referencesObject()
-                && objectAttributeFromLegacyServer.getValue() != null) {
+        if (objectAttributeFromLegacyServer.referencesObject()) {
 
             final Object objectAttributeFromLegacyServerValue = objectAttributeFromLegacyServer.getValue();
             final Object objectAttributeFromRestServerValue = objectAttributeFromRestServer.getValue();
 
-            Assert.assertNotNull("objectAttribute[" + name + "] value from rest server is not null (classId: " + pk + ")",
-                    objectAttributeFromRestServerValue);
+            if (objectAttributeFromLegacyServerValue != null) {
 
-            Assert.assertTrue("objectAttribute[" + name + "] value from legacy server is a MetaObject (classId: " + pk + ")",
-                    MetaObject.class.isAssignableFrom(objectAttributeFromLegacyServerValue.getClass()));
-            Assert.assertNotNull("objectAttribute[" + name + "] value from rest server is a MetaObject (classId: " + pk + ")",
-                    MetaObject.class.isAssignableFrom(objectAttributeFromRestServerValue.getClass()));
+                Assert.assertNotNull("objectAttribute[" + name + "] value from rest server is not null (classId: " + pk + ")",
+                        objectAttributeFromRestServerValue);
 
-            this.compareMetaObjects(
-                    (MetaObject) objectAttributeFromLegacyServerValue,
-                    (MetaObject) objectAttributeFromRestServerValue);
+                Assert.assertTrue("objectAttribute[" + name + "] value from legacy server is a MetaObject (classId: " + pk + ")",
+                        MetaObject.class.isAssignableFrom(objectAttributeFromLegacyServerValue.getClass()));
+                Assert.assertNotNull("objectAttribute[" + name + "] value from rest server is a MetaObject (classId: " + pk + ")",
+                        MetaObject.class.isAssignableFrom(objectAttributeFromRestServerValue.getClass()));
+
+                this.compareMetaObjects(
+                        (MetaObject) objectAttributeFromLegacyServerValue,
+                        (MetaObject) objectAttributeFromRestServerValue);
+            } else {
+                Assert.assertNull("objectAttribute[" + name + "] value from rest server is null (classId: " + pk + ")",
+                        objectAttributeFromRestServerValue);
+            }
         }
+    }
+
+    protected void compareMemberAttributeInfos(
+            final MemberAttributeInfo maiFromJson,
+            final MemberAttributeInfo maiFromLegacyServer,
+            final MemberAttributeInfo maiFromRestServer,
+            final int pk) {
+
+        final String name = maiFromJson.getName();
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getArrayKeyFieldName from rest server matches (" + pk + ")",
+                maiFromJson.getArrayKeyFieldName(),
+                maiFromRestServer.getArrayKeyFieldName());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getArrayKeyFieldName from legacy server matches (" + pk + ")",
+                maiFromJson.getArrayKeyFieldName(),
+                maiFromLegacyServer.getArrayKeyFieldName());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getClassId() from rest server matches (" + pk + ")",
+                maiFromJson.getClassId(),
+                maiFromRestServer.getClassId());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getClassId() from legacy server matches (" + pk + ")",
+                maiFromJson.getClassId(),
+                maiFromLegacyServer.getClassId());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getComplexEditor() from rest server matches (" + pk + ")",
+                maiFromJson.getComplexEditor(),
+                maiFromRestServer.getComplexEditor());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getComplexEditor() from legacy server matches (" + pk + ")",
+                maiFromJson.getComplexEditor(),
+                maiFromLegacyServer.getComplexEditor());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getDefaultValue() from rest server matches (" + pk + ")",
+                maiFromJson.getDefaultValue(),
+                maiFromRestServer.getDefaultValue());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getDefaultValue() from legacy server matches (" + pk + ")",
+                maiFromJson.getDefaultValue(),
+                maiFromLegacyServer.getDefaultValue());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getEditor() from rest server matches (" + pk + ")",
+                maiFromJson.getEditor(),
+                maiFromRestServer.getEditor());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getEditor() from legacy server matches (" + pk + ")",
+                maiFromJson.getEditor(),
+                maiFromLegacyServer.getEditor());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getFieldName() from rest server matches (" + pk + ")",
+                maiFromJson.getFieldName(),
+                maiFromRestServer.getFieldName());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getFieldName() from legacy server matches (" + pk + ")",
+                maiFromJson.getFieldName(),
+                maiFromLegacyServer.getFieldName());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getForeignKeyClassId() from rest server matches (" + pk + ")",
+                maiFromJson.getForeignKeyClassId(),
+                maiFromRestServer.getForeignKeyClassId());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getForeignKeyClassId() from legacy server matches (" + pk + ")",
+                maiFromJson.getForeignKeyClassId(),
+                maiFromLegacyServer.getForeignKeyClassId());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getFromString() from rest server matches (" + pk + ")",
+                maiFromJson.getFromString(),
+                maiFromRestServer.getFromString());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getFromString() from legacy server matches (" + pk + ")",
+                maiFromJson.getFromString(),
+                maiFromLegacyServer.getFromString());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getId() from rest server matches (" + pk + ")",
+                maiFromJson.getId(),
+                maiFromRestServer.getId());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getId() from legacy server matches (" + pk + ")",
+                maiFromJson.getId(),
+                maiFromLegacyServer.getId());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getJavaclassname() from rest server matches (" + pk + ")",
+                maiFromJson.getJavaclassname(),
+                maiFromRestServer.getJavaclassname());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getJavaclassname() from legacy server matches (" + pk + ")",
+                maiFromJson.getJavaclassname(),
+                maiFromLegacyServer.getJavaclassname());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getKey() from rest server matches (" + pk + ")",
+                maiFromJson.getKey(),
+                maiFromRestServer.getKey());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getKey() from legacy server matches (" + pk + ")",
+                maiFromJson.getKey(),
+                maiFromLegacyServer.getKey());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getName() from rest server matches (" + pk + ")",
+                maiFromJson.getName(),
+                maiFromRestServer.getName());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getName() from legacy server matches (" + pk + ")",
+                maiFromJson.getName(),
+                maiFromLegacyServer.getName());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getPosition() from rest server matches (" + pk + ")",
+                maiFromJson.getPosition(),
+                maiFromRestServer.getPosition());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getPosition() from legacy server matches (" + pk + ")",
+                maiFromJson.getPosition(),
+                maiFromLegacyServer.getPosition());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getRenderer() from rest server matches (" + pk + ")",
+                maiFromJson.getRenderer(),
+                maiFromRestServer.getRenderer());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getRenderer() from legacy server matches (" + pk + ")",
+                maiFromJson.getRenderer(),
+                maiFromLegacyServer.getRenderer());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getToString() from rest server matches (" + pk + ")",
+                maiFromJson.getToString(),
+                maiFromRestServer.getToString());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getToString() from legacy server matches (" + pk + ")",
+                maiFromJson.getToString(),
+                maiFromLegacyServer.getToString());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getTypeId() from rest server matches (" + pk + ")",
+                maiFromJson.getTypeId(),
+                maiFromRestServer.getTypeId());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getTypeId() from legacy server matches (" + pk + ")",
+                maiFromJson.getTypeId(),
+                maiFromLegacyServer.getTypeId());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].isArray() from rest server matches (" + pk + ")",
+                maiFromJson.isArray(),
+                maiFromRestServer.isArray());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].isArray() from legacy server matches (" + pk + ")",
+                maiFromJson.isArray(),
+                maiFromLegacyServer.isArray());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].isExtensionAttribute() from rest server matches (" + pk + ")",
+                maiFromJson.isExtensionAttribute(),
+                maiFromRestServer.isExtensionAttribute());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].isExtensionAttribute() from legacy server matches (" + pk + ")",
+                maiFromJson.isExtensionAttribute(),
+                maiFromLegacyServer.isExtensionAttribute());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].isForeignKey() from rest server matches (" + pk + ")",
+                maiFromJson.isForeignKey(),
+                maiFromRestServer.isForeignKey());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].isForeignKey() from legacy server matches (" + pk + ")",
+                maiFromJson.isForeignKey(),
+                maiFromLegacyServer.isForeignKey());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].isIndexed() from rest server matches (" + pk + ")",
+                maiFromJson.isIndexed(),
+                maiFromRestServer.isIndexed());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].isIndexed() from legacy server matches (" + pk + ")",
+                maiFromJson.isIndexed(),
+                maiFromLegacyServer.isIndexed());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].isOptional() from rest server matches (" + pk + ")",
+                maiFromJson.isOptional(),
+                maiFromRestServer.isIndexed());
+        Assert.assertEquals("memberAttributeInfo[" + name + "].isOptional() from legacy server matches (" + pk + ")",
+                maiFromJson.isOptional(),
+                maiFromLegacyServer.isOptional());
+    }
+
+    protected void compareMemberAttributeInfos(
+            final MemberAttributeInfo maiFromLegacyServer,
+            final MemberAttributeInfo maiFromRestServer,
+            final int pk) {
+
+        final String name = maiFromLegacyServer.getName();
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getArrayKeyFieldName from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.getArrayKeyFieldName(),
+                maiFromRestServer.getArrayKeyFieldName());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getClassId() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.getClassId(),
+                maiFromRestServer.getClassId());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getComplexEditor() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.getComplexEditor(),
+                maiFromRestServer.getComplexEditor());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getDefaultValue() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.getDefaultValue(),
+                maiFromRestServer.getDefaultValue());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getEditor() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.getEditor(),
+                maiFromRestServer.getEditor());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getFieldName() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.getFieldName(),
+                maiFromRestServer.getFieldName());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getForeignKeyClassId() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.getForeignKeyClassId(),
+                maiFromRestServer.getForeignKeyClassId());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getFromString() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.getFromString(),
+                maiFromRestServer.getFromString());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getId() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.getId(),
+                maiFromRestServer.getId());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getJavaclassname() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.getJavaclassname(),
+                maiFromRestServer.getJavaclassname());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getKey() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.getKey(),
+                maiFromRestServer.getKey());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getName() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.getName(),
+                maiFromRestServer.getName());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getPosition() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.getPosition(),
+                maiFromRestServer.getPosition());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getRenderer() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.getRenderer(),
+                maiFromRestServer.getRenderer());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getToString() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.getToString(),
+                maiFromRestServer.getToString());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].getTypeId() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.getTypeId(),
+                maiFromRestServer.getTypeId());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].isArray() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.isArray(),
+                maiFromRestServer.isArray());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].isExtensionAttribute() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.isExtensionAttribute(),
+                maiFromRestServer.isExtensionAttribute());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].isForeignKey() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.isForeignKey(),
+                maiFromRestServer.isForeignKey());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].isIndexed() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.isIndexed(),
+                maiFromRestServer.isIndexed());
+
+        Assert.assertEquals("memberAttributeInfo[" + name + "].isOptional() from rest server matches MemberAttributeInfo from legacy server (" + pk + ")",
+                maiFromLegacyServer.isOptional(),
+                maiFromRestServer.isIndexed());
     }
 
     protected int countDbEntities(final String tableName) throws SQLException {
