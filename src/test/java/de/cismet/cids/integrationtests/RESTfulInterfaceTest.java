@@ -626,6 +626,7 @@ public class RESTfulInterfaceTest extends TestBase {
         LOGGER.info("updateAndCompareSimpleProperties(" + name + ") test passed!");
     }
 
+    @Ignore
     @Test
     @UseDataProvider("getMetaClassTableNames")
     public void test04countDbEntitiesAfterUpdate(final String tableName) throws Exception {
@@ -905,22 +906,22 @@ public class RESTfulInterfaceTest extends TestBase {
             final CidsBean cidsBeanFromLegacyServer,
             final CidsBean cidsBeanFromRestServer) throws AssertionError {
 
-        LOGGER.debug("comparing MetaObjects");
+        LOGGER.debug("comparing MetaObjects from json against MetaObjects from legacy server and from rest server");
         this.compareMetaObjects(metaObjectFromJson,
                 metaObjectFromLegacyServer,
                 metaObjectFromRestServer);
 
-        LOGGER.debug("comparing CidsBeans");
+        LOGGER.debug("comparing CidsBeans from json against MetaObjects from legacy server and from rest server");
         this.compareCidsBeans(cidsBeanFromJson,
                 cidsBeanFromLegacyServer,
                 cidsBeanFromRestServer);
 
-        LOGGER.debug("comparing MetaObjects from CidsBean.getMetaObject()");
+        LOGGER.debug("comparing MetaObjects from CidsBean.getMetaObject() from json against MetaObjects from legacy server and from rest server");
         this.compareMetaObjects(cidsBeanFromJson.getMetaObject(),
                 cidsBeanFromLegacyServer.getMetaObject(),
                 cidsBeanFromRestServer.getMetaObject());
 
-        LOGGER.debug("comparing CidsBean from CidsBean.getMetaObject().getCidsBean()");
+        LOGGER.debug("comparing CidsBean from CidsBean.getMetaObject().getCidsBean() from json against MetaObjects from legacy server and from rest server");
         this.compareCidsBeans(cidsBeanFromJson.getMetaObject().getBean(),
                 cidsBeanFromLegacyServer.getMetaObject().getBean(),
                 cidsBeanFromRestServer.getMetaObject().getBean());
