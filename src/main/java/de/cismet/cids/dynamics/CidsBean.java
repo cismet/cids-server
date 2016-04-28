@@ -745,6 +745,7 @@ public class CidsBean implements PropertyChangeListener {
                                     arrayElement,
                                     zwischenTabellenKlasse.getAttributePolicy());
                             dummyOA.setParentObject(dummy);
+                            dummyOA.setClassKey(mai.getForeignKeyClassId() + '@' + zwischenTabellenKlasse.getDomain());
                             dummyOA.setChanged(true);
                             dummy.addAttribute(dummyOA);
                             arrayElement.setReferencingObjectAttribute(dummyOA);
