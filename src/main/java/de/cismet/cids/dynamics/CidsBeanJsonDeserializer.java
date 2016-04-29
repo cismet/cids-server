@@ -27,6 +27,9 @@ import java.math.BigDecimal;
 
 import java.sql.Timestamp;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -57,6 +60,8 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
 
     private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
             CidsBeanJsonDeserializer.class);
+
+    protected static final DateFormat SQL_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
     //~ Constructors -----------------------------------------------------------
 
@@ -260,52 +265,60 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                         final Class attrClass = BlacklistClassloading.forName(cb.getMetaObject()
                                         .getAttributeByFieldName(
                                             prop).getMai().getJavaclassname());
+
                         if (attrClass.equals(String.class)) {
                             cb.quiteSetProperty(prop, (String)value);
                         } else if (attrClass.equals(Geometry.class)) {
                             try {
                                 cb.quiteSetProperty(prop, fromEwkt((String)value));
                             } catch (Exception e) {
-                                throw new RuntimeException("problem during processing of " + prop + "("
+                                throw new RuntimeException("problem during processing of '" + prop + "' ("
                                             + attrClass + "). value:"
                                             + value,
+                                    e);
+                            }
+                        } else if (attrClass.equals(java.sql.Date.class)) {
+                            try {
+                                final java.util.Date javaDate = SQL_DATE_FORMAT.parse(value.toString());
+                                final java.sql.Date sqlDate = new java.sql.Date(javaDate.getTime());
+                                cb.quiteSetProperty(prop, sqlDate);
+                            } catch (Exception e) {
+                                throw new RuntimeException("cannot set java.sql.Date for '" + prop + "' (" + attrClass
+                                            + ")",
                                     e);
                             }
                         } else {
                             try {
                                 cb.quiteSetProperty(prop, value);
                             } catch (Exception e) {
-                                throw new RuntimeException("problem bei " + prop + "(" + attrClass + ")",
+                                throw new RuntimeException("cannot set property '" + prop + "' (" + attrClass + ")",
                                     e);
                             }
                         }
+                    } else if (value instanceof Collection) {
+                        cb.getBeanCollectionProperty(prop).addAll((Collection)value);
+
+                        // insert does not work for arrays if statii are not set
+                        // -> WHY?!
+                        // // Clean up
+                        // // No changed flags shall be true.
+                        // // All statuses shall be NO_STATUS
+                        // final ObjectAttribute oa = cb.getMetaObject().getAttributeByFieldName(prop);
+                        // oa.setChanged(false);
+                        // final MetaObject dummy = (MetaObject)oa.getValue();
+                        // if (dummy != null) {
+                        // dummy.setChanged(false);
+                        // dummy.forceStatus(MetaObject.NO_STATUS);
+                        // dummy.setStatus(MetaObject.NO_STATUS);
+                        // final ObjectAttribute[] entries = dummy.getAttribs();
+                        // for (final ObjectAttribute entry : entries) {
+                        // entry.setChanged(false);
+                        // ((MetaObject)entry.getValue()).forceStatus(MetaObject.NO_STATUS);
+                        // ((MetaObject)entry.getValue()).setChanged(false);
+                        // }
+                        // }
                     } else {
-                        if (value instanceof Collection) {
-                            cb.getBeanCollectionProperty(prop).addAll((Collection)value);
-
-                            // insert does not work for arrays if statii are not set
-                            // -> WHY?!
-
-                            // // Clean up
-                            // // No changed flags shall be true.
-                            // // All statuses shall be NO_STATUS
-                            // final ObjectAttribute oa = cb.getMetaObject().getAttributeByFieldName(prop);
-                            // oa.setChanged(false);
-                            // final MetaObject dummy = (MetaObject)oa.getValue();
-                            // if (dummy != null) {
-                            // dummy.setChanged(false);
-                            // dummy.forceStatus(MetaObject.NO_STATUS);
-                            // dummy.setStatus(MetaObject.NO_STATUS);
-                            // final ObjectAttribute[] entries = dummy.getAttribs();
-                            // for (final ObjectAttribute entry : entries) {
-                            // entry.setChanged(false);
-                            // ((MetaObject)entry.getValue()).forceStatus(MetaObject.NO_STATUS);
-                            // ((MetaObject)entry.getValue()).setChanged(false);
-                            // }
-                            // }
-                        } else {
-                            cb.quiteSetProperty(prop, value);
-                        }
+                        cb.quiteSetProperty(prop, value);
                     }
                 }
                 cb.getMetaObject().setID((cb.getPrimaryKeyValue() != null) ? (int)cb.getPrimaryKeyValue() : -1);
