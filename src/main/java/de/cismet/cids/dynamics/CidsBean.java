@@ -667,8 +667,6 @@ public class CidsBean implements PropertyChangeListener {
             final int index,
             final int length) {
         final List<CidsBean> old = new ArrayList<CidsBean>(list);
-        // new list or list modified?
-        boolean arrayIsNew = false;
 
         for (int i = index; i < (index + length); ++i) {
             try {
@@ -686,7 +684,6 @@ public class CidsBean implements PropertyChangeListener {
                         // Anlegen eines Dummy-Objektes
                         MetaObject dummy = (MetaObject)oa.getValue();
                         if (dummy == null) {
-                            arrayIsNew = true;
                             final Sirius.server.localserver.object.Object dummyO =
                                 new Sirius.server.localserver.object.DefaultObject(
                                     getMetaObject().getID(),
@@ -699,19 +696,15 @@ public class CidsBean implements PropertyChangeListener {
                             oa.setChanged(true);
                         }
 
-                        // arrayAttributeId == key in LinkedHashMap!
-                        // mimic behaviour of ObjectFactory if a *new* array is created
-                        // otherwise let DefaultMetaObject auto-generate attribute ids
-                        final String arrayAttributeId = arrayIsNew ? ((mai.getId() + ".") + i) : null;
-
                         // 1:n Beziehung??
                         if (oa.isVirtualOneToManyAttribute()) {
-                            // final ObjectAttribute[] arrayElementAttrs = dummy.getAttribs();
+                            final ObjectAttribute[] arrayElementAttrs = dummy.getAttribs();
+
                             dummy.setStatus(MetaObject.MODIFIED);
                             final ObjectAttribute entryToAddOA = new ObjectAttribute(
-                                    arrayAttributeId,
+                                    null,
                                     mai,
-                                    cb.getPrimaryKeyValue(),
+                                    -1,
                                     cb.getMetaObject(),
                                     cb.getMetaObject().getMetaClass().getAttributePolicy());
                             entryToAddOA.setParentObject(dummy);
@@ -743,16 +736,15 @@ public class CidsBean implements PropertyChangeListener {
 
                             // hinzufuegen eines Attributes, das auf das angelegte Arrayelement zeigt
                             dummy.setStatus(MetaObject.MODIFIED);
-                            // final ObjectAttribute[] attribs = dummy.getAttribs();
+                            final ObjectAttribute[] attribs = dummy.getAttribs();
 
                             final ObjectAttribute dummyOA = new ObjectAttribute(
-                                    arrayAttributeId,
+                                    null,
                                     mai,
-                                    cb.getPrimaryKeyValue(),
+                                    -1,
                                     arrayElement,
                                     zwischenTabellenKlasse.getAttributePolicy());
                             dummyOA.setParentObject(dummy);
-                            dummyOA.setClassKey(mai.getForeignKeyClassId() + "@" + zwischenTabellenKlasse.getDomain());
                             dummyOA.setChanged(true);
                             dummy.addAttribute(dummyOA);
                             arrayElement.setReferencingObjectAttribute(dummyOA);

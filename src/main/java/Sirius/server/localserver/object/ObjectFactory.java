@@ -588,7 +588,12 @@ public final class ObjectFactory extends Shutdown {
                 oAttr.setClassKey(mai.getForeignKeyClassId() + "@" + classCache.getProperties().getServerName()); // NOI18N
 
                 if (!mai.isVirtual()) {
-                    oAttr.setJavaType(mai.getJavaclassname());
+                    // spaltenindex f\u00FCr sql metadaten abfragen
+                    final int colNo = rs.findColumn(fieldName);
+
+                    // java type retrieved by getObject
+                    final String javaType = rs.getMetaData().getColumnClassName(colNo);
+                    oAttr.setJavaType(javaType);
                 } else {
                     oAttr.setJavaType(java.lang.Object.class.getCanonicalName());
                 }

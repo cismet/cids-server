@@ -5,6 +5,11 @@
 *              ... and it just works.
 *
 ****************************************************/
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package de.cismet.cidsx.server.api.types.legacy;
 
 import Sirius.server.middleware.types.AbstractAttributeRepresentationFormater;
@@ -47,7 +52,7 @@ public class CidsBeanFactory {
     private static final Pattern OBJECTID_PATTERN = Pattern.compile("([^/?]+)(?=/?(?:$|\\?))");
 
     private static final transient Logger LOG = Logger.getLogger(CidsBeanFactory.class);
-    private static final CidsBeanFactory FACTORY = new CidsBeanFactory();
+    private static final CidsBeanFactory factory = new CidsBeanFactory();
 
     //~ Instance fields --------------------------------------------------------
 
@@ -69,7 +74,7 @@ public class CidsBeanFactory {
      * @return  DOCUMENT ME!
      */
     public static final CidsBeanFactory getFactory() {
-        return FACTORY;
+        return factory;
     }
 
     /**
