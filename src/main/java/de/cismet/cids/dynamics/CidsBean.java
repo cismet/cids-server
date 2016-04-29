@@ -702,9 +702,11 @@ public class CidsBean implements PropertyChangeListener {
 
                             dummy.setStatus(MetaObject.MODIFIED);
                             final ObjectAttribute entryToAddOA = new ObjectAttribute(
-                                    null,
+                                    mai.getId()
+                                            + "."
+                                            + i,
                                     mai,
-                                    -1,
+                                    cb.getPrimaryKeyValue(),
                                     cb.getMetaObject(),
                                     cb.getMetaObject().getMetaClass().getAttributePolicy());
                             entryToAddOA.setParentObject(dummy);
@@ -739,9 +741,11 @@ public class CidsBean implements PropertyChangeListener {
                             final ObjectAttribute[] attribs = dummy.getAttribs();
 
                             final ObjectAttribute dummyOA = new ObjectAttribute(
-                                    null,
+                                    mai.getId()
+                                            + "."
+                                            + i,
                                     mai,
-                                    -1,
+                                    cb.getPrimaryKeyValue(),
                                     arrayElement,
                                     zwischenTabellenKlasse.getAttributePolicy());
                             dummyOA.setParentObject(dummy);
