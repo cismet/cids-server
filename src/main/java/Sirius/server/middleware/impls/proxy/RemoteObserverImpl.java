@@ -90,7 +90,7 @@ public class RemoteObserverImpl {
                 if (localServer instanceof InfoService) {
                     final InfoService is = (InfoService)localServer;
                     MetaClassCache.getInstance().setAllClasses(is.getAllClassInformation(), localServers[i].getName());
-                    System.out.println(localServers[i].getName() + " added to the MetaClassCache");
+                    System.out.println(localServers[i].getName() + " added to the MetaClassCache [by observed change]");
                 }
             }
             if (logger.isDebugEnabled()) {
