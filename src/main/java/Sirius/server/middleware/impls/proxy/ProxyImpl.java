@@ -7,9 +7,11 @@
 ****************************************************/
 package Sirius.server.middleware.impls.proxy;
 
+import Sirius.server.MetaClassCache;
 import Sirius.server.Server;
 import Sirius.server.ServerType;
 import Sirius.server.localserver.method.MethodMap;
+import Sirius.server.middleware.interfaces.domainserver.InfoService;
 import Sirius.server.middleware.types.HistoryObject;
 import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.Link;
@@ -115,6 +117,12 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
 
                 final Remote localServer = Naming.lookup(lookupString);
                 activeLocalServers.put(name, localServer);
+                if (localServer instanceof InfoService) {
+                    final InfoService is = (InfoService)localServer;
+                    MetaClassCache.getInstance().setAllClasses(is.getAllClassInformation(), localServers[i].getName());
+                    System.out.println(localServers[i].getName()
+                                + " added to the MetaClassCache [by already existing servers]");
+                }
             }
 
             register();
