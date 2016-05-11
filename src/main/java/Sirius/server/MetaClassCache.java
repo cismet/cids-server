@@ -94,7 +94,7 @@ public class MetaClassCache {
      * @return  DOCUMENT ME!
      */
     public MetaClass getMetaClass(final String domain, final String tableName) {
-        return (MetaClass)allTableNameClassCaches.get(domain).get(tableName);
+        return (MetaClass)allTableNameClassCaches.get(domain).get(tableName.toLowerCase());
     }
 
     /**
