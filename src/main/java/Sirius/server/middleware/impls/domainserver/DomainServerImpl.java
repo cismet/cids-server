@@ -135,7 +135,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             this.properties = properties;
             final String fileName;
             if (((fileName = properties.getLog4jPropertyFile()) != null) && !fileName.equals("")) { // NOI18N
-                PropertyConfigurator.configure(fileName);
+                PropertyConfigurator.configureAndWatch(fileName, 10000);
             }
 
             serverInfo = new Server(
@@ -1084,7 +1084,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         if ((log4jPropFile == null) || !log4jPropFile.isFile() || !log4jPropFile.canRead()) {
             throw new IllegalArgumentException("serverproperties provided invalid log4j config file: " + log4jPropFile); // NOI18N
         } else {
-            PropertyConfigurator.configure(log4jPropFile.getAbsolutePath());
+            PropertyConfigurator.configureAndWatch(log4jPropFile.getAbsolutePath(), 10000);
         }
     }
 

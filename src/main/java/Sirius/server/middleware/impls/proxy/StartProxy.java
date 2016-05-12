@@ -82,7 +82,7 @@ public final class StartProxy {
         final String fileName = properties.getLog4jPropertyFile();
         if ((fileName != null) && !fileName.isEmpty()) {
             try {
-                PropertyConfigurator.configure(fileName);
+                PropertyConfigurator.configureAndWatch(fileName, 10000);
             } catch (final Exception e) {
                 LOG.warn("could not initialise Log4J", e); // NOI18N
             }
