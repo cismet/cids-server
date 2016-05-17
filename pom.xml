@@ -223,13 +223,13 @@
             <artifactId>testcontainers</artifactId>
             <!-- windows: use 1.0.2-SNAPSHOT from https://github.com/v-schulz/testcontainers-java/tree/windows-support -->
             <!--<version>1.0.2-SNAPSHOT</version>-->
-            <version>1.0.4</version>
+            <version>1.0.5</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
-            <version>1.0.2</version>
+            <version>1.0.5</version>
             <scope>test</scope>
         </dependency>
         <dependency>

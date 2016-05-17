@@ -60,6 +60,7 @@ import org.testcontainers.containers.DockerComposeContainer;
  */
 @RunWith(DataProviderRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+//@Ignore
 public class RESTfulInterfaceTest extends TestBase {
 
     protected final static Logger LOGGER = Logger.getLogger(RESTfulInterfaceTest.class);
@@ -443,6 +444,14 @@ public class RESTfulInterfaceTest extends TestBase {
         LOGGER.info("testing getAndCompareMetaClasses (" + classId + ") passed!");
     }
 
+    /**
+     * FIXME: test fails
+     * https://github.com/cismet/cids-server-rest-legacy/issues/32
+     * https://github.com/cismet/cids-server/issues/166
+     *
+     * @param cidsBeanJson
+     * @throws Exception
+     */
     @Test
     @UseDataProvider("getCidsBeansJson")
     public void test02getAndCompareMetaObjects(final String cidsBeanJson) throws Exception {
