@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.testcontainers.containers.DockerComposeContainer;
@@ -20,6 +21,7 @@ import org.testcontainers.containers.DockerComposeContainer;
  *
  * @author Pascal Dihé <pascal.dihe@cismet.de>
  */
+@Ignore
 public class UserServiceTest extends TestBase {
 
     protected final static Logger LOGGER = Logger.getLogger(UserServiceTest.class);

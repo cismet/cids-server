@@ -272,7 +272,7 @@ public class RESTfulInterfaceTest extends TestBase {
     }
 
     /**
-     * Unfortunately, this data provicer method is called before the @ClassRule
+     * Unfortunately, this data provider method is called before the @ClassRule
      * and before @BeforeClass! Therefore intitialisation of CidsBeans from JSON
      * (located in test resources package) is delegated to initCidsBeansJson();
      *
@@ -376,7 +376,7 @@ public class RESTfulInterfaceTest extends TestBase {
         LOGGER.debug("testing countDbEntities(" + tableName + ")");
 
         try {
-            final int count = this.countDbEntities(tableName);
+            final int count = countDbEntities(connection, tableName);
             // URL_BASE is 0
 //            Assert.assertTrue(tableName + " entities available in integration base",
 //                    count > 0);
@@ -653,7 +653,7 @@ public class RESTfulInterfaceTest extends TestBase {
         LOGGER.debug("testing countDbEntitiesAfterUpdate(" + tableName + ")");
 
         try {
-            final int count = this.countDbEntities(tableName);
+            final int count = this.countDbEntities(connection, tableName);
             // e.g. URL_BASe is null
 //            Assert.assertTrue(tableName + " entities available in integration base",
 //                    count > 0);
@@ -2700,7 +2700,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 maiFromRestServer.isOptional());
     }
 
-    protected int countDbEntities(final String tableName) throws SQLException {
+    protected static int countDbEntities(final Connection connection, final String tableName) throws SQLException {
         final Statement countStatement = connection.createStatement();
         final ResultSet resultSet = countStatement.executeQuery("SELECT count(*) FROM " + tableName);
         int count = 0;
