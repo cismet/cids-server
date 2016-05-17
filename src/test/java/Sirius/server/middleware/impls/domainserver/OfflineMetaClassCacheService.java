@@ -17,7 +17,7 @@ import java.util.Scanner;
 import org.apache.log4j.Logger;
 
 /**
- * Offline Meta Class Cache Service initilaited with MetaClasses loadeded from
+ * Offline Meta Class Cache Service initialized with MetaClasses loadeded from
  * JSON CidsBeanInfo objects
  *
  * @author Pascal Dihé <pascal.dihe@cismet.de>
