@@ -18,9 +18,7 @@ import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
@@ -31,7 +29,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
@@ -64,6 +61,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
     protected static User user = null;
     protected static boolean connectionFailed = false;
     protected static Map<String, Integer> dbEntitiesCount = new HashMap<String, Integer>();
+    protected static Map<String, MetaObject> newMetaObjects = new HashMap<String, MetaObject>();
 
     /**
      * This ClassRule is executed only once before any test run (@Test method)
@@ -203,6 +201,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
+    // <editor-fold defaultstate="collapsed" desc="DATA PROVIDERS ----------------------------------------------------------">
     @DataProvider
     public final static String[] getMetaClassTableNames() throws Exception {
 
@@ -273,6 +272,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         };
     }
 
+    // </editor-fold>
     @Test
     @UseDataProvider("getMetaClassTableNames")
     public void test00integrationBase00countDbEntities(final String tableName) throws Exception {
@@ -582,6 +582,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
+    // CLASS SERVICE TEST ------------------------------------------------------
     @Test
     public void test03classService00getClasses() throws Exception {
         LOGGER.debug("[03.00] testing getClasses");
@@ -653,7 +654,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @throws Exception
      */
     @Test
-    @Ignore
     @UseDataProvider("getMetaClassIds")
     public void test03classService03getInstance(final Integer classId) throws Exception {
         LOGGER.debug("[03.03] testing getInstance(" + classId + ")");
@@ -662,11 +662,9 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             Assert.assertNotNull("meta class '" + classId + "' from meta class cache not null", metaClass);
 
             // FIXME: ObjectFactory().getInstance() fails with NPE for Classes SPH_SPIELHALLE and SPH_Betreiber
-            final Iterator iter = Collections.synchronizedCollection(metaClass.getMemberAttributeInfos().values()).iterator();
-            final MetaObject metaObjectFromService = connector.getInstance(user, metaClass);
-            Assert.assertNotNull("new meta object of meta class '" + classId + "' from service not null",
-                    metaObjectFromService);
-
+            //            final MetaObject metaObjectFromService = connector.getInstance(user, metaClass);
+            //            Assert.assertNotNull("new meta object of meta class '" + classId + "' from service not null",
+            //                    metaObjectFromService);
             final MetaObject metaObjectFromClass = metaClass.getEmptyInstance();
             Assert.assertNotNull("new meta object of meta class '" + classId + "' from meta class not null",
                     metaObjectFromClass);
@@ -685,9 +683,142 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
+    // OBJECT SERVICE TEST -----------------------------------------------------
+    @Test
+    @UseDataProvider("getMetaClassIds")
+    public void test04objectService00getMetaObjects(final Integer classId) throws Exception {
+        LOGGER.debug("[04.00] testing getMetaObjects(" + classId + ")");
+        try {
+            final MetaClass metaClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), classId);
+
+            Assert.assertNotNull("meta class '" + classId + "' from meta class cache not null", metaClass);
+            Assert.assertTrue(metaClass.getTableName() + " entities counted",
+                    dbEntitiesCount.containsKey(metaClass.getTableName()));
+
+            final int count = dbEntitiesCount.get(metaClass.getTableName());
+
+            final String query = "SELECT " + metaClass.getID() + ", " + metaClass.getTableName() + "."
+                    + metaClass.getPrimaryKey() + " FROM " + metaClass.getTableName() + " ORDER BY "
+                    + metaClass.getTableName() + "."
+                    + metaClass.getPrimaryKey() + " ASC";
+
+            final MetaObject[] metaObjects = connector.getMetaObject(user, query);
+            Assert.assertEquals(count + " '" + metaClass.getTableName() + "' entities in Integration Base",
+                    count, metaObjects.length);
+
+            for (int i = 0; i < metaObjects.length; i++) {
+                final MetaObject metaObject = connector.getMetaObject(
+                        user, classId, metaObjects[i].getId(), user.getDomain());
+
+                this.compareMetaObjects(metaObjects[i], metaObject, false, false);
+            }
+
+            LOGGER.info("getMetaObjects(" + classId + ") test passed!");
+
+        } catch (AssertionError ae) {
+            LOGGER.error("getMetaObjects(" + classId + ") test failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during getMetaObjects(" + classId + "): " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
+    @Test
+    @UseDataProvider("getMetaClassIds")
+    public void test04objectService01insertMetaObject(final Integer classId) throws Exception {
+        LOGGER.debug("[04.01] testing insertMetaObject(" + classId + ")");
+        try {
+            final MetaClass metaClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), classId);
+
+            Assert.assertNotNull("meta class '" + classId + "' from meta class cache not null", metaClass);
+            Assert.assertTrue(metaClass.getTableName() + " entities counted",
+                    dbEntitiesCount.containsKey(metaClass.getTableName()));
+
+            final int expectedCount = dbEntitiesCount.get(metaClass.getTableName()) + 1;
+
+            final MetaObject newMetaObject = metaClass.getEmptyInstance();
+            Assert.assertNotNull("new meta object of meta class '" + classId + "' not null",
+                    newMetaObject);
+
+            final MetaObject insertedMetaObject = connector.insertMetaObject(user, newMetaObject, user.getDomain());
+            Assert.assertNotNull("inserted meta object of meta class '" + classId + "' not null",
+                    insertedMetaObject);
+
+            newMetaObjects.put(metaClass.getTableName(), insertedMetaObject);
+
+            final int actualCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, metaClass.getTableName());
+            Assert.assertEquals(expectedCount + " '" + metaClass.getTableName() + "' entities in Integration Base",
+                    expectedCount, actualCount);
+
+            this.compareMetaObjects(newMetaObject, insertedMetaObject, true, false);
+
+            LOGGER.info("insertMetaObject(" + classId + ") test passed!");
+
+        } catch (AssertionError ae) {
+            LOGGER.error("insertMetaObject(" + classId + ") test failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during insertMetaObject(" + classId + "): " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
+    @Test
+    @UseDataProvider("getMetaClassIds")
+    public void test04objectService02deleteMetaObject(final Integer classId) throws Exception {
+        LOGGER.debug("[04.01] testing deleteMetaObject(" + classId + ")");
+
+        try {
+
+            final MetaClass metaClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), classId);
+
+            Assert.assertNotNull("meta class '" + classId + "' from meta class cache not null", metaClass);
+            Assert.assertTrue(metaClass.getTableName() + " entities counted",
+                    dbEntitiesCount.containsKey(metaClass.getTableName()));
+
+            final int expectedCount = dbEntitiesCount.get(metaClass.getTableName());
+            Assert.assertTrue("new '" + metaClass.getTableName() + "' entity created",
+                    newMetaObjects.containsKey(metaClass.getTableName()));
+
+            final MetaObject metaObject = newMetaObjects.remove(metaClass.getTableName());
+            final int objectId = connector.deleteMetaObject(user, metaObject, user.getDomain());
+
+            Assert.assertEquals("'" + metaClass.getTableName() + "' entity deleted",
+                    metaObject.getID(), objectId);
+            final int actualCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, metaClass.getTableName());
+
+            Assert.assertEquals(expectedCount + " '" + metaClass.getTableName() + "' entities in Integration Base",
+                    expectedCount, actualCount);
+
+            LOGGER.info("deleteMetaObject(" + classId + ") test passed!");
+
+        } catch (AssertionError ae) {
+            LOGGER.error("deleteMetaObject(" + classId + ") test failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during deleteMetaObject(" + classId + "): " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="HELPER METHODS ----------------------------------------------------------">
+    /**
+     * Compres NMetaObjects and thier attributes. If compareChanged or
+     * compareNew, are true, some fields are not compared
+     *
+     * @param expectedMetaObject
+     * @param actualMetaObject
+     * @param compareChanged
+     * @param compareNew
+     *
+     * @throws AssertionError
+     */
     protected void compareMetaObjects(
             final MetaObject expectedMetaObject,
-            final MetaObject actualMetaObject) throws AssertionError {
+            final MetaObject actualMetaObject,
+            final boolean compareChanged,
+            final boolean compareNew) throws AssertionError {
 
         final int pk = expectedMetaObject.getId();
         final String name = expectedMetaObject.getAttribute("name") != null
@@ -722,25 +853,24 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 expectedMetaObject.getGroup(),
                 actualMetaObject.getGroup());
 
-        Assert.assertEquals("expected MetaObject" + name + "].getId() matches actual MetaObject (" + pk + ")",
-                expectedMetaObject.getId(),
-                actualMetaObject.getId());
+        // don't compare ids of new objects (id is -1 before insert!)
+        if (!compareNew) {
+            Assert.assertEquals("expected MetaObject" + name + "].getId() matches actual MetaObject (" + pk + ")",
+                    expectedMetaObject.getId(),
+                    actualMetaObject.getId());
 
-        Assert.assertEquals("expected MetaObject" + name + "].getID() matches actual MetaObject (" + pk + ")",
-                expectedMetaObject.getID(),
-                actualMetaObject.getID());
+            Assert.assertEquals("expected MetaObject" + name + "].getID() matches actual MetaObject (" + pk + ")",
+                    expectedMetaObject.getID(),
+                    actualMetaObject.getID());
 
-        Assert.assertEquals("expected MetaObject" + name + "].getKey() matches actual MetaObject (" + pk + ")",
-                expectedMetaObject.getKey(),
-                actualMetaObject.getKey());
+            Assert.assertEquals("expected MetaObject" + name + "].getKey() matches actual MetaObject (" + pk + ")",
+                    expectedMetaObject.getKey(),
+                    actualMetaObject.getKey());
+        }
 
         Assert.assertEquals("expected MetaObject" + name + "].getName() matches actual MetaObject (" + pk + ")",
                 expectedMetaObject.getName(),
                 actualMetaObject.getName());
-
-        Assert.assertEquals("expected MetaObject" + name + "].getPropertyString() matches actual MetaObject (" + pk + ")",
-                expectedMetaObject.getPropertyString(),
-                actualMetaObject.getPropertyString());
 
         Assert.assertEquals("expected MetaObject" + name + "].getRenderer() matches actual MetaObject (" + pk + ")",
                 expectedMetaObject.getRenderer(),
@@ -750,18 +880,25 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 expectedMetaObject.getSimpleEditor(),
                 actualMetaObject.getSimpleEditor());
 
-        Assert.assertEquals("expected MetaObject" + name + "].getStatus() matches actual MetaObject (" + pk + ")",
-                expectedMetaObject.getStatus(),
-                actualMetaObject.getStatus());
+        // id and status of new / changed objects do not match remotely objects inserted / upated
+        if (!compareNew && !compareChanged) {
+            Assert.assertEquals("expected MetaObject" + name + "].getPropertyString() matches actual MetaObject (" + pk + ")",
+                    expectedMetaObject.getPropertyString(),
+                    actualMetaObject.getPropertyString());
 
-        Assert.assertEquals("expected MetaObject" + name + "].getStatusDebugString() matches actual MetaObject (" + pk + ")",
-                expectedMetaObject.getStatusDebugString(),
-                actualMetaObject.getStatusDebugString());
+            Assert.assertEquals("expected MetaObject" + name + "].getStatus() matches actual MetaObject (" + pk + ")",
+                    expectedMetaObject.getStatus(),
+                    actualMetaObject.getStatus());
+
+            Assert.assertEquals("expected MetaObject" + name + "].getStatusDebugString() matches actual MetaObject (" + pk + ")",
+                    expectedMetaObject.getStatusDebugString(),
+                    actualMetaObject.getStatusDebugString());
+        }
 
         final ObjectAttribute[] objectAttributeFromLegacyServer = expectedMetaObject.getAttribs();
         final ObjectAttribute[] objectAttributeFromRestServer = actualMetaObject.getAttribs();
 
-        Assert.assertEquals("expected MetaObject" + name + "].getAttribs() size from rest server matches MetaObject from rest server (" + pk + ")",
+        Assert.assertEquals("expected MetaObject" + name + "].getAttribs() matches actual MetaObject.getAttribs()  (" + pk + ")",
                 objectAttributeFromLegacyServer.length,
                 objectAttributeFromRestServer.length);
 
@@ -769,14 +906,18 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             this.compareObjectAttributes(
                     objectAttributeFromLegacyServer[i],
                     objectAttributeFromRestServer[i],
-                    pk);
+                    pk,
+                    compareChanged,
+                    compareNew);
         }
     }
 
     protected void compareObjectAttributes(
             final ObjectAttribute expectedObjectAttribute,
             final ObjectAttribute actualObjectAttribute,
-            final int pk) throws AssertionError {
+            final int pk,
+            final boolean compareChanged,
+            final boolean compareNew) throws AssertionError {
 
         final String name = expectedObjectAttribute.getName();
 
@@ -792,13 +933,16 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 expectedObjectAttribute.getDescription(),
                 actualObjectAttribute.getDescription());
 
-        Assert.assertEquals("expected objectAttribute[" + name + "].getID()  matches actual ObjectAttribute  (classId: " + pk + ")",
-                expectedObjectAttribute.getID(),
-                actualObjectAttribute.getID());
+        // id and status of new / changed objects do not match remotely objects inserted / upated
+        if (!compareNew) {
+            Assert.assertEquals("expected objectAttribute[" + name + "].getID()  matches actual ObjectAttribute  (classId: " + pk + ")",
+                    expectedObjectAttribute.getID(),
+                    actualObjectAttribute.getID());
 
-        Assert.assertEquals("expected objectAttribute[" + name + "].getKey()  matches actual ObjectAttribute  (classId: " + pk + ")",
-                expectedObjectAttribute.getKey(),
-                actualObjectAttribute.getKey());
+            Assert.assertEquals("expected objectAttribute[" + name + "].getKey()  matches actual ObjectAttribute  (classId: " + pk + ")",
+                    expectedObjectAttribute.getKey(),
+                    actualObjectAttribute.getKey());
+        }
 
         Assert.assertEquals("expected objectAttribute[" + name + "].getJavaType()  matches actual ObjectAttribute  (classId: " + pk + ")",
                 expectedObjectAttribute.getJavaType(),
@@ -816,9 +960,12 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 expectedObjectAttribute.isArray(),
                 actualObjectAttribute.isArray());
 
-        Assert.assertEquals("expected objectAttribute[" + name + "].isChanged()  matches actual ObjectAttribute  (classId: " + pk + ")",
-                expectedObjectAttribute.isChanged(),
-                actualObjectAttribute.isChanged());
+        // id and status of new / changed objects do not match remotely objects inserted / upated
+        if (!compareNew && !compareChanged) {
+            Assert.assertEquals("expected objectAttribute[" + name + "].isChanged()  matches actual ObjectAttribute  (classId: " + pk + ")",
+                    expectedObjectAttribute.isChanged(),
+                    actualObjectAttribute.isChanged());
+        }
 
         Assert.assertEquals("expected objectAttribute[" + name + "].isOptional()  matches actual ObjectAttribute  (classId: " + pk + ")",
                 expectedObjectAttribute.isOptional(),
@@ -891,7 +1038,9 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
                 this.compareMetaObjects(
                         (MetaObject) expectedObjectAttributeValue,
-                        (MetaObject) actualObjectAttributeValue);
+                        (MetaObject) actualObjectAttributeValue,
+                        compareNew,
+                        compareChanged);
 
             } else if (expectedObjectAttributeValueClass.isPrimitive()) {
                 Assert.assertEquals("actual objectAttribute[" + name + "] value matches (classId: " + pk + ")",
@@ -997,4 +1146,5 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 expectedMemberAttributeInfo.isOptional(),
                 actualMemberAttributeInfo.isOptional());
     }
+    // </editor-fold>
 }
