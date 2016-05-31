@@ -17,8 +17,10 @@ import static de.cismet.cids.integrationtests.TestEnvironment.SERVER_CONTAINER;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
@@ -62,6 +64,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
     protected static boolean connectionFailed = false;
     protected static Map<String, Integer> dbEntitiesCount = new HashMap<String, Integer>();
     protected static Map<String, MetaObject> newMetaObjects = new HashMap<String, MetaObject>();
+    protected static Map<String, List<Integer>> metaObjectIds = new HashMap<String, List<Integer>>();
 
     /**
      * This ClassRule is executed only once before any test run (@Test method)
@@ -684,6 +687,12 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
     }
 
     // OBJECT SERVICE TEST -----------------------------------------------------
+    /**
+     * Test getMetaObjects by uery and getMetaObject by id
+     *
+     * @param classId
+     * @throws Exception
+     */
     @Test
     @UseDataProvider("getMetaClassIds")
     public void test04objectService00getMetaObjects(final Integer classId) throws Exception {
@@ -705,6 +714,10 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             final MetaObject[] metaObjects = connector.getMetaObject(user, query);
             Assert.assertEquals(count + " '" + metaClass.getTableName() + "' entities in Integration Base",
                     count, metaObjects.length);
+
+            final ArrayList metaObjectIdList = new ArrayList<Integer>(count);
+            metaObjectIds.put(metaClass.getTableName().toLowerCase(), metaObjectIdList);
+
             for (int i = 0; i < metaObjects.length; i++) {
                 Assert.assertNotNull("meta object #" + i + "/" + count + " for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") from meta class cache not null", metaObjects[i]);
                 final MetaObject metaObject = connector.getMetaObject(
@@ -713,6 +726,8 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         metaObject);
 
                 this.compareMetaObjects(metaObjects[i], metaObject, false, false);
+
+                metaObjectIdList.add(metaObject.getID());
             }
 
             LOGGER.info("getMetaObjects(" + classId + ") test passed!");
@@ -789,7 +804,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             if (!tableName.equalsIgnoreCase("URL_BASE")
                     && !tableName.equalsIgnoreCase("URL")
                     && !tableName.equalsIgnoreCase("sph_spielhalle_kategorien")) {
-                LOGGER.debug("[04.01] testing deleteMetaObject(" + classId + ")");
+                LOGGER.debug("[04.02] testing deleteMetaObject(" + classId + ")");
 
                 final int expectedCount = dbEntitiesCount.get(metaClass.getTableName());
                 Assert.assertTrue("new '" + metaClass.getTableName() + "' (id:" + classId + ") entity created",
@@ -813,6 +828,78 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             throw ae;
         } catch (Exception ex) {
             LOGGER.error("Unexpected error during deleteMetaObject(" + classId + "): " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
+    @Test
+    @UseDataProvider("getMetaClassIds")
+    public void test04objectService03updateMetaObjectNameProperty(final Integer classId) throws Exception {
+
+        try {
+            final MetaClass metaClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), classId);
+
+            Assert.assertNotNull("meta class '" + classId + "' from meta class cache not null", metaClass);
+            Assert.assertTrue(metaClass.getTableName() + " entities counted",
+                    dbEntitiesCount.containsKey(metaClass.getTableName()));
+
+            final String tableName = metaClass.getTableName();
+            if (!tableName.equalsIgnoreCase("URL_BASE")
+                    && !tableName.equalsIgnoreCase("URL")
+                    && !tableName.equalsIgnoreCase("sph_spielhalle_kategorien")) {
+
+                LOGGER.debug("[04.03] testing updateMetaObjectNameProperty(" + classId + ")");
+                final int expectedCount = dbEntitiesCount.get(tableName);
+
+                Assert.assertTrue("meta object ids for meta class '" + tableName + "' cached",
+                        metaObjectIds.containsKey(tableName.toLowerCase()));
+                final List<Integer> metaObjectIdList = metaObjectIds.get(tableName.toLowerCase());
+                Assert.assertEquals(expectedCount + " meta object ids for meta class '" + tableName + "' cached",
+                        expectedCount, metaObjectIdList.size());
+
+                int i = 0;
+                for (final int metaObjectId : metaObjectIdList) {
+                    i++;
+                    final MetaObject metaObject = connector.getMetaObject(
+                            user, metaObjectId, classId, user.getDomain());
+                    Assert.assertNotNull("meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") retrieved from server",
+                            metaObject);
+
+                    final ObjectAttribute nameAttribute = metaObject.getAttributeByFieldName("name");
+                    if (nameAttribute != null && nameAttribute.getValue() != null) {
+                        final String updatedObjectName = nameAttribute.getValue().toString() + " (updated)";
+                        nameAttribute.setValue(updatedObjectName);
+                        nameAttribute.setChanged(true);
+                        metaObject.setChanged(true);
+
+                        final int response = connector.updateMetaObject(user, metaObject, user.getDomain());
+                        Assert.assertEquals("meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") successfully updated from server",
+                                1, response);
+                        Assert.assertEquals("name of meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") changed to '" + updatedObjectName + "'",
+                                updatedObjectName, metaObject.getAttributeByFieldName("name").toString());
+
+                        final MetaObject updatedMetaObject = connector.getMetaObject(
+                                user, metaObjectId, classId, user.getDomain());
+                        Assert.assertNotNull("updated meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") retrieved from server",
+                                metaObject);
+
+                        this.compareMetaObjects(metaObject, updatedMetaObject, false, true);
+                    }
+                }
+
+                final int actualCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, metaClass.getTableName());
+                Assert.assertEquals(expectedCount + " '" + metaClass.getTableName() + "' entities in Integration Base",
+                        expectedCount, actualCount);
+
+                LOGGER.info("updateMetaObjectNameProperty(" + classId + ") test passed! "
+                        + expectedCount + " meta objects updated");
+            }
+
+        } catch (AssertionError ae) {
+            LOGGER.error("updateMetaObjectNameProperty(" + classId + ") test failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during updateMetaObjectNameProperty(" + classId + "): " + ex.getMessage(), ex);
             throw ex;
         }
     }
