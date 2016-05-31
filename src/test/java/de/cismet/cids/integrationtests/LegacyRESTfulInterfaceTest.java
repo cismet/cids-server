@@ -875,11 +875,11 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         final int response = connector.updateMetaObject(user, metaObject, user.getDomain());
                         Assert.assertEquals("meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") successfully updated from server",
                                 1, response);
-                        Assert.assertEquals("name of meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") changed to '" + updatedObjectName + "'",
-                                updatedObjectName, metaObject.getAttributeByFieldName("name").toString());
 
                         final MetaObject updatedMetaObject = connector.getMetaObject(
                                 user, metaObjectId, classId, user.getDomain());
+                        Assert.assertEquals("name of meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") changed to '" + updatedObjectName + "'",
+                                updatedObjectName, updatedMetaObject.getAttributeByFieldName("name").toString());
                         Assert.assertNotNull("updated meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") retrieved from server",
                                 metaObject);
 
@@ -927,72 +927,72 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 ? expectedMetaObject.getAttribute("name").toString()
                 : String.valueOf(pk);
 
-        Assert.assertEquals("expected MetaObject" + name + "].getClassID() matches actual MetaObject (" + pk + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getClassID() matches actual MetaObject (" + pk + ")",
                 expectedMetaObject.getClassID(),
                 actualMetaObject.getClassID());
 
-        Assert.assertEquals("expected MetaObject" + name + "].getClassKey() matches actual MetaObject (" + pk + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getClassKey() matches actual MetaObject (" + pk + ")",
                 expectedMetaObject.getClassKey(),
                 actualMetaObject.getClassKey());
 
-        Assert.assertEquals("expected MetaObject" + name + "].getComplexEditor() matches actual MetaObject (" + pk + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getComplexEditor() matches actual MetaObject (" + pk + ")",
                 expectedMetaObject.getComplexEditor(),
                 actualMetaObject.getComplexEditor());
 
-        Assert.assertEquals("expected MetaObject" + name + "].getDescription() matches actual MetaObject (" + pk + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getDescription() matches actual MetaObject (" + pk + ")",
                 expectedMetaObject.getDescription(),
                 actualMetaObject.getDescription());
 
-        Assert.assertEquals("expected MetaObject" + name + "].getDomain() matches actual MetaObject (" + pk + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getDomain() matches actual MetaObject (" + pk + ")",
                 expectedMetaObject.getDomain(),
                 actualMetaObject.getDomain());
 
-        Assert.assertEquals("expected MetaObject" + name + "].getEditor() matches actual MetaObject (" + pk + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getEditor() matches actual MetaObject (" + pk + ")",
                 expectedMetaObject.getEditor(),
                 actualMetaObject.getEditor());
 
-        Assert.assertEquals("expected MetaObject" + name + "].getGroup() matches actual MetaObject (" + pk + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getGroup() matches actual MetaObject (" + pk + ")",
                 expectedMetaObject.getGroup(),
                 actualMetaObject.getGroup());
 
         // don't compare ids of new objects (id is -1 before insert!)
         if (!compareNew) {
-            Assert.assertEquals("expected MetaObject" + name + "].getId() matches actual MetaObject (" + pk + ")",
+            Assert.assertEquals("expected MetaObject [" + name + "].getId() matches actual MetaObject (" + pk + ")",
                     expectedMetaObject.getId(),
                     actualMetaObject.getId());
 
-            Assert.assertEquals("expected MetaObject" + name + "].getID() matches actual MetaObject (" + pk + ")",
+            Assert.assertEquals("expected MetaObject [" + name + "].getID() matches actual MetaObject (" + pk + ")",
                     expectedMetaObject.getID(),
                     actualMetaObject.getID());
 
-            Assert.assertEquals("expected MetaObject" + name + "].getKey() matches actual MetaObject (" + pk + ")",
+            Assert.assertEquals("expected MetaObject [" + name + "].getKey() matches actual MetaObject (" + pk + ")",
                     expectedMetaObject.getKey(),
                     actualMetaObject.getKey());
         }
 
-        Assert.assertEquals("expected MetaObject" + name + "].getName() matches actual MetaObject (" + pk + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getName() matches actual MetaObject (" + pk + ")",
                 expectedMetaObject.getName(),
                 actualMetaObject.getName());
 
-        Assert.assertEquals("expected MetaObject" + name + "].getRenderer() matches actual MetaObject (" + pk + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getRenderer() matches actual MetaObject (" + pk + ")",
                 expectedMetaObject.getRenderer(),
                 actualMetaObject.getRenderer());
 
-        Assert.assertEquals("expected MetaObject" + name + "].getSimpleEditor() matches actual MetaObject (" + pk + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getSimpleEditor() matches actual MetaObject (" + pk + ")",
                 expectedMetaObject.getSimpleEditor(),
                 actualMetaObject.getSimpleEditor());
 
         // id and status of new / changed objects do not match remotely objects inserted / upated
         if (!compareNew && !compareChanged) {
-            Assert.assertEquals("expected MetaObject" + name + "].getPropertyString() matches actual MetaObject (" + pk + ")",
+            Assert.assertEquals("expected MetaObject [" + name + "].getPropertyString() matches actual MetaObject (" + pk + ")",
                     expectedMetaObject.getPropertyString(),
                     actualMetaObject.getPropertyString());
 
-            Assert.assertEquals("expected MetaObject" + name + "].getStatus() matches actual MetaObject (" + pk + ")",
+            Assert.assertEquals("expected MetaObject [" + name + "].getStatus() matches actual MetaObject (" + pk + ")",
                     expectedMetaObject.getStatus(),
                     actualMetaObject.getStatus());
 
-            Assert.assertEquals("expected MetaObject" + name + "].getStatusDebugString() matches actual MetaObject (" + pk + ")",
+            Assert.assertEquals("expected MetaObject [" + name + "].getStatusDebugString() matches actual MetaObject (" + pk + ")",
                     expectedMetaObject.getStatusDebugString(),
                     actualMetaObject.getStatusDebugString());
         }
@@ -1000,7 +1000,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         final ObjectAttribute[] objectAttributeFromLegacyServer = expectedMetaObject.getAttribs();
         final ObjectAttribute[] objectAttributeFromRestServer = actualMetaObject.getAttribs();
 
-        Assert.assertEquals("expected MetaObject" + name + "].getAttribs() matches actual MetaObject.getAttribs()  (" + pk + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getAttribs() matches actual MetaObject.getAttribs()  (" + pk + ")",
                 objectAttributeFromLegacyServer.length,
                 objectAttributeFromRestServer.length);
 
