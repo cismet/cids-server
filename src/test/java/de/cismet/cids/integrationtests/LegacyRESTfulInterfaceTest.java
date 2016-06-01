@@ -883,12 +883,13 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         Assert.assertNotNull("updated meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") retrieved from server",
                                 metaObject);
 
-                        // Don't compare SPH_SPIELHALLE recursively, because it contains a back reference
-                        // (through SPH_BETREIBER) -> comparison will fail!
+                        // Don't compare SPH_SPIELHALLE/SPH_BETREIBER recursively, because 
+                        // SPH_BETREIBER contains a back reference to SPH_SPIELHALLE -> comparison will fail!
                         if (tableName.equalsIgnoreCase("SPH_SPIELHALLE")) {
-                            this.compareMetaObjects(metaObject, updatedMetaObject, false, false, true);
+                            //compare only top level child objects and arrays
+                            this.compareMetaObjects(metaObject, updatedMetaObject, 1, false, true);
                         } else {
-                            this.compareMetaObjects(metaObject, updatedMetaObject, true, false, true);
+                            this.compareMetaObjects(metaObject, updatedMetaObject, Integer.MAX_VALUE, false, true);
                         }
                     }
                 }
@@ -928,7 +929,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             final boolean compareNew,
             final boolean compareChanged) throws AssertionError {
 
-        this.compareMetaObjects(expectedMetaObject, actualMetaObject, true, compareNew, compareChanged);
+        this.compareMetaObjects(expectedMetaObject, actualMetaObject, Integer.MAX_VALUE, compareNew, compareChanged);
     }
 
     /**
@@ -937,7 +938,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @param expectedMetaObject
      * @param actualMetaObject
-     * @param recursive process also object attributes
+     * @param recursive process also objects in object attributes down to this level
      * @param compareChanged
      * @param compareNew
      *
@@ -946,7 +947,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
     protected void compareMetaObjects(
             final MetaObject expectedMetaObject,
             final MetaObject actualMetaObject,
-            final boolean recursive,
+            final int recursionLevel,
             final boolean compareNew,
             final boolean compareChanged) throws AssertionError {
 
@@ -1025,19 +1026,19 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     actualMetaObject.getStatusDebugString());
         }
 
-        final ObjectAttribute[] objectAttributeFromLegacyServer = expectedMetaObject.getAttribs();
-        final ObjectAttribute[] objectAttributeFromRestServer = actualMetaObject.getAttribs();
+        final ObjectAttribute[] expectedObjectAttributes = expectedMetaObject.getAttribs();
+        final ObjectAttribute[] actualObjectAttributes = actualMetaObject.getAttribs();
 
         Assert.assertEquals("expected MetaObject [" + name + "].getAttribs() matches actual MetaObject.getAttribs()  (" + pk + ")",
-                objectAttributeFromLegacyServer.length,
-                objectAttributeFromRestServer.length);
+                expectedObjectAttributes.length,
+                actualObjectAttributes.length);
 
-        for (int i = 0; i < objectAttributeFromLegacyServer.length; i++) {
+        for (int i = 0; i < expectedObjectAttributes.length; i++) {
             this.compareObjectAttributes(
-                    objectAttributeFromLegacyServer[i],
-                    objectAttributeFromRestServer[i],
+                    expectedObjectAttributes[i],
+                    actualObjectAttributes[i],
                     pk,
-                    recursive,
+                    recursionLevel,
                     compareNew,
                     compareChanged);
         }
@@ -1060,7 +1061,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             final ObjectAttribute expectedObjectAttribute,
             final ObjectAttribute actualObjectAttribute,
             final int pk,
-            final boolean recursive,
+            final int recursionLevel,
             final boolean compareNew,
             final boolean compareChanged) throws AssertionError {
 
@@ -1176,7 +1177,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     expectedObjectAttributeValueClass,
                     actualObjectAttributeValueClass);
 
-            if (recursive && expectedObjectAttribute.referencesObject()) {
+            if (recursionLevel > 0 && expectedObjectAttribute.referencesObject()) {
                 Assert.assertTrue("expected objectAttribute[" + name + "] value is a MetaObject (classId: " + pk + ")",
                         MetaObject.class.isAssignableFrom(expectedObjectAttributeValueClass));
                 Assert.assertTrue("actual objectAttribute[" + name + "] value is a MetaObject (classId: " + pk + ")",
@@ -1186,7 +1187,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 this.compareMetaObjects(
                         (MetaObject) expectedObjectAttributeValue,
                         (MetaObject) actualObjectAttributeValue,
-                        true,
+                        recursionLevel-1,
                         compareNew,
                         compareChanged);
 
