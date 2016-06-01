@@ -15,6 +15,7 @@ import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import static de.cismet.cids.integrationtests.TestEnvironment.INTEGRATIONBASE_CONTAINER;
 import static de.cismet.cids.integrationtests.TestEnvironment.SERVER_CONTAINER;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
+import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
@@ -1079,7 +1081,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     && !tableName.equalsIgnoreCase("URL")
                     && !tableName.equalsIgnoreCase("sph_spielhalle_kategorien")) {
 
-                LOGGER.debug("[04.04] testing updateMetaObjectNamePropertyNoAttributeChangeFlag(" + classId + ")");
+                LOGGER.debug("[04.05] testing updateMetaObjectNamePropertyNoAttributeChangeFlag(" + classId + ")");
                 final int expectedCount = dbEntitiesCount.get(tableName);
 
                 Assert.assertTrue("meta object ids for meta class '" + tableName + "' cached",
@@ -1147,7 +1149,207 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
+    @Test
+    public void test04objectService06replaceMetaObjectObjectProperty() throws Exception {
+
+        try {
+            LOGGER.debug("[04.06] testing replaceMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
+
+            final List<MetaObject> kategorien = this.getAllMetaObjects("SPH_KATEGORIE");
+            final List<MetaObject> spielhallen = this.getAllMetaObjects("SPH_SPIELHALLE");
+
+            final int expectedCount = dbEntitiesCount.get("SPH_SPIELHALLE");
+
+            Assert.assertTrue("SPH_KATEGORIE meta objects available",
+                    !kategorien.isEmpty());
+            Assert.assertTrue("SPH_SPIELHALLE meta objects available",
+                    !spielhallen.isEmpty());
+
+            int i = 0;
+            for (final MetaObject metaObject : spielhallen) {
+                i++;
+
+                final ObjectAttribute objectAttribute = metaObject.getAttributeByFieldName("hauptkategorie");
+                Assert.assertNotNull("attribute 'hauptkategorie' of  meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' is not null",
+                        objectAttribute);
+                Assert.assertNotNull("value of attribute 'hauptkategorie' of  meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' is not null",
+                        objectAttribute.getValue());
+                Assert.assertTrue("value of attribute 'hauptkategorie' of  meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' is a Meta Object",
+                        MetaObject.class.isAssignableFrom(objectAttribute.getValue().getClass()));
+
+                final MetaObject oldKategorie = (MetaObject) objectAttribute.getValue();
+                MetaObject newKategorie = oldKategorie;
+                while (oldKategorie.getID() == newKategorie.getID()) {
+                    newKategorie = kategorien.get(new Random().nextInt(kategorien.size()));
+                }
+
+                objectAttribute.setValue(newKategorie);
+                objectAttribute.setChanged(true);
+
+                int response = connector.updateMetaObject(user, metaObject, user.getDomain());
+                Assert.assertEquals("meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' (id:" + metaObject.getMetaClass().getID() + ") successfully updated from server",
+                        1, response);
+
+                final MetaObject updatedMetaObject = connector.getMetaObject(
+                        user, metaObject.getID(), metaObject.getMetaClass().getID(), user.getDomain());
+
+                Assert.assertNotNull("updated meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' (id:" + metaObject.getMetaClass().getID() + ") retrieved from server",
+                        updatedMetaObject);
+                Assert.assertNotNull("replaced hauptkategorie attribute of meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' (id:" + metaObject.getMetaClass().getID() + ") is not null",
+                        updatedMetaObject.getAttributeByFieldName("name"));
+                Assert.assertNotNull("replaced hauptkategorie of  meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' (id:" + metaObject.getMetaClass().getID() + ") is not null",
+                        updatedMetaObject.getAttributeByFieldName("hauptkategorie").getValue());
+                Assert.assertEquals("replaced hauptkategorie of meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' (id:" + metaObject.getMetaClass().getID() + ") changed from '" + oldKategorie.getName() + "' to '" + newKategorie.getName() + "'",
+                        newKategorie.getName(),
+                        ((MetaObject) updatedMetaObject.getAttributeByFieldName("hauptkategorie").getValue()).getName());
+
+                this.compareMetaObjects(metaObject, updatedMetaObject, true, false, true);
+            }
+
+            final int actualCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, "SPH_SPIELHALLE");
+            Assert.assertEquals(expectedCount + " 'SPH_SPIELHALLE' entities in Integration Base",
+                    expectedCount, actualCount);
+
+            LOGGER.info("replaceMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE) test passed! "
+                    + expectedCount + " meta objects updated");
+
+        } catch (AssertionError ae) {
+            LOGGER.error("replaceMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE) test failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during replaceMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE): " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
+    @Test
+    public void test04objectService07updateMetaObjectObjectProperty() throws Exception {
+
+        try {
+            LOGGER.debug("[04.07] testing replaceMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
+
+            final List<MetaObject> spielhallen = this.getAllMetaObjects("SPH_SPIELHALLE");
+
+            final int expectedCount = dbEntitiesCount.get("SPH_SPIELHALLE");
+            Assert.assertTrue("SPH_SPIELHALLE meta objects available",
+                    !spielhallen.isEmpty());
+
+            int i = 0;
+            for (final MetaObject metaObject : spielhallen) {
+                i++;
+
+                final ObjectAttribute objectAttribute = metaObject.getAttributeByFieldName("hauptkategorie");
+                Assert.assertNotNull("attribute 'hauptkategorie' of  meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' is not null",
+                        objectAttribute);
+                Assert.assertNotNull("value of attribute 'hauptkategorie' of  meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' is not null",
+                        objectAttribute.getValue());
+                Assert.assertTrue("value of attribute 'hauptkategorie' of  meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' is a Meta Object",
+                        MetaObject.class.isAssignableFrom(objectAttribute.getValue().getClass()));
+
+                final MetaObject oldKategorie = (MetaObject) objectAttribute.getValue();
+
+                final ObjectAttribute nameAttribute = oldKategorie.getAttributeByFieldName("name");
+                final String oldlKategorieName = nameAttribute.getValue().toString();
+                final String updatedKategorieName = oldlKategorieName + " (updated)";
+                nameAttribute.setValue(updatedKategorieName);
+                nameAttribute.setChanged(true);
+
+                int response = connector.updateMetaObject(user, metaObject, user.getDomain());
+                Assert.assertEquals("meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' (id:" + metaObject.getMetaClass().getID() + ") successfully updated from server",
+                        1, response);
+
+                final MetaObject updatedMetaObject = connector.getMetaObject(
+                        user, metaObject.getID(), metaObject.getMetaClass().getID(), user.getDomain());
+
+                Assert.assertNotNull("updated meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' (id:" + metaObject.getMetaClass().getID() + ") retrieved from server",
+                        updatedMetaObject);
+                Assert.assertNotNull("updated hauptkategorie attribute of meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' (id:" + metaObject.getMetaClass().getID() + ") is not null",
+                        updatedMetaObject.getAttributeByFieldName("name"));
+                Assert.assertNotNull("updated hauptkategorie of meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' (id:" + metaObject.getMetaClass().getID() + ") is not null",
+                        updatedMetaObject.getAttributeByFieldName("hauptkategorie").getValue());
+                Assert.assertEquals("updated hauptkategorie of meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' (id:" + metaObject.getMetaClass().getID() + ") changed from '" + oldlKategorieName + "' to '" + updatedKategorieName + "'",
+                        updatedKategorieName,
+                        ((MetaObject) updatedMetaObject.getAttributeByFieldName("hauptkategorie").getValue()).getName());
+
+                this.compareMetaObjects(metaObject, updatedMetaObject, true, false, true);
+
+                // revert changes!
+                final ObjectAttribute updatedObjectAttribute = updatedMetaObject.getAttributeByFieldName("hauptkategorie");
+                final MetaObject updatedKategorie = (MetaObject) updatedObjectAttribute.getValue();
+
+                final ObjectAttribute updatedNameAttribute = updatedKategorie.getAttributeByFieldName("name");
+                updatedNameAttribute.setValue(oldlKategorieName);
+                updatedNameAttribute.setChanged(true);
+
+                //updatedObjectAttribute.setValue(oldlKategorieName);
+                //updatedObjectAttribute.setChanged(true);
+                response = connector.updateMetaObject(user, updatedMetaObject, user.getDomain());
+                Assert.assertEquals("meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' (id:" + metaObject.getMetaClass().getID() + ") successfully updated from server",
+                        1, response);
+
+                final MetaObject revertedMetaObject = connector.getMetaObject(
+                        user, metaObject.getID(), metaObject.getMetaClass().getID(), user.getDomain());
+
+                Assert.assertNotNull("updated meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' (id:" + metaObject.getMetaClass().getID() + ") retrieved from server",
+                        updatedMetaObject);
+                Assert.assertNotNull("updated hauptkategorie attribute of meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' (id:" + metaObject.getMetaClass().getID() + ") is not null",
+                        updatedMetaObject.getAttributeByFieldName("name"));
+                Assert.assertNotNull("updated hauptkategorie of meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' (id:" + metaObject.getMetaClass().getID() + ") is not null",
+                        updatedMetaObject.getAttributeByFieldName("hauptkategorie").getValue());
+                Assert.assertEquals("updated hauptkategorie of meta object #" + i + "/" + expectedCount + " (id:" + metaObject.getID() + ") for meta class '" + metaObject.getMetaClass().getTableName() + "' (id:" + metaObject.getMetaClass().getID() + ") reverted from '" + updatedKategorieName + "' to '" + oldlKategorieName + "'",
+                        updatedKategorieName,
+                        ((MetaObject) updatedMetaObject.getAttributeByFieldName("hauptkategorie").getValue()).getName());
+
+                // Don't compare SPH_SPIELHALLE/SPH_BETREIBER recursively, because 
+                // SPH_BETREIBER contains a back reference to SPH_SPIELHALLE -> comparison will fail!
+                this.compareMetaObjects(updatedMetaObject, revertedMetaObject, true, false, true);
+
+            }
+
+            final int actualCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, "SPH_SPIELHALLE");
+            Assert.assertEquals(expectedCount + " 'SPH_SPIELHALLE' entities in Integration Base",
+                    expectedCount, actualCount);
+
+            LOGGER.info("updateMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE) test passed! "
+                    + expectedCount + " meta objects updated");
+
+        } catch (AssertionError ae) {
+            LOGGER.error("updateMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE) test failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during updateMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE): " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
     // <editor-fold defaultstate="collapsed" desc="HELPER METHODS ----------------------------------------------------------">
+    protected List<MetaObject> getAllMetaObjects(final String metaClassTableName) throws RemoteException {
+        final MetaClass metaClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), metaClassTableName);
+
+        Assert.assertNotNull("meta class '" + metaClassTableName + "' from meta class cache not null", metaClass);
+        Assert.assertTrue(metaClass.getTableName() + " entities counted",
+                dbEntitiesCount.containsKey(metaClassTableName));
+        Assert.assertTrue("meta object ids for meta class '" + metaClassTableName + "' cached",
+                metaObjectIds.containsKey(metaClassTableName.toLowerCase()));
+        final List<Integer> metaObjectIdList = metaObjectIds.get(metaClassTableName.toLowerCase());
+        final int expectedCount = dbEntitiesCount.get(metaClassTableName);
+        Assert.assertEquals(expectedCount + " meta object ids for meta class '" + metaClassTableName + "' cached",
+                expectedCount, metaObjectIdList.size());
+
+        final ArrayList<MetaObject> metaObjects = new ArrayList<MetaObject>(expectedCount);
+        int i = 0;
+        for (final int metaObjectId : metaObjectIdList) {
+            i++;
+            final MetaObject metaObject = connector.getMetaObject(
+                    user, metaObjectId, metaClass.getId(), user.getDomain());
+            Assert.assertNotNull("meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + metaClass.getId() + ") retrieved from server",
+                    metaObject);
+            metaObjects.add(metaObject);
+
+        }
+        return metaObjects;
+    }
+
     /**
      * Compares recursivly MetaObjects and thier attributes. If compareChanged
      * or compareNew, are true, some fields are not compared. If limitRecursion
