@@ -957,6 +957,188 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
+    /**
+     * Test changing the 'name' property of all objects when no changed flag is
+     * set on meta object (server should perform no changes!).
+     *
+     * @param classId
+     * @throws Exception
+     */
+    @Test
+    @UseDataProvider("getMetaClassIds")
+    public void test04objectService04updateMetaObjectNamePropertyNoObjectChangeFlag(final Integer classId) throws Exception {
+
+        try {
+            final MetaClass metaClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), classId);
+
+            Assert.assertNotNull("meta class '" + classId + "' from meta class cache not null", metaClass);
+            Assert.assertTrue(metaClass.getTableName() + " entities counted",
+                    dbEntitiesCount.containsKey(metaClass.getTableName()));
+
+            final String tableName = metaClass.getTableName();
+            if (!tableName.equalsIgnoreCase("URL_BASE")
+                    && !tableName.equalsIgnoreCase("URL")
+                    && !tableName.equalsIgnoreCase("sph_spielhalle_kategorien")) {
+
+                LOGGER.debug("[04.04] testing updateMetaObjectNamePropertyNoObjectChangeFlag(" + classId + ")");
+                final int expectedCount = dbEntitiesCount.get(tableName);
+
+                Assert.assertTrue("meta object ids for meta class '" + tableName + "' cached",
+                        metaObjectIds.containsKey(tableName.toLowerCase()));
+                final List<Integer> metaObjectIdList = metaObjectIds.get(tableName.toLowerCase());
+                Assert.assertEquals(expectedCount + " meta object ids for meta class '" + tableName + "' cached",
+                        expectedCount, metaObjectIdList.size());
+
+                int i = 0;
+                for (final int metaObjectId : metaObjectIdList) {
+                    i++;
+                    final MetaObject metaObject = connector.getMetaObject(
+                            user, metaObjectId, classId, user.getDomain());
+                    Assert.assertNotNull("meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") retrieved from server",
+                            metaObject);
+
+                    final ObjectAttribute nameAttribute = metaObject.getAttributeByFieldName("name");
+                    if (nameAttribute != null && nameAttribute.getValue() != null) {
+                        final String originalObjectName = nameAttribute.getValue().toString();
+                        final String updatedObjectName = originalObjectName + " (updated)";
+                        nameAttribute.setValue(updatedObjectName);
+                        nameAttribute.setChanged(true);
+                        // don't set the meta object changed flag!
+                        //metaObject.setChanged(true);
+
+                        int response = connector.updateMetaObject(user, metaObject, user.getDomain());
+                        Assert.assertEquals("meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") successfully updated from server",
+                                1, response);
+
+                        final MetaObject notUpdatedMetaObject = connector.getMetaObject(
+                                user, metaObjectId, classId, user.getDomain());
+
+                        Assert.assertNotNull("not updated meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") retrieved from server",
+                                notUpdatedMetaObject);
+                        Assert.assertNotNull("name attribute of not updated  meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") is not null",
+                                notUpdatedMetaObject.getAttributeByFieldName("name"));
+                        Assert.assertNotNull("name of not updated meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") is not null",
+                                notUpdatedMetaObject.getAttributeByFieldName("name").getValue());
+                        Assert.assertEquals("name of not updated meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") not changed to '" + updatedObjectName + "'",
+                                originalObjectName,
+                                notUpdatedMetaObject.getAttributeByFieldName("name").getValue().toString());
+
+                        // reset for comparision!
+                        nameAttribute.setValue(originalObjectName);
+                        nameAttribute.setChanged(false);
+
+                        this.compareMetaObjects(metaObject, notUpdatedMetaObject, false, false, false);
+                    }
+                }
+
+                final int actualCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, metaClass.getTableName());
+                Assert.assertEquals(expectedCount + " '" + metaClass.getTableName() + "' entities in Integration Base",
+                        expectedCount, actualCount);
+
+                LOGGER.info("updateMetaObjectNamePropertyNoObjectChangeFlag(" + classId + ") test passed! "
+                        + expectedCount + " meta objects updated");
+            }
+
+        } catch (AssertionError ae) {
+            LOGGER.error("updateMetaObjectNamePropertyNoObjectChangeFlag(" + classId + ") test failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during updateMetaObjectNamePropertyNoObjectChangeFlag(" + classId + "): " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
+    /**
+     * Test changing the 'name' property of all objects when no changed flag is
+     * set on the changed object attribute (server should perform no changes!).
+     *
+     * @param classId
+     * @throws Exception
+     */
+    @Test
+    @UseDataProvider("getMetaClassIds")
+    public void test04objectService05updateMetaObjectNamePropertyNoAttributeChangeFlag(final Integer classId) throws Exception {
+
+        try {
+            final MetaClass metaClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), classId);
+
+            Assert.assertNotNull("meta class '" + classId + "' from meta class cache not null", metaClass);
+            Assert.assertTrue(metaClass.getTableName() + " entities counted",
+                    dbEntitiesCount.containsKey(metaClass.getTableName()));
+
+            final String tableName = metaClass.getTableName();
+            if (!tableName.equalsIgnoreCase("URL_BASE")
+                    && !tableName.equalsIgnoreCase("URL")
+                    && !tableName.equalsIgnoreCase("sph_spielhalle_kategorien")) {
+
+                LOGGER.debug("[04.04] testing updateMetaObjectNamePropertyNoAttributeChangeFlag(" + classId + ")");
+                final int expectedCount = dbEntitiesCount.get(tableName);
+
+                Assert.assertTrue("meta object ids for meta class '" + tableName + "' cached",
+                        metaObjectIds.containsKey(tableName.toLowerCase()));
+                final List<Integer> metaObjectIdList = metaObjectIds.get(tableName.toLowerCase());
+                Assert.assertEquals(expectedCount + " meta object ids for meta class '" + tableName + "' cached",
+                        expectedCount, metaObjectIdList.size());
+
+                int i = 0;
+                for (final int metaObjectId : metaObjectIdList) {
+                    i++;
+                    final MetaObject metaObject = connector.getMetaObject(
+                            user, metaObjectId, classId, user.getDomain());
+                    Assert.assertNotNull("meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") retrieved from server",
+                            metaObject);
+
+                    final ObjectAttribute nameAttribute = metaObject.getAttributeByFieldName("name");
+                    if (nameAttribute != null && nameAttribute.getValue() != null) {
+                        final String originalObjectName = nameAttribute.getValue().toString();
+                        final String updatedObjectName = originalObjectName + " (updated)";
+                        nameAttribute.setValue(updatedObjectName);
+                        // don't set the attribute changed flag!
+                        //nameAttribute.setChanged(true);
+                        metaObject.setChanged(true);
+
+                        int response = connector.updateMetaObject(user, metaObject, user.getDomain());
+                        Assert.assertEquals("meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") successfully updated from server",
+                                1, response);
+
+                        final MetaObject notUpdatedMetaObject = connector.getMetaObject(
+                                user, metaObjectId, classId, user.getDomain());
+
+                        Assert.assertNotNull("not updated meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") retrieved from server",
+                                notUpdatedMetaObject);
+                        Assert.assertNotNull("not updated name attribute of not updated  meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") is not null",
+                                notUpdatedMetaObject.getAttributeByFieldName("name"));
+                        Assert.assertNotNull("not updated name of not updated meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") is not null",
+                                notUpdatedMetaObject.getAttributeByFieldName("name").getValue());
+                        Assert.assertEquals("not updated name of not updated meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") not changed to '" + updatedObjectName + "'",
+                                originalObjectName,
+                                notUpdatedMetaObject.getAttributeByFieldName("name").getValue().toString());
+
+                        // reset for comparision!
+                        nameAttribute.setValue(originalObjectName);
+                        metaObject.setChanged(false);
+
+                        this.compareMetaObjects(metaObject, notUpdatedMetaObject, false, false, false);
+                    }
+                }
+
+                final int actualCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, metaClass.getTableName());
+                Assert.assertEquals(expectedCount + " '" + metaClass.getTableName() + "' entities in Integration Base",
+                        expectedCount, actualCount);
+
+                LOGGER.info("updateMetaObjectNamePropertyNoAttributeChangeFlag(" + classId + ") test passed! "
+                        + expectedCount + " meta objects updated");
+            }
+
+        } catch (AssertionError ae) {
+            LOGGER.error("updateMetaObjectNamePropertyNoAttributeChangeFlag(" + classId + ") test failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during updateMetaObjectNamePropertyNoAttributeChangeFlag(" + classId + "): " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
     // <editor-fold defaultstate="collapsed" desc="HELPER METHODS ----------------------------------------------------------">
     /**
      * Compares recursivly MetaObjects and thier attributes. If compareChanged
