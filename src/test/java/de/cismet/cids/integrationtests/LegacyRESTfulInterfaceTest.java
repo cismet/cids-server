@@ -32,6 +32,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
@@ -878,8 +879,10 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         final String updatedObjectName = originalObjectName + " (updated)";
                         nameAttribute.setValue(updatedObjectName);
                         nameAttribute.setChanged(true);
-                        metaObject.setChanged(true);
 
+                        // probaby set by the server:
+                        //metaObject.setChanged(true);
+                        //metaObject.setStatus(MetaObject.MODIFIED);
                         int response = connector.updateMetaObject(user, metaObject, user.getDomain());
                         Assert.assertEquals("meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") successfully updated from server",
                                 1, response);
@@ -958,6 +961,10 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
     }
 
     /**
+     * FIXME: Test ignored: Expected behaviour of MetaObject.setChanged(),
+     * MetaObject.setStatus(), ObjectAttribute.setChanged() no clear - cannot be
+     * tested
+     *
      * Test changing the 'name' property of all objects when no changed flag is
      * set on meta object (server should perform no changes!).
      *
@@ -966,6 +973,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      */
     @Test
     @UseDataProvider("getMetaClassIds")
+    @Ignore
     public void test04objectService04updateMetaObjectNamePropertyNoObjectChangeFlag(final Integer classId) throws Exception {
 
         try {
