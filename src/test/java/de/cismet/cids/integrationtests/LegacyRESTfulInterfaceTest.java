@@ -883,7 +883,13 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         Assert.assertNotNull("updated meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") retrieved from server",
                                 metaObject);
 
-                        this.compareMetaObjects(metaObject, updatedMetaObject, false, true);
+                        // Don't compare SPH_SPIELHALLE recursively, because it contains a back reference
+                        // (through SPH_BETREIBER) -> comparison will fail!
+                        if (tableName.equalsIgnoreCase("SPH_SPIELHALLE")) {
+                            this.compareMetaObjects(metaObject, updatedMetaObject, false, false, true);
+                        } else {
+                            this.compareMetaObjects(metaObject, updatedMetaObject, true, false, true);
+                        }
                     }
                 }
 
@@ -906,8 +912,8 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
     // <editor-fold defaultstate="collapsed" desc="HELPER METHODS ----------------------------------------------------------">
     /**
-     * Compres NMetaObjects and thier attributes. If compareChanged or
-     * compareNew, are true, some fields are not compared
+     * Compares recursivly MetaObjects and thier attributes. If compareChanged
+     * or compareNew, are true, some fields are not compared
      *
      * @param expectedMetaObject
      * @param actualMetaObject
@@ -919,6 +925,28 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
     protected void compareMetaObjects(
             final MetaObject expectedMetaObject,
             final MetaObject actualMetaObject,
+            final boolean compareNew,
+            final boolean compareChanged) throws AssertionError {
+
+        this.compareMetaObjects(expectedMetaObject, actualMetaObject, true, compareNew, compareChanged);
+    }
+
+    /**
+     * Compares MetaObjects and thier attributes. If compareChanged or
+     * compareNew, are true, some fields are not compared
+     *
+     * @param expectedMetaObject
+     * @param actualMetaObject
+     * @param recursive process also object attributes
+     * @param compareChanged
+     * @param compareNew
+     *
+     * @throws AssertionError
+     */
+    protected void compareMetaObjects(
+            final MetaObject expectedMetaObject,
+            final MetaObject actualMetaObject,
+            final boolean recursive,
             final boolean compareNew,
             final boolean compareChanged) throws AssertionError {
 
@@ -1009,15 +1037,30 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     objectAttributeFromLegacyServer[i],
                     objectAttributeFromRestServer[i],
                     pk,
+                    recursive,
                     compareNew,
                     compareChanged);
         }
     }
 
+    /**
+     * Compares ObjectAttributes. If recursive is true and the object value is a
+     * MetaObject, compareMetaObjects is invoked and compareNew and
+     * compareChanged are passed as arguments.
+     *
+     * @param expectedObjectAttribute
+     * @param actualObjectAttribute
+     * @param pk
+     * @param recursive
+     * @param compareNew
+     * @param compareChanged
+     * @throws AssertionError
+     */
     protected void compareObjectAttributes(
             final ObjectAttribute expectedObjectAttribute,
             final ObjectAttribute actualObjectAttribute,
             final int pk,
+            final boolean recursive,
             final boolean compareNew,
             final boolean compareChanged) throws AssertionError {
 
@@ -1133,15 +1176,17 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     expectedObjectAttributeValueClass,
                     actualObjectAttributeValueClass);
 
-            if (expectedObjectAttribute.referencesObject()) {
+            if (recursive && expectedObjectAttribute.referencesObject()) {
                 Assert.assertTrue("expected objectAttribute[" + name + "] value is a MetaObject (classId: " + pk + ")",
                         MetaObject.class.isAssignableFrom(expectedObjectAttributeValueClass));
                 Assert.assertTrue("actual objectAttribute[" + name + "] value is a MetaObject (classId: " + pk + ")",
                         MetaObject.class.isAssignableFrom(actualObjectAttributeValueClass));
 
+                // recursively compare meta objects
                 this.compareMetaObjects(
                         (MetaObject) expectedObjectAttributeValue,
                         (MetaObject) actualObjectAttributeValue,
+                        true,
                         compareNew,
                         compareChanged);
 
