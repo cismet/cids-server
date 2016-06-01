@@ -833,6 +833,12 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
+    /**
+     * Test changing the 'name' property of all objects
+     *
+     * @param classId
+     * @throws Exception
+     */
     @Test
     @UseDataProvider("getMetaClassIds")
     public void test04objectService03updateMetaObjectNameProperty(final Integer classId) throws Exception {
@@ -868,21 +874,28 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
                     final ObjectAttribute nameAttribute = metaObject.getAttributeByFieldName("name");
                     if (nameAttribute != null && nameAttribute.getValue() != null) {
-                        final String updatedObjectName = nameAttribute.getValue().toString() + " (updated)";
+                        final String originalObjectName = nameAttribute.getValue().toString();
+                        final String updatedObjectName = originalObjectName + " (updated)";
                         nameAttribute.setValue(updatedObjectName);
                         nameAttribute.setChanged(true);
                         metaObject.setChanged(true);
 
-                        final int response = connector.updateMetaObject(user, metaObject, user.getDomain());
+                        int response = connector.updateMetaObject(user, metaObject, user.getDomain());
                         Assert.assertEquals("meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") successfully updated from server",
                                 1, response);
 
                         final MetaObject updatedMetaObject = connector.getMetaObject(
                                 user, metaObjectId, classId, user.getDomain());
-                        Assert.assertEquals("name of meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") changed to '" + updatedObjectName + "'",
-                                updatedObjectName, updatedMetaObject.getAttributeByFieldName("name").toString());
+
                         Assert.assertNotNull("updated meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") retrieved from server",
-                                metaObject);
+                                updatedMetaObject);
+                        Assert.assertNotNull("name attribute of meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") is not null",
+                                updatedMetaObject.getAttributeByFieldName("name"));
+                        Assert.assertNotNull("name of meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") is not null",
+                                updatedMetaObject.getAttributeByFieldName("name").getValue());
+                        Assert.assertEquals("name of meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") changed to '" + updatedObjectName + "'",
+                                updatedObjectName,
+                                updatedMetaObject.getAttributeByFieldName("name").getValue().toString());
 
                         // Don't compare SPH_SPIELHALLE/SPH_BETREIBER recursively, because 
                         // SPH_BETREIBER contains a back reference to SPH_SPIELHALLE -> comparison will fail!
@@ -891,6 +904,38 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                             this.compareMetaObjects(metaObject, updatedMetaObject, true, false, true);
                         } else {
                             this.compareMetaObjects(metaObject, updatedMetaObject, false, false, true);
+                        }
+
+                        // revert changes!
+                        final ObjectAttribute updatedNameAttribute = updatedMetaObject.getAttributeByFieldName("name");
+                        updatedNameAttribute.setValue(originalObjectName);
+                        updatedNameAttribute.setChanged(true);
+                        updatedMetaObject.setChanged(true);
+
+                        response = connector.updateMetaObject(user, updatedMetaObject, user.getDomain());
+                        Assert.assertEquals("meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") successfully updated (reverted) from server",
+                                1, response);
+
+                        final MetaObject revertedMetaObject = connector.getMetaObject(
+                                user, metaObjectId, classId, user.getDomain());
+
+                        Assert.assertNotNull("updated meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") retrieved from server",
+                                revertedMetaObject);
+                        Assert.assertNotNull("name attribute of meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") is not null",
+                                revertedMetaObject.getAttributeByFieldName("name"));
+                        Assert.assertNotNull("name of meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") is not null",
+                                revertedMetaObject.getAttributeByFieldName("name").getValue());
+                        Assert.assertEquals("name of meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") reverted to '" + originalObjectName + "'",
+                                originalObjectName,
+                                revertedMetaObject.getAttributeByFieldName("name").getValue().toString());
+
+                        // Don't compare SPH_SPIELHALLE/SPH_BETREIBER recursively, because 
+                        // SPH_BETREIBER contains a back reference to SPH_SPIELHALLE -> comparison will fail!
+                        if (tableName.equalsIgnoreCase("SPH_SPIELHALLE")) {
+                            //compare only top level child objects and arrays
+                            this.compareMetaObjects(updatedMetaObject, revertedMetaObject, true, false, true);
+                        } else {
+                            this.compareMetaObjects(updatedMetaObject, revertedMetaObject, false, false, true);
                         }
                     }
                 }
