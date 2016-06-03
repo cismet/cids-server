@@ -30,7 +30,18 @@
                 <!-- enable integration tests (this flag is checked in JUnit Tests @ClassRule) -->
                 <de.cismet.cids.integrationtests.enabled>true</de.cismet.cids.integrationtests.enabled>
                 <!-- default base folder for docker volumens -->
-                <de.cismet.cids.integrationtests.docker.volumes>${user.home}/docker-volumes/cids-integrationtests</de.cismet.cids.integrationtests.docker.volumes>
+                <de.cismet.cids.integrationtests.docker.volumes>
+                    ${user.home}/docker-volumes/cids-integrationtests
+                </de.cismet.cids.integrationtests.docker.volumes>
+                <!-- mount this local maven repo as docker volume
+                     disabled by default in integrationtests profile! (for Jenkins Build)
+                     enabled by default in integrationtests nbactions file (for local tests)
+                -->
+                <!--
+                <de.cismet.cids.integrationtests.docker.localrepository>
+                    ${user.home}/.m2/repository
+                </de.cismet.cids.integrationtests.docker.localrepository>
+                -->
             </properties>
         </profile>
     </profiles>
@@ -283,36 +294,45 @@
                     </excludes>
                     <!-- set system property for JUnit ClassRule -->
                     <systemPropertyVariables>
-                            <de.cismet.cids.integrationtests.enabled>
-                                ${de.cismet.cids.integrationtests.enabled}
-                            </de.cismet.cids.integrationtests.enabled>
+                        <!-- enable or disable integration tests -->
+                        <de.cismet.cids.integrationtests.enabled>
+                            ${de.cismet.cids.integrationtests.enabled}
+                        </de.cismet.cids.integrationtests.enabled>
+                        <!-- default base folder for docker volumens -->
+                        <de.cismet.cids.integrationtests.docker.volumes>
+                            ${de.cismet.cids.integrationtests.docker.volumes}
+                        </de.cismet.cids.integrationtests.docker.volumes>
+                        <!-- mount this local maven repo as docker volume -->
+                        <de.cismet.cids.integrationtests.docker.localrepository>
+                            ${de.cismet.cids.integrationtests.docker.localrepository}
+                        </de.cismet.cids.integrationtests.docker.localrepository>
                     </systemPropertyVariables>
                 </configuration>
            </plugin>
             <!-- 
                 rmic will most likely be not necessary any more and is thus
                 
-                   DEPRECATED
-                -->
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>rmic-maven-plugin</artifactId>
-                    <version>1.1</version>
-                    <executions>
-                        <execution>
-                            <id>rmi-compilation</id>
-                            <goals>
-                                <goal>rmic</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <outputDirectory>${project.build.outputDirectory}</outputDirectory>
-                    </configuration>
-                </plugin>
+               DEPRECATED
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>rmic-maven-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <id>rmi-compilation</id>
+                        <goals>
+                            <goal>rmic</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                </configuration>
+            </plugin>
         </plugins>
-            <finalName>cidsServer</finalName>
-        </build>
+        <finalName>cidsServer</finalName>
+    </build>
 </project>
 
 

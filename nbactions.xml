@@ -127,6 +127,7 @@
             </goals>
             <properties>
                 <test>${packageClassName}</test>
+                <jalopy.skip>true</jalopy.skip>
             </properties>
         </action>
 </actions>
