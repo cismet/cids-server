@@ -117,17 +117,17 @@
         </properties>
     </action>
     <action>
-            <actionName>test.single</actionName>
-            <packagings>
-                <packaging>*</packaging>
-            </packagings>
-            <goals>
-                <goal>test-compile</goal>
-                <goal>test</goal>
-            </goals>
-            <properties>
-                <test>${packageClassName}</test>
-                <jalopy.skip>true</jalopy.skip>
-            </properties>
-        </action>
+        <actionName>test.single</actionName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
+        <goals>
+            <goal>test-compile</goal>
+            <goal>test</goal>
+        </goals>
+        <properties>
+            <test>${packageClassName}</test>
+            <jalopy.skip>true</jalopy.skip>
+        </properties>
+    </action>
 </actions>

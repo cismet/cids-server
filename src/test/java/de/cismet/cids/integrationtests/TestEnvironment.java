@@ -29,7 +29,11 @@ import org.testcontainers.containers.DockerComposeContainer;
  */
 public class TestEnvironment extends ExternalResource {
 
+    protected final static Logger LOGGER = Logger.getLogger(TestEnvironment.class);
+
     public static final String INTEGRATION_TESTS_ENABLED = "de.cismet.cids.integrationtests.enabled";
+    public static final String DOCKER_VOLUMES_DIR = "de.cismet.cids.integrationtests.docker.volumes";
+    public static final String DOCKER_COMPOSEFILE_NAME = "de.cismet.cids.integrationtests.docker.composefile";
     protected static volatile Properties properties = null;
 
     public static final String INTEGRATIONBASE_CONTAINER = "cids_integrationtests_integrationbase_1";
@@ -45,13 +49,15 @@ public class TestEnvironment extends ExternalResource {
     };
 
     public static boolean isIntegrationTestsEnabled() {
-        //System.out.println(System.getProperty(INTEGRATION_TESTS_ENABLED));
-        return "true".equalsIgnoreCase(System.getProperty(INTEGRATION_TESTS_ENABLED));
+        return (System.getProperty(DOCKER_VOLUMES_DIR) != null
+                && System.getProperty(DOCKER_COMPOSEFILE_NAME) != null
+                && "true".equalsIgnoreCase(System.getProperty(INTEGRATION_TESTS_ENABLED)));
     }
 
     public static boolean isIntegrationTestsDisabled() {
-        //System.out.println(System.getProperty(INTEGRATION_TESTS_ENABLED));
-        return !"true".equalsIgnoreCase(System.getProperty(INTEGRATION_TESTS_ENABLED));
+        return (System.getProperty(DOCKER_VOLUMES_DIR) == null
+                || System.getProperty(DOCKER_COMPOSEFILE_NAME) == null
+                || !"true".equalsIgnoreCase(System.getProperty(INTEGRATION_TESTS_ENABLED)));
     }
 
     @Override
@@ -89,26 +95,26 @@ public class TestEnvironment extends ExternalResource {
 
         return localProperties;
     }
-    
+
     public static boolean pingHostWithGet(final String host, final int port, final String path, int retries) {
         final String connectionUrl = "http://" + host + ":" + port + path;
         Logger.getLogger(TestEnvironment.class).debug("ping service with GET at url " + connectionUrl);
         final HttpMethod method = new GetMethod(connectionUrl);
-        
+
         return pingHost(method, host, port, path, retries);
     }
-    
+
     public static boolean pingHostWithPost(final String host, final int port, final String path, int retries) {
         final String connectionUrl = "http://" + host + ":" + port + path;
         Logger.getLogger(TestEnvironment.class).debug("ping service with POST at url " + connectionUrl);
         final HttpMethod method = new PostMethod(connectionUrl);
-        
+
         return pingHost(method, host, port, path, retries);
     }
 
     protected static boolean pingHost(final HttpMethod method, final String host, final int port, final String path, int retries) {
         try {
-            
+
             final HttpClient client = new HttpClient();
             final HttpMethodRetryHandler retryHandler = new DefaultHttpMethodRetryHandler(retries, true);
             final HttpMethodParams params = new HttpMethodParams();
@@ -133,12 +139,17 @@ public class TestEnvironment extends ExternalResource {
         }
     }
 
+    /**
+     * Configure the default docker environment: Extend the base docker copose
+     * file with settings injected by the testcontainers framework
+     *
+     * @return
+     * @throws Exception
+     */
     public static DockerComposeContainer createDefaultDockerEnvironment() throws Exception {
-        final String composeFile = System.getProperty("user.home")
+        final String composeFile = System.getProperty(DOCKER_VOLUMES_DIR)
                 + File.separator
-                + "docker-volumes" + File.separator
-                + "cids-integrationtests" + File.separator
-                + "docker-compose.yml";
+                + System.getProperty(DOCKER_COMPOSEFILE_NAME);
 
         final File file = new File(composeFile);
         if (!file.exists()) {
@@ -146,7 +157,8 @@ public class TestEnvironment extends ExternalResource {
                     + composeFile;
             throw new FileNotFoundException(message);
         }
-
+        
+        LOGGER.info("starting docker environment with compose file: " + file.getAbsolutePath());
         DockerComposeContainer dockerEnvironment = new DockerComposeContainer(file)
                 .withExposedService(INTEGRATIONBASE_CONTAINER,
                         Integer.parseInt(getProperties().getProperty("integrationbase.port", "5432")))

@@ -33,15 +33,10 @@
                 <de.cismet.cids.integrationtests.docker.volumes>
                     ${user.home}/docker-volumes/cids-integrationtests
                 </de.cismet.cids.integrationtests.docker.volumes>
-                <!-- mount this local maven repo as docker volume
-                     disabled by default in integrationtests profile! (for Jenkins Build)
-                     enabled by default in integrationtests nbactions file (for local tests)
-                -->
-                <!--
-                <de.cismet.cids.integrationtests.docker.localrepository>
-                    ${user.home}/.m2/repository
-                </de.cismet.cids.integrationtests.docker.localrepository>
-                -->
+                <!-- default name of the docker compose file -->
+                <de.cismet.cids.integrationtests.docker.composefile>
+                    docker-compose.yml
+                </de.cismet.cids.integrationtests.docker.composefile>
             </properties>
         </profile>
     </profiles>
@@ -267,9 +262,12 @@
             </testResource>
             <!-- add docker volumes base dir to classpath -->
             <!-- only available in profile 'integrationtests', skipped if non-existant -->
+            <!-- disabled, not needed anymore -->
+            <!-- 
             <testResource>
                 <directory>${de.cismet.cids.integrationtests.docker.volumes}</directory>
             </testResource>
+            -->
         </testResources>
         <plugins>
             <plugin>
@@ -298,14 +296,14 @@
                         <de.cismet.cids.integrationtests.enabled>
                             ${de.cismet.cids.integrationtests.enabled}
                         </de.cismet.cids.integrationtests.enabled>
-                        <!-- default base folder for docker volumens -->
+                        <!-- default base folder for docker volumes -->
                         <de.cismet.cids.integrationtests.docker.volumes>
                             ${de.cismet.cids.integrationtests.docker.volumes}
                         </de.cismet.cids.integrationtests.docker.volumes>
-                        <!-- mount this local maven repo as docker volume -->
-                        <de.cismet.cids.integrationtests.docker.localrepository>
-                            ${de.cismet.cids.integrationtests.docker.localrepository}
-                        </de.cismet.cids.integrationtests.docker.localrepository>
+                        <!-- default name of the docker compose file -->
+                        <de.cismet.cids.integrationtests.docker.composefile>
+                            ${de.cismet.cids.integrationtests.docker.composefile}
+                        </de.cismet.cids.integrationtests.docker.composefile>
                     </systemPropertyVariables>
                 </configuration>
            </plugin>

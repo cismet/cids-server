@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+    <action>
+        <actionName>CUSTOM-Integrationtest local libs</actionName>
+        <displayName>Integrationtest local libs</displayName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
+        <goals>
+            <goal>test-compile</goal>
+            <goal>surefire:test</goal>
+        </goals>
+        <properties>
+            <test>${packageClassName}</test>
+            <jalopy.skip>true</jalopy.skip>
+            <de.cismet.cids.integrationtests.docker.composefile>
+                use-local-repository.yml
+            </de.cismet.cids.integrationtests.docker.composefile>
+        </properties>
+    </action>
+    <action>
+        <actionName>CUSTOM-Integrationtests local libs</actionName>
+        <displayName>Integrationtests local libs</displayName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
+        <goals>
+            <goal>test</goal>
+        </goals>
+        <properties>
+            <jalopy.skip>true</jalopy.skip>
+            <de.cismet.cids.integrationtests.docker.composefile>
+                use-local-repository.yml
+            </de.cismet.cids.integrationtests.docker.composefile>
+        </properties>
+    </action>
+    <action>
+        <actionName>CUSTOM-Debug Integrationtests local libs</actionName>
+        <displayName>Debug Integrationtests local libs</displayName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
+        <goals>
+            <goal>test-compile</goal>
+            <goal>surefire:test</goal>
+        </goals>
+        <properties>
+            <test>${packageClassName}</test>
+            <forkMode>once</forkMode>
+            <maven.surefire.debug>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address}</maven.surefire.debug>
+            <jpda.listen>true</jpda.listen>
+            <jalopy.skip>true</jalopy.skip>
+            <de.cismet.cids.integrationtests.docker.composefile>
+                use-local-repository.yml
+            </de.cismet.cids.integrationtests.docker.composefile>
+        </properties>
+    </action>
+</actions>
