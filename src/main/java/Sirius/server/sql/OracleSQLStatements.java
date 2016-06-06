@@ -694,13 +694,16 @@ public final class OracleSQLStatements implements ServerSQLStatements {
     @Override
     public String getObjectFactoryGetObjectStmt(final String tableName,
             final String fieldname,
-            final String referenceKey) {
+            final String referenceKey,
+            final String orderByField) {
         return "Select * from "
                     + tableName
                     + " where " // NOI18N
                     + fieldname
                     + " = "     // NOI18N
-                    + referenceKey;
+                    + referenceKey
+                    + " order by "
+                    + orderByField;
     }
 
     @Override
