@@ -54,16 +54,10 @@ public class TestEnvironment extends ExternalResource {
                 && "true".equalsIgnoreCase(System.getProperty(INTEGRATION_TESTS_ENABLED)));
     }
 
-    public static boolean isIntegrationTestsDisabled() {
-        return (System.getProperty(DOCKER_VOLUMES_DIR) == null
-                || System.getProperty(DOCKER_COMPOSEFILE_NAME) == null
-                || !"true".equalsIgnoreCase(System.getProperty(INTEGRATION_TESTS_ENABLED)));
-    }
-
     @Override
     protected void before() throws Throwable {
-        Logger.getLogger(TestEnvironment.class).info("activating cids Integration Tests: " + !TestEnvironment.isIntegrationTestsDisabled());
-        Assume.assumeTrue(!TestEnvironment.isIntegrationTestsDisabled());
+        Logger.getLogger(TestEnvironment.class).info("activating cids Integration Tests: " + TestEnvironment.isIntegrationTestsEnabled());
+        Assume.assumeTrue(TestEnvironment.isIntegrationTestsEnabled());
     }
 
     public static String getCallserverUrl(final String containerIpAddress, final int mappedPort) {
@@ -157,7 +151,7 @@ public class TestEnvironment extends ExternalResource {
                     + composeFile;
             throw new FileNotFoundException(message);
         }
-        
+
         LOGGER.info("starting docker environment with compose file: " + file.getAbsolutePath());
         DockerComposeContainer dockerEnvironment = new DockerComposeContainer(file)
                 .withExposedService(INTEGRATIONBASE_CONTAINER,

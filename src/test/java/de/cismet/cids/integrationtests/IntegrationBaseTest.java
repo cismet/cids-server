@@ -48,10 +48,10 @@ public class IntegrationBaseTest extends TestBase {
      */
     @ClassRule
     public static TestRule initcidsRefContainer() throws Throwable {
-        LOGGER.info("activating cids Integration Tests: " + !TestEnvironment.isIntegrationTestsDisabled());
+        LOGGER.info("activating cids Integration Tests: " + TestEnvironment.isIntegrationTestsEnabled());
 
         // check if integration tests are enabled in current maven profile
-        if (TestEnvironment.isIntegrationTestsDisabled()) {
+        if (!TestEnvironment.isIntegrationTestsEnabled()) {
             // return Dummy ClassRule that skips the test
             return new ExternalResource() {
                 @Override

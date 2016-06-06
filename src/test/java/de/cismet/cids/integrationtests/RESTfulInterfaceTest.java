@@ -96,10 +96,10 @@ public class RESTfulInterfaceTest extends TestBase {
     @ClassRule
     public static TestRule initCidsRefContainer() {
         LOGGER.info("@ClassRule initCidsRefContainer(): activating cids Integration Tests: "
-                + !TestEnvironment.isIntegrationTestsDisabled());
+                + TestEnvironment.isIntegrationTestsEnabled());
 
         // check if integration tests are enabled in current maven profile
-        if (TestEnvironment.isIntegrationTestsDisabled()) {
+        if (!TestEnvironment.isIntegrationTestsEnabled()) {
             // return Dummy ClassRule that skips the test
             return TestEnvironment.SKIP_INTEGRATION_TESTS;
         } else {
