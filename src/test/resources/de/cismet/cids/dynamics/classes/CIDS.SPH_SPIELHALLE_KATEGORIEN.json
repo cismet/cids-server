@@ -9,7 +9,7 @@
           "description": "nn"
         },
         "NAME": "SPH_SPIELHALLE_KATEGORIEN",
-        "DESCRIPTION": "",
+        "DESCRIPTION": "Kategorien der Spielhalle (Array)",
         "LEGACY_PK_FIELD": "ID",
         "POLICY": "STANDARD",
         "LEGACY_OBJECT_ICON": {

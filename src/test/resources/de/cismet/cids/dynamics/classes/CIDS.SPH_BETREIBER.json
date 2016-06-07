@@ -9,7 +9,7 @@
           "description": "nn"
         },
         "NAME": "SPH_Betreiber",
-        "DESCRIPTION": "",
+        "DESCRIPTION": "Spielhallen Betreiber Entity",
         "LEGACY_PK_FIELD": "ID",
         "POLICY": "STANDARD",
         "LEGACY_OBJECT_ICON": {

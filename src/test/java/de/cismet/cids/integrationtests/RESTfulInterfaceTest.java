@@ -425,11 +425,11 @@ public class RESTfulInterfaceTest extends TestBase {
             final MetaClass metaClassFromRestServer = restConnector.getClass(user,
                     metaClassFromJson.getID(), metaClassFromJson.getDomain());
 
-            this.compareMetaClasses(
+            compareMetaClasses(
                     metaClassFromLegacyServer,
                     metaClassFromRestServer);
 
-            this.compareMetaClasses(
+            compareMetaClasses(
                     metaClassFromJson,
                     metaClassFromLegacyServer,
                     metaClassFromRestServer);
@@ -484,23 +484,23 @@ public class RESTfulInterfaceTest extends TestBase {
                     metaObjectFromJson.getClassID(), metaObjectFromJson.getDomain());
             final CidsBean cidsBeanFromRestServer = metaObjectFromRestServer.getBean();
 
-            this.compareCidsBeans(
+            compareCidsBeans(
                     cidsBeanFromLegacyServer,
                     cidsBeanFromRestServer);
 
-            this.compareCidsBeanProperties(
+            compareCidsBeanProperties(
                     cidsBeanFromJson,
                     cidsBeanFromLegacyServer,
                     cidsBeanFromRestServer,
                     name);
 
-            this.compareAll(
+            compareAll(
                     metaObjectFromLegacyServer,
                     metaObjectFromRestServer,
                     cidsBeanFromLegacyServer,
                     cidsBeanFromRestServer);
 
-            this.compareAll(
+            compareAll(
                     metaObjectFromJson,
                     metaObjectFromLegacyServer,
                     metaObjectFromRestServer,
@@ -583,12 +583,12 @@ public class RESTfulInterfaceTest extends TestBase {
             cidsBeanFromLegacyServer.setProperty("letze_aenderung", new java.sql.Timestamp(time));
             cidsBeanFromRestServer.setProperty("letze_aenderung", new java.sql.Timestamp(time));
 
-            this.compareCidsBeanProperties(cidsBeanFromJson,
+            compareCidsBeanProperties(cidsBeanFromJson,
                     cidsBeanFromLegacyServer,
                     cidsBeanFromRestServer,
                     name);
 
-            this.compareAll(metaObjectFromJson,
+            compareAll(metaObjectFromJson,
                     metaObjectFromLegacyServer,
                     metaObjectFromRestServer,
                     cidsBeanFromJson,
@@ -623,12 +623,12 @@ public class RESTfulInterfaceTest extends TestBase {
                     metaObjectFromJson.getClassID(), metaObjectFromJson.getDomain());
             cidsBeanFromRestServer = metaObjectFromRestServer.getBean();
 
-            this.compareCidsBeanProperties(cidsBeanFromJson,
+            compareCidsBeanProperties(cidsBeanFromJson,
                     cidsBeanFromLegacyServer,
                     cidsBeanFromRestServer,
                     name);
 
-            this.compareAll(metaObjectFromJson,
+            compareAll(metaObjectFromJson,
                     metaObjectFromLegacyServer,
                     metaObjectFromRestServer,
                     cidsBeanFromLegacyServer,
@@ -701,11 +701,11 @@ public class RESTfulInterfaceTest extends TestBase {
                     final CidsBean cidsBeanPropertyLegacyServer = (CidsBean) propertyFromLegacyServer;
                     final CidsBean cidsBeanPropertyFromRestServer = (CidsBean) propertyFromRestServer;
 
-                    this.compareCidsBeans(cidsBeanPropertyFromJson,
+                    compareCidsBeans(cidsBeanPropertyFromJson,
                             cidsBeanPropertyLegacyServer,
                             cidsBeanPropertyFromRestServer);
 
-                    this.compareCidsBeanProperties(cidsBeanPropertyFromJson,
+                    compareCidsBeanProperties(cidsBeanPropertyFromJson,
                             cidsBeanPropertyLegacyServer,
                             cidsBeanPropertyFromRestServer,
                             name);
@@ -750,11 +750,11 @@ public class RESTfulInterfaceTest extends TestBase {
                         final CidsBean collectionCidsBeanFromRestServer
                                 = cidsBeanCollectionPropertyIteratorFromRestServer.next();
 
-                        this.compareCidsBeans(collectionCidsBeanFromJson,
+                        compareCidsBeans(collectionCidsBeanFromJson,
                                 collectionCidsBeanFromLegacyServer,
                                 collectionCidsBeanFromRestServer);
 
-                        this.compareCidsBeanProperties(collectionCidsBeanFromJson,
+                        compareCidsBeanProperties(collectionCidsBeanFromJson,
                                 collectionCidsBeanFromLegacyServer,
                                 collectionCidsBeanFromRestServer,
                                 name);
@@ -829,7 +829,7 @@ public class RESTfulInterfaceTest extends TestBase {
                     final CidsBean cidsBeanPropertyLegacyServer = (CidsBean) propertyFromLegacyServer;
                     final CidsBean cidsBeanPropertyFromRestServer = (CidsBean) propertyFromRestServer;
 
-                    this.compareCidsBeans(
+                    compareCidsBeans(
                             cidsBeanPropertyLegacyServer,
                             cidsBeanPropertyFromRestServer);
 
@@ -863,11 +863,11 @@ public class RESTfulInterfaceTest extends TestBase {
                         final CidsBean collectionCidsBeanFromRestServer
                                 = cidsBeanCollectionPropertyIteratorFromRestServer.next();
 
-                        this.compareCidsBeans(
+                        compareCidsBeans(
                                 collectionCidsBeanFromLegacyServer,
                                 collectionCidsBeanFromRestServer);
 
-                        this.compareCidsBeanProperties(
+                        compareCidsBeanProperties(
                                 collectionCidsBeanFromLegacyServer,
                                 collectionCidsBeanFromRestServer,
                                 name);
@@ -927,22 +927,22 @@ public class RESTfulInterfaceTest extends TestBase {
             final CidsBean cidsBeanFromRestServer) throws AssertionError {
 
         LOGGER.debug("comparing MetaObjects from json against MetaObjects from legacy server and from rest server");
-        this.compareMetaObjects(metaObjectFromJson,
+        compareMetaObjects(metaObjectFromJson,
                 metaObjectFromLegacyServer,
                 metaObjectFromRestServer);
 
         LOGGER.debug("comparing CidsBeans from json against MetaObjects from legacy server and from rest server");
-        this.compareCidsBeans(cidsBeanFromJson,
+        compareCidsBeans(cidsBeanFromJson,
                 cidsBeanFromLegacyServer,
                 cidsBeanFromRestServer);
 
         LOGGER.debug("comparing MetaObjects from CidsBean.getMetaObject() from json against MetaObjects from legacy server and from rest server");
-        this.compareMetaObjects(cidsBeanFromJson.getMetaObject(),
+        compareMetaObjects(cidsBeanFromJson.getMetaObject(),
                 cidsBeanFromLegacyServer.getMetaObject(),
                 cidsBeanFromRestServer.getMetaObject());
 
         LOGGER.debug("comparing CidsBean from CidsBean.getMetaObject().getCidsBean() from json against MetaObjects from legacy server and from rest server");
-        this.compareCidsBeans(cidsBeanFromJson.getMetaObject().getBean(),
+        compareCidsBeans(cidsBeanFromJson.getMetaObject().getBean(),
                 cidsBeanFromLegacyServer.getMetaObject().getBean(),
                 cidsBeanFromRestServer.getMetaObject().getBean());
     }
@@ -954,24 +954,24 @@ public class RESTfulInterfaceTest extends TestBase {
             final CidsBean cidsBeanFromRestServer) throws AssertionError {
 
         LOGGER.debug("comparing MetaObjects from legacy server against MetaObjects from rest server");
-        this.compareMetaObjects(
+        compareMetaObjects(
                 metaObjectFromLegacyServer,
                 metaObjectFromRestServer);
 
         LOGGER.debug("comparing CidsBeans from legacy server against CidsBeans from rest server");
-        this.compareCidsBeans(
+        compareCidsBeans(
                 cidsBeanFromLegacyServer,
                 cidsBeanFromRestServer);
 
         LOGGER.debug("comparing MetaObjects from CidsBean.getMetaObject() "
                 + "from legacy server against MetaObjects from rest server");
-        this.compareMetaObjects(
+        compareMetaObjects(
                 cidsBeanFromLegacyServer.getMetaObject(),
                 cidsBeanFromRestServer.getMetaObject());
 
         LOGGER.debug("comparing CidsBean from CidsBean.getMetaObject().getCidsBean() "
                 + "from legacy server against CidsBeans from rest server");
-        this.compareCidsBeans(
+        compareCidsBeans(
                 cidsBeanFromLegacyServer.getMetaObject().getBean(),
                 cidsBeanFromRestServer.getMetaObject().getBean());
     }
@@ -984,7 +984,7 @@ public class RESTfulInterfaceTest extends TestBase {
      * @param metaObjectFromRestServer
      * @throws AssertionError
      */
-    protected void compareMetaObjects(final MetaObject metaObjectFromJson,
+    static void compareMetaObjects(final MetaObject metaObjectFromJson,
             final MetaObject metaObjectFromLegacyServer,
             final MetaObject metaObjectFromRestServer) throws AssertionError {
 
@@ -1135,7 +1135,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 objectAttributeFromRestServer.length);
 
         for (int i = 0; i < objectAttributeFromJson.length; i++) {
-            this.compareObjectAttributes(
+            compareObjectAttributes(
                     objectAttributeFromJson[i],
                     objectAttributeFromLegacyServer[i],
                     objectAttributeFromRestServer[i],
@@ -1143,7 +1143,7 @@ public class RESTfulInterfaceTest extends TestBase {
         }
     }
 
-    protected void compareMetaObjects(
+    static void compareMetaObjects(
             final MetaObject metaObjectFromLegacyServer,
             final MetaObject metaObjectFromRestServer) throws AssertionError {
 
@@ -1239,7 +1239,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 objectAttributeFromRestServer.length);
 
         for (int i = 0; i < objectAttributeFromLegacyServer.length; i++) {
-            this.compareObjectAttributes(
+            compareObjectAttributes(
                     objectAttributeFromLegacyServer[i],
                     objectAttributeFromRestServer[i],
                     pk);
@@ -1255,7 +1255,7 @@ public class RESTfulInterfaceTest extends TestBase {
      * @param cidsBeanFromRestServer
      * @throws AssertionError
      */
-    protected void compareCidsBeans(final CidsBean cidsBeanFromJson,
+    static void compareCidsBeans(final CidsBean cidsBeanFromJson,
             final CidsBean cidsBeanFromLegacyServer,
             final CidsBean cidsBeanFromRestServer) throws AssertionError {
 
@@ -1371,7 +1371,7 @@ public class RESTfulInterfaceTest extends TestBase {
 //                cidsBeanFromRestServer.getMOString());
     }
 
-    protected void compareCidsBeans(
+    static void compareCidsBeans(
             final CidsBean cidsBeanFromLegacyServer,
             final CidsBean cidsBeanFromRestServer) throws AssertionError {
 
@@ -1445,7 +1445,7 @@ public class RESTfulInterfaceTest extends TestBase {
 //                cidsBeanFromRestServer.getMOString());
     }
 
-    protected void compareMetaClasses(final MetaClass metaClassFromJson,
+    static void compareMetaClasses(final MetaClass metaClassFromJson,
             final MetaClass metaClassFromLegacyServer,
             final MetaClass metaClassFromRestServer) throws AssertionError {
 
@@ -1618,7 +1618,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 metaClassAttributesFromLegacyServer.length);
 
         for (int i = 0; i < metaClassAttributesFromJson.length; i++) {
-            this.compareMetaClassAttributes(
+            compareMetaClassAttributes(
                     metaClassAttributesFromJson[i],
                     metaClassAttributesFromLegacyServer[i],
                     metaClassAttributesFromRestServer[i],
@@ -1655,7 +1655,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 Assert.assertNotNull("objectAttribute[" + name + "] from legacy server has MemberAttributeInfo (classId: " + pk + ")",
                         maiFromLegacyServer);
 
-                this.compareMemberAttributeInfos(
+                compareMemberAttributeInfos(
                         maiFromJson,
                         maiFromLegacyServer,
                         maiFromRestServer,
@@ -1672,7 +1672,7 @@ public class RESTfulInterfaceTest extends TestBase {
         final MetaObject metaObjectFromRestServer = metaClassFromRestServer.getEmptyInstance();
         final MetaObject metaObjectFromLegacyServer = metaClassFromLegacyServer.getEmptyInstance();
 
-        this.compareMetaObjects(metaObjectFromJson,
+        compareMetaObjects(metaObjectFromJson,
                 metaObjectFromLegacyServer,
                 metaObjectFromRestServer);
 
@@ -1680,12 +1680,12 @@ public class RESTfulInterfaceTest extends TestBase {
         final CidsBean cidsBeanFromRestServer = metaObjectFromRestServer.getBean();
         final CidsBean cidsBeanFromLegacyServer = metaObjectFromLegacyServer.getBean();
 
-        this.compareCidsBeans(cidsBeanFromJson,
+        compareCidsBeans(cidsBeanFromJson,
                 cidsBeanFromLegacyServer,
                 cidsBeanFromRestServer);
     }
 
-    protected void compareMetaClasses(
+    static void compareMetaClasses(
             final MetaClass metaClassFromLegacyServer,
             final MetaClass metaClassFromRestServer) throws AssertionError {
 
@@ -1704,7 +1704,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 metaClassFromLegacyServer.getComplexEditor(),
                 metaClassFromRestServer.getComplexEditor());
 
-        Assert.assertEquals("metaClass[" + name + "].getId()() from rest legacy matches MetaClass from rest server  (" + pk + ")",
+        Assert.assertEquals("metaClass[" + name + "].getDescription() from rest legacy matches MetaClass from rest server  (" + pk + ")",
                 metaClassFromLegacyServer.getDescription(),
                 metaClassFromRestServer.getDescription());
 
@@ -1788,7 +1788,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 metaClassAttributesFromRestServer.length);
 
         for (int i = 0; i < metaClassAttributesFromLegacyServer.length; i++) {
-            this.compareMetaClassAttributes(
+            compareMetaClassAttributes(
                     metaClassAttributesFromLegacyServer[i],
                     metaClassAttributesFromRestServer[i],
                     pk);
@@ -1815,7 +1815,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 Assert.assertNotNull("objectAttribute[" + name + "] from legacy server has MemberAttributeInfo (classId: " + pk + ")",
                         maiFromRestServer);
 
-                this.compareMemberAttributeInfos(
+                compareMemberAttributeInfos(
                         maiFromLegacyServer,
                         maiFromRestServer,
                         pk);
@@ -1828,19 +1828,19 @@ public class RESTfulInterfaceTest extends TestBase {
         final MetaObject metaObjectFromRestServer = metaClassFromRestServer.getEmptyInstance();
         final MetaObject metaObjectFromLegacyServer = metaClassFromLegacyServer.getEmptyInstance();
 
-        this.compareMetaObjects(
+        compareMetaObjects(
                 metaObjectFromLegacyServer,
                 metaObjectFromRestServer);
 
         final CidsBean cidsBeanFromLegacyServer = metaObjectFromLegacyServer.getBean();
         final CidsBean cidsBeanFromRestServer = metaObjectFromRestServer.getBean();
 
-        this.compareCidsBeans(
+        compareCidsBeans(
                 cidsBeanFromLegacyServer,
                 cidsBeanFromRestServer);
     }
 
-    protected void compareMetaClassAttributes(final ClassAttribute metaClassAttributeFromJson,
+    static void compareMetaClassAttributes(final ClassAttribute metaClassAttributeFromJson,
             final ClassAttribute metaClassAttributeFromLegacyServer,
             final ClassAttribute metaClassAttributeFromRestServer,
             final int pk) throws AssertionError {
@@ -1996,7 +1996,7 @@ public class RESTfulInterfaceTest extends TestBase {
         }
     }
 
-    protected void compareMetaClassAttributes(
+    static void compareMetaClassAttributes(
             final ClassAttribute metaClassAttributeFromLegacyServer,
             final ClassAttribute metaClassAttributeFromRestServer,
             final int pk) throws AssertionError {
@@ -2088,7 +2088,7 @@ public class RESTfulInterfaceTest extends TestBase {
 
     }
 
-    protected void compareObjectAttributes(final ObjectAttribute objectAttributeFromJson,
+    static void compareObjectAttributes(final ObjectAttribute objectAttributeFromJson,
             final ObjectAttribute objectAttributeFromLegacyServer,
             final ObjectAttribute objectAttributeFromRestServer,
             final int pk) throws AssertionError {
@@ -2231,7 +2231,7 @@ public class RESTfulInterfaceTest extends TestBase {
             Assert.assertNotNull("objectAttribute[" + name + "] from legacy server has MemberAttributeInfo (classId: " + pk + ")",
                     maiFromLegacyServer);
 
-            this.compareMemberAttributeInfos(
+            compareMemberAttributeInfos(
                     maiFromJson,
                     maiFromLegacyServer,
                     maiFromRestServer,
@@ -2274,7 +2274,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 Assert.assertTrue("objectAttribute[" + name + "] value from rest server is a MetaObject (classId: " + pk + ")",
                         MetaObject.class.isAssignableFrom(objectAttributeFromRestServerValueClass));
 
-                this.compareMetaObjects(
+                compareMetaObjects(
                         (MetaObject) objectAttributeFromJsonValue,
                         (MetaObject) objectAttributeFromLegacyServerValue,
                         (MetaObject) objectAttributeFromRestServerValue);
@@ -2297,7 +2297,7 @@ public class RESTfulInterfaceTest extends TestBase {
         }
     }
 
-    protected void compareObjectAttributes(
+    static void compareObjectAttributes(
             final ObjectAttribute objectAttributeFromLegacyServer,
             final ObjectAttribute objectAttributeFromRestServer,
             final int pk) throws AssertionError {
@@ -2405,7 +2405,7 @@ public class RESTfulInterfaceTest extends TestBase {
             Assert.assertNotNull("objectAttribute[" + name + "] from rest server has MemberAttributeInfo (classId: " + pk + ")",
                     maiFromRestServer);
 
-            this.compareMemberAttributeInfos(
+            compareMemberAttributeInfos(
                     maiFromLegacyServer,
                     maiFromRestServer,
                     pk);
@@ -2435,7 +2435,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 Assert.assertTrue("objectAttribute[" + name + "] value from rest server is a MetaObject (classId: " + pk + ")",
                         MetaObject.class.isAssignableFrom(objectAttributeFromRestServerValueClass));
 
-                this.compareMetaObjects(
+                compareMetaObjects(
                         (MetaObject) objectAttributeFromLegacyServerValue,
                         (MetaObject) objectAttributeFromRestServerValue);
 
@@ -2452,7 +2452,7 @@ public class RESTfulInterfaceTest extends TestBase {
         }
     }
 
-    protected void compareMemberAttributeInfos(
+    static void compareMemberAttributeInfos(
             final MemberAttributeInfo maiFromJson,
             final MemberAttributeInfo maiFromLegacyServer,
             final MemberAttributeInfo maiFromRestServer,
@@ -2608,7 +2608,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 maiFromLegacyServer.isOptional());
     }
 
-    protected void compareMemberAttributeInfos(
+    static void compareMemberAttributeInfos(
             final MemberAttributeInfo maiFromLegacyServer,
             final MemberAttributeInfo maiFromRestServer,
             final int pk) {

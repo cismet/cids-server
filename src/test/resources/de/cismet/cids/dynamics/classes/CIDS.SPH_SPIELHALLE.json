@@ -9,7 +9,7 @@
           "description": "nn"
         },
         "NAME": "SPH_SPIELHALLE",
-        "DESCRIPTION": "",
+        "DESCRIPTION": "Spielhallen Entity",
         "LEGACY_PK_FIELD": "ID",
         "POLICY": "STANDARD",
         "LEGACY_OBJECT_ICON": {
