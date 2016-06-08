@@ -15,9 +15,11 @@ import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import static de.cismet.cids.integrationtests.TestEnvironment.INTEGRATIONBASE_CONTAINER;
 import static de.cismet.cids.integrationtests.TestEnvironment.SERVER_CONTAINER;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
+import java.io.IOError;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -128,7 +130,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     dockerEnvironment.getServicePort(SERVER_CONTAINER,
                             Integer.parseInt(PROPERTIES.getProperty("broker.port", "9986"))));
 
-            // check jdbcConnection to legacy server (broker f.k.a. callserver)
+            // check cnnection to legacy server (broker f.k.a. callserver)
             if (!TestEnvironment.pingHostWithPost(dockerEnvironment.getServiceHost(SERVER_CONTAINER,
                     Integer.parseInt(PROPERTIES.getProperty("broker.port", "9986"))),
                     dockerEnvironment.getServicePort(SERVER_CONTAINER,
@@ -151,28 +153,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
             LOGGER.info("sucessfully authenticated cids user: " + user.toString());
 
-            // connect to integration base (postgred DB) -----------------------
-            final String integrationBaseUrl = "jdbc:postgresql://"
-                    + dockerEnvironment.getServiceHost(INTEGRATIONBASE_CONTAINER,
-                            Integer.parseInt(PROPERTIES.getProperty("integrationbase.port", "5432")))
-                    + ":"
-                    + dockerEnvironment.getServicePort(INTEGRATIONBASE_CONTAINER,
-                            Integer.parseInt(PROPERTIES.getProperty("integrationbase.port", "5432")))
-                    + "/"
-                    + PROPERTIES.getProperty("integrationbase.dbname", "cids_reference");
-
-            try {
-                Class.forName("org.postgresql.Driver");
-            } catch (ClassNotFoundException e) {
-                LOGGER.error("JDBC Driver 'org.postgresql.Driver' not available", e);
-                throw e;
-            }
-
-            LOGGER.info("connecting to cids reference integration base postgres db: " + integrationBaseUrl);
-            jdbcConnection = DriverManager.getConnection(
-                    integrationBaseUrl,
-                    PROPERTIES.getProperty("integrationbase.username", "postgres"),
-                    PROPERTIES.getProperty("integrationbase.password", "postgres"));
+            jdbcConnection = createJdbcConnection();
 
         } catch (Exception e) {
 
@@ -181,7 +162,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @AfterClass
+    //@AfterClass
     public static void afterClass() {
         LOGGER.debug("afterClass() invoked, cleaning up");
         try {
@@ -291,7 +272,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         LOGGER.debug("[00.00] testing countDbEntities(" + tableName + ")");
 
         try {
-            final int count = RESTfulInterfaceTest.countDbEntities(jdbcConnection, tableName);
+            final int count = countDbEntities(tableName, 3);
             if (!tableName.equalsIgnoreCase("URL_BASE") && !tableName.equalsIgnoreCase("URL")) {
                 Assert.assertTrue(tableName + " entities available in integration base", count > 0);
             }
@@ -299,7 +280,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             Assert.assertNull(tableName + " entities counted only once",
                     dbEntitiesCount.put(tableName, count));
 
-            LOGGER.info("countDbEntities(" + tableName + ") test passed!");
+            LOGGER.info("countDbEntities(" + tableName + ") test passed: " + count);
 
         } catch (AssertionError ae) {
             LOGGER.error("countDbEntities(" + tableName + ") test failed with: "
@@ -310,8 +291,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     + ex.getMessage(), ex);
             throw ex;
         }
-
-        LOGGER.info("countDbEntities(" + tableName + ") test passed!");
     }
 
     // SERVER CORE / INFRASTRUCTURE TESTS --------------------------------------
@@ -610,6 +589,9 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
             MetaClassCache.getInstance().setAllClasses(metaClasses, user.getDomain());
 
+            Assert.assertFalse("MetaClassCache is not empty",
+                    MetaClassCache.getInstance().getAllClasses(user.getDomain()).isEmpty());
+
             Assert.assertEquals("meta classes array size matches meta class cache size",
                     MetaClassCache.getInstance().getAllClasses(user.getDomain()).size(), metaClasses.length);
 
@@ -670,6 +652,8 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
     public void test03classService03getInstance(final Integer classId) throws Exception {
         LOGGER.debug("[03.03] testing getInstance(" + classId + ")");
         try {
+            Assert.assertFalse("MetaClassCache is not empty",
+                    MetaClassCache.getInstance().getAllClasses(user.getDomain()).isEmpty());
             final MetaClass metaClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), classId);
             Assert.assertNotNull("meta class '" + classId + "' from meta class cache not null", metaClass);
 
@@ -779,7 +763,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
                 newMetaObjects.put(metaClass.getTableName(), insertedMetaObject);
 
-                final int actualCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, metaClass.getTableName());
+                final int actualCount = countDbEntities(metaClass.getTableName(), 3);
                 Assert.assertEquals(expectedCount + " '" + metaClass.getTableName() + "' entities in Integration Base",
                         expectedCount, actualCount);
 
@@ -824,7 +808,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
                 Assert.assertEquals("One '" + metaClass.getTableName() + "' (id:" + classId + ") entity deleted",
                         1, rowCount);
-                final int actualCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, metaClass.getTableName());
+                final int actualCount = countDbEntities(metaClass.getTableName(), 3);
 
                 Assert.assertEquals(expectedCount + " '" + metaClass.getTableName() + "' (id:" + classId + ") entities in Integration Base",
                         expectedCount, actualCount);
@@ -954,7 +938,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     }
                 }
 
-                final int actualCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, metaClass.getTableName());
+                final int actualCount = countDbEntities(metaClass.getTableName(), 3);
                 Assert.assertEquals(expectedCount + " '" + metaClass.getTableName() + "' entities in Integration Base",
                         expectedCount, actualCount);
 
@@ -1045,7 +1029,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     }
                 }
 
-                final int actualCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, metaClass.getTableName());
+                final int actualCount = countDbEntities(metaClass.getTableName(), 3);
                 Assert.assertEquals(expectedCount + " '" + metaClass.getTableName() + "' entities in Integration Base",
                         expectedCount, actualCount);
 
@@ -1122,7 +1106,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 this.compareMetaObjects(metaObject, updatedMetaObject, true, false, true);
             }
 
-            final int actualCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, "SPH_SPIELHALLE");
+            final int actualCount = countDbEntities("SPH_SPIELHALLE", 3);
             Assert.assertEquals(expectedCount + " 'SPH_SPIELHALLE' entities in Integration Base",
                     expectedCount, actualCount);
 
@@ -1262,11 +1246,11 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 }
             }
 
-            final int actualCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, "SPH_SPIELHALLE");
+            final int actualCount = countDbEntities("SPH_SPIELHALLE", 3);
             Assert.assertEquals(expectedCount + " 'SPH_SPIELHALLE' entities in Integration Base",
                     expectedCount, actualCount);
 
-            final int actualKategorienCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, "SPH_KATEGORIE");
+            final int actualKategorienCount = countDbEntities("SPH_KATEGORIE", 3);
             Assert.assertEquals(expectedKategorienCount + " 'SPH_KATEGORIE' entities in Integration Base",
                     expectedKategorienCount, actualKategorienCount);
 
@@ -1360,11 +1344,11 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 this.compareMetaObjects(spielhalleObject, updatedSpielhalleObject, true, false, false);
             }
 
-            final int actualCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, "SPH_SPIELHALLE");
+            final int actualCount = countDbEntities("SPH_SPIELHALLE", 3);
             Assert.assertEquals(expectedCount + " 'SPH_SPIELHALLE' entities in Integration Base",
                     expectedCount, actualCount);
 
-            final int actualKategorienCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, "SPH_KATEGORIE");
+            final int actualKategorienCount = countDbEntities("SPH_KATEGORIE", 3);
             Assert.assertEquals(expectedKategorienCount + " 'SPH_KATEGORIE' entities in Integration Base",
                     expectedKategorienCount, actualKategorienCount);
 
@@ -1460,11 +1444,11 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 this.compareMetaObjects(spielhalleObject, updatedSpielhalleObject, true, true, true);
             }
 
-            final int actualSpielhallenCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, "SPH_SPIELHALLE");
+            final int actualSpielhallenCount = countDbEntities("SPH_SPIELHALLE", 3);
             Assert.assertEquals(expectedSpielhallenCount + " 'SPH_SPIELHALLE' entities in Integration Base",
                     expectedSpielhallenCount, actualSpielhallenCount);
 
-            final int actualKategorienCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, "SPH_KATEGORIE");
+            final int actualKategorienCount = countDbEntities("SPH_KATEGORIE", 3);
             Assert.assertEquals(expectedKategorienCount + " 'SPH_KATEGORIE' entities in Integration Base (" + actualSpielhallenCount + " are new)",
                     expectedKategorienCount, actualKategorienCount);
 
@@ -1537,11 +1521,11 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 this.compareMetaObjects(spielhalleObject, updatedSpielhalleObject, true, false, true);
             }
 
-            final int actualSpielhallenCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, "SPH_SPIELHALLE");
+            final int actualSpielhallenCount = countDbEntities("SPH_SPIELHALLE", 3);
             Assert.assertEquals(expectedSpielhallenCount + " 'SPH_SPIELHALLE' entities in Integration Base",
                     expectedSpielhallenCount, actualSpielhallenCount);
 
-            final int actualKategorienCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, "SPH_KATEGORIE");
+            final int actualKategorienCount = countDbEntities("SPH_KATEGORIE", 3);
             Assert.assertEquals(expectedKategorienCount + " 'SPH_KATEGORIE' entities in Integration Base (" + actualSpielhallenCount + " deleted)",
                     expectedKategorienCount, actualKategorienCount);
 
@@ -1625,11 +1609,11 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 this.compareMetaObjects(spielhalleObject, updatedMetaObject, true, false, true);
             }
 
-            final int actualSpielhallenCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, "SPH_SPIELHALLE");
+            final int actualSpielhallenCount = countDbEntities("SPH_SPIELHALLE", 3);
             Assert.assertEquals(expectedSpielhallenCount + " 'SPH_SPIELHALLE' entities in Integration Base",
                     expectedSpielhallenCount, actualSpielhallenCount);
 
-            final int actualKategorienCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, "SPH_KATEGORIE");
+            final int actualKategorienCount = countDbEntities("SPH_KATEGORIE", 3);
             Assert.assertEquals(expectedKategorienCount + " 'SPH_KATEGORIE' entities in Integration Base",
                     expectedKategorienCount, actualKategorienCount);
 
@@ -1662,7 +1646,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             final List<MetaObject> spielhallen = this.getAllMetaObjects("SPH_SPIELHALLE");
 
             final int expectedCount = dbEntitiesCount.get("SPH_SPIELHALLE");
-            final int expectedKategorienCount = dbEntitiesCount.get("SPH_SPIELHALLE_KATEGORIE");
+            final int expectedKategorienCount = dbEntitiesCount.get("SPH_SPIELHALLE_KATEGORIEN");
             Assert.assertTrue("SPH_SPIELHALLE meta objects available",
                     !spielhallen.isEmpty());
 
@@ -1690,19 +1674,27 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 final int kategorieObjectIndex = dummyKategorieArrayObjectAttributes.length - 1;
                 final ObjectAttribute dummyKategorieArrayObjectAttribute = dummyKategorieArrayObjectAttributes[kategorieObjectIndex];
                 final MetaObject intermediateKategorieArrayObject = (MetaObject) dummyKategorieArrayObjectAttribute.getValue();
-                final ObjectAttribute kategorieAttribute = intermediateKategorieArrayObject.getAttributeByFieldName(
-                        dummyKategorieArrayObjectAttribute.getMai().getArrayKeyFieldName());
-                Assert.assertNotNull("intermediate Kategorie Array Objec Attribute '" + dummyKategorieArrayObjectAttribute.getMai().getArrayKeyFieldName() + "' of meta object #" + i + "/" + expectedCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") does exist",
+
+                ObjectAttribute kategorieAttribute = null;
+                for (final ObjectAttribute oa : intermediateKategorieArrayObject.getAttribs()) {
+                    if (oa.referencesObject()) {
+                        kategorieAttribute = oa;
+                    }
+                }
+
+                Assert.assertNotNull("intermediate Kategorie Array Object Attribute[" + kategorieObjectIndex + "] of meta object #" + i + "/" + expectedCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") does exist",
                         kategorieAttribute);
+
                 final MetaObject kategorieObject = (MetaObject) kategorieAttribute.getValue();
                 final ObjectAttribute kategorieNameAttribute = kategorieObject.getAttributeByFieldName("name");
                 final String oldKategorieName = kategorieNameAttribute.getValue().toString();
-                final String updatedKategorieName = oldKategorieName + " (updated)";
+                final String updatedKategorieName = oldKategorieName + " (array updated)";
 
                 kategorienAttribute.setChanged(true);
                 dummyKategorieArrayObject.setStatus(MetaObject.MODIFIED);
                 dummyKategorieArrayObjectAttribute.setChanged(true);
                 intermediateKategorieArrayObject.setStatus(MetaObject.MODIFIED);
+                kategorieAttribute.setChanged(true);
                 kategorieObject.setStatus(MetaObject.MODIFIED);
                 kategorieNameAttribute.setChanged(true);
                 kategorieNameAttribute.setValue(updatedKategorieName);
@@ -1716,18 +1708,23 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         1, response);
 
                 final MetaObject updatedSpielhalleObject = connector.getMetaObject(user, spielhalleObject.getID(), spielhalleObject.getMetaClass().getID(), user.getDomain());
+                final MetaObject updatedKategorieObject = connector.getMetaObject(user, kategorieObject.getID(), kategorieObject.getMetaClass().getID(), user.getDomain());
 
+                Assert.assertEquals("name of kategorie (" + updatedKategorieObject.getID() + ") changed from '" + oldKategorieName + "' to '" + updatedKategorieName + "'",
+                        updatedKategorieName,
+                        getArrayElements(updatedSpielhalleObject, "kategorien").get(kategorieObjectIndex).getAttributeByFieldName("name").getValue().toString());
                 Assert.assertNotNull("updated meta object #" + i + "/" + expectedCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") retrieved from server",
                         updatedSpielhalleObject);
-                Assert.assertNotNull("updated kategorie attribute of meta object #" + i + "/" + expectedCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") is not null",
+                Assert.assertNotNull("updated kategorien attribute of meta object #" + i + "/" + expectedCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") is not null",
                         updatedSpielhalleObject.getAttributeByFieldName("kategorien"));
-                Assert.assertNotNull("updated kategorie of meta object #" + i + "/" + expectedCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") is not null",
+                Assert.assertNotNull("updated kategorien of meta object #" + i + "/" + expectedCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") is not null",
                         updatedSpielhalleObject.getAttributeByFieldName("kategorien").getValue());
-                Assert.assertEquals("updated kategorie of meta object #" + i + "/" + expectedCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") changed from '" + oldKategorieName + "' to '" + updatedKategorieName + "'",
+                Assert.assertEquals("name of kategorie[" + kategorieObjectIndex + "]  of meta object #" + i + "/" + expectedCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") changed from '" + oldKategorieName + "' to '" + updatedKategorieName + "'",
                         updatedKategorieName,
                         getArrayElements(updatedSpielhalleObject, "kategorien").get(kategorieObjectIndex).getAttributeByFieldName("name").getValue().toString());
 
-                this.compareMetaObjects(spielhalleObject, updatedSpielhalleObject, true, false, true);
+                this.compareMetaObjects((MetaObject) spielhalleObject.getAttributeByFieldName("kategorien").getValue(), (MetaObject) updatedSpielhalleObject.getAttributeByFieldName("kategorien").getValue(),
+                        false, false, true);
 
                 // revert changes!
                 kategorieNameAttribute.setValue(oldKategorieName);
@@ -1743,11 +1740,11 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 this.compareMetaObjects(originalSpielhalleObject, revertedSpielhalleObject, false, false, false);
             }
 
-            final int actualCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, "SPH_SPIELHALLE");
+            final int actualCount = countDbEntities("SPH_SPIELHALLE", 3);
             Assert.assertEquals(expectedCount + " 'SPH_SPIELHALLE' entities in Integration Base",
                     expectedCount, actualCount);
 
-            final int actualKategorienCount = RESTfulInterfaceTest.countDbEntities(jdbcConnection, "SPH_SPIELHALLE_KATEGORIE");
+            final int actualKategorienCount = countDbEntities("SPH_SPIELHALLE_KATEGORIEN", 3);
             Assert.assertEquals(expectedKategorienCount + " 'SPH_SPIELHALLE_KATEGORIE' entities in Integration Base",
                     expectedKategorienCount, actualKategorienCount);
 
@@ -1766,6 +1763,37 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
     }
 
     // <editor-fold defaultstate="collapsed" desc="HELPER METHODS ----------------------------------------------------------">
+    /**
+     *
+     * @param connection
+     * @param tableName
+     * @return
+     * @throws IOError
+     * @throws SQLException
+     */
+    protected static int countDbEntities(final String tableName, int retries) throws SQLException, ClassNotFoundException {
+        if (retries > 0) {
+            retries--;
+            try {
+                return RESTfulInterfaceTest.countDbEntities(jdbcConnection, tableName);
+            } catch (final SQLException sqlException) {
+                LOGGER.warn("database connection (" + tableName + ") closed unexpectedly"
+                        + "(closed:" + jdbcConnection.isClosed() + "), trying to reconnect (#" + retries + ")", sqlException);
+                jdbcConnection = createJdbcConnection();
+                return countDbEntities(tableName, retries);
+            }
+        } else {
+            throw new SQLException("could not establish connection to integration base, giving up!");
+        }
+    }
+
+    /**
+     *
+     * @param parentObject
+     * @param arrayFieldName
+     * @return
+     * @throws AssertionError
+     */
     protected List<MetaObject> getArrayElements(final MetaObject parentObject,
             final String arrayFieldName) throws AssertionError {
 
@@ -1806,12 +1834,11 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                                 intermediateArrayElementObjectAttribute.getValue());
                         Assert.assertTrue("value of '" + arrayFieldName + "' attribute's intermediate Array Element Object #" + i + "'s attribute '" + intermediateArrayElementObjectAttribute.getName() + "' in meta object '" + parentObject.getName() + "' is MetaObject",
                                 MetaObject.class.isAssignableFrom(intermediateArrayElementObjectAttribute.getValue().getClass()));
-
-                        Assert.assertEquals("array attribute's " + arrayFieldName + "' ArrayKeyFieldName matches intermediate Array Element Object Attribute FieldName in intermediate Array Element Object #" + i + "'s attribute '" + intermediateArrayElementObjectAttribute.getName() + "' in meta object '" + parentObject.getName() + "' is MetaObject",
-                                arrayContainerDummyAttribute.getMai().getArrayKeyFieldName(),
-                                intermediateArrayElementObjectAttribute.getMai().getFieldName());
-
                         arrayElementObjects.add((MetaObject) intermediateArrayElementObjectAttribute.getValue());
+                    } else if (!intermediateArrayElementObjectAttribute.isPrimaryKey()) {
+                        Assert.assertEquals("array attribute's " + arrayFieldName + "' ArrayKeyFieldName matches intermediate Array Element Object Attribute FieldName in intermediate Array Element Object #" + i + "'s attribute '" + intermediateArrayElementObjectAttribute.getName() + "' in meta object '" + parentObject.getName() + "' is MetaObject",
+                                arrayContainerDummyAttribute.getMai().getArrayKeyFieldName().toLowerCase(),
+                                intermediateArrayElementObjectAttribute.getMai().getFieldName().toLowerCase());
                     }
                 }
             } else {
@@ -2302,6 +2329,34 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
 
         return sb.toString();
+    }
+
+    protected static Connection createJdbcConnection() throws ClassNotFoundException, SQLException {
+        // connect to integration base (postgred DB) -----------------------
+        final String integrationBaseUrl = "jdbc:postgresql://"
+                + dockerEnvironment.getServiceHost(INTEGRATIONBASE_CONTAINER,
+                        Integer.parseInt(PROPERTIES.getProperty("integrationbase.port", "5432")))
+                + ":"
+                + dockerEnvironment.getServicePort(INTEGRATIONBASE_CONTAINER,
+                        Integer.parseInt(PROPERTIES.getProperty("integrationbase.port", "5432")))
+                + "/"
+                + PROPERTIES.getProperty("integrationbase.dbname", "cids_reference");
+
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            LOGGER.error("JDBC Driver 'org.postgresql.Driver' not available", e);
+            throw e;
+        }
+
+        LOGGER.info("connecting to cids reference integration base postgres db: " + integrationBaseUrl);
+        final Connection connection = DriverManager.getConnection(
+                integrationBaseUrl,
+                PROPERTIES.getProperty("integrationbase.username", "postgres"),
+                PROPERTIES.getProperty("integrationbase.password", "postgres"));
+        connection.setReadOnly(true);
+
+        return connection;
     }
 
     // </editor-fold>

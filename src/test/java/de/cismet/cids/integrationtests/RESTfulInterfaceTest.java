@@ -17,6 +17,7 @@ import static de.cismet.cids.integrationtests.TestEnvironment.REST_SERVER_CONTAI
 import static de.cismet.cids.integrationtests.TestEnvironment.SERVER_CONTAINER;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
 import de.cismet.cidsx.client.connector.RESTfulInterfaceConnector;
+import java.io.IOError;
 import java.io.InputStream;
 import java.net.URL;
 import java.sql.Connection;
@@ -2700,17 +2701,26 @@ public class RESTfulInterfaceTest extends TestBase {
                 maiFromRestServer.isOptional());
     }
 
-    protected static int countDbEntities(final Connection connection, final String tableName) throws SQLException {
-        final Statement countStatement = connection.createStatement();
-        final ResultSet resultSet = countStatement.executeQuery("SELECT count(*) FROM " + tableName);
-        int count = 0;
-        if (resultSet.next()) {
-            count = resultSet.getInt(1);
-        }
+    protected static int countDbEntities(final Connection connection, final String tableName) throws IOError, SQLException {
+        //if (!connection.isClosed()) {
+           // if (connection.isValid(1)) {
+                final Statement countStatement = connection.createStatement();
+                final ResultSet resultSet = countStatement.executeQuery("SELECT count(*) FROM " + tableName);
+                int count = -1;
+                if (resultSet.next()) {
+                    count = resultSet.getInt(1);
+                }
 
-        resultSet.close();
-        countStatement.close();
+                //resultSet.close();
+                countStatement.close();
 
-        return count;
+                return count;
+//            } else {
+//                throw new IOError(new SQLException("cannot submit query, connection is not valid!"));
+//            }
+
+//        } else {
+//            throw new IOError(new SQLException("cannot submit query, connection is closed!"));
+//        }
     }
 }
