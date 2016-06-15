@@ -736,9 +736,179 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
+    /**
+     * Verify the order of n-m and 1-n array elements after repreated object
+     * retrieval
+     *
+     * @throws Exception
+     */
+    @Test
+    public void test04objectService01getMetaObjectArrays() throws Exception {
+        try {
+            LOGGER.debug("[04.01] testing getMetaObjectArrays()");
+
+            final int expectedBetreiberCount = dbEntitiesCount.get("SPH_BETREIBER");
+            final int expectedSpielhallenCount = dbEntitiesCount.get("SPH_SPIELHALLE");
+
+            final List<MetaObject> betreiber1 = this.getAllMetaObjects("SPH_BETREIBER");
+            final List<MetaObject> betreiber2 = this.getAllMetaObjects("SPH_BETREIBER");
+
+            Assert.assertFalse("SPH_BETREIBER meta objects available",
+                    betreiber1.isEmpty());
+            Assert.assertFalse("SPH_BETREIBER meta objects available",
+                    betreiber2.isEmpty());
+            Assert.assertEquals(betreiber1.size() + " SPH_BETREIBER meta objects in both arrays",
+                    betreiber1.size(),
+                    betreiber2.size());
+            Assert.assertEquals(expectedBetreiberCount + " SPH_BETREIBER meta objects in database",
+                    expectedBetreiberCount,
+                    betreiber2.size());
+
+            int i = 0;
+            for (final MetaObject betreiberObject1 : betreiber1) {
+                i++;
+
+                final MetaObject betreiberObject2 = betreiber2.get(i);
+                final MetaObject betreiberObject3 = connector.getMetaObject(user, betreiberObject1.getID(), betreiberObject1.getMetaClass().getID(), user.getDomain());
+
+                Assert.assertEquals("order of SPH_BETREIBER meta objects matches",
+                        betreiberObject1.getID(),
+                        betreiberObject2.getID());
+                Assert.assertEquals("order of SPH_BETREIBER meta objects matches",
+                        betreiberObject2.getID(),
+                        betreiberObject3.getID());
+
+                final List<MetaObject> spielhallen1 = getArrayElements(betreiberObject1, "spielhallen");
+                final List<MetaObject> spielhallen2 = getArrayElements(betreiberObject2, "spielhallen");
+                final List<MetaObject> spielhallen3 = getArrayElements(betreiberObject3, "spielhallen");
+
+                Assert.assertFalse("SPH_SPIELHALLE meta objects available in SPH_BETREIBER " + betreiberObject1.getID(),
+                        spielhallen1.isEmpty());
+                Assert.assertFalse("SPH_SPIELHALLE meta objects available in SPH_BETREIBER " + betreiberObject2.getID(),
+                        spielhallen2.isEmpty());
+                Assert.assertFalse("SPH_SPIELHALLE meta objects available in SPH_BETREIBER " + betreiberObject3.getID(),
+                        spielhallen3.isEmpty());
+
+                Assert.assertEquals(spielhallen1.size() + " SPH_SPIELHALLE meta objects available in SPH_BETREIBER " + betreiberObject1.getID(),
+                        spielhallen1.size(),
+                        spielhallen2.size());
+                Assert.assertEquals(spielhallen2.size() + " SPH_SPIELHALLE meta objects available in SPH_BETREIBER " + betreiberObject1.getID(),
+                        spielhallen2.size(),
+                        spielhallen3.size());
+
+                int j = 0;
+                for (final MetaObject spielhalleObject1 : spielhallen1) {
+                    j++;
+
+                    final MetaObject spielhalleObject2 = spielhallen2.get(j);
+                    final MetaObject spielhalleObject3 = spielhallen3.get(j);
+                    final MetaObject spielhalleObject4 = connector.getMetaObject(user, spielhalleObject1.getID(), spielhalleObject1.getMetaClass().getID(), user.getDomain());
+
+                    Assert.assertEquals("order of SPH_SPIELHALLE meta objects in SPH_BETREIBER (" + betreiberObject1.getID() + ") array matches",
+                            spielhalleObject1.getID(),
+                            spielhalleObject2.getID());
+                    Assert.assertEquals("order of SPH_SPIELHALLE meta objects in SPH_BETREIBER (" + betreiberObject2.getID() + ") array matches",
+                            spielhalleObject2.getID(),
+                            spielhalleObject3.getID());
+                    Assert.assertEquals("order of SPH_SPIELHALLE meta objects in SPH_BETREIBER (" + betreiberObject3.getID() + ") array matches",
+                            spielhalleObject3.getID(),
+                            spielhalleObject4.getID());
+
+                    this.compareMetaObjects(spielhalleObject1, spielhalleObject2, false, false, false);
+                    this.compareMetaObjects(spielhalleObject2, spielhalleObject3, false, false, false);
+                    this.compareMetaObjects(spielhalleObject3, spielhalleObject4, false, false, false);
+                }
+
+                this.compareMetaObjects(betreiberObject1, betreiberObject2, false, false, false);
+                this.compareMetaObjects(betreiberObject2, betreiberObject3, false, false, false);
+            }
+
+            final List<MetaObject> spielhallen1 = this.getAllMetaObjects("SPH_SPIELHALLE");
+            final List<MetaObject> spielhallen2 = this.getAllMetaObjects("SPH_SPIELHALLE");
+
+            Assert.assertFalse("SPH_SPIELHALLE meta objects available",
+                    spielhallen1.isEmpty());
+            Assert.assertFalse("SPH_SPIELHALLE meta objects available",
+                    spielhallen2.isEmpty());
+            Assert.assertEquals(spielhallen1.size() + " SPH_SPIELHALLE meta objects in both arrays",
+                    spielhallen1.size(),
+                    spielhallen2.size());
+            Assert.assertEquals(expectedBetreiberCount + " SPH_SPIELHALLE meta objects in database",
+                    expectedSpielhallenCount,
+                    spielhallen2.size());
+
+            i = 0;
+            for (final MetaObject spielhalleObject1 : spielhallen1) {
+                i++;
+
+                final MetaObject spielhalleObject2 = spielhallen2.get(i);
+                final MetaObject spielhalleObject3 = connector.getMetaObject(user, spielhalleObject1.getID(), spielhalleObject1.getMetaClass().getID(), user.getDomain());
+
+                Assert.assertEquals("order of SPH_SPIELHALLE meta objects matches",
+                        spielhalleObject1.getID(),
+                        spielhalleObject2.getID());
+                Assert.assertEquals("order of SPH_SPIELHALLE meta objects matches",
+                        spielhalleObject2.getID(),
+                        spielhalleObject3.getID());
+
+                final List<MetaObject> kategorien1 = getArrayElements(spielhalleObject1, "kategorien");
+                final List<MetaObject> kategorien2 = getArrayElements(spielhalleObject2, "kategorien");
+                final List<MetaObject> kategorien3 = getArrayElements(spielhalleObject3, "kategorien");
+
+                Assert.assertFalse("SPH_KATEGORIE meta objects available in SPH_SPIELHALLE " + spielhalleObject1.getID(),
+                        kategorien1.isEmpty());
+                Assert.assertFalse("SPH_KATEGORIE meta objects available in SPH_SPIELHALLE " + spielhalleObject2.getID(),
+                        kategorien2.isEmpty());
+                Assert.assertFalse("SPH_KATEGORIE meta objects available in SPH_SPIELHALLE " + spielhalleObject3.getID(),
+                        kategorien3.isEmpty());
+
+                Assert.assertEquals(kategorien1.size() + " SPH_KATEGORIE meta objects available in SPH_SPIELHALLE " + spielhalleObject1.getID(),
+                        kategorien1.size(),
+                        kategorien2.size());
+                Assert.assertEquals(kategorien2.size() + " SPH_KATEGORIE meta objects available in SPH_SPIELHALLE " + spielhalleObject1.getID(),
+                        kategorien2.size(),
+                        kategorien3.size());
+
+                int j = 0;
+                for (final MetaObject kategorieObject1 : kategorien1) {
+                    j++;
+
+                    final MetaObject kategorieObject2 = kategorien2.get(j);
+                    final MetaObject kategorieObject3 = kategorien3.get(j);
+                    final MetaObject kategorieObject4 = connector.getMetaObject(user, kategorieObject1.getID(), kategorieObject1.getMetaClass().getID(), user.getDomain());
+
+                    Assert.assertEquals("order of SPH_KATEGORIE meta objects in SPH_SPIELHALLE (" + spielhalleObject1.getID() + ") array matches",
+                            kategorieObject1.getID(),
+                            kategorieObject2.getID());
+                    Assert.assertEquals("order of SPH_KATEGORIE meta objects in SPH_SPIELHALLE (" + spielhalleObject2.getID() + ") array matches",
+                            kategorieObject2.getID(),
+                            kategorieObject3.getID());
+
+                    this.compareMetaObjects(kategorieObject1, kategorieObject2, false, false, false);
+                    this.compareMetaObjects(kategorieObject2, kategorieObject3, false, false, false);
+                    this.compareMetaObjects(kategorieObject3, kategorieObject4, false, false, false);
+
+                }
+
+                this.compareMetaObjects(spielhalleObject1, spielhalleObject2, false, false, false);
+                this.compareMetaObjects(spielhalleObject2, spielhalleObject3, false, false, false);
+            }
+
+            LOGGER.info("getMetaObjectArrays() test passed! "
+                    + expectedSpielhallenCount + " meta objects updated");
+
+        } catch (AssertionError ae) {
+            LOGGER.error("getMetaObjectArrays() test failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during getMetaObjectArrays(): " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
     @Test
     @UseDataProvider("getMetaClassIds")
-    public void test04objectService01insertMetaObject(final Integer classId) throws Exception {
+    public void test04objectService02insertMetaObject(final Integer classId) throws Exception {
 
         try {
             final MetaClass metaClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), classId);
@@ -752,7 +922,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     && !tableName.equalsIgnoreCase("URL")
                     && !tableName.equalsIgnoreCase("sph_spielhalle_kategorien")) {
 
-                LOGGER.debug("[04.01] testing insertMetaObject(" + classId + ")");
+                LOGGER.debug("[04.02] testing insertMetaObject(" + classId + ")");
                 final int expectedCount = dbEntitiesCount.get(metaClass.getTableName()) + 1;
 
                 final MetaObject newMetaObject = metaClass.getEmptyInstance();
@@ -785,7 +955,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
     @Test
     @UseDataProvider("getMetaClassIds")
-    public void test04objectService02deleteMetaObject(final Integer classId) throws Exception {
+    public void test04objectService03deleteMetaObject(final Integer classId) throws Exception {
 
         try {
 
@@ -799,7 +969,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             if (!tableName.equalsIgnoreCase("URL_BASE")
                     && !tableName.equalsIgnoreCase("URL")
                     && !tableName.equalsIgnoreCase("sph_spielhalle_kategorien")) {
-                LOGGER.debug("[04.02] testing deleteMetaObject(" + classId + ")");
+                LOGGER.debug("[04.03] testing deleteMetaObject(" + classId + ")");
 
                 final int expectedCount = dbEntitiesCount.get(metaClass.getTableName());
                 Assert.assertTrue("new '" + metaClass.getTableName() + "' (id:" + classId + ") entity created",
@@ -835,7 +1005,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      */
     @Test
     @UseDataProvider("getMetaClassIds")
-    public void test04objectService03updateMetaObjectNameProperty(final Integer classId) throws Exception {
+    public void test04objectService04updateMetaObjectNameProperty(final Integer classId) throws Exception {
 
         try {
             final MetaClass metaClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), classId);
@@ -849,7 +1019,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     && !tableName.equalsIgnoreCase("URL")
                     && !tableName.equalsIgnoreCase("sph_spielhalle_kategorien")) {
 
-                LOGGER.debug("[04.03] testing updateMetaObjectNameProperty(" + classId + ")");
+                LOGGER.debug("[04.04] testing updateMetaObjectNameProperty(" + classId + ")");
                 final int expectedCount = dbEntitiesCount.get(tableName);
 
                 Assert.assertTrue("meta object ids for meta class '" + tableName + "' cached",
@@ -966,7 +1136,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      */
     @Test
     @UseDataProvider("getMetaClassIds")
-    public void test04objectService04updateMetaObjectNamePropertyNoAttributeChangeFlag(final Integer classId) throws Exception {
+    public void test04objectService05updateMetaObjectNamePropertyNoAttributeChangeFlag(final Integer classId) throws Exception {
 
         try {
             final MetaClass metaClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), classId);
@@ -980,7 +1150,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     && !tableName.equalsIgnoreCase("URL")
                     && !tableName.equalsIgnoreCase("sph_spielhalle_kategorien")) {
 
-                LOGGER.debug("[04.04] testing updateMetaObjectNamePropertyNoAttributeChangeFlag(" + classId + ")");
+                LOGGER.debug("[04.05] testing updateMetaObjectNamePropertyNoAttributeChangeFlag(" + classId + ")");
                 final int expectedCount = dbEntitiesCount.get(tableName);
 
                 Assert.assertTrue("meta object ids for meta class '" + tableName + "' cached",
@@ -1049,10 +1219,10 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
     }
 
     @Test
-    public void test04objectService05reassignMetaObjectUpdatedObjectProperty() throws Exception {
+    public void test04objectService06reassignMetaObjectUpdatedObjectProperty() throws Exception {
 
         try {
-            LOGGER.debug("[04.05] testing reassignMetaObjectUpdatedObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
+            LOGGER.debug("[04.06] testing reassignMetaObjectUpdatedObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
             // needed for DB Triggers
             Thread.sleep(200);
 
@@ -1132,9 +1302,9 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @throws Exception
      */
     @Test
-    public void test04objectService06updateMetaObjectObjectProperty() throws Exception {
+    public void test04objectService07updateMetaObjectObjectProperty() throws Exception {
         try {
-            LOGGER.debug("[04.06] testing updateMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
+            LOGGER.debug("[04.07] testing updateMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
             // needed for DB Triggers
             Thread.sleep(200);
 
@@ -1276,9 +1446,9 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @throws Exception
      */
     @Test
-    public void test04objectService07createMetaObjectObjectProperty() throws Exception {
+    public void test04objectService08createMetaObjectObjectProperty() throws Exception {
         try {
-            LOGGER.debug("[04.07] testing createMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
+            LOGGER.debug("[04.08] testing createMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
             // needed for DB Triggers
             Thread.sleep(200);
 
@@ -1374,9 +1544,9 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @throws Exception
      */
     @Test
-    public void test04objectService08createMetaObjectObjectProperty() throws Exception {
+    public void test04objectService09createMetaObjectObjectProperty() throws Exception {
         try {
-            LOGGER.debug("[04.08] testing createMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
+            LOGGER.debug("[04.09] testing createMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
             // needed for DB Triggers
             Thread.sleep(200);
 
@@ -1474,9 +1644,9 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @throws Exception
      */
     @Test
-    public void test04objectService09deleteMetaObjectObjectProperty() throws Exception {
+    public void test04objectService10deleteMetaObjectObjectProperty() throws Exception {
         try {
-            LOGGER.debug("[04.09] testing deleteMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
+            LOGGER.debug("[04.10] testing deleteMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
             // needed for DB Triggers
             Thread.sleep(200);
 
@@ -1552,10 +1722,10 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @throws Exception
      */
     @Test
-    public void test04objectService10reassignMetaObjectDeletedObjectProperty() throws Exception {
+    public void test04objectService11reassignMetaObjectDeletedObjectProperty() throws Exception {
 
         try {
-            LOGGER.debug("[04.10] testing reassignMetaObjectDeletedObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
+            LOGGER.debug("[04.11] testing reassignMetaObjectDeletedObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
             // needed for DB Triggers
             Thread.sleep(200);
 
@@ -1639,9 +1809,9 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @throws Exception
      */
     @Test
-    public void test04objectService11updateMetaObjectNtoMArrayProperty() throws Exception {
+    public void test04objectService12updateMetaObjectNtoMArrayProperty() throws Exception {
         try {
-            LOGGER.debug("[04.11] testing updateMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
+            LOGGER.debug("[04.12] testing updateMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
             // needed for DB Triggers
             Thread.sleep(200);
 
@@ -1770,9 +1940,9 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @throws Exception
      */
     @Test
-    public void test04objectService12ReplaceMetaObjectNtoMArrayProperty() throws Exception {
+    public void test04objectService13ReplaceMetaObjectNtoMArrayProperty() throws Exception {
         try {
-            LOGGER.debug("[04.12] testing addMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
+            LOGGER.debug("[04.13] testing addMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
             // needed for DB Triggers
             Thread.sleep(200);
 
@@ -1888,9 +2058,9 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      */
     @Test
     @Ignore
-    public void test04objectService13AddMetaObjectNtoMArrayProperty() throws Exception {
+    public void test04objectService14AddMetaObjectNtoMArrayProperty() throws Exception {
         try {
-            LOGGER.debug("[04.13] testing addMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
+            LOGGER.debug("[04.14] testing addMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
             // needed for DB Triggers
             Thread.sleep(200);
 
