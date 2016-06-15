@@ -766,9 +766,9 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
             int i = 0;
             for (final MetaObject betreiberObject1 : betreiber1) {
+                final MetaObject betreiberObject2 = betreiber2.get(i);
                 i++;
 
-                final MetaObject betreiberObject2 = betreiber2.get(i);
                 final MetaObject betreiberObject3 = connector.getMetaObject(user, betreiberObject1.getID(), betreiberObject1.getMetaClass().getID(), user.getDomain());
 
                 Assert.assertEquals("order of SPH_BETREIBER meta objects matches",
@@ -798,11 +798,9 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
                 int j = 0;
                 for (final MetaObject spielhalleObject1 : spielhallen1) {
-                    j++;
-
                     final MetaObject spielhalleObject2 = spielhallen2.get(j);
                     final MetaObject spielhalleObject3 = spielhallen3.get(j);
-                    final MetaObject spielhalleObject4 = connector.getMetaObject(user, spielhalleObject1.getID(), spielhalleObject1.getMetaClass().getID(), user.getDomain());
+                    j++;
 
                     Assert.assertEquals("order of SPH_SPIELHALLE meta objects in SPH_BETREIBER (" + betreiberObject1.getID() + ") array matches",
                             spielhalleObject1.getID(),
@@ -810,13 +808,9 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     Assert.assertEquals("order of SPH_SPIELHALLE meta objects in SPH_BETREIBER (" + betreiberObject2.getID() + ") array matches",
                             spielhalleObject2.getID(),
                             spielhalleObject3.getID());
-                    Assert.assertEquals("order of SPH_SPIELHALLE meta objects in SPH_BETREIBER (" + betreiberObject3.getID() + ") array matches",
-                            spielhalleObject3.getID(),
-                            spielhalleObject4.getID());
 
                     this.compareMetaObjects(spielhalleObject1, spielhalleObject2, false, false, false);
                     this.compareMetaObjects(spielhalleObject2, spielhalleObject3, false, false, false);
-                    this.compareMetaObjects(spielhalleObject3, spielhalleObject4, false, false, false);
                 }
 
                 this.compareMetaObjects(betreiberObject1, betreiberObject2, false, false, false);
@@ -839,17 +833,14 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
             i = 0;
             for (final MetaObject spielhalleObject1 : spielhallen1) {
+                final MetaObject spielhalleObject2 = spielhallen2.get(i);
                 i++;
 
-                final MetaObject spielhalleObject2 = spielhallen2.get(i);
                 final MetaObject spielhalleObject3 = connector.getMetaObject(user, spielhalleObject1.getID(), spielhalleObject1.getMetaClass().getID(), user.getDomain());
 
                 Assert.assertEquals("order of SPH_SPIELHALLE meta objects matches",
                         spielhalleObject1.getID(),
                         spielhalleObject2.getID());
-                Assert.assertEquals("order of SPH_SPIELHALLE meta objects matches",
-                        spielhalleObject2.getID(),
-                        spielhalleObject3.getID());
 
                 final List<MetaObject> kategorien1 = getArrayElements(spielhalleObject1, "kategorien");
                 final List<MetaObject> kategorien2 = getArrayElements(spielhalleObject2, "kategorien");
@@ -871,11 +862,10 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
                 int j = 0;
                 for (final MetaObject kategorieObject1 : kategorien1) {
-                    j++;
 
                     final MetaObject kategorieObject2 = kategorien2.get(j);
                     final MetaObject kategorieObject3 = kategorien3.get(j);
-                    final MetaObject kategorieObject4 = connector.getMetaObject(user, kategorieObject1.getID(), kategorieObject1.getMetaClass().getID(), user.getDomain());
+                    j++;
 
                     Assert.assertEquals("order of SPH_KATEGORIE meta objects in SPH_SPIELHALLE (" + spielhalleObject1.getID() + ") array matches",
                             kategorieObject1.getID(),
@@ -885,9 +875,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                             kategorieObject3.getID());
 
                     this.compareMetaObjects(kategorieObject1, kategorieObject2, false, false, false);
-                    this.compareMetaObjects(kategorieObject2, kategorieObject3, false, false, false);
-                    this.compareMetaObjects(kategorieObject3, kategorieObject4, false, false, false);
-
                 }
 
                 this.compareMetaObjects(spielhalleObject1, spielhalleObject2, false, false, false);
@@ -895,7 +882,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             }
 
             LOGGER.info("getMetaObjectArrays() test passed! "
-                    + expectedSpielhallenCount + " meta objects updated");
+                    + (expectedSpielhallenCount + expectedBetreiberCount) + " meta objects with arrays compared");
 
         } catch (AssertionError ae) {
             LOGGER.error("getMetaObjectArrays() test failed with: " + ae.getMessage(), ae);
@@ -1224,7 +1211,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         try {
             LOGGER.debug("[04.06] testing reassignMetaObjectUpdatedObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
             // needed for DB Triggers
-            Thread.sleep(200);
+            Thread.sleep(100);
 
             final List<MetaObject> kategorien = this.getAllMetaObjects("SPH_KATEGORIE");
             final List<MetaObject> spielhallen = this.getAllMetaObjects("SPH_SPIELHALLE");
@@ -1283,7 +1270,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     expectedCount, actualCount);
 
             // needed for DB Triggers
-            Thread.sleep(200);
+            Thread.sleep(100);
             LOGGER.info("reassignMetaObjectUpdatedObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE) test passed! "
                     + expectedCount + " meta objects updated");
 
@@ -1306,7 +1293,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         try {
             LOGGER.debug("[04.07] testing updateMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
             // needed for DB Triggers
-            Thread.sleep(200);
+            Thread.sleep(100);
 
             final List<MetaObject> spielhallen = this.getAllMetaObjects("SPH_SPIELHALLE");
 
@@ -1427,7 +1414,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     expectedKategorienCount, actualKategorienCount);
 
             // needed for DB Triggers
-            Thread.sleep(200);
+            Thread.sleep(100);
             LOGGER.info("updateMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE) test passed! "
                     + expectedCount + " meta objects updated");
 
@@ -1450,7 +1437,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         try {
             LOGGER.debug("[04.08] testing createMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
             // needed for DB Triggers
-            Thread.sleep(200);
+            Thread.sleep(100);
 
             final List<MetaObject> spielhallen = this.getAllMetaObjects("SPH_SPIELHALLE");
 
@@ -1525,7 +1512,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     expectedKategorienCount, actualKategorienCount);
 
             // needed for DB Triggers
-            Thread.sleep(200);
+            Thread.sleep(100);
             LOGGER.info("createMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE) test passed! "
                     + expectedCount + " meta objects updated");
 
@@ -1548,7 +1535,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         try {
             LOGGER.debug("[04.09] testing createMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
             // needed for DB Triggers
-            Thread.sleep(200);
+            Thread.sleep(100);
 
             final List<MetaObject> spielhallen = this.getAllMetaObjects("SPH_SPIELHALLE");
 
@@ -1625,7 +1612,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     expectedKategorienCount, actualKategorienCount);
 
             // needed for DB Triggers
-            Thread.sleep(200);
+            Thread.sleep(100);
             LOGGER.info("createMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE) test passed! "
                     + expectedSpielhallenCount + " meta objects updated");
 
@@ -1648,7 +1635,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         try {
             LOGGER.debug("[04.10] testing deleteMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
             // needed for DB Triggers
-            Thread.sleep(200);
+            Thread.sleep(100);
 
             final List<MetaObject> spielhallen = this.getAllMetaObjects("SPH_SPIELHALLE");
 
@@ -1702,7 +1689,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     expectedKategorienCount, actualKategorienCount);
 
             // needed for DB Triggers
-            Thread.sleep(200);
+            Thread.sleep(100);
             LOGGER.info("deleteMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE) test passed! "
                     + expectedSpielhallenCount + " meta objects updated");
 
@@ -1727,7 +1714,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         try {
             LOGGER.debug("[04.11] testing reassignMetaObjectDeletedObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
             // needed for DB Triggers
-            Thread.sleep(200);
+            Thread.sleep(100);
 
             final List<MetaObject> spielhallen = this.getAllMetaObjects("SPH_SPIELHALLE");
 
@@ -1790,7 +1777,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     expectedKategorienCount, actualKategorienCount);
 
             // needed for DB Triggers
-            Thread.sleep(200);
+            Thread.sleep(100);
             LOGGER.info("reassignMetaObjectDeletedObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE) test passed! "
                     + expectedSpielhallenCount + " meta objects updated");
 
@@ -1813,7 +1800,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         try {
             LOGGER.debug("[04.12] testing updateMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
             // needed for DB Triggers
-            Thread.sleep(200);
+            Thread.sleep(100);
 
             final List<MetaObject> spielhallen = this.getAllMetaObjects("SPH_SPIELHALLE");
 
@@ -1921,7 +1908,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     expectedKategorienCount, actualKategorienCount);
 
             // needed for DB Triggers
-            Thread.sleep(200);
+            Thread.sleep(100);
             LOGGER.info("updateMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN) test passed! "
                     + expectedCount + " meta objects updated");
 
@@ -1940,29 +1927,49 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @throws Exception
      */
     @Test
-    public void test04objectService13ReplaceMetaObjectNtoMArrayProperty() throws Exception {
+    public void test04objectService13replaceMetaObjectNtoMArrayProperty() throws Exception {
         try {
-            LOGGER.debug("[04.13] testing addMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
+            LOGGER.debug("[04.13] testing replaceMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
             // needed for DB Triggers
-            Thread.sleep(200);
-
-            final List<MetaObject> kategorien = this.getAllMetaObjects("SPH_KATEGORIE");
-            final List<MetaObject> spielhallen = this.getAllMetaObjects("SPH_SPIELHALLE");
-
-            Assert.assertFalse("SPH_KATEGORIE meta objects available",
-                    kategorien.isEmpty());
-            Assert.assertFalse("SPH_SPIELHALLE meta objects available",
-                    spielhallen.isEmpty());
+            Thread.sleep(100);
 
             final int expectedSpielhallenCount = dbEntitiesCount.get("SPH_SPIELHALLE");
             final int expectedKategorienCount = dbEntitiesCount.get("SPH_SPIELHALLE_KATEGORIEN");
             final int expectedKategorieCount = dbEntitiesCount.get("SPH_KATEGORIE");
 
+            final List<MetaObject> originalSpielhallen = this.getAllMetaObjects("SPH_SPIELHALLE");
+            Assert.assertFalse("SPH_SPIELHALLE meta objects available",
+                    originalSpielhallen.isEmpty());
+            Assert.assertEquals(expectedSpielhallenCount + " SPH_SPIELHALLE meta objects in database",
+                    expectedSpielhallenCount,
+                    originalSpielhallen.size());
+
+            final List<MetaObject> spielhallen = this.getAllMetaObjects("SPH_SPIELHALLE");
+            Assert.assertFalse("SPH_SPIELHALLE meta objects available",
+                    spielhallen.isEmpty());
+            Assert.assertEquals(expectedSpielhallenCount + " SPH_SPIELHALLE meta objects in database",
+                    expectedSpielhallenCount,
+                    spielhallen.size());
+
+            Assert.assertEquals(expectedSpielhallenCount + " SPH_SPIELHALLE meta objects in database",
+                    originalSpielhallen.size(),
+                    spielhallen.size());
+
+            final List<MetaObject> kategorien = this.getAllMetaObjects("SPH_KATEGORIE");
+            Assert.assertFalse("SPH_KATEGORIE meta objects available",
+                    kategorien.isEmpty());
+            Assert.assertEquals(expectedKategorieCount + " SPH_KATEGORIE meta objects in database",
+                    expectedKategorieCount,
+                    kategorien.size());
+
             int i = 0;
             for (final MetaObject spielhalleObject : spielhallen) {
-                i++;
 
-                final MetaObject originalSpielhalleObject = connector.getMetaObject(user, spielhalleObject.getID(), spielhalleObject.getMetaClass().getID(), user.getDomain());
+                // don't fetch a new spielhalle object after kaegorien[] of another spielhalle object has changed
+                // Beware of SPIELHALLE/BETREIBER/SPIELHALLEN[]/SPIELHALLE/KATEGORIEN[]/KATEGORIE object structure!
+                //final MetaObject originalSpielhalleObject = connector.getMetaObject(user, spielhalleObject.getID(), spielhalleObject.getMetaClass().getID(), user.getDomain());
+                final MetaObject originalSpielhalleObject = originalSpielhallen.get(i);
+                i++;
 
                 Assert.assertNotNull("meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") retrieved from server",
                         originalSpielhalleObject);
@@ -1972,17 +1979,21 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         originalSpielhalleObject.getAttributeByFieldName("kategorien").getValue());
                 Assert.assertFalse("array attribute 'kategorien' of  meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' is not empty",
                         getArrayElements(originalSpielhalleObject, "kategorien").isEmpty());
-                // safely compare recursively, because nothing has changed!
+
+                // safely compare recursively, because originalSpielhalleObject retrieved before changes were made
                 this.compareMetaObjects(spielhalleObject, originalSpielhalleObject, false, false, false);
 
                 final ObjectAttribute kategorienAttribute = spielhalleObject.getAttributeByFieldName("kategorien");
+                // get the n-m dummy container object
                 final MetaObject dummyKategorieArrayObject = (MetaObject) kategorienAttribute.getValue();
+                // get all array entries as attributes
                 final ObjectAttribute[] dummyKategorieArrayObjectAttributes = dummyKategorieArrayObject.getAttribs();
-                // select the last intermediate arry heler object from the respective dummy arrayField
+                // select the last intermediate array helper object from the respective dummy arrayField
                 final int kategorieObjectIndex = dummyKategorieArrayObjectAttributes.length - 1;
                 final ObjectAttribute dummyKategorieArrayObjectAttribute = dummyKategorieArrayObjectAttributes[kategorieObjectIndex];
                 final MetaObject intermediateKategorieArrayObject = (MetaObject) dummyKategorieArrayObjectAttribute.getValue();
 
+                // find the real kategorie object attribute in the intermediate array helper object's attributes
                 ObjectAttribute kategorieAttribute = null;
                 for (final ObjectAttribute oa : intermediateKategorieArrayObject.getAttribs()) {
                     if (oa.referencesObject()) {
@@ -1992,18 +2003,21 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
                 Assert.assertNotNull("intermediate Kategorie Array Object Attribute[" + kategorieObjectIndex + "] of meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") does exist",
                         kategorieAttribute);
-
+                // get the real kategorie object from the attribute
                 final MetaObject oldKategorieObject = (MetaObject) kategorieAttribute.getValue();
+                // select random new kategorie object
                 MetaObject newKategorieObject = oldKategorieObject;
                 while (oldKategorieObject.getID() == newKategorieObject.getID()) {
                     newKategorieObject = kategorien.get(new Random().nextInt(kategorien.size()));
                 }
 
+                // important: change chain
                 kategorienAttribute.setChanged(true);
                 dummyKategorieArrayObject.setStatus(MetaObject.MODIFIED);
                 dummyKategorieArrayObjectAttribute.setChanged(true);
                 intermediateKategorieArrayObject.setStatus(MetaObject.MODIFIED);
                 kategorieAttribute.setChanged(true);
+                // actually assign a new kategorie without changing the dummy / intermediate objects
                 kategorieAttribute.setValue(newKategorieObject);
 
                 int response = connector.updateMetaObject(user, spielhalleObject, user.getDomain());
@@ -2021,8 +2035,53 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         getArrayElements(updatedSpielhalleObject, "kategorien").get(kategorieObjectIndex).getId(),
                         getArrayElements(updatedSpielhalleObject, "kategorien").get(kategorieObjectIndex).getId());
 
+                // compare only the kategorien array 
                 this.compareMetaObjects((MetaObject) spielhalleObject.getAttributeByFieldName("kategorien").getValue(), (MetaObject) updatedSpielhalleObject.getAttributeByFieldName("kategorien").getValue(),
                         false, false, true);
+
+                // revert the changes! 
+                kategorienAttribute.setChanged(true);
+                dummyKategorieArrayObject.setStatus(MetaObject.MODIFIED);
+                dummyKategorieArrayObjectAttribute.setChanged(true);
+                intermediateKategorieArrayObject.setStatus(MetaObject.MODIFIED);
+                kategorieAttribute.setChanged(true);
+                // recycle old dummy stuff!
+                kategorieAttribute.setValue(oldKategorieObject);
+
+                response = connector.updateMetaObject(user, spielhalleObject, user.getDomain());
+                Assert.assertEquals("reverted meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") successfully retrieved from server",
+                        1, response);
+                final MetaObject revertedSpielhalleObject = connector.getMetaObject(user, spielhalleObject.getID(), spielhalleObject.getMetaClass().getID(), user.getDomain());
+                Assert.assertNotNull("reverted meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") retrieved from server",
+                        revertedSpielhalleObject);
+                Assert.assertNotNull("reverted kategorien attribute of meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") is not null",
+                        revertedSpielhalleObject.getAttributeByFieldName("kategorien"));
+                Assert.assertNotNull("reverted kategorien of meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") is not null",
+                        revertedSpielhalleObject.getAttributeByFieldName("kategorien").getValue());
+
+                Assert.assertEquals("kategorie[" + kategorieObjectIndex + "]  of reverted meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") replaced from '" + oldKategorieObject.getName() + "' to '" + newKategorieObject.getName() + "'",
+                        getArrayElements(revertedSpielhalleObject, "kategorien").get(kategorieObjectIndex).getId(),
+                        getArrayElements(revertedSpielhalleObject, "kategorien").get(kategorieObjectIndex).getId());
+            }
+
+            final List<MetaObject> revertedSpielhallen = this.getAllMetaObjects("SPH_SPIELHALLE");
+            Assert.assertFalse("SPH_SPIELHALLE meta objects available",
+                    revertedSpielhallen.isEmpty());
+            Assert.assertEquals(expectedSpielhallenCount + " SPH_SPIELHALLE meta objects in database",
+                    expectedSpielhallenCount,
+                    revertedSpielhallen.size());
+            Assert.assertEquals(expectedSpielhallenCount + " SPH_SPIELHALLE meta objects in database",
+                    originalSpielhallen.size(),
+                    revertedSpielhallen.size());
+
+            i = 0;
+            for (final MetaObject originalSpielhalleObject : originalSpielhallen) {
+                final MetaObject revertedSpielhalle = revertedSpielhallen.get(i);
+                i++;
+
+                // safely compare recursively, because originalSpielhalleObject retrieved before changes were made
+                // and revertedSpielhalle object retrieved after *all* changes were reverted!
+                this.compareMetaObjects(originalSpielhalleObject, revertedSpielhalle, false, false, false);
             }
 
             final int actualSpielhallenCount = countDbEntities("SPH_SPIELHALLE", 3);
@@ -2038,15 +2097,15 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     expectedKategorieCount, actualKategorieCount);
 
             // needed for DB Triggers
-            Thread.sleep(200);
-            LOGGER.info("addMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN) test passed! "
+            Thread.sleep(100);
+            LOGGER.info("replaceMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN) test passed! "
                     + expectedSpielhallenCount + " meta objects updated");
 
         } catch (AssertionError ae) {
-            LOGGER.error("addMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN) test failed with: " + ae.getMessage(), ae);
+            LOGGER.error("replaceMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN) test failed with: " + ae.getMessage(), ae);
             throw ae;
         } catch (Exception ex) {
-            LOGGER.error("Unexpected error during addMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN): " + ex.getMessage(), ex);
+            LOGGER.error("Unexpected error during replaceMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN): " + ex.getMessage(), ex);
             throw ex;
         }
     }
@@ -2062,7 +2121,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         try {
             LOGGER.debug("[04.14] testing addMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
             // needed for DB Triggers
-            Thread.sleep(200);
+            Thread.sleep(100);
 
             final List<MetaObject> kategorien = this.getAllMetaObjects("SPH_KATEGORIE");
             final List<MetaObject> spielhallen = this.getAllMetaObjects("SPH_SPIELHALLE");
@@ -2145,7 +2204,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     expectedKategorieCount, actualKategorieCount);
 
             // needed for DB Triggers
-            Thread.sleep(200);
+            Thread.sleep(100);
             LOGGER.info("addMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN) test passed! "
                     + expectedSpielhallenCount + " meta objects updated");
 
@@ -2258,8 +2317,20 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         final ObjectAttribute arrayField = parentObject.getAttributeByFieldName(arrayFieldName);
         Assert.assertNotNull("'" + arrayFieldName + "' attribute available in meta object '" + parentObject.getName() + "'",
                 arrayField);
-        Assert.assertTrue("'" + arrayFieldName + "' attribute is array",
-                arrayField.isArray());
+        // WARNING: isArrayis not set on 1-n array attributes!
+        //Assert.assertTrue("'" + arrayFieldName + "' attribute is array",
+        //        arrayField.isArray());
+
+        if (arrayField.isArray()) {
+            Assert.assertTrue("dummay array object '" + arrayFieldName + "' is n-m array: "
+                    + "arrayField.getMai().getForeignKeyClassId() >= 0 = true",
+                    arrayField.getMai().getForeignKeyClassId() >= 0);
+        } else {
+            Assert.assertTrue("dummay array object '" + arrayFieldName + "' is 1-n array: "
+                    + "arrayField.getMai().getForeignKeyClassId() < 0 = true",
+                    arrayField.getMai().getForeignKeyClassId() < 0);
+        }
+
         Assert.assertNotNull("value of '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + "' is not null",
                 arrayField.getValue());
         Assert.assertTrue("value of '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + "' is MetaObject",
@@ -2488,6 +2559,9 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         actualMetaObject.getReferencingObjectAttribute());
             }
         } else {
+            Assert.assertNotNull("actualMetaObject MetaObject [" + name + "].getReferencingObjectAttribute() is not null",
+                    actualMetaObject.getReferencingObjectAttribute());
+
             // always limit recursion in referencing oa
             this.compareObjectAttributes(
                     expectedMetaObject.getReferencingObjectAttribute(),
