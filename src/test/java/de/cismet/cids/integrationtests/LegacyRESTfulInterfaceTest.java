@@ -1963,7 +1963,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
                 // don't fetch a new spielhalle object after kaegorien[] of another spielhalle object has changed
                 // Beware of SPIELHALLE/BETREIBER/SPIELHALLEN[]/SPIELHALLE/KATEGORIEN[]/KATEGORIE object structure!
-                //final MetaObject originalSpielhalleObject = connector.getMetaObject(user, spielhalleObject.getID(), spielhalleObject.getMetaClass().getID(), user.getDomain());
+                //final MetaObject originalBetreiberObject = connector.getMetaObject(user, spielhalleObject.getID(), spielhalleObject.getMetaClass().getID(), user.getDomain());
                 final MetaObject originalSpielhalleObject = originalSpielhallen.get(i);
                 i++;
 
@@ -1976,7 +1976,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 Assert.assertFalse("array attribute 'kategorien' of  meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' is not empty",
                         getArrayElements(originalSpielhalleObject, "kategorien").isEmpty());
 
-                // safely compare recursively, because originalSpielhalleObject retrieved before changes were made
+                // safely compare recursively, because originalBetreiberObject retrieved before changes were made
                 this.compareMetaObjects(spielhalleObject, originalSpielhalleObject, false, false, false);
 
                 final ObjectAttribute kategorienAttribute = spielhalleObject.getAttributeByFieldName("kategorien");
@@ -2075,7 +2075,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 final MetaObject revertedSpielhalle = revertedSpielhallen.get(i);
                 i++;
 
-                // safely compare recursively, because originalSpielhalleObject retrieved before changes were made
+                // safely compare recursively, because originalBetreiberObject retrieved before changes were made
                 // and revertedSpielhalle object retrieved after *all* changes were reverted!
                 this.compareMetaObjects(originalSpielhalleObject, revertedSpielhalle, false, false, false);
             }
@@ -2153,7 +2153,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
                 // don't fetch a new spielhalle object after kaegorien[] of another spielhalle object has changed
                 // Beware of SPIELHALLE/BETREIBER/SPIELHALLEN[]/SPIELHALLE/KATEGORIEN[]/KATEGORIE object structure!
-                //final MetaObject originalSpielhalleObject = connector.getMetaObject(user, spielhalleObject.getID(), spielhalleObject.getMetaClass().getID(), user.getDomain());
+                //final MetaObject originalBetreiberObject = connector.getMetaObject(user, spielhalleObject.getID(), spielhalleObject.getMetaClass().getID(), user.getDomain());
                 final MetaObject originalSpielhalleObject = originalSpielhallen.get(i);
                 i++;
 
@@ -2166,7 +2166,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 Assert.assertFalse("array attribute 'kategorien' of  meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' is not empty",
                         getArrayElements(originalSpielhalleObject, "kategorien").isEmpty());
 
-                // safely compare recursively, because originalSpielhalleObject retrieved before changes were made
+                // safely compare recursively, because originalBetreiberObject retrieved before changes were made
                 this.compareMetaObjects(spielhalleObject, originalSpielhalleObject, false, false, false);
 
                 // select random new kategorie object
@@ -2241,7 +2241,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
     @Test
     public void test04objectService15removeMetaObjectNtoMArrayProperty() throws Exception {
         try {
-            LOGGER.debug("[04.14] testing removeMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
+            LOGGER.debug("[04.15] testing removeMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
             // needed for DB Triggers
             Thread.sleep(100);
 
@@ -2280,7 +2280,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
                 // don't fetch a new spielhalle object after kaegorien[] of another spielhalle object has changed
                 // Beware of SPIELHALLE/BETREIBER/SPIELHALLEN[]/SPIELHALLE/KATEGORIEN[]/KATEGORIE object structure!
-                //final MetaObject originalSpielhalleObject = connector.getMetaObject(user, spielhalleObject.getID(), spielhalleObject.getMetaClass().getID(), user.getDomain());
+                //final MetaObject originalBetreiberObject = connector.getMetaObject(user, spielhalleObject.getID(), spielhalleObject.getMetaClass().getID(), user.getDomain());
                 final MetaObject originalSpielhalleObject = originalSpielhallen.get(i);
                 i++;
 
@@ -2294,7 +2294,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 Assert.assertFalse("array attribute 'kategorien' of  meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' is not empty",
                         arrayElements.isEmpty());
 
-                // safely compare recursively, because originalSpielhalleObject retrieved before changes were made
+                // safely compare recursively, because originalBetreiberObject retrieved before changes were made
                 this.compareMetaObjects(spielhalleObject, originalSpielhalleObject, false, false, false);
 
                 final int arrayElementIndex = arrayElements.size() - 1;
@@ -2368,6 +2368,144 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             throw ae;
         } catch (Exception ex) {
             LOGGER.error("Unexpected error during removeMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN): " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
+    /**
+     * Test updating a property of a meta object residing in a n-m array.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void test04objectService16updateMetaObject1toNArrayProperty() throws Exception {
+        try {
+            LOGGER.debug("[04.16] testing updateMetaObject1toNArrayProperty(SPH_BETRIEBER/SPH_SPIELHALLE)");
+            // needed for DB Triggers
+            Thread.sleep(100);
+
+            final List<MetaObject> betreiberList = this.getAllMetaObjects("SPH_BETREIBER");
+            final List<MetaObject> originalBetreiberList = new ArrayList<MetaObject>(betreiberList.size());
+
+            final int expectedBetreiberCount = dbEntitiesCount.get("SPH_BETREIBER");
+            Assert.assertTrue("SPH_BETREIBER meta objects available",
+                    !betreiberList.isEmpty());
+            final int expectedSpielhallenCount = dbEntitiesCount.get("SPH_SPIELHALLE");
+            Assert.assertTrue("SPH_SPIELHALLE meta objects available",
+                    !betreiberList.isEmpty());
+
+            int i = 0;
+            for (final MetaObject betreiberObject : betreiberList) {
+                i++;
+
+                final MetaObject originalBetreiberObject = connector.getMetaObject(user, betreiberObject.getID(), betreiberObject.getMetaClass().getID(), user.getDomain());
+                originalBetreiberList.add(originalBetreiberObject);
+
+                Assert.assertNotNull("meta object #" + i + "/" + expectedBetreiberCount + " (id:" + betreiberObject.getID() + ") for meta class '" + betreiberObject.getMetaClass().getTableName() + "' (id:" + betreiberObject.getMetaClass().getID() + ") retrieved from server",
+                        originalBetreiberObject);
+                Assert.assertNotNull("spielhallen attribute of meta object #" + i + "/" + expectedBetreiberCount + " (id:" + betreiberObject.getID() + ") for meta class '" + betreiberObject.getMetaClass().getTableName() + "' (id:" + betreiberObject.getMetaClass().getID() + ") is not null",
+                        originalBetreiberObject.getAttributeByFieldName("spielhallen"));
+                Assert.assertNotNull("spielhallen array dummy object of meta object #" + i + "/" + expectedBetreiberCount + " (id:" + betreiberObject.getID() + ") for meta class '" + betreiberObject.getMetaClass().getTableName() + "' (id:" + betreiberObject.getMetaClass().getID() + ") is not null",
+                        originalBetreiberObject.getAttributeByFieldName("spielhallen").getValue());
+                Assert.assertFalse("array attribute 'spielhallen' of  meta object #" + i + "/" + expectedBetreiberCount + " (id:" + betreiberObject.getID() + ") for meta class '" + betreiberObject.getMetaClass().getTableName() + "' is not empty",
+                        getArrayElements(originalBetreiberObject, "spielhallen").isEmpty());
+                // safely compare recursively, because nothing has changed!
+                this.compareMetaObjects(betreiberObject, originalBetreiberObject, false, false, false);
+
+                final ObjectAttribute spielhallenAttribute = betreiberObject.getAttributeByFieldName("spielhallen");
+                final MetaObject dummySpielhalleArrayObject = (MetaObject) spielhallenAttribute.getValue();
+                final ObjectAttribute[] dummySpielhalleArrayObjectAttributes = dummySpielhalleArrayObject.getAttribs();
+
+                Assert.assertEquals("array attribute 'spielhallen' of  meta object #" + i + "/" + expectedBetreiberCount + " (id:" + betreiberObject.getID() + ") for meta class '" + betreiberObject.getMetaClass().getTableName() + "' contains " + dummySpielhalleArrayObjectAttributes.length + " elements",
+                        dummySpielhalleArrayObjectAttributes.length,
+                        getArrayElements(betreiberObject, "spielhallen").size());
+
+                // select the last intermediate array heler object from the respective dummy arrayField
+                final int spielhalleObjectIndex = dummySpielhalleArrayObjectAttributes.length - 1;
+                final ObjectAttribute dummySpielhalleArrayObjectAttribute = dummySpielhalleArrayObjectAttributes[spielhalleObjectIndex];
+                final MetaObject spielhalleObject = (MetaObject) dummySpielhalleArrayObjectAttribute.getValue();
+
+                final ObjectAttribute spielhalleNameAttribute = spielhalleObject.getAttributeByFieldName("name");
+                final String oldSpielhalleName = spielhalleNameAttribute.getValue().toString();
+                final String updatedSpielhalleName = oldSpielhalleName + " (betreiber array updated)";
+
+                spielhallenAttribute.setChanged(true);
+                dummySpielhalleArrayObject.setStatus(MetaObject.MODIFIED);
+                dummySpielhalleArrayObjectAttribute.setChanged(true);
+                spielhalleObject.setStatus(MetaObject.MODIFIED);
+                spielhalleNameAttribute.setChanged(true);
+                spielhalleNameAttribute.setValue(updatedSpielhalleName);
+
+                Assert.assertEquals("spielhalle[" + spielhalleObjectIndex + "] of meta object #" + i + "/" + expectedBetreiberCount + " (id:" + betreiberObject.getID() + ") for meta class '" + betreiberObject.getMetaClass().getTableName() + "' (id:" + betreiberObject.getMetaClass().getID() + ") changed from '" + oldSpielhalleName + "' to '" + updatedSpielhalleName + "'",
+                        updatedSpielhalleName,
+                        getArrayElements(betreiberObject, "spielhallen").get(spielhalleObjectIndex).getAttributeByFieldName("name").getValue().toString());
+
+                int response = connector.updateMetaObject(user, betreiberObject, user.getDomain());
+                Assert.assertEquals("meta object #" + i + "/" + expectedBetreiberCount + " (id:" + betreiberObject.getID() + ") for meta class '" + betreiberObject.getMetaClass().getTableName() + "' (id:" + betreiberObject.getMetaClass().getID() + ") successfully updated from server",
+                        1, response);
+
+                final MetaObject updatedBetreiberObject = connector.getMetaObject(user, betreiberObject.getID(), betreiberObject.getMetaClass().getID(), user.getDomain());
+                final MetaObject updatedSpielhalleObject = connector.getMetaObject(user, spielhalleObject.getID(), spielhalleObject.getMetaClass().getID(), user.getDomain());
+
+                Assert.assertEquals("name of spielhalle (" + updatedSpielhalleObject.getID() + ") changed from '" + oldSpielhalleName + "' to '" + updatedSpielhalleName + "'",
+                        updatedSpielhalleName,
+                        getArrayElements(updatedSpielhalleObject, "spielhallen").get(spielhalleObjectIndex).getAttributeByFieldName("name").getValue().toString());
+                Assert.assertNotNull("updated meta object #" + i + "/" + expectedBetreiberCount + " (id:" + betreiberObject.getID() + ") for meta class '" + betreiberObject.getMetaClass().getTableName() + "' (id:" + betreiberObject.getMetaClass().getID() + ") retrieved from server",
+                        updatedBetreiberObject);
+                Assert.assertNotNull("updated spielhallen attribute of meta object #" + i + "/" + expectedBetreiberCount + " (id:" + betreiberObject.getID() + ") for meta class '" + betreiberObject.getMetaClass().getTableName() + "' (id:" + betreiberObject.getMetaClass().getID() + ") is not null",
+                        updatedBetreiberObject.getAttributeByFieldName("spielhallen"));
+                Assert.assertNotNull("updated spielhallen of meta object #" + i + "/" + expectedBetreiberCount + " (id:" + betreiberObject.getID() + ") for meta class '" + betreiberObject.getMetaClass().getTableName() + "' (id:" + betreiberObject.getMetaClass().getID() + ") is not null",
+                        updatedBetreiberObject.getAttributeByFieldName("spielhallen").getValue());
+                Assert.assertEquals("name of spielhalle[" + spielhalleObjectIndex + "]  of meta object #" + i + "/" + expectedBetreiberCount + " (id:" + betreiberObject.getID() + ") for meta class '" + betreiberObject.getMetaClass().getTableName() + "' (id:" + betreiberObject.getMetaClass().getID() + ") changed from '" + oldSpielhalleName + "' to '" + updatedSpielhalleName + "'",
+                        updatedSpielhalleName,
+                        getArrayElements(updatedBetreiberObject, "spielhallen").get(spielhalleObjectIndex).getAttributeByFieldName("name").getValue().toString());
+
+                this.compareMetaObjects((MetaObject) betreiberObject.getAttributeByFieldName("spielhallen").getValue(), (MetaObject) updatedSpielhalleObject.getAttributeByFieldName("spielhallen").getValue(),
+                        true, false, true);
+
+                // revert changes!
+                spielhalleNameAttribute.setValue(oldSpielhalleName);
+                response = connector.updateMetaObject(user, spielhalleObject, user.getDomain());
+                Assert.assertEquals("spielhalle object (" + spielhalleObject.getName() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") successfully updated from server",
+                        1, response);
+
+                final MetaObject revertedBetreiberObject = connector.getMetaObject(user, betreiberObject.getID(), betreiberObject.getMetaClass().getID(), user.getDomain());
+                Assert.assertEquals("name of spielhalle[" + spielhalleObjectIndex + "] of meta object #" + i + "/" + expectedBetreiberCount + " (id:" + betreiberObject.getID() + ") for meta class '" + betreiberObject.getMetaClass().getTableName() + "' (id:" + betreiberObject.getMetaClass().getID() + ") reverted from '" + updatedSpielhalleName + "' to '" + oldSpielhalleName + "'",
+                        oldSpielhalleName,
+                        getArrayElements(revertedBetreiberObject, "spielhallen").get(spielhalleObjectIndex).getAttributeByFieldName("name").getValue().toString());
+
+            }
+
+            final List<MetaObject> revertedBetreiberList = this.getAllMetaObjects("SPH_BETREIBER");
+            Assert.assertEquals("reverted " + originalBetreiberList.size() + " spielhallen",
+                    originalBetreiberList.size(),
+                    revertedBetreiberList.size());
+
+            // compare after all updates have been reverted!
+            int j = 0;
+            for (final MetaObject originalBetreiber : originalBetreiberList) {
+                this.compareMetaObjects(originalBetreiber, revertedBetreiberList.get(j), false, false, false);
+                j++;
+            }
+
+            final int actualCount = countDbEntities("SPH_SPIELHALLE", 3);
+            Assert.assertEquals(expectedBetreiberCount + " 'SPH_SPIELHALLE' entities in Integration Base",
+                    expectedBetreiberCount, actualCount);
+
+            final int actualSpielhallenCount = countDbEntities("SPH_SPIELHALLE_KATEGORIEN", 3);
+            Assert.assertEquals(expectedSpielhallenCount + " 'SPH_SPIELHALLE_KATEGORIE' entities in Integration Base",
+                    expectedSpielhallenCount, actualSpielhallenCount);
+
+            // needed for DB Triggers
+            Thread.sleep(100);
+            LOGGER.info("updateMetaObject1toNArrayProperty(SPH_BETRIEBER/SPH_SPIELHALLE) test passed! "
+                    + expectedBetreiberCount + " meta objects updated");
+
+        } catch (AssertionError ae) {
+            LOGGER.error("updateMetaObject1toNArrayProperty(SPH_BETRIEBER/SPH_SPIELHALLE) test failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during updateMetaObject1toNArrayProperty(SPH_BETRIEBER/SPH_SPIELHALLE): " + ex.getMessage(), ex);
             throw ex;
         }
     }
