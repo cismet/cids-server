@@ -2116,7 +2116,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @throws Exception
      */
     @Test
-    @Ignore
     public void test04objectService14addMetaObjectNtoMArrayProperty() throws Exception {
         try {
             LOGGER.debug("[04.14] testing addMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
@@ -2174,56 +2173,14 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 // safely compare recursively, because originalSpielhalleObject retrieved before changes were made
                 this.compareMetaObjects(spielhalleObject, originalSpielhalleObject, false, false, false);
 
-                final ObjectAttribute kategorienAttribute = spielhalleObject.getAttributeByFieldName("kategorien");
-                // get the n-m dummy container object
-                final MetaObject dummyKategorieArrayObject = (MetaObject) kategorienAttribute.getValue();
-                // get all array entries as attributes
-                final ObjectAttribute[] dummyKategorieArrayObjectAttributes = dummyKategorieArrayObject.getAttribs();
-                final int kategorieObjectIndex = dummyKategorieArrayObjectAttributes.length;
-
-                // create a new intermediate helper object
-                final int arrayHelperObjectClassId = kategorienAttribute.getMai().getForeignKeyClassId();
-                Assert.assertTrue("array Helper Object ClassId  of meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' is not negative",
-                        arrayHelperObjectClassId >= 0);
-
-                final MetaClass arrayHelperObjectClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), arrayHelperObjectClassId);
-                Assert.assertNotNull("array Helper Object meta class '" + arrayHelperObjectClassId + "' from meta class cache not null", arrayHelperObjectClassId);
-
-                final MetaObject intermediateKategorieArrayObject = arrayHelperObjectClass.getEmptyInstance();
-                Assert.assertNotNull("new array intermediate meta object of meta class '" + arrayHelperObjectClass.getName() + "'  not null",
-                        intermediateKategorieArrayObject);
-                // find the real kategorie object attribute in the intermediate array helper object's attributes
-                ObjectAttribute kategorieAttribute = null;
-                for (final ObjectAttribute oa : intermediateKategorieArrayObject.getAttribs()) {
-                    if (oa.referencesObject()) {
-                        kategorieAttribute = oa;
-                    }
-                }
-                Assert.assertNotNull("actual array entry attribute of new array intermediate meta object of meta class '" + arrayHelperObjectClass.getName() + "'  not null",
-                        kategorieAttribute);
-
                 // select random new kategorie object
                 final MetaObject newKategorieObject = kategorien.get(new Random().nextInt(kategorien.size()));
 
-                // create intermediate attribute 
-                // use member attribute info from dummy array attribute?!
-                final ObjectAttribute dummyKategorieArrayObjectAttribute
-                        = new ObjectAttribute((kategorienAttribute.getMai().getId()
-                                + "." // NOI18N
-                                + kategorieObjectIndex),
-                                kategorienAttribute.getMai(),
-                                intermediateKategorieArrayObject.getID(),
-                                intermediateKategorieArrayObject,
-                                Policy.createWIKIPolicy());
+                // delegate adding attribute to helper method
+                final int newKategorieObjectIndex = addArrayElement(spielhalleObject, "kategorien", newKategorieObject);
 
-                // important: change chain
-                kategorienAttribute.setChanged(true);
-                dummyKategorieArrayObject.setStatus(MetaObject.MODIFIED);
-                dummyKategorieArrayObject.addAttribute(dummyKategorieArrayObjectAttribute);
-                intermediateKategorieArrayObject.setStatus(MetaObject.MODIFIED);
-                kategorieAttribute.setChanged(true);
-                // actually assign a new kategorie without changing the dummy / intermediate objects
-                kategorieAttribute.setValue(newKategorieObject);
+                // compare size after addAttribute
+                final int newKategorienSize = getArrayElements(spielhalleObject, "kategorien").size();
 
                 int response = connector.updateMetaObject(user, spielhalleObject, user.getDomain());
                 Assert.assertEquals("meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") successfully updated from server",
@@ -2238,8 +2195,14 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 Assert.assertNotNull("updated kategorien of meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") is not null",
                         updatedSpielhalleObject.getAttributeByFieldName("kategorien").getValue());
 
-                Assert.assertEquals("kategorie[" + kategorieObjectIndex + "]  of meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") added as '" + newKategorieObject.getName() + "'",
-                        getArrayElements(updatedSpielhalleObject, "kategorien").get(kategorieObjectIndex).getName(),
+                final int updatedKategorienSize = getArrayElements(updatedSpielhalleObject, "kategorien").size();
+                Assert.assertEquals("server updated kategorien[] of meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") size is " + newKategorienSize,
+                        newKategorienSize, updatedKategorienSize);
+                Assert.assertEquals("server updated kategorien[] of meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") size is " + newKategorienSize,
+                        updatedKategorienSize, (newKategorieObjectIndex + 1));
+
+                Assert.assertEquals("kategorie[" + newKategorieObjectIndex + "]  of meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") added as '" + newKategorieObject.getName() + "'",
+                        getArrayElements(updatedSpielhalleObject, "kategorien").get(newKategorieObjectIndex).getName(),
                         newKategorieObject.getName());
 
                 // compare only the kategorien array 
@@ -2252,12 +2215,14 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     expectedSpielhallenCount, actualSpielhallenCount);
 
             final int actualKategorienCount = countDbEntities("SPH_SPIELHALLE_KATEGORIEN", 3);
-            Assert.assertEquals(expectedKategorienCount + " 'SPH_SPIELHALLE_KATEGORIE' entities in Integration Base",
-                    expectedKategorienCount, actualKategorienCount);
+            Assert.assertEquals((expectedKategorienCount + i) + " 'SPH_SPIELHALLE_KATEGORIE' entities in Integration Base",
+                    (expectedKategorienCount + i), actualKategorienCount);
+            Assert.assertEquals(expectedUpdatedKategorienCount + " 'SPH_SPIELHALLE_KATEGORIE' entities in Integration Base",
+                    expectedUpdatedKategorienCount, actualKategorienCount);
 
             final int actualKategorieCount = countDbEntities("SPH_KATEGORIE", 3);
             Assert.assertEquals(expectedKategorieCount + " 'SPH_KATEGORIE' entities in Integration Base",
-                    expectedUpdatedKategorienCount, actualKategorieCount);
+                    expectedKategorieCount, actualKategorieCount);
 
             // needed for DB Triggers
             Thread.sleep(100);
@@ -2299,7 +2264,15 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    protected void addArrayElement(final MetaObject parentObject,
+    /**
+     * Helper Method for adding array elements
+     *
+     * @param parentObject
+     * @param arrayFieldName
+     * @param arrayElementObject
+     * @return
+     */
+    protected int addArrayElement(final MetaObject parentObject,
             final String arrayFieldName,
             final MetaObject arrayElementObject) {
 
@@ -2308,6 +2281,8 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 arrayField);
         Assert.assertTrue("'" + arrayFieldName + "' attribute is array",
                 arrayField.isArray());
+        // TODO: create new dummy container object if value is null
+        // See 
         Assert.assertNotNull("value of '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + "' is not null",
                 arrayField.getValue());
         Assert.assertTrue("value of '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + "' is MetaObject",
@@ -2319,11 +2294,23 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
         // 1-n array
         if (arrayField.getMai().isVirtual() && arrayField.getMai().getForeignKeyClassId() < 0) {
+            Assert.assertTrue("FIXME: implement operation", false);
+            return -1;
 
         } else {
+
+            final int oldArraySize = getArrayElements(parentObject, arrayFieldName).size();
+            final int newArrayElementObjectIndex = arrayContainerDummyObject.getAttribs().length;
+            Assert.assertEquals(arrayFieldName + "[] of meta object '" + parentObject + "' (" + parentObject.getID() + ") size is " + oldArraySize,
+                    newArrayElementObjectIndex, oldArraySize);
+
+            final int intermediateArrayElementClassClassId = arrayField.getMai().getForeignKeyClassId();
+            Assert.assertTrue("array Helper Object ClassId  of meta object '" + parentObject + "' (" + parentObject.getID() + ") is not negative",
+                    intermediateArrayElementClassClassId >= 0);
+
             final MetaClass intermediateArrayElementClass
                     = MetaClassCache.getInstance().getMetaClass(parentObject.getDomain(),
-                            arrayField.getMai().getForeignKeyClassId());
+                            intermediateArrayElementClassClassId);
             Assert.assertNotNull("intermediate Array Element Class (" + arrayField.getMai().getForeignKeyClassId() + ") for '" + arrayFieldName + "' array found",
                     intermediateArrayElementClass);
 
@@ -2334,11 +2321,13 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             intermediateArrayElementObject.setStatus(MetaObject.NEW);
 
             final ObjectAttribute arrayContainerDummyObjectAttribute = new ObjectAttribute(
-                    String.valueOf(Math.random()),
+                    arrayField.getMai().getId()
+                    + "." // NOI18N
+                    + newArrayElementObjectIndex,
                     arrayField.getMai(),
                     intermediateArrayElementObject.getID(),
                     intermediateArrayElementObject,
-                    Policy.createWIKIPolicy());
+                    intermediateArrayElementClass.getAttributePolicy());
 
             Assert.assertTrue("dummay array object '" + arrayFieldName + "' is array: ",
                     arrayContainerDummyObjectAttribute.isArray());
@@ -2346,17 +2335,54 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     + "arrayContainerDummyAttribute.isVirtualOneToManyAttribute() = false",
                     arrayContainerDummyObjectAttribute.isVirtualOneToManyAttribute());
 
+            // copied from Persistance Manager. Should be centralized. See #171
+            arrayContainerDummyObjectAttribute.setOptional(arrayField.getMai().isOptional());
+            arrayContainerDummyObjectAttribute.setVisible(arrayField.getMai().isVisible());
+            intermediateArrayElementObject.setReferencingObjectAttribute(arrayContainerDummyObjectAttribute);
+            arrayContainerDummyObjectAttribute.setParentObject(arrayContainerDummyObject);
+            arrayContainerDummyObjectAttribute.setClassKey(
+                    arrayField.getMai().getForeignKeyClassId() + "@" + intermediateArrayElementClass.getDomain()); // NOI18N
+
             final ObjectAttribute[] intermediateArrayElementObjectAttributes = intermediateArrayElementObject.getAttribs();
+            ObjectAttribute arrayElementAttribute = null;
+            ObjectAttribute arrayReferenceAttribute = null;
+
             for (final ObjectAttribute intermediateArrayElementObjectAttribute : intermediateArrayElementObjectAttributes) {
+                Assert.assertNotNull("class key of intermediateArrayElementObjectAttribute '" + intermediateArrayElementObjectAttribute.getName() + "' is not null",
+                        intermediateArrayElementObjectAttribute.getClassKey());
+
                 if (intermediateArrayElementObjectAttribute.referencesObject()) // arrayElement
                 {
-                    intermediateArrayElementObjectAttribute.setValue(arrayElementObject);
+                    arrayElementAttribute = intermediateArrayElementObjectAttribute;
                 } else if (!intermediateArrayElementObjectAttribute.isPrimaryKey()) {
-                    intermediateArrayElementObjectAttribute.setValue(parentObject.getID());
+                    arrayReferenceAttribute = intermediateArrayElementObjectAttribute;
                 }
             }
 
+            Assert.assertNotNull("actual array entry attribute of new array intermediate meta object of meta class '" + intermediateArrayElementClass.getName() + "'  not null",
+                    arrayElementAttribute);
+            Assert.assertNotNull("back reference array attribute of new array intermediate meta object of meta class '" + intermediateArrayElementClass.getName() + "'  not null",
+                    arrayReferenceAttribute);
+
+            arrayElementAttribute.setValue(arrayElementObject);
+            arrayElementAttribute.setChanged(true);
+
+            arrayReferenceAttribute.setValue(parentObject.getID());
+            arrayReferenceAttribute.setChanged(true);
+
             arrayContainerDummyObject.addAttribute(arrayContainerDummyObjectAttribute);
+            arrayContainerDummyObject.setStatus(MetaObject.MODIFIED);
+
+            // compare size after addAttribute
+            final int newArraySize = getArrayElements(parentObject, arrayFieldName).size();
+            Assert.assertEquals("updated '" + arrayFieldName + "[]' of meta object '" + parentObject + "' (" + parentObject.getID() + ")  size is " + newArraySize,
+                    newArraySize, (oldArraySize + 1));
+
+            arrayField.setChanged(true);
+            parentObject.setChanged(true);
+
+            return newArrayElementObjectIndex;
+
         }
 
     }
@@ -2436,6 +2462,14 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         Assert.assertEquals("array attribute's " + arrayFieldName + "' ArrayKeyFieldName matches intermediate Array Element Object Attribute FieldName in intermediate Array Element Object #" + i + "'s attribute '" + intermediateArrayElementObjectAttribute.getName() + "' in meta object '" + parentObject.getName() + "' is MetaObject",
                                 arrayContainerDummyAttribute.getMai().getArrayKeyFieldName().toLowerCase(),
                                 intermediateArrayElementObjectAttribute.getMai().getFieldName().toLowerCase());
+                        Assert.assertNotNull("array attribute's " + arrayFieldName + "' ArrayKeyField '" + intermediateArrayElementObjectAttribute.getMai().getFieldName() + "' value is not null in intermediate Array Element Object #" + i + "'s attribute '" + intermediateArrayElementObjectAttribute.getName() + "' in meta object '" + parentObject.getName() + "' is MetaObject",
+                                intermediateArrayElementObjectAttribute.getValue());
+                        Assert.assertTrue("array attribute's " + arrayFieldName + "' ArrayKeyField '" + intermediateArrayElementObjectAttribute.getMai().getFieldName() + "' value is Integer in intermediate Array Element Object #" + i + "'s attribute '" + intermediateArrayElementObjectAttribute.getName() + "' in meta object '" + parentObject.getName() + "' is MetaObject",
+                                Integer.class.isAssignableFrom(intermediateArrayElementObjectAttribute.getValue().getClass()));
+                        Assert.assertEquals("array attribute's " + arrayFieldName + "' ArrayKeyField '" + intermediateArrayElementObjectAttribute.getMai().getFieldName() + "' value matches parent object id '" + parentObject.getId() + "' in intermediate Array Element Object #" + i + "'s attribute '" + intermediateArrayElementObjectAttribute.getName() + "' in meta object '" + parentObject.getName() + "' is MetaObject",
+                                parentObject.getID(),
+                                ((Integer) intermediateArrayElementObjectAttribute.getValue()).intValue());
+
                     }
                 }
             } else {
