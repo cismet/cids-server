@@ -1,7 +1,6 @@
 package de.cismet.cids.integrationtests;
 
 import Sirius.server.MetaClassCache;
-import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.impls.domainserver.OfflineMetaClassCacheService;
@@ -9,7 +8,6 @@ import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
-import Sirius.server.newuser.permission.Policy;
 import Sirius.util.image.Image;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
@@ -32,13 +30,11 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Vector;
 import org.apache.log4j.Logger;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
@@ -2224,11 +2220,14 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             Assert.assertEquals(expectedKategorieCount + " 'SPH_KATEGORIE' entities in Integration Base",
                     expectedKategorieCount, actualKategorieCount);
 
+            // update for next test!
+            dbEntitiesCount.put("SPH_SPIELHALLE_KATEGORIEN", expectedUpdatedKategorienCount);
+
             // needed for DB Triggers
             Thread.sleep(100);
             LOGGER.info("addMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN) test passed! "
                     + expectedSpielhallenCount + " meta objects updated, "
-                    + (expectedUpdatedKategorienCount - expectedKategorienCount) + " array entries added");
+                    + i + " array entries added");
 
         } catch (AssertionError ae) {
             LOGGER.error("addMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN) test failed with: " + ae.getMessage(), ae);
@@ -2239,13 +2238,148 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
+    @Test
+    public void test04objectService15removeMetaObjectNtoMArrayProperty() throws Exception {
+        try {
+            LOGGER.debug("[04.14] testing removeMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
+            // needed for DB Triggers
+            Thread.sleep(100);
+
+            final int expectedSpielhallenCount = dbEntitiesCount.get("SPH_SPIELHALLE");
+            final int expectedKategorienCount = dbEntitiesCount.get("SPH_SPIELHALLE_KATEGORIEN");
+            int expectedUpdatedKategorienCount = expectedKategorienCount;
+            final int expectedKategorieCount = dbEntitiesCount.get("SPH_KATEGORIE");
+
+            final List<MetaObject> originalSpielhallen = this.getAllMetaObjects("SPH_SPIELHALLE");
+            Assert.assertFalse("SPH_SPIELHALLE meta objects available",
+                    originalSpielhallen.isEmpty());
+            Assert.assertEquals(expectedSpielhallenCount + " SPH_SPIELHALLE meta objects in database",
+                    expectedSpielhallenCount,
+                    originalSpielhallen.size());
+
+            final List<MetaObject> spielhallen = this.getAllMetaObjects("SPH_SPIELHALLE");
+            Assert.assertFalse("SPH_SPIELHALLE meta objects available",
+                    spielhallen.isEmpty());
+            Assert.assertEquals(expectedSpielhallenCount + " SPH_SPIELHALLE meta objects in database",
+                    expectedSpielhallenCount,
+                    spielhallen.size());
+
+            Assert.assertEquals(expectedSpielhallenCount + " SPH_SPIELHALLE meta objects in database",
+                    originalSpielhallen.size(),
+                    spielhallen.size());
+
+            final List<MetaObject> kategorien = this.getAllMetaObjects("SPH_KATEGORIE");
+            Assert.assertFalse("SPH_KATEGORIE meta objects available",
+                    kategorien.isEmpty());
+            Assert.assertEquals(expectedKategorieCount + " SPH_KATEGORIE meta objects in database",
+                    expectedKategorieCount,
+                    kategorien.size());
+
+            int i = 0;
+            for (final MetaObject spielhalleObject : spielhallen) {
+
+                // don't fetch a new spielhalle object after kaegorien[] of another spielhalle object has changed
+                // Beware of SPIELHALLE/BETREIBER/SPIELHALLEN[]/SPIELHALLE/KATEGORIEN[]/KATEGORIE object structure!
+                //final MetaObject originalSpielhalleObject = connector.getMetaObject(user, spielhalleObject.getID(), spielhalleObject.getMetaClass().getID(), user.getDomain());
+                final MetaObject originalSpielhalleObject = originalSpielhallen.get(i);
+                i++;
+
+                Assert.assertNotNull("meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") retrieved from server",
+                        originalSpielhalleObject);
+                Assert.assertNotNull("kategorien attribute of meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") is not null",
+                        originalSpielhalleObject.getAttributeByFieldName("kategorien"));
+                Assert.assertNotNull("kategorien array dummy object of meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") is not null",
+                        originalSpielhalleObject.getAttributeByFieldName("kategorien").getValue());
+                final List<MetaObject> arrayElements = getArrayElements(originalSpielhalleObject, "kategorien");
+                Assert.assertFalse("array attribute 'kategorien' of  meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' is not empty",
+                        arrayElements.isEmpty());
+
+                // safely compare recursively, because originalSpielhalleObject retrieved before changes were made
+                this.compareMetaObjects(spielhalleObject, originalSpielhalleObject, false, false, false);
+
+                final int arrayElementIndex = arrayElements.size() - 1;
+                final int oldKategorieSize = arrayElements.size();
+                final MetaObject arrayElement = arrayElements.get(arrayElementIndex);
+
+                final MetaObject removedArrayElement = removeArrayElement(arrayElement, "kategorien", arrayElementIndex);
+
+                Assert.assertEquals("array element kategorien[" + arrayElementIndex + "] of  meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' removed (id:" + arrayElement.getId() + ")",
+                        arrayElement.getId(),
+                        removedArrayElement.getId());
+                compareMetaObjects(arrayElement, removedArrayElement, false, false, false);
+
+                // compare size after removeAttribute
+                final int newKategorienSize = getArrayElements(spielhalleObject, "kategorien").size();
+                Assert.assertEquals("updated kategorien[] of meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") size is " + newKategorienSize,
+                        oldKategorieSize - 1, newKategorienSize);
+                Assert.assertEquals("updated kategorien[] of meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") size is " + newKategorienSize,
+                        newKategorienSize, newKategorienSize);
+
+                int response = connector.updateMetaObject(user, spielhalleObject, user.getDomain());
+                Assert.assertEquals("meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") successfully updated from server",
+                        1, response);
+
+                expectedUpdatedKategorienCount--;
+
+                final MetaObject updatedSpielhalleObject = connector.getMetaObject(user, spielhalleObject.getID(), spielhalleObject.getMetaClass().getID(), user.getDomain());
+                Assert.assertNotNull("updated meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") retrieved from server",
+                        updatedSpielhalleObject);
+                Assert.assertNotNull("updated kategorien attribute of meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") is not null",
+                        updatedSpielhalleObject.getAttributeByFieldName("kategorien"));
+                Assert.assertNotNull("updated kategorien of meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") is not null",
+                        updatedSpielhalleObject.getAttributeByFieldName("kategorien").getValue());
+
+                final int updatedKategorienSize = getArrayElements(updatedSpielhalleObject, "kategorien").size();
+                Assert.assertEquals("server updated kategorien[] of meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") size is " + newKategorienSize,
+                        newKategorienSize, updatedKategorienSize);
+                Assert.assertEquals("server updated kategorien[] of meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") size is " + newKategorienSize,
+                        updatedKategorienSize, arrayElementIndex);
+
+                // compare only the kategorien array 
+                this.compareMetaObjects((MetaObject) spielhalleObject.getAttributeByFieldName("kategorien").getValue(), (MetaObject) updatedSpielhalleObject.getAttributeByFieldName("kategorien").getValue(),
+                        false, false, true);
+            }
+
+            final int actualSpielhallenCount = countDbEntities("SPH_SPIELHALLE", 3);
+            Assert.assertEquals(expectedSpielhallenCount + " 'SPH_SPIELHALLE' entities in Integration Base",
+                    expectedSpielhallenCount, actualSpielhallenCount);
+
+            final int actualKategorienCount = countDbEntities("SPH_SPIELHALLE_KATEGORIEN", 3);
+            Assert.assertEquals((expectedKategorienCount - i) + " 'SPH_SPIELHALLE_KATEGORIE' entities in Integration Base",
+                    (expectedKategorienCount - i), actualKategorienCount);
+            Assert.assertEquals(expectedUpdatedKategorienCount + " 'SPH_SPIELHALLE_KATEGORIE' entities in Integration Base",
+                    expectedUpdatedKategorienCount, actualKategorienCount);
+
+            final int actualKategorieCount = countDbEntities("SPH_KATEGORIE", 3);
+            Assert.assertEquals(expectedKategorieCount + " 'SPH_KATEGORIE' entities in Integration Base",
+                    expectedKategorieCount, actualKategorieCount);
+
+            // update for next test!
+            dbEntitiesCount.put("SPH_SPIELHALLE_KATEGORIEN", expectedUpdatedKategorienCount);
+
+            // needed for DB Triggers
+            Thread.sleep(100);
+            LOGGER.info("removeMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN) test passed! "
+                    + expectedSpielhallenCount + " meta objects updated, "
+                    + i + " array entries removed");
+
+        } catch (AssertionError ae) {
+            LOGGER.error("removeMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN) test failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during removeMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN): " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
     // <editor-fold defaultstate="collapsed" desc="HELPER METHODS ----------------------------------------------------------">
     /**
      *
-     * @param connection
      * @param tableName
+     * @param retries
      * @return
      * @throws IOError
+     * @throws java.lang.ClassNotFoundException
      * @throws SQLException
      */
     protected static int countDbEntities(final String tableName, int retries) throws SQLException, ClassNotFoundException {
@@ -2385,6 +2519,52 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
         }
 
+    }
+
+    protected MetaObject removeArrayElement(final MetaObject parentObject,
+            final String arrayFieldName,
+            final int arrayElementIndex) {
+
+        final ObjectAttribute arrayField = parentObject.getAttributeByFieldName(arrayFieldName);
+        Assert.assertNotNull("'" + arrayFieldName + "' attribute available in meta object '" + parentObject.getName() + "'",
+                arrayField);
+        Assert.assertTrue("'" + arrayFieldName + "' attribute is array",
+                arrayField.isArray());
+
+        Assert.assertNotNull("value of '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + "' is not null",
+                arrayField.getValue());
+        Assert.assertTrue("value of '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + "' is MetaObject",
+                MetaObject.class.isAssignableFrom(arrayField.getValue().getClass()));
+
+        final MetaObject arrayContainerDummyObject = (MetaObject) arrayField.getValue();
+        Assert.assertTrue("value of '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + "' is array Container Dummy Object",
+                arrayContainerDummyObject.isDummy());
+
+        // 1-n array
+        if (arrayField.getMai().isVirtual() && arrayField.getMai().getForeignKeyClassId() < 0) {
+            Assert.assertTrue("FIXME: implement operation", false);
+            return null;
+
+        } else {
+
+            final int oldArraySize = getArrayElements(parentObject, arrayFieldName).size();
+            final ObjectAttribute[] arrayContainerDummyObjectAttributes = arrayContainerDummyObject.getAttribs();
+            Assert.assertEquals(arrayFieldName + "[] of meta object '" + parentObject + "' (" + parentObject.getID() + ") size is " + oldArraySize,
+                    arrayContainerDummyObjectAttributes.length, oldArraySize);
+            Assert.assertTrue(arrayFieldName + "[] of meta object '" + parentObject + "' (" + parentObject.getID() + ") size is > " + arrayElementIndex,
+                    oldArraySize > arrayElementIndex && arrayElementIndex >= 0);
+
+            final MetaObject arrayElement = getArrayElements(parentObject, arrayFieldName).get(arrayElementIndex);
+            final ObjectAttribute arrayContainerDummyObjectAttribute = arrayContainerDummyObjectAttributes[arrayElementIndex];
+            arrayContainerDummyObject.removeAttribute(arrayContainerDummyObjectAttribute);
+            arrayContainerDummyObject.setChanged(true);
+
+            final int newArraySize = getArrayElements(parentObject, arrayFieldName).size();
+            Assert.assertEquals(arrayFieldName + "[] of meta object '" + parentObject + "' (" + parentObject.getID() + ") size is " + newArraySize,
+                    arrayContainerDummyObject.getAttribs().length, newArraySize);
+
+            return arrayElement;
+        }
     }
 
     /**
