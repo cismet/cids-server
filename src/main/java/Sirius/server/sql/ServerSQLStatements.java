@@ -509,15 +509,16 @@ public interface ServerSQLStatements extends DialectProvider {
     String getIndexTriggerSelectReindexPureStmt(int classId, int objectId);
 
     /**
-     * DOCUMENT ME!
+     * Creates the statement for selecting n-m and 1-n array elements.
      *
      * @param   tableName     DOCUMENT ME!
      * @param   fieldname     DOCUMENT ME!
      * @param   referenceKey  DOCUMENT ME!
+     * @param   orderByField  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    String getObjectFactoryGetObjectStmt(String tableName, String fieldname, String referenceKey);
+    String getObjectFactoryGetObjectStmt(String tableName, String fieldname, String referenceKey, String orderByField);
 
     /**
      * DOCUMENT ME!
