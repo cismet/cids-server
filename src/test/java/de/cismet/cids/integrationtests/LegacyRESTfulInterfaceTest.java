@@ -2926,20 +2926,67 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 arrayContainerDummyObject.isDummy());
 
         // 1-n array
-        if (arrayField.getMai().isVirtual() && arrayField.getMai().getForeignKeyClassId() < 0) {
-            Assert.assertTrue("FIXME: implement operation", false);
-            return -1;
+        if (arrayField.getMai().isVirtual()) {
+            Assert.assertTrue("array attribute '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + " is Virtual One To Many Attribute (1-n array)",
+                    arrayField.isVirtualOneToManyAttribute());
 
+            final int intermediateArrayElementClassClassId = arrayField.getMai().getForeignKeyClassId();
+            Assert.assertTrue("array Helper Object ClassId  of meta object '" + parentObject + "' (" + parentObject.getID() + ") is negative",
+                    intermediateArrayElementClassClassId < 0);
+
+            final int oldArraySize = getArrayElements(parentObject, arrayFieldName).size();
+            final int newArrayElementObjectIndex = arrayContainerDummyObject.getAttribs().length;
+            Assert.assertEquals("1-n '" + arrayFieldName + "[]' of meta object '" + parentObject + "' (" + parentObject.getID() + ") size is " + oldArraySize,
+                    newArrayElementObjectIndex, oldArraySize);
+
+            final MetaClass arrayElementClass = arrayElementObject.getMetaClass();
+            final ObjectAttribute arrayContainerDummyObjectAttribute = new ObjectAttribute(
+                    arrayField.getMai().getId()
+                    + "." // NOI18N
+                    + newArrayElementObjectIndex,
+                    arrayField.getMai(),
+                    arrayElementObject.getID(),
+                    arrayElementObject,
+                    arrayElementClass.getAttributePolicy());
+
+            Assert.assertTrue("dummay array object attribute '" + arrayContainerDummyObjectAttribute.getName() + "' is array: ",
+                    arrayContainerDummyObjectAttribute.isArray());
+            Assert.assertTrue("dummay array object '" + arrayContainerDummyObjectAttribute.getName() + "' is 1-n array: "
+                    + "arrayContainerDummyAttribute.isVirtualOneToManyAttribute() = false",
+                    arrayContainerDummyObjectAttribute.isVirtualOneToManyAttribute());
+
+            // should be centralized. See #171
+            arrayContainerDummyObjectAttribute.setOptional(arrayField.getMai().isOptional());
+            arrayContainerDummyObjectAttribute.setVisible(arrayField.getMai().isVisible());
+            arrayElementObject.setReferencingObjectAttribute(arrayContainerDummyObjectAttribute);
+            arrayContainerDummyObjectAttribute.setParentObject(arrayContainerDummyObject);
+            arrayContainerDummyObjectAttribute.setClassKey(
+                    arrayField.getMai().getForeignKeyClassId() + "@" + arrayElementClass.getDomain()); // NOI18N
+
+            arrayContainerDummyObject.addAttribute(arrayContainerDummyObjectAttribute);
+            arrayContainerDummyObject.setStatus(MetaObject.MODIFIED);
+
+            // compare size after addAttribute
+            final int newArraySize = getArrayElements(parentObject, arrayFieldName).size();
+            Assert.assertEquals("updated 1-n '" + arrayFieldName + "[]' of meta object '" + parentObject + "' (" + parentObject.getID() + ")  size is " + newArraySize,
+                    newArraySize, (oldArraySize + 1));
+
+            arrayField.setChanged(true);
+            parentObject.setChanged(true);
+
+            return newArrayElementObjectIndex;
         } else {
+            Assert.assertFalse("array attribute '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + " is no Virtual One To Many Attribute (n-m array)",
+                    arrayField.isVirtualOneToManyAttribute());
+
+            final int intermediateArrayElementClassClassId = arrayField.getMai().getForeignKeyClassId();
+            Assert.assertTrue("array Helper Object ClassId  of meta object '" + parentObject + "' (" + parentObject.getID() + ") is not negative",
+                    intermediateArrayElementClassClassId >= 0);
 
             final int oldArraySize = getArrayElements(parentObject, arrayFieldName).size();
             final int newArrayElementObjectIndex = arrayContainerDummyObject.getAttribs().length;
             Assert.assertEquals(arrayFieldName + "[] of meta object '" + parentObject + "' (" + parentObject.getID() + ") size is " + oldArraySize,
                     newArrayElementObjectIndex, oldArraySize);
-
-            final int intermediateArrayElementClassClassId = arrayField.getMai().getForeignKeyClassId();
-            Assert.assertTrue("array Helper Object ClassId  of meta object '" + parentObject + "' (" + parentObject.getID() + ") is not negative",
-                    intermediateArrayElementClassClassId >= 0);
 
             final MetaClass intermediateArrayElementClass
                     = MetaClassCache.getInstance().getMetaClass(parentObject.getDomain(),
@@ -2962,9 +3009,9 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     intermediateArrayElementObject,
                     intermediateArrayElementClass.getAttributePolicy());
 
-            Assert.assertTrue("dummay array object '" + arrayFieldName + "' is array: ",
+            Assert.assertTrue("new dummay array object attribute '" + arrayContainerDummyObjectAttribute.getName() + "' is array: ",
                     arrayContainerDummyObjectAttribute.isArray());
-            Assert.assertFalse("dummay array object '" + arrayFieldName + "' is n-m array: "
+            Assert.assertFalse("new dummay array object attribute '" + arrayContainerDummyObjectAttribute.getName() + "' is n-m array: "
                     + "arrayContainerDummyAttribute.isVirtualOneToManyAttribute() = false",
                     arrayContainerDummyObjectAttribute.isVirtualOneToManyAttribute());
 
@@ -3040,11 +3087,13 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 arrayContainerDummyObject.isDummy());
 
         // 1-n array
-        if (arrayField.getMai().isVirtual() && arrayField.getMai().getForeignKeyClassId() < 0) {
-            Assert.assertTrue("FIXME: implement operation", false);
-            return null;
+        if (arrayField.getMai().isVirtual()) {
+            Assert.assertTrue("array attribute '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + " is Virtual One To Many Attribute (1-n array)",
+                    arrayField.isVirtualOneToManyAttribute());
 
-        } else {
+            final int intermediateArrayElementClassClassId = arrayField.getMai().getForeignKeyClassId();
+            Assert.assertTrue("array Helper Object ClassId  of meta object '" + parentObject + "' (" + parentObject.getID() + ") is negative",
+                    intermediateArrayElementClassClassId < 0);
 
             final int oldArraySize = getArrayElements(parentObject, arrayFieldName).size();
             final ObjectAttribute[] arrayContainerDummyObjectAttributes = arrayContainerDummyObject.getAttribs();
@@ -3055,6 +3104,46 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
             final MetaObject arrayElement = getArrayElements(parentObject, arrayFieldName).get(arrayElementIndex);
             final ObjectAttribute arrayContainerDummyObjectAttribute = arrayContainerDummyObjectAttributes[arrayElementIndex];
+
+            Assert.assertEquals("Referencing Object Attribute of array element '" + arrayElement.getName() + "' in array attribute '" + arrayFieldName + "' in meta object '" + parentObject.getName() + " correctly set",
+                    arrayElement.getReferencingObjectAttribute(),
+                    arrayContainerDummyObjectAttribute);
+            Assert.assertEquals("Parent Object of Referencing Object Attribute of array element '" + arrayElement.getName() + "' in array attribute '" + arrayFieldName + "' in meta object '" + parentObject.getName() + " correctly set",
+                    arrayElement.getReferencingObjectAttribute().getParentObject(),
+                    arrayContainerDummyObject);
+
+            // DOES NOT WORK:
+            arrayContainerDummyObject.removeAttribute(arrayContainerDummyObjectAttribute);
+            arrayContainerDummyObject.setChanged(true);
+
+            final int newArraySize = getArrayElements(parentObject, arrayFieldName).size();
+            Assert.assertEquals(arrayFieldName + "[] of meta object '" + parentObject + "' (" + parentObject.getID() + ") size is " + newArraySize,
+                    arrayContainerDummyObject.getAttribs().length, newArraySize);
+
+            return arrayElement;
+        } else { // n-m array
+            Assert.assertFalse("array attribute '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + " is no Virtual One To Many Attribute (n-m array)",
+                    arrayField.isVirtualOneToManyAttribute());
+
+            final int intermediateArrayElementClassClassId = arrayField.getMai().getForeignKeyClassId();
+            Assert.assertTrue("array Helper Object ClassId  of meta object '" + parentObject + "' (" + parentObject.getID() + ") is not negative",
+                    intermediateArrayElementClassClassId >= 0);
+
+            final int oldArraySize = getArrayElements(parentObject, arrayFieldName).size();
+            final ObjectAttribute[] arrayContainerDummyObjectAttributes = arrayContainerDummyObject.getAttribs();
+            Assert.assertEquals(arrayFieldName + "[] of meta object '" + parentObject + "' (" + parentObject.getID() + ") size is " + oldArraySize,
+                    arrayContainerDummyObjectAttributes.length, oldArraySize);
+            Assert.assertTrue(arrayFieldName + "[] of meta object '" + parentObject + "' (" + parentObject.getID() + ") size is > " + arrayElementIndex,
+                    oldArraySize > arrayElementIndex && arrayElementIndex >= 0);
+
+            final MetaObject arrayElement = getArrayElements(parentObject, arrayFieldName).get(arrayElementIndex);
+            final ObjectAttribute arrayContainerDummyObjectAttribute = arrayContainerDummyObjectAttributes[arrayElementIndex];
+
+            Assert.assertEquals("Referencing Object Attribute of array element '" + arrayElement.getName() + "' in array attribute '" + arrayFieldName + "' in meta object '" + parentObject.getName() + " correctly set",
+                    arrayElement.getReferencingObjectAttribute(),
+                    arrayContainerDummyObjectAttribute);
+
+            // DOES NOT WORK:
             arrayContainerDummyObject.removeAttribute(arrayContainerDummyObjectAttribute);
             arrayContainerDummyObject.setChanged(true);
 
@@ -3112,7 +3201,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     arrayContainerDummyAttribute.getValue());
             Assert.assertTrue("value of '" + arrayFieldName + "' attribute's intermediate Array Element Object #" + i + " in meta object '" + parentObject.getName() + "' is MetaObject",
                     MetaObject.class.isAssignableFrom(arrayContainerDummyAttribute.getValue().getClass()));
-            final MetaObject arrayElementObject = (MetaObject) arrayContainerDummyAttribute.getValue();
+            final MetaObject intermediateArrayElementObject = (MetaObject) arrayContainerDummyAttribute.getValue();
 
             // n-m: process intermediate objects
             if (arrayContainerDummyAttribute.isArray()) {
@@ -3127,16 +3216,25 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         arrayField.getMai().getForeignKeyClassId() < 0);
                 Assert.assertEquals("intermediate Array Element Object #" + i + " is instance of class " + arrayField.getMai().getForeignKeyClassId(),
                         arrayField.getMai().getForeignKeyClassId(),
-                        arrayElementObject.getMetaClass().getID());
+                        intermediateArrayElementObject.getMetaClass().getID());
 
-                final ObjectAttribute[] intermediateArrayElementObjectAttributes = arrayElementObject.getAttribs();
+                final ObjectAttribute[] intermediateArrayElementObjectAttributes = intermediateArrayElementObject.getAttribs();
                 for (final ObjectAttribute intermediateArrayElementObjectAttribute : intermediateArrayElementObjectAttributes) {
                     if (intermediateArrayElementObjectAttribute.referencesObject()) {
                         Assert.assertNotNull("value of '" + arrayFieldName + "' attribute's intermediate Array Element Object #" + i + "'s attribute '" + intermediateArrayElementObjectAttribute.getName() + "' in meta object '" + parentObject.getName() + "' is not null",
                                 intermediateArrayElementObjectAttribute.getValue());
                         Assert.assertTrue("value of '" + arrayFieldName + "' attribute's intermediate Array Element Object #" + i + "'s attribute '" + intermediateArrayElementObjectAttribute.getName() + "' in meta object '" + parentObject.getName() + "' is MetaObject",
                                 MetaObject.class.isAssignableFrom(intermediateArrayElementObjectAttribute.getValue().getClass()));
-                        arrayElementObjects.add((MetaObject) intermediateArrayElementObjectAttribute.getValue());
+
+                        final MetaObject arrayElementObject = (MetaObject) intermediateArrayElementObjectAttribute.getValue();
+                        Assert.assertEquals("Referencing Object Attribute of array element '" + arrayElementObject.getName() + "' in array attribute '" + arrayFieldName + "' in meta object '" + parentObject.getName() + " correctly set",
+                                arrayElementObject.getReferencingObjectAttribute(),
+                                intermediateArrayElementObjectAttribute);
+                        Assert.assertEquals("Parent Object of Referencing Object Attribute of array element '" + arrayElementObject.getName() + "' in array attribute '" + arrayFieldName + "' in meta object '" + parentObject.getName() + " correctly set",
+                                arrayElementObject.getReferencingObjectAttribute().getParentObject(),
+                                intermediateArrayElementObject);
+
+                        arrayElementObjects.add(arrayElementObject);
                     } else if (!intermediateArrayElementObjectAttribute.isPrimaryKey()) {
                         Assert.assertEquals("array attribute's " + arrayFieldName + "' ArrayKeyFieldName matches intermediate Array Element Object Attribute FieldName in intermediate Array Element Object #" + i + "'s attribute '" + intermediateArrayElementObjectAttribute.getName() + "' in meta object '" + parentObject.getName() + "' is MetaObject",
                                 arrayContainerDummyAttribute.getMai().getArrayKeyFieldName().toLowerCase(),
@@ -3151,7 +3249,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
                     }
                 }
-            } else {
+            } else { // 1-n
                 Assert.assertTrue("dummay array object '" + arrayFieldName + "' is 1-n array: "
                         + "arrayContainerDummyAttribute.isVirtualOneToManyAttribute() = true",
                         arrayContainerDummyAttribute.isVirtualOneToManyAttribute());
@@ -3161,7 +3259,16 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 Assert.assertTrue("dummay array object '" + arrayFieldName + "' is 1-n array: "
                         + "arrayField.getMai().getForeignKeyClassId() < 0 = true",
                         arrayField.getMai().getForeignKeyClassId() < 0);
-                arrayElementObjects.add(arrayElementObject);
+
+                final MetaObject arrayElementObject = intermediateArrayElementObject;
+                Assert.assertEquals("Referencing Object Attribute of array element '" + arrayElementObject.getName() + "' in array attribute '" + arrayFieldName + "' in meta object '" + parentObject.getName() + " correctly set",
+                        arrayElementObject.getReferencingObjectAttribute(),
+                        arrayContainerDummyAttribute);
+                Assert.assertEquals("Parent Object of Referencing Object Attribute of array element '" + arrayElementObject.getName() + "' in array attribute '" + arrayFieldName + "' in meta object '" + parentObject.getName() + " correctly set",
+                        arrayElementObject.getReferencingObjectAttribute().getParentObject(),
+                        arrayContainerDummyObject);
+
+                arrayElementObjects.add(intermediateArrayElementObject);
             }
         }
 
