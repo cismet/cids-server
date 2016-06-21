@@ -12,6 +12,7 @@ import Sirius.util.image.Image;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
+import de.cismet.cids.dynamics.CidsBean;
 import static de.cismet.cids.integrationtests.TestEnvironment.INTEGRATIONBASE_CONTAINER;
 import static de.cismet.cids.integrationtests.TestEnvironment.SERVER_CONTAINER;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
@@ -686,7 +687,86 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
     // OBJECT SERVICE TEST -----------------------------------------------------
     /**
-     * Test getMetaObjects by uery and getMetaObject by id
+     * Test getMetaObjects by query and CidsBean from / to MetaObject
+     *
+     * @param classId
+     * @throws Exception
+     */
+    @Test
+    @UseDataProvider("getMetaClassIds")
+    public void test04objectService021getCidsBeans(final Integer classId) throws Exception {
+        LOGGER.debug("[04.21] testing getCidsBeans(" + classId + ")");
+        try {
+            final MetaClass metaClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), classId);
+            final String tableName = metaClass.getTableName();
+
+            Assert.assertNotNull("meta class '" + classId + "' from meta class cache not null", metaClass);
+            Assert.assertTrue(metaClass.getTableName() + " entities counted",
+                    dbEntitiesCount.containsKey(metaClass.getTableName()));
+
+            final int count = dbEntitiesCount.get(metaClass.getTableName());
+
+            final String query = "SELECT " + metaClass.getID() + ", " + tableName + "."
+                    + metaClass.getPrimaryKey() + " FROM " + tableName + " ORDER BY "
+                    + metaClass.getTableName() + "."
+                    + metaClass.getPrimaryKey() + " ASC";
+
+            final MetaObject[] metaObjects = connector.getMetaObject(user, query);
+            Assert.assertEquals(count + " '" + tableName + "' entities in Integration Base",
+                    count, metaObjects.length);
+
+            final List<Integer> metaObjectIdList = new ArrayList<Integer>(count);
+
+            if (metaObjectIds.containsKey(tableName.toLowerCase())) {
+                final List<Integer> oldMetaObjectIdList = metaObjectIds.remove(tableName.toLowerCase());
+                LOGGER.warn(oldMetaObjectIdList.size() + " '" + tableName
+                        + "' MetaObject IDs already cached, replacing by " + metaObjectIdList.size() + " IDs");
+            }
+
+            metaObjectIds.put(tableName.toLowerCase(), metaObjectIdList);
+
+            for (int i = 0; i < metaObjects.length; i++) {
+                Assert.assertNotNull("meta object #" + i + "/" + count + " for meta class '" + tableName + "' (id:" + classId + ") from meta class cache not null", metaObjects[i]);
+                final MetaObject metaObject = connector.getMetaObject(
+                        user, metaObjects[i].getId(), classId, user.getDomain());
+                Assert.assertNotNull("meta object #" + i + "/" + count + " (id:" + metaObjects[i].getId() + ") for meta class '" + tableName + "' (id:" + classId + ") retrieved from server",
+                        metaObject);
+
+                this.compareMetaObjects(metaObjects[i], metaObject, false, false, false);
+
+                if (!tableName.equalsIgnoreCase("URL_BASE")
+                        && !tableName.equalsIgnoreCase("URL")
+                        && !tableName.equalsIgnoreCase("sph_spielhalle_kategorien")) {
+
+                    final CidsBean cidsBean1 = metaObjects[i].getBean();
+                    final CidsBean cidsBean2 = metaObjects[i].getBean();
+
+                    this.compareCidsBeans(cidsBean1, cidsBean2);
+
+                    this.compareMetaObjects(cidsBean1.getMetaObject(), cidsBean2.getMetaObject(),
+                            false, false, false);
+                }
+
+                metaObjectIdList.add(metaObject.getID());
+            }
+
+            Assert.assertEquals(metaObjects.length + " '" + metaClass.getName() + "' CidsBeans tested",
+                    metaObjects.length, metaObjectIdList.size());
+
+            LOGGER.info("getCidsBeans(" + classId + ") test passed, " + metaObjectIdList.size()
+                    + " '" + metaClass.getName() + "' CidsBeans tested");
+
+        } catch (AssertionError ae) {
+            LOGGER.error("getCidsBeans(" + classId + ") test failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during getCidsBeans(" + classId + "): " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
+    /**
+     * Test getMetaObjects by query and getMetaObject by id
      *
      * @param classId
      * @throws Exception
@@ -718,7 +798,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             if (metaObjectIds.containsKey(metaClass.getTableName().toLowerCase())) {
                 final List<Integer> oldMetaObjectIdList = metaObjectIds.remove(metaClass.getTableName().toLowerCase());
                 LOGGER.warn(oldMetaObjectIdList.size() + " '" + metaClass.getTableName()
-                        + "' MetaObject IDs already cached, replaying by " + metaObjectIdList.size() + " IDs");
+                        + "' MetaObject IDs already cached, replacing by " + metaObjectIdList.size() + " IDs");
             }
 
             metaObjectIds.put(metaClass.getTableName().toLowerCase(), metaObjectIdList);
@@ -735,7 +815,8 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 metaObjectIdList.add(metaObject.getID());
             }
 
-            LOGGER.info("getMetaObjects(" + classId + ") test passed!");
+            LOGGER.info("getMetaObjects(" + classId + ") test passed, " + metaObjects.length
+                    + " '" + metaClass.getName() + "' MetaObjects tested");
 
         } catch (AssertionError ae) {
             LOGGER.error("getMetaObjects(" + classId + ") test failed with: " + ae.getMessage(), ae);
@@ -747,7 +828,291 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
     }
 
     /**
-     * Verify the order of n-m and 1-n array elements after repreated object
+     * Verify the order of n-m and 1-n array elements after repeated object
+     * retrieval
+     *
+     * @throws Exception
+     */
+    @Test
+    public void test04objectService022getCidsBeanArrays() throws Exception {
+        try {
+            LOGGER.debug("[04.22] testing getCidsBeanArrays()");
+
+            final int expectedBetreiberCount = dbEntitiesCount.get("SPH_BETREIBER");
+            final int expectedSpielhallenCount = dbEntitiesCount.get("SPH_SPIELHALLE");
+
+            final List<MetaObject> betreiber1 = this.getAllMetaObjects("SPH_BETREIBER");
+            final List<MetaObject> betreiber2 = this.getAllMetaObjects("SPH_BETREIBER");
+
+            Assert.assertFalse("SPH_BETREIBER meta objects available",
+                    betreiber1.isEmpty());
+            Assert.assertFalse("SPH_BETREIBER meta objects available",
+                    betreiber2.isEmpty());
+            Assert.assertEquals(betreiber1.size() + " SPH_BETREIBER meta objects in both arrays",
+                    betreiber1.size(),
+                    betreiber2.size());
+            Assert.assertEquals(expectedBetreiberCount + " SPH_BETREIBER meta objects in database",
+                    expectedBetreiberCount,
+                    betreiber2.size());
+
+            int i = 0;
+            for (final MetaObject betreiberObject1 : betreiber1) {
+                final MetaObject betreiberObject2 = betreiber2.get(i);
+                i++;
+
+                final MetaObject betreiberObject3 = connector.getMetaObject(user, betreiberObject1.getID(), betreiberObject1.getMetaClass().getID(), user.getDomain());
+
+                Assert.assertEquals("order of SPH_BETREIBER meta objects matches",
+                        betreiberObject1.getID(),
+                        betreiberObject2.getID());
+                Assert.assertEquals("order of SPH_BETREIBER meta objects matches",
+                        betreiberObject2.getID(),
+                        betreiberObject3.getID());
+
+                final CidsBean betreiberCidsBean1 = betreiberObject1.getBean();
+                final CidsBean betreiberCidsBean2 = betreiberObject1.getBean();
+                final CidsBean betreiberCidsBean3 = betreiberObject1.getBean();
+
+                final List<MetaObject> spielhallenFromMetaObject1 = getArrayElements(betreiberObject1, "spielhallen");
+                final List<MetaObject> spielhallenFromMetaObject2 = getArrayElements(betreiberObject2, "spielhallen");
+                final List<MetaObject> spielhallenFromMetaObject3 = getArrayElements(betreiberObject3, "spielhallen");
+
+                Assert.assertFalse("SPH_SPIELHALLE meta objects available in SPH_BETREIBER " + betreiberObject1.getID(),
+                        spielhallenFromMetaObject1.isEmpty());
+                Assert.assertFalse("SPH_SPIELHALLE meta objects available in SPH_BETREIBER " + betreiberObject2.getID(),
+                        spielhallenFromMetaObject2.isEmpty());
+                Assert.assertFalse("SPH_SPIELHALLE meta objects available in SPH_BETREIBER " + betreiberObject3.getID(),
+                        spielhallenFromMetaObject3.isEmpty());
+
+                Assert.assertEquals(spielhallenFromMetaObject1.size() + " SPH_SPIELHALLE meta objects available in SPH_BETREIBER " + betreiberObject1.getID(),
+                        spielhallenFromMetaObject1.size(),
+                        spielhallenFromMetaObject2.size());
+                Assert.assertEquals(spielhallenFromMetaObject2.size() + " SPH_SPIELHALLE meta objects available in SPH_BETREIBER " + betreiberObject1.getID(),
+                        spielhallenFromMetaObject2.size(),
+                        spielhallenFromMetaObject3.size());
+
+                final List<CidsBean> spielhallenFromCidsBean1 = betreiberCidsBean1.getBeanCollectionProperty("spielhallen");
+                final List<CidsBean> spielhallenFromCidsBean2 = betreiberCidsBean2.getBeanCollectionProperty("spielhallen");
+                final List<CidsBean> spielhallenFromCidsBean3 = betreiberCidsBean3.getBeanCollectionProperty("spielhallen");
+
+                Assert.assertFalse("SPH_SPIELHALLE Cids Beans available in SPH_BETREIBER " + betreiberObject1.getID(),
+                        spielhallenFromCidsBean1.isEmpty());
+                Assert.assertFalse("SPH_SPIELHALLE Cids Beans available in SPH_BETREIBER " + betreiberObject2.getID(),
+                        spielhallenFromCidsBean2.isEmpty());
+                Assert.assertFalse("SPH_SPIELHALLE Cids Beans available in SPH_BETREIBER " + betreiberObject3.getID(),
+                        spielhallenFromCidsBean3.isEmpty());
+
+                Assert.assertEquals(spielhallenFromMetaObject1.size() + " SPH_SPIELHALLE Cids Beans available in SPH_BETREIBER " + betreiberObject1.getID(),
+                        spielhallenFromCidsBean1.size(),
+                        spielhallenFromCidsBean2.size());
+                Assert.assertEquals(spielhallenFromMetaObject2.size() + " SPH_SPIELHALLE Cids Beans available in SPH_BETREIBER " + betreiberObject2.getID(),
+                        spielhallenFromCidsBean2.size(),
+                        spielhallenFromCidsBean3.size());
+
+                Assert.assertEquals(spielhallenFromMetaObject1.size() + " SPH_SPIELHALLE Cids Beans and Meta Objects available in SPH_BETREIBER " + betreiberObject1.getID(),
+                        spielhallenFromCidsBean1.size(),
+                        spielhallenFromMetaObject1.size());
+                Assert.assertEquals(spielhallenFromMetaObject1.size() + " SPH_SPIELHALLE Cids Beans and Meta Objects available in SPH_BETREIBER " + betreiberObject2.getID(),
+                        spielhallenFromCidsBean2.size(),
+                        spielhallenFromMetaObject2.size());
+                Assert.assertEquals(spielhallenFromMetaObject1.size() + " SPH_SPIELHALLE Cids Beans and Meta Objects available in SPH_BETREIBER " + betreiberObject3.getID(),
+                        spielhallenFromCidsBean3.size(),
+                        spielhallenFromMetaObject3.size());
+
+                int j = 0;
+                for (final MetaObject spielhalleObject1 : spielhallenFromMetaObject1) {
+                    final MetaObject spielhalleObject2 = spielhallenFromMetaObject2.get(j);
+                    final MetaObject spielhalleObject3 = spielhallenFromMetaObject3.get(j);
+
+                    Assert.assertEquals("order of SPH_SPIELHALLE meta objects in SPH_BETREIBER (" + betreiberObject1.getID() + ") array matches",
+                            spielhalleObject1.getID(),
+                            spielhalleObject2.getID());
+                    Assert.assertEquals("order of SPH_SPIELHALLE meta objects in SPH_BETREIBER (" + betreiberObject2.getID() + ") array matches",
+                            spielhalleObject2.getID(),
+                            spielhalleObject3.getID());
+
+                    final CidsBean spielhalleCidsBean1 = spielhallenFromCidsBean1.get(j);
+                    final CidsBean spielhalleCidsBean2 = spielhallenFromCidsBean1.get(j);
+                    final CidsBean spielhalleCidsBean3 = spielhallenFromCidsBean1.get(j);
+
+                    Assert.assertEquals("order of SPH_SPIELHALLE Cids Beans in SPH_BETREIBER (" + betreiberObject1.getID() + ") array matches",
+                            spielhalleCidsBean1.getPrimaryKeyValue(),
+                            spielhalleCidsBean2.getPrimaryKeyValue());
+                    Assert.assertEquals("order of SPH_SPIELHALLE Cids Beans in SPH_BETREIBER (" + betreiberObject2.getID() + ") array matches",
+                            spielhalleCidsBean2.getPrimaryKeyValue(),
+                            spielhalleCidsBean3.getPrimaryKeyValue());
+
+                    Assert.assertEquals("order of SPH_SPIELHALLE Cids Beans and Meta Objects in SPH_BETREIBER (" + betreiberObject1.getID() + ") array matches",
+                            spielhalleCidsBean1.getPrimaryKeyValue().intValue(),
+                            spielhalleObject1.getID());
+                    Assert.assertEquals("order of SPH_SPIELHALLE Cids Beans and Meta Objects in SPH_BETREIBER (" + betreiberObject1.getID() + ") array matches",
+                            spielhalleCidsBean2.getPrimaryKeyValue().intValue(),
+                            spielhalleObject2.getID());
+                    Assert.assertEquals("order of SPH_SPIELHALLE Cids Beans and Meta Objects in SPH_BETREIBER (" + betreiberObject1.getID() + ") array matches",
+                            spielhalleCidsBean2.getPrimaryKeyValue().intValue(),
+                            spielhalleObject2.getID());
+
+                    this.compareMetaObjects(spielhalleObject1, spielhalleObject2, false, false, false);
+                    this.compareMetaObjects(spielhalleObject2, spielhalleObject3, false, false, false);
+
+                    this.compareCidsBeans(spielhalleCidsBean1, spielhalleCidsBean2);
+                    this.compareCidsBeans(spielhalleCidsBean2, spielhalleCidsBean3);
+
+                    this.compareMetaObjects(spielhalleObject1, spielhalleCidsBean1.getMetaObject(), false, false, false);
+                    this.compareMetaObjects(spielhalleObject2, spielhalleCidsBean2.getMetaObject(), false, false, false);
+                    this.compareMetaObjects(spielhalleObject3, spielhalleCidsBean3.getMetaObject(), false, false, false);
+
+                    j++;
+                }
+
+                this.compareMetaObjects(betreiberObject1, betreiberObject2, false, false, false);
+                this.compareMetaObjects(betreiberObject2, betreiberObject3, false, false, false);
+
+                this.compareMetaObjects(betreiberObject1, betreiberCidsBean1.getMetaObject(), false, false, false);
+                this.compareMetaObjects(betreiberObject2, betreiberCidsBean2.getMetaObject(), false, false, false);
+                this.compareMetaObjects(betreiberObject3, betreiberCidsBean3.getMetaObject(), false, false, false);
+            }
+
+            final List<MetaObject> spielhallen1 = this.getAllMetaObjects("SPH_SPIELHALLE");
+            final List<MetaObject> spielhallen2 = this.getAllMetaObjects("SPH_SPIELHALLE");
+
+            Assert.assertFalse("SPH_SPIELHALLE meta objects available",
+                    spielhallen1.isEmpty());
+            Assert.assertFalse("SPH_SPIELHALLE meta objects available",
+                    spielhallen2.isEmpty());
+            Assert.assertEquals(spielhallen1.size() + " SPH_SPIELHALLE meta objects in both arrays",
+                    spielhallen1.size(),
+                    spielhallen2.size());
+            Assert.assertEquals(expectedBetreiberCount + " SPH_SPIELHALLE meta objects in database",
+                    expectedSpielhallenCount,
+                    spielhallen2.size());
+
+            i = 0;
+            for (final MetaObject spielhalleObject1 : spielhallen1) {
+                final MetaObject spielhalleObject2 = spielhallen2.get(i);
+                i++;
+
+                final MetaObject spielhalleObject3 = connector.getMetaObject(user, spielhalleObject1.getID(), spielhalleObject1.getMetaClass().getID(), user.getDomain());
+
+                Assert.assertEquals("order of SPH_SPIELHALLE meta objects matches",
+                        spielhalleObject1.getID(),
+                        spielhalleObject2.getID());
+
+                final CidsBean spielhalleCidsBean1 = spielhalleObject1.getBean();
+                final CidsBean spielhalleCidsBean2 = spielhalleObject2.getBean();
+                final CidsBean spielhalleCidsBean3 = spielhalleObject3.getBean();
+
+                final List<MetaObject> kategorienFromMetaObject1 = getArrayElements(spielhalleObject1, "kategorien");
+                final List<MetaObject> kategorienFromMetaObject2 = getArrayElements(spielhalleObject2, "kategorien");
+                final List<MetaObject> kategorienFromMetaObject3 = getArrayElements(spielhalleObject3, "kategorien");
+
+                Assert.assertFalse("SPH_KATEGORIE meta objects available in SPH_SPIELHALLE " + spielhalleObject1.getID(),
+                        kategorienFromMetaObject1.isEmpty());
+                Assert.assertFalse("SPH_KATEGORIE meta objects available in SPH_SPIELHALLE " + spielhalleObject2.getID(),
+                        kategorienFromMetaObject2.isEmpty());
+                Assert.assertFalse("SPH_KATEGORIE meta objects available in SPH_SPIELHALLE " + spielhalleObject3.getID(),
+                        kategorienFromMetaObject3.isEmpty());
+
+                Assert.assertEquals(kategorienFromMetaObject1.size() + " SPH_KATEGORIE meta objects available in SPH_SPIELHALLE " + spielhalleObject1.getID(),
+                        kategorienFromMetaObject1.size(),
+                        kategorienFromMetaObject2.size());
+                Assert.assertEquals(kategorienFromMetaObject2.size() + " SPH_KATEGORIE meta objects available in SPH_SPIELHALLE " + spielhalleObject1.getID(),
+                        kategorienFromMetaObject2.size(),
+                        kategorienFromMetaObject3.size());
+
+                final List<CidsBean> kategorienFromCidsBean1 = spielhalleCidsBean1.getBeanCollectionProperty("kategorien");
+                final List<CidsBean> kategorienFromCidsBean2 = spielhalleCidsBean2.getBeanCollectionProperty("kategorien");
+                final List<CidsBean> kategorienFromCidsBean3 = spielhalleCidsBean3.getBeanCollectionProperty("kategorien");
+
+                Assert.assertFalse("SPH_KATEGORIE Cids Beans available in SPH_SPIELHALLE " + spielhalleObject1.getID(),
+                        kategorienFromCidsBean1.isEmpty());
+                Assert.assertFalse("SPH_KATEGORIE Cids Beans available in SPH_SPIELHALLE " + spielhalleObject2.getID(),
+                        kategorienFromCidsBean2.isEmpty());
+                Assert.assertFalse("SPH_KATEGORIE Cids Beans available in SPH_SPIELHALLE " + spielhalleObject3.getID(),
+                        kategorienFromCidsBean3.isEmpty());
+
+                Assert.assertEquals(kategorienFromMetaObject1.size() + " SPH_KATEGORIE Cids Beans available in SPH_SPIELHALLE " + spielhalleObject1.getID(),
+                        kategorienFromCidsBean1.size(),
+                        kategorienFromCidsBean2.size());
+                Assert.assertEquals(kategorienFromMetaObject2.size() + " SPH_KATEGORIE Cids Beans available in SPH_SPIELHALLE " + spielhalleObject2.getID(),
+                        kategorienFromCidsBean2.size(),
+                        kategorienFromCidsBean3.size());
+
+                Assert.assertEquals(kategorienFromMetaObject1.size() + " SPH_KATEGORIE Cids Beans and Meta Objects available in SPH_SPIELHALLE " + spielhalleObject1.getID(),
+                        kategorienFromCidsBean1.size(),
+                        kategorienFromMetaObject1.size());
+                Assert.assertEquals(kategorienFromMetaObject1.size() + " SPH_KATEGORIE Cids Beans and Meta Objects available in SPH_SPIELHALLE " + spielhalleObject2.getID(),
+                        kategorienFromCidsBean2.size(),
+                        kategorienFromMetaObject2.size());
+                Assert.assertEquals(kategorienFromMetaObject1.size() + " SPH_KATEGORIE Cids Beans and Meta Objects available in SPH_SPIELHALLE " + spielhalleObject3.getID(),
+                        kategorienFromCidsBean3.size(),
+                        kategorienFromMetaObject3.size());
+
+                int j = 0;
+                for (final MetaObject kategorieObject1 : kategorienFromMetaObject1) {
+
+                    final MetaObject kategorieObject2 = kategorienFromMetaObject2.get(j);
+                    final MetaObject kategorieObject3 = kategorienFromMetaObject3.get(j);
+
+                    Assert.assertEquals("order of SPH_KATEGORIE meta objects in SPH_SPIELHALLE (" + spielhalleObject1.getID() + ") array matches",
+                            kategorieObject1.getID(),
+                            kategorieObject2.getID());
+                    Assert.assertEquals("order of SPH_KATEGORIE meta objects in SPH_SPIELHALLE (" + spielhalleObject2.getID() + ") array matches",
+                            kategorieObject2.getID(),
+                            kategorieObject3.getID());
+
+                    final CidsBean kategorieCidsBean1 = kategorienFromCidsBean1.get(j);
+                    final CidsBean kategorieCidsBean2 = kategorienFromCidsBean1.get(j);
+                    final CidsBean kategorieCidsBean3 = kategorienFromCidsBean1.get(j);
+
+                    Assert.assertEquals("order of SPH_KATEGORIE Cids Beans in SPH_SPIELHALLE (" + spielhalleObject1.getID() + ") array matches",
+                            kategorieCidsBean1.getPrimaryKeyValue(),
+                            kategorieCidsBean2.getPrimaryKeyValue());
+                    Assert.assertEquals("order of SPH_KATEGORIE Cids Beans in SPH_SPIELHALLE (" + spielhalleObject2.getID() + ") array matches",
+                            kategorieCidsBean2.getPrimaryKeyValue(),
+                            kategorieCidsBean3.getPrimaryKeyValue());
+
+                    Assert.assertEquals("order of SPH_KATEGORIE Cids Beans and Meta Objects in SPH_SPIELHALLE (" + spielhalleObject1.getID() + ") array matches",
+                            kategorieCidsBean1.getPrimaryKeyValue().intValue(),
+                            kategorieObject1.getID());
+                    Assert.assertEquals("order of SPH_KATEGORIE Cids Beans and Meta Objects in SPH_SPIELHALLE (" + spielhalleObject1.getID() + ") array matches",
+                            kategorieCidsBean2.getPrimaryKeyValue().intValue(),
+                            kategorieObject2.getID());
+                    Assert.assertEquals("order of SPH_KATEGORIE Cids Beans and Meta Objects in SPH_SPIELHALLE (" + spielhalleObject1.getID() + ") array matches",
+                            kategorieCidsBean2.getPrimaryKeyValue().intValue(),
+                            kategorieObject2.getID());
+
+                    this.compareMetaObjects(kategorieObject1, kategorieObject2, false, false, false);
+                    this.compareMetaObjects(kategorieObject2, kategorieObject3, false, false, false);
+
+                    this.compareCidsBeans(kategorieCidsBean1, kategorieCidsBean2);
+                    this.compareCidsBeans(kategorieCidsBean2, kategorieCidsBean3);
+
+                    this.compareMetaObjects(kategorieObject1, kategorieCidsBean1.getMetaObject(), false, false, false);
+                    this.compareMetaObjects(kategorieObject2, kategorieCidsBean2.getMetaObject(), false, false, false);
+                    this.compareMetaObjects(kategorieObject3, kategorieCidsBean3.getMetaObject(), false, false, false);
+
+                    j++;
+                }
+
+                this.compareMetaObjects(spielhalleObject1, spielhalleObject2, false, false, false);
+                this.compareMetaObjects(spielhalleObject2, spielhalleObject3, false, false, false);
+            }
+
+            LOGGER.info("getCidsBeanArrays() test passed! "
+                    + (expectedSpielhallenCount + expectedBetreiberCount) + " CidsBeans with arrays compared");
+
+        } catch (AssertionError ae) {
+            LOGGER.error("getCidsBeanArrays() test failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during getCidsBeanArrays(): " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
+    /**
+     * Verify the order of n-m and 1-n array elements after repeated object
      * retrieval
      *
      * @throws Exception
@@ -885,6 +1250,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                             kategorieObject3.getID());
 
                     this.compareMetaObjects(kategorieObject1, kategorieObject2, false, false, false);
+                    this.compareMetaObjects(kategorieObject2, kategorieObject3, false, false, false);
                 }
 
                 this.compareMetaObjects(spielhalleObject1, spielhalleObject2, false, false, false);
@@ -1684,7 +2050,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 Assert.assertNull("hauptkategorie of meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' (id:" + spielhalleObject.getMetaClass().getID() + ") deleted",
                         updatedSpielhalleObject.getAttributeByFieldName("hauptkategorie").getValue());
 
-                // compare as changed -> property string do not match (bestreiber->spiehalle->hauptkategorie != spiehalle->hauptkategorie)
+                // compare as changed -> property string do not match (bestreiber->spiehalle->hauptkategorie != spielhalle->hauptkategorie)
                 // set deleted object to null to pass comparison
                 hauptkategorieAttribute.setValue(null);
                 this.compareMetaObjects(spielhalleObject, updatedSpielhalleObject, true, false, true);
@@ -3746,6 +4112,15 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
     }
 
     /**
+     *
+     * @param expectedCidsBean
+     * @param actualCidsBean
+     */
+    protected void compareCidsBeans(final CidsBean expectedCidsBean, final CidsBean actualCidsBean) {
+        RESTfulInterfaceTest.compareCidsBeans(expectedCidsBean, actualCidsBean);
+    }
+
+    /**
      * Compares recursivly MetaObjects and thier attributes. If compareChanged
      * or compareNew, are true, some fields are not compared. If limitRecursion
      * is set to true, the recursive comparision stops if the an object of the
@@ -4225,6 +4600,5 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
         return connection;
     }
-
     // </editor-fold>
 }
