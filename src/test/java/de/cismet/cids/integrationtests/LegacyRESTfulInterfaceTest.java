@@ -698,6 +698,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @param classId
      * @throws Exception
      */
+    @Ignore
     @Test
     @UseDataProvider("getMetaClassIds")
     public void test04objectService021getCidsBeans(final Integer classId) throws Exception {
@@ -798,7 +799,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @param classId
      * @throws Exception
      */
-    @Ignore
     @Test
     @UseDataProvider("getMetaClassIds")
     public void test04objectService00getMetaObjects(final Integer classId) throws Exception {
@@ -864,6 +864,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @throws Exception
      */
     @Test
+    @Ignore
     public void test04objectService022getCidsBeanArrays() throws Exception {
         try {
             LOGGER.debug("[04.22] testing getCidsBeanArrays()");
@@ -1147,7 +1148,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Ignore
     @Test
     public void test04objectService01getMetaObjectArrays() throws Exception {
         try {
@@ -4616,7 +4616,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
 
         final Sirius.server.localserver.object.Object expectedParentObject = expectedObjectAttribute.getParentObject();
-        final Sirius.server.localserver.object.Object actualParentObject = expectedObjectAttribute.getParentObject();
+        final Sirius.server.localserver.object.Object actualParentObject = actualObjectAttribute.getParentObject();
 
         // FIXME: possibly uneccessary check! Parent object shall never be null!
         if (expectedParentObject == null) {
@@ -4627,10 +4627,20 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     MetaObject.class.isAssignableFrom(expectedParentObject.getClass()));
             Assert.assertTrue("actual objectAttribute[" + name + "]'s parent object is a MetaObject, too(" + this.getHierarchyPath(objectHierarchy) + ")",
                     MetaObject.class.isAssignableFrom(actualParentObject.getClass()));
+            
+            Assert.assertEquals("expected objectAttribute[" + name + "]'s parent object referece matches correct class (" + this.getHierarchyPath(objectHierarchy) + ")",
+                    expectedMetaObject.getClass().getCanonicalName(), expectedParentObject.getClass().getCanonicalName());
+            Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object referece matches correct class (" + this.getHierarchyPath(objectHierarchy) + ")",
+                    actualMetaObject.getClass().getCanonicalName(), actualParentObject.getClass().getCanonicalName());
+            
+            Assert.assertEquals("expected objectAttribute[" + name + "]'s parent object referece matches correct instance (" + this.getHierarchyPath(objectHierarchy) + ")",
+                    expectedMetaObject.getKey(), expectedParentObject.getKey());
+            Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object referece matches correct instance (" + this.getHierarchyPath(objectHierarchy) + ")",
+                    actualMetaObject.getKey(), actualParentObject.getKey());
 
-            Assert.assertSame("expected objectAttribute[" + name + "]'s parent object referece points to correct instance (" + this.getHierarchyPath(objectHierarchy) + ")",
+            Assert.assertSame("expected objectAttribute[" + name + "]'s parent object referece points to same instance (" + this.getHierarchyPath(objectHierarchy) + ")",
                     expectedMetaObject, expectedParentObject);
-            Assert.assertSame("actual objectAttribute[" + name + "]'s parent object referece points to correct instance (" + this.getHierarchyPath(objectHierarchy) + ")",
+            Assert.assertSame("actual objectAttribute[" + name + "]'s parent object referece points to same instance (" + this.getHierarchyPath(objectHierarchy) + ")",
                     actualMetaObject, actualParentObject);
 
             Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object matches expected parent object (" + this.getHierarchyPath(objectHierarchy) + ")",
