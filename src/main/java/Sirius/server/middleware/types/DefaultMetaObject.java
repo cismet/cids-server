@@ -150,13 +150,12 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
      */
     @Override
     public String getName() {
-        final Collection c = getAttributeByName("name", 1); // NOI18N
+        final Collection<ObjectAttribute> c = getAttributeByName("name", 1); // NOI18N
         String name = null;
         if (c.size() > 0) {
-            final Iterator iter = c.iterator();
-            Attribute a = null;
+            final Iterator<ObjectAttribute> iter = c.iterator();
             if (iter.hasNext()) {
-                a = (Attribute)iter.next();
+                final ObjectAttribute a = iter.next();
 
                 final Object value = a.getValue();
 
@@ -180,12 +179,12 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
      */
     @Override
     public String getDescription() {
-        final Collection c = getAttributeByName("description", 1); // NOI18N
+        final Collection<ObjectAttribute> c = getAttributeByName("description", 1); // NOI18N
 
-        final Iterator iter = c.iterator();
+        final Iterator<ObjectAttribute> iter = c.iterator();
 
         if (iter.hasNext()) {
-            final Object o = ((Attribute)iter.next()).getValue();
+            final Object o = iter.next().getValue();
 
             if (o != null) {
                 return o.toString();
@@ -247,6 +246,7 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
      * @return  Value of property changed.
      */
     @Override
+    @Deprecated
     public boolean isChanged() {
         return changed || (getStatus() == MODIFIED) || (getStatus() == NEW);
     }
@@ -257,6 +257,7 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
      * @param  changed  New value of property changed.
      */
     @Override
+    @Deprecated
     public void setChanged(final boolean changed) {
         this.changed = changed;
     }
@@ -375,10 +376,10 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     public void setAllStatus(final int status) {
         this.setStatus(status);
 
-        final Iterator attributes = attribHash.values().iterator();
+        final Iterator<ObjectAttribute> attributes = attribHash.values().iterator();
 
         while (attributes.hasNext()) {
-            final ObjectAttribute a = (ObjectAttribute)attributes.next();
+            final ObjectAttribute a = attributes.next();
 
             // recursion
             if (a.referencesObject()) {
@@ -392,13 +393,13 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     }
 
     @Override
-    public Collection getURLs(final Collection classKeys) {
+    public Collection<String> getURLs(final Collection classKeys) {
         if (LOG != null) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("enter getURLS"); // NOI18N
             }
         }
-        final ArrayList l = new ArrayList();
+        final ArrayList<String> l = new ArrayList<String>();
 
         if (classKeys.contains(this.getClassKey()))           // class is an URL
         {
@@ -414,10 +415,10 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
             l.add(url);
         }
 
-        final Iterator attributes = attribHash.values().iterator();
+        final Iterator<ObjectAttribute> attributes = attribHash.values().iterator();
 
         while (attributes.hasNext()) {
-            final ObjectAttribute a = (ObjectAttribute)attributes.next();
+            final ObjectAttribute a = attributes.next();
 
             // recursion
             if (a.referencesObject()) {
@@ -437,13 +438,13 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     }
 
     @Override
-    public Collection getURLsByName(final Collection classKeys, final Collection urlNames) {
+    public Collection<String> getURLsByName(final Collection classKeys, final Collection urlNames) {
         if (LOG != null) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("enter getURLS"); // NOI18N
             }
         }
-        final ArrayList l = new ArrayList();
+        final ArrayList<String> l = new ArrayList<String>();
 
         if (classKeys.contains(this.getClassKey()))                                      // class is an URL
         {
@@ -461,12 +462,12 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
             return l;
         }
 
-        final Collection attrs = getAttributesByName(urlNames);
+        final Collection<ObjectAttribute> attrs = getAttributesByName(urlNames);
 
-        final Iterator attributes = attrs.iterator();
+        final Iterator<ObjectAttribute> attributes = attrs.iterator();
 
         while (attributes.hasNext()) {
-            final ObjectAttribute a = (ObjectAttribute)attributes.next();
+            final ObjectAttribute a = attributes.next();
 
             // recursion
             if (a.referencesObject()) {

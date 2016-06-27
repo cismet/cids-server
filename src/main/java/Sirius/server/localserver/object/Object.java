@@ -7,7 +7,6 @@
 ****************************************************/
 package Sirius.server.localserver.object;
 
-import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.newuser.User;
 
@@ -16,7 +15,7 @@ import Sirius.util.Mapable;
 import java.io.Serializable;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import de.cismet.cids.tools.fromstring.FromStringCreator;
 import de.cismet.cids.tools.fromstring.StringCreateable;
@@ -83,7 +82,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @return  eine fuer UG massgeschneiderte Version des Objekts
      */
-    Object filter(User ug);
+    Sirius.server.localserver.object.Object filter(User ug);
 
     /**
      * creates an Instance of this Object from a string representation.
@@ -117,7 +116,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @return  das Attribut zu dem der Schlüssel passt
      */
-    java.lang.Object getAttribute(java.lang.Object key);
+    ObjectAttribute getAttribute(java.lang.Object key);
 
     /**
      * Method from Hell liefert ein Attribut �ber den Fieldname Es wird davon ausgegangen, dass nur ObjectAttributes im
@@ -137,14 +136,14 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @return  Collection mit allen attributen gleichen schlüssels == name
      */
-    Collection<Attribute> getAttributeByName(String name, int maxResult);
+    Collection<ObjectAttribute> getAttributeByName(String name, int maxResult);
 
     /**
      * getter for attribHash.
      *
      * @return  Hashtabel containing this objects attributes
      */
-    HashMap getAttributes();
+    LinkedHashMap<java.lang.Object, ObjectAttribute> getAttributes();
 
     /**
      * beschafft eine Collection welche alle Attribute enthält deren Schlüssel dem parameter name entsprechen.
@@ -153,7 +152,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @return  Collection mit allen attributen gleichen schlüssels == name
      */
-    Collection getAttributesByName(Collection names);
+    Collection<ObjectAttribute> getAttributesByName(Collection names);
 
     /**
      * DOCUMENT ME!
@@ -163,7 +162,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @return  DOCUMENT ME!
      */
-    Collection getAttributesByType(Class c, int recursionDepth);
+    Collection<ObjectAttribute> getAttributesByType(Class c, int recursionDepth);
 
     /**
      * DOCUMENT ME!
@@ -172,7 +171,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @return  DOCUMENT ME!
      */
-    Collection getAttributesByType(Class c);
+    Collection<ObjectAttribute> getAttributesByType(Class c);
 
     /**
      * getter for classID.
@@ -205,7 +204,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @return  this objects class tables primary key
      */
-    Attribute getPrimaryKey();
+    ObjectAttribute getPrimaryKey();
 
     /**
      * DOCUMENT ME!
@@ -235,7 +234,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @return  DOCUMENT ME!
      */
-    Collection getTraversedAttributesByType(Class c);
+    Collection<ObjectAttribute> getTraversedAttributesByType(Class c);
 
     /**
      * getter for dummy.

@@ -42,10 +42,10 @@ public class ToStringConverter implements Serializable {
     public String convert(final Sirius.server.localserver.object.Object o, final HashMap classes) {
         final StringBuilder stringRepresentation = new StringBuilder();
 
-        final Collection<Attribute> names = o.getAttributeByName("name", 1); // NOI18N
-        final Iterator iter = names.iterator();
+        final Collection<ObjectAttribute> names = o.getAttributeByName("name", 1); // NOI18N
+        final Iterator<ObjectAttribute> iter = names.iterator();
         if (iter.hasNext()) {
-            stringRepresentation.append(((ObjectAttribute)iter.next()).getValue());
+            stringRepresentation.append(iter.next().getValue());
         } else {
             stringRepresentation.append(o.getKey().toString());
         }
@@ -64,7 +64,7 @@ public class ToStringConverter implements Serializable {
         final StringBuilder stringRepresentation = new StringBuilder();
 
         if (o instanceof Sirius.server.localserver.object.Object) {
-            final Collection<Attribute> names = ((Sirius.server.localserver.object.Object)o).getAttributeByName(
+            final Collection<ObjectAttribute> names = ((Sirius.server.localserver.object.Object)o).getAttributeByName(
                     "name", // NOI18N
                     1);
             if (names.size() > 0) {
