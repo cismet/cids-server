@@ -245,7 +245,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
     public ToStringConverter getToStringConverter() {
         if (toStringConverter == null) {
             final Sirius.server.localserver.object.Object parObj = parentObject;
-            if (parObj instanceof MetaObject) {
+            if (MetaObject.class.isAssignableFrom(parObj.getClass())) {
                 final MetaObject mo = (MetaObject)parObj;
                 try {
                     final Class<?> converterClass = ClassloadingHelper.getDynamicClass(mo.getMetaClass(),
@@ -260,13 +260,19 @@ public class ObjectAttribute extends Attribute implements Mapable,
                     }
                 } catch (final Throwable t) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Error while trying to load ToStringConverter !", t);
+                        LOG.warn("Error while trying to load ToStringConverter for object attribute '" + this.getName()
+                                    + "' (" + this.getKey() + "): " + t.getMessage(),
+                            t);
                     }
                 }
                 if (toStringConverter == null) {
                     toStringConverter = new ToStringConverter();
                 }
             }
+        } else if (LOG.isDebugEnabled()) {
+            final String message = "Error while trying to load ToStringConverter for object attribute '"
+                        + this.getName() + "' (" + this.getKey() + "): parent object is null or no MetaObject!";
+            LOG.warn(message, new Exception(message));
         }
 
         return toStringConverter;
