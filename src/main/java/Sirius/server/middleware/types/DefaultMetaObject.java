@@ -89,31 +89,54 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
         } else {
             // this.status = NO_STATUS;
         }
-        final ObjectAttribute[] attr = o.getAttribs();
-
-        for (int i = 0; i < attr.length; i++) {
-            if (attr[i].referencesObject()) {
-                final Sirius.server.localserver.object.Object ob = (Sirius.server.localserver.object.Object)
-                    attr[i].getValue();
-
-                if (ob != null) {
-                    if (ob instanceof LightweightObject) {
-                        attr[i].setValue(new LightweightMetaObject(ob.getClassID(), ob.getID(), domain, user));
-                    } else {
-                        attr[i].setValue(new DefaultMetaObject(ob, domain, user));
-                    }
-                    // attr[i].setClassKey(ob.getClassID()+"@"+domain);
-                }
-            }
-            // \u00FCbrschreibe classkey der attribute
-        }
 
         this.setDummy(o.isDummy());
+        this.initAttributes(domain, user);
     }
 
     // --------------------------------------------------------------
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * Since no middleware.MetaAttribute class exists, we have to update the "old" localserver.Attributes to make them
+     * compatible to thier new parent middleware.MetaObject instance.<br>
+     * Warning: This operation must not be called more than once per MetaObject instance!
+     *
+     * @param  domain  DOCUMENT ME!
+     * @param  user    DOCUMENT ME!
+     */
+    private void initAttributes(final String domain, final User user) {
+        for (final ObjectAttribute objectAttribute : this.attribHash.values()) {
+            // important: change parent from deprecated localserver.Object to new middleware.MetaObject instance!
+            // FIX for #172
+            objectAttribute.setParentObject(this);
+            if (objectAttribute.referencesObject() && (objectAttribute.getValue() != null)) {
+                final Sirius.server.localserver.object.Object theObject = (Sirius.server.localserver.object.Object)
+                    objectAttribute.getValue();
+
+                if (MetaObject.class.isAssignableFrom(theObject.getClass())
+                            || LightweightMetaObject.class.isAssignableFrom(theObject.getClass())) {
+                    LOG.error("object attribute '" + objectAttribute.getName() + "' of MetaObject "
+                                + this.getName() + "' (" + this.getID() + "@" + this.getClassKey()
+                                + ") already converted to MetaObject!");
+                }
+
+                if (theObject instanceof LightweightObject) {
+                    objectAttribute.setValue(new LightweightMetaObject(
+                            theObject.getClassID(),
+                            theObject.getID(),
+                            domain,
+                            user));
+                } else {
+                    objectAttribute.setValue(new DefaultMetaObject(theObject, domain, user));
+                }
+                // disabled! why?
+                // attr[i].setClassKey(ob.getClassID()+"@"+domain);
+            }
+        }
+        // \u00FCbrschreibe classkey der attribute
+    }
 
     @Override
     public HashMap getAllClasses() {

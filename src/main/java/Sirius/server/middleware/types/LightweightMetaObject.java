@@ -7,7 +7,6 @@
 ****************************************************/
 package Sirius.server.middleware.types;
 
-import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.proxy.MetaService;

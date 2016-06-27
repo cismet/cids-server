@@ -5,10 +5,6 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.cismet.cids.dynamics;
 
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
@@ -668,6 +664,7 @@ public class CidsBean implements PropertyChangeListener {
             final int length) {
         final List<CidsBean> old = new ArrayList<CidsBean>(list);
 
+        // FIXME: #171
         for (int i = index; i < (index + length); ++i) {
             try {
                 old.remove(i - (list.size() - old.size()));

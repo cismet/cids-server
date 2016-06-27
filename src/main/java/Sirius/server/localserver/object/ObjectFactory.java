@@ -575,11 +575,6 @@ public final class ObjectFactory extends Shutdown {
                 oAttr.setReferencesObject(mai.isForeignKey());
                 oAttr.setOptional(mai.isOptional());
 
-                oAttr.setParentObject(result); // Achtung die Adresse des Objektes ist nicht die Adresse des
-                // tatsaechlichen MetaObjects. Dieses wird neu erzeugt. da aber die
-                // gleichen objectattributes benutzt werden funktioniert ein zugriff ueber
-                // parent auf diese oa's trotzdem
-
                 if (attrValue instanceof Sirius.server.localserver.object.Object) {
                     ((Sirius.server.localserver.object.Object)attrValue).setReferencingObjectAttribute(oAttr);
                 }
@@ -728,7 +723,6 @@ public final class ObjectFactory extends Shutdown {
                     oa.setOptional(mai.isOptional());
                     oa.setVisible(mai.isVisible());
                     intermediateArrayElementObject.setReferencingObjectAttribute(oa);
-                    oa.setParentObject(dummyArrayContainerObject);
                     // bei gelegenheit raus da es im Konstruktor von MetaObject gesetzt wird
                     oa.setClassKey(mai.getForeignKeyClassId() + "@" + classCache.getProperties().getServerName()); // NOI18N
                     dummyArrayContainerObject.addAttribute(oa);
@@ -866,7 +860,6 @@ public final class ObjectFactory extends Shutdown {
                     oa.setOptional(mai.isOptional());
                     oa.setVisible(mai.isVisible());
                     arrayElementObject.setReferencingObjectAttribute(oa);
-                    oa.setParentObject(dummyArrayContainerObject);
                     // bei gelegenheit raus da es im Konstruktor von MetaObject gesetzt wird
                     oa.setClassKey(mai.getForeignKeyClassId() + "@" + classCache.getProperties().getServerName()); // NOI18N
                     dummyArrayContainerObject.addAttribute(oa);

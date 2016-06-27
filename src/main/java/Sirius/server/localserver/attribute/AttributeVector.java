@@ -15,7 +15,8 @@ import java.util.Vector;
 /**
  * DOCUMENT ME!
  *
- * @version  $Revision$, $Date$
+ * @version     $Revision$, $Date$
+ * @Deprecated  DOCUMENT ME!
  */
 public class AttributeVector extends Vector implements Serializable {
 

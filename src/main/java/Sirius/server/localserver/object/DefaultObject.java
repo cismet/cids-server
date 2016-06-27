@@ -7,7 +7,6 @@
 ****************************************************/
 package Sirius.server.localserver.object;
 
-import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.newuser.User;
 
@@ -61,15 +60,15 @@ public class DefaultObject implements Object {
         this((o != null) ? o.getID() : -1, (o != null) ? o.getClassID() : -1);
         if (o != null) {
             if (o.getAttributes() != null) {
-                attribHash = new LinkedHashMap(o.getAttributes());
+                attribHash = new LinkedHashMap<java.lang.Object, ObjectAttribute>(o.getAttributes());
             } else {
-                attribHash = new LinkedHashMap(10, 0.75f, false);
+                attribHash = new LinkedHashMap<java.lang.Object, ObjectAttribute>(10, 0.75f, false);
             }
             this.objectCreator = o.getObjectCreator();
             this.referencingObjectAttribute = o.getReferencingObjectAttribute();
             this.status = o.getStatus();
         } else {
-            LOG.error("object null default object created"); // NOI18N
+            LOG.error("object null -> default object created"); // NOI18N
         }
     }
 
@@ -140,6 +139,9 @@ public class DefaultObject implements Object {
      */
     @Override
     public void addAttribute(final ObjectAttribute anyAttribute) {
+        // fix for #172 and #171
+        anyAttribute.setParentObject(this);
+
         if (dummy) {
             // in einem arrayLink Objekt m\u00FCssen
             // alle Felder ausgefuellt sein egal
