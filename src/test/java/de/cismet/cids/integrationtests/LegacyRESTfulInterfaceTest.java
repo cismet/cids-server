@@ -670,16 +670,17 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             Assert.assertNotNull("meta class '" + classId + "' from meta class cache not null", metaClass);
 
             // FIXME: ObjectFactory().getInstance() fails with NPE for Classes SPH_SPIELHALLE and SPH_Betreiber
-            //            final parentObject metaObjectFromService = connector.getInstance(user, metaClass);
-            //            Assert.assertNotNull("new meta object of meta class '" + classId + "' from service not null",
-            //                    metaObjectFromService);
+            //final MetaObject metaObjectFromService = connector.getInstance(user, metaClass);
+            //Assert.assertNotNull("new meta object of meta class '" + classId + "' from service not null",
+            //        metaObjectFromService);
+
             final MetaObject metaObjectFromClass = metaClass.getEmptyInstance();
             Assert.assertNotNull("new meta object of meta class '" + classId + "' from meta class not null",
                     metaObjectFromClass);
 
             // FIXME:  parentObject].getPropertyString()  does not match!
             // ID=[] name= > but was: ID=[-1] name
-            //this.compareMetaObjects(metaObjectFromService, metaObjectFromClass);
+            //this.compareMetaObjects(metaObjectFromService, metaObjectFromClass, true, false, false);
             LOGGER.info("getInstance(" + classId + ") test passed!");
 
         } catch (AssertionError ae) {
@@ -1300,7 +1301,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @Ignore
     @Test
     @UseDataProvider("getMetaClassIds")
     public void test04objectService02insertMetaObject(final Integer classId) throws Exception {
@@ -1348,7 +1348,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @Ignore
     @Test
     @UseDataProvider("getMetaClassIds")
     public void test04objectService03deleteMetaObject(final Integer classId) throws Exception {
@@ -1399,7 +1398,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @param classId
      * @throws Exception
      */
-    @Ignore
     @Test
     @UseDataProvider("getMetaClassIds")
     public void test04objectService04updateMetaObjectNameProperty(final Integer classId) throws Exception {
@@ -1531,7 +1529,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @param classId
      * @throws Exception
      */
-    @Ignore
     @Test
     @UseDataProvider("getMetaClassIds")
     public void test04objectService05updateMetaObjectNamePropertyNoAttributeChangeFlag(final Integer classId) throws Exception {
@@ -1616,7 +1613,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @Ignore
     @Test
     public void test04objectService06reassignMetaObjectUpdatedObjectProperty() throws Exception {
 
@@ -1700,7 +1696,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Ignore
     @Test
     public void test04objectService07updateMetaObjectObjectProperty() throws Exception {
         try {
@@ -1845,7 +1840,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Ignore
     @Test
     public void test04objectService08createMetaObjectObjectProperty() throws Exception {
         try {
@@ -1944,7 +1938,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Ignore
     @Test
     public void test04objectService09createMetaObjectObjectProperty() throws Exception {
         try {
@@ -2045,7 +2038,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Ignore
     @Test
     public void test04objectService10deleteMetaObjectObjectProperty() throws Exception {
         try {
@@ -2124,7 +2116,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Ignore
     @Test
     public void test04objectService11reassignMetaObjectDeletedObjectProperty() throws Exception {
 
@@ -2212,7 +2203,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Ignore
     @Test
     public void test04objectService12updateMetaObjectNtoMArrayProperty() throws Exception {
         try {
@@ -2353,7 +2343,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Ignore
     @Test
     public void test04objectService13replaceMetaObjectNtoMArrayProperty() throws Exception {
         try {
@@ -2554,7 +2543,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Ignore
     @Test
     public void test04objectService14addMetaObjectNtoMArrayProperty() throws Exception {
         try {
@@ -2693,7 +2681,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @Ignore
     @Test
     public void test04objectService15removeMetaObjectNtoMArrayProperty() throws Exception {
         try {
@@ -2844,7 +2831,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Ignore
     @Test
     public void test04objectService16updateMetaObject1toNArrayProperty() throws Exception {
         try {
@@ -2998,7 +2984,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Ignore
     @Test
     public void test04objectService17replaceMetaObject1toNArrayPropertyDetail() throws Exception {
         try {
@@ -3179,7 +3164,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Ignore
     @Test
     public void test04objectService18replaceMetaObject1toNArrayPropertyMaster() throws Exception {
         try {
@@ -3342,7 +3326,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @throws Exception
      */
     @Test
-    @Ignore
     public void test04objectService19removeMetaObject1toNArrayProperty() throws Exception {
         try {
             LOGGER.debug("[04.19] testing removeMetaObject1toNArrayProperty(SPH_BETREIBER/SPH_SPIELHALLE)");
@@ -3590,7 +3573,9 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 Assert.assertEquals(originalKategorien.size() + " kategorien[] in restored spielhalle '" + originalSpielhallenObject.getName() + " (" + originalSpielhallenObject.getId() + ")",
                         originalKategorien.size(), revertedKategorien.size());
 
-                compareMetaObjects(originalSpielhallenObject, revertedSpielhallenObject, false, false, false);
+                // compare with changed an new flags since originalSpielhallen objects 
+                // status changed (needed to restore deleted intermediate array objects)!
+                compareMetaObjects(originalSpielhallenObject, revertedSpielhallenObject, false, true, true);
                 i++;
             }
 
@@ -4399,14 +4384,13 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
         // id and status of new / changed objects do not match remotely objects inserted / upated
         if (!compareNew && !compareChanged) {
-
-            Assert.assertEquals("expected MetaObject [" + name + "].getStatus() matches actual MetaObject (" + this.getHierarchyPath(objectHierarchy) + ")",
-                    expectedMetaObject.getStatus(),
-                    actualMetaObject.getStatus());
-
             Assert.assertEquals("expected MetaObject [" + name + "].getStatusDebugString() matches actual MetaObject (" + this.getHierarchyPath(objectHierarchy) + ")",
                     expectedMetaObject.getStatusDebugString(),
                     actualMetaObject.getStatusDebugString());
+            
+            Assert.assertEquals("expected MetaObject [" + name + "].getStatus() matches actual MetaObject (" + this.getHierarchyPath(objectHierarchy) + ")",
+                    expectedMetaObject.getStatus(),
+                    actualMetaObject.getStatus());
         }
 
         Assert.assertEquals("expected MetaObject [" + name + "].hasObjectWritePermission(user) matches actual MetaObject (" + this.getHierarchyPath(objectHierarchy) + ")",
@@ -4426,9 +4410,10 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     actualMetaObject.getReferencingObjectAttribute());
 
             // always limit recursion in referencing oa
+            // note: ReferencingObjectAttribute's parent object is not the current current meta object!
             this.compareObjectAttributes(
-                    expectedMetaObject,
-                    actualMetaObject,
+                    (MetaObject) expectedMetaObject.getReferencingObjectAttribute().getParentObject(),
+                    (MetaObject) actualMetaObject.getReferencingObjectAttribute().getParentObject(),
                     expectedMetaObject.getReferencingObjectAttribute(),
                     actualMetaObject.getReferencingObjectAttribute(),
                     true,
@@ -4544,8 +4529,8 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         // remove check when fixed!
         if (expectedObjectAttribute.getJavaType() != null && actualObjectAttribute.getJavaType() != null) {
             Assert.assertEquals("expected kategorienAttribute[" + name + "].getJavaType()  matches actual ObjectAttribute  (" + this.getHierarchyPath(objectHierarchy) + ")",
-                    expectedObjectAttribute.getJavaType(),
-                    actualObjectAttribute.getJavaType());
+                expectedObjectAttribute.getJavaType(),
+                actualObjectAttribute.getJavaType());
         }
 
         Assert.assertEquals("expected objectAttribute[" + name + "].getPermissions().toString()  matches actual ObjectAttribute  (" + this.getHierarchyPath(objectHierarchy) + ")",
@@ -4618,33 +4603,54 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         final Sirius.server.localserver.object.Object expectedParentObject = expectedObjectAttribute.getParentObject();
         final Sirius.server.localserver.object.Object actualParentObject = actualObjectAttribute.getParentObject();
 
-        // FIXME: possibly uneccessary check! Parent object shall never be null!
-        if (expectedParentObject == null) {
-            Assert.assertNull("actual objectAttribute[" + name + "]'s parent object is null, too(" + this.getHierarchyPath(objectHierarchy) + ")",
-                    actualParentObject);
-        } else {
-            Assert.assertTrue("expected objectAttribute[" + name + "]'s parent object is a MetaObject, too(" + this.getHierarchyPath(objectHierarchy) + ")",
-                    MetaObject.class.isAssignableFrom(expectedParentObject.getClass()));
-            Assert.assertTrue("actual objectAttribute[" + name + "]'s parent object is a MetaObject, too(" + this.getHierarchyPath(objectHierarchy) + ")",
-                    MetaObject.class.isAssignableFrom(actualParentObject.getClass()));
-            
-            Assert.assertEquals("expected objectAttribute[" + name + "]'s parent object referece matches correct class (" + this.getHierarchyPath(objectHierarchy) + ")",
-                    expectedMetaObject.getClass().getCanonicalName(), expectedParentObject.getClass().getCanonicalName());
-            Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object referece matches correct class (" + this.getHierarchyPath(objectHierarchy) + ")",
-                    actualMetaObject.getClass().getCanonicalName(), actualParentObject.getClass().getCanonicalName());
-            
-            Assert.assertEquals("expected objectAttribute[" + name + "]'s parent object referece matches correct instance (" + this.getHierarchyPath(objectHierarchy) + ")",
-                    expectedMetaObject.getKey(), expectedParentObject.getKey());
-            Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object referece matches correct instance (" + this.getHierarchyPath(objectHierarchy) + ")",
-                    actualMetaObject.getKey(), actualParentObject.getKey());
+        Assert.assertNotNull("expected objectAttribute[" + name + "]'s parent object is null, too(" + this.getHierarchyPath(objectHierarchy) + ")",
+                expectedParentObject);
+        Assert.assertNotNull("actual objectAttribute[" + name + "]'s parent object is null, too(" + this.getHierarchyPath(objectHierarchy) + ")",
+                actualParentObject);
 
-            Assert.assertSame("expected objectAttribute[" + name + "]'s parent object referece points to same instance (" + this.getHierarchyPath(objectHierarchy) + ")",
-                    expectedMetaObject, expectedParentObject);
-            Assert.assertSame("actual objectAttribute[" + name + "]'s parent object referece points to same instance (" + this.getHierarchyPath(objectHierarchy) + ")",
-                    actualMetaObject, actualParentObject);
+        Assert.assertTrue("expected objectAttribute[" + name + "]'s parent object is a MetaObject, too(" + this.getHierarchyPath(objectHierarchy) + ")",
+                MetaObject.class.isAssignableFrom(expectedParentObject.getClass()));
+        Assert.assertTrue("actual objectAttribute[" + name + "]'s parent object is a MetaObject, too(" + this.getHierarchyPath(objectHierarchy) + ")",
+                MetaObject.class.isAssignableFrom(actualParentObject.getClass()));
 
+        final MetaObject expectedParentMetaObject = (MetaObject) expectedParentObject;
+        final MetaObject actualParentMetaObject = (MetaObject) expectedParentObject;
+
+        Assert.assertEquals("expected objectAttribute[" + name + "]'s parent object referece matches correct class (" + this.getHierarchyPath(objectHierarchy) + ")",
+                expectedMetaObject.getClass().getCanonicalName(), expectedParentObject.getClass().getCanonicalName());
+        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object referece matches correct class (" + this.getHierarchyPath(objectHierarchy) + ")",
+                actualMetaObject.getClass().getCanonicalName(), actualParentObject.getClass().getCanonicalName());
+
+        Assert.assertEquals("expected objectAttribute[" + name + "]'s parent object referece matches correct instance (" + this.getHierarchyPath(objectHierarchy) + ")",
+                expectedMetaObject.getKey(), expectedParentObject.getKey());
+        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object referece matches correct instance (" + this.getHierarchyPath(objectHierarchy) + ")",
+                actualMetaObject.getKey(), actualParentObject.getKey());
+
+        Assert.assertSame("expected objectAttribute[" + name + "]'s parent object referece points to same instance (" + this.getHierarchyPath(objectHierarchy) + ")",
+                expectedMetaObject, expectedParentObject);
+        Assert.assertSame("actual objectAttribute[" + name + "]'s parent object referece points to same instance (" + this.getHierarchyPath(objectHierarchy) + ")",
+                actualMetaObject, actualParentObject);
+
+        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's class id matches expected parent object (" + this.getHierarchyPath(objectHierarchy) + ")",
+                expectedParentMetaObject.getClassID(), actualParentMetaObject.getClassID());
+        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's id matches expected parent object (" + this.getHierarchyPath(objectHierarchy) + ")",
+                expectedParentMetaObject.getID(), actualParentMetaObject.getID());
+        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's name matches expected parent object (" + this.getHierarchyPath(objectHierarchy) + ")",
+                expectedParentMetaObject.getName(), actualParentMetaObject.getName());
+        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's status matches expected parent object (" + this.getHierarchyPath(objectHierarchy) + ")",
+                expectedParentMetaObject.getStatus(), actualParentMetaObject.getStatus());
+
+        // not persisted MOs are only equal if they have the same reference!
+        if (expectedParentMetaObject.getID() != -1) {
             Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object matches expected parent object (" + this.getHierarchyPath(objectHierarchy) + ")",
                     expectedParentObject, actualParentObject);
+        }
+
+        // DANGEROUS
+        // status and IDs change between saved and unsaved objects!
+        if (!compareNew && compareChanged) {
+            Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's status matches expected parent object (" + this.getHierarchyPath(objectHierarchy) + ")",
+                    expectedParentMetaObject.getPropertyString(), actualParentMetaObject.getPropertyString());
         }
 
         final Object expectedObjectAttributeValue = expectedObjectAttribute.getValue();
@@ -4655,9 +4661,11 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     actualObjectAttributeValue);
 
             // as dangerous as MetaObject.getPropertyString!
-            Assert.assertEquals("expected objectAttribute[" + name + "].toString()  matches actual ObjectAttribute  (" + this.getHierarchyPath(objectHierarchy) + ")",
-                    expectedObjectAttribute.toString(),
-                    actualObjectAttribute.toString());
+            if (!compareNew && compareChanged) {
+                Assert.assertEquals("expected objectAttribute[" + name + "].toString()  matches actual ObjectAttribute  (" + this.getHierarchyPath(objectHierarchy) + ")",
+                        expectedObjectAttribute.toString(),
+                        actualObjectAttribute.toString());
+            }
 
             final Class expectedObjectAttributeValueClass = expectedObjectAttributeValue.getClass();
             final Class actualObjectAttributeValueClass = actualObjectAttributeValue.getClass();
@@ -4668,8 +4676,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     actualObjectAttributeValueClass);
 
             //referencesObject: ID (Integer) -> DefaultMetaObject!
-            // FIXME: remove the 2nd check when #166 is fixed
-            if (!expectedObjectAttribute.referencesObject() /*&& !expectedObjectAttribute.getJavaType().equals("org.postgis.PGgeometry")*/) {
+            if (!expectedObjectAttribute.referencesObject()) {
 
                 Class javaType = null;
                 try {
@@ -4705,6 +4712,21 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 // same type exists already in the hierarchy (parent object)
                 if (!limitRecursion || !objectHierarchy.contains(((MetaObject) expectedObjectAttributeValue).getClassKey())) {
                     // recursively compare meta objects
+                    final MetaObject expectedObjectAttributeMetaObject = (MetaObject) expectedObjectAttributeValue;
+                    final MetaObject actualObjectAttributeMetaObject = (MetaObject) actualObjectAttributeValue;
+
+                    Assert.assertNotNull("expected objectAttribute[" + name + "] MetaObject value has ReferencingObjectAttribute (" + this.getHierarchyPath(objectHierarchy) + ")",
+                            expectedObjectAttributeMetaObject.getReferencingObjectAttribute());
+                    Assert.assertNotNull("actual objectAttribute[" + name + "] MetaObject value has ReferencingObjectAttribute (" + this.getHierarchyPath(objectHierarchy) + ")",
+                            actualObjectAttributeMetaObject.getReferencingObjectAttribute());
+
+                    Assert.assertSame("expected objectAttribute[" + name + "] MetaObject value has ReferencingObjectAttribute set to correct attribute instance (" + this.getHierarchyPath(objectHierarchy) + ")",
+                            expectedObjectAttribute,
+                            expectedObjectAttributeMetaObject.getReferencingObjectAttribute());
+                    Assert.assertSame("actual objectAttribute[" + name + "] MetaObject value has ReferencingObjectAttribute set to correct attribute instance (" + this.getHierarchyPath(objectHierarchy) + ")",
+                            actualObjectAttribute,
+                            actualObjectAttributeMetaObject.getReferencingObjectAttribute());
+
                     this.compareMetaObjects(
                             (MetaObject) expectedObjectAttributeValue,
                             (MetaObject) actualObjectAttributeValue,
@@ -4718,11 +4740,13 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 Assert.assertEquals("actual objectAttribute[" + name + "] primitive value matches (" + this.getHierarchyPath(objectHierarchy) + ")",
                         expectedObjectAttributeValue,
                         actualObjectAttributeValue);
-            } else {
-                // ???? disable value comparision for non-primitives due to unknown behaviour of object.equals
-                Assert.assertEquals("actual objectAttribute[" + name + "] object value (" + expectedObjectAttributeValueClass.getSimpleName() + ") matches (" + this.getHierarchyPath(objectHierarchy) + ")",
-                        expectedObjectAttributeValue,
-                        actualObjectAttributeValue);
+            } else // ids of saved and usaved objects may be different!
+            {
+                if (!compareNew && !compareChanged && !expectedObjectAttribute.isPrimaryKey()) {
+                    Assert.assertEquals("actual objectAttribute[" + name + "] object value (" + expectedObjectAttributeValueClass.getSimpleName() + ") matches (" + this.getHierarchyPath(objectHierarchy) + ")",
+                            expectedObjectAttributeValue,
+                            actualObjectAttributeValue);
+                }
             }
         } else if (!compareNew && !compareChanged) {
             // disable null value comparison for new and changed objects
