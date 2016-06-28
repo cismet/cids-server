@@ -14,7 +14,6 @@ import Sirius.server.localserver._class.ClassCache;
 import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
-import Sirius.server.middleware.types.DefaultMetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.permission.Permission;
@@ -890,7 +889,7 @@ public final class ObjectFactory extends Shutdown {
      */
     public Sirius.server.localserver.object.Object getInstance(final int classId) throws Exception {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("getInstance(" + classId + ") called", new CurrentStackTrace()); // NOI18N
+            LOG.debug("getInstance(" + classId + ") called"); // NOI18N
         }
         final Sirius.server.localserver._class.Class c = classCache.getClass(classId);
 
@@ -898,76 +897,82 @@ public final class ObjectFactory extends Shutdown {
                 -1,
                 classId);
 
-        // nur ein Versuch:-)
-        final Iterator iter = Collections.synchronizedCollection(c.getMemberAttributeInfos().values()).iterator();
+        if ((c.getMemberAttributeInfos() != null) && !c.getMemberAttributeInfos().isEmpty()) {
+            final Iterator iter = Collections.synchronizedCollection(c.getMemberAttributeInfos().values()).iterator();
 
-        while (iter.hasNext()) {
-            final MemberAttributeInfo mai = (MemberAttributeInfo)iter.next();
+            while (iter.hasNext()) {
+                final MemberAttributeInfo mai = (MemberAttributeInfo)iter.next();
 
-            ObjectAttribute oAttr;
+                ObjectAttribute oAttr;
 
-            if (!mai.isForeignKey()) {
-                oAttr = new ObjectAttribute(mai, -1, null, c.getAttributePolicy());
-            } else if (!mai.isArray()) {
-                oAttr = new ObjectAttribute(mai, -1, getInstance(mai.getForeignKeyClassId()), c.getAttributePolicy());
-            } else // isArray
-            {
-                // construct artificial metaobject
+                if (!mai.isForeignKey()) {
+                    oAttr = new ObjectAttribute(mai, -1, null, c.getAttributePolicy());
+                } else if (!mai.isArray()) {
+                    oAttr = new ObjectAttribute(
+                            mai,
+                            -1,
+                            getInstance(mai.getForeignKeyClassId()),
+                            c.getAttributePolicy());
+                } else // isArray
+                {
+                    // construct artificial metaobject
 
-                // classId des zwischenobjektes (join tabelle) zuweisen
-                final int jtClassId = mai.getForeignKeyClassId();
+                    // classId des zwischenobjektes (join tabelle) zuweisen
+                    final int jtClassId = mai.getForeignKeyClassId();
 
-                // Klasse der referenztabellen besorgen
-                final Sirius.server.localserver._class.Class cl = classCache.getClass(jtClassId);
+                    // Klasse der referenztabellen besorgen
+                    final Sirius.server.localserver._class.Class cl = classCache.getClass(jtClassId);
 
-                // dummy erszeugen
-                final Sirius.server.localserver.object.Object result =
-                    new Sirius.server.localserver.object.DefaultObject(-1,
-                        cl.getID());
+                    // dummy erszeugen
+                    final Sirius.server.localserver.object.Object result =
+                        new Sirius.server.localserver.object.DefaultObject(-1,
+                            cl.getID());
 
-                // der dummy bekommt jetzt genau ein Attribut vom Typ der Klasse der Referenztabelle, als Muster
+                    // der dummy bekommt jetzt genau ein Attribut vom Typ der Klasse der Referenztabelle, als Muster
 
-                // zwischenobjekt als arrayelement anlegen
+                    // zwischenobjekt als arrayelement anlegen
 
-                result.addAttribute(new ObjectAttribute(mai, -1, getInstance(jtClassId), cl.getAttributePolicy()));
+                    result.addAttribute(new ObjectAttribute(mai, -1, getInstance(jtClassId), cl.getAttributePolicy()));
 
-                result.setDummy(true);
+                    result.setDummy(true);
 
-                // Objektattribut (array dummy) setzten
-                oAttr = new ObjectAttribute(mai, -1, result, cl.getAttributePolicy());
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("array oattr :" + oAttr.getName() + " class" + oAttr.getClassKey()); // NOI18N
+                    // Objektattribut (array dummy) setzten
+                    oAttr = new ObjectAttribute(mai, -1, result, cl.getAttributePolicy());
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("array oattr :" + oAttr.getName() + " class" + oAttr.getClassKey()); // NOI18N
+                    }
                 }
-            }
 
-            // not covered by the constructor
-            oAttr.setVisible(mai.isVisible());
-            oAttr.setSubstitute(mai.isSubstitute());
-            oAttr.setReferencesObject(mai.isForeignKey());
+                // not covered by the constructor
+                oAttr.setVisible(mai.isVisible());
+                oAttr.setSubstitute(mai.isSubstitute());
+                oAttr.setReferencesObject(mai.isForeignKey());
 
-            oAttr.setIsPrimaryKey(mai.getFieldName().equalsIgnoreCase(c.getPrimaryKey()));
+                oAttr.setIsPrimaryKey(mai.getFieldName().equalsIgnoreCase(c.getPrimaryKey()));
 
-            oAttr.setOptional(mai.isOptional());
+                oAttr.setOptional(mai.isOptional());
 
-            try {
-                final String table = c.getTableName();
+                try {
+                    final String table = c.getTableName();
 
-                final String pk = (mai.getFieldName() + "@" + table).toLowerCase(); // NOI18N
+                    final String pk = (mai.getFieldName() + "@" + table).toLowerCase(); // NOI18N
 
-                if (primaryKeys.contains(pk)) {
-                    oAttr.setIsPrimaryKey(true); // bei gelegenheit raus da es im Konstruktor von MetaObject gesetzt
-                    // wird
+                    if (primaryKeys.contains(pk)) {
+                        oAttr.setIsPrimaryKey(true); // bei gelegenheit raus da es im Konstruktor von MetaObject gesetzt
+                        // wird
+                    }
+                    oAttr.setClassKey(mai.getForeignKeyClassId() + "@" + classCache.getProperties().getServerName()); // NOI18N
+                } catch (Exception e) {
+                    LOG.error("could not set primary key property", e);                                               // NOI18N
                 }
-                oAttr.setClassKey(mai.getForeignKeyClassId() + "@" + classCache.getProperties().getServerName()); // NOI18N
-            } catch (Exception e) {
-                LOG.error("could not set primary key property", e);                                               // NOI18N
-            }
 
-            o.addAttribute(oAttr);
+                o.addAttribute(oAttr);
+            }
+        } else {
+            LOG.warn("no MemberAttributeInfo found in class '" + c.getTableName() + "' ("
+                        + c.getKey() + "): cannot add attrributes to Object!");
         }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("result of getInstance()" + new DefaultMetaObject(o, "LOCAL")); // NOI18N
-        }
+
         return o;
     }
 

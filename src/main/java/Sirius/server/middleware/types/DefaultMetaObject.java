@@ -25,6 +25,8 @@ import de.cismet.cids.tools.tostring.*;
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
 
+import de.cismet.tools.CurrentStackTrace;
+
 /**
  * Return Type of a RMI method.
  *
@@ -80,9 +82,11 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     public DefaultMetaObject(final Sirius.server.localserver.object.Object o, final String domain, final User user) {
         // zum Testen einfach rekursives ersetzen
         super(o);
-        o.filter(user);
+        if (user != null) {
+            o.filter(user);
+        }
         this.domain = domain;
-        setStatus(o.getStatus());
+        super.setStatus(o.getStatus());
         if (o instanceof DefaultMetaObject) {
             // this.status = ((MetaObject) o).status;
             this.classes = ((DefaultMetaObject)o).classes;
@@ -90,7 +94,7 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
             // this.status = NO_STATUS;
         }
 
-        this.setDummy(o.isDummy());
+        super.setDummy(o.isDummy());
         this.initAttributes(domain, user);
     }
 
@@ -117,9 +121,10 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
 
                 if (MetaObject.class.isAssignableFrom(theObject.getClass())
                             || LightweightMetaObject.class.isAssignableFrom(theObject.getClass())) {
-                    LOG.error("object attribute '" + objectAttribute.getName() + "' of MetaObject "
+                    LOG.error("object attribute '" + objectAttribute.getName() + "' of MetaObject '"
                                 + this.getName() + "' (" + this.getID() + "@" + this.getClassKey()
-                                + ") already converted to MetaObject!");
+                                + ") already converted to MetaObject!",
+                        new CurrentStackTrace());
                 }
 
                 if (theObject instanceof LightweightObject) {
@@ -136,6 +141,24 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
             }
         }
         // \u00FCbrschreibe classkey der attribute
+    }
+
+    @Override
+    public void addAttribute(final ObjectAttribute objectAttribute) {
+        super.addAttribute(objectAttribute);
+
+        if (objectAttribute.referencesObject() && (objectAttribute.getValue() != null)) {
+            final Sirius.server.localserver.object.Object theObject = (Sirius.server.localserver.object.Object)
+                objectAttribute.getValue();
+
+            if (!MetaObject.class.isAssignableFrom(theObject.getClass())
+                        || LightweightMetaObject.class.isAssignableFrom(theObject.getClass())) {
+                LOG.error("object attribute '" + objectAttribute.getName() + "' of MetaObject "
+                            + this.getName() + "' (" + this.getID() + "@" + this.getClassKey()
+                            + ")  does not contain a MetaObject!",
+                    new CurrentStackTrace());
+            }
+        }
     }
 
     @Override

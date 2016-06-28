@@ -110,6 +110,10 @@ public class ObjectAttribute extends Attribute implements Mapable,
         this.complexEditor = mai.getComplexEditor();
 
         this.toStringString = mai.getToString();
+//        this.setVisible(mai.isVisible());
+//        this.setSubstitute(mai.isSubstitute());
+//        this.setReferencesObject(mai.isForeignKey());
+//        this.setOptional(mai.isOptional());
 
         this.setValue(value);
 
@@ -141,7 +145,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
      *
      * @return  Value of property classID.
      */
-    public int getClassID() {
+    public final int getClassID() {
         return classID;
     }
 
@@ -150,7 +154,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
      *
      * @param  classID  New value of property classID.
      */
-    public void setClassID(final int classID) {
+    public final void setClassID(final int classID) {
         this.classID = classID;
     }
 
@@ -159,7 +163,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
      *
      * @param  objectID  New value of property objectID.
      */
-    public void setObjectID(final int objectID) {
+    public final void setObjectID(final int objectID) {
         this.objectID = objectID;
     }
 
@@ -188,12 +192,12 @@ public class ObjectAttribute extends Attribute implements Mapable,
      *
      * @return  DOCUMENT ME!
      */
-    public String getToStringString() {
+    public final String getToStringString() {
         return toStringString;
     }
 
     @Override
-    public String getRenderer() {
+    public final String getRenderer() {
         return toStringString;
     }
 
@@ -203,12 +207,12 @@ public class ObjectAttribute extends Attribute implements Mapable,
     }
 
     @Override
-    public boolean isStringCreateable() {
+    public final boolean isStringCreateable() {
         return (objectCreator != null);
     }
 
     @Override
-    public String getComplexEditor() {
+    public final String getComplexEditor() {
         if (this.complexEditor == null) {
             complexEditor = "Sirius.navigator.ui.attributes.editor.metaobject.DefaultComplexMetaAttributeEditor"; // NOI18N
         }
@@ -223,7 +227,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
     }
 
     @Override
-    public String getSimpleEditor() {
+    public final String getSimpleEditor() {
         return editor;
     }
 
@@ -232,7 +236,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
      *
      * @param  complexEditor  New value of property complexEditor.
      */
-    public void setComplexEditor(final String complexEditor) {
+    public final void setComplexEditor(final String complexEditor) {
         this.complexEditor = complexEditor;
     }
 
@@ -297,7 +301,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
      *
      * @param  mai  DOCUMENT ME!
      */
-    protected void initFromString(final MemberAttributeInfo mai) {
+    protected final void initFromString(final MemberAttributeInfo mai) {
         final String fromString = mai.getFromString();
         if (fromString != null) {
             try {
@@ -344,16 +348,19 @@ public class ObjectAttribute extends Attribute implements Mapable,
      *
      * @return  DOCUMENT ME!
      */
-    public MemberAttributeInfo getMai() {
+    public final MemberAttributeInfo getMai() {
         return mai;
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param  mai  DOCUMENT ME!
+     * @param       mai  DOCUMENT ME!
+     *
+     * @deprecated  MAI should not be changed after construction!
      */
-    public void setMai(final MemberAttributeInfo mai) {
+    @Deprecated
+    public final void setMai(final MemberAttributeInfo mai) {
         this.mai = mai;
     }
 
@@ -362,7 +369,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
      *
      * @return  DOCUMENT ME!
      */
-    public Sirius.server.localserver.object.Object getParentObject() {
+    public final Sirius.server.localserver.object.Object getParentObject() {
         return parentObject;
     }
 
@@ -371,7 +378,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
      *
      * @param  parentObject  DOCUMENT ME!
      */
-    public void setParentObject(final Sirius.server.localserver.object.Object parentObject) {
+    public final void setParentObject(final Sirius.server.localserver.object.Object parentObject) {
         this.parentObject = parentObject;
     }
 
@@ -380,7 +387,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
      *
      * @return  DOCUMENT ME!
      */
-    public boolean isVirtualOneToManyAttribute() {
+    public final boolean isVirtualOneToManyAttribute() {
         return (mai.isVirtual() && (mai.getForeignKeyClassId() < 0));
     }
 }

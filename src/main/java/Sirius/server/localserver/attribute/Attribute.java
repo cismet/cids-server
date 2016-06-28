@@ -283,7 +283,7 @@ public abstract class Attribute implements Mapable, Serializable, StringConverta
      *
      * @param  visible  New value of property visible.
      */
-    public void setVisible(final boolean visible) {
+    public final void setVisible(final boolean visible) {
         this.visible = visible;
     }
 
@@ -292,7 +292,7 @@ public abstract class Attribute implements Mapable, Serializable, StringConverta
      *
      * @return  Value of property substitute.
      */
-    public boolean isSubstitute() {
+    public final boolean isSubstitute() {
         return substitute;
     }
 
@@ -301,7 +301,7 @@ public abstract class Attribute implements Mapable, Serializable, StringConverta
      *
      * @param  substitute  New value of property substitute.
      */
-    public void setSubstitute(final boolean substitute) {
+    public final void setSubstitute(final boolean substitute) {
         this.substitute = substitute;
     }
 
@@ -310,7 +310,7 @@ public abstract class Attribute implements Mapable, Serializable, StringConverta
      *
      * @return  DOCUMENT ME!
      */
-    public String getClassKey() {
+    public final String getClassKey() {
         if (classKey != null) {
             return classKey;
         } else {
@@ -324,7 +324,7 @@ public abstract class Attribute implements Mapable, Serializable, StringConverta
      *
      * @param  classKey  New value of property classKey.
      */
-    public void setClassKey(final java.lang.String classKey) {
+    public final void setClassKey(final java.lang.String classKey) {
         this.classKey = classKey;
     }
 
@@ -333,7 +333,7 @@ public abstract class Attribute implements Mapable, Serializable, StringConverta
      *
      * @param  typeId  DOCUMENT ME!
      */
-    public void setTypeId(final int typeId) {
+    public final void setTypeId(final int typeId) {
         this.typeId = typeId;
     }
 
@@ -342,7 +342,7 @@ public abstract class Attribute implements Mapable, Serializable, StringConverta
      *
      * @return  Value of property typeId.
      */
-    public int getTypeId() {
+    public final int getTypeId() {
         return typeId;
     }
 
@@ -351,7 +351,7 @@ public abstract class Attribute implements Mapable, Serializable, StringConverta
      *
      * @return  Value of property changed.
      */
-    public boolean isChanged() {
+    public final boolean isChanged() {
         return changed;
     }
 
@@ -360,14 +360,14 @@ public abstract class Attribute implements Mapable, Serializable, StringConverta
      *
      * @param  changed  New value of property changed.
      */
-    public void setChanged(final boolean changed) {
+    public final void setChanged(final boolean changed) {
         this.changed = changed;
     }
 
     /**
      * DOCUMENT ME!
      */
-    public void setValuesNull() {
+    public final void setValuesNull() {
         if (!referencesObject) {
             value = null;
             if (LOG.isDebugEnabled()) {
@@ -383,25 +383,31 @@ public abstract class Attribute implements Mapable, Serializable, StringConverta
      *
      * @return  Value of property isPrimaryKey.
      */
-    public boolean isPrimaryKey() {
+    public final boolean isPrimaryKey() {
         return isPrimaryKey;
     }
 
     /**
      * Setter for property isPrimaryKey.
      *
-     * @param  isPrimaryKey  New value of property isPrimaryKey.
+     * @param       isPrimaryKey  New value of property isPrimaryKey.
+     *
+     * @deprecated  does not change value in MemberAttributeInfo!
      */
-    public void setIsPrimaryKey(final boolean isPrimaryKey) {
+    @Deprecated
+    public final void setIsPrimaryKey(final boolean isPrimaryKey) {
         this.isPrimaryKey = isPrimaryKey;
     }
 
     /**
      * Getter for property javaType.
      *
-     * @return  Value of property javaType.
+     * @return      Value of property javaType.
+     *
+     * @deprecated  does not change value in MemberAttributeInfo!
      */
-    public String getJavaType() {
+    @Deprecated
+    public final String getJavaType() {
         return javaType;
     }
 
@@ -410,7 +416,7 @@ public abstract class Attribute implements Mapable, Serializable, StringConverta
      *
      * @param  javaType  New value of property javaType.
      */
-    public void setJavaType(final String javaType) {
+    public final void setJavaType(final String javaType) {
         this.javaType = javaType;
     }
 
@@ -419,16 +425,19 @@ public abstract class Attribute implements Mapable, Serializable, StringConverta
      *
      * @return  Value of property isArray.
      */
-    public boolean isArray() {
+    public final boolean isArray() {
         return isArray;
     }
 
     /**
      * Setter for property isArray.
      *
-     * @param  isArray  New value of property isArray.
+     * @param       isArray  New value of property isArray.
+     *
+     * @deprecated  does not change value in MemberAttributeInfo!
      */
-    public void setIsArray(final boolean isArray) {
+    @Deprecated
+    public final void setIsArray(final boolean isArray) {
         this.isArray = isArray;
     }
 
@@ -437,13 +446,14 @@ public abstract class Attribute implements Mapable, Serializable, StringConverta
      *
      * @param  id  DOCUMENT ME!
      */
-    public void setId(final String id) {
+    public final void setId(final String id) {
         this.id = id;
     }
 
     /**
      * DOCUMENT ME!
      */
+    @Deprecated
     public void printMe() {
         System.out.println(name + " : " + value); // NOI18N
     }
@@ -460,9 +470,12 @@ public abstract class Attribute implements Mapable, Serializable, StringConverta
     /**
      * DOCUMENT ME!
      *
-     * @param  optional  DOCUMENT ME!
+     * @param       optional  DOCUMENT ME!
+     *
+     * @deprecated  does not change value in MemberAttributeInfo!
      */
-    public void setOptional(final boolean optional) {
+    @Deprecated
+    public final void setOptional(final boolean optional) {
         this.optional = optional;
     }
 
@@ -471,7 +484,7 @@ public abstract class Attribute implements Mapable, Serializable, StringConverta
      *
      * @return  DOCUMENT ME!
      */
-    public boolean isOptional() {
+    public final boolean isOptional() {
         return optional;
     }
 }
