@@ -311,12 +311,7 @@ public abstract class Attribute implements Mapable, Serializable, StringConverta
      * @return  DOCUMENT ME!
      */
     public final String getClassKey() {
-        if (classKey != null) {
-            return classKey;
-        } else {
-            LOG.error("Attribute Value no type for getCLassKey ::" + value.getClass()); // NOI18N
-            return null;
-        }
+        return classKey;
     }
 
     /**
