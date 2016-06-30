@@ -49,7 +49,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @param  objectAttributes  attributes to be added to the Object
      */
-    void addAllAttributes(ObjectAttribute[] objectAttributes);
+    void addAllAttributes(final ObjectAttribute[] objectAttributes);
 
     /**
      * Fügt ein Attribut in die davor vorgesehenen AtrributVectoren ein.<BR>
@@ -61,7 +61,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      * @see    #doubles
      * @see    #longs
      */
-    void addAttribute(ObjectAttribute anyAttribute);
+    void addAttribute(final ObjectAttribute anyAttribute);
 
     /**
      * UNUSED.
@@ -73,7 +73,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      * @deprecated  UNUSED
      */
     @Override
-    java.lang.Object constructKey(Mapable m);
+    java.lang.Object constructKey(final Mapable m);
 
     /**
      * liefert eine fuer ug sichtbare Attributierung.
@@ -82,7 +82,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @return  eine fuer UG massgeschneiderte Version des Objekts
      */
-    Sirius.server.localserver.object.Object filter(User ug);
+    Sirius.server.localserver.object.Object filter(final User ug);
 
     /**
      * creates an Instance of this Object from a string representation.
@@ -97,7 +97,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      * @throws  Exception  java.lang.Exception error during consturction of an Object
      */
     @Override
-    java.lang.Object fromString(String objectRepresentation, java.lang.Object mo) throws Exception;
+    java.lang.Object fromString(final String objectRepresentation, final java.lang.Object mo) throws Exception;
 
     /**
      * beschafft eine Arrayrprenstation aller Attribute des Object.<BR>
@@ -109,14 +109,14 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
     ObjectAttribute[] getAttribs();
 
     /**
-     * retrieves an Attributed referenced by its key (name) Please note that this method retrieves the first attribute
-     * that matchtes if one needs all attributes matching he should use getAttributeByname().
+     * retrieves an Attributed referenced by its <strong>name</strong> Please note that this method retrieves the first
+     * attribute that matchtes if one needs all attributes matching he should use getAttributeByname().
      *
-     * @param   key  Schlüssel (key) des gewünschten Attributs
+     * @param   name  Name des gewünschten Attributs
      *
      * @return  das Attribut zu dem der Schlüssel passt
      */
-    ObjectAttribute getAttribute(java.lang.Object key);
+    ObjectAttribute getAttribute(final String name);
 
     /**
      * Method from Hell liefert ein Attribut �ber den Fieldname Es wird davon ausgegangen, dass nur ObjectAttributes im
@@ -126,7 +126,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @return  DOCUMENT ME!
      */
-    ObjectAttribute getAttributeByFieldName(String fieldname);
+    ObjectAttribute getAttributeByFieldName(final String fieldname);
 
     /**
      * beschafft eine Collection welche alle Attribute enthält deren Schlüssel dem parameter name entsprechen.
@@ -136,7 +136,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @return  Collection mit allen attributen gleichen schlüssels == name
      */
-    Collection<ObjectAttribute> getAttributeByName(String name, int maxResult);
+    Collection<ObjectAttribute> getAttributeByName(final String name, final int maxResult);
 
     /**
      * getter for attribHash.
@@ -152,7 +152,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @return  Collection mit allen attributen gleichen schlüssels == name
      */
-    Collection<ObjectAttribute> getAttributesByName(Collection names);
+    Collection<ObjectAttribute> getAttributesByName(final Collection names);
 
     /**
      * DOCUMENT ME!
@@ -162,7 +162,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @return  DOCUMENT ME!
      */
-    Collection<ObjectAttribute> getAttributesByType(Class c, int recursionDepth);
+    Collection<ObjectAttribute> getAttributesByType(final Class c, final int recursionDepth);
 
     /**
      * DOCUMENT ME!
@@ -171,7 +171,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @return  DOCUMENT ME!
      */
-    Collection<ObjectAttribute> getAttributesByType(Class c);
+    Collection<ObjectAttribute> getAttributesByType(final Class c);
 
     /**
      * getter for classID.
@@ -234,7 +234,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @return  DOCUMENT ME!
      */
-    Collection<ObjectAttribute> getTraversedAttributesByType(Class c);
+    Collection<ObjectAttribute> getTraversedAttributesByType(final Class c);
 
     /**
      * getter for dummy.
@@ -263,28 +263,28 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @param  anyAttribute  DOCUMENT ME!
      */
-    void removeAttribute(ObjectAttribute anyAttribute);
+    void removeAttribute(final ObjectAttribute anyAttribute);
 
     /**
      * setter for dummy.
      *
      * @param  dummy  whether it is a dummy
      */
-    void setDummy(boolean dummy);
+    void setDummy(final boolean dummy);
 
     /**
      * DOCUMENT ME!
      *
      * @param  objectID  DOCUMENT ME!
      */
-    void setID(int objectID);
+    void setID(final int objectID);
 
     /**
      * Setter for property persistent.
      *
      * @param  persistent  New value of property persistent.
      */
-    void setPersistent(boolean persistent);
+    void setPersistent(final boolean persistent);
 
     /**
      * DOCUMENT ME!
@@ -296,7 +296,7 @@ public interface Object extends Mapable, StringConvertable, StringCreateable, Se
      *
      * @param  referencingObjectAttribute  DOCUMENT ME!
      */
-    void setReferencingObjectAttribute(ObjectAttribute referencingObjectAttribute);
+    void setReferencingObjectAttribute(final ObjectAttribute referencingObjectAttribute);
 
     /**
      * setter for status.

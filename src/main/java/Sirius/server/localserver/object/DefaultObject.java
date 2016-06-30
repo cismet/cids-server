@@ -193,19 +193,19 @@ public class DefaultObject implements Object {
     }
 
     /**
-     * retrieves an Attribute referenced by its key (name) Please note that this method retrieves the first attribute
-     * that matchtes if one needs all attributes matching he should use getAttributeByname().
+     * retrieves an Attribute referenced by its <strong>name</strong> Please note that this method retrieves the first
+     * attribute that matchtes if one needs all attributes matching he should use getAttributeByname().
      *
-     * @param   key  Schluessel (key) des gewuenschten Attributs
+     * @param   name  name des gewuenschten Attributs
      *
      * @return  das Attribut zu dem der Schluessel passt
      */
     @Override
-    public ObjectAttribute getAttribute(final java.lang.Object key) {
+    public ObjectAttribute getAttribute(final String name) {
         // return  attribHash.get(key);
         final ObjectAttribute[] as = getAttribs();
         for (int i = 0; i < as.length; i++) {
-            if (as[i].getName().equalsIgnoreCase(key.toString())) {
+            if (as[i].getName().equalsIgnoreCase(name)) {
                 return as[i];
             }
         }
