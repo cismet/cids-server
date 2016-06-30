@@ -7,8 +7,11 @@ import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import de.cismet.cids.utils.MetaClassCacheService;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
@@ -175,12 +178,12 @@ public class MetaObjectIntegrityTest {
                     + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey() + ") key",
                     metaObject.getAttribute(objectAttribute.getName()));
 
-            //            Assert.assertSame("MetaObject '" + metaObject.getName() + "|"
-            //                    + metaClass.getTableName() + "' (" + metaObject.getId()
-            //                    + "@" + metaObject.getClassKey() + "): getAttribute() contains attribute '"
-            //                    + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey() + ") instance",
-            //                    objectAttribute,
-            //                    metaObject.getAttribute(objectAttribute.getName()));
+            Assert.assertSame("MetaObject '" + metaObject.getName() + "|"
+                    + metaClass.getTableName() + "' (" + metaObject.getId()
+                    + "@" + metaObject.getClassKey() + "): getAttribute() contains attribute '"
+                    + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey() + ") instance",
+                    objectAttribute,
+                    metaObject.getAttribute(objectAttribute.getName()));
             Assert.assertNotNull("MetaObject '" + metaObject.getName() + "|"
                     + metaClass.getTableName() + "' (" + metaObject.getId()
                     + "@" + metaObject.getClassKey() + "): getAttributeByFieldName() contains attribute '"
@@ -272,12 +275,22 @@ public class MetaObjectIntegrityTest {
                             MetaObject.class.isAssignableFrom(value.getClass()));
 
                     final MetaObject valueMetaObject = (MetaObject) value;
+                    final ObjectAttribute referencingObjectAttribute = valueMetaObject.getReferencingObjectAttribute();
                     Assert.assertNotNull("MetaObject '" + metaObject.getName() + "|"
                             + metaClass.getTableName() + "' (" + metaObject.getId()
                             + "@" + metaObject.getClassKey() + ")'s object attribute "
                             + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey()
                             + ")' MetaObject ReferencingObjectAttribute is not null",
-                            valueMetaObject.getReferencingObjectAttribute());
+                            referencingObjectAttribute);
+
+                    Assert.assertEquals("MetaObject '" + metaObject.getName() + "|"
+                            + metaClass.getTableName() + "' (" + metaObject.getId()
+                            + "@" + metaObject.getClassKey() + ")'s object attribute "
+                            + "[" + i + "] '" + objectAttribute.getName() + "' (" + objectAttribute.getKey()
+                            + ")' MetaObject ReferencingObjectAttribute '"
+                            + referencingObjectAttribute.getName() + "' (" + referencingObjectAttribute.getKey() + ")'matches attribute's key",
+                            objectAttribute.getKey(),
+                            valueMetaObject.getReferencingObjectAttribute().getKey());
 
                     Assert.assertSame("MetaObject '" + metaObject.getName() + "|"
                             + metaClass.getTableName() + "' (" + metaObject.getId()
@@ -287,37 +300,56 @@ public class MetaObjectIntegrityTest {
                             objectAttribute,
                             valueMetaObject.getReferencingObjectAttribute());
 
-                    Assert.assertSame("MetaObject '" + metaObject.getName() + "|"
+//                    if (objectAttribute.isVirtualOneToManyAttribute()) {
+//                        Assert.assertEquals("MetaObject '" + metaObject.getName() + "|"
+//                                + metaClass.getTableName() + "' (" + metaObject.getId()
+//                                + "@" + metaObject.getClassKey() + ")'s virtual array object attribute "
+//                                + "[" + i + "] '" + objectAttribute.getName() + "' (" + objectAttribute.getKey()
+//                                + ")'s  ClassKey matches valueMetaObject's ClassKey",
+//                                "-" + valueMetaObject.getClassKey(),
+//                                objectAttribute.getClassKey());
+//                    } else {
+                    Assert.assertEquals("MetaObject '" + metaObject.getName() + "|"
                             + metaClass.getTableName() + "' (" + metaObject.getId()
                             + "@" + metaObject.getClassKey() + ")'s object attribute "
                             + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey()
                             + ")'s  ClassKey matches valueMetaObject's ClassKey",
                             valueMetaObject.getClassKey(),
                             objectAttribute.getClassKey());
+                    //}
 
-                    Assert.assertEquals("MetaObject '" + metaObject.getName() + "|"
-                            + metaClass.getTableName() + "' (" + metaObject.getId()
-                            + "@" + metaObject.getClassKey() + ")'s attribute "
-                            + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey()
-                            + ") getComplexEditor() matches valueMetaObject.getComplexEditor()",
-                            valueMetaObject.getComplexEditor(),
-                            objectAttribute.getComplexEditor());
+                    // TODO: check if object and attribute editors / renderers are the same
+                    // =========================================================
+                    if (valueMetaObject.getComplexEditor() != null) {
+                        Assert.assertEquals("MetaObject '" + metaObject.getName() + "|"
+                                + metaClass.getTableName() + "' (" + metaObject.getId()
+                                + "@" + metaObject.getClassKey() + ")'s attribute "
+                                + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey()
+                                + ") getComplexEditor() matches valueMetaObject.getComplexEditor()",
+                                valueMetaObject.getComplexEditor(),
+                                objectAttribute.getComplexEditor());
+                    }
 
-                    Assert.assertEquals("MetaObject '" + metaObject.getName() + "|"
-                            + metaClass.getTableName() + "' (" + metaObject.getId()
-                            + "@" + metaObject.getClassKey() + ")'s attribute "
-                            + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey()
-                            + ") getRenderer() matches  valueMetaObject.getRenderer()",
-                            valueMetaObject.getRenderer(),
-                            objectAttribute.getRenderer());
+                    if (valueMetaObject.getRenderer() != null) {
+                        Assert.assertEquals("MetaObject '" + metaObject.getName() + "|"
+                                + metaClass.getTableName() + "' (" + metaObject.getId()
+                                + "@" + metaObject.getClassKey() + ")'s attribute "
+                                + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey()
+                                + ") getRenderer() matches  valueMetaObject.getRenderer()",
+                                valueMetaObject.getRenderer(),
+                                objectAttribute.getRenderer());
+                    }
 
-                    Assert.assertEquals("MetaObject '" + metaObject.getName() + "|"
-                            + metaClass.getTableName() + "' (" + metaObject.getId()
-                            + "@" + metaObject.getClassKey() + ")'s attribute "
-                            + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey()
-                            + ") getSimpleEditor() matches  valueMetaObject.getSimpleEditor()",
-                            valueMetaObject.getSimpleEditor(),
-                            objectAttribute.getSimpleEditor());
+                    if (valueMetaObject.getSimpleEditor() != null) {
+                        Assert.assertEquals("MetaObject '" + metaObject.getName() + "|"
+                                + metaClass.getTableName() + "' (" + metaObject.getId()
+                                + "@" + metaObject.getClassKey() + ")'s attribute "
+                                + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey()
+                                + ") getSimpleEditor() matches  valueMetaObject.getSimpleEditor()",
+                                valueMetaObject.getSimpleEditor(),
+                                objectAttribute.getSimpleEditor());
+                    }
+                    // =========================================================
 
                     // check n-m array
                     final String arrayKeyFieldName = objectAttribute.getMai().getArrayKeyFieldName();
@@ -337,20 +369,19 @@ public class MetaObjectIntegrityTest {
             }
 
             // end check value -----------------------------------------------------
-// FIXME: #174            
-//            Assert.assertNotNull("MetaObject '" + metaObject.getName() + "|"
-//                    + metaClass.getTableName() + "' (" + metaObject.getId()
-//                    + "@" + metaObject.getClassKey() + ")'s attribute "
-//                    + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey()
-//                    + ")' ParentObject is not null",
-//                    objectAttribute.getParentObject());
-//            Assert.assertSame("MetaObject '" + metaObject.getName() + "|"
-//                    + metaClass.getTableName() + "' (" + metaObject.getId()
-//                    + "@" + metaObject.getClassKey() + ")'s attribute "
-//                    + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey()
-//                    + ")' matches metaObject instance",
-//                    metaObject,
-//                    objectAttribute.getParentObject());
+            Assert.assertNotNull("MetaObject '" + metaObject.getName() + "|"
+                    + metaClass.getTableName() + "' (" + metaObject.getId()
+                    + "@" + metaObject.getClassKey() + ")'s attribute "
+                    + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey()
+                    + ")' ParentObject is not null",
+                    objectAttribute.getParentObject());
+            Assert.assertSame("MetaObject '" + metaObject.getName() + "|"
+                    + metaClass.getTableName() + "' (" + metaObject.getId()
+                    + "@" + metaObject.getClassKey() + ")'s attribute "
+                    + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey()
+                    + ")' matches metaObject instance",
+                    metaObject,
+                    objectAttribute.getParentObject());
             if (!objectAttribute.isArray()
                     && !objectAttribute.isVirtualOneToManyAttribute()
                     && !objectAttribute.isSubstitute()
@@ -387,11 +418,19 @@ public class MetaObjectIntegrityTest {
                     + ")'s MemberAttributeInfo key found in metaClass.getMemberAttributeInfos()",
                     metaClass.getMemberAttributeInfos().containsKey(memberAttributeInfo.getKey()));
 
+            Assert.assertEquals("MetaObject '" + metaObject.getName() + "|"
+                    + metaClass.getTableName() + "' (" + metaObject.getId()
+                    + "@" + metaObject.getClassKey() + ")'s attribute "
+                    + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey()
+                    + ")'s MemberAttributeInfo found in metaClass.getMemberAttributeInfos()",
+                    ((MemberAttributeInfo) metaClass.getMemberAttributeInfos().get(memberAttributeInfo.getKey())).getKey(),
+                    memberAttributeInfo.getKey());
+
             Assert.assertSame("MetaObject '" + metaObject.getName() + "|"
                     + metaClass.getTableName() + "' (" + metaObject.getId()
                     + "@" + metaObject.getClassKey() + ")'s attribute "
                     + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey()
-                    + ")'s MemberAttributeInfo instance founf in metaClass.getMemberAttributeInfos()",
+                    + ")'s MemberAttributeInfo instance found in metaClass.getMemberAttributeInfos()",
                     metaClass.getMemberAttributeInfos().get(memberAttributeInfo.getKey()),
                     memberAttributeInfo);
 
@@ -899,20 +938,26 @@ public class MetaObjectIntegrityTest {
                     } else if (!intermediateArrayElementObjectAttribute.isPrimaryKey()) {
                         Assert.assertEquals("MetaObject '" + metaObject.getName() + "|"
                                 + metaClass.getTableName() + "' (" + metaObject.getId()
-                                + "@" + metaObject.getClassKey() + ")'s array attribute array attribute's " + arrayAttribute.getName() + "' ArrayKeyFieldName matches intermediate Array Element Object Attribute FieldName in intermediate Array Element Object #" + i + "'s attribute '" + intermediateArrayElementObjectAttribute.getName() + "' in meta object '" + metaObject.getName() + "' is MetaObject",
+                                + "@" + metaObject.getClassKey() + ")'s array attribute '" + arrayAttribute.getName() + "' ArrayKeyFieldName matches intermediate Array Element Object Attribute FieldName in intermediate Array Element Object #" + i + "'s attribute '" + intermediateArrayElementObjectAttribute.getName() + "' in meta object '" + metaObject.getName() + "' is MetaObject",
                                 arrayContainerDummyObjectAttribute.getMai().getArrayKeyFieldName().toLowerCase(),
                                 intermediateArrayElementObjectAttribute.getMai().getFieldName().toLowerCase());
                         Assert.assertNotNull("MetaObject '" + metaObject.getName() + "|"
                                 + metaClass.getTableName() + "' (" + metaObject.getId()
-                                + "@" + metaObject.getClassKey() + ")'s array attribute array attribute's " + arrayAttribute.getName() + "' ArrayKeyField '" + intermediateArrayElementObjectAttribute.getMai().getFieldName() + "' value is not null in intermediate Array Element Object #" + i + "'s attribute '" + intermediateArrayElementObjectAttribute.getName() + "' in meta object '" + metaObject.getName() + "' is MetaObject",
+                                + "@" + metaObject.getClassKey() + ")'s array attribute '" + arrayAttribute.getName() + "' ArrayKeyField '" + intermediateArrayElementObjectAttribute.getMai().getFieldName() + "' value is not null in intermediate Array Element Object #" + i + "'s attribute '" + intermediateArrayElementObjectAttribute.getName() + "' in meta object '" + metaObject.getName() + "' is MetaObject",
                                 intermediateArrayElementObjectAttribute.getValue());
                         Assert.assertTrue("MetaObject '" + metaObject.getName() + "|"
                                 + metaClass.getTableName() + "' (" + metaObject.getId()
-                                + "@" + metaObject.getClassKey() + ")'s array attribute array attribute's " + arrayAttribute.getName() + "' ArrayKeyField '" + intermediateArrayElementObjectAttribute.getMai().getFieldName() + "' value is Integer in intermediate Array Element Object #" + i + "'s attribute '" + intermediateArrayElementObjectAttribute.getName() + "' in meta object '" + metaObject.getName() + "' is MetaObject",
+                                + "@" + metaObject.getClassKey() + ")'s array attribute '" + arrayAttribute.getName() + "' ArrayKeyField '"
+                                + intermediateArrayElementObjectAttribute.getMai().getFieldName()
+                                + "' value is Integer in intermediate Array Element Object #" + i + "'s attribute '"
+                                + intermediateArrayElementObjectAttribute.getName() + "' in meta object '" + metaObject.getName()
+                                + "' is MetaObject",
                                 Integer.class.isAssignableFrom(intermediateArrayElementObjectAttribute.getValue().getClass()));
                         Assert.assertEquals("MetaObject '" + metaObject.getName() + "|"
                                 + metaClass.getTableName() + "' (" + metaObject.getId()
-                                + "@" + metaObject.getClassKey() + ")'s array attribute array attribute's " + arrayAttribute.getName() + "' ArrayKeyField '" + intermediateArrayElementObjectAttribute.getMai().getFieldName() + "' value matches parent object id '" + metaObject.getId() + "' in intermediate Array Element Object #" + i + "'s attribute '" + intermediateArrayElementObjectAttribute.getName() + "' in meta object '" + metaObject.getName() + "' is MetaObject",
+                                + "@" + metaObject.getClassKey() + ")'s array attribute[" + i + "] '" + arrayAttribute.getName() + "' ArrayKeyField '"
+                                + intermediateArrayElementObjectAttribute.getMai().getFieldName() + "'s value matches parent object id '"
+                                + metaObject.getId() + "'",
                                 metaObject.getID(),
                                 ((Integer) intermediateArrayElementObjectAttribute.getValue()).intValue());
                     }
@@ -933,6 +978,12 @@ public class MetaObjectIntegrityTest {
                         + "@" + metaObject.getClassKey() + ")'s array attribute dummy array object '" + arrayAttribute.getName() + "' is 1-n array: "
                         + "arrayField.getMai().getForeignKeyClassId() < 0 = true",
                         arrayAttribute.getMai().getForeignKeyClassId() < 0);
+                Assert.assertEquals("MetaObject '" + metaObject.getName() + "|"
+                        + metaClass.getTableName() + "' (" + metaObject.getId()
+                        + "@" + metaObject.getClassKey() + ")'s array attribute dummy array object '" + arrayAttribute.getName()
+                        + "' is 1-n array: arrayAttribute.getClassKey() is negative",
+                        0,
+                        arrayAttribute.getClassKey().indexOf('-'));
 
                 final MetaObject arrayElementObject = intermediateArrayElementObject;
                 Assert.assertEquals("MetaObject '" + metaObject.getName() + "|"
@@ -945,6 +996,78 @@ public class MetaObjectIntegrityTest {
                         + "@" + metaObject.getClassKey() + ")'s array attribute Parent Object of Referencing Object Attribute of 1-n array element '" + arrayElementObject.getName() + "' in array attribute '" + arrayAttribute.getName() + "' in meta object '" + metaObject.getName() + " correctly set",
                         arrayElementObject.getReferencingObjectAttribute().getParentObject().getKey(),
                         arrayContainerDummyObject.getKey());
+            }
+        }
+    }
+
+    public static HashMap<MetaClass, List<MetaObject>> getAllInstancesByClass(final MetaObject metaObject) {
+        final HashMap<MetaClass, List<MetaObject>> allInstances = new HashMap<MetaClass, List<MetaObject>>();
+        final List<MetaObject> instances = new ArrayList<MetaObject>();
+
+        instances.add(metaObject);
+        allInstances.put(metaObject.getMetaClass(), instances);
+        allInstancesByClass(metaObject, allInstances);
+
+        return allInstances;
+    }
+
+    protected static void allInstancesByClass(
+            final MetaObject metaObject,
+            final HashMap<MetaClass, List<MetaObject>> allInstances) {
+        //f
+
+        for (final ObjectAttribute objectAttribute : metaObject.getAttributes().values()) {
+            if (objectAttribute.referencesObject()
+                    && objectAttribute.getValue() != null
+                    && MetaObject.class.isAssignableFrom(objectAttribute.getValue().getClass())) {
+
+                final MetaObject childMetaObject = (MetaObject) objectAttribute.getValue();
+                final MetaClass childMetaClass = childMetaObject.getMetaClass();
+                final List<MetaObject> instances;
+                if (allInstances.containsKey(childMetaClass)) {
+                    instances = allInstances.get(childMetaClass);
+                } else {
+                    instances = new ArrayList<MetaObject>();
+                    allInstances.put(childMetaClass, instances);
+                }
+
+                instances.add(childMetaObject);
+                allInstancesByClass(childMetaObject, allInstances);
+            }
+        }
+    }
+
+    public static HashMap<Object, List<MetaObject>> getAllInstancesByKey(final MetaObject metaObject) {
+        final HashMap<Object, List<MetaObject>> allInstances = new HashMap<Object, List<MetaObject>>();
+        final List<MetaObject> instances = new ArrayList<MetaObject>();
+
+        instances.add(metaObject);
+        allInstances.put(metaObject.getKey(), instances);
+        allInstancesByKey(metaObject, allInstances);
+
+        return allInstances;
+    }
+
+    protected static void allInstancesByKey(
+            final MetaObject metaObject,
+            final HashMap<Object, List<MetaObject>> allInstances) {
+
+        for (final ObjectAttribute objectAttribute : metaObject.getAttributes().values()) {
+            if (objectAttribute.referencesObject()
+                    && objectAttribute.getValue() != null
+                    && MetaObject.class.isAssignableFrom(objectAttribute.getValue().getClass())) {
+
+                final MetaObject childMetaObject = (MetaObject) objectAttribute.getValue();
+                final List<MetaObject> instances;
+                if (allInstances.containsKey(childMetaObject.getKey())) {
+                    instances = allInstances.get(childMetaObject.getKey());
+                } else {
+                    instances = new ArrayList<MetaObject>();
+                    allInstances.put(childMetaObject.getKey(), instances);
+                }
+
+                instances.add(childMetaObject);
+                allInstancesByKey(childMetaObject, allInstances);
             }
         }
     }

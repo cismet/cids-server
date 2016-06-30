@@ -1,9 +1,11 @@
 package Sirius.server.middleware.impls.domainserver;
 
+import Sirius.server.MetaClassCache;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.newuser.User;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.cismet.cids.integrationtests.RESTfulInterfaceTest;
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.utils.MetaClassCacheService;
 import de.cismet.cidsx.server.api.types.CidsClass;
@@ -28,6 +30,7 @@ import org.apache.log4j.Logger;
 public class OfflineMetaClassCacheService implements MetaClassCacheService {
 
     protected final static String CLASSES_JSON_PACKAGE = "de/cismet/cids/dynamics/classes/";
+    protected final static String DOMAIN = "CIDS_REF";
 
     protected final static HashMap<Integer, MetaClass> ALL_CLASSES_BY_ID = new HashMap<Integer, MetaClass>();
     protected final static HashMap<String, MetaClass> ALL_CLASSES_BY_TABLE_NAME = new HashMap<String, MetaClass>();
@@ -117,6 +120,8 @@ public class OfflineMetaClassCacheService implements MetaClassCacheService {
      */
     public void updateFromServer(final User user,
             final CallServerService connector) {
+
+        final MetaClass[] allClasses = new MetaClass[ALL_CLASSES_BY_ID.size()];
         int i = 0;
         for (final MetaClass offlineMetaClass : ALL_CLASSES_BY_ID.values()) {
             try {
@@ -125,14 +130,29 @@ public class OfflineMetaClassCacheService implements MetaClassCacheService {
                         offlineMetaClass.getDomain());
 
                 if (onlineMetaClass != null) {
+
+                    RESTfulInterfaceTest.compareMetaClasses(onlineMetaClass, offlineMetaClass);
                     if ((ALL_CLASSES_BY_ID.put(onlineMetaClass.getID(), onlineMetaClass) != null)
                             && (ALL_CLASSES_BY_TABLE_NAME.put(onlineMetaClass.getTableName(), onlineMetaClass) != null)) {
-                        i++;
-                    }
 
+                        allClasses[i] = onlineMetaClass;
+                        i++;
+                    } else {
+                        LOGGER.warn("could not replace offline MetaClass '" + offlineMetaClass + "' ("
+                                + offlineMetaClass.getKey() + "): with online meta class: ALL_CLASSES_BY_ID: "
+                                + ALL_CLASSES_BY_ID.containsKey(onlineMetaClass.getID()) + " / ALL_CLASSES_BY_TABLE_NAME: "
+                                + ALL_CLASSES_BY_TABLE_NAME.containsKey(onlineMetaClass.getTableName()));
+                    }
+                } else {
+                    LOGGER.warn("could not replace offline MetaClass '" + offlineMetaClass + "' ("
+                            + offlineMetaClass.getKey() + "): with online meta class: online meta class is null!");
                 }
-            } catch (Throwable t) {
-                LOGGER.error(t.getMessage(), t);
+            } catch (AssertionError ae) {
+                LOGGER.error("Offline and online MetaClass instances do not match: "
+                        + ae.getMessage(), ae);
+            } catch (Exception e) {
+                LOGGER.error("Unexpected Error during update of OfflineMetaClassCacheService: "
+                        + e.getMessage(), e);
             }
         }
 
@@ -141,9 +161,13 @@ public class OfflineMetaClassCacheService implements MetaClassCacheService {
                     + ALL_CLASSES_BY_ID.size() + " MetaClasses from Server");
             this.online = true;
         } else {
-            LOGGER.warn("OfflineMetaClassCacheService updated with only " + i + " of "
+            LOGGER.error("OfflineMetaClassCacheService updated with only " + i + " of "
                     + ALL_CLASSES_BY_ID.size() + " MetaClasses from Server");
         }
+
+        final MetaClassCache metaClassCache = MetaClassCache.getInstance();
+        metaClassCache.clearCache();
+        metaClassCache.setAllClasses(allClasses, DOMAIN);
     }
 
     public boolean isOnline() {

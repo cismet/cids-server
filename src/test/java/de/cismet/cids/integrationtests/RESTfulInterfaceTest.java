@@ -1446,7 +1446,7 @@ public class RESTfulInterfaceTest extends TestBase {
 //                cidsBeanFromRestServer.getMOString());
     }
 
-    static void compareMetaClasses(final MetaClass metaClassFromJson,
+    public static void compareMetaClasses(final MetaClass metaClassFromJson,
             final MetaClass metaClassFromLegacyServer,
             final MetaClass metaClassFromRestServer) throws AssertionError {
 
@@ -1686,7 +1686,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 cidsBeanFromRestServer);
     }
 
-    static void compareMetaClasses(
+    public static void compareMetaClasses(
             final MetaClass metaClassFromLegacyServer,
             final MetaClass metaClassFromRestServer) throws AssertionError {
 
