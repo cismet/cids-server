@@ -1073,7 +1073,12 @@ public class CidsBean implements PropertyChangeListener {
      */
     public static CidsBean createNewCidsBeanFromJSON(final boolean intraObjectCacheEnabled, final String json)
             throws Exception {
-        return intraObjectCacheMapper.readValue(json, CidsBean.class);
+        // #174 boolean flag intraObjectCacheEnabled in CidsBean.createNewCidsBeanFromJSON() is not evaluated
+        if (intraObjectCacheEnabled) {
+            return intraObjectCacheMapper.readValue(json, CidsBean.class);
+        } else {
+            return mapper.readValue(json, CidsBean.class);
+        }
     }
 
     /**
