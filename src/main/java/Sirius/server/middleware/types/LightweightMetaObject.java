@@ -362,13 +362,13 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param   key  DOCUMENT ME!
+     * @param   name  key DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
     @Override
-    public ObjectAttribute getAttribute(final Object key) {
-        return getRealMetaObject().getAttribute(key);
+    public ObjectAttribute getAttribute(final String name) {
+        return getRealMetaObject().getAttribute(name);
     }
 
     /**

@@ -252,16 +252,20 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                             + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER); // NOI18N
             }
             if (!cacheHit && (cb != null)) {
+                // #174 parent MetaObject ID is still -1 when array elements are added
+                cb.getMetaObject().setID((cb.getPrimaryKeyValue() != null) ? (int)cb.getPrimaryKeyValue() : -1);
                 for (final String prop : propValueMap.keySet()) {
                     final Object value = propValueMap.get(prop);
 
-                    if (value instanceof String) {
-                        final ObjectAttribute objectAttribute = cb.getMetaObject().getAttributeByFieldName(prop);
-                        if (objectAttribute == null) {
-                            throw new RuntimeException("unknow property '" + prop + "' in instance of "
-                                        + cb.getCidsBeanInfo());
-                        }
+                    final ObjectAttribute objectAttribute = cb.getMetaObject().getAttributeByFieldName(prop);
+                    if (objectAttribute == null) {
+                        final String message = "unknow property '" + prop + "' in instance of "
+                                    + cb.getCidsBeanInfo();
+                        LOG.error(message);
+                        throw new RuntimeException(message);
+                    }
 
+                    if (value instanceof String) {
                         final Class attrClass = BlacklistClassloading.forName(cb.getMetaObject()
                                         .getAttributeByFieldName(
                                             prop).getMai().getJavaclassname());
@@ -321,7 +325,7 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                         cb.quiteSetProperty(prop, value);
                     }
                 }
-                cb.getMetaObject().setID((cb.getPrimaryKeyValue() != null) ? (int)cb.getPrimaryKeyValue() : -1);
+
                 cb.getMetaObject().forceStatus(MetaObject.NO_STATUS);
                 if (isIntraObjectCacheEnabled() && (cb.getPrimaryKeyValue() != -1)) {
                     jp.put(key, cb);
