@@ -3809,6 +3809,14 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         Assert.assertTrue("value of '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + "' is array Container Dummy Object",
                 arrayContainerDummyObject.isDummy());
 
+        if (arrayField.isArray()) {
+            Assert.assertTrue("value of '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + "' Dummy Object's Class ID is not negative",
+                    arrayContainerDummyObject.getClassID() >= 0);
+        } else {
+            Assert.assertTrue("value of '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + "' Container Dummy Object's Class ID is negative",
+                    arrayContainerDummyObject.getClassID() < 0);
+        }
+
         // 1-n array
         if (arrayFieldMemberAttributeInfo.isVirtual()) {
             // this is madness: 1-n array is no array!
@@ -4113,6 +4121,14 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         final MetaObject arrayContainerDummyObject = (MetaObject) arrayField.getValue();
         Assert.assertTrue("value of '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + "' is array Container Dummy Object",
                 arrayContainerDummyObject.isDummy());
+
+        if (arrayField.isArray()) {
+            Assert.assertTrue("value of '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + "' Dummy Object's Class ID is not negative",
+                    arrayContainerDummyObject.getClassID() >= 0);
+        } else {
+            Assert.assertTrue("value of '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + "' Container Dummy Object's Class ID is negative",
+                    arrayContainerDummyObject.getClassID() < 0);
+        }
 
         final ObjectAttribute[] arrayContainerDummyObjectAttributes = arrayContainerDummyObject.getAttribs();
         final List<MetaObject> arrayElementObjects = new ArrayList<MetaObject>();
@@ -4463,77 +4479,101 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
         objectHierarchy.add(expectedMetaObject.getClassKey());
 
-        Assert.assertEquals("expected MetaObject [" + name + "].getClassID() matches actual MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getClassID() matches actual MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedMetaObject.getClassID(),
                 actualMetaObject.getClassID());
 
-        Assert.assertEquals("expected MetaObject [" + name + "].getClassKey() matches actual MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getClassKey() matches actual MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedMetaObject.getClassKey(),
                 actualMetaObject.getClassKey());
 
-        Assert.assertEquals("expected MetaObject [" + name + "].getComplexEditor() matches actual MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getComplexEditor() matches actual MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedMetaObject.getComplexEditor(),
                 actualMetaObject.getComplexEditor());
 
-        Assert.assertEquals("expected MetaObject [" + name + "].getDescription() matches actual MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getDescription() matches actual MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedMetaObject.getDescription(),
                 actualMetaObject.getDescription());
 
-        Assert.assertEquals("expected MetaObject [" + name + "].getDomain() matches actual MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getDomain() matches actual MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedMetaObject.getDomain(),
                 actualMetaObject.getDomain());
 
-        Assert.assertEquals("expected MetaObject [" + name + "].getEditor() matches actual MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getEditor() matches actual MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedMetaObject.getEditor(),
                 actualMetaObject.getEditor());
 
-        Assert.assertEquals("expected MetaObject [" + name + "].getGroup() matches actual MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getGroup() matches actual MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedMetaObject.getGroup(),
                 actualMetaObject.getGroup());
 
         // don't compare ids of new objects (id is -1 before insert!)
         if (!compareNew) {
-            Assert.assertEquals("expected MetaObject [" + name + "].getKey() matches actual MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+            Assert.assertEquals("expected MetaObject [" + name + "].getKey() matches actual MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                     expectedMetaObject.getKey(),
                     actualMetaObject.getKey());
 
-            Assert.assertEquals("expected MetaObject [" + name + "].getId() matches actual MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+            Assert.assertEquals("expected MetaObject [" + name + "].getId() matches actual MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                     expectedMetaObject.getId(),
                     actualMetaObject.getId());
 
-            Assert.assertEquals("expected MetaObject [" + name + "].getID() matches actual MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+            Assert.assertEquals("expected MetaObject [" + name + "].getID() matches actual MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                     expectedMetaObject.getID(),
                     actualMetaObject.getID());
         }
 
-        Assert.assertEquals("expected MetaObject [" + name + "].getName() matches actual MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getName() matches actual MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedMetaObject.getName(),
                 actualMetaObject.getName());
 
-        Assert.assertEquals("expected MetaObject [" + name + "].getRenderer() matches actual MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getRenderer() matches actual MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedMetaObject.getRenderer(),
                 actualMetaObject.getRenderer());
 
-        Assert.assertEquals("expected MetaObject [" + name + "].getSimpleEditor() matches actual MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getSimpleEditor() matches actual MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedMetaObject.getSimpleEditor(),
                 actualMetaObject.getSimpleEditor());
 
         // id and status of new / changed objects do not match remotely objects inserted / upated
         if (!compareNew && !compareChanged) {
-            Assert.assertEquals("expected MetaObject [" + name + "].getStatusDebugString() matches actual MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+            Assert.assertEquals("expected MetaObject [" + name + "].getStatusDebugString() matches actual MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                     expectedMetaObject.getStatusDebugString(),
                     actualMetaObject.getStatusDebugString());
 
-            Assert.assertEquals("expected MetaObject [" + name + "].getStatus() matches actual MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+            Assert.assertEquals("expected MetaObject [" + name + "].getStatus() matches actual MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                     expectedMetaObject.getStatus(),
                     actualMetaObject.getStatus());
         }
 
-        Assert.assertEquals("expected MetaObject [" + name + "].hasObjectWritePermission(user) matches actual MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].hasObjectWritePermission(user) matches actual MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedMetaObject.hasObjectWritePermission(user),
                 actualMetaObject.hasObjectWritePermission(user));
 
-        RESTfulInterfaceTest.compareMetaClasses(expectedMetaObject.getMetaClass(), actualMetaObject.getMetaClass());
+        if (expectedMetaObject.getMetaClass() == null) {
+            Assert.assertTrue("expected MetaObject [" + name + "].getMetaClass() is null since getClassId() is negative {" + getHierarchyPath(objectHierarchy) + "}",
+                    expectedMetaObject.getClassID() < 0);
+            Assert.assertTrue("actual MetaObject [" + name + "].getMetaClass() is null since getClassId() is negative {" + getHierarchyPath(objectHierarchy) + "}",
+                    expectedMetaObject.getClassID() < 0);
+
+            if (checkBackReference && expectedMetaObject.getReferencingObjectAttribute() != null) {
+                Assert.assertNotNull("actual MetaObject [" + name + "].getReferencingObjectAttribute() is not null {" + getHierarchyPath(objectHierarchy) + "}",
+                        expectedMetaObject.getReferencingObjectAttribute());
+
+                Assert.assertTrue("expected MetaObject [" + name + "]'s ReferencingObjectAttribute is a virtual array attibute since getClassId() is negative is negative {" + getHierarchyPath(objectHierarchy) + "}",
+                        expectedMetaObject.getReferencingObjectAttribute().isVirtualOneToManyAttribute());
+
+                Assert.assertTrue("actual MetaObject [" + name + "]'s ReferencingObjectAttribute is a virtual array attibute since getClassId() is negative is negative {" + getHierarchyPath(objectHierarchy) + "}",
+                        expectedMetaObject.getReferencingObjectAttribute().isVirtualOneToManyAttribute());
+            }
+
+            Assert.assertNull("expected MetaObject [" + name + "].getMetaClass() is not null {" + getHierarchyPath(objectHierarchy) + "}",
+                    expectedMetaObject.getMetaClass());
+
+        } else {
+            Assert.assertNotNull("actual MetaObject [" + name + "].getMetaClass() is not null {" + getHierarchyPath(objectHierarchy) + "}",
+                    actualMetaObject.getMetaClass());
+            RESTfulInterfaceTest.compareMetaClasses(expectedMetaObject.getMetaClass(), actualMetaObject.getMetaClass());
+        }
 
         if (checkBackReference) {
             if (expectedMetaObject.getReferencingObjectAttribute() == null) {
@@ -4561,27 +4601,27 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             }
         }
 
-        Assert.assertEquals("actual MetaObject [" + name + "].toString() matches expected MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("actual MetaObject [" + name + "].toString() matches expected MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedMetaObject.toString(),
                 actualMetaObject.toString());
 
         final ObjectAttribute[] expectedObjectAttributes = expectedMetaObject.getAttribs();
         final ObjectAttribute[] actualObjectAttributes = actualMetaObject.getAttribs();
 
-        Assert.assertEquals("actual MetaObject [" + name + "].getAttribs() matches expected MetaObject.getAttribs()  (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("actual MetaObject [" + name + "].getAttribs() matches expected MetaObject.getAttribs()  {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedObjectAttributes.length,
                 actualObjectAttributes.length);
 
-        Assert.assertEquals("expected MetaObject [" + name + "].getAttribs() matches expected MetaObject.getAttributes()  (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getAttribs() matches expected MetaObject.getAttributes()  {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedObjectAttributes.length,
                 expectedMetaObject.getAttributes().size());
-        Assert.assertEquals("actual MetaObject [" + name + "].getAttribs() matches actual MetaObject.getAttributes()  (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("actual MetaObject [" + name + "].getAttribs() matches actual MetaObject.getAttributes()  {" + getHierarchyPath(objectHierarchy) + "}",
                 actualObjectAttributes.length,
                 actualMetaObject.getAttributes().size());
-        Assert.assertEquals("actual MetaObject [" + name + "].getAttribs() matches expected MetaObject.getAttributes()  (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("actual MetaObject [" + name + "].getAttribs() matches expected MetaObject.getAttributes()  {" + getHierarchyPath(objectHierarchy) + "}",
                 actualObjectAttributes.length,
                 expectedMetaObject.getAttributes().size());
-        Assert.assertEquals("expected MetaObject [" + name + "].getAttribs() matches actual MetaObject.getAttributes()  (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("expected MetaObject [" + name + "].getAttribs() matches actual MetaObject.getAttributes()  {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedObjectAttributes.length,
                 actualMetaObject.getAttributes().size());
 
@@ -4605,11 +4645,11 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             //                LOGGER.debug(actualMetaObject.getPropertyString());
             //            }
 
-            Assert.assertEquals("expected MetaObject [" + name + "].getPropertyString() matches actual MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+            Assert.assertEquals("expected MetaObject [" + name + "].getPropertyString() matches actual MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                     expectedMetaObject.getPropertyString(),
                     actualMetaObject.getPropertyString());
 
-            Assert.assertTrue("expected MetaObject [" + name + "].propertyEquals(actualMetaObject) (" + getHierarchyPath(objectHierarchy) + ")",
+            Assert.assertTrue("expected MetaObject [" + name + "].propertyEquals(actualMetaObject) {" + getHierarchyPath(objectHierarchy) + "}",
                     expectedMetaObject.propertyEquals(actualMetaObject));
         }
     }
@@ -4680,12 +4720,12 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         // https://github.com/cismet/cids-server/issues/166
         // remove check when fixed!
         if (expectedObjectAttribute.getJavaType() != null && actualObjectAttribute.getJavaType() != null) {
-            Assert.assertEquals("expected kategorienAttribute[" + name + "].getJavaType()  matches actual ObjectAttribute  (" + getHierarchyPath(objectHierarchy) + ")",
+            Assert.assertEquals("expected kategorienAttribute[" + name + "].getJavaType()  matches actual ObjectAttribute  {" + getHierarchyPath(objectHierarchy) + "}",
                     expectedObjectAttribute.getJavaType(),
                     actualObjectAttribute.getJavaType());
         }
 
-        Assert.assertEquals("expected objectAttribute[" + name + "].getPermissions().toString()  matches actual ObjectAttribute  (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("expected objectAttribute[" + name + "].getPermissions().toString()  matches actual ObjectAttribute  {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedObjectAttribute.getPermissions().getPolicy().toString(),
                 actualObjectAttribute.getPermissions().getPolicy().toString());
 
@@ -4732,7 +4772,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 expectedObjectAttribute.isStringCreateable(),
                 actualObjectAttribute.isStringCreateable());
 
-        Assert.assertEquals("expected objectAttribute[" + name + "].isVirtualOneToManyAttribute()  matches actual ObjectAttribute  (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("expected objectAttribute[" + name + "].isVirtualOneToManyAttribute()  matches actual ObjectAttribute  {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedObjectAttribute.isVirtualOneToManyAttribute(),
                 actualObjectAttribute.isVirtualOneToManyAttribute());
 
@@ -4759,60 +4799,60 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     actualMemberAttributeInfo,
                     getHierarchyPath(objectHierarchy));
         } else {
-            Assert.assertNull("expected objectAttribute[" + name + "] has no MemberAttributeInfo (" + getHierarchyPath(objectHierarchy) + ")",
+            Assert.assertNull("expected objectAttribute[" + name + "] has no MemberAttributeInfo {" + getHierarchyPath(objectHierarchy) + "}",
                     actualMemberAttributeInfo);
         }
 
         final Sirius.server.localserver.object.Object expectedParentObject = expectedObjectAttribute.getParentObject();
         final Sirius.server.localserver.object.Object actualParentObject = actualObjectAttribute.getParentObject();
 
-        Assert.assertNotNull("expected objectAttribute[" + name + "]'s parent object is null, too(" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertNotNull("expected objectAttribute[" + name + "]'s parent object is null, too{" + getHierarchyPath(objectHierarchy) + "}",
                 expectedParentObject);
-        Assert.assertNotNull("actual objectAttribute[" + name + "]'s parent object is null, too(" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertNotNull("actual objectAttribute[" + name + "]'s parent object is null, too{" + getHierarchyPath(objectHierarchy) + "}",
                 actualParentObject);
 
-        Assert.assertTrue("expected objectAttribute[" + name + "]'s parent object is a MetaObject, too(" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertTrue("expected objectAttribute[" + name + "]'s parent object is a MetaObject, too{" + getHierarchyPath(objectHierarchy) + "}",
                 MetaObject.class.isAssignableFrom(expectedParentObject.getClass()));
-        Assert.assertTrue("actual objectAttribute[" + name + "]'s parent object is a MetaObject, too(" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertTrue("actual objectAttribute[" + name + "]'s parent object is a MetaObject, too{" + getHierarchyPath(objectHierarchy) + "}",
                 MetaObject.class.isAssignableFrom(actualParentObject.getClass()));
 
         final MetaObject expectedParentMetaObject = (MetaObject) expectedParentObject;
         final MetaObject actualParentMetaObject = (MetaObject) expectedParentObject;
 
-        Assert.assertEquals("expected objectAttribute[" + name + "]'s parent object referece matches correct class (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("expected objectAttribute[" + name + "]'s parent object referece matches correct class {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedMetaObject.getClass().getCanonicalName(), expectedParentObject.getClass().getCanonicalName());
-        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object referece matches correct class (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object referece matches correct class {" + getHierarchyPath(objectHierarchy) + "}",
                 actualMetaObject.getClass().getCanonicalName(), actualParentObject.getClass().getCanonicalName());
 
-        Assert.assertEquals("expected objectAttribute[" + name + "]'s parent object referece matches correct instance (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("expected objectAttribute[" + name + "]'s parent object referece matches correct instance {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedMetaObject.getKey(), expectedParentObject.getKey());
-        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object referece matches correct instance (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object referece matches correct instance {" + getHierarchyPath(objectHierarchy) + "}",
                 actualMetaObject.getKey(), actualParentObject.getKey());
 
-        Assert.assertSame("expected objectAttribute[" + name + "]'s parent object referece points to same instance (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertSame("expected objectAttribute[" + name + "]'s parent object referece points to same instance {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedMetaObject, expectedParentObject);
-        Assert.assertSame("actual objectAttribute[" + name + "]'s parent object referece points to same instance (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertSame("actual objectAttribute[" + name + "]'s parent object referece points to same instance {" + getHierarchyPath(objectHierarchy) + "}",
                 actualMetaObject, actualParentObject);
 
-        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's class id matches expected parent object (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's class id matches expected parent object {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedParentMetaObject.getClassID(), actualParentMetaObject.getClassID());
-        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's id matches expected parent object (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's id matches expected parent object {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedParentMetaObject.getID(), actualParentMetaObject.getID());
-        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's name matches expected parent object (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's name matches expected parent object {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedParentMetaObject.getName(), actualParentMetaObject.getName());
-        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's status matches expected parent object (" + getHierarchyPath(objectHierarchy) + ")",
+        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's status matches expected parent object {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedParentMetaObject.getStatus(), actualParentMetaObject.getStatus());
 
         // not persisted MOs are only equal if they have the same reference!
         if (expectedParentMetaObject.getID() != -1) {
-            Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object matches expected parent object (" + getHierarchyPath(objectHierarchy) + ")",
+            Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object matches expected parent object {" + getHierarchyPath(objectHierarchy) + "}",
                     expectedParentObject, actualParentObject);
         }
 
         // DANGEROUS
         // status and IDs change between saved and unsaved objects!
         if (!compareNew && compareChanged) {
-            Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's status matches expected parent object (" + getHierarchyPath(objectHierarchy) + ")",
+            Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's status matches expected parent object {" + getHierarchyPath(objectHierarchy) + "}",
                     expectedParentMetaObject.getPropertyString(), actualParentMetaObject.getPropertyString());
         }
 
@@ -4820,12 +4860,12 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         final Object actualObjectAttributeValue = actualObjectAttribute.getValue();
 
         if (expectedObjectAttributeValue != null) {
-            Assert.assertNotNull("actual objectAttribute[" + name + "] value (" + expectedObjectAttributeValue + ") is not null (" + getHierarchyPath(objectHierarchy) + ")",
+            Assert.assertNotNull("actual objectAttribute[" + name + "] value (" + expectedObjectAttributeValue + ") is not null {" + getHierarchyPath(objectHierarchy) + "}",
                     actualObjectAttributeValue);
 
             // as dangerous as MetaObject.getPropertyString!
             if (!compareNew && compareChanged) {
-                Assert.assertEquals("expected objectAttribute[" + name + "].toString()  matches actual ObjectAttribute  (" + getHierarchyPath(objectHierarchy) + ")",
+                Assert.assertEquals("expected objectAttribute[" + name + "].toString()  matches actual ObjectAttribute  {" + getHierarchyPath(objectHierarchy) + "}",
                         expectedObjectAttribute.toString(),
                         actualObjectAttribute.toString());
             }
@@ -4834,7 +4874,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             final Class actualObjectAttributeValueClass = actualObjectAttributeValue.getClass();
 
             Assert.assertEquals("actual objectAttribute[" + name + "] value is a "
-                    + expectedObjectAttributeValueClass.getSimpleName() + " (" + getHierarchyPath(objectHierarchy) + ")",
+                    + expectedObjectAttributeValueClass.getSimpleName() + " {" + getHierarchyPath(objectHierarchy) + "}",
                     expectedObjectAttributeValueClass,
                     actualObjectAttributeValueClass);
 
@@ -4855,20 +4895,20 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 Assert.assertNotNull("expected objectAttribute[" + name + "] JavaType Class '"
                         + expectedObjectAttribute.getJavaType() + "' found)", javaType);
                 Assert.assertTrue("expected objectAttribute[" + name + "] value is as assignable from "
-                        + expectedObjectAttribute.getJavaType() + " (" + getHierarchyPath(objectHierarchy) + ")"
+                        + expectedObjectAttribute.getJavaType() + " {" + getHierarchyPath(objectHierarchy) + "}"
                         + " as defined by getJavaType()",
                         javaType.isAssignableFrom(expectedObjectAttributeValueClass));
                 Assert.assertTrue("actual objectAttribute[" + name + "] value is assignable from "
-                        + actualObjectAttribute.getJavaType() + " (" + getHierarchyPath(objectHierarchy) + ")"
+                        + actualObjectAttribute.getJavaType() + " {" + getHierarchyPath(objectHierarchy) + "}"
                         + " as defined by getJavaType()",
                         javaType.isAssignableFrom(actualObjectAttributeValueClass));
 
             }
 
             if (expectedObjectAttribute.referencesObject()) {
-                Assert.assertTrue("expected objectAttribute[" + name + "] value is a MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+                Assert.assertTrue("expected objectAttribute[" + name + "] value is a MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                         MetaObject.class.isAssignableFrom(expectedObjectAttributeValueClass));
-                Assert.assertTrue("actual objectAttribute[" + name + "] value is a MetaObject (" + getHierarchyPath(objectHierarchy) + ")",
+                Assert.assertTrue("actual objectAttribute[" + name + "] value is a MetaObject {" + getHierarchyPath(objectHierarchy) + "}",
                         MetaObject.class.isAssignableFrom(actualObjectAttributeValueClass));
 
                 // if recursion shall be limited check if an object of the
@@ -4879,15 +4919,15 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     final MetaObject actualObjectAttributeMetaObject = (MetaObject) actualObjectAttributeValue;
 
                     if (checkBackReference) {
-                        Assert.assertNotNull("expected objectAttribute[" + name + "] MetaObject value has ReferencingObjectAttribute (" + getHierarchyPath(objectHierarchy) + ")",
+                        Assert.assertNotNull("expected objectAttribute[" + name + "] MetaObject value has ReferencingObjectAttribute {" + getHierarchyPath(objectHierarchy) + "}",
                                 expectedObjectAttributeMetaObject.getReferencingObjectAttribute());
-                        Assert.assertNotNull("actual objectAttribute[" + name + "] MetaObject value has ReferencingObjectAttribute (" + getHierarchyPath(objectHierarchy) + ")",
+                        Assert.assertNotNull("actual objectAttribute[" + name + "] MetaObject value has ReferencingObjectAttribute {" + getHierarchyPath(objectHierarchy) + "}",
                                 actualObjectAttributeMetaObject.getReferencingObjectAttribute());
 
-                        Assert.assertSame("expected objectAttribute[" + name + "] MetaObject value has ReferencingObjectAttribute set to correct attribute instance (" + getHierarchyPath(objectHierarchy) + ")",
+                        Assert.assertSame("expected objectAttribute[" + name + "] MetaObject value has ReferencingObjectAttribute set to correct attribute instance {" + getHierarchyPath(objectHierarchy) + "}",
                                 expectedObjectAttribute,
                                 expectedObjectAttributeMetaObject.getReferencingObjectAttribute());
-                        Assert.assertSame("actual objectAttribute[" + name + "] MetaObject value has ReferencingObjectAttribute set to correct attribute instance (" + getHierarchyPath(objectHierarchy) + ")",
+                        Assert.assertSame("actual objectAttribute[" + name + "] MetaObject value has ReferencingObjectAttribute set to correct attribute instance {" + getHierarchyPath(objectHierarchy) + "}",
                                 actualObjectAttribute,
                                 actualObjectAttributeMetaObject.getReferencingObjectAttribute());
                     }
@@ -4903,19 +4943,21 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 }
 
             } else if (expectedObjectAttributeValueClass.isPrimitive()) {
-                Assert.assertEquals("actual objectAttribute[" + name + "] primitive value matches (" + getHierarchyPath(objectHierarchy) + ")",
+                Assert.assertEquals("actual objectAttribute[" + name + "] primitive value matches {" + getHierarchyPath(objectHierarchy) + "}",
                         expectedObjectAttributeValue,
                         actualObjectAttributeValue);
             } else // ids of saved and usaved objects may be different!
-             if (!compareNew && !compareChanged && !expectedObjectAttribute.isPrimaryKey()) {
-                    Assert.assertEquals("actual objectAttribute[" + name + "] object value (" + expectedObjectAttributeValueClass.getSimpleName() + ") matches (" + getHierarchyPath(objectHierarchy) + ")",
+            {
+                if (!compareNew && !compareChanged && !expectedObjectAttribute.isPrimaryKey()) {
+                    Assert.assertEquals("actual objectAttribute[" + name + "] object value (" + expectedObjectAttributeValueClass.getSimpleName() + ") matches {" + getHierarchyPath(objectHierarchy) + "}",
                             expectedObjectAttributeValue,
                             actualObjectAttributeValue);
                 }
+            }
         } else if (!compareNew && !compareChanged) {
             // disable null value comparison for new and changed objects
             // server may populate null values (e.g. dummy array objects, default values, etc.)
-            Assert.assertNull("expected objectAttribute[" + name + "] value from rest server is null (" + getHierarchyPath(objectHierarchy) + ")",
+            Assert.assertNull("expected objectAttribute[" + name + "] value from rest server is null {" + getHierarchyPath(objectHierarchy) + "}",
                     actualObjectAttributeValue);
         }
     }
@@ -4927,87 +4969,87 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
         final String name = expectedMemberAttributeInfo.getName();
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getArrayKeyFieldName matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getArrayKeyFieldName matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.getArrayKeyFieldName(),
                 actualMemberAttributeInfo.getArrayKeyFieldName());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getClassId() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getClassId() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.getClassId(),
                 actualMemberAttributeInfo.getClassId());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getComplexEditor() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getComplexEditor() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.getComplexEditor(),
                 actualMemberAttributeInfo.getComplexEditor());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getDefaultValue() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getDefaultValue() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.getDefaultValue(),
                 actualMemberAttributeInfo.getDefaultValue());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getEditor() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getEditor() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.getEditor(),
                 actualMemberAttributeInfo.getEditor());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getFieldName() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getFieldName() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.getFieldName(),
                 actualMemberAttributeInfo.getFieldName());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getForeignKeyClassId() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getForeignKeyClassId() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.getForeignKeyClassId(),
                 actualMemberAttributeInfo.getForeignKeyClassId());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getFromString() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getFromString() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.getFromString(),
                 actualMemberAttributeInfo.getFromString());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getId() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getId() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.getId(),
                 actualMemberAttributeInfo.getId());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getJavaclassname() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getJavaclassname() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.getJavaclassname(),
                 actualMemberAttributeInfo.getJavaclassname());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getKey() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getKey() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.getKey(),
                 actualMemberAttributeInfo.getKey());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getName() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getName() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.getName(),
                 actualMemberAttributeInfo.getName());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getPosition() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getPosition() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.getPosition(),
                 actualMemberAttributeInfo.getPosition());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getRenderer() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getRenderer() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.getRenderer(),
                 actualMemberAttributeInfo.getRenderer());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getToString() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getToString() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.getToString(),
                 actualMemberAttributeInfo.getToString());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getTypeId() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].getTypeId() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.getTypeId(),
                 actualMemberAttributeInfo.getTypeId());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].isArray() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].isArray() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.isArray(),
                 actualMemberAttributeInfo.isArray());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].isExtensionAttribute() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].isExtensionAttribute() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.isExtensionAttribute(),
                 actualMemberAttributeInfo.isExtensionAttribute());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].isForeignKey() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].isForeignKey() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.isForeignKey(),
                 actualMemberAttributeInfo.isForeignKey());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].isIndexed() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].isIndexed() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.isIndexed(),
                 actualMemberAttributeInfo.isIndexed());
 
-        Assert.assertEquals("actual memberAttributeInfo[" + name + "].isOptional() matches actual MemberAttributeInfo (" + hierarchyPath + ")",
+        Assert.assertEquals("actual memberAttributeInfo[" + name + "].isOptional() matches actual MemberAttributeInfo {" + hierarchyPath + "}",
                 expectedMemberAttributeInfo.isOptional(),
                 actualMemberAttributeInfo.isOptional());
     }

@@ -30,6 +30,13 @@ import org.junit.runners.MethodSorters;
 public abstract class AbstractCidsBeanDeserialisationTest {
 
     protected final static Logger LOGGER = Logger.getLogger(AbstractCidsBeanDeserialisationTest.class);
+
+    /**
+     * Generated with deduplicate = true, omit null values = true and
+     * SerializationFeature.INDENT_OUTPUT = false
+     */
+    protected final static String NORMALISED_ENTITIES = "de/cismet/cids/integrationtests/normalisedentities/";
+
     /**
      * Generated with deduplicate = false, omit null values = true and
      * SerializationFeature.INDENT_OUTPUT = false
@@ -44,6 +51,7 @@ public abstract class AbstractCidsBeanDeserialisationTest {
 
     protected final static ArrayList<String> CIDS_BEANS_JSON_FORMATTED = new ArrayList<String>();
     protected final static ArrayList<String> CIDS_BEANS_JSON_UNFORMATTED = new ArrayList<String>();
+    protected final static ArrayList<String> CIDS_BEANS_JSON_NORMALISED = new ArrayList<String>();
 
     protected static ArrayList<String> initCidsBeansJson(final String entitiesPackage) throws Exception {
 
@@ -122,5 +130,14 @@ public abstract class AbstractCidsBeanDeserialisationTest {
         }
 
         return CIDS_BEANS_JSON_UNFORMATTED.toArray(new String[CIDS_BEANS_JSON_UNFORMATTED.size()]);
+    }
+
+    @DataProvider
+    public final static String[] getCidsBeansJsonNormalised() throws Exception {
+        if (CIDS_BEANS_JSON_NORMALISED.isEmpty()) {
+            CIDS_BEANS_JSON_NORMALISED.addAll(initCidsBeansJson(NORMALISED_ENTITIES));
+        }
+
+        return CIDS_BEANS_JSON_NORMALISED.toArray(new String[CIDS_BEANS_JSON_NORMALISED.size()]);
     }
 }
