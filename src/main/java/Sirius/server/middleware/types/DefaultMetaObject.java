@@ -800,7 +800,15 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
 
     @Override
     public boolean equals(final Object obj) {
-        if (obj instanceof MetaObject) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (obj == this) {
+            return true;
+        }
+
+        if (MetaObject.class.isAssignableFrom(obj.getClass())) {
             final MetaObject tmp = (MetaObject)obj;
             // debug: if ((getClassID() == tmp.getClassID()) && (getID() == tmp.getID()) &&
             // getDomain().equals(tmp.getDomain()) != equals(obj)) { logger.fatal("Different Equals: " + toString() +
@@ -811,6 +819,12 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
                             && getDomain().equals(tmp.getDomain());
             } else {
                 // not persisted MOs are only equal if they have the same reference
+                // if the MO to be compared is proxied, compare not the proxy reference
+                // but the actual MO
+                if (obj instanceof java.lang.reflect.Proxy) {
+                    return obj.equals(this);
+                }
+
                 return this
                             == obj;
             }
