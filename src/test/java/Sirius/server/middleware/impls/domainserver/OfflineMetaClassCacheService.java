@@ -19,7 +19,7 @@ import java.util.Scanner;
 import org.apache.log4j.Logger;
 
 /**
- * Offline Meta Class Cache Service initialized with MetaClasses loadeded from
+ * Offline Meta Class Cache Service initialized with MetaClasses loaded from
  * JSON CidsBeanInfo objects
  *
  * @author Pascal Dihé <pascal.dihe@cismet.de>
@@ -131,7 +131,11 @@ public class OfflineMetaClassCacheService implements MetaClassCacheService {
 
                 if (onlineMetaClass != null) {
 
-                    RESTfulInterfaceTest.compareMetaClasses(onlineMetaClass, offlineMetaClass);
+                    final boolean compareEmptyInstances = false;
+                    RESTfulInterfaceTest.compareMetaClasses(onlineMetaClass,
+                            offlineMetaClass,
+                            compareEmptyInstances);
+                    
                     if ((ALL_CLASSES_BY_ID.put(onlineMetaClass.getID(), onlineMetaClass) != null)
                             && (ALL_CLASSES_BY_TABLE_NAME.put(onlineMetaClass.getTableName(), onlineMetaClass) != null)) {
 

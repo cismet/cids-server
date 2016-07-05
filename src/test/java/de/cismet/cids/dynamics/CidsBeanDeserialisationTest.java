@@ -7,9 +7,9 @@ import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import de.cismet.cids.integrationtests.LegacyRESTfulInterfaceTest;
 import de.cismet.cids.json.IntraObjectCacheJsonParams;
-import de.cismet.tools.CurrentStackTrace;
 import java.util.HashMap;
 import java.util.List;
+import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
@@ -28,13 +28,16 @@ import org.junit.runners.MethodSorters;
 //@PrepareForTest(IdGenerator.class)
 public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisationTest {
 
-    @Test
+    private final static Logger LOGGER = Logger.getLogger(CidsBeanDeserialisationTest.class);
+
+    //@Test
     @UseDataProvider("getCidsBeansJson")
     public void test00DeserializeCidsBeanIntraObjectCacheDisabled(final String cidsBeanJson) throws Exception {
 
+        MetaObject metaObject = null;
         try {
             final CidsBean cidsBean = CidsBean.createNewCidsBeanFromJSON(false, cidsBeanJson);
-            final MetaObject metaObject = cidsBean.getMetaObject();
+            metaObject = cidsBean.getMetaObject();
             LOGGER.debug("test00DeserializeCidsBeanIntraObjectCacheDisabled("
                     + cidsBean.getCidsBeanInfo().getJsonObjectKey() + "): '" + metaObject.getName() + "'");
 
@@ -49,13 +52,16 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
             LegacyRESTfulInterfaceTest.compareMetaObjects(metaObject,
                     referenceMetaObject, false, true, false, true);
 
-            this.compareInstances(metaObject, false);
+            MetaObjectIntegrityTest.compareInstances(metaObject, false);
 
             LOGGER.info("test00DeserializeCidsBeanIntraObjectCacheDisabled("
                     + cidsBean.getCidsBeanInfo().getJsonObjectKey() + ") passed!");
 
         } catch (AssertionError ae) {
             LOGGER.error("test00DeserializeCidsBeanIntraObjectCacheDisabled failed with: " + ae.getMessage(), ae);
+            if (metaObject != null) {
+                LOGGER.debug(metaObject.getDebugString());
+            }
             throw ae;
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage(), ex);
@@ -67,9 +73,10 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
     @UseDataProvider("getCidsBeansJson")
     public void test01DeserializeCidsBeanIntraObjectCacheEnabled(final String cidsBeanJson) throws Exception {
 
+        MetaObject metaObject = null;
         try {
             final CidsBean cidsBean = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
-            final MetaObject metaObject = cidsBean.getMetaObject();
+            metaObject = cidsBean.getMetaObject();
             LOGGER.debug("test01DeserializeCidsBeanIntraObjectCacheEnabled("
                     + cidsBean.getCidsBeanInfo().getJsonObjectKey() + "): '" + metaObject.getName() + "'");
 
@@ -86,15 +93,19 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
             // ->  testDeserializeAndCompareCidsBean
             //Assert.assertEquals(cidsBean.toJSONString(true), cidsBeanJson);
             // #174
-            // does not work if IntraObjectCache is enabled!!!! -> Refercing object attributes do not match
+            // does not work if IntraObjectCache is enabled!!!! -> Referencing object attributes do not match
             //MetaObjectIntegrityTest.checkMetaObjectIntegrity(cidsBean.getMetaObject());
-            this.compareInstances(metaObject, true);
+            final boolean intraObjectCacheEnabled = true;
+            MetaObjectIntegrityTest.compareInstances(metaObject, intraObjectCacheEnabled);
 
             LOGGER.info("test01DeserializeCidsBeanIntraObjectCacheEnabled("
                     + cidsBean.getCidsBeanInfo().getJsonObjectKey() + ") passed!");
 
         } catch (AssertionError ae) {
             LOGGER.error("test01DeserializeCidsBeanIntraObjectCacheEnabled failed with: " + ae.getMessage(), ae);
+            if (metaObject != null) {
+                LOGGER.debug(metaObject.getDebugString());
+            }
             throw ae;
         } catch (Exception ex) {
 
@@ -157,7 +168,7 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
             LegacyRESTfulInterfaceTest.compareMetaObjects(metaObject,
                     referenceMetaObject, false, true, false, true);
 
-            this.compareInstances(metaObject, false);
+            MetaObjectIntegrityTest.compareInstances(metaObject, false);
 
             LOGGER.info("test03DeserializeNormalisedCidsBeanIntraObjectCacheDisabled("
                     + cidsBean.getCidsBeanInfo().getJsonObjectKey() + ") passed!");
@@ -171,7 +182,7 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
         }
     }
 
-    @Test
+    //@Test
     @UseDataProvider("getCidsBeansJsonNormalised")
     public void test04DeserializeNormalisedCidsBeanIntraObjectCacheEnabled(final String cidsBeanJson) throws Exception {
 
@@ -196,7 +207,7 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
             // #174
             // does not work if IntraObjectCache is enabled!!!! -> Refercing object attributes do not match
             //MetaObjectIntegrityTest.checkMetaObjectIntegrity(cidsBean.getMetaObject());
-            this.compareInstances(metaObject, true);
+            MetaObjectIntegrityTest.compareInstances(metaObject, true);
 
             LOGGER.info("test04DeserializeNormalisedCidsBeanIntraObjectCacheEnabled("
                     + cidsBean.getCidsBeanInfo().getJsonObjectKey() + ") passed!");
@@ -286,61 +297,5 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
         }
     }
 
-    void compareInstances(final MetaObject metaObject, final boolean intraObjectCacheEnlabled) {
-
-        // compare instances of the same meta object (same object key)
-        final HashMap<Object, List<MetaObject>> allInstances
-                = MetaObjectIntegrityTest.getAllInstancesByKey(metaObject);
-        for (final Object key : allInstances.keySet()) {
-            final List<MetaObject> instances = allInstances.get(key);
-
-            if (instances.size() > 1) {
-                MetaObject cachedObject1 = null;
-                for (final MetaObject cachedObject2 : instances) {
-
-                    // ignore array dummy and intermediate objects 
-                    if (cachedObject2.isDummy()
-                            || (cachedObject2.getReferencingObjectAttribute() != null
-                            && cachedObject2.getReferencingObjectAttribute().isArray())) {
-                        break;
-                    }
-
-                    // FIXME: WORKAROUND for spielhalle/betreiber/spielhalle[] -> implement proper limit recursion
-                    if (cachedObject2.getKey().equals(metaObject.getKey())) {
-                        LOGGER.warn("ignoring parent meta object "
-                                + metaObject.getName() + "' (" + metaObject.getKey() + ") in "
-                                + instances.size() + " cached instances of meta object '"
-                                + cachedObject2.getName() + "' (" + cachedObject2.getKey() + ")");
-                        break;
-                    }
-
-                    // regardless of object hierarchy
-                    if (cachedObject1 == null) {
-                        LOGGER.debug("checking " + instances.size() + " cached instances of meta object '"
-                                + cachedObject2.getName() + "' (" + cachedObject2.getKey() + ") in parent meta object "
-                                + metaObject.getName() + "' (" + metaObject.getKey() + ")");
-                        cachedObject1 = cachedObject2;
-                    } else {
-                        // important: set referencing oa check to false!
-                        LegacyRESTfulInterfaceTest.compareMetaObjects(cachedObject1,
-                                cachedObject2, true, !intraObjectCacheEnlabled, false, false);
-
-                        if (intraObjectCacheEnlabled) {
-                            Assert.assertSame(instances.size() + " cached instances of meta object '"
-                                    + cachedObject2.getName() + "' (" + cachedObject2.getKey() + ") in parent meta object "
-                                    + metaObject.getName() + "' (" + metaObject.getKey()
-                                    + ") are the same instances since IntraObjectCache is enabled",
-                                    cachedObject1, cachedObject2);
-                        } else {
-                            Assert.assertNotSame(instances.size() + " cached instances of meta object '"
-                                    + cachedObject2.getName() + "' (" + cachedObject2.getKey() + ") in parent meta object "
-                                    + metaObject.getName() + "' (" + metaObject.getKey()
-                                    + ") are not the same instances since IntraObjectCache is disabled",
-                                    cachedObject1, cachedObject2);
-                        }
-                    }
-                }
-            }
-        }
-    }
+    
 }

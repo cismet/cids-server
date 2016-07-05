@@ -76,10 +76,10 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
     /**
      * This ClassRule is executed only once before any test run (@Test method)
-     * starts. It checks whether the cids testing enviroment is enabled or not.
-     * If the testing enviroment is enabled, it creates a new managed
-     * ComposeContainer that provides access to a dockerized cids
-     * integrationtests system.
+     * starts. It checks whether the cids testing environment is enabled or not.
+     * If the testing environment is enabled, it creates a new managed
+     * ComposeContainer that provides access to a dockerized cids integration
+     * tests system.
      *
      * @return ComposeContainer or dummy ClassRule
      */
@@ -4572,7 +4572,11 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         } else {
             Assert.assertNotNull("actual MetaObject [" + name + "].getMetaClass() is not null {" + getHierarchyPath(objectHierarchy) + "}",
                     actualMetaObject.getMetaClass());
-            RESTfulInterfaceTest.compareMetaClasses(expectedMetaObject.getMetaClass(), actualMetaObject.getMetaClass());
+            final boolean compareEmptyInstances = false;
+            RESTfulInterfaceTest.compareMetaClasses(
+                    expectedMetaObject.getMetaClass(),
+                    actualMetaObject.getMetaClass(),
+                    compareEmptyInstances);
         }
 
         if (checkBackReference) {
@@ -4947,13 +4951,11 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         expectedObjectAttributeValue,
                         actualObjectAttributeValue);
             } else // ids of saved and usaved objects may be different!
-            {
-                if (!compareNew && !compareChanged && !expectedObjectAttribute.isPrimaryKey()) {
+             if (!compareNew && !compareChanged && !expectedObjectAttribute.isPrimaryKey()) {
                     Assert.assertEquals("actual objectAttribute[" + name + "] object value (" + expectedObjectAttributeValueClass.getSimpleName() + ") matches {" + getHierarchyPath(objectHierarchy) + "}",
                             expectedObjectAttributeValue,
                             actualObjectAttributeValue);
                 }
-            }
         } else if (!compareNew && !compareChanged) {
             // disable null value comparison for new and changed objects
             // server may populate null values (e.g. dummy array objects, default values, etc.)

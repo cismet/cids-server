@@ -426,14 +426,18 @@ public class RESTfulInterfaceTest extends TestBase {
             final MetaClass metaClassFromRestServer = restConnector.getClass(user,
                     metaClassFromJson.getID(), metaClassFromJson.getDomain());
 
+            final boolean compareEmptyInstances = true;
             compareMetaClasses(
                     metaClassFromLegacyServer,
-                    metaClassFromRestServer);
+                    metaClassFromRestServer, 
+                    compareEmptyInstances);
 
             compareMetaClasses(
                     metaClassFromJson,
                     metaClassFromLegacyServer,
-                    metaClassFromRestServer);
+                    metaClassFromRestServer,
+                    compareEmptyInstances);
+            
         } catch (AssertionError ae) {
             LOGGER.error("getAndCompareMetaClasses(" + name + ") test failed with: " + ae.getMessage(), ae);
             throw ae;
@@ -1446,9 +1450,10 @@ public class RESTfulInterfaceTest extends TestBase {
 //                cidsBeanFromRestServer.getMOString());
     }
 
-    public static void compareMetaClasses(final MetaClass metaClassFromJson,
+    static void compareMetaClasses(final MetaClass metaClassFromJson,
             final MetaClass metaClassFromLegacyServer,
-            final MetaClass metaClassFromRestServer) throws AssertionError {
+            final MetaClass metaClassFromRestServer, 
+            final boolean compareEmptyInstances) throws AssertionError {
 
         final int pk = metaClassFromJson.getID();
         final String name = metaClassFromJson.getName();
@@ -1688,7 +1693,8 @@ public class RESTfulInterfaceTest extends TestBase {
 
     public static void compareMetaClasses(
             final MetaClass metaClassFromLegacyServer,
-            final MetaClass metaClassFromRestServer) throws AssertionError {
+            final MetaClass metaClassFromRestServer,
+            final boolean compareEmptyInstances) throws AssertionError {
 
         final int pk = metaClassFromLegacyServer.getID();
         final String name = metaClassFromLegacyServer.getName();
@@ -2609,7 +2615,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 maiFromLegacyServer.isOptional());
     }
 
-    static void compareMemberAttributeInfos(
+    public static void compareMemberAttributeInfos(
             final MemberAttributeInfo maiFromLegacyServer,
             final MemberAttributeInfo maiFromRestServer,
             final int pk) {

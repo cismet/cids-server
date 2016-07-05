@@ -29,8 +29,6 @@ import org.junit.runners.MethodSorters;
 //@PrepareForTest(IdGenerator.class)
 public abstract class AbstractCidsBeanDeserialisationTest {
 
-    protected final static Logger LOGGER = Logger.getLogger(AbstractCidsBeanDeserialisationTest.class);
-
     /**
      * Generated with deduplicate = true, omit null values = true and
      * SerializationFeature.INDENT_OUTPUT = false
@@ -54,14 +52,14 @@ public abstract class AbstractCidsBeanDeserialisationTest {
     protected final static ArrayList<String> CIDS_BEANS_JSON_NORMALISED = new ArrayList<String>();
 
     protected static ArrayList<String> initCidsBeansJson(final String entitiesPackage) throws Exception {
-
+        final Logger LOGGER = Logger.getLogger(AbstractCidsBeanDeserialisationTest.class);
         final ArrayList<String> cidsBeansJson = new ArrayList<String>();
         final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         URL resources;
 
         try {
             resources = classLoader.getResource(entitiesPackage);
-
+            
             final Scanner scanner = new Scanner((InputStream) resources.getContent()).useDelimiter("\\n");
             while (scanner.hasNext()) {
                 final String jsonFile = entitiesPackage + scanner.next();
@@ -85,7 +83,7 @@ public abstract class AbstractCidsBeanDeserialisationTest {
             throw ex;
         }
     }
-
+ 
     @BeforeClass
     public static void setUpClass() throws Exception {
         final Properties log4jProperties = new Properties();

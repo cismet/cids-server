@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import static de.cismet.cids.dynamics.AbstractCidsBeanDeserialisationTest.LOGGER;
 import de.cismet.cids.utils.MetaClassCacheService;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
@@ -18,6 +17,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
+import org.apache.log4j.Logger;
 import org.jdesktop.observablecollections.ObservableList;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -34,7 +34,8 @@ import org.openide.util.Lookup;
  */
 public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTest {
 
-    protected final static ArrayList<CidsBean> CIDS_BEANS = new ArrayList<CidsBean>();
+    private final static Logger LOGGER = Logger.getLogger(CidsBeanSerialisationTest.class);
+    private final static ArrayList<CidsBean> CIDS_BEANS = new ArrayList<CidsBean>();
 
     @DataProvider
     public final static Object[][] getCidsBeans() throws Exception {
