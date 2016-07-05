@@ -115,6 +115,14 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
             // important: change parent from deprecated localserver.Object to new middleware.MetaObject instance!
             // FIX for #172
             objectAttribute.setParentObject(this);
+
+            if (!this.isDummy() && (objectAttribute.getObjectID() != this.getID())) {
+                LOG.warn("object attribute '" + objectAttribute.getName() + "' of MetaObject "
+                            + this.getName() + "' (" + this.getID() + "@" + this.getClassKey()
+                            + ") object id does not match: " + objectAttribute.getObjectID());
+                objectAttribute.setObjectID(this.getID());
+            }
+
             if (objectAttribute.referencesObject() && (objectAttribute.getValue() != null)) {
                 final Sirius.server.localserver.object.Object theObject = (Sirius.server.localserver.object.Object)
                     objectAttribute.getValue();
@@ -146,6 +154,13 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     @Override
     public void addAttribute(final ObjectAttribute objectAttribute) {
         super.addAttribute(objectAttribute);
+
+        if (!this.isDummy() && (objectAttribute.getObjectID() != this.getID())) {
+            LOG.warn("object attribute '" + objectAttribute.getName() + "' of MetaObject "
+                        + this.getName() + "' (" + this.getID() + "@" + this.getClassKey()
+                        + ") object id does not match: " + objectAttribute.getObjectID());
+            objectAttribute.setObjectID(this.getID());
+        }
 
         if (objectAttribute.referencesObject() && (objectAttribute.getValue() != null)) {
             final Sirius.server.localserver.object.Object theObject = (Sirius.server.localserver.object.Object)
@@ -842,5 +857,15 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
         hash = (11 * hash)
                     + this.getDomain().hashCode();
         return hash;
+    }
+
+    @Override
+    public void setID(final int objectID) {
+        super.setID(objectID);
+        if (!this.isDummy() && !this.attribHash.isEmpty()) {
+            for (final ObjectAttribute objectAttribute : this.attribHash.values()) {
+                objectAttribute.setObjectID(objectID);
+            }
+        }
     }
 }
