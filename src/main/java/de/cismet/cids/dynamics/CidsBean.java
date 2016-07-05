@@ -593,7 +593,7 @@ public class CidsBean implements PropertyChangeListener {
     }
 
     /**
-     * DOCUMENT ME!
+     * Sets a property but does not set the change status flag.
      *
      * @param   name   DOCUMENT ME!
      * @param   value  DOCUMENT ME!
@@ -681,10 +681,12 @@ public class CidsBean implements PropertyChangeListener {
                         // Anlegen eines Dummy-Objektes
                         MetaObject dummy = (MetaObject)oa.getValue();
                         if (dummy == null) {
+                            final int classId = oa.isVirtualOneToManyAttribute() ? (-1 * mai.getForeignKeyClassId())
+                                                                                 : mai.getForeignKeyClassId();
                             final Sirius.server.localserver.object.Object dummyO =
                                 new Sirius.server.localserver.object.DefaultObject(
                                     getMetaObject().getID(),
-                                    oa.getMai().getForeignKeyClassId());
+                                    classId);
                             dummy = new DefaultMetaObject(dummyO, getMetaObject().getDomain());
                             dummy.setReferencingObjectAttribute(oa);
                             dummy.setDummy(true);
@@ -705,6 +707,7 @@ public class CidsBean implements PropertyChangeListener {
                                     cb.getMetaObject(),
                                     cb.getMetaObject().getMetaClass().getAttributePolicy());
                             entryToAddOA.setParentObject(dummy);
+                            entryToAddOA.setClassKey(mai.getForeignKeyClassId() + "@" + dummy.getDomain());
                             entryToAddOA.setChanged(true);
                             dummy.addAttribute(entryToAddOA);
                             cb.getMetaObject().setReferencingObjectAttribute(entryToAddOA);
@@ -742,6 +745,7 @@ public class CidsBean implements PropertyChangeListener {
                                     arrayElement,
                                     zwischenTabellenKlasse.getAttributePolicy());
                             dummyOA.setParentObject(dummy);
+                            dummyOA.setClassKey(mai.getForeignKeyClassId() + "@" + zwischenTabellenKlasse.getDomain());
                             dummyOA.setChanged(true);
                             dummy.addAttribute(dummyOA);
                             arrayElement.setReferencingObjectAttribute(dummyOA);
@@ -1077,7 +1081,9 @@ public class CidsBean implements PropertyChangeListener {
         if (intraObjectCacheEnabled) {
             return intraObjectCacheMapper.readValue(json, CidsBean.class);
         } else {
-            return mapper.readValue(json, CidsBean.class);
+            LOG.warn("ignoring intraObjectCache disabled flag! https://github.com/cismet/cids-server/issues/175");
+            // return mapper.readValue(json, CidsBean.class);
+            return intraObjectCacheMapper.readValue(json, CidsBean.class);
         }
     }
 
@@ -1095,9 +1101,22 @@ public class CidsBean implements PropertyChangeListener {
             final String json) throws Exception {
         final TypeFactory t = TypeFactory.defaultInstance();
 
-        final Collection<CidsBean> jsonBeans = intraObjectCacheMapper.readValue(
-                json,
-                t.constructCollectionType(Collection.class, CidsBean.class));
+        final Collection<CidsBean> jsonBeans;
+        // #174 boolean flag intraObjectCacheEnabled in CidsBean.createNewCidsBeanFromJSON() is not evaluated
+        if (intraObjectCacheEnabled) {
+            jsonBeans = intraObjectCacheMapper.readValue(
+                    json,
+                    t.constructCollectionType(Collection.class, CidsBean.class));
+        } else {
+            LOG.warn("ignoring intraObjectCache disabled flag! https://github.com/cismet/cids-server/issues/175");
+//            jsonBeans = mapper..readValue(
+//                json,
+//                t.constructCollectionType(Collection.class, CidsBean.class));
+            jsonBeans = intraObjectCacheMapper.readValue(
+                    json,
+                    t.constructCollectionType(Collection.class, CidsBean.class));
+        }
+
         return jsonBeans;
     }
 

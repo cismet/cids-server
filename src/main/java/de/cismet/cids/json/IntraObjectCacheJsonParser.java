@@ -5,10 +5,6 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.cismet.cids.json;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -77,5 +73,14 @@ public class IntraObjectCacheJsonParser extends JsonParserDelegate {
      */
     public void put(final String key, final CidsBean bean) {
         ioc.put(key, bean);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public int size() {
+        return ioc.size();
     }
 }
