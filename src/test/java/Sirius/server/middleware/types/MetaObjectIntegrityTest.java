@@ -200,11 +200,39 @@ public class MetaObjectIntegrityTest {
     }
 
     // <editor-fold defaultstate="collapsed" desc="HELPER METHODS ----------------------------------------------------------">
+    /**
+     * Check the integrity of the supplied MetaObject
+     *
+     * @param metaObject
+     */
     public static void checkMetaObjectIntegrity(final MetaObject metaObject) {
-        checkMetaObjectIntegrity(metaObject, new ArrayList<String>());
+        checkMetaObjectIntegrity(metaObject, true);
     }
 
-    private static void checkMetaObjectIntegrity(final MetaObject metaObject, final List<String> objectHierarchy) {
+    /**
+     * Check the integrity of the supplied MetaObject
+     *
+     * @param metaObject
+     * @param checkBackReference set to false intaObjectCacheed objects till
+     * #175 is fixed
+     */
+    public static void checkMetaObjectIntegrity(final MetaObject metaObject,
+            final boolean checkBackReference) {
+        checkMetaObjectIntegrity(metaObject, checkBackReference, new ArrayList<String>());
+    }
+
+    /**
+     * Check the integrity of the supplied MetaObject.
+     *
+     * @param metaObject
+     * @param checkBackReference set to false intaObjectCacheed objects till
+     * #175 is fixed
+     * @param objectHierarchy
+     */
+    private static void checkMetaObjectIntegrity(final MetaObject metaObject,
+            final boolean checkBackReference,
+            final List<String> objectHierarchy
+    ) {
 
         objectHierarchy.add(metaObject.getClassKey());
         final String hierarchyPath = getHierarchyPath(objectHierarchy);
@@ -392,30 +420,33 @@ public class MetaObjectIntegrityTest {
                             MetaObject.class.isAssignableFrom(value.getClass()));
 
                     final MetaObject valueMetaObject = (MetaObject) value;
-                    final ObjectAttribute referencingObjectAttribute = valueMetaObject.getReferencingObjectAttribute();
-                    Assert.assertNotNull((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
-                            + metaClassName + "' (" + metaObject.getId()
-                            + "@" + metaObject.getClassKey() + ")'s object attribute "
-                            + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey()
-                            + ")' MetaObject ReferencingObjectAttribute is not null {" + hierarchyPath + "}",
-                            referencingObjectAttribute);
 
-                    Assert.assertEquals((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
-                            + metaClassName + "' (" + metaObject.getId()
-                            + "@" + metaObject.getClassKey() + ")'s object attribute "
-                            + "[" + i + "] '" + objectAttribute.getName() + "' (" + objectAttribute.getKey()
-                            + ") MetaObject ReferencingObjectAttribute '"
-                            + referencingObjectAttribute.getName() + "' (" + referencingObjectAttribute.getKey() + ") matches attribute's key {" + hierarchyPath + "}",
-                            objectAttribute.getKey(),
-                            valueMetaObject.getReferencingObjectAttribute().getKey());
+                    if (checkBackReference) {
+                        final ObjectAttribute referencingObjectAttribute = valueMetaObject.getReferencingObjectAttribute();
+                        Assert.assertNotNull((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
+                                + metaClassName + "' (" + metaObject.getId()
+                                + "@" + metaObject.getClassKey() + ")'s object attribute "
+                                + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey()
+                                + ")' MetaObject ReferencingObjectAttribute is not null {" + hierarchyPath + "}",
+                                referencingObjectAttribute);
 
-                    Assert.assertSame((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
-                            + metaClassName + "' (" + metaObject.getId()
-                            + "@" + metaObject.getClassKey() + ")'s object attribute "
-                            + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey()
-                            + ")' MetaObject ReferencingObjectAttribute matches attribute instance {" + hierarchyPath + "}",
-                            objectAttribute,
-                            valueMetaObject.getReferencingObjectAttribute());
+                        Assert.assertEquals((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
+                                + metaClassName + "' (" + metaObject.getId()
+                                + "@" + metaObject.getClassKey() + ")'s object attribute "
+                                + "[" + i + "] '" + objectAttribute.getName() + "' (" + objectAttribute.getKey()
+                                + ") MetaObject ReferencingObjectAttribute '"
+                                + referencingObjectAttribute.getName() + "' (" + referencingObjectAttribute.getKey() + ") matches attribute's key {" + hierarchyPath + "}",
+                                objectAttribute.getKey(),
+                                valueMetaObject.getReferencingObjectAttribute().getKey());
+
+                        Assert.assertSame((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
+                                + metaClassName + "' (" + metaObject.getId()
+                                + "@" + metaObject.getClassKey() + ")'s object attribute "
+                                + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey()
+                                + ")' MetaObject ReferencingObjectAttribute matches attribute instance {" + hierarchyPath + "}",
+                                objectAttribute,
+                                referencingObjectAttribute);
+                    }
 
                     if (objectAttribute.isVirtualOneToManyAttribute()) {
                         Assert.assertEquals((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
@@ -519,11 +550,16 @@ public class MetaObjectIntegrityTest {
                     }
 
                     if (valueMetaObject.isDummy()) {
-                        checkArrayAttributes(metaObject, objectAttribute, new ArrayList<String>(objectHierarchy));
+                        checkArrayAttributes(metaObject, 
+                                objectAttribute, 
+                                checkBackReference,
+                                new ArrayList<String>(objectHierarchy));
                     }
 
                     // recursively check integrity
-                    checkMetaObjectIntegrity(valueMetaObject, new ArrayList<String>(objectHierarchy));
+                    checkMetaObjectIntegrity(valueMetaObject,
+                            checkBackReference,
+                            new ArrayList<String>(objectHierarchy));
                 }
             }
 
@@ -1085,8 +1121,11 @@ public class MetaObjectIntegrityTest {
                 metaObject.getStatusDebugString());
     }
 
-    protected static void checkArrayAttributes(final MetaObject metaObject,
-            final ObjectAttribute arrayAttribute, final List<String> objectHierarchy) throws AssertionError {
+    protected static void checkArrayAttributes(
+            final MetaObject metaObject,
+            final ObjectAttribute arrayAttribute,
+            final boolean checkBackReference,
+            final List<String> objectHierarchy) throws AssertionError {
 
         String hierarchyPath = getHierarchyPath(objectHierarchy);
         Assert.assertNotNull((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "' (" + metaObject.getId()
@@ -1291,32 +1330,37 @@ public class MetaObjectIntegrityTest {
                         objectHierarchy.add(arrayElementObject.getClassKey());
                         hierarchyPath = getHierarchyPath(objectHierarchy);
 
-                        Assert.assertNotNull((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
-                                + metaClassName + "' (" + metaObject.getId()
-                                + "@" + metaObject.getClassKey() + ")'s array attribute Referencing Object Attribute of array element '"
-                                + arrayElementObject.getName() + "' in array attribute '" + arrayAttribute.getName()
-                                + "' in meta object '" + metaObject.getName() + " set {" + hierarchyPath + "}",
-                                arrayElementObject.getReferencingObjectAttribute());
-                        Assert.assertEquals((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
-                                + metaClassName + "' (" + metaObject.getId()
-                                + "@" + metaObject.getClassKey() + ")'s array attribute Referencing Object Attribute of array element '"
-                                + arrayElementObject.getName() + "' in array attribute '" + arrayAttribute.getName()
-                                + "' in meta object '" + metaObject.getName() + " correctly set {" + hierarchyPath + "}",
-                                arrayElementObject.getReferencingObjectAttribute(),
-                                intermediateArrayElementObjectAttribute);
-                        Assert.assertNotNull((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
-                                + metaClassName + "' (" + metaObject.getId()
-                                + "@" + metaObject.getClassKey() + ")'s array attribute Parent Object of Referencing Object Attribute of array element '"
-                                + arrayElementObject.getName() + "' in array attribute '" + arrayAttribute.getName() + "' in meta object '"
-                                + metaObject.getName() + " set {" + hierarchyPath + "}",
-                                arrayElementObject.getReferencingObjectAttribute().getParentObject());
-                        Assert.assertEquals((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
-                                + metaClassName + "' (" + metaObject.getId()
-                                + "@" + metaObject.getClassKey() + ")'s array attribute Parent Object of Referencing Object Attribute of array element '"
-                                + arrayElementObject.getName() + "' in array attribute '" + arrayAttribute.getName()
-                                + "' in meta object '" + metaObject.getName() + " correctly set {" + hierarchyPath + "}",
-                                arrayElementObject.getReferencingObjectAttribute().getParentObject().getKey(),
-                                intermediateArrayElementObject.getKey());
+                        if (checkBackReference) {
+                            final ObjectAttribute referencingObjectAttribute
+                                    = arrayElementObject.getReferencingObjectAttribute();
+
+                            Assert.assertNotNull((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
+                                    + metaClassName + "' (" + metaObject.getId()
+                                    + "@" + metaObject.getClassKey() + ")'s array attribute Referencing Object Attribute of array element '"
+                                    + arrayElementObject.getName() + "' in array attribute '" + arrayAttribute.getName()
+                                    + "' in meta object '" + metaObject.getName() + " set {" + hierarchyPath + "}",
+                                    referencingObjectAttribute);
+                            Assert.assertEquals((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
+                                    + metaClassName + "' (" + metaObject.getId()
+                                    + "@" + metaObject.getClassKey() + ")'s array attribute Referencing Object Attribute of array element '"
+                                    + arrayElementObject.getName() + "' in array attribute '" + arrayAttribute.getName()
+                                    + "' in meta object '" + metaObject.getName() + " correctly set {" + hierarchyPath + "}",
+                                    referencingObjectAttribute,
+                                    intermediateArrayElementObjectAttribute);
+                            Assert.assertNotNull((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
+                                    + metaClassName + "' (" + metaObject.getId()
+                                    + "@" + metaObject.getClassKey() + ")'s array attribute Parent Object of Referencing Object Attribute of array element '"
+                                    + arrayElementObject.getName() + "' in array attribute '" + arrayAttribute.getName() + "' in meta object '"
+                                    + metaObject.getName() + " set {" + hierarchyPath + "}",
+                                    referencingObjectAttribute.getParentObject());
+                            Assert.assertEquals((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
+                                    + metaClassName + "' (" + metaObject.getId()
+                                    + "@" + metaObject.getClassKey() + ")'s array attribute Parent Object of Referencing Object Attribute of array element '"
+                                    + arrayElementObject.getName() + "' in array attribute '" + arrayAttribute.getName()
+                                    + "' in meta object '" + metaObject.getName() + " correctly set {" + hierarchyPath + "}",
+                                    referencingObjectAttribute.getParentObject().getKey(),
+                                    intermediateArrayElementObject.getKey());
+                        }
 
                         objectHierarchy.remove(objectHierarchy.size() - 1);
                         // back reference to "master" class

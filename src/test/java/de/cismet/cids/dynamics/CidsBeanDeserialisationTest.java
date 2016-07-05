@@ -7,8 +7,6 @@ import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import de.cismet.cids.integrationtests.LegacyRESTfulInterfaceTest;
 import de.cismet.cids.json.IntraObjectCacheJsonParams;
-import java.util.HashMap;
-import java.util.List;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -18,6 +16,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 /**
+ * Check Integrity of MetaObjects deserialized from CidsBeans
+ *
+ * FIXME: #175
  *
  * @author Pascal Dihé <pascal.dihe@cismet.de>
  */
@@ -30,7 +31,15 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
 
     private final static Logger LOGGER = Logger.getLogger(CidsBeanDeserialisationTest.class);
 
-    //@Test
+    /**
+     * Test Deserialize CidsBeans with IntraObjectCacheDisabled. IGNORED til
+     * #175 is fixed
+     *
+     * @param cidsBeanJson
+     * @throws Exception
+     */
+    @Ignore
+    @Test
     @UseDataProvider("getCidsBeansJson")
     public void test00DeserializeCidsBeanIntraObjectCacheDisabled(final String cidsBeanJson) throws Exception {
 
@@ -47,8 +56,8 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
             MetaObjectIntegrityTest.checkMetaObjectIntegrity(metaObject);
             MetaObjectIntegrityTest.checkMetaObjectIntegrity(referenceMetaObject);
 
-            // set compare new to true since array ids do not match
-            // FIXME: #174
+            // set compare new to true since intermediate array object ids are -1
+            // due to https://github.com/cismet/cids-server/issues/165
             LegacyRESTfulInterfaceTest.compareMetaObjects(metaObject,
                     referenceMetaObject, false, true, false, true);
 
@@ -69,6 +78,12 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
         }
     }
 
+    /**
+     * Test deserialize CidsBeans with IntraObjectCacheEnabled
+     *
+     * @param cidsBeanJson
+     * @throws Exception
+     */
     @Test
     @UseDataProvider("getCidsBeansJson")
     public void test01DeserializeCidsBeanIntraObjectCacheEnabled(final String cidsBeanJson) throws Exception {
@@ -83,9 +98,10 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
             final CidsBean referenceCidsBean = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
             final MetaObject referenceMetaObject = referenceCidsBean.getMetaObject();
 
-            // set comapre new to true since array ids do not match
-            // FIXME: #174
-            // don't compare referencing object attributes
+            // set compare new to true since intermediate array object ids are -1
+            // due to https://github.com/cismet/cids-server/issues/165
+            // set compare referencing object attributes 
+            // due to https://github.com/cismet/cids-server/issues/175
             LegacyRESTfulInterfaceTest.compareMetaObjects(metaObject,
                     referenceMetaObject, false, true, false, false);
 
@@ -114,7 +130,18 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
         }
     }
 
-    //@Test
+    /**
+     *
+     * Test deserialize and compare CidsBeans with IntraObjectCacheEnabled and
+     * IntraObjectCacheDisabled
+     *
+     * IGNORED til #175 is fixed
+     *
+     * @param cidsBeanJson
+     * @throws Exception
+     */
+    @Test
+    @Ignore
     @UseDataProvider("getCidsBeansJson")
     public void test02DeserializeAndCompareCidsBeans(final String cidsBeanJson) throws Exception {
 
@@ -128,8 +155,10 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
             LOGGER.debug("test02DeserializeAndCompareCidsBeans("
                     + cidsBean.getCidsBeanInfo().getJsonObjectKey() + "): '" + metaObject.getName() + "'");
 
-            // set comapre new to true since array ids do not match
-            // FIXME: #174
+            // set compare new to true since intermediate array object ids are -1
+            // due to https://github.com/cismet/cids-server/issues/165
+            // set compare referencing object attributes 
+            // due to https://github.com/cismet/cids-server/issues/175
             LegacyRESTfulInterfaceTest.compareMetaObjects(metaObject,
                     intraObjectCacheEnabledMetaObject, false, true, false, false);
 
@@ -146,6 +175,13 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
         }
     }
 
+    /**
+     * Test Deserialize CidsBeans with IntraObjectCacheDisabled from normalised
+     * JSON (containing $ref) IGNORED til #175 is fixed
+     *
+     * @param cidsBeanJson
+     * @throws Exception
+     */
     @Test
     @Ignore
     @UseDataProvider("getCidsBeansJsonNormalised")
@@ -163,8 +199,8 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
             MetaObjectIntegrityTest.checkMetaObjectIntegrity(metaObject);
             MetaObjectIntegrityTest.checkMetaObjectIntegrity(referenceMetaObject);
 
-            // set compare new to true since array ids do not match
-            // FIXME: #174
+            // set compare new to true since intermediate array object ids are -1
+            // due to https://github.com/cismet/cids-server/issues/165
             LegacyRESTfulInterfaceTest.compareMetaObjects(metaObject,
                     referenceMetaObject, false, true, false, true);
 
@@ -182,7 +218,14 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
         }
     }
 
-    //@Test
+    /**
+     * Test Deserialize CidsBeans with IntraObjectCacheDisabled from normalised
+     * JSON (containing $ref)
+     *
+     * @param cidsBeanJson
+     * @throws Exception
+     */
+    @Test
     @UseDataProvider("getCidsBeansJsonNormalised")
     public void test04DeserializeNormalisedCidsBeanIntraObjectCacheEnabled(final String cidsBeanJson) throws Exception {
 
@@ -195,9 +238,10 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
             final CidsBean referenceCidsBean = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
             final MetaObject referenceMetaObject = referenceCidsBean.getMetaObject();
 
-            // set comapre new to true since array ids do not match
-            // FIXME: #174
-            // don't compare referencing object attributes
+            // set compare new to true since intermediate array object ids are -1
+            // due to https://github.com/cismet/cids-server/issues/165
+            // set compare referencing object attributes 
+            // due to https://github.com/cismet/cids-server/issues/175
             LegacyRESTfulInterfaceTest.compareMetaObjects(metaObject,
                     referenceMetaObject, false, true, false, false);
 
@@ -206,7 +250,9 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
             //Assert.assertEquals(cidsBean.toJSONString(true), cidsBeanJson);
             // #174
             // does not work if IntraObjectCache is enabled!!!! -> Refercing object attributes do not match
-            //MetaObjectIntegrityTest.checkMetaObjectIntegrity(cidsBean.getMetaObject());
+            // set checkBackReferenceTo False!
+            MetaObjectIntegrityTest.checkMetaObjectIntegrity(cidsBean.getMetaObject(), false);
+
             MetaObjectIntegrityTest.compareInstances(metaObject, true);
 
             LOGGER.info("test04DeserializeNormalisedCidsBeanIntraObjectCacheEnabled("
@@ -228,7 +274,7 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
      * @param cidsBeanJson
      * @throws Exception
      */
-    //@Test
+    @Test
     @UseDataProvider("getCidsBeansJsonUnformatted")
     public void test05DeserializeAndCompareCidsBeansJson(final String cidsBeanJson) throws Exception {
         try {
@@ -254,48 +300,4 @@ public class CidsBeanDeserialisationTest extends AbstractCidsBeanDeserialisation
             throw ex;
         }
     }
-
-    /**
-     * Disabled. See #165
-     *
-     * @param cidsBeanJson
-     * @throws Exception
-     */
-    @Test
-    @UseDataProvider("getCidsBeansJson")
-    @Ignore
-    public void test06DeserializeCidsBeanMetaObjectStatus(final String cidsBeanJson) throws Exception {
-
-        try {
-            final CidsBean cidsBean = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
-            //Assume.assumeTrue(cidsBean.getCidsBeanInfo().getClassKey().equalsIgnoreCase("SPH_SPIELHALLE"));
-
-            LOGGER.debug("test06DeserializeCidsBeanMetaObjectStatus: " + cidsBean.getPrimaryKeyValue());
-
-            // FIXME: TEST Fails!
-            //            Assert.assertEquals("Status of Array MetaObject not set ",
-            //                    MetaObject.NO_STATUS,
-            //                    ((MetaObject) cidsBean.getMetaObject().getAttributeByFieldName("kategorien").getValue()).getStatus());
-            final ObjectAttribute[] arrayArray
-                    = ((MetaObject) cidsBean.getMetaObject().getAttributeByFieldName("kategorien").getValue()).getAttribs();
-
-            // FIXME: TEST Fails!
-            //            Assert.assertEquals("Status of first Dummy Array MetaObject entry not set",
-            //                    MetaObject.NO_STATUS,
-            //                    ((MetaObject) arrayArray[0].getValue()).getStatus());
-            // FIXME: TEST Fails!
-            //            Assert.assertEquals("Status of first real Array MetaObject entry not set",
-            //                    MetaObject.NO_STATUS,
-            //                    ((MetaObject) ((MetaObject) arrayArray[0].getValue()).getAttribute("kategorie")).getStatus());
-        } catch (AssertionError ae) {
-            LOGGER.error("test06DeserializeCidsBeanMetaObjectStatus failed with: " + ae.getMessage());
-            throw ae;
-        } catch (Exception ex) {
-
-            LOGGER.error(ex.getMessage(), ex);
-            throw ex;
-        }
-    }
-
-    
 }
