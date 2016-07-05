@@ -52,7 +52,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
     /**
      * DOCUMENT ME!
      *
-     * @Deprecated  arrarently not used anymore
+     * @Deprecated  apparently not used anymore
      */
     protected Object deletedValue = null;
     protected String editor;
@@ -172,7 +172,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
      *
      * @return  DOCUMENT ME!
      */
-    final int getObjectID() {
+    public final int getObjectID() {
         return objectID;
     }
 

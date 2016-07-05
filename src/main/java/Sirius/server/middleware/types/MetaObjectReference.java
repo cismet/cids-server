@@ -8,9 +8,10 @@
 package Sirius.server.middleware.types;
 
 import Sirius.server.localserver.attribute.ObjectAttribute;
-import java.io.Serializable;
 
 import org.apache.log4j.Logger;
+
+import java.io.Serializable;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;

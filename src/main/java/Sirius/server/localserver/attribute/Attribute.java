@@ -306,7 +306,8 @@ public abstract class Attribute implements Mapable, Serializable, StringConverta
     }
 
     /**
-     * DOCUMENT ME!
+     * Classkey of the value if the value is a metaobject ("foreign key"). See
+     * MemberAttributeInfo.foreignKeyReferencesTo and referencesObject()
      *
      * @return  DOCUMENT ME!
      */
