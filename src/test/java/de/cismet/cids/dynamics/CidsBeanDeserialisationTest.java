@@ -1,6 +1,5 @@
 package de.cismet.cids.dynamics;
 
-import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.MetaObjectIntegrityTest;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;

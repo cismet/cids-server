@@ -231,6 +231,9 @@ public class MetaObjectIntegrityTest {
             final List<String> objectHierarchy
     ) {
 
+        Assert.assertNotNull("checkMetaObjectIntegrity: metaObject is not null",
+                metaObject);
+
         objectHierarchy.add(metaObject.getClassKey());
         final String hierarchyPath = getHierarchyPath(objectHierarchy);
         final MetaClass metaClass = metaObject.getMetaClass();
@@ -915,7 +918,7 @@ public class MetaObjectIntegrityTest {
                 + "@" + metaObject.getClassKey() + "): all available attributes checked {" + hierarchyPath + "}",
                 metaObject.getAttributes().size(),
                 i);
-        
+
         if (metaObjectAttributeNames.length > 0) {
             final Collection attributeCollection
                     = metaObject.getAttributesByName(Arrays.asList(metaObjectAttributeNames));
@@ -1137,6 +1140,18 @@ public class MetaObjectIntegrityTest {
             final List<String> objectHierarchy) throws AssertionError {
 
         String hierarchyPath = getHierarchyPath(objectHierarchy);
+
+        Assert.assertNotNull("checkArrayAttributes: metaObject is not null {" + hierarchyPath + "}",
+                metaObject);
+        Assert.assertNotNull("checkArrayAttributes: arrayAttribute is not null {" + hierarchyPath + "}",
+                arrayAttribute);
+
+        Assert.assertSame((metaObject.isDummy() ? "DUMMY " : "") + " array attribute '"
+                + arrayAttribute.getName() + "' is attribute of MetaObject '" + metaObject.getName() + "' (" + metaObject.getId()
+                + "@" + metaObject.getClassKey() + ")  {" + hierarchyPath + "}",
+                metaObject.getAttributeByFieldName(arrayAttribute.getMai().getFieldName()),
+                arrayAttribute);
+
         Assert.assertNotNull((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "' (" + metaObject.getId()
                 + "@" + metaObject.getClassKey() + ")'s meta class is not null {" + hierarchyPath + "}",
                 metaObject.getMetaClass());

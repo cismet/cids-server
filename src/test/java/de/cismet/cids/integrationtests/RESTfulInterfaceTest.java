@@ -429,7 +429,7 @@ public class RESTfulInterfaceTest extends TestBase {
             final boolean compareEmptyInstances = true;
             compareMetaClasses(
                     metaClassFromLegacyServer,
-                    metaClassFromRestServer, 
+                    metaClassFromRestServer,
                     compareEmptyInstances);
 
             compareMetaClasses(
@@ -437,7 +437,7 @@ public class RESTfulInterfaceTest extends TestBase {
                     metaClassFromLegacyServer,
                     metaClassFromRestServer,
                     compareEmptyInstances);
-            
+
         } catch (AssertionError ae) {
             LOGGER.error("getAndCompareMetaClasses(" + name + ") test failed with: " + ae.getMessage(), ae);
             throw ae;
@@ -1264,6 +1264,11 @@ public class RESTfulInterfaceTest extends TestBase {
             final CidsBean cidsBeanFromLegacyServer,
             final CidsBean cidsBeanFromRestServer) throws AssertionError {
 
+        Assert.assertNotNull("compareCidsBeans: cidsBeanFromLegacyServer is not null",
+                cidsBeanFromLegacyServer);
+        Assert.assertNotNull("compareCidsBeans: cidsBeanFromRestServer is not null",
+                cidsBeanFromRestServer);
+
         final CidsBeanInfo beanInfoFromJson = cidsBeanFromJson.getCidsBeanInfo();
         final String cidsBeanJson = cidsBeanFromJson.toJSONString(true);
 
@@ -1452,8 +1457,13 @@ public class RESTfulInterfaceTest extends TestBase {
 
     static void compareMetaClasses(final MetaClass metaClassFromJson,
             final MetaClass metaClassFromLegacyServer,
-            final MetaClass metaClassFromRestServer, 
+            final MetaClass metaClassFromRestServer,
             final boolean compareEmptyInstances) throws AssertionError {
+
+        Assert.assertNotNull("compareMetaClasses: metaClassFromLegacyServer is not null",
+                metaClassFromLegacyServer);
+        Assert.assertNotNull("compareMetaClasses: metaClassFromRestServer is not null",
+                metaClassFromRestServer);
 
         final int pk = metaClassFromJson.getID();
         final String name = metaClassFromJson.getName();
@@ -1852,6 +1862,13 @@ public class RESTfulInterfaceTest extends TestBase {
             final ClassAttribute metaClassAttributeFromRestServer,
             final int pk) throws AssertionError {
 
+        Assert.assertNotNull("compareMetaClassAttributes: metaClassAttributeFromJson is not null",
+                metaClassAttributeFromJson);
+        Assert.assertNotNull("compareMetaClassAttributes: metaClassAttributeFromLegacyServer is not null",
+                metaClassAttributeFromLegacyServer);
+        Assert.assertNotNull("compareMetaClassAttributes: metaClassAttributeFromRestServer is not null",
+                metaClassAttributeFromRestServer);
+
         final String name = metaClassAttributeFromJson.getName();
 
         Assert.assertEquals("metaClassAttribute[" + name + "].getClassID() from rest server matches (classId: " + pk + ")",
@@ -2007,6 +2024,11 @@ public class RESTfulInterfaceTest extends TestBase {
             final ClassAttribute metaClassAttributeFromLegacyServer,
             final ClassAttribute metaClassAttributeFromRestServer,
             final int pk) throws AssertionError {
+
+        Assert.assertNotNull("compareMetaClassAttributes: metaClassAttributeFromLegacyServer is not null",
+                metaClassAttributeFromLegacyServer);
+        Assert.assertNotNull("compareMetaClassAttributes: metaClassAttributeFromLegacyServer is not null",
+                metaClassAttributeFromLegacyServer);
 
         final String name = metaClassAttributeFromLegacyServer.getName();
 
@@ -2465,6 +2487,13 @@ public class RESTfulInterfaceTest extends TestBase {
             final MemberAttributeInfo maiFromRestServer,
             final int pk) {
 
+        Assert.assertNotNull("compareMemberAttributeInfos: maiFromJson is not null",
+                maiFromJson);
+        Assert.assertNotNull("compareMemberAttributeInfos: maiFromLegacyServer is not null",
+                maiFromLegacyServer);
+        Assert.assertNotNull("compareMemberAttributeInfos: maiFromRestServer is not null",
+                maiFromRestServer);
+
         final String name = maiFromJson.getName();
 
         Assert.assertEquals("memberAttributeInfo[" + name + "].getArrayKeyFieldName from rest server matches (" + pk + ")",
@@ -2709,18 +2738,18 @@ public class RESTfulInterfaceTest extends TestBase {
 
     protected static int countDbEntities(final Connection connection, final String tableName) throws IOError, SQLException {
         //if (!connection.isClosed()) {
-           // if (connection.isValid(1)) {
-                final Statement countStatement = connection.createStatement();
-                final ResultSet resultSet = countStatement.executeQuery("SELECT count(*) FROM " + tableName);
-                int count = -1;
-                if (resultSet.next()) {
-                    count = resultSet.getInt(1);
-                }
+        // if (connection.isValid(1)) {
+        final Statement countStatement = connection.createStatement();
+        final ResultSet resultSet = countStatement.executeQuery("SELECT count(*) FROM " + tableName);
+        int count = -1;
+        if (resultSet.next()) {
+            count = resultSet.getInt(1);
+        }
 
-                //resultSet.close();
-                countStatement.close();
+        //resultSet.close();
+        countStatement.close();
 
-                return count;
+        return count;
 //            } else {
 //                throw new IOError(new SQLException("cannot submit query, connection is not valid!"));
 //            }
