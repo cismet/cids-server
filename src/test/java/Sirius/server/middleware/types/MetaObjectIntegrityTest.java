@@ -4,7 +4,6 @@ import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.impls.domainserver.OfflineMetaClassCacheService;
 import Sirius.server.newuser.User;
-import Sirius.server.newuser.UserException;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
@@ -14,7 +13,6 @@ import de.cismet.cids.integrationtests.TestEnvironment;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
 import de.cismet.cids.utils.MetaClassCacheService;
 import java.lang.reflect.Proxy;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,7 +27,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -270,10 +267,13 @@ public class MetaObjectIntegrityTest {
                 metaObject.getAllClasses().get(metaClass.getDomain() + metaClass.getId()));
 
         // ---------------------------------------------------------------------
-        Assert.assertFalse((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
-                + metaClassName + "' (" + metaObject.getId()
-                + "@" + metaObject.getClassKey() + "): getAttribs() is not empty {" + hierarchyPath + "}",
-                metaObject.getAttributes().isEmpty());
+        // empty dummy array object allowed ...
+        if (!metaObject.isDummy()) {
+            Assert.assertFalse((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
+                    + metaClassName + "' (" + metaObject.getId()
+                    + "@" + metaObject.getClassKey() + "): getAttribs() is not empty {" + hierarchyPath + "}",
+                    metaObject.getAttributes().isEmpty());
+        }
 
         Assert.assertEquals((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
                 + metaClassName + "' (" + metaObject.getId()
@@ -549,9 +549,10 @@ public class MetaObjectIntegrityTest {
                         }
                     }
 
-                    if (valueMetaObject.isDummy()) {
-                        checkArrayAttributes(metaObject, 
-                                objectAttribute, 
+                    // check only dummy non-empty attributes
+                    if (valueMetaObject.isDummy() && !valueMetaObject.getAttributes().isEmpty()) {
+                        checkArrayAttributes(metaObject,
+                                objectAttribute,
                                 checkBackReference,
                                 new ArrayList<String>(objectHierarchy));
                     }
@@ -909,31 +910,39 @@ public class MetaObjectIntegrityTest {
         }
         // end check attributes --------------------------------------------
 
-        final Collection attributeCollection
-                = metaObject.getAttributesByName(Arrays.asList(metaObjectAttributeNames));
-
-        Assert.assertNotNull((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
-                + metaClassName + "' (" + metaObject.getId()
-                + "@" + metaObject.getClassKey() + "): getAttributesByName returns attributes {" + hierarchyPath + "}",
-                attributeCollection);
-
-        Assert.assertFalse((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
-                + metaClassName + "' (" + metaObject.getId()
-                + "@" + metaObject.getClassKey() + "): getAttributesByName returns attribute {" + hierarchyPath + "}s",
-                attributeCollection.isEmpty());
-
         Assert.assertEquals((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
                 + metaClassName + "' (" + metaObject.getId()
-                + "@" + metaObject.getClassKey() + "): getAttributesByName matches attributes objectAttributes size {" + hierarchyPath + "}",
-                objectAttributes.length,
-                attributeCollection.size());
+                + "@" + metaObject.getClassKey() + "): all available attributes checked {" + hierarchyPath + "}",
+                metaObject.getAttributes().size(),
+                i);
+        
+        if (metaObjectAttributeNames.length > 0) {
+            final Collection attributeCollection
+                    = metaObject.getAttributesByName(Arrays.asList(metaObjectAttributeNames));
 
-        for (final ObjectAttribute objectAttribute : objectAttributes) {
-            Assert.assertTrue((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
+            Assert.assertNotNull((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
                     + metaClassName + "' (" + metaObject.getId()
-                    + "@" + metaObject.getClassKey() + "): getAttributesByName contains attribute '"
-                    + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey() + ") instance {" + hierarchyPath + "}",
-                    attributeCollection.contains(objectAttribute));
+                    + "@" + metaObject.getClassKey() + "): getAttributesByName returns attributes {" + hierarchyPath + "}",
+                    attributeCollection);
+
+            Assert.assertFalse((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
+                    + metaClassName + "' (" + metaObject.getId()
+                    + "@" + metaObject.getClassKey() + "): getAttributesByName returns attribute {" + hierarchyPath + "}s",
+                    attributeCollection.isEmpty());
+
+            Assert.assertEquals((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
+                    + metaClassName + "' (" + metaObject.getId()
+                    + "@" + metaObject.getClassKey() + "): getAttributesByName matches attributes objectAttributes size {" + hierarchyPath + "}",
+                    objectAttributes.length,
+                    attributeCollection.size());
+
+            for (final ObjectAttribute objectAttribute : objectAttributes) {
+                Assert.assertTrue((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
+                        + metaClassName + "' (" + metaObject.getId()
+                        + "@" + metaObject.getClassKey() + "): getAttributesByName contains attribute '"
+                        + "[" + i + "] " + objectAttribute.getName() + "' (" + objectAttribute.getKey() + ") instance {" + hierarchyPath + "}",
+                        attributeCollection.contains(objectAttribute));
+            }
         }
 
         Assert.assertTrue((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
@@ -1034,7 +1043,7 @@ public class MetaObjectIntegrityTest {
         }
 
         // getReferencingObjectAttribute ---------------------------------------
-        if (metaObject.getReferencingObjectAttribute() != null) {
+        if (checkBackReference && metaObject.getReferencingObjectAttribute() != null) {
             final ObjectAttribute referencingObjectAttribute = metaObject.getReferencingObjectAttribute();
 
             Assert.assertTrue((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"

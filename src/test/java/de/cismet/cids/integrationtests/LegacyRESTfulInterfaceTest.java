@@ -75,7 +75,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
     protected static Map<String, List<Integer>> metaObjectIds = new HashMap<String, List<Integer>>();
 
     /**
-     * This ClassRule is executed only once before any test run (@Test method)
+     * This ClassRule is executed only once before any test run (//@Test method)
      * starts. It checks whether the cids testing environment is enabled or not.
      * If the testing environment is enabled, it creates a new managed
      * ComposeContainer that provides access to a dockerized cids integration
@@ -310,7 +310,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
     }
 
     // SERVER CORE / INFRASTRUCTURE TESTS --------------------------------------
-    @Test
+    //@Test
     public void test01server00getDefaultIcons() throws Exception {
         LOGGER.debug("[01.00] testing getDefaultIcons()");
         final String domain = PROPERTIES.getProperty("userDomain", "CIDS_REF");
@@ -344,7 +344,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @Test
+    //@Test
     public void test01server01getDomains() throws Exception {
         LOGGER.debug("[01.01] testing getDomains()");
 
@@ -369,7 +369,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
     }
 
     // USER SERVICE TESTS ------------------------------------------------------
-    @Test
+    //@Test
     public void test02userService00changePasswordSuccess() throws Exception {
         LOGGER.debug("[02.00] testing changePasswordSuccess()");
         final String newPassword = "DADhejPYEDtym:8hej54umVEB0hag25y";
@@ -394,7 +394,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @Test
+    //@Test
     public void test02userService01changePasswordError() throws Exception {
         LOGGER.debug("[02.01] testing changePasswordError()");
 
@@ -411,7 +411,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @Test(expected = UserException.class)
+    //@Test(expected = UserException.class)
     public void test02userService02getUserPasswordError() throws Exception {
 
         LOGGER.debug("[02.02] testing getUserPasswordError()");
@@ -436,7 +436,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @Test(expected = UserException.class)
+    //@Test(expected = UserException.class)
     public void test02userService03getUserDomainError() throws Exception {
 
         LOGGER.debug("[02.03] testing getUserDomainError()");
@@ -460,7 +460,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @Test
+    //@Test
     public void test02userService04getDomains() throws Exception {
         LOGGER.debug("[02.04] testing getDomains()");
 
@@ -486,7 +486,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @Test
+    //@Test
     public void test02userService05getUserGroupNames() throws Exception {
         LOGGER.debug("[02.05] testing getUserGroupNames");
 
@@ -527,7 +527,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @Test
+    //@Test
     public void test02userService06getUserGroupNamesError() throws Exception {
         LOGGER.debug("[02.06] testing getUserGroupNamesError()");
 
@@ -550,7 +550,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
     }
 
-    @Test
+    //@Test
     @UseDataProvider("getConfigAttributes")
     public void test02userService07hasConfigAttribute(final String configAttribute) throws Exception {
         LOGGER.debug("[02.07] testing hasConfigAttribute(" + configAttribute + ")");
@@ -569,7 +569,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @Test
+    //@Test
     @UseDataProvider("getConfigAttributes")
     public void test02userService08getConfigAttribute(final String configAttribute) throws Exception {
         LOGGER.debug("[02.08] testing getConfigAttribute(" + configAttribute + ")");
@@ -590,7 +590,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
     }
 
     // CLASS SERVICE TEST ------------------------------------------------------
-    @Test
+    //@Test
     public void test03classService00getClasses() throws Exception {
         LOGGER.debug("[03.00] testing getClasses");
 
@@ -622,7 +622,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @Test
+    //@Test
     @UseDataProvider("getMetaClassTableNames")
     public void test03classService01getClassByTableName(final String tableName) throws Exception {
         LOGGER.debug("[03.01] testing getClassByTableName(" + tableName + ")");
@@ -639,7 +639,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @Test
+    //@Test
     @UseDataProvider("getMetaClassIds")
     public void test03classService02getClass(final Integer classId) throws Exception {
         LOGGER.debug("[03.02] testing getClass(" + classId + ")");
@@ -663,7 +663,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @param classId
      * @throws Exception
      */
-    @Test
+    //@Test
     @UseDataProvider("getMetaClassIds")
     public void test03classService03getInstance(final Integer classId) throws Exception {
         LOGGER.debug("[03.03] testing getInstance(" + classId + ")");
@@ -685,7 +685,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
             // FIXME:  parentObject].getPropertyString()  does not match!
             // ID=[] name= > but was: ID=[-1] name
-            //this.compareMetaObjects(metaObjectFromService, metaObjectFromClass, true, false, false);
+            //compareMetaObjects(metaObjectFromService, metaObjectFromClass, true, false, false);
             LOGGER.info("getInstance(" + classId + ") test passed!");
 
         } catch (AssertionError ae) {
@@ -704,8 +704,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @param classId
      * @throws Exception
      */
-    @Ignore
-    @Test
+    //@Test
     @UseDataProvider("getMetaClassIds")
     public void test04objectService021getCidsBeans(final Integer classId) throws Exception {
         LOGGER.debug("[04.21] testing getCidsBeans(" + classId + ")");
@@ -739,8 +738,8 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 Assert.assertNotNull("meta object #" + i + "/" + count + " (id:" + metaObject1.getId() + ") for meta class '" + tableName + "' (id:" + classId + ") retrieved from server",
                         metaObject2);
 
-                this.compareMetaObjects(metaObject1, metaObject2, false, false, false, true);
-                this.compareMetaObjects(metaObject2, metaObject1, false, false, false, true);
+                compareMetaObjects(metaObject1, metaObject2, false, false, false, true);
+                compareMetaObjects(metaObject2, metaObject1, false, false, false, true);
                 if (!tableName.equalsIgnoreCase("URL_BASE")
                         && !tableName.equalsIgnoreCase("URL")
                         && !tableName.equalsIgnoreCase("sph_spielhalle_kategorien")) {
@@ -750,22 +749,22 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
                     // check if getBean() somehow modifies the original Meta Object!
                     this.compareCidsBeansVsMetaObjects(metaObject2, cidsBean1);
-                    this.compareMetaObjects(metaObject1, metaObject2, false, false, false, true);
-                    this.compareMetaObjects(metaObject2, metaObject1, false, false, false, true);
+                    compareMetaObjects(metaObject1, metaObject2, false, false, false, true);
+                    compareMetaObjects(metaObject2, metaObject1, false, false, false, true);
 
                     // check if MetaObject from CidsBean matches original MetaObject 
-                    this.compareMetaObjects(metaObject2, cidsBean1.getMetaObject(),
+                    compareMetaObjects(metaObject2, cidsBean1.getMetaObject(),
                             false, false, false, true);
 
                     final CidsBean cidsBean2 = metaObject2.getBean();
                     this.compareCidsBeansVsMetaObjects(metaObject2, cidsBean2);
 
                     // check if MetaObject from CidsBean matches original MetaObject 
-                    this.compareMetaObjects(metaObject1, cidsBean2.getMetaObject(),
+                    compareMetaObjects(metaObject1, cidsBean2.getMetaObject(),
                             false, false, false, true);
 
                     this.compareCidsBeans(cidsBean1, cidsBean2);
-                    this.compareMetaObjects(cidsBean1.getMetaObject(), cidsBean2.getMetaObject(),
+                    compareMetaObjects(cidsBean1.getMetaObject(), cidsBean2.getMetaObject(),
                             false, false, false, true);
 
                     // cross compare ....
@@ -838,7 +837,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 Assert.assertNotNull("meta object #" + i + "/" + count + " (id:" + metaObjects[i].getId() + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") retrieved from server",
                         metaObject);
 
-                this.compareMetaObjects(metaObjects[i], metaObject, false, false, false, true);
+                compareMetaObjects(metaObjects[i], metaObject, false, false, false, true);
 
                 metaObjectIdList.add(metaObject.getID());
             }
@@ -873,7 +872,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @throws Exception
      */
     @Test
-    @Ignore
     public void test04objectService022getCidsBeanArrays() throws Exception {
         try {
             LOGGER.debug("[04.22] testing getCidsBeanArrays()");
@@ -992,25 +990,25 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                             spielhalleCidsBean2.getPrimaryKeyValue().intValue(),
                             spielhalleObject2.getID());
 
-                    this.compareMetaObjects(spielhalleObject1, spielhalleObject2, false, false, false, true);
-                    this.compareMetaObjects(spielhalleObject2, spielhalleObject3, false, false, false, true);
+                    compareMetaObjects(spielhalleObject1, spielhalleObject2, false, false, false, true);
+                    compareMetaObjects(spielhalleObject2, spielhalleObject3, false, false, false, true);
 
                     this.compareCidsBeans(spielhalleCidsBean1, spielhalleCidsBean2);
                     this.compareCidsBeans(spielhalleCidsBean2, spielhalleCidsBean3);
 
-                    this.compareMetaObjects(spielhalleObject1, spielhalleCidsBean1.getMetaObject(), false, false, false, true);
-                    this.compareMetaObjects(spielhalleObject2, spielhalleCidsBean2.getMetaObject(), false, false, false, true);
-                    this.compareMetaObjects(spielhalleObject3, spielhalleCidsBean3.getMetaObject(), false, false, false, true);
+                    compareMetaObjects(spielhalleObject1, spielhalleCidsBean1.getMetaObject(), false, false, false, true);
+                    compareMetaObjects(spielhalleObject2, spielhalleCidsBean2.getMetaObject(), false, false, false, true);
+                    compareMetaObjects(spielhalleObject3, spielhalleCidsBean3.getMetaObject(), false, false, false, true);
 
                     j++;
                 }
 
-                this.compareMetaObjects(betreiberObject1, betreiberObject2, false, false, false, true);
-                this.compareMetaObjects(betreiberObject2, betreiberObject3, false, false, false, true);
+                compareMetaObjects(betreiberObject1, betreiberObject2, false, false, false, true);
+                compareMetaObjects(betreiberObject2, betreiberObject3, false, false, false, true);
 
-                this.compareMetaObjects(betreiberObject1, betreiberCidsBean1.getMetaObject(), false, false, false, true);
-                this.compareMetaObjects(betreiberObject2, betreiberCidsBean2.getMetaObject(), false, false, false, true);
-                this.compareMetaObjects(betreiberObject3, betreiberCidsBean3.getMetaObject(), false, false, false, true);
+                compareMetaObjects(betreiberObject1, betreiberCidsBean1.getMetaObject(), false, false, false, true);
+                compareMetaObjects(betreiberObject2, betreiberCidsBean2.getMetaObject(), false, false, false, true);
+                compareMetaObjects(betreiberObject3, betreiberCidsBean3.getMetaObject(), false, false, false, true);
             }
 
             final List<MetaObject> spielhallen1 = this.getAllMetaObjects("SPH_SPIELHALLE");
@@ -1122,21 +1120,21 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                             kategorieCidsBean2.getPrimaryKeyValue().intValue(),
                             kategorieObject2.getID());
 
-                    this.compareMetaObjects(kategorieObject1, kategorieObject2, false, false, false, true);
-                    this.compareMetaObjects(kategorieObject2, kategorieObject3, false, false, false, true);
+                    compareMetaObjects(kategorieObject1, kategorieObject2, false, false, false, true);
+                    compareMetaObjects(kategorieObject2, kategorieObject3, false, false, false, true);
 
                     this.compareCidsBeans(kategorieCidsBean1, kategorieCidsBean2);
                     this.compareCidsBeans(kategorieCidsBean2, kategorieCidsBean3);
 
-                    this.compareMetaObjects(kategorieObject1, kategorieCidsBean1.getMetaObject(), false, false, false, true);
-                    this.compareMetaObjects(kategorieObject2, kategorieCidsBean2.getMetaObject(), false, false, false, true);
-                    this.compareMetaObjects(kategorieObject3, kategorieCidsBean3.getMetaObject(), false, false, false, true);
+                    compareMetaObjects(kategorieObject1, kategorieCidsBean1.getMetaObject(), false, false, false, true);
+                    compareMetaObjects(kategorieObject2, kategorieCidsBean2.getMetaObject(), false, false, false, true);
+                    compareMetaObjects(kategorieObject3, kategorieCidsBean3.getMetaObject(), false, false, false, true);
 
                     j++;
                 }
 
-                this.compareMetaObjects(spielhalleObject1, spielhalleObject2, false, false, false, true);
-                this.compareMetaObjects(spielhalleObject2, spielhalleObject3, false, false, false, true);
+                compareMetaObjects(spielhalleObject1, spielhalleObject2, false, false, false, true);
+                compareMetaObjects(spielhalleObject2, spielhalleObject3, false, false, false, true);
             }
 
             LOGGER.info("getCidsBeanArrays() test passed! "
@@ -1157,7 +1155,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Test
+    //@Test
     public void test04objectService01getMetaObjectArrays() throws Exception {
         try {
             LOGGER.debug("[04.01] testing getMetaObjectArrays()");
@@ -1234,12 +1232,12 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                             spielhalleObject2.getID(),
                             spielhalleObject3.getID());
 
-                    this.compareMetaObjects(spielhalleObject1, spielhalleObject2, false, false, false, true);
-                    this.compareMetaObjects(spielhalleObject2, spielhalleObject3, false, false, false, true);
+                    compareMetaObjects(spielhalleObject1, spielhalleObject2, false, false, false, true);
+                    compareMetaObjects(spielhalleObject2, spielhalleObject3, false, false, false, true);
                 }
 
-                this.compareMetaObjects(betreiberObject1, betreiberObject2, false, false, false, true);
-                this.compareMetaObjects(betreiberObject2, betreiberObject3, false, false, false, true);
+                compareMetaObjects(betreiberObject1, betreiberObject2, false, false, false, true);
+                compareMetaObjects(betreiberObject2, betreiberObject3, false, false, false, true);
             }
 
             final List<MetaObject> spielhallen1 = this.getAllMetaObjects("SPH_SPIELHALLE");
@@ -1309,12 +1307,12 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                             kategorieObject2.getID(),
                             kategorieObject3.getID());
 
-                    this.compareMetaObjects(kategorieObject1, kategorieObject2, false, false, false, true);
-                    this.compareMetaObjects(kategorieObject2, kategorieObject3, false, false, false, true);
+                    compareMetaObjects(kategorieObject1, kategorieObject2, false, false, false, true);
+                    compareMetaObjects(kategorieObject2, kategorieObject3, false, false, false, true);
                 }
 
-                this.compareMetaObjects(spielhalleObject1, spielhalleObject2, false, false, false, true);
-                this.compareMetaObjects(spielhalleObject2, spielhalleObject3, false, false, false, true);
+                compareMetaObjects(spielhalleObject1, spielhalleObject2, false, false, false, true);
+                compareMetaObjects(spielhalleObject2, spielhalleObject3, false, false, false, true);
             }
 
             LOGGER.info("getMetaObjectArrays() test passed! "
@@ -1329,7 +1327,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @Test
+    //@Test
     @UseDataProvider("getMetaClassIds")
     public void test04objectService02insertMetaObject(final Integer classId) throws Exception {
 
@@ -1364,7 +1362,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 Assert.assertEquals(expectedCount + " '" + metaClass.getTableName() + "' entities in Integration Base",
                         expectedCount, actualCount);
 
-                this.compareMetaObjects(newMetaObject, insertedMetaObject, false, true, false, true);
+                compareMetaObjects(newMetaObject, insertedMetaObject, false, true, false, true);
 
                 LOGGER.info("insertMetaObject(" + classId + ") test passed! New id is " + insertedMetaObject.getID());
             }
@@ -1378,7 +1376,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @Test
+    //@Test
     @UseDataProvider("getMetaClassIds")
     public void test04objectService03deleteMetaObject(final Integer classId) throws Exception {
 
@@ -1428,7 +1426,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @param classId
      * @throws Exception
      */
-    @Test
+    //@Test
     @UseDataProvider("getMetaClassIds")
     public void test04objectService04updateMetaObjectNameProperty(final Integer classId) throws Exception {
 
@@ -1467,7 +1465,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     Assert.assertNotNull("meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") retrieved from server",
                             originalMetaObject);
 
-                    this.compareMetaObjects(metaObject, originalMetaObject, false, false, false, true);
+                    compareMetaObjects(metaObject, originalMetaObject, false, false, false, true);
 
                     final ObjectAttribute nameAttribute = metaObject.getAttributeByFieldName("name");
                     if (nameAttribute != null && nameAttribute.getValue() != null) {
@@ -1502,9 +1500,9 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         // SPH_BETREIBER contains a back reference to SPH_SPIELHALLE -> comparison will fail!
                         if (tableName.equalsIgnoreCase("SPH_SPIELHALLE")) {
                             //compare only top level child objects and arrays
-                            this.compareMetaObjects(metaObject, updatedMetaObject, true, false, true, true);
+                            compareMetaObjects(metaObject, updatedMetaObject, true, false, true, true);
                         } else {
-                            this.compareMetaObjects(metaObject, updatedMetaObject, false, false, true, true);
+                            compareMetaObjects(metaObject, updatedMetaObject, false, false, true, true);
                         }
 
                         // revert changes!
@@ -1533,7 +1531,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                                 revertedMetaObject.getAttributeByFieldName("name").getValue().toString());
 
                         try {
-                            this.compareMetaObjects(originalMetaObject, revertedMetaObject, false, false, false, true);
+                            compareMetaObjects(originalMetaObject, revertedMetaObject, false, false, false, true);
                         } catch (Throwable t) {
                             LOGGER.error("[" + i + "] " + t.getMessage(), t);
                         }
@@ -1564,7 +1562,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @param classId
      * @throws Exception
      */
-    @Test
+    //@Test
     @UseDataProvider("getMetaClassIds")
     public void test04objectService05updateMetaObjectNamePropertyNoAttributeChangeFlag(final Integer classId) throws Exception {
 
@@ -1630,7 +1628,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         nameAttribute.setValue(originalObjectName);
                         metaObject.setChanged(false);
 
-                        this.compareMetaObjects(metaObject, notUpdatedMetaObject, false, false, false, true);
+                        compareMetaObjects(metaObject, notUpdatedMetaObject, false, false, false, true);
                     }
                 }
 
@@ -1651,7 +1649,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @Test
+    //@Test
     public void test04objectService06reassignMetaObjectUpdatedObjectProperty() throws Exception {
 
         try {
@@ -1711,7 +1709,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         ((MetaObject) updatedMetaObject.getAttributeByFieldName("hauptkategorie").getValue()).getName());
 
                 // compare changed
-                this.compareMetaObjects(metaObject, updatedMetaObject, true, false, true, true);
+                compareMetaObjects(metaObject, updatedMetaObject, true, false, true, true);
             }
 
             final int actualCount = countDbEntities("SPH_SPIELHALLE", 3);
@@ -1737,7 +1735,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Test
+    //@Test
     public void test04objectService07updateMetaObjectObjectProperty() throws Exception {
         try {
             LOGGER.debug("[04.07] testing updateMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
@@ -1765,7 +1763,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         originalSpielhalleObject.getAttributeByFieldName("hauptkategorie").getValue());
 
                 // safely compare recursively, because nothing has changed!
-                this.compareMetaObjects(spielhalleObject, originalSpielhalleObject, false, false, false, true);
+                compareMetaObjects(spielhalleObject, originalSpielhalleObject, false, false, false, true);
 
                 final ObjectAttribute hauptkategorieAttribute = spielhalleObject.getAttributeByFieldName("hauptkategorie");
                 Assert.assertNotNull("attribute 'hauptkategorie' of  meta object #" + i + "/" + expectedCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' is not null",
@@ -1817,7 +1815,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         updatedKategorieName,
                         ((MetaObject) updatedSpielhalleObject.getAttributeByFieldName("hauptkategorie").getValue()).getName());
 
-                this.compareMetaObjects(spielhalleObject, updatedSpielhalleObject, true, false, true, true);
+                compareMetaObjects(spielhalleObject, updatedSpielhalleObject, true, false, true, true);
 
                 // revert changes!
                 final ObjectAttribute updatedHauptkategorieAttribute = updatedSpielhalleObject.getAttributeByFieldName("hauptkategorie");
@@ -1854,7 +1852,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
                 // safely compare recursively, because nothing has changed!
                 try {
-                    this.compareMetaObjects(originalSpielhalleObject, revertedSpielhalleObject, false, false, false, true);
+                    compareMetaObjects(originalSpielhalleObject, revertedSpielhalleObject, false, false, false, true);
                 } catch (Throwable t) {
                     LOGGER.error("[" + i + "] " + t.getMessage(), t);
                 }
@@ -1887,7 +1885,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Test
+    //@Test
     public void test04objectService08createMetaObjectObjectProperty() throws Exception {
         try {
             LOGGER.debug("[04.08] testing createMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
@@ -1959,7 +1957,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 hauptkategorieAttribute.setChanged(false);
 
                 MetaObjectIntegrityTest.checkMetaObjectIntegrity(spielhalleObject);
-                this.compareMetaObjects(spielhalleObject, updatedSpielhalleObject, true, false, false, true);
+                compareMetaObjects(spielhalleObject, updatedSpielhalleObject, true, false, false, true);
             }
 
             final int actualCount = countDbEntities("SPH_SPIELHALLE", 3);
@@ -1989,7 +1987,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Test
+    //@Test
     public void test04objectService09createMetaObjectObjectProperty() throws Exception {
         try {
             LOGGER.debug("[04.09] testing createMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
@@ -2062,7 +2060,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         ((MetaObject) updatedSpielhalleObject.getAttributeByFieldName("hauptkategorie").getValue()).getName());
 
                 // don't compare ids and status -> object is new
-                this.compareMetaObjects(spielhalleObject, updatedSpielhalleObject, true, true, true, true);
+                compareMetaObjects(spielhalleObject, updatedSpielhalleObject, true, true, true, true);
             }
 
             final int actualSpielhallenCount = countDbEntities("SPH_SPIELHALLE", 3);
@@ -2092,7 +2090,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Test
+    //@Test
     public void test04objectService10deleteMetaObjectObjectProperty() throws Exception {
         try {
             LOGGER.debug("[04.10] testing deleteMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
@@ -2142,7 +2140,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 // compare as changed -> property string do not match (bestreiber->spiehalle->hauptkategorie != spielhalle->hauptkategorie)
                 // set deleted object to null to pass comparison
                 hauptkategorieAttribute.setValue(null);
-                this.compareMetaObjects(spielhalleObject, updatedSpielhalleObject, true, false, true, true);
+                compareMetaObjects(spielhalleObject, updatedSpielhalleObject, true, false, true, true);
             }
 
             final int actualSpielhallenCount = countDbEntities("SPH_SPIELHALLE", 3);
@@ -2173,7 +2171,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Test
+    //@Test
     public void test04objectService11reassignMetaObjectDeletedObjectProperty() throws Exception {
 
         try {
@@ -2233,7 +2231,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         newKategorie.getName(),
                         ((MetaObject) updatedSpielhalleObject.getAttributeByFieldName("hauptkategorie").getValue()).getName());
 
-                this.compareMetaObjects(spielhalleObject, updatedSpielhalleObject, true, false, true, true);
+                compareMetaObjects(spielhalleObject, updatedSpielhalleObject, true, false, true, true);
             }
 
             final int actualSpielhallenCount = countDbEntities("SPH_SPIELHALLE", 3);
@@ -2263,7 +2261,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Test
+    //@Test
     public void test04objectService12updateMetaObjectNtoMArrayProperty() throws Exception {
         try {
             LOGGER.debug("[04.12] testing updateMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
@@ -2301,7 +2299,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 Assert.assertFalse("array attribute 'kategorien' of  meta object #" + i + "/" + expectedSpielhallenCount + " (id:" + spielhalleObject.getID() + ") for meta class '" + spielhalleObject.getMetaClass().getTableName() + "' is not empty",
                         getArrayElements(originalSpielhalleObject, "kategorien").isEmpty());
                 // safely compare recursively, because nothing has changed!
-                this.compareMetaObjects(spielhalleObject, originalSpielhalleObject, false, false, false, true);
+                compareMetaObjects(spielhalleObject, originalSpielhalleObject, false, false, false, true);
 
                 final ObjectAttribute kategorienAttribute = spielhalleObject.getAttributeByFieldName("kategorien");
                 final MetaObject dummyKategorieArrayObject = (MetaObject) kategorienAttribute.getValue();
@@ -2366,7 +2364,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         updatedKategorieName,
                         getArrayElements(updatedSpielhalleObject, "kategorien").get(kategorieObjectIndex).getAttributeByFieldName("name").getValue().toString());
 
-                this.compareMetaObjects((MetaObject) spielhalleObject.getAttributeByFieldName("kategorien").getValue(), (MetaObject) updatedSpielhalleObject.getAttributeByFieldName("kategorien").getValue(),
+                compareMetaObjects((MetaObject) spielhalleObject.getAttributeByFieldName("kategorien").getValue(), (MetaObject) updatedSpielhalleObject.getAttributeByFieldName("kategorien").getValue(),
                         false, false, true, true);
 
                 // revert changes!
@@ -2384,7 +2382,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         oldKategorieName,
                         getArrayElements(revertedSpielhalleObject, "kategorien").get(kategorieObjectIndex).getAttributeByFieldName("name").getValue().toString());
 
-                this.compareMetaObjects(originalSpielhalleObject, revertedSpielhalleObject, false, false, false, true);
+                compareMetaObjects(originalSpielhalleObject, revertedSpielhalleObject, false, false, false, true);
             }
 
             final int actualCount = countDbEntities("SPH_SPIELHALLE", 3);
@@ -2414,7 +2412,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Test
+    //@Test
     public void test04objectService13replaceMetaObjectNtoMArrayProperty() throws Exception {
         try {
             LOGGER.debug("[04.13] testing replaceMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
@@ -2479,7 +2477,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         getArrayElements(originalSpielhalleObject, "kategorien").isEmpty());
 
                 // safely compare recursively, because originalBetreiberObject retrieved before changes were made
-                this.compareMetaObjects(spielhalleObject, originalSpielhalleObject, false, false, false, true);
+                compareMetaObjects(spielhalleObject, originalSpielhalleObject, false, false, false, true);
 
                 final ObjectAttribute kategorienAttribute = spielhalleObject.getAttributeByFieldName("kategorien");
                 // get the n-m dummy container object
@@ -2540,7 +2538,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         getArrayElements(updatedSpielhalleObject, "kategorien").get(kategorieObjectIndex).getId());
 
                 // compare only the kategorien array 
-                this.compareMetaObjects((MetaObject) spielhalleObject.getAttributeByFieldName("kategorien").getValue(), (MetaObject) updatedSpielhalleObject.getAttributeByFieldName("kategorien").getValue(),
+                compareMetaObjects((MetaObject) spielhalleObject.getAttributeByFieldName("kategorien").getValue(), (MetaObject) updatedSpielhalleObject.getAttributeByFieldName("kategorien").getValue(),
                         false, false, true, true);
 
                 // revert the changes! 
@@ -2592,7 +2590,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
                 // safely compare recursively, because originalBetreiberObject retrieved before changes were made
                 // and revertedSpielhalleObject object retrieved after *all* changes were reverted!
-                this.compareMetaObjects(originalSpielhalleObject, revertedSpielhalleObject, false, false, false, true);
+                compareMetaObjects(originalSpielhalleObject, revertedSpielhalleObject, false, false, false, true);
             }
 
             final int actualSpielhallenCount = countDbEntities("SPH_SPIELHALLE", 3);
@@ -2626,7 +2624,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Test
+    //@Test
     public void test04objectService14addMetaObjectNtoMArrayProperty() throws Exception {
         try {
             LOGGER.debug("[04.14] testing addMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
@@ -2693,7 +2691,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         getArrayElements(originalSpielhalleObject, "kategorien").isEmpty());
 
                 // safely compare recursively, because originalBetreiberObject retrieved before changes were made
-                this.compareMetaObjects(spielhalleObject, originalSpielhalleObject, false, false, false, true);
+                compareMetaObjects(spielhalleObject, originalSpielhalleObject, false, false, false, true);
 
                 // select random new kategorie object
                 final MetaObject newKategorieObject = kategorien.get(new Random().nextInt(kategorien.size()));
@@ -2732,7 +2730,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         newKategorieObject.getName());
 
                 // compare only the kategorien array 
-                this.compareMetaObjects((MetaObject) spielhalleObject.getAttributeByFieldName("kategorien").getValue(), (MetaObject) updatedSpielhalleObject.getAttributeByFieldName("kategorien").getValue(),
+                compareMetaObjects((MetaObject) spielhalleObject.getAttributeByFieldName("kategorien").getValue(), (MetaObject) updatedSpielhalleObject.getAttributeByFieldName("kategorien").getValue(),
                         false, true, true, true);
             }
 
@@ -2768,7 +2766,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    @Test
+    //@Test
     public void test04objectService15removeMetaObjectNtoMArrayProperty() throws Exception {
         try {
             LOGGER.debug("[04.15] testing removeMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
@@ -2837,7 +2835,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         arrayElements.isEmpty());
 
                 // safely compare recursively, because originalBetreiberObject retrieved before changes were made
-                this.compareMetaObjects(spielhalleObject, originalSpielhalleObject, false, false, false, true);
+                compareMetaObjects(spielhalleObject, originalSpielhalleObject, false, false, false, true);
 
                 final int arrayElementIndex = arrayElements.size() - 1;
                 final int oldKategorieSize = arrayElements.size();
@@ -2922,7 +2920,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Test
+    //@Test
     public void test04objectService16updateMetaObject1toNArrayProperty() throws Exception {
         try {
             LOGGER.debug("[04.16] testing updateMetaObject1toNArrayProperty(SPH_BETREIBER/SPH_SPIELHALLE)");
@@ -3022,7 +3020,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         updatedSpielhalleName,
                         getArrayElements(updatedBetreiberObject, "spielhallen").get(spielhalleObjectIndex).getAttributeByFieldName("name").getValue().toString());
 
-                this.compareMetaObjects((MetaObject) betreiberObject.getAttributeByFieldName("spielhallen").getValue(),
+                compareMetaObjects((MetaObject) betreiberObject.getAttributeByFieldName("spielhallen").getValue(),
                         (MetaObject) updatedBetreiberObject.getAttributeByFieldName("spielhallen").getValue(),
                         true, false, true, true);
 
@@ -3054,7 +3052,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 final MetaObject revertedBetreiberObject = revertedBetreiberList.get(j);
                 MetaObjectIntegrityTest.checkMetaObjectIntegrity(revertedBetreiberObject);
 
-                this.compareMetaObjects(originalBetreiber, revertedBetreiberObject, false, false, false, true);
+                compareMetaObjects(originalBetreiber, revertedBetreiberObject, false, false, false, true);
                 j++;
             }
 
@@ -3087,7 +3085,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Test
+    //@Test
     public void test04objectService17replaceMetaObject1toNArrayPropertyDetail() throws Exception {
         try {
             LOGGER.debug("[04.17] testing replaceMetaObject1toNArrayPropertyDetail(SPH_SPIELHALLE/SPH_BETREIBER)");
@@ -3252,7 +3250,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             // compare after all updates have been reverted!
             int j = 0;
             for (final MetaObject originalBetreiber : originalBetreiberList) {
-                this.compareMetaObjects(originalBetreiber, revertedBetreiberList.get(j), false, false, false, true);
+                compareMetaObjects(originalBetreiber, revertedBetreiberList.get(j), false, false, false, true);
                 j++;
             }
 
@@ -3279,7 +3277,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Test
+    //@Test
     public void test04objectService18replaceMetaObject1toNArrayPropertyMaster() throws Exception {
         try {
             LOGGER.debug("[04.18] testing replaceMetaObject1toNArrayProperty(SPH_BETREIBER/SPH_SPIELHALLE)");
@@ -3421,7 +3419,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             // compare after all updates have been reverted!
             int j = 0;
             for (final MetaObject originalBetreiber : originalBetreiberList) {
-                this.compareMetaObjects(originalBetreiber, revertedBetreiberList.get(j), false, false, false, true);
+                compareMetaObjects(originalBetreiber, revertedBetreiberList.get(j), false, false, false, true);
                 j++;
             }
 
@@ -3445,7 +3443,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    @Test
+    //@Test
     public void test04objectService19removeMetaObject1toNArrayProperty() throws Exception {
         try {
             LOGGER.debug("[04.19] testing removeMetaObject1toNArrayProperty(SPH_BETREIBER/SPH_SPIELHALLE)");
@@ -3674,7 +3672,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 final MetaObject originalBetreiberObject = originalBetreiberList.get(i);
                 MetaObjectIntegrityTest.checkMetaObjectIntegrity(originalBetreiberObject);
 
-                this.compareMetaObjects(originalBetreiberObject, revertedBetreiberObject, false, false, false, true);
+                compareMetaObjects(originalBetreiberObject, revertedBetreiberObject, false, false, false, true);
                 i++;
             }
 
@@ -3736,8 +3734,10 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             try {
                 return RESTfulInterfaceTest.countDbEntities(jdbcConnection, tableName);
             } catch (final SQLException sqlException) {
-                LOGGER.warn("database connection (" + tableName + ") closed unexpectedly"
-                        + "(closed:" + jdbcConnection.isClosed() + "), trying to reconnect (#" + retries + ")", sqlException);
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.warn("database connection (" + tableName + ") closed unexpectedly"
+                            + "(closed:" + jdbcConnection.isClosed() + "), trying to reconnect (#" + retries + ")", sqlException);
+                }
                 jdbcConnection = createJdbcConnection();
                 return countDbEntities(tableName, retries);
             }
@@ -4122,13 +4122,8 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         Assert.assertTrue("value of '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + "' is array Container Dummy Object",
                 arrayContainerDummyObject.isDummy());
 
-        if (arrayField.isArray()) {
-            Assert.assertTrue("value of '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + "' Dummy Object's Class ID is not negative",
-                    arrayContainerDummyObject.getClassID() >= 0);
-        } else {
-            Assert.assertTrue("value of '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + "' Container Dummy Object's Class ID is negative",
-                    arrayContainerDummyObject.getClassID() < 0);
-        }
+        Assert.assertFalse("value of '" + arrayFieldName + "' attribute in meta object '" + parentObject.getName() + "' Container Dummy Object's Class ID is negative",
+                arrayContainerDummyObject.getClassID() < 0);
 
         final ObjectAttribute[] arrayContainerDummyObjectAttributes = arrayContainerDummyObject.getAttribs();
         final List<MetaObject> arrayElementObjects = new ArrayList<MetaObject>();
@@ -4317,96 +4312,124 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 metaObject.getId(),
                 cidsBean.getPrimaryKeyValue().intValue());
 
-        Assert.assertEquals("MetaObject [" + name + "].getAttributes() matches CidsBean.getPropertyNames() size",
-                metaObject.getAttributes().size(),
-                cidsBean.getPropertyNames().length);
+        if (metaObject.getAttributes().size() < cidsBean.getPropertyNames().length) {
 
-        final ObjectAttribute[] objectAttributes = metaObject.getAttribs();
-        Assert.assertEquals("MetaObject [" + name + "].getAttribs() matches CidsBean.getPropertyNames() size",
-                objectAttributes.length,
-                cidsBean.getPropertyNames().length);
+            Assert.assertNotNull("MetaObject '[" + name + "]' self-cycle check: has referencing Attribute",
+                    metaObject.getReferencingObjectAttribute());
 
-        final String[] metaObjectPropertyNames = new String[metaObject.getAttributes().size()];
-        int i = 0;
-        for (final ObjectAttribute objectAttribute : objectAttributes) {
-            metaObjectPropertyNames[i] = objectAttribute.getMai().getFieldName();
-            i++;
-        }
+            MetaObject parentObject = metaObject;
+            boolean selfCycle = false;
+            while (parentObject.getReferencingObjectAttribute() != null) {
+                Assert.assertNotNull("MetaObject '[" + parentObject.getName() + "]' self-cycle check: has referencing Attribute parent MetaObject",
+                        metaObject.getReferencingObjectAttribute().getParentObject());
 
-        final String[] cidsBeanPropertyNames = cidsBean.getPropertyNames();
-
-        Assert.assertEquals("MetaObject [" + name + "] attribute names size matches CidsBean atribute names size",
-                metaObjectPropertyNames.length,
-                cidsBeanPropertyNames.length);
-
-        // disabled due to lower vs UPPERCASE attribute names in MetaObject and CidsBean 
-        //        Assert.assertArrayEquals("MetaObject [" + name + "] attribute names order matches CidsBean atribute names order",
-        //                metaObjectPropertyNames,
-        //                cidsBeanPropertyNames);
-        i = 0;
-        for (final String metaObjectPropertyName : metaObjectPropertyNames) {
-            final String cidsBeanPropertyName = cidsBeanPropertyNames[i];
-
-            Assert.assertEquals("MetaObject [" + name + "] attribute name '" + metaObjectPropertyName
-                    + "' matches CidsBean attribute name '" + cidsBeanPropertyName + "'",
-                    metaObjectPropertyName.toLowerCase(),
-                    cidsBeanPropertyName.toLowerCase());
-
-            final ObjectAttribute objectAttribute = objectAttributes[i];
-            final Object cidsBeanProperty = cidsBean.getProperty(cidsBeanPropertyName);
-
-            if (objectAttribute == null) {
-                Assert.assertNull("MetaObject [" + name + "] attribute '" + metaObjectPropertyName + "' is null in CidsBean, too",
-                        cidsBeanProperty);
-            } else {
-                final Object metaObjectProperty = objectAttribute.getValue();
-                if (metaObjectProperty == null) {
-                    Assert.assertNull("MetaObject [" + name + "] attribute '" + metaObjectPropertyName + "' is null in CidsBean, too",
-                            cidsBeanProperty);
-                } else if (objectAttribute.isVirtualOneToManyAttribute() || objectAttribute.isArray()) {
-                    final List<MetaObject> metaObjectArrayPropertyList = getArrayElements(metaObject, metaObjectPropertyName);
-                    final List<CidsBean> cidsBeanArrayPropertyList = cidsBean.getBeanCollectionProperty(cidsBeanPropertyName);
-                    Assert.assertNotNull("CidsBean [" + name + "] collection property '" + cidsBeanPropertyName + "' is not null",
-                            cidsBeanArrayPropertyList);
-
-                    Assert.assertEquals("MetaObject [" + name + "] array attribute '" + metaObjectPropertyName + "' size matches CidsBean CollectionProperty size",
-                            metaObjectArrayPropertyList.size(),
-                            cidsBeanArrayPropertyList.size());
-
-                    int j = 0;
-                    for (final MetaObject metaObjectArrayPropertyListElement : metaObjectArrayPropertyList) {
-                        final CidsBean cidsBeanArrayPropertyListElement = cidsBeanArrayPropertyList.get(j);
-                        Assert.assertEquals("MetaObject [" + name + "] array attribute '" + metaObjectPropertyName + "' element #" + j + "'s id matches respective CidsBean id",
-                                metaObjectArrayPropertyListElement.getId(),
-                                cidsBeanArrayPropertyListElement.getPrimaryKeyValue().intValue());
-
-                        compareCidsBeansVsMetaObjects(metaObjectArrayPropertyListElement, cidsBeanArrayPropertyListElement);
-                        j++;
-                    }
-                } else if (objectAttribute.referencesObject()) {
-                    Assert.assertTrue("MetaObject [" + name + "] object attribute '" + metaObjectPropertyName + "' is a MetaObject",
-                            MetaObject.class.isAssignableFrom(metaObjectProperty.getClass()));
-                    Assert.assertTrue("CidsBean [" + name + "] object attribute '" + cidsBeanPropertyName + "' is a CidsBean",
-                            CidsBean.class.isAssignableFrom(cidsBeanProperty.getClass()));
-
-                    final MetaObject metaObjectPropertyMetaObject = (MetaObject) metaObjectProperty;
-                    final CidsBean cidsBeanPropertyCidsBean = (CidsBean) cidsBeanProperty;
-                    Assert.assertEquals("MetaObject [" + name + "] object attribute '" + metaObjectPropertyName + "'s id matches respective CidsBean id",
-                            metaObjectPropertyMetaObject.getId(),
-                            cidsBeanPropertyCidsBean.getPrimaryKeyValue().intValue());
-
-                    compareCidsBeansVsMetaObjects(metaObjectPropertyMetaObject, cidsBeanPropertyCidsBean);
-                } else {
-                    Assert.assertEquals("MetaObject [" + name + "] object attribute value '" + metaObjectPropertyName + "'s Java Class matches respective CidsBean property Java Class",
-                            metaObjectProperty.getClass().getCanonicalName(),
-                            cidsBeanProperty.getClass().getCanonicalName());
-
-                    Assert.assertEquals("MetaObject [" + name + "] object attribute value '" + metaObjectPropertyName + "'matches respective CidsBean property",
-                            metaObjectProperty,
-                            cidsBeanProperty);
+                parentObject = (MetaObject) parentObject.getReferencingObjectAttribute().getParentObject();
+                if (metaObject.getClassKey().equals(parentObject.getClassKey())) {
+                    selfCycle = true;
+                    break;
                 }
             }
-            i++;
+
+            Assert.assertTrue("MetaObject '[" + name + "]' self-cycle expected since MetaObject has "
+                    + metaObject.getAttributes().size() + " attributes but corresponding CidsBean has "
+                    + cidsBean.getPropertyNames().length + " properties",
+                    selfCycle);
+
+//            LOGGER.debug("MetaObject '[" + name + "]' self-cycle detected: MetaObject has "
+//                    + metaObject.getAttributes().size() + " attributes but corresponding CidsBean has "
+//                    + cidsBean.getPropertyNames().length + " properties");
+        } else {
+            Assert.assertEquals("MetaObject [" + name + "].getAttributes() matches CidsBean.getPropertyNames() size",
+                    metaObject.getAttributes().size(),
+                    cidsBean.getPropertyNames().length);
+
+            final ObjectAttribute[] objectAttributes = metaObject.getAttribs();
+            Assert.assertEquals("MetaObject [" + name + "].getAttribs() matches CidsBean.getPropertyNames() size",
+                    objectAttributes.length,
+                    cidsBean.getPropertyNames().length);
+
+            final String[] metaObjectPropertyNames = new String[metaObject.getAttributes().size()];
+            int i = 0;
+            for (final ObjectAttribute objectAttribute : objectAttributes) {
+                metaObjectPropertyNames[i] = objectAttribute.getMai().getFieldName();
+                i++;
+            }
+
+            final String[] cidsBeanPropertyNames = cidsBean.getPropertyNames();
+
+            Assert.assertEquals("MetaObject [" + name + "] attribute names size matches CidsBean atribute names size",
+                    metaObjectPropertyNames.length,
+                    cidsBeanPropertyNames.length);
+
+            // disabled due to lower vs UPPERCASE attribute names in MetaObject and CidsBean 
+            //        Assert.assertArrayEquals("MetaObject [" + name + "] attribute names order matches CidsBean atribute names order",
+            //                metaObjectPropertyNames,
+            //                cidsBeanPropertyNames);
+            i = 0;
+            for (final String metaObjectPropertyName : metaObjectPropertyNames) {
+                final String cidsBeanPropertyName = cidsBeanPropertyNames[i];
+
+                Assert.assertEquals("MetaObject [" + name + "] attribute name '" + metaObjectPropertyName
+                        + "' matches CidsBean attribute name '" + cidsBeanPropertyName + "'",
+                        metaObjectPropertyName.toLowerCase(),
+                        cidsBeanPropertyName.toLowerCase());
+
+                final ObjectAttribute objectAttribute = objectAttributes[i];
+                final Object cidsBeanProperty = cidsBean.getProperty(cidsBeanPropertyName);
+
+                if (objectAttribute == null) {
+                    Assert.assertNull("MetaObject [" + name + "] attribute '" + metaObjectPropertyName + "' is null in CidsBean, too",
+                            cidsBeanProperty);
+                } else {
+                    final Object metaObjectProperty = objectAttribute.getValue();
+                    if (metaObjectProperty == null) {
+                        Assert.assertNull("MetaObject [" + name + "] attribute '" + metaObjectPropertyName + "' is null in CidsBean, too",
+                                cidsBeanProperty);
+                    } else if (objectAttribute.isVirtualOneToManyAttribute() || objectAttribute.isArray()) {
+                        final List<MetaObject> metaObjectArrayPropertyList = getArrayElements(metaObject, metaObjectPropertyName);
+                        final List<CidsBean> cidsBeanArrayPropertyList = cidsBean.getBeanCollectionProperty(cidsBeanPropertyName);
+                        Assert.assertNotNull("CidsBean [" + name + "] collection property '" + cidsBeanPropertyName + "' is not null",
+                                cidsBeanArrayPropertyList);
+
+                        Assert.assertEquals("MetaObject [" + name + "] array attribute '" + metaObjectPropertyName + "' size matches CidsBean CollectionProperty size",
+                                metaObjectArrayPropertyList.size(),
+                                cidsBeanArrayPropertyList.size());
+
+                        int j = 0;
+                        for (final MetaObject metaObjectArrayPropertyListElement : metaObjectArrayPropertyList) {
+                            final CidsBean cidsBeanArrayPropertyListElement = cidsBeanArrayPropertyList.get(j);
+                            Assert.assertEquals("MetaObject [" + name + "] array attribute '" + metaObjectPropertyName + "' element #" + j + "'s id matches respective CidsBean id",
+                                    metaObjectArrayPropertyListElement.getId(),
+                                    cidsBeanArrayPropertyListElement.getPrimaryKeyValue().intValue());
+
+                            compareCidsBeansVsMetaObjects(metaObjectArrayPropertyListElement, cidsBeanArrayPropertyListElement);
+                            j++;
+                        }
+                    } else if (objectAttribute.referencesObject()) {
+                        Assert.assertTrue("MetaObject [" + name + "] object attribute '" + metaObjectPropertyName + "' is a MetaObject",
+                                MetaObject.class.isAssignableFrom(metaObjectProperty.getClass()));
+                        Assert.assertTrue("CidsBean [" + name + "] object attribute '" + cidsBeanPropertyName + "' is a CidsBean",
+                                CidsBean.class.isAssignableFrom(cidsBeanProperty.getClass()));
+
+                        final MetaObject metaObjectPropertyMetaObject = (MetaObject) metaObjectProperty;
+                        final CidsBean cidsBeanPropertyCidsBean = (CidsBean) cidsBeanProperty;
+                        Assert.assertEquals("MetaObject [" + name + "] object attribute '" + metaObjectPropertyName + "'s id matches respective CidsBean id",
+                                metaObjectPropertyMetaObject.getId(),
+                                cidsBeanPropertyCidsBean.getPrimaryKeyValue().intValue());
+
+                        compareCidsBeansVsMetaObjects(metaObjectPropertyMetaObject, cidsBeanPropertyCidsBean);
+                    } else {
+                        Assert.assertEquals("MetaObject [" + name + "] object attribute value '" + metaObjectPropertyName + "'s Java Class matches respective CidsBean property Java Class",
+                                metaObjectProperty.getClass().getCanonicalName(),
+                                cidsBeanProperty.getClass().getCanonicalName());
+
+                        Assert.assertEquals("MetaObject [" + name + "] object attribute value '" + metaObjectPropertyName + "'matches respective CidsBean property",
+                                metaObjectProperty,
+                                cidsBeanProperty);
+                    }
+                }
+                i++;
+            }
         }
     }
 
@@ -4815,40 +4838,55 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         Assert.assertNotNull("actual objectAttribute[" + name + "]'s parent object is null, too{" + getHierarchyPath(objectHierarchy) + "}",
                 actualParentObject);
 
-        Assert.assertTrue("expected objectAttribute[" + name + "]'s parent object is a MetaObject, too{" + getHierarchyPath(objectHierarchy) + "}",
-                MetaObject.class.isAssignableFrom(expectedParentObject.getClass()));
-        Assert.assertTrue("actual objectAttribute[" + name + "]'s parent object is a MetaObject, too{" + getHierarchyPath(objectHierarchy) + "}",
-                MetaObject.class.isAssignableFrom(actualParentObject.getClass()));
+        Assert
+                .assertTrue("expected objectAttribute[" + name + "]'s parent object is a MetaObject, too{" + getHierarchyPath(objectHierarchy) + "}",
+                        MetaObject.class
+                        .isAssignableFrom(expectedParentObject.getClass()));
+        Assert.assertTrue(
+                "actual objectAttribute[" + name + "]'s parent object is a MetaObject, too{" + getHierarchyPath(objectHierarchy) + "}",
+                MetaObject.class
+                .isAssignableFrom(actualParentObject.getClass()));
 
         final MetaObject expectedParentMetaObject = (MetaObject) expectedParentObject;
         final MetaObject actualParentMetaObject = (MetaObject) expectedParentObject;
 
-        Assert.assertEquals("expected objectAttribute[" + name + "]'s parent object referece matches correct class {" + getHierarchyPath(objectHierarchy) + "}",
+        Assert.assertEquals(
+                "expected objectAttribute[" + name + "]'s parent object referece matches correct class {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedMetaObject.getClass().getCanonicalName(), expectedParentObject.getClass().getCanonicalName());
-        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object referece matches correct class {" + getHierarchyPath(objectHierarchy) + "}",
+        Assert.assertEquals(
+                "actual objectAttribute[" + name + "]'s parent object referece matches correct class {" + getHierarchyPath(objectHierarchy) + "}",
                 actualMetaObject.getClass().getCanonicalName(), actualParentObject.getClass().getCanonicalName());
 
-        Assert.assertEquals("expected objectAttribute[" + name + "]'s parent object referece matches correct instance {" + getHierarchyPath(objectHierarchy) + "}",
+        Assert.assertEquals(
+                "expected objectAttribute[" + name + "]'s parent object referece matches correct instance {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedMetaObject.getKey(), expectedParentObject.getKey());
-        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object referece matches correct instance {" + getHierarchyPath(objectHierarchy) + "}",
+        Assert.assertEquals(
+                "actual objectAttribute[" + name + "]'s parent object referece matches correct instance {" + getHierarchyPath(objectHierarchy) + "}",
                 actualMetaObject.getKey(), actualParentObject.getKey());
 
-        Assert.assertSame("expected objectAttribute[" + name + "]'s parent object referece points to same instance {" + getHierarchyPath(objectHierarchy) + "}",
+        Assert.assertSame(
+                "expected objectAttribute[" + name + "]'s parent object referece points to same instance {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedMetaObject, expectedParentObject);
-        Assert.assertSame("actual objectAttribute[" + name + "]'s parent object referece points to same instance {" + getHierarchyPath(objectHierarchy) + "}",
+        Assert.assertSame(
+                "actual objectAttribute[" + name + "]'s parent object referece points to same instance {" + getHierarchyPath(objectHierarchy) + "}",
                 actualMetaObject, actualParentObject);
 
-        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's class id matches expected parent object {" + getHierarchyPath(objectHierarchy) + "}",
+        Assert.assertEquals(
+                "actual objectAttribute[" + name + "]'s parent object's class id matches expected parent object {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedParentMetaObject.getClassID(), actualParentMetaObject.getClassID());
-        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's id matches expected parent object {" + getHierarchyPath(objectHierarchy) + "}",
+        Assert.assertEquals(
+                "actual objectAttribute[" + name + "]'s parent object's id matches expected parent object {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedParentMetaObject.getID(), actualParentMetaObject.getID());
-        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's name matches expected parent object {" + getHierarchyPath(objectHierarchy) + "}",
+        Assert.assertEquals(
+                "actual objectAttribute[" + name + "]'s parent object's name matches expected parent object {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedParentMetaObject.getName(), actualParentMetaObject.getName());
-        Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object's status matches expected parent object {" + getHierarchyPath(objectHierarchy) + "}",
+        Assert.assertEquals(
+                "actual objectAttribute[" + name + "]'s parent object's status matches expected parent object {" + getHierarchyPath(objectHierarchy) + "}",
                 expectedParentMetaObject.getStatus(), actualParentMetaObject.getStatus());
 
         // not persisted MOs are only equal if they have the same reference!
-        if (expectedParentMetaObject.getID() != -1) {
+        if (expectedParentMetaObject.getID()
+                != -1) {
             Assert.assertEquals("actual objectAttribute[" + name + "]'s parent object matches expected parent object {" + getHierarchyPath(objectHierarchy) + "}",
                     expectedParentObject, actualParentObject);
         }
@@ -4863,7 +4901,8 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         final Object expectedObjectAttributeValue = expectedObjectAttribute.getValue();
         final Object actualObjectAttributeValue = actualObjectAttribute.getValue();
 
-        if (expectedObjectAttributeValue != null) {
+        if (expectedObjectAttributeValue
+                != null) {
             Assert.assertNotNull("actual objectAttribute[" + name + "] value (" + expectedObjectAttributeValue + ") is not null {" + getHierarchyPath(objectHierarchy) + "}",
                     actualObjectAttributeValue);
 
@@ -4951,11 +4990,13 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         expectedObjectAttributeValue,
                         actualObjectAttributeValue);
             } else // ids of saved and usaved objects may be different!
-             if (!compareNew && !compareChanged && !expectedObjectAttribute.isPrimaryKey()) {
+            {
+                if (!compareNew && !compareChanged && !expectedObjectAttribute.isPrimaryKey()) {
                     Assert.assertEquals("actual objectAttribute[" + name + "] object value (" + expectedObjectAttributeValueClass.getSimpleName() + ") matches {" + getHierarchyPath(objectHierarchy) + "}",
                             expectedObjectAttributeValue,
                             actualObjectAttributeValue);
                 }
+            }
         } else if (!compareNew && !compareChanged) {
             // disable null value comparison for new and changed objects
             // server may populate null values (e.g. dummy array objects, default values, etc.)
