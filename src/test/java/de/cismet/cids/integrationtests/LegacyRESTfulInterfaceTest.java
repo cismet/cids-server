@@ -2625,7 +2625,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 MetaObjectIntegrityTest.checkMetaObjectIntegrity(revertedSpielhalleObject);
 
                 // safely compare recursively, because originalBetreiberObject retrieved before changes were made
-                // and revertedSpielhalleObject object retrieved after *all* changes were reverted!
+                // and revertedSpielhalleBean object retrieved after *all* changes were reverted!
                 compareMetaObjects(originalSpielhalleObject, revertedSpielhalleObject, false, false, false, true);
             }
 
@@ -5067,6 +5067,412 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             throw ae;
         } catch (Exception ex) {
             LOGGER.error("Unexpected error during removeCidsBeanNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN): " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
+    /**
+     * Test updating a property of a cids bean residing in a n-m array.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void test04objectService36updateCidsBean1toNArrayProperty() throws Exception {
+        try {
+            LOGGER.debug("[04.36] testing updateCidsBean1toNArrayProperty(SPH_BETREIBER/SPH_SPIELHALLE)");
+
+            final MetaClass betreiberMetaClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), "SPH_BETREIBER");
+            Assert.assertNotNull("meta class 'SPH_BETREIBER' from meta class cache not null",
+                    betreiberMetaClass);
+
+            final int expectedSpielhallenCount = dbEntitiesCount.get("SPH_SPIELHALLE");
+            final int expectedBetreiberCount = dbEntitiesCount.get("SPH_BETREIBER");
+
+            final List<Integer> betreiberIdList = metaObjectIds.get("SPH_BETREIBER".toLowerCase());
+            Assert.assertTrue("SPH_BETREIBER cids beans available",
+                    !betreiberIdList.isEmpty());
+
+            Assert.assertEquals(expectedBetreiberCount + " SPH_BETREIBER cids beans available",
+                    expectedBetreiberCount,
+                    betreiberIdList.size());
+
+            final List<CidsBean> originalBetreiberList = getAllCidsBeans("SPH_BETREIBER");
+            Assert.assertTrue("SPH_BETREIBER cids beans available",
+                    !originalBetreiberList.isEmpty());
+            Assert.assertEquals(expectedBetreiberCount + " SPH_BETREIBER cids beans available",
+                    expectedBetreiberCount,
+                    originalBetreiberList.size());
+
+            int i = 0;
+            for (final Integer betreiberId : betreiberIdList) {
+                i++;
+
+                final MetaObject betreiberObject = connector.getMetaObject(user, betreiberId, betreiberMetaClass.getID(), user.getDomain());
+                Assert.assertNotNull("cids bean #" + i + "/" + expectedBetreiberCount
+                        + " (id:" + betreiberObject.getID() + ") for meta class '"
+                        + betreiberObject.getMetaClass().getTableName() + "' (id:"
+                        + betreiberObject.getMetaClass().getID() + ") retrieved from server",
+                        betreiberObject);
+
+                final CidsBean betreiberBean = betreiberObject.getBean();
+                Assert.assertNotNull("cids bean #" + i + "/" + expectedBetreiberCount + " (id:" + betreiberObject.getID()
+                        + ") for meta class '" + betreiberObject.getMetaClass().getTableName() + "' (id:"
+                        + betreiberObject.getMetaClass().getID() + ") retrieved from server",
+                        betreiberObject);
+
+                final List<CidsBean> spielhallen = betreiberBean.getBeanCollectionProperty("spielhallen");
+                Assert.assertFalse("array attribute 'spielhallen' of  cids bean #" + i + "/" + expectedBetreiberCount
+                        + " (id:" + betreiberObject.getID() + ") for meta class '"
+                        + betreiberObject.getMetaClass().getTableName() + "' is not empty",
+                        spielhallen.isEmpty());
+
+                Assert.assertEquals("array attribute 'spielhallen' of  cids bean #" + i + "/" + expectedBetreiberCount
+                        + " (id:" + betreiberObject.getID() + ") for meta class '"
+                        + betreiberObject.getMetaClass().getTableName() + "' contains "
+                        + spielhallen.size() + " elements",
+                        spielhallen.size(),
+                        getArrayElements(betreiberObject, "spielhallen").size());
+
+                // select the last intermediate array heler object from the respective dummy arrayField
+                final int spielhalleObjectIndex = spielhallen.size() - 1;
+                final CidsBean spielhalleBean = spielhallen.get(spielhalleObjectIndex);
+
+                final String oldSpielhalleName = (String) spielhalleBean.getProperty("name");
+                final String updatedSpielhalleName = oldSpielhalleName + " (betreiber array updated)";
+
+                spielhalleBean.setProperty("name", updatedSpielhalleName);
+
+                Assert.assertEquals("spielhalle[" + spielhalleObjectIndex + "] of cids bean #" + i + "/" + expectedBetreiberCount + " (id:" + betreiberObject.getID() + ") for meta class '" + betreiberObject.getMetaClass().getTableName() + "' (id:" + betreiberObject.getMetaClass().getID() + ") changed from '" + oldSpielhalleName + "' to '" + updatedSpielhalleName + "'",
+                        updatedSpielhalleName,
+                        (String) betreiberBean.getBeanCollectionProperty("spielhallen").get(spielhalleObjectIndex).getProperty("name"));
+
+                Assert.assertEquals("spielhalle[" + spielhalleObjectIndex + "] of cids bean #" + i + "/" + expectedBetreiberCount + " (id:" + betreiberObject.getID() + ") for meta class '" + betreiberObject.getMetaClass().getTableName() + "' (id:" + betreiberObject.getMetaClass().getID() + ") changed from '" + oldSpielhalleName + "' to '" + updatedSpielhalleName + "'",
+                        updatedSpielhalleName,
+                        getArrayElements(betreiberObject, "spielhallen").get(spielhalleObjectIndex).getAttributeByFieldName("name").getValue().toString());
+
+                MetaObjectIntegrityTest.checkMetaObjectIntegrity(betreiberBean.getMetaObject());
+
+                final CidsBean updatedBetreiberBean = betreiberBean.persist();
+                Assert.assertNotNull("updated cids bean #" + i + "/" + expectedBetreiberCount
+                        + " (id:" + betreiberObject.getID() + ") for meta class '"
+                        + betreiberObject.getMetaClass().getTableName() + "' (id:"
+                        + betreiberObject.getMetaClass().getID() + ") retrieved from server",
+                        updatedBetreiberBean);
+                MetaObjectIntegrityTest.checkMetaObjectIntegrity(updatedBetreiberBean.getMetaObject());
+
+                final MetaObject updatedSpielhalleObject = connector.getMetaObject(user, spielhalleBean.getMetaObject().getID(), spielhalleBean.getMetaObject().getMetaClass().getID(), user.getDomain());
+                Assert.assertNotNull("updated meta object #" + i + "/" + expectedBetreiberCount
+                        + " (id:" + betreiberObject.getID() + ") for meta class '"
+                        + updatedSpielhalleObject.getMetaClass().getTableName() + "' (id:"
+                        + updatedSpielhalleObject.getMetaClass().getID() + ") retrieved from server",
+                        updatedSpielhalleObject);
+                final CidsBean updatedSpielhalleBean = updatedSpielhalleObject.getBean();
+                Assert.assertNotNull("updated cids bean #" + i + "/" + expectedBetreiberCount
+                        + " (id:" + betreiberObject.getID() + ") for meta class '"
+                        + updatedSpielhalleBean.getMetaObject().getMetaClass().getTableName()
+                        + "' (id:" + updatedSpielhalleBean.getMetaObject().getMetaClass().getID() + ") retrieved from server",
+                        updatedSpielhalleBean);
+                MetaObjectIntegrityTest.checkMetaObjectIntegrity(updatedSpielhalleBean.getMetaObject());
+
+                Assert.assertEquals("name of spielhalle (" + updatedSpielhalleBean.getMetaObject().getID() + ") changed from '"
+                        + oldSpielhalleName + "' to '" + updatedSpielhalleName + "'",
+                        updatedSpielhalleName,
+                        (String) updatedBetreiberBean.getBeanCollectionProperty("spielhallen").get(spielhalleObjectIndex).getProperty("name"));
+
+                compareMetaObjects((MetaObject) betreiberObject.getAttributeByFieldName("spielhallen").getValue(),
+                        (MetaObject) updatedBetreiberBean.getMetaObject().getAttributeByFieldName("spielhallen").getValue(),
+                        true, false, true, true);
+
+                // revert changes!
+                updatedSpielhalleBean.setProperty("name", oldSpielhalleName);
+                MetaObjectIntegrityTest.checkMetaObjectIntegrity(spielhalleBean.getMetaObject());
+                updatedSpielhalleBean.persist();
+
+                final MetaObject revertedBetreiberObject = connector.getMetaObject(user, betreiberObject.getID(), betreiberObject.getMetaClass().getID(), user.getDomain());
+                MetaObjectIntegrityTest.checkMetaObjectIntegrity(revertedBetreiberObject);
+                Assert.assertEquals("name of spielhalle[" + spielhalleObjectIndex + "] of cids bean #" + i + "/" + expectedBetreiberCount + " (id:" + betreiberObject.getID() + ") for meta class '" + betreiberObject.getMetaClass().getTableName() + "' (id:" + betreiberObject.getMetaClass().getID() + ") reverted from '" + updatedSpielhalleName + "' to '" + oldSpielhalleName + "'",
+                        oldSpielhalleName,
+                        getArrayElements(revertedBetreiberObject, "spielhallen").get(spielhalleObjectIndex).getAttributeByFieldName("name").getValue().toString());
+
+                final CidsBean revertedBetreiberBean = revertedBetreiberObject.getBean();
+                Assert.assertEquals("name of spielhalle[" + spielhalleObjectIndex + "] of cids bean #" + i + "/" + expectedBetreiberCount + " (id:" + betreiberObject.getID() + ") for meta class '" + betreiberObject.getMetaClass().getTableName() + "' (id:" + betreiberObject.getMetaClass().getID() + ") reverted from '" + updatedSpielhalleName + "' to '" + oldSpielhalleName + "'",
+                        oldSpielhalleName,
+                        (String) revertedBetreiberBean.getBeanCollectionProperty("spielhallen").get(spielhalleObjectIndex).getProperty("name"));
+            }
+
+            final List<CidsBean> revertedBetreiberList = this.getAllCidsBeans("SPH_BETREIBER");
+            Assert.assertEquals("reverted " + betreiberIdList.size() + " betreiber",
+                    betreiberIdList.size(),
+                    revertedBetreiberList.size());
+
+            // compare after all updates have been reverted!
+            int j = 0;
+            for (final CidsBean originalBetreiberBean : originalBetreiberList) {
+                final CidsBean revertedBetreiberBean = revertedBetreiberList.get(j);
+                MetaObjectIntegrityTest.checkMetaObjectIntegrity(revertedBetreiberBean.getMetaObject());
+
+                compareMetaObjects(
+                        originalBetreiberBean.getMetaObject(),
+                        revertedBetreiberBean.getMetaObject(),
+                        false, false, false, true);
+                j++;
+            }
+
+            final int actualBetreiberCount = countDbEntities("SPH_BETREIBER", 3);
+            Assert.assertEquals(expectedBetreiberCount + " 'SPH_BETREIBER' entities in Integration Base",
+                    expectedBetreiberCount, actualBetreiberCount);
+
+            final int actualSpielhallenCount = countDbEntities("SPH_SPIELHALLE", 3);
+            Assert.assertEquals(expectedSpielhallenCount + " 'SPH_SPIELHALLE' entities in Integration Base",
+                    expectedSpielhallenCount, actualSpielhallenCount);
+
+            LOGGER.info("updateCidsBean1toNArrayProperty(SPH_BETREIBER/SPH_SPIELHALLE) test passed! "
+                    + expectedBetreiberCount + " cids beans updated");
+
+        } catch (AssertionError ae) {
+            LOGGER.error("updateCidsBean1toNArrayProperty(SPH_BETREIBER/SPH_SPIELHALLE) test failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during updateCidsBean1toNArrayProperty(SPH_BETREIBER/SPH_SPIELHALLE): " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
+    /**
+     * Replaces an element (detail object) in an 1-n array of a master object by
+     * changing the back reference to the master object in the detail object:
+     * replace betreiber of spielhalle changes also betreiber/spielhallen[]
+     *
+     * @throws Exception
+     */
+    @Test
+    public void test04objectService37replaceCidsBean1toNArrayPropertyDetail() throws Exception {
+        try {
+            LOGGER.debug("[04.37] testing replaceCidsBean1toNArrayPropertyDetail(SPH_SPIELHALLE/SPH_BETREIBER)");
+            // needed for DB Triggers
+            //Thread.sleep(100);
+
+            final MetaClass spielhallenMetaClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), "SPH_SPIELHALLE");
+            Assert.assertNotNull("meta class 'SPH_SPIELHALLE' from meta class cache not null",
+                    spielhallenMetaClass);
+
+            final int expectedSpielhallenCount = dbEntitiesCount.get("SPH_SPIELHALLE");
+            final List<Integer> spielhallenIdList = metaObjectIds.get("SPH_SPIELHALLE".toLowerCase());
+            Assert.assertTrue("SPH_SPIELHALLE cids beans available",
+                    !spielhallenIdList.isEmpty());
+            Assert.assertEquals(expectedSpielhallenCount + " SPH_SPIELHALLE cids beans available",
+                    expectedSpielhallenCount,
+                    spielhallenIdList.size());
+
+            final int expectedBetreiberCount = dbEntitiesCount.get("SPH_BETREIBER");
+            final List<CidsBean> betreiberList = this.getAllCidsBeans("SPH_BETREIBER");
+            Assert.assertTrue("SPH_BETREIBER cids beans available",
+                    !betreiberList.isEmpty());
+            Assert.assertEquals(expectedBetreiberCount + " SPH_BETREIBER cids beans available",
+                    expectedBetreiberCount,
+                    betreiberList.size());
+
+            Assert.assertEquals(expectedBetreiberCount + " SPH_BETREIBER cids beans available",
+                    expectedBetreiberCount,
+                    betreiberList.size());
+
+            final List<CidsBean> originalBetreiberList = getAllCidsBeans("SPH_BETREIBER");
+            Assert.assertTrue("SPH_BETREIBER cids beans available",
+                    !originalBetreiberList.isEmpty());
+            Assert.assertEquals(expectedBetreiberCount + " SPH_BETREIBER cids beans available",
+                    betreiberList.size(),
+                    originalBetreiberList.size());
+
+            int i = 0;
+            for (final Integer spielhalleId : spielhallenIdList) {
+                i++;
+
+                final MetaObject spielhalleObject = connector.getMetaObject(user, spielhalleId, spielhallenMetaClass.getID(), user.getDomain());
+                Assert.assertNotNull("metaObject #" + i + "/" + expectedSpielhallenCount + " (id:"
+                        + spielhalleObject.getID() + ") for meta class '"
+                        + spielhalleObject.getMetaClass().getTableName() + "' (id:"
+                        + spielhalleObject.getMetaClass().getID() + ") retrieved from server",
+                        spielhalleObject);
+                final CidsBean spielhalleBean = spielhalleObject.getBean();
+
+                Assert.assertNotNull("spielhallen attribute of cids bean #" + i + "/" + expectedSpielhallenCount
+                        + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
+                        + spielhalleBean.getMetaObject().getMetaClass().getTableName() + "' (id:"
+                        + spielhalleBean.getMetaObject().getMetaClass().getID() + ") is not null",
+                        spielhalleBean.getProperty("betreiber"));
+
+                final CidsBean oldBetreiberBean = (CidsBean) spielhalleBean.getProperty("betreiber");
+
+                final List<CidsBean> spielhalleArrayElementsOfOldBetreiber
+                        = oldBetreiberBean.getBeanCollectionProperty("spielhallen");
+                Assert.assertTrue("array attribute 'spielhallen' of  cids bean #" + i + "/" + expectedSpielhallenCount
+                        + " (id:" + oldBetreiberBean.getMetaObject().getID() + ") for meta class '"
+                        + oldBetreiberBean.getMetaObject().getMetaClass().getTableName() + "' contains '"
+                        + spielhalleBean.getMetaObject().getName() + "'",
+                        spielhalleArrayElementsOfOldBetreiber.contains(spielhalleBean));
+
+                // get a random new betreiber
+                CidsBean newBetreiberBean = oldBetreiberBean;
+                while (oldBetreiberBean.getPrimaryKeyValue().equals(newBetreiberBean.getPrimaryKeyValue())) {
+                    newBetreiberBean = betreiberList.get(new Random().nextInt(betreiberList.size()));
+                }
+
+                final int spielhalleArrayElementsOfNewBetreiberSize
+                        = newBetreiberBean.getBeanCollectionProperty("spielhallen").size();
+
+                spielhalleBean.setProperty("betreiber", newBetreiberBean);
+
+                MetaObjectIntegrityTest.checkMetaObjectIntegrity(spielhalleBean.getMetaObject());
+
+                final CidsBean updatedSpielhalleBean = spielhalleBean.persist();
+                MetaObjectIntegrityTest.checkMetaObjectIntegrity(updatedSpielhalleBean.getMetaObject());
+
+                final MetaObject updatedNewBetreiberObject
+                        = connector.getMetaObject(user, newBetreiberBean.getMetaObject().getID(), newBetreiberBean.getMetaObject().getMetaClass().getID(), user.getDomain());
+                MetaObjectIntegrityTest.checkMetaObjectIntegrity(updatedNewBetreiberObject);
+                final CidsBean updatedNewBetreiberBean = updatedNewBetreiberObject.getBean();
+
+                final MetaObject updatedOldBetreiberObject
+                        = connector.getMetaObject(user, oldBetreiberBean.getMetaObject().getID(), oldBetreiberBean.getMetaObject().getMetaClass().getID(), user.getDomain());
+                MetaObjectIntegrityTest.checkMetaObjectIntegrity(updatedOldBetreiberObject);
+                final CidsBean updatedOldBetreiberBean = updatedOldBetreiberObject.getBean();
+
+                final List<CidsBean> updatedSpielhalleArrayElementsOfNewBetreiber
+                        = updatedNewBetreiberBean.getBeanCollectionProperty("spielhallen");
+                final List<CidsBean> updatedSpielhalleArrayElementsOfOldBetreiber
+                        = updatedOldBetreiberBean.getBeanCollectionProperty("spielhallen");
+                final int updatedSpielhalleObjectIndex
+                        = updatedSpielhalleArrayElementsOfNewBetreiber.indexOf(updatedSpielhalleBean);
+
+                Assert.assertNotNull("changed 'betreiber' attribute of updated of cids bean #" + i + "/" + expectedSpielhallenCount
+                        + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
+                        + spielhalleBean.getMetaObject().getMetaClass().getTableName() + "' (id:"
+                        + spielhalleBean.getMetaObject().getMetaClass().getID() + ") is not null",
+                        updatedSpielhalleBean.getProperty("betreiber"));
+                Assert.assertEquals("'betreiber' attribute of updated cids bean #" + i + "/" + expectedSpielhallenCount
+                        + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
+                        + spielhalleBean.getMetaObject().getMetaClass().getTableName() + "' (id:"
+                        + spielhalleBean.getMetaObject().getMetaClass().getID() + ") replaced by '"
+                        + updatedNewBetreiberBean.getProperty("name") + "'",
+                        (CidsBean) updatedSpielhalleBean.getProperty("betreiber"),
+                        updatedNewBetreiberBean);
+
+                Assert.assertTrue("spielhalle(" + updatedSpielhalleBean.getProperty("name") + "]) available in betreiber/spielhallen[] attribute of  cids bean cids bean #" + i + "/"
+                        + expectedSpielhallenCount + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
+                        + spielhalleBean.getMetaObject().getMetaClass().getTableName() + "'",
+                        updatedSpielhalleObjectIndex != -1);
+
+                // we cannot compare spielhalleArrayElements.size() since it belongs
+                // to the oldBetreiber object!
+                Assert.assertEquals("'update new betreiber/spielhallen[] attribute of updated of cids bean #" + i + "/"
+                        + expectedSpielhallenCount + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
+                        + spielhalleBean.getMetaObject().getMetaClass().getTableName() + "' (id:"
+                        + spielhalleBean.getMetaObject().getMetaClass().getID() + ") incresed by one",
+                        spielhalleArrayElementsOfNewBetreiberSize + 1,
+                        updatedSpielhalleArrayElementsOfNewBetreiber.size());
+
+                Assert.assertEquals("'betreiber/spielhallen[] attribute of updated of cids bean #" + i + "/"
+                        + expectedSpielhallenCount + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
+                        + spielhalleBean.getMetaObject().getMetaClass().getTableName() + "' (id:"
+                        + spielhalleBean.getMetaObject().getMetaClass().getID() + ") decreased by one",
+                        spielhalleArrayElementsOfOldBetreiber.size() - 1,
+                        updatedSpielhalleArrayElementsOfOldBetreiber.size());
+
+                Assert.assertTrue("betreiber/spielhallen[] attribute of updated cids bean cids bean #" + i + "/"
+                        + expectedSpielhallenCount + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
+                        + spielhalleBean.getMetaObject().getMetaClass().getTableName() + "' changed from '"
+                        + oldBetreiberBean.getProperty("name") + "' to '" + newBetreiberBean.getProperty("name")
+                        + "' (is contained in array)",
+                        updatedSpielhalleArrayElementsOfNewBetreiber.contains(updatedSpielhalleBean));
+                Assert.assertFalse("betreiber/spielhallen[] attribute of of updated cids bean cids bean #" + i + "/"
+                        + expectedSpielhallenCount + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
+                        + spielhalleBean.getMetaObject().getMetaClass().getTableName() + "' changed from '"
+                        + oldBetreiberBean.getProperty("name") + "' (is not contained in array) to '"
+                        + newBetreiberBean.getProperty("name") + "'",
+                        updatedSpielhalleArrayElementsOfOldBetreiber.contains(updatedSpielhalleBean));
+
+                // revert changes!
+                updatedSpielhalleBean.setProperty("betreiber", updatedOldBetreiberBean);
+                MetaObjectIntegrityTest.checkMetaObjectIntegrity(updatedSpielhalleBean.getMetaObject());
+
+                final CidsBean revertedSpielhalleBean = updatedSpielhalleBean.persist();
+                MetaObjectIntegrityTest.checkMetaObjectIntegrity(revertedSpielhalleBean.getMetaObject());
+
+                final MetaObject revertedBetreiberObject
+                        = connector.getMetaObject(user, oldBetreiberBean.getMetaObject().getID(), oldBetreiberBean.getMetaObject().getMetaClass().getID(), user.getDomain());
+                MetaObjectIntegrityTest.checkMetaObjectIntegrity(revertedBetreiberObject);
+                final CidsBean revertedBetreiberBean = revertedBetreiberObject.getBean();
+
+                final List<CidsBean> revertedSpielhalleArrayElements
+                        = revertedBetreiberBean.getBeanCollectionProperty("spielhallen");
+                final int revertedSpielhalleObjectIndex = revertedSpielhalleArrayElements.indexOf(revertedSpielhalleBean);
+
+                Assert.assertNotNull("changed 'betreiber' attribute of reverted of cids bean #" + i + "/" + expectedSpielhallenCount
+                        + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
+                        + spielhalleBean.getMetaObject().getMetaClass().getTableName() + "' (id:"
+                        + spielhalleBean.getMetaObject().getMetaClass().getID() + ") is not null",
+                        revertedSpielhalleBean.getProperty("betreiber"));
+
+                Assert.assertEquals("'betreiber' attribute of reverted cids bean #" + i + "/" + expectedSpielhallenCount
+                        + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
+                        + spielhalleBean.getMetaObject().getMetaClass().getTableName() + "' (id:"
+                        + spielhalleBean.getMetaObject().getMetaClass().getID() + ") replaced by '"
+                        + revertedBetreiberBean.getProperty("name") + "'",
+                        ((CidsBean) revertedSpielhalleBean.getProperty("betreiber")),
+                        revertedBetreiberBean);
+
+                Assert.assertTrue("spielhalle(" + revertedSpielhalleBean.getProperty("name")
+                        + "]) available in betreiber/spielhallen[] attribute of  cids bean cids bean #" + i + "/"
+                        + expectedSpielhallenCount + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
+                        + spielhalleBean.getMetaObject().getMetaClass().getTableName() + "'",
+                        revertedSpielhalleObjectIndex != -1);
+
+                Assert.assertEquals("'betreiber/spielhallen[] attribute of reverted of cids bean #" + i + "/"
+                        + expectedSpielhallenCount + " (id:" + spielhalleBean.getMetaObject().getID()
+                        + ") for meta class '" + spielhalleBean.getMetaObject().getMetaClass().getTableName()
+                        + "' (id:" + spielhalleBean.getMetaObject().getMetaClass().getID() + ") not changed in size",
+                        spielhalleArrayElementsOfOldBetreiber.size(),
+                        revertedSpielhalleArrayElements.size());
+
+                Assert.assertTrue("betreiber/spielhallen[" + revertedSpielhalleObjectIndex
+                        + "] attribute of reverted cids bean cids bean #" + i + "/" + expectedSpielhallenCount
+                        + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
+                        + spielhalleBean.getMetaObject().getMetaClass().getTableName() + "' changed from '"
+                        + oldBetreiberBean.getProperty("name") + "' to '" + newBetreiberBean.getProperty("name") + "'",
+                        revertedSpielhalleArrayElements.contains(revertedSpielhalleBean));
+            }
+
+            final int actualBetreiberCount = countDbEntities("SPH_BETREIBER", 3);
+            Assert.assertEquals(expectedBetreiberCount + " 'SPH_BETREIBER' entities in Integration Base",
+                    expectedBetreiberCount, actualBetreiberCount);
+
+            final int actualSpielhallenCount = countDbEntities("SPH_SPIELHALLE", 3);
+            Assert.assertEquals(expectedSpielhallenCount + " 'SPH_SPIELHALLE' entities in Integration Base",
+                    expectedSpielhallenCount, actualSpielhallenCount);
+
+            final List<CidsBean> revertedBetreiberList = this.getAllCidsBeans("SPH_BETREIBER");
+            Assert.assertEquals("reverted " + betreiberList.size() + " spielhallen",
+                    betreiberList.size(),
+                    revertedBetreiberList.size());
+
+            // compare after all updates have been reverted!
+            int j = 0;
+            for (final CidsBean originalBetreiberBean : originalBetreiberList) {
+                compareMetaObjects(
+                        originalBetreiberBean.getMetaObject(),
+                        revertedBetreiberList.get(j).getMetaObject(),
+                        false, false, false, true);
+                j++;
+            }
+
+            LOGGER.info("replaceCidsBean1toNArrayPropertyDetail(SPH_SPIELHALLE/SPH_BETREIBER) test passed! "
+                    + expectedBetreiberCount + " cids beans updated");
+
+        } catch (AssertionError ae) {
+            LOGGER.error("replaceCidsBean1toNArrayPropertyDetail(SPH_SPIELHALLE/SPH_BETREIBER) test failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during replaceCidsBean1toNArrayPropertyDetail(SPH_SPIELHALLE/SPH_BETREIBER): " + ex.getMessage(), ex);
             throw ex;
         }
     }
