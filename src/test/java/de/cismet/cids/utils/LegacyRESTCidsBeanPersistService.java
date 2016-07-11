@@ -25,25 +25,25 @@ public class LegacyRESTCidsBeanPersistService implements CidsBeanPersistService 
     }
 
     public RESTfulSerialInterfaceConnector getConnector() {
-        return getInstance().connector;
+        return LegacyRESTCidsBeanPersistService.getInstance().connector;
     }
 
     public void setConnector(RESTfulSerialInterfaceConnector connector) {
-        getInstance().connector = connector;
+        LegacyRESTCidsBeanPersistService.getInstance().connector = connector;
     }
 
     public User getUser() {
-        return getInstance().user;
+        return LegacyRESTCidsBeanPersistService.getInstance().user;
     }
 
     public void setUser(User user) {
-        getInstance().user = user;
+        LegacyRESTCidsBeanPersistService.getInstance().user = user;
     }
 
     @Override
     public CidsBean persistCidsBean(final CidsBean cidsBean) throws Exception, AssertionError {
 
-        assert getInstance().isOnline() : "illegal state: call to persistCidsBean while LegacyRESTCidsBeanPersistService is offline"; // NOI18N
+        assert LegacyRESTCidsBeanPersistService.getInstance().isOnline() : "illegal state: call to persistCidsBean while LegacyRESTCidsBeanPersistService is offline"; // NOI18N
 
         final MetaObject metaObject = cidsBean.getMetaObject();
         final String domain = metaObject.getDomain();
@@ -53,22 +53,41 @@ public class LegacyRESTCidsBeanPersistService implements CidsBeanPersistService 
 
         switch (metaObject.getStatus()) {
             case MetaObject.MODIFIED:
-                getInstance().connector.updateMetaObject(getInstance().user, metaObject, domain);
-                return connector
-                        .getMetaObject(getInstance().user, metaObject.getID(), metaObject.getClassID(), domain)
-                        .getBean();
-                
+                LegacyRESTCidsBeanPersistService.getInstance().connector.updateMetaObject(
+                        LegacyRESTCidsBeanPersistService.getInstance().user,
+                        metaObject,
+                        domain);
+
+                final MetaObject updatedMetaObject
+                        = LegacyRESTCidsBeanPersistService.getInstance().connector.getMetaObject(
+                                LegacyRESTCidsBeanPersistService.getInstance().user,
+                                metaObject.getID(),
+                                metaObject.getClassID(),
+                                domain);
+
+                assert updatedMetaObject != null : "MetaObject '" + metaObject.getName() + "' ("
+                        + metaObject.getKey() + "' successfully updated";
+
+                return updatedMetaObject.getBean();
+
             case MetaObject.TO_DELETE:
-                getInstance().connector.deleteMetaObject(getInstance().user, metaObject, domain);
+                LegacyRESTCidsBeanPersistService.getInstance().connector.deleteMetaObject(
+                        LegacyRESTCidsBeanPersistService.getInstance().user,
+                        metaObject, domain);
                 return null;
-                
+
             case MetaObject.NEW:
-                final MetaObject mo = getInstance().connector.insertMetaObject(getInstance().user, metaObject, domain);
-                if (mo == null) {
-                    throw new Exception("illegal state: insert metaobject returned null");
-                }
-                return mo.getBean();
-                
+                final MetaObject insertedMetaObject
+                        = LegacyRESTCidsBeanPersistService.getInstance().connector.insertMetaObject(
+                                LegacyRESTCidsBeanPersistService.getInstance().user,
+                                metaObject,
+                                domain);
+
+                assert insertedMetaObject != null : "MetaObject '" + metaObject.getName() + "' ("
+                        + metaObject.getKey() + "' successfully inserted";
+
+                return insertedMetaObject.getBean();
+
             default:
                 throw new Exception("nothing to do, persist was called on CidsBean " + metaObject.getName() + "' ("
                         + cidsBean.getCidsBeanInfo().getJsonObjectKey() + ") that has not been modified: "
@@ -77,7 +96,7 @@ public class LegacyRESTCidsBeanPersistService implements CidsBeanPersistService 
     }
 
     public boolean isOnline() {
-        return getInstance().connector != null && getInstance().user != null;
+        return LegacyRESTCidsBeanPersistService.getInstance().connector != null && getInstance().user != null;
     }
 
     public static LegacyRESTCidsBeanPersistService getInstance() {
@@ -86,7 +105,8 @@ public class LegacyRESTCidsBeanPersistService implements CidsBeanPersistService 
 
     private static final class LazyInitialiser {
 
-        private static final LegacyRESTCidsBeanPersistService INSTANCE = new LegacyRESTCidsBeanPersistService();
+        private static final LegacyRESTCidsBeanPersistService INSTANCE
+                = new LegacyRESTCidsBeanPersistService();
 
         private LazyInitialiser() {
         }

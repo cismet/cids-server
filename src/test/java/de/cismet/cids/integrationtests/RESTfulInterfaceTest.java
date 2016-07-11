@@ -680,6 +680,13 @@ public class RESTfulInterfaceTest extends TestBase {
         LOGGER.info("countDbEntitiesAfterUpdate(" + tableName + ") test passed!");
     }
 
+    /**
+     * 
+     * @param cidsBeanFromJson
+     * @param cidsBeanFromLegacyServer
+     * @param cidsBeanFromRestServer
+     * @param name 
+     */
     protected void compareCidsBeanProperties(final CidsBean cidsBeanFromJson,
             final CidsBean cidsBeanFromLegacyServer,
             final CidsBean cidsBeanFromRestServer,
@@ -810,6 +817,12 @@ public class RESTfulInterfaceTest extends TestBase {
         }
     }
 
+    /**
+     * 
+     * @param cidsBeanFromLegacyServer
+     * @param cidsBeanFromRestServer
+     * @param name 
+     */
     protected void compareCidsBeanProperties(
             final CidsBean cidsBeanFromLegacyServer,
             final CidsBean cidsBeanFromRestServer,
@@ -923,7 +936,10 @@ public class RESTfulInterfaceTest extends TestBase {
      * @param cidsBeanFromJson
      * @param cidsBeanFromLegacyServer
      * @param cidsBeanFromRestServer
+     * @deprecated use comparison methods in LegacyRESTTest
+     * 
      */
+    @Deprecated
     protected void compareAll(final MetaObject metaObjectFromJson,
             final MetaObject metaObjectFromLegacyServer,
             final MetaObject metaObjectFromRestServer,
@@ -952,6 +968,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 cidsBeanFromRestServer.getMetaObject().getBean());
     }
 
+    @Deprecated
     protected void compareAll(
             final MetaObject metaObjectFromLegacyServer,
             final MetaObject metaObjectFromRestServer,
@@ -988,7 +1005,9 @@ public class RESTfulInterfaceTest extends TestBase {
      * @param metaObjectFromLegacyServer
      * @param metaObjectFromRestServer
      * @throws AssertionError
+     * @deprecated Use comparison methods in LegacyRESTTest
      */
+    @Deprecated
     static void compareMetaObjects(final MetaObject metaObjectFromJson,
             final MetaObject metaObjectFromLegacyServer,
             final MetaObject metaObjectFromRestServer) throws AssertionError {
@@ -1047,7 +1066,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 metaObjectFromJson.getGroup(),
                 metaObjectFromRestServer.getGroup());
 
-        // FIXME: array element helper object information lost in CidsBean / Json!
+        // array element helper object information lost in CidsBean / Json!
         // id cannot be restored and is always -1
         // see https://github.com/cismet/cids-server-rest-legacy/issues/32
         if (!metaObjectFromJson.getMetaClass().isArrayElementLink()) {
@@ -1082,7 +1101,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 metaObjectFromJson.getName(),
                 metaObjectFromRestServer.getName());
 
-        // FIXME: Property Strings do not match -> Array Helper Object Ids are lost after deserialization
+        // Property Strings do not match -> Array Helper Object Ids are lost after deserialization
         // See Issue #165
         // https://github.com/cismet/cids-server-rest-legacy/issues/32
 //        LOGGER.debug(metaObjectFromJson.getPropertyString());
@@ -1107,8 +1126,9 @@ public class RESTfulInterfaceTest extends TestBase {
                 metaObjectFromJson.getSimpleEditor(),
                 metaObjectFromRestServer.getSimpleEditor());
 
-        // FIXME: array element helper object recreated during  CidsBean / Json deserialzation!
+        // array element helper object recreated during  CidsBean / Json deserialzation!
         // getStatus() is always modified!
+        // see #165
         if (!metaObjectFromLegacyServer.getMetaClass().isArrayElementLink()) {
             Assert.assertEquals("metaObject[" + name + "].getStatus() from legacy server matches (" + pk + ")",
                     metaObjectFromJson.getStatus(),
@@ -1120,7 +1140,7 @@ public class RESTfulInterfaceTest extends TestBase {
             LOGGER.warn("skipping comparision due to bug: array element helper object recreated during  CidsBean / Json deserialzation!");
         }
 
-        // FIXME: DebugStrings Strings do not match -> Array Helper Object Ids are lost after deserialization
+        // DebugStrings Strings do not match -> Array Helper Object Ids are lost after deserialization
         // See Issue #165
         //        Assert.assertEquals("metaObject["+name+"].getStatusDebugString() from legacy server matches ("+pk+")",
         //                metaObjectFromJson.getStatusDebugString(),
@@ -1147,7 +1167,8 @@ public class RESTfulInterfaceTest extends TestBase {
                     pk);
         }
     }
-
+    
+    @Deprecated
     static void compareMetaObjects(
             final MetaObject metaObjectFromLegacyServer,
             final MetaObject metaObjectFromRestServer) throws AssertionError {
@@ -1185,8 +1206,9 @@ public class RESTfulInterfaceTest extends TestBase {
                 metaObjectFromLegacyServer.getGroup(),
                 metaObjectFromRestServer.getGroup());
 
-        // FIXME: array element helper object information lost in CidsBean / Json!
+        // array element helper object information lost in CidsBean / Json!
         // id cannot be restored and is always -1
+        // See #165
         if (!metaObjectFromLegacyServer.getMetaClass().isArrayElementLink()) {
             Assert.assertEquals("metaObject[" + name + "].getId() from legacy server matches MetaObject from rest server (" + pk + ")",
                     metaObjectFromLegacyServer.getId(),
@@ -1207,7 +1229,7 @@ public class RESTfulInterfaceTest extends TestBase {
                 metaObjectFromLegacyServer.getName(),
                 metaObjectFromRestServer.getName());
 
-        // FIXME: Property Strings do not match -> Array Helper Object Ids are lost after deserialization
+        // Property Strings do not match -> Array Helper Object Ids are lost after deserialization
         // See Issue #165
 //        LOGGER.debug(metaObjectFromLegacyServer.getPropertyString());
 //        Assert.assertEquals("metaObject["+name+"].getPropertyString() from legacy server matches MetaObject from rest server ("+pk+")",
@@ -1221,8 +1243,9 @@ public class RESTfulInterfaceTest extends TestBase {
                 metaObjectFromLegacyServer.getSimpleEditor(),
                 metaObjectFromRestServer.getSimpleEditor());
 
-        // FIXME: array element helper object recreated during  CidsBean / Json deserialzation!
+        // array element helper object recreated during  CidsBean / Json deserialzation!
         // getStatus() is always modified!
+        // See #165
         if (!metaObjectFromLegacyServer.getMetaClass().isArrayElementLink()) {
             Assert.assertEquals("metaObject[" + name + "].getStatus() from legacy server matches MetaObject from rest server (" + pk + ")",
                     metaObjectFromLegacyServer.getStatus(),
@@ -2117,6 +2140,7 @@ public class RESTfulInterfaceTest extends TestBase {
 
     }
 
+    @Deprecated
     static void compareObjectAttributes(final ObjectAttribute objectAttributeFromJson,
             final ObjectAttribute objectAttributeFromLegacyServer,
             final ObjectAttribute objectAttributeFromRestServer,
@@ -2326,6 +2350,7 @@ public class RESTfulInterfaceTest extends TestBase {
         }
     }
 
+    @Deprecated
     static void compareObjectAttributes(
             final ObjectAttribute objectAttributeFromLegacyServer,
             final ObjectAttribute objectAttributeFromRestServer,
@@ -2337,21 +2362,15 @@ public class RESTfulInterfaceTest extends TestBase {
                 objectAttributeFromLegacyServer.getClassID(),
                 objectAttributeFromRestServer.getClassID());
 
-        // FIXME: add ObjectAttribute.setClassKey in CidsBean.listElementAdded
-        // https://github.com/cismet/cids-server/issues/166
-        if (objectAttributeFromLegacyServer.getParentObject() == null || !objectAttributeFromLegacyServer.getParentObject().isDummy()) {
-            Assert.assertEquals("objectAttribute[" + name + "].getClassKey() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
+        Assert.assertEquals("objectAttribute[" + name + "].getClassKey() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
                     objectAttributeFromLegacyServer.getClassKey(),
                     objectAttributeFromRestServer.getClassKey());
-        } else {
-            LOGGER.warn("skipping comparision due to bug: ObjectAttribute.setClassKey in CidsBean.listElementAdded missing");
-        }
 
         Assert.assertEquals("objectAttribute[" + name + "].getDescription() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
                 objectAttributeFromLegacyServer.getDescription(),
                 objectAttributeFromRestServer.getDescription());
 
-        // FIXME: ArrayElementLink ObjectAttribute ids not preserved!
+        // ArrayElementLink ObjectAttribute ids not preserved!
         // https://github.com/cismet/cids-server-rest-legacy/issues/32
         if (objectAttributeFromLegacyServer.getParentObject() == null || !objectAttributeFromLegacyServer.getParentObject().isDummy()) {
             Assert.assertEquals("objectAttribute[" + name + "].getID() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
@@ -2365,11 +2384,9 @@ public class RESTfulInterfaceTest extends TestBase {
             LOGGER.warn("skipping comparision due to bug: FIXME: ArrayElementLink ObjectAttribute ids not preserved!");
         }
 
-        // FIXME: test disabled due to bug
-        // https://github.com/cismet/cids-server/issues/166
-        //Assert.assertEquals("objectAttribute[" + name + "].getJavaType() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
-        //        objectAttributeFromLegacyServer.getJavaType(),
-        //       objectAttributeFromRestServer.getJavaType());
+        Assert.assertEquals("objectAttribute[" + name + "].getJavaType() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
+                objectAttributeFromLegacyServer.getJavaType(),
+               objectAttributeFromRestServer.getJavaType());
         Assert.assertEquals("objectAttribute[" + name + "].getPermissions().toString() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",
                 objectAttributeFromLegacyServer.getPermissions().getPolicy().toString(),
                 objectAttributeFromRestServer.getPermissions().getPolicy().toString());
@@ -2382,8 +2399,9 @@ public class RESTfulInterfaceTest extends TestBase {
                 objectAttributeFromLegacyServer.isArray(),
                 objectAttributeFromRestServer.isArray());
 
-        // FIXME: test fails for array attributes from REST or JSON!
+        // test fails for array attributes from REST or JSON!
         // Array-Helper-Objects are re-created during Bean deserialization!
+        // See #165
         try {
             if (!objectAttributeFromLegacyServer.isArray()) {
                 Assert.assertEquals("objectAttribute[" + name + "].isChanged() from legacy server matches ObjectAttribute from rest server  (classId: " + pk + ")",

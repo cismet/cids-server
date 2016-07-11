@@ -711,7 +711,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @param classId
      * @throws Exception
      */
-    //@Test
+    @Test
     @UseDataProvider("getMetaClassIds")
     public void test04objectService20getCidsBeans(final Integer classId) throws Exception {
         LOGGER.debug("[04.20] testing getCidsBeans(" + classId + ")");
@@ -1162,7 +1162,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    //@Test
+    @Test
     public void test04objectService01getMetaObjectArrays() throws Exception {
         try {
             LOGGER.debug("[04.01] testing getMetaObjectArrays()");
@@ -1334,7 +1334,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
-    //@Test
+    @Test
     @UseDataProvider("getMetaClassIds")
     public void test04objectService02insertMetaObject(final Integer classId) throws Exception {
 
@@ -1358,14 +1358,22 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         newMetaObjectFromClass);
                 MetaObjectIntegrityTest.checkMetaObjectIntegrity(newMetaObjectFromClass);
 
-                final MetaObject newMetaObjectFromService = connector.getInstance(user, metaClass);
-                Assert.assertNotNull("new meta object of meta class from service '" + metaClass.getTableName() + "' (id:" + classId + ") not null",
-                        newMetaObjectFromClass);
-                MetaObjectIntegrityTest.checkMetaObjectIntegrity(newMetaObjectFromClass);
-
-                compareMetaObjects(newMetaObjectFromService, newMetaObjectFromClass,
-                        true, true, false, true);
-
+                // FIXME #174: ObjectFactory.getInstance() for objects that contain
+                // 1-n attributes!
+                // FIXME: ObjectFactory.getInstance() broken and deprecated -> remove
+//                if (!tableName.equalsIgnoreCase("sph_spielhalle")
+//                        && !tableName.equalsIgnoreCase("sph_betreiber")) {
+//
+//                    final MetaObject newMetaObjectFromService = connector.getInstance(user, metaClass);
+//                    Assert.assertNotNull("new meta object of meta class from service '" + metaClass.getTableName() + "' (id:" + classId + ") not null",
+//                            newMetaObjectFromClass);
+//                    MetaObjectIntegrityTest.checkMetaObjectIntegrity(newMetaObjectFromClass);
+//
+//                    compareMetaObjects(newMetaObjectFromService, newMetaObjectFromClass,
+//                            true, true, false, true);
+//                } else {
+//                    LOGGER.warn("skipping remote creation of '" + tableName + "' due to bug in ObjectFactory. See #174");
+//                }
                 final MetaObject insertedMetaObject = connector.insertMetaObject(user, newMetaObjectFromClass, user.getDomain());
                 Assert.assertNotNull("inserted meta object of meta class '" + metaClass.getTableName() + "' (id:" + classId + ") not null",
                         insertedMetaObject);
@@ -1441,7 +1449,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @param classId
      * @throws Exception
      */
-    //@Test
+    @Test
     @UseDataProvider("getMetaClassIds")
     public void test04objectService04updateMetaObjectNameProperty(final Integer classId) throws Exception {
 
@@ -1577,7 +1585,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * @param classId
      * @throws Exception
      */
-    //@Test
+    @Test
     @UseDataProvider("getMetaClassIds")
     public void test04objectService05updateMetaObjectNamePropertyNoAttributeChangeFlag(final Integer classId) throws Exception {
 
@@ -1669,7 +1677,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    //@Test
+    @Test
     public void test04objectService06reassignMetaObjectUpdatedObjectProperty() throws Exception {
 
         try {
@@ -1755,7 +1763,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    //@Test
+    @Test
     public void test04objectService07updateMetaObjectObjectProperty() throws Exception {
         try {
             LOGGER.debug("[04.07] testing updateMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
@@ -1905,7 +1913,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    //@Test
+    @Test
     public void test04objectService08updateMetaObjectObjectPropertyNoObjectChangeStatus() throws Exception {
         try {
             LOGGER.debug("[04.08] testing updateMetaObjectObjectPropertyNoObjectChangeStatus(SPH_SPIELHALLE/SPH_KATEGORIE)");
@@ -2007,7 +2015,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    //@Test
+    @Test
     public void test04objectService09createMetaObjectObjectProperty() throws Exception {
         try {
             LOGGER.debug("[04.09] testing createMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
@@ -2017,14 +2025,15 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             final List<MetaObject> spielhallen = this.getAllMetaObjects("SPH_SPIELHALLE");
 
             final int expectedSpielhallenCount = dbEntitiesCount.get("SPH_SPIELHALLE");
-            int expectedKategorienCount = dbEntitiesCount.get("SPH_KATEGORIE") + expectedSpielhallenCount;
+            final int oldKategorienCount = dbEntitiesCount.get("SPH_KATEGORIE");
+            int expectedKategorienCount = oldKategorienCount + expectedSpielhallenCount;
             Assert.assertTrue("SPH_SPIELHALLE meta objects available",
                     !spielhallen.isEmpty());
 
             final MetaClass kategorieClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), "SPH_KATEGORIE");
             Assert.assertNotNull("meta class 'SPH_KATEGORIE' from meta class cache not null", kategorieClass);
             final ArrayList<MetaObject> newKategorien = new ArrayList<MetaObject>(expectedSpielhallenCount);
-            final int[] newKategorienIds = new int[spielhallen.size()];
+            final int[] newKategorienIds = new int[expectedSpielhallenCount];
 
             int i = 0;
             for (final MetaObject spielhalleObject : spielhallen) {
@@ -2082,18 +2091,13 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
                 // don't compare ids and status -> object is new
                 compareMetaObjects(spielhalleObject, updatedSpielhalleObject, true, true, true, true);
-                newKategorienIds[i]
+                newKategorienIds[i - 1]
                         = ((MetaObject) updatedSpielhalleObject.getAttributeByFieldName("hauptkategorie").getValue()).getID();
             }
 
             final int actualSpielhallenCount = countDbEntities("SPH_SPIELHALLE", 3);
             Assert.assertEquals(expectedSpielhallenCount + " 'SPH_SPIELHALLE' entities in Integration Base",
                     expectedSpielhallenCount, actualSpielhallenCount);
-
-            final int actualKategorienCount = countDbEntities("SPH_KATEGORIE", 3);
-            Assert.assertEquals((expectedKategorienCount + i) + " 'SPH_KATEGORIE' entities in Integration Base ("
-                    + i + " are new)",
-                    (expectedKategorienCount + i), actualKategorienCount);
 
             int j = 0;
             for (final int kategorieId : newKategorienIds) {
@@ -2102,12 +2106,20 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
                 final MetaObject savedNewKategorie
                         = connector.getMetaObject(user, kategorieId, kategorieClass.getID(), kategorieClass.getDomain());
-                Assert.assertNotNull("new kategorie '" + newKategorie.getName() + "' (" + newKategorie.getKey() + ")is not null",
+                Assert.assertNotNull("new kategorie '" + newKategorie.getName() + "' (" + newKategorie.getKey() + ") is not null",
                         savedNewKategorie);
 
                 compareMetaObjects(newKategorie, savedNewKategorie,
                         false, true, false, false);
             }
+
+            final int actualKategorienCount = countDbEntities("SPH_KATEGORIE", 3);
+            Assert.assertEquals(expectedKategorienCount + " 'SPH_KATEGORIE' entities in Integration Base ("
+                    + i + " are new)",
+                    expectedKategorienCount, actualKategorienCount);
+            Assert.assertEquals(expectedKategorienCount + " 'SPH_KATEGORIE' entities in Integration Base ("
+                    + i + " are new)",
+                    (oldKategorienCount + i), actualKategorienCount);
 
             LOGGER.info("createMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE) test passed! "
                     + expectedSpielhallenCount + " meta objects updated");
@@ -2126,7 +2138,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    //@Test
+    @Test
     public void test04objectService10deleteMetaObjectObjectProperty() throws Exception {
         try {
             LOGGER.debug("[04.10] testing deleteMetaObjectObjectProperty(SPH_SPIELHALLE/SPH_KATEGORIE)");
@@ -2177,6 +2189,20 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 // set deleted object to null to pass comparison
                 hauptkategorieAttribute.setValue(null);
                 compareMetaObjects(spielhalleObject, updatedSpielhalleObject, true, false, true, true);
+
+                final MetaObject deletedHauptkategorieObject = connector.getMetaObject(
+                        user,
+                        kategorieObject.getID(),
+                        kategorieObject.getClassID(),
+                        kategorieObject.getDomain());
+
+                Assert.assertNull("hauptkategorie '" + kategorieObject.getName()
+                        + "' (" + kategorieObject.getKey()
+                        + ") of meta object #" + i + "/" + expectedSpielhallenCount + " (id:"
+                        + spielhalleObject.getID() + ") for meta class '"
+                        + spielhalleObject.getMetaClass().getTableName()
+                        + "' (id:" + spielhalleObject.getMetaClass().getID() + ") deleted",
+                        deletedHauptkategorieObject);
             }
 
             final int actualSpielhallenCount = countDbEntities("SPH_SPIELHALLE", 3);
@@ -2207,7 +2233,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    //@Test
+    @Test
     public void test04objectService11reassignMetaObjectDeletedObjectProperty() throws Exception {
 
         try {
@@ -2297,7 +2323,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    //@Test
+    @Test
     public void test04objectService12updateMetaObjectNtoMArrayProperty() throws Exception {
         try {
             LOGGER.debug("[04.12] testing updateMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
@@ -2448,7 +2474,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    //@Test
+    @Test
     public void test04objectService13replaceMetaObjectNtoMArrayProperty() throws Exception {
         try {
             LOGGER.debug("[04.13] testing replaceMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
@@ -2660,7 +2686,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    //@Test
+    @Test
     public void test04objectService14addMetaObjectNtoMArrayProperty() throws Exception {
         try {
             LOGGER.debug("[04.14] testing addMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
@@ -2808,7 +2834,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    //@Test
+    @Test
     public void test04objectService15removeMetaObjectNtoMArrayProperty() throws Exception {
         try {
             LOGGER.debug("[04.15] testing removeMetaObjectNtoMArrayProperty(SPH_SPIELHALLE/SPH_SPIELHALLE_KATEGORIEN)");
@@ -2962,7 +2988,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    //@Test
+    @Test
     public void test04objectService16updateMetaObject1toNArrayProperty() throws Exception {
         try {
             LOGGER.debug("[04.16] testing updateMetaObject1toNArrayProperty(SPH_BETREIBER/SPH_SPIELHALLE)");
@@ -3127,7 +3153,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    //@Test
+    @Test
     public void test04objectService17replaceMetaObject1toNArrayPropertyDetail() throws Exception {
         try {
             LOGGER.debug("[04.17] testing replaceMetaObject1toNArrayPropertyDetail(SPH_SPIELHALLE/SPH_BETREIBER)");
@@ -3319,7 +3345,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      *
      * @throws Exception
      */
-    //@Test
+    @Test
     public void test04objectService18replaceMetaObject1toNArrayPropertyMaster() throws Exception {
         try {
             LOGGER.debug("[04.18] testing replaceMetaObject1toNArrayProperty(SPH_BETREIBER/SPH_SPIELHALLE)");
@@ -3785,11 +3811,6 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         + "' (id:" + classId + ") not null",
                         newMetaObjectFromClass);
 
-                final MetaObject newMetaObjectFromService = connector.getInstance(user, metaClass);
-                Assert.assertNotNull("new meta object of meta class from service '" + metaClass.getTableName()
-                        + "' (id:" + classId + ") not null",
-                        newMetaObjectFromService);
-
                 final CidsBean newCidsBeanFromBean
                         = CidsBean.createNewCidsBeanFromTableName(metaClass.getDomain(), metaClass.getTableName());
                 MetaObjectIntegrityTest.checkMetaObjectIntegrity(newCidsBeanFromBean.getMetaObject(), true);
@@ -3797,25 +3818,10 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 final CidsBean newCidsBeanFromClass = newMetaObjectFromClass.getBean();
                 MetaObjectIntegrityTest.checkMetaObjectIntegrity(newCidsBeanFromClass.getMetaObject(), true);
 
-                final CidsBean newCidsBeanFromService = newMetaObjectFromService.getBean();
-                MetaObjectIntegrityTest.checkMetaObjectIntegrity(newCidsBeanFromService.getMetaObject(), true);
-
-                this.compareCidsBeans(newCidsBeanFromBean, newCidsBeanFromClass);
-                this.compareCidsBeans(newCidsBeanFromClass, newCidsBeanFromService);
-
-                this.compareCidsBeansVsMetaObjects(newMetaObjectFromClass, newCidsBeanFromClass);
-                this.compareCidsBeansVsMetaObjects(newMetaObjectFromService, newCidsBeanFromService);
+                compareCidsBeans(newCidsBeanFromBean, newCidsBeanFromClass);
 
                 compareMetaObjects(
                         newCidsBeanFromBean.getMetaObject(),
-                        newMetaObjectFromClass,
-                        false, true, false, true);
-                compareMetaObjects(
-                        newCidsBeanFromClass.getMetaObject(),
-                        newMetaObjectFromService,
-                        false, true, false, true);
-                compareMetaObjects(
-                        newCidsBeanFromService.getMetaObject(),
                         newMetaObjectFromClass,
                         false, true, false, true);
 
@@ -3840,11 +3846,43 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         persistedCidsBean.getMetaObject(),
                         false, true, false, true);
 
-                compareMetaObjects(
-                        insertedMetaObject,
-                        persistedCidsBean.getMetaObject(),
-                        false, true, false, true);
-
+                // no! different objects, different ids
+//                compareMetaObjects(
+//                        insertedMetaObject,
+//                        persistedCidsBean.getMetaObject(),
+//                        false, true, false, true);
+                // FIXME #174: ObjectFactory.getInstance() for objects that contain
+                // 1-n attributes!
+                // FIXME: ObjectFactory.getInstance() broken and deprecated -> remove
+//                if (!tableName.equalsIgnoreCase("sph_spielhalle")
+//                        && !tableName.equalsIgnoreCase("sph_betreiber")) {
+//
+//                    final MetaObject newMetaObjectFromService = connector.getInstance(user, metaClass);
+//                    Assert.assertNotNull("new meta object of meta class from service '" + metaClass.getTableName()
+//                            + "' (id:" + classId + ") not null",
+//                            newMetaObjectFromService);
+//
+//                    final CidsBean newCidsBeanFromService = newMetaObjectFromService.getBean();
+//                    MetaObjectIntegrityTest.checkMetaObjectIntegrity(newCidsBeanFromService.getMetaObject(), true);
+//
+//                    this.compareCidsBeansVsMetaObjects(newMetaObjectFromClass, newCidsBeanFromClass);
+//                    this.compareCidsBeansVsMetaObjects(newMetaObjectFromService, newCidsBeanFromService);
+//
+//                    compareCidsBeans(newCidsBeanFromClass, newCidsBeanFromService);
+//
+//                    compareMetaObjects(
+//                            newCidsBeanFromClass.getMetaObject(),
+//                            newMetaObjectFromService,
+//                            false, true, false, true);
+//
+//                    compareMetaObjects(
+//                            newCidsBeanFromService.getMetaObject(),
+//                            newMetaObjectFromClass,
+//                            false, true, false, true);
+//
+//                } else {
+//                    LOGGER.warn("skipping remote creation of '" + tableName + "' due to bug in ObjectFactory. See #174");
+//                }
                 LOGGER.info("insertCidsBean(" + classId + ") test passed! New CidsBean '"
                         + persistedCidsBean.getCidsBeanInfo().getJsonObjectKey()
                         + " and new MetaObject '" + insertedMetaObject.getKey() + "' inserted");
@@ -3911,9 +3949,9 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
         }
     }
 
+    @Test
     @UseDataProvider("getMetaClassIds")
     public void test04objectService24updateCidsBeanNameProperty(final Integer classId) throws Exception {
-
         try {
             final MetaClass metaClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), classId);
 
@@ -4034,6 +4072,8 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
      * is set on the changed object arrayField (server should perform no
      * changes!).
      *
+     * TEST DISABLED: quiteSetProperty has package level access in CidsBean!
+     *
      * @param classId
      * @throws Exception
      */
@@ -4041,7 +4081,97 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
     @Ignore
     @UseDataProvider("getMetaClassIds")
     public void test04objectService25updateCidsBeanNamePropertyNoAttributeChangeFlag(final Integer classId) throws Exception {
-        // TODO implement with quiteSetProperty
+        try {
+            final MetaClass metaClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), classId);
+
+            Assert.assertNotNull("meta class '" + classId + "' from meta class cache not null", metaClass);
+            Assert.assertTrue(metaClass.getTableName() + " entities counted",
+                    dbEntitiesCount.containsKey(metaClass.getTableName()));
+
+            final String tableName = metaClass.getTableName();
+            if (!tableName.equalsIgnoreCase("URL_BASE")
+                    && !tableName.equalsIgnoreCase("URL")
+                    && !tableName.equalsIgnoreCase("sph_spielhalle_kategorien")) {
+
+                LOGGER.debug("[04.25] testing updateCidsBeanNamePropertyNoAttributeChangeFlag(" + classId + ")");
+                final int expectedCount = dbEntitiesCount.get(tableName);
+
+                Assert.assertTrue("meta object ids for meta class '" + tableName + "' cached",
+                        metaObjectIds.containsKey(tableName.toLowerCase()));
+                final List<Integer> metaObjectIdList = metaObjectIds.get(tableName.toLowerCase());
+                Assert.assertEquals(expectedCount + " meta object ids for meta class '" + tableName + "' cached",
+                        expectedCount, metaObjectIdList.size());
+
+                int i = 0;
+                for (final int metaObjectId : metaObjectIdList) {
+                    i++;
+                    final MetaObject metaObject = connector.getMetaObject(
+                            user, metaObjectId, classId, user.getDomain());
+                    Assert.assertNotNull("meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") retrieved from server",
+                            metaObject);
+
+                    final MetaObject originalMetaObject = connector.getMetaObject(
+                            user, metaObjectId, classId, user.getDomain());
+
+                    Assert.assertNotNull("meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") retrieved from server",
+                            originalMetaObject);
+
+                    final CidsBean cidsBean = metaObject.getBean();
+                    final Object nameAttribute = cidsBean.getProperty("name");
+
+                    if (nameAttribute != null) {
+                        final String originalObjectName = nameAttribute.toString();
+                        final String updatedObjectName = originalObjectName + " (updated)";
+                        // don't set change flags!
+                        // quiteSetProperty has package level access! :/
+                        // cidsBean.quiteSetProperty("name", updatedObjectName);
+                        cidsBean.setProperty("name", updatedObjectName);
+
+                        MetaObjectIntegrityTest.checkMetaObjectIntegrity(cidsBean.getMetaObject());
+                        final CidsBean updatedCidsBean = cidsBean.persist();
+
+                        Assert.assertNotNull("updated cids bean #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") retrieved from server",
+                                updatedCidsBean);
+                        MetaObjectIntegrityTest.checkMetaObjectIntegrity(updatedCidsBean.getMetaObject());
+
+                        Assert.assertNotNull("name attribute of meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") is not null",
+                                updatedCidsBean.getProperty("name"));
+                        Assert.assertEquals("name of meta object #" + i + "/" + metaObjectIdList.size() + " (id:" + metaObjectId + ") for meta class '" + metaClass.getTableName() + "' (id:" + classId + ") changed to '" + updatedObjectName + "'",
+                                originalObjectName,
+                                updatedCidsBean.getProperty("name").toString());
+
+                        // Don't compare SPH_SPIELHALLE/SPH_BETREIBER recursively, because 
+                        // SPH_BETREIBER contains a back reference to SPH_SPIELHALLE -> comparison will fail!
+                        if (tableName.equalsIgnoreCase("SPH_SPIELHALLE")) {
+                            //compare only top level child objects and arrays
+                            compareMetaObjects(
+                                    cidsBean.getMetaObject(),
+                                    updatedCidsBean.getMetaObject(),
+                                    true, false, true, true);
+                        } else {
+                            compareMetaObjects(
+                                    cidsBean.getMetaObject(),
+                                    updatedCidsBean.getMetaObject(),
+                                    false, false, true, true);
+                        }
+                    }
+                }
+
+                final int actualCount = countDbEntities(metaClass.getTableName(), 3);
+                Assert.assertEquals(expectedCount + " '" + metaClass.getTableName() + "' entities in Integration Base",
+                        expectedCount, actualCount);
+
+                LOGGER.info("updateCidsBeanNamePropertyNoAttributeChangeFlag(" + classId + ") test passed! "
+                        + expectedCount + " meta objects updated");
+            }
+
+        } catch (AssertionError ae) {
+            LOGGER.error("updateCidsBeanNamePropertyNoAttributeChangeFlag(" + classId + ") test failed with: " + ae.getMessage(), ae);
+            throw ae;
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error during updateCidsBeanNamePropertyNoAttributeChangeFlag(" + classId + "): " + ex.getMessage(), ex);
+            throw ex;
+        }
     }
 
     /**
@@ -4297,11 +4427,14 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             int expectedKategorienCount = dbEntitiesCount.get("SPH_KATEGORIE") + expectedSpielhallenCount;
             Assert.assertTrue("SPH_SPIELHALLE cids beans available",
                     !spielhallen.isEmpty());
+            Assert.assertEquals(expectedSpielhallenCount + " SPH_SPIELHALLE cids beans available",
+                    expectedSpielhallenCount,
+                    spielhallen.size());
 
             final MetaClass kategorieClass = MetaClassCache.getInstance().getMetaClass(user.getDomain(), "SPH_KATEGORIE");
             Assert.assertNotNull("meta class 'SPH_KATEGORIE' from meta class cache not null", kategorieClass);
             final ArrayList<CidsBean> newKategorien = new ArrayList<CidsBean>(spielhallen.size());
-            final int[] newKategorienIds = new int[newKategorien.size()];
+            final int[] newKategorienIds = new int[spielhallen.size()];
 
             int i = 0;
             for (final CidsBean spielhalleBean : spielhallen) {
@@ -4370,7 +4503,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         updatedSpielhalleBean.getMetaObject(),
                         true, true, true, true);
 
-                newKategorienIds[i] = ((CidsBean) updatedSpielhalleBean.getProperty("hauptkategorie")).getPrimaryKeyValue();
+                newKategorienIds[i - 1] = ((CidsBean) updatedSpielhalleBean.getProperty("hauptkategorie")).getPrimaryKeyValue();
             }
 
             final int actualSpielhallenCount = countDbEntities("SPH_SPIELHALLE", 3);
@@ -4380,7 +4513,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             final int actualKategorienCount = countDbEntities("SPH_KATEGORIE", 3);
             Assert.assertEquals(expectedKategorienCount + " 'SPH_KATEGORIE' entities in Integration Base ("
                     + i + " are new)",
-                    expectedKategorienCount + i, actualKategorienCount);
+                    expectedKategorienCount, actualKategorienCount);
 
             int j = 0;
             for (final int kategorieId : newKategorienIds) {
@@ -4431,35 +4564,55 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
             int i = 0;
             for (final CidsBean spielhalleBean : spielhallen) {
                 i++;
-
-                final Object hauptkategorieAttribute = spielhalleBean.getProperty("hauptkategorie");
                 Assert.assertNotNull("attribute 'hauptkategorie' of  meta object #" + i + "/" + expectedSpielhallenCount
                         + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
                         + spielhalleBean.getMetaObject().getMetaClass().getTableName() + "' is not null",
-                        hauptkategorieAttribute);
+                        spielhalleBean.getProperty("hauptkategorie"));
                 Assert.assertTrue("value of attribute 'hauptkategorie' of  meta object #" + i + "/" + expectedSpielhallenCount
                         + " (id:" + spielhalleBean.getMetaObject().getID()
                         + ") for meta class '" + spielhalleBean.getMetaObject().getMetaClass().getTableName() + "' is a Meta Object",
-                        CidsBean.class.isAssignableFrom(hauptkategorieAttribute.getClass()));
+                        CidsBean.class.isAssignableFrom(spielhalleBean.getProperty("hauptkategorie").getClass()));
 
-                final CidsBean kategorieBean = (CidsBean) hauptkategorieAttribute;
-                kategorieBean.delete();
+                final CidsBean hauptkategorieBean = (CidsBean) spielhalleBean.getProperty("hauptkategorie");
+                hauptkategorieBean.delete();
+
+                Assert.assertEquals("attribute 'hauptkategorie' of  meta object #" + i + "/" + expectedSpielhallenCount
+                        + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
+                        + spielhalleBean.getMetaObject().getMetaClass().getTableName() + "' status id deleted: "
+                        + hauptkategorieBean.getMetaObject().getStatusDebugString(),
+                        MetaObject.TO_DELETE,
+                        hauptkategorieBean.getMetaObject().getStatus());
+
+                Assert.assertTrue("attribute 'hauptkategorie' of  meta object #" + i + "/" + expectedSpielhallenCount
+                        + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
+                        + spielhalleBean.getMetaObject().getMetaClass().getTableName() + "' status isChanged",
+                        hauptkategorieBean.getMetaObject().getReferencingObjectAttribute().isChanged());
 
                 MetaObjectIntegrityTest.checkMetaObjectIntegrity(spielhalleBean.getMetaObject());
 
-                final CidsBean updatedSpielhalleBean = spielhalleBean.persist();
+                Assert.assertNull("hauptkategorie of meta object #" + i + "/" + expectedSpielhallenCount + " (id:"
+                        + spielhalleBean.getMetaObject().getID() + ") for meta class '"
+                        + spielhalleBean.getMetaObject().getMetaClass().getTableName()
+                        + "' (id:" + spielhalleBean.getMetaObject().getMetaClass().getID() + ") deleted locally",
+                        spielhalleBean.getProperty("hauptkategorie"));
 
-                Assert.assertNotNull("updated meta object #" + i + "/" + expectedSpielhallenCount
-                        + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
-                        + spielhalleBean.getMetaObject().getMetaClass().getTableName() + "' (id:"
-                        + spielhalleBean.getMetaObject().getMetaClass().getID() + ") retrieved from server",
-                        updatedSpielhalleBean);
+                // Attention: Need to explicitely delete the meta object!
+                final CidsBean deletedHauptkategorieBean = hauptkategorieBean.persist();
+                Assert.assertNull("hauptkategorie '" + hauptkategorieBean.getMetaObject().getName()
+                        + "' (" + hauptkategorieBean.getMetaObject().getKey()
+                        + ") of meta object #" + i + "/" + expectedSpielhallenCount + " (id:"
+                        + spielhalleBean.getMetaObject().getID() + ") for meta class '"
+                        + spielhalleBean.getMetaObject().getMetaClass().getTableName()
+                        + "' (id:" + spielhalleBean.getMetaObject().getMetaClass().getID() + ") deleted",
+                        deletedHauptkategorieBean);
+
+                final CidsBean updatedSpielhalleBean = spielhalleBean.persist();
                 MetaObjectIntegrityTest.checkMetaObjectIntegrity(updatedSpielhalleBean.getMetaObject());
 
                 Assert.assertNull("hauptkategorie of meta object #" + i + "/" + expectedSpielhallenCount + " (id:"
                         + spielhalleBean.getMetaObject().getID() + ") for meta class '"
                         + spielhalleBean.getMetaObject().getMetaClass().getTableName()
-                        + "' (id:" + spielhalleBean.getMetaObject().getMetaClass().getID() + ") deleted",
+                        + "' (id:" + spielhalleBean.getMetaObject().getMetaClass().getID() + ") deleted remote",
                         updatedSpielhalleBean.getProperty("hauptkategorie"));
 
                 // compare as changed -> property string do not match (bestreiber->spiehalle->hauptkategorie != spielhalle->hauptkategorie)
@@ -4468,6 +4621,21 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 compareMetaObjects(spielhalleBean.getMetaObject(),
                         updatedSpielhalleBean.getMetaObject(),
                         true, false, true, true);
+
+                final MetaObject deletedHauptkategorieObject = connector.getMetaObject(
+                        user,
+                        hauptkategorieBean.getMetaObject().getID(),
+                        hauptkategorieBean.getMetaObject().getClassID(),
+                        hauptkategorieBean.getMetaObject().getDomain());
+
+                Assert.assertNull("hauptkategorie '" + hauptkategorieBean.getMetaObject().getName()
+                        + "' (" + hauptkategorieBean.getMetaObject().getKey()
+                        + ") of meta object #" + i + "/" + expectedSpielhallenCount + " (id:"
+                        + spielhalleBean.getMetaObject().getID() + ") for meta class '"
+                        + spielhalleBean.getMetaObject().getMetaClass().getTableName()
+                        + "' (id:" + spielhalleBean.getMetaObject().getMetaClass().getID() + ") deleted",
+                        deletedHauptkategorieObject);
+
             }
 
             final int actualSpielhallenCount = countDbEntities("SPH_SPIELHALLE", 3);
@@ -4475,7 +4643,8 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                     expectedSpielhallenCount, actualSpielhallenCount);
 
             final int actualKategorienCount = countDbEntities("SPH_KATEGORIE", 3);
-            Assert.assertEquals(expectedKategorienCount + " 'SPH_KATEGORIE' entities in Integration Base (" + actualSpielhallenCount + " deleted)",
+            Assert.assertEquals(expectedKategorienCount + " 'SPH_KATEGORIE' entities in Integration Base ("
+                    + actualSpielhallenCount + " deleted)",
                     expectedKategorienCount, actualKategorienCount);
 
             LOGGER.info("deleteCidsBeanBeanProperty(SPH_SPIELHALLE/SPH_KATEGORIE) test passed! "
@@ -4647,6 +4816,8 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
                 final String oldKategorieName = (String) kategorieBean.getProperty("name");
                 final String updatedKategorieName = oldKategorieName + " (array updated)";
+                
+                kategorieBean.setProperty("name", updatedKategorieName);
 
                 Assert.assertEquals("kategorie[" + kategorieBeanIndex + "] of cids bean #" + i + "/" + expectedSpielhallenCount
                         + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
@@ -4968,7 +5139,7 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                 final CidsBean originalSpielhalleBean = originalSpielhallen.get(i);
                 i++;
 
-                final List<CidsBean> arrayElements = originalSpielhalleBean.getBeanCollectionProperty("kategorien");
+                final List<CidsBean> arrayElements = spielhalleBean.getBeanCollectionProperty("kategorien");
                 Assert.assertFalse("array attribute 'kategorien' of  cids bean #" + i + "/" + expectedSpielhallenCount
                         + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
                         + spielhalleBean.getMetaObject().getMetaClass().getTableName() + "' is not empty",
@@ -4983,7 +5154,8 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
 
                 final CidsBean arrayElement = arrayElements.get(arrayElementIndex);
 
-                final CidsBean removedArrayElement = spielhalleBean.getBeanCollectionProperty("kategorien").remove(arrayElementIndex);
+                final CidsBean removedArrayElement 
+                        = spielhalleBean.getBeanCollectionProperty("kategorien").remove(arrayElementIndex);
 
                 Assert.assertEquals("array element kategorien[" + arrayElementIndex + "] of  cids bean #" + i + "/" + expectedSpielhallenCount
                         + " (id:" + spielhalleBean.getMetaObject().getID() + ") for meta class '"
@@ -6795,11 +6967,13 @@ public class LegacyRESTfulInterfaceTest extends TestBase {
                         expectedObjectAttributeValue,
                         actualObjectAttributeValue);
             } else // ids of saved and usaved objects may be different!
-             if (!compareNew && !compareChanged && !expectedObjectAttribute.isPrimaryKey()) {
+            {
+                if (!compareNew && !compareChanged && !expectedObjectAttribute.isPrimaryKey()) {
                     Assert.assertEquals("actual objectAttribute[" + name + "] object value (" + expectedObjectAttributeValueClass.getSimpleName() + ") matches {" + getHierarchyPath(objectHierarchy) + "}",
                             expectedObjectAttributeValue,
                             actualObjectAttributeValue);
                 }
+            }
         } else if (!compareNew && !compareChanged) {
             // disable null value comparison for new and changed objects
             // server may populate null values (e.g. dummy array objects, default values, etc.)

@@ -974,7 +974,8 @@ public class MetaObjectIntegrityTest {
         if (metaObject.getId() == -1) {
             Assert.assertEquals((metaObject.isDummy() ? "DUMMY " : "") + "MetaObject '" + metaObject.getName() + "|"
                     + metaClassName + "' (" + metaObject.getId()
-                    + "@" + metaObject.getClassKey() + "): Status is NEW if id is -1 {" + hierarchyPath + "}",
+                    + "@" + metaObject.getClassKey() + "): Status is NEW if id is -1 {" + hierarchyPath + "}: ."
+                    +metaObject.getStatusDebugString(),
                     MetaObject.NEW,
                     metaObject.getStatus());
         }
