@@ -1204,7 +1204,7 @@ public final class PersistenceManager extends Shutdown {
                                     }
                                 }
                                 // foreign key will be set
-                                if (status == MetaObject.TEMPLATE) {
+                                if (status == MetaObject.TEMPLATE) {                             
                                     values.add(NULL);
                                 } else {
                                     values.add(objectID);

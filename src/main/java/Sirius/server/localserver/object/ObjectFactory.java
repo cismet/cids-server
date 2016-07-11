@@ -879,15 +879,19 @@ public final class ObjectFactory extends Shutdown {
     }
 
     /**
-     * DOCUMENT ME!
+     * Creates a new instance of the respective class.
      *
-     * @param   classId  DOCUMENT ME!
+     * @param       classId  DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return      DOCUMENT ME!
      *
-     * @throws  Exception  DOCUMENT ME!
+     * @throws      Exception  DOCUMENT ME!
+     *
+     * @deprecated  use MetaClass.getInstance() instead
      */
+    @Deprecated
     public Sirius.server.localserver.object.Object getInstance(final int classId) throws Exception {
+        // FIXME #174 add support for 1-n arrays!
         if (LOG.isDebugEnabled()) {
             LOG.debug("getInstance(" + classId + ") called"); // NOI18N
         }
