@@ -42,10 +42,10 @@ public class ToStringConverter implements Serializable {
     public String convert(final Sirius.server.localserver.object.Object o, final HashMap classes) {
         final StringBuilder stringRepresentation = new StringBuilder();
 
-        final Collection<Attribute> names = o.getAttributeByName("name", 1); // NOI18N
-        final Iterator iter = names.iterator();
+        final Collection<ObjectAttribute> names = o.getAttributeByName("name", 1); // NOI18N
+        final Iterator<ObjectAttribute> iter = names.iterator();
         if (iter.hasNext()) {
-            stringRepresentation.append(((ObjectAttribute)iter.next()).getValue());
+            stringRepresentation.append(iter.next().getValue());
         } else {
             stringRepresentation.append(o.getKey().toString());
         }
@@ -56,35 +56,41 @@ public class ToStringConverter implements Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @param   o  DOCUMENT ME!
+     * @param   stringConvertable  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public String convert(final StringConvertable o) {
+    public String convert(final StringConvertable stringConvertable) {
         final StringBuilder stringRepresentation = new StringBuilder();
 
-        if (o instanceof Sirius.server.localserver.object.Object) {
-            final Collection<Attribute> names = ((Sirius.server.localserver.object.Object)o).getAttributeByName(
-                    "name", // NOI18N
-                    1);
+        if (Sirius.server.localserver.object.Object.class.isAssignableFrom(stringConvertable.getClass())) {
+            final Collection<ObjectAttribute> names = ((Sirius.server.localserver.object.Object)stringConvertable)
+                        .getAttributeByName(
+                            "name", // NOI18N
+                            1);
             if (names.size() > 0) {
                 for (final Attribute cur : names) {
                     stringRepresentation.append(cur.getValue());
                 }
             } else {
-                final ObjectAttribute oa = ((Sirius.server.localserver.object.Object)o).getAttributeByFieldName("name");
+                final ObjectAttribute oa = ((Sirius.server.localserver.object.Object)stringConvertable)
+                            .getAttributeByFieldName("name");
                 if (oa != null) {
                     stringRepresentation.append(String.valueOf(oa.getValue()));
                 }
             }
-        } else if (o instanceof Sirius.server.localserver.attribute.ObjectAttribute) {
-            if (((Sirius.server.localserver.attribute.ObjectAttribute)o).getMai().getJavaclassname().equals(
+        } else if (Sirius.server.localserver.attribute.ObjectAttribute.class.isAssignableFrom(
+                        stringConvertable.getClass())) {
+            if (((Sirius.server.localserver.attribute.ObjectAttribute)stringConvertable).getMai().getJavaclassname()
+                        .equals(
                             GEOMETRY_CLASS_NAME)) {
-                final Geometry geom = (Geometry)((ObjectAttribute)o).getValue();
+                final Geometry geom = (Geometry)((ObjectAttribute)stringConvertable).getValue();
                 stringRepresentation.append(geom.getGeometryType());
             } else {
-                stringRepresentation.append(((ObjectAttribute)o).getValue());
+                stringRepresentation.append(((ObjectAttribute)stringConvertable).getValue());
             }
+        } else {
+            // ?!
         }
 
         return stringRepresentation.toString();
