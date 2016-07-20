@@ -45,12 +45,8 @@ public class CidsLayerInitStatement extends AbstractCidsServerSearch {
 
     //~ Instance fields --------------------------------------------------------
 
-// private String envelopeQuery = "select st_asText(st_extent(geo_field)) from %s;";
-// private String envelopeQuery = "select st_asText(st_extent(tmp.%s)) from (%s) as tmp";
     private final String envelopeQuery = "select st_asText(st_extent(%s)) %s";
-    private final String geometryTypeQuery =
-        "SELECT distinct st_geometryType(%1$s), (select st_asText(%1$s) %2$s  where %1$s is not null limit 1) %2$s  where %1$s is not null";
-//    private String initString = "select column_name, data_type from information_schema.columns where table_schema = '%s' and table_name = '%s' order by ordinal_position ASC";
+    private final String geometryTypeQuery = "SELECT distinct st_geometryType(%1$s) %2$s  where %1$s is not null";
     private int classId;
     private String domain;
     private CidsLayerInfo layerInfo;
@@ -100,8 +96,8 @@ public class CidsLayerInitStatement extends AbstractCidsServerSearch {
             if (geometryType.size() == 1) {
                 final ArrayList list = geometryType.get(0);
 
-                if ((list.size() == 2) && (list.get(1) != null)) {
-                    type = list.get(1).toString();
+                if ((list.size() == 1) && (list.get(0) != null)) {
+                    type = list.get(0).toString();
                 }
             }
 
