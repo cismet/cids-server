@@ -5,10 +5,6 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package Sirius.server.middleware.types;
 
 import Sirius.server.newuser.User;
@@ -180,6 +176,7 @@ public interface MetaObject extends Sirius.server.localserver.object.Object,
      *
      * @return  Value of property changed.
      */
+    @Deprecated
     boolean isChanged();
 
     /**
@@ -229,6 +226,7 @@ public interface MetaObject extends Sirius.server.localserver.object.Object,
      *
      * @param  changed  New value of property changed.
      */
+    @Deprecated
     void setChanged(boolean changed);
 
     /**

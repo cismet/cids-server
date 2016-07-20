@@ -5,15 +5,10 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package Sirius.server.middleware.types;
 
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
-import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.sql.DialectProvider;
 import Sirius.server.sql.SQLTools;
 
@@ -153,7 +148,7 @@ public class BeanFactory {
                     if (!a.getMai().isExtensionAttribute()) {
                         final String field = a.getMai().getFieldName().toLowerCase();
                         Object value = a.getValue();
-                        a.setParentObject(metaObject);
+                        // a.setParentObject(metaObject); // disabled -> fixed in #172
                         if (value instanceof MetaObject) {
                             final MetaObject tmpMO = (MetaObject)value;
                             if (tmpMO.isDummy()) {
@@ -167,7 +162,7 @@ public class BeanFactory {
                                 if (a.getMai().isVirtual() && a.getMai().isForeignKey()
                                             && (a.getMai().getForeignKeyClassId() < 0)) {
                                     for (final ObjectAttribute arrayElementOA : arrayOAs) {
-                                        arrayElementOA.setParentObject(tmpMO);
+                                        // arrayElementOA.setParentObject(tmpMO);  // disabled -> fixed in #172
                                         final MetaObject arrayElementMO = (MetaObject)arrayElementOA.getValue();
                                         final CidsBean cdBean = arrayElementMO.getBean();
                                         if (cdBean != null) {
@@ -183,13 +178,14 @@ public class BeanFactory {
                                 } else {
                                     // n-m Beziehung (Array)
                                     for (final ObjectAttribute arrayElementOA : arrayOAs) {
-                                        arrayElementOA.setParentObject(tmpMO);
+                                        // arrayElementOA.setParentObject(tmpMO);  // disabled -> fixed in #172
                                         final MetaObject arrayElementMO = (MetaObject)arrayElementOA.getValue();
                                         // In diesem MetaObject gibt es nun genau ein Attribut das als Value ein
                                         // MetaObject hat
                                         final ObjectAttribute[] arrayElementAttribs = arrayElementMO.getAttribs();
                                         for (final ObjectAttribute targetArrayElement : arrayElementAttribs) {
-                                            targetArrayElement.setParentObject(arrayElementMO);
+                                            // targetArrayElement.setParentObject(arrayElementMO);  // disabled ->
+                                            // fixed in #172
                                             final Object targetArrayElementValObj = targetArrayElement.getValue();
                                             if (targetArrayElementValObj instanceof MetaObject) {
                                                 final MetaObject targetMO = (MetaObject)targetArrayElementValObj;

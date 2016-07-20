@@ -5,13 +5,8 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package Sirius.server.middleware.types;
 
-import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.proxy.MetaService;
@@ -28,6 +23,7 @@ import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -220,12 +216,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     }
 
     @Override
-    public Collection getURLs(final Collection classKeys) {
+    public Collection<String> getURLs(final Collection classKeys) {
         return getRealMetaObject().getURLs(classKeys);
     }
 
     @Override
-    public Collection getURLsByName(final Collection classKeys, final Collection urlNames) {
+    public Collection<String> getURLsByName(final Collection classKeys, final Collection urlNames) {
         return getRealMetaObject().getURLsByName(classKeys, urlNames);
     }
 
@@ -347,6 +343,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      *
      * @throws  Exception  DOCUMENT ME!
      */
+    @Deprecated
     @Override
     public Object fromString(final String objectRepresentation, final Object mo) throws Exception {
         return getRealMetaObject().fromString(objectRepresentation, mo);
@@ -365,13 +362,13 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     /**
      * DOCUMENT ME!
      *
-     * @param   key  DOCUMENT ME!
+     * @param   name  key DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
     @Override
-    public Object getAttribute(final Object key) {
-        return getRealMetaObject().getAttribute(key);
+    public ObjectAttribute getAttribute(final String name) {
+        return getRealMetaObject().getAttribute(name);
     }
 
     /**
@@ -395,7 +392,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      * @return  DOCUMENT ME!
      */
     @Override
-    public Collection<Attribute> getAttributeByName(final String name, final int maxResult) {
+    public Collection<ObjectAttribute> getAttributeByName(final String name, final int maxResult) {
         return getRealMetaObject().getAttributeByName(name, maxResult);
     }
 
@@ -405,7 +402,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      * @return  DOCUMENT ME!
      */
     @Override
-    public HashMap getAttributes() {
+    public LinkedHashMap<java.lang.Object, ObjectAttribute> getAttributes() {
         return getRealMetaObject().getAttributes();
     }
 
@@ -417,7 +414,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      * @return  DOCUMENT ME!
      */
     @Override
-    public Collection getAttributesByName(final Collection names) {
+    public Collection<ObjectAttribute> getAttributesByName(final Collection names) {
         return getRealMetaObject().getAttributesByName(names);
     }
 
@@ -430,7 +427,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      * @return  DOCUMENT ME!
      */
     @Override
-    public Collection getAttributesByType(final Class c, final int recursionDepth) {
+    public Collection<ObjectAttribute> getAttributesByType(final Class c, final int recursionDepth) {
         return getRealMetaObject().getAttributesByType(c, recursionDepth);
     }
 
@@ -442,7 +439,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      * @return  DOCUMENT ME!
      */
     @Override
-    public Collection getAttributesByType(final Class c) {
+    public Collection<ObjectAttribute> getAttributesByType(final Class c) {
         return getRealMetaObject().getAttributesByType(c);
     }
 
@@ -462,7 +459,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      * @return  DOCUMENT ME!
      */
     @Override
-    public Attribute getPrimaryKey() {
+    public ObjectAttribute getPrimaryKey() {
         return getRealMetaObject().getPrimaryKey();
     }
 
@@ -504,7 +501,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      * @return  DOCUMENT ME!
      */
     @Override
-    public Collection getTraversedAttributesByType(final Class c) {
+    public Collection<ObjectAttribute> getTraversedAttributesByType(final Class c) {
         return getRealMetaObject().getTraversedAttributesByType(c);
     }
 

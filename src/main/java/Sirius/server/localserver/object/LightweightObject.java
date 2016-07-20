@@ -5,10 +5,6 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package Sirius.server.localserver.object;
 
 /**
@@ -26,7 +22,7 @@ public class LightweightObject extends DefaultObject {
      *
      * @param  o  DOCUMENT ME!
      */
-    public LightweightObject(final Object o) {
+    public LightweightObject(final Sirius.server.localserver.object.Object o) {
         super(o);
     }
 

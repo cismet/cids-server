@@ -8,6 +8,7 @@
 package de.cismet.cids.tools.tostring;
 
 import Sirius.server.localserver.attribute.Attribute;
+import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
 
 import java.io.Serializable;
@@ -40,10 +41,10 @@ public class StrassStringConverter extends ToStringConverter implements Serializ
 
             String stringRepresentation = ""; // NOI18N
 
-            final Collection<Attribute> attrs = mo.getAttributeByName("NAME", 1); // NOI18N
+            final Collection<ObjectAttribute> attrs = mo.getAttributeByName("NAME", 1); // NOI18N
 
             if (!attrs.isEmpty()) {
-                final Attribute attr = attrs.iterator().next();
+                final ObjectAttribute attr = attrs.iterator().next();
 
                 stringRepresentation += (attr.toString() + " ");
             }

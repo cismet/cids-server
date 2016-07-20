@@ -14,7 +14,6 @@ import Sirius.server.localserver._class.ClassCache;
 import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
-import Sirius.server.middleware.types.DefaultMetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.permission.Permission;
@@ -575,11 +574,6 @@ public final class ObjectFactory extends Shutdown {
                 oAttr.setReferencesObject(mai.isForeignKey());
                 oAttr.setOptional(mai.isOptional());
 
-                oAttr.setParentObject(result); // Achtung die Adresse des Objektes ist nicht die Adresse des
-                // tatsaechlichen MetaObjects. Dieses wird neu erzeugt. da aber die
-                // gleichen objectattributes benutzt werden funktioniert ein zugriff ueber
-                // parent auf diese oa's trotzdem
-
                 if (attrValue instanceof Sirius.server.localserver.object.Object) {
                     ((Sirius.server.localserver.object.Object)attrValue).setReferencingObjectAttribute(oAttr);
                 }
@@ -588,12 +582,7 @@ public final class ObjectFactory extends Shutdown {
                 oAttr.setClassKey(mai.getForeignKeyClassId() + "@" + classCache.getProperties().getServerName()); // NOI18N
 
                 if (!mai.isVirtual()) {
-                    // spaltenindex f\u00FCr sql metadaten abfragen
-                    final int colNo = rs.findColumn(fieldName);
-
-                    // java type retrieved by getObject
-                    final String javaType = rs.getMetaData().getColumnClassName(colNo);
-                    oAttr.setJavaType(javaType);
+                    oAttr.setJavaType(mai.getJavaclassname());
                 } else {
                     oAttr.setJavaType(java.lang.Object.class.getCanonicalName());
                 }
@@ -658,7 +647,8 @@ public final class ObjectFactory extends Shutdown {
     }
 
     /**
-     * DOCUMENT ME!
+     * Creates a dummay array container object with dummy entries. See
+     * https://github.com/cismet/developer-space/wiki/Array-Objekte-Struktur
      *
      * @param   referenceKey     DOCUMENT ME!
      * @param   mai              DOCUMENT ME!
@@ -675,15 +665,21 @@ public final class ObjectFactory extends Shutdown {
             final HashMap<String, Sirius.server.localserver.object.Object> ohm) throws SQLException {
         // construct artificial metaobject
 
-        final Sirius.server.localserver._class.Class c = classCache.getClass(mai.getForeignKeyClassId());
+        final Sirius.server.localserver._class.Class dummyArrayClass = classCache.getClass(mai.getForeignKeyClassId());
 
-        final Sirius.server.localserver.object.Object result = new Sirius.server.localserver.object.DefaultObject(
+        final Sirius.server.localserver.object.Object dummyArrayContainerObject =
+            new Sirius.server.localserver.object.DefaultObject(
                 array_predicate,
-                c.getID());
-        result.setDummy(true);
+                dummyArrayClass.getID());
+        dummyArrayContainerObject.setDummy(true);
 
+        // #169: order by array table id
         final String getObjectStmnt = SQLTools.getStatements(dialect)
-                    .getObjectFactoryGetObjectStmt(c.getTableName(), mai.getArrayKeyFieldName(), referenceKey);
+                    .getObjectFactoryGetObjectStmt(
+                        dummyArrayClass.getTableName(),
+                        mai.getArrayKeyFieldName(),
+                        referenceKey,
+                        dummyArrayClass.getPrimaryKey());
 
         Statement stmnt = null;
         ResultSet rs = null;
@@ -698,34 +694,47 @@ public final class ObjectFactory extends Shutdown {
             // artificial id
             int i = 0;
             while (rs.next()) {
-                final int o_id = rs.getInt(c.getPrimaryKey());
+                final int o_id = rs.getInt(dummyArrayClass.getPrimaryKey());
 
-                final Sirius.server.localserver.object.Object element = createObject(o_id, rs, c, true, null, 1);
+                // createObject adds the *real* array entry as object attribute to the intermediate object
+                final Sirius.server.localserver.object.Object intermediateArrayElementObject = createObject(
+                        o_id,
+                        rs,
+                        dummyArrayClass,
+                        true,
+                        null,
+                        1);
 
-                if (element != null) {
+                if (intermediateArrayElementObject != null) {
                     final ObjectAttribute oa = new ObjectAttribute(
                             mai.getId()
                                     + "." // NOI18N
                                     + i++,
                             mai,
                             o_id,
-                            element,
-                            c.getAttributePolicy());
+                            intermediateArrayElementObject,
+                            dummyArrayClass.getAttributePolicy());
                     oa.setOptional(mai.isOptional());
                     oa.setVisible(mai.isVisible());
-                    element.setReferencingObjectAttribute(oa);
-                    oa.setParentObject(result);
+                    intermediateArrayElementObject.setReferencingObjectAttribute(oa);
                     // bei gelegenheit raus da es im Konstruktor von MetaObject gesetzt wird
                     oa.setClassKey(mai.getForeignKeyClassId() + "@" + classCache.getProperties().getServerName()); // NOI18N
-                    result.addAttribute(oa);
+                    dummyArrayContainerObject.addAttribute(oa);
                 } else {
                     // TODO: expensive and should probably only be a warning
-                    LOG.error(new ObjectAttribute(mai.getId() + "." + i++, mai, o_id, element, c.getAttributePolicy()) // NOI18N
-                                + " ommited as element was null");                                               // NOI18N
+                    LOG.error(new ObjectAttribute(
+                                    mai.getId()
+                                    + "."
+                                    + i++,
+                                    mai,
+                                    o_id,
+                                    intermediateArrayElementObject,
+                                    dummyArrayClass.getAttributePolicy()) // NOI18N
+                                + " ommited as element was null");        // NOI18N
                 }
             }
 
-            return result;
+            return dummyArrayContainerObject;
         } finally {
             DBConnection.closeResultSets(rs);
             DBConnection.closeStatements(stmnt);
@@ -750,7 +759,7 @@ public final class ObjectFactory extends Shutdown {
     }
 
     /**
-     * DOCUMENT ME!
+     * Creates a 1-n dummy array object.
      *
      * @param   referenceKey     DOCUMENT ME!
      * @param   mai              DOCUMENT ME!
@@ -772,9 +781,13 @@ public final class ObjectFactory extends Shutdown {
 
         final Sirius.server.localserver._class.Class masterClass = classCache.getClass(masterClassId);
 
+        /**
+         * Class of the actual array entries
+         */
         final Sirius.server.localserver._class.Class detailClass = classCache.getClass(-1 * mai.getForeignKeyClassId());
 
-        final Sirius.server.localserver.object.Object result = new Sirius.server.localserver.object.DefaultObject(
+        final Sirius.server.localserver.object.Object dummyArrayContainerObject =
+            new Sirius.server.localserver.object.DefaultObject(
                 array_predicate,
                 detailClass.getID());
 
@@ -794,13 +807,14 @@ public final class ObjectFactory extends Shutdown {
             return null;
         }
 
-        result.setDummy(true);
+        dummyArrayContainerObject.setDummy(true);
 
         final String getObjectStmnt = SQLTools.getStatements(dialect)
                     .getObjectFactoryGetObjectStmt(
                         detailClass.getTableName(),
                         maiBacklink.getFieldName(),
-                        String.valueOf(array_predicate));
+                        String.valueOf(array_predicate),
+                        detailClass.getPrimaryKey());
 
         Statement stmnt = null;
         ResultSet rs = null;
@@ -817,7 +831,10 @@ public final class ObjectFactory extends Shutdown {
             while (rs.next()) {
                 final int o_id = rs.getInt(detailClass.getPrimaryKey());
 
-                final Sirius.server.localserver.object.Object element = createObject(
+                /**
+                 * The *real* array element object
+                 */
+                final Sirius.server.localserver.object.Object arrayElementObject = createObject(
                         o_id,
                         rs,
                         detailClass,
@@ -825,22 +842,21 @@ public final class ObjectFactory extends Shutdown {
                         ohm,
                         1);
 
-                if (element != null) {
+                if (arrayElementObject != null) {
                     final ObjectAttribute oa = new ObjectAttribute(
                             mai.getId()
                                     + "." // NOI18N
                                     + i++,
                             mai,
                             o_id,
-                            element,
+                            arrayElementObject,
                             detailClass.getAttributePolicy());
                     oa.setOptional(mai.isOptional());
                     oa.setVisible(mai.isVisible());
-                    element.setReferencingObjectAttribute(oa);
-                    oa.setParentObject(result);
+                    arrayElementObject.setReferencingObjectAttribute(oa);
                     // bei gelegenheit raus da es im Konstruktor von MetaObject gesetzt wird
                     oa.setClassKey(mai.getForeignKeyClassId() + "@" + classCache.getProperties().getServerName()); // NOI18N
-                    result.addAttribute(oa);
+                    dummyArrayContainerObject.addAttribute(oa);
                 } else {
                     // TODO: expensive and should probably only be a warning
                     LOG.error(new ObjectAttribute(
@@ -849,13 +865,13 @@ public final class ObjectFactory extends Shutdown {
                                     + i++,
                                     mai,
                                     o_id,
-                                    element,
+                                    arrayElementObject,
                                     detailClass.getAttributePolicy()) // NOI18N
                                 + " ommited as element was null");    // NOI18N
                 }
             }
 
-            return result;
+            return dummyArrayContainerObject;
         } finally {
             DBConnection.closeResultSets(rs);
             DBConnection.closeStatements(stmnt);
@@ -863,17 +879,21 @@ public final class ObjectFactory extends Shutdown {
     }
 
     /**
-     * DOCUMENT ME!
+     * Creates a new instance of the respective class.
      *
-     * @param   classId  DOCUMENT ME!
+     * @param       classId  DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return      DOCUMENT ME!
      *
-     * @throws  Exception  DOCUMENT ME!
+     * @throws      Exception  DOCUMENT ME!
+     *
+     * @deprecated  use MetaClass.getInstance() instead
      */
+    @Deprecated
     public Sirius.server.localserver.object.Object getInstance(final int classId) throws Exception {
+        // FIXME #174 add support for 1-n arrays!
         if (LOG.isDebugEnabled()) {
-            LOG.debug("getInstance(" + classId + ") called", new CurrentStackTrace()); // NOI18N
+            LOG.debug("getInstance(" + classId + ") called"); // NOI18N
         }
         final Sirius.server.localserver._class.Class c = classCache.getClass(classId);
 
@@ -881,76 +901,82 @@ public final class ObjectFactory extends Shutdown {
                 -1,
                 classId);
 
-        // nur ein Versuch:-)
-        final Iterator iter = Collections.synchronizedCollection(c.getMemberAttributeInfos().values()).iterator();
+        if ((c.getMemberAttributeInfos() != null) && !c.getMemberAttributeInfos().isEmpty()) {
+            final Iterator iter = Collections.synchronizedCollection(c.getMemberAttributeInfos().values()).iterator();
 
-        while (iter.hasNext()) {
-            final MemberAttributeInfo mai = (MemberAttributeInfo)iter.next();
+            while (iter.hasNext()) {
+                final MemberAttributeInfo mai = (MemberAttributeInfo)iter.next();
 
-            ObjectAttribute oAttr;
+                ObjectAttribute oAttr;
 
-            if (!mai.isForeignKey()) {
-                oAttr = new ObjectAttribute(mai, -1, null, c.getAttributePolicy());
-            } else if (!mai.isArray()) {
-                oAttr = new ObjectAttribute(mai, -1, getInstance(mai.getForeignKeyClassId()), c.getAttributePolicy());
-            } else // isArray
-            {
-                // construct artificial metaobject
+                if (!mai.isForeignKey()) {
+                    oAttr = new ObjectAttribute(mai, -1, null, c.getAttributePolicy());
+                } else if (!mai.isArray()) {
+                    oAttr = new ObjectAttribute(
+                            mai,
+                            -1,
+                            getInstance(mai.getForeignKeyClassId()),
+                            c.getAttributePolicy());
+                } else // isArray
+                {
+                    // construct artificial metaobject
 
-                // classId des zwischenobjektes (join tabelle) zuweisen
-                final int jtClassId = mai.getForeignKeyClassId();
+                    // classId des zwischenobjektes (join tabelle) zuweisen
+                    final int jtClassId = mai.getForeignKeyClassId();
 
-                // Klasse der referenztabellen besorgen
-                final Sirius.server.localserver._class.Class cl = classCache.getClass(jtClassId);
+                    // Klasse der referenztabellen besorgen
+                    final Sirius.server.localserver._class.Class cl = classCache.getClass(jtClassId);
 
-                // dummy erszeugen
-                final Sirius.server.localserver.object.Object result =
-                    new Sirius.server.localserver.object.DefaultObject(-1,
-                        cl.getID());
+                    // dummy erszeugen
+                    final Sirius.server.localserver.object.Object result =
+                        new Sirius.server.localserver.object.DefaultObject(-1,
+                            cl.getID());
 
-                // der dummy bekommt jetzt genau ein Attribut vom Typ der Klasse der Referenztabelle, als Muster
+                    // der dummy bekommt jetzt genau ein Attribut vom Typ der Klasse der Referenztabelle, als Muster
 
-                // zwischenobjekt als arrayelement anlegen
+                    // zwischenobjekt als arrayelement anlegen
 
-                result.addAttribute(new ObjectAttribute(mai, -1, getInstance(jtClassId), cl.getAttributePolicy()));
+                    result.addAttribute(new ObjectAttribute(mai, -1, getInstance(jtClassId), cl.getAttributePolicy()));
 
-                result.setDummy(true);
+                    result.setDummy(true);
 
-                // Objektattribut (array dummy) setzten
-                oAttr = new ObjectAttribute(mai, -1, result, cl.getAttributePolicy());
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("array oattr :" + oAttr.getName() + " class" + oAttr.getClassKey()); // NOI18N
+                    // Objektattribut (array dummy) setzten
+                    oAttr = new ObjectAttribute(mai, -1, result, cl.getAttributePolicy());
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("array oattr :" + oAttr.getName() + " class" + oAttr.getClassKey()); // NOI18N
+                    }
                 }
-            }
 
-            // not covered by the constructor
-            oAttr.setVisible(mai.isVisible());
-            oAttr.setSubstitute(mai.isSubstitute());
-            oAttr.setReferencesObject(mai.isForeignKey());
+                // not covered by the constructor
+                oAttr.setVisible(mai.isVisible());
+                oAttr.setSubstitute(mai.isSubstitute());
+                oAttr.setReferencesObject(mai.isForeignKey());
 
-            oAttr.setIsPrimaryKey(mai.getFieldName().equalsIgnoreCase(c.getPrimaryKey()));
+                oAttr.setIsPrimaryKey(mai.getFieldName().equalsIgnoreCase(c.getPrimaryKey()));
 
-            oAttr.setOptional(mai.isOptional());
+                oAttr.setOptional(mai.isOptional());
 
-            try {
-                final String table = c.getTableName();
+                try {
+                    final String table = c.getTableName();
 
-                final String pk = (mai.getFieldName() + "@" + table).toLowerCase(); // NOI18N
+                    final String pk = (mai.getFieldName() + "@" + table).toLowerCase(); // NOI18N
 
-                if (primaryKeys.contains(pk)) {
-                    oAttr.setIsPrimaryKey(true); // bei gelegenheit raus da es im Konstruktor von MetaObject gesetzt
-                    // wird
+                    if (primaryKeys.contains(pk)) {
+                        oAttr.setIsPrimaryKey(true); // bei gelegenheit raus da es im Konstruktor von MetaObject gesetzt
+                        // wird
+                    }
+                    oAttr.setClassKey(mai.getForeignKeyClassId() + "@" + classCache.getProperties().getServerName()); // NOI18N
+                } catch (Exception e) {
+                    LOG.error("could not set primary key property", e);                                               // NOI18N
                 }
-                oAttr.setClassKey(mai.getForeignKeyClassId() + "@" + classCache.getProperties().getServerName()); // NOI18N
-            } catch (Exception e) {
-                LOG.error("could not set primary key property", e);                                               // NOI18N
-            }
 
-            o.addAttribute(oAttr);
+                o.addAttribute(oAttr);
+            }
+        } else {
+            LOG.warn("no MemberAttributeInfo found in class '" + c.getTableName() + "' ("
+                        + c.getKey() + "): cannot add attrributes to Object!");
         }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("result of getInstance()" + new DefaultMetaObject(o, "LOCAL")); // NOI18N
-        }
+
         return o;
     }
 

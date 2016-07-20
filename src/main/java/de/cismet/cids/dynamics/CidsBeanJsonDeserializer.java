@@ -134,8 +134,12 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
         IntraObjectCacheJsonParser jp = null;
         if (_jp instanceof IntraObjectCacheJsonParser) {
             jp = (IntraObjectCacheJsonParser)_jp;
+//            if (LOG.isDebugEnabled()) {
+//                LOG.debug("reusing IntraObjectCacheJsonParser with " + jp.size() + " cached instances");
+//            }
         } else {
             jp = new IntraObjectCacheJsonParser(_jp);
+//            LOG.info("initializing new IntraObjectCacheJsonParser");
         }
 
         final HashMap<String, Object> propValueMap = new HashMap<String, Object>();
@@ -149,8 +153,14 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                     keySet = true;
                     if (isIntraObjectCacheEnabled() && jp.containsKey(key) && !key.equals("-1")) {
                         cb = jp.get(key);
+//                        if (LOG.isDebugEnabled()) {
+//                            LOG.debug("using cached bean '" + cb.getCidsBeanInfo().getJsonObjectKey() + "'");
+//                        }
                         cacheHit = true;
                     } else {
+//                        if (LOG.isDebugEnabled()) {
+//                            LOG.debug("creating new bean instance '" + key + "'");
+//                        }
                         cb = CidsBean.createNewCidsBeanFromTableName(bInfo.getDomainKey(), bInfo.getClassKey()); // test
                         cb.quiteSetProperty(cb.getPrimaryKeyFieldname().toLowerCase(),
                             Integer.parseInt(bInfo.getObjectKey()));
@@ -162,7 +172,15 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                             while (jp.nextValue() != JsonToken.END_ARRAY) {
                                 final CidsBean arrayObject = jp.readValueAs(CidsBean.class);
                                 if (arrayObject != null) {
-                                    if (isIntraObjectCacheEnabled() && (arrayObject.getPrimaryKeyValue() != -1)) {
+                                    if (isIntraObjectCacheEnabled()
+                                                && (arrayObject.getPrimaryKeyValue() != -1)
+                                                && !jp.containsKey(arrayObject.getCidsBeanInfo().getJsonObjectKey())) {
+                                        if (LOG.isDebugEnabled()) {
+                                            LOG.debug("caching array bean '"
+                                                        + arrayObject.getCidsBeanInfo().getJsonObjectKey()
+                                                        + "' of parent bean"
+                                                        + cb.getCidsBeanInfo().getJsonObjectKey() + "'");
+                                        }
                                         jp.put(arrayObject.getCidsBeanInfo().getJsonObjectKey(), arrayObject);
                                     }
                                     array.add(arrayObject);
@@ -174,7 +192,14 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
 
                         case START_OBJECT: {
                             final CidsBean subObject = jp.readValueAs(CidsBean.class);
-                            if (isIntraObjectCacheEnabled() && (subObject.getPrimaryKeyValue() != -1)) {
+                            if (isIntraObjectCacheEnabled()
+                                        && ((subObject.getPrimaryKeyValue() != -1)
+                                            && !jp.containsKey(subObject.getCidsBeanInfo().getJsonObjectKey()))) {
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug("caching child bean '"
+                                                + subObject.getCidsBeanInfo().getJsonObjectKey() + "' of parent bean '"
+                                                + cb.getCidsBeanInfo().getJsonObjectKey() + "'");
+                                }
                                 jp.put(subObject.getCidsBeanInfo().getJsonObjectKey(), subObject);
                             }
                             propValueMap.put(fieldName, subObject);
@@ -252,16 +277,20 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                             + CidsBeanInfo.JSON_CIDS_OBJECT_KEY_REFERENCE_IDENTIFIER); // NOI18N
             }
             if (!cacheHit && (cb != null)) {
+                // #174 parent MetaObject ID is still -1 when array elements are added
+                cb.getMetaObject().setID((cb.getPrimaryKeyValue() != null) ? (int)cb.getPrimaryKeyValue() : -1);
                 for (final String prop : propValueMap.keySet()) {
                     final Object value = propValueMap.get(prop);
 
-                    if (value instanceof String) {
-                        final ObjectAttribute objectAttribute = cb.getMetaObject().getAttributeByFieldName(prop);
-                        if (objectAttribute == null) {
-                            throw new RuntimeException("unknow property '" + prop + "' in instance of "
-                                        + cb.getCidsBeanInfo());
-                        }
+                    final ObjectAttribute objectAttribute = cb.getMetaObject().getAttributeByFieldName(prop);
+                    if (objectAttribute == null) {
+                        final String message = "unknow property '" + prop + "' in instance of "
+                                    + cb.getCidsBeanInfo();
+                        LOG.error(message);
+                        throw new RuntimeException(message);
+                    }
 
+                    if (value instanceof String) {
                         final Class attrClass = BlacklistClassloading.forName(cb.getMetaObject()
                                         .getAttributeByFieldName(
                                             prop).getMai().getJavaclassname());
@@ -321,12 +350,22 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                         cb.quiteSetProperty(prop, value);
                     }
                 }
-                cb.getMetaObject().setID((cb.getPrimaryKeyValue() != null) ? (int)cb.getPrimaryKeyValue() : -1);
+
                 cb.getMetaObject().forceStatus(MetaObject.NO_STATUS);
                 if (isIntraObjectCacheEnabled() && (cb.getPrimaryKeyValue() != -1)) {
+//                    if (LOG.isDebugEnabled()) {
+//                        LOG.debug("caching bean '" + cb.getCidsBeanInfo().getJsonObjectKey() + "'");
+//                    }
+                    if (jp.containsKey(key)) {
+                        LOG.warn("bean '" + cb.getCidsBeanInfo().getJsonObjectKey()
+                                    + "' already cached! -> possible self-cycle detected");
+                    }
                     jp.put(key, cb);
                 }
             }
+//            if (LOG.isDebugEnabled()) {
+//                LOG.debug("bean '" + cb.getCidsBeanInfo().getJsonObjectKey() + "' created");
+//            }
             return cb;
         } catch (Exception ex) {
             throw new RuntimeException("Error during creation of new CidsBean key=" + key, ex); // NOI18N

@@ -7,19 +7,15 @@
 ****************************************************/
 package Sirius.server.localserver.object;
 
-import Sirius.server.localserver.attribute.Attribute;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.newuser.User;
-import Sirius.server.newuser.permission.PermissionHolder;
 
 import Sirius.util.Mapable;
 
 import org.apache.log4j.Logger;
 
-import java.util.*;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 
@@ -45,7 +41,7 @@ public class DefaultObject implements Object {
     /** indicates whether this object was constucted artificially eg array object. */
     protected boolean dummy = false;
     /** container for this objects attributes. */
-    protected LinkedHashMap attribHash;
+    protected LinkedHashMap<java.lang.Object, ObjectAttribute> attribHash;
     /** indicates wheter this object was loaded from a domainservers database. */
     protected boolean persistent = true;
     protected ObjectAttribute referencingObjectAttribute;
@@ -64,15 +60,15 @@ public class DefaultObject implements Object {
         this((o != null) ? o.getID() : -1, (o != null) ? o.getClassID() : -1);
         if (o != null) {
             if (o.getAttributes() != null) {
-                attribHash = new LinkedHashMap(o.getAttributes());
+                attribHash = new LinkedHashMap<java.lang.Object, ObjectAttribute>(o.getAttributes());
             } else {
-                attribHash = new LinkedHashMap(10, 0.75f, false);
+                attribHash = new LinkedHashMap<java.lang.Object, ObjectAttribute>(10, 0.75f, false);
             }
             this.objectCreator = o.getObjectCreator();
             this.referencingObjectAttribute = o.getReferencingObjectAttribute();
             this.status = o.getStatus();
         } else {
-            LOG.error("object null default object created"); // NOI18N
+            LOG.error("object null -> default object created"); // NOI18N
         }
     }
 
@@ -87,7 +83,7 @@ public class DefaultObject implements Object {
         this.objectID = objectID;
 
         // insertion order
-        attribHash = new LinkedHashMap(10, 0.75f, false);
+        attribHash = new LinkedHashMap<java.lang.Object, ObjectAttribute>(10, 0.75f, false);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -143,6 +139,9 @@ public class DefaultObject implements Object {
      */
     @Override
     public void addAttribute(final ObjectAttribute anyAttribute) {
+        // fix for #172 and #171
+        anyAttribute.setParentObject(this);
+
         if (dummy) {
             // in einem arrayLink Objekt m\u00FCssen
             // alle Felder ausgefuellt sein egal
@@ -154,7 +153,7 @@ public class DefaultObject implements Object {
             // deswegen wird die speicheradresse von anyAttributes genommen, falls id noch nicht gesetzt
             // (wird kurz vorher erst erzeugt, kann deshalb kein Duplikat geben)
             if (anyAttribute.getID() == null) {
-                anyAttribute.setId(new Integer(System.identityHashCode(anyAttribute)).toString());
+                anyAttribute.setId(Integer.toString(System.identityHashCode(anyAttribute)));
             }
             if ((LOG != null) && LOG.isInfoEnabled()) {
                 LOG.info(
@@ -189,24 +188,24 @@ public class DefaultObject implements Object {
      * @return  Hashtabel containing this objects attributes
      */
     @Override
-    public HashMap getAttributes() {
+    public LinkedHashMap<java.lang.Object, ObjectAttribute> getAttributes() {
         return attribHash;
     }
 
     /**
-     * retrieves an Attributed referenced by its key (name) Please note that this method retrieves the first attribute
-     * that matchtes if one needs all attributes matching he should use getAttributeByname().
+     * retrieves an Attribute referenced by its <strong>name</strong> Please note that this method retrieves the first
+     * attribute that matchtes if one needs all attributes matching he should use getAttributeByname().
      *
-     * @param   key  Schluessel (key) des gewuenschten Attributs
+     * @param   name  name des gewuenschten Attributs
      *
      * @return  das Attribut zu dem der Schluessel passt
      */
     @Override
-    public java.lang.Object getAttribute(final java.lang.Object key) {
+    public ObjectAttribute getAttribute(final String name) {
         // return  attribHash.get(key);
         final ObjectAttribute[] as = getAttribs();
         for (int i = 0; i < as.length; i++) {
-            if (as[i].getName().equalsIgnoreCase(key.toString())) {
+            if (as[i].getName().equalsIgnoreCase(name)) {
                 return as[i];
             }
         }
@@ -222,11 +221,11 @@ public class DefaultObject implements Object {
      * @return  Collection mit allen attributen gleichen schluessels == name
      */
     @Override
-    public Collection<Attribute> getAttributeByName(final String name, int maxResult) {
-        final Iterator<Attribute> iter = getAttributes().values().iterator();
-        final ArrayList<Attribute> attribsByName = new ArrayList();
+    public Collection<ObjectAttribute> getAttributeByName(final String name, int maxResult) {
+        final Iterator<ObjectAttribute> iter = getAttributes().values().iterator();
+        final ArrayList<ObjectAttribute> attribsByName = new ArrayList<ObjectAttribute>();
         while ((maxResult > 0) && iter.hasNext()) {
-            Attribute a = null;
+            ObjectAttribute a = null;
             a = iter.next();
             if (a.getName().equalsIgnoreCase(name)) {
                 attribsByName.add(a);
@@ -246,7 +245,7 @@ public class DefaultObject implements Object {
      */
     @Override
     public ObjectAttribute getAttributeByFieldName(final String fieldname) {
-        final Iterator<Attribute> iter = getAttributes().values().iterator();
+        final Iterator<ObjectAttribute> iter = getAttributes().values().iterator();
         while (iter.hasNext()) {
             ObjectAttribute a = null; // TODO intanceof check ???
             a = (ObjectAttribute)iter.next();
@@ -265,13 +264,12 @@ public class DefaultObject implements Object {
      * @return  Collection mit allen attributen gleichen schluessels == name
      */
     @Override
-    public Collection getAttributesByName(final Collection names) {
-        final Iterator iter = getAttributes().values().iterator();
+    public Collection<ObjectAttribute> getAttributesByName(final Collection names) {
+        final Iterator<ObjectAttribute> iter = getAttributes().values().iterator();
 
-        final ArrayList attribsByName = new ArrayList();
+        final ArrayList<ObjectAttribute> attribsByName = new ArrayList<ObjectAttribute>();
         while (iter.hasNext()) {
-            Attribute a = null;
-            a = (Attribute)iter.next();
+            final ObjectAttribute a = iter.next();
 
             if (names.contains(a.getName())) {
                 attribsByName.add(a);
@@ -281,22 +279,22 @@ public class DefaultObject implements Object {
     }
 
     @Override
-    public Collection getAttributesByType(final java.lang.Class c, int recursionDepth) {
-        final Iterator iter = getAttributes().values().iterator();
+    public Collection<ObjectAttribute> getAttributesByType(final java.lang.Class c, int recursionDepth) {
+        final Iterator<ObjectAttribute> iter = getAttributes().values().iterator();
 
-        final ArrayList attribsByType = new ArrayList();
+        final ArrayList<ObjectAttribute> attribsByType = new ArrayList<ObjectAttribute>();
 
         if (recursionDepth < 0) {
             return attribsByType;
         }
         recursionDepth--;
         while (iter.hasNext()) {
-            Attribute a = null;
-            a = (Attribute)iter.next();
+            final ObjectAttribute a = iter.next();
             final java.lang.Object val = a.getValue();
             if ((val != null) && c.isAssignableFrom(val.getClass())) {
                 attribsByType.add(a);
-            } else if ((val != null) && (val instanceof Sirius.server.localserver.object.Object)) {
+            } else if ((val != null)
+                        && (Sirius.server.localserver.object.Object.class.isAssignableFrom(val.getClass()))) {
                 attribsByType.addAll(
                     ((Sirius.server.localserver.object.Object)val).getAttributesByType(c, recursionDepth));
             }
@@ -306,12 +304,12 @@ public class DefaultObject implements Object {
     // --------------------------------------------------------------------------
 
     @Override
-    public Collection getAttributesByType(final java.lang.Class c) {
+    public Collection<ObjectAttribute> getAttributesByType(final java.lang.Class c) {
         return getAttributesByType(c, 0);
     }
 
     @Override
-    public Collection getTraversedAttributesByType(final java.lang.Class c) {
+    public Collection<ObjectAttribute> getTraversedAttributesByType(final java.lang.Class c) {
         return getAttributesByType(c, Integer.MAX_VALUE);
     }
 
@@ -323,17 +321,17 @@ public class DefaultObject implements Object {
      * @return  eine fuer UG massgeschneiderte Version des Objekts
      */
     @Override
-    public Object filter(final User u) {
+    public Sirius.server.localserver.object.Object filter(final User u) {
         final DefaultObject tmp = new DefaultObject(this);
 
         final LinkedHashMap view = new LinkedHashMap();
 
-        final Collection col = this.attribHash.values();
+        final Collection<ObjectAttribute> col = this.attribHash.values();
 
-        final Iterator iter = col.iterator();
+        final Iterator<ObjectAttribute> iter = col.iterator();
 
         while (iter.hasNext()) {
-            final Attribute a = (Attribute)iter.next();
+            final ObjectAttribute a = iter.next();
             if (a.getPermissions().hasReadPermission(u)) {
                 view.put(a.getKey(), a);
             }
@@ -373,7 +371,7 @@ public class DefaultObject implements Object {
             try {
                 addAttribute(objectAttributes[i]);
             } catch (Exception e) {
-                LOG.error("add attribute", e); // NOI18N
+                LOG.error("add attribute failed: " + e.getMessage(), e); // NOI18N
             }
         }
     }
@@ -411,7 +409,9 @@ public class DefaultObject implements Object {
      * @throws  Exception  java.lang.Exception error during consturction of an DefaultObject
      */
     @Override
+    @Deprecated
     public java.lang.Object fromString(final String objectRepresentation, final java.lang.Object mo) throws Exception {
+        // null???
         return null;
     }
 
@@ -430,7 +430,7 @@ public class DefaultObject implements Object {
      */
     @Override
     public void setValuesNull() {
-        final Attribute[] as = getAttribs();
+        final ObjectAttribute[] as = getAttribs();
 
         for (int i = 0; i < as.length; i++) {
             as[i].setValuesNull();
@@ -439,11 +439,10 @@ public class DefaultObject implements Object {
 
     @Override
     public void setPrimaryKeysNull() {
-        final Iterator iter = getAttributes().values().iterator();
+        final Iterator<ObjectAttribute> iter = getAttributes().values().iterator();
 
         while (iter.hasNext()) {
-            Attribute a = null;
-            a = (Attribute)iter.next();
+            final ObjectAttribute a = iter.next();
 
             if (a.isPrimaryKey()) {
                 a.setValue(null);
@@ -463,14 +462,13 @@ public class DefaultObject implements Object {
      * @return  this objects class tables primary key
      */
     @Override
-    public Attribute getPrimaryKey() {
-        final Iterator iter = getAttributes().values().iterator();
+    public ObjectAttribute getPrimaryKey() {
+        final Iterator<ObjectAttribute> iter = getAttributes().values().iterator();
 
-        final ArrayList attribsByName = new ArrayList();
+        final ArrayList<ObjectAttribute> attribsByName = new ArrayList<ObjectAttribute>();
 
         while (iter.hasNext()) {
-            Attribute a = null;
-            a = (Attribute)iter.next();
+            final ObjectAttribute a = iter.next();
 
             if (a.isPrimaryKey()) {
                 return a;
