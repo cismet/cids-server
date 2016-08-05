@@ -15,7 +15,7 @@ import java.sql.Types;
  * DOCUMENT ME!
  *
  * @author   martin.scholl@cismet.de
- * @version  0.1
+ * @version  0.2
  */
 @ServiceProvider(service = ServerSQLStatements.class)
 public final class OracleSQLStatements implements ServerSQLStatements {
@@ -439,24 +439,36 @@ public final class OracleSQLStatements implements ServerSQLStatements {
             final PreparableStatement geoSql,
             final boolean caseSensitive) {
         // NOTE: lower of oracle and lower of java may behave differently
-        final String sql =
-            "SELECT DISTINCT i.class_id ocid,i.object_id oid, c.stringrep,c.geometry,c.lightweight_json " // NOI18N
-                    + "FROM   cs_attr_string s, "                                                         // NOI18N
-                    + "       cs_attr_object_derived i "                                                  // NOI18N
-                    + "       LEFT OUTER JOIN cs_cache c "                                                // NOI18N
-                    + "       ON     ( "                                                                  // NOI18N
-                    + "                     c.class_id =i.class_id "                                      // NOI18N
-                    + "              AND    c.object_id=i.object_id "                                     // NOI18N
-                    + "              ) "                                                                  // NOI18N
-                    + "WHERE  i.attr_class_id = s.class_id "                                              // NOI18N
-                    + "AND    i.attr_object_id=s.object_id "                                              // NOI18N
+        final String sql = "SELECT ocid,\n"
+                    + "  oid,\n"
+                    + "  stringrep,\n"
+                    + "  geometry,\n"
+                    + "  lightweight_json\n"
+                    + "FROM\n"
+                    + "  (SELECT i.class_id ocid,\n"
+                    + "    i.object_id oid,\n"
+                    + "    c.stringrep,\n"
+                    + "    c.geometry,\n"
+                    + "    c.lightweight_json,\n"
+                    + "    row_number() over (partition BY i.class_id, i.object_id order by rownum) rn\n"
+                    + "FROM   cs_attr_string s, "                     // NOI18N
+                    + "       cs_attr_object_derived i "              // NOI18N
+                    + "       LEFT OUTER JOIN cs_cache c "            // NOI18N
+                    + "       ON     ( "                              // NOI18N
+                    + "                     c.class_id =i.class_id "  // NOI18N
+                    + "              AND    c.object_id=i.object_id " // NOI18N
+                    + "              ) "                              // NOI18N
+                    + "WHERE  i.attr_class_id = s.class_id "          // NOI18N
+                    + "AND    i.attr_object_id=s.object_id "          // NOI18N
                     + "AND    "
                     + (caseSensitive ? "" : "lower(")
                     + "s.string_val"
                     + (caseSensitive ? "" : ")")
-                    + " like ? "                                                                          // NOI18N
+                    + " like ? "                                      // NOI18N
                     + "AND i.class_id IN "
-                    + classesIn;
+                    + classesIn
+                    + "  )\n"
+                    + "WHERE rn = 1";
         final PreparableStatement ps;
 
         final String param = "%"
@@ -476,12 +488,13 @@ public final class OracleSQLStatements implements ServerSQLStatements {
             System.arraycopy(geoSql.getObjects(), 0, objects, 1, geoSql.getObjects().length);
             objects[0] = param;
 
-            ps = new PreparableStatement("select distinct * from ("
+            ps = new PreparableStatement("SELECT TXT_RESULTS.* FROM (\n"
                             + sql
-                            + ") as txt,(select distinct class_id as ocid,object_id as oid,stringrep from ("
-                            + geoSql
-                            + ")as y ) as geo where txt.ocid=geo.ocid and txt.oid=geo.oid",
+                            + "\n) as TXT_RESULTS \n"
+                            + "JOIN (" + geoSql + ") AS GEO_RESULTS \n"
+                            + "ON (TXT_RESULTS.ocid=GEO_RESULTS.ocid and TXT_RESULTS.oid=GEO_RESULTS.oid)",
                     types);
+
             ps.setObjects(objects);
         }
 
@@ -493,29 +506,38 @@ public final class OracleSQLStatements implements ServerSQLStatements {
         // NOTE: does not narrow down matches using the bbox of the geometry like the postgis version via '&&' thus may
         // be too slow
         final PreparableStatement ps = new PreparableStatement(
-                "SELECT DISTINCT i.class_id , "                                                      // NOI18N
-                        + "                i.object_id, "                                            // NOI18N
-                        + "                c.stringrep,c.geometry,c.lightweight_json "               // NOI18N
-                        + "FROM            geom g, "                                                 // NOI18N
-                        + "                cs_attr_object_derived i "                                // NOI18N
-                        + "                LEFT OUTER JOIN cs_cache c "                              // NOI18N
-                        + "                ON              ( "                                       // NOI18N
-                        + "                                                c.class_id =i.class_id "  // NOI18N
-                        + "                                AND             c.object_id=i.object_id " // NOI18N
-                        + "                                ) "                                       // NOI18N
-                        + "WHERE           i.attr_class_id = "                                       // NOI18N
-                        + "                ( SELECT cs_class.id "                                    // NOI18N
-                        + "                FROM    cs_class "                                        // NOI18N
-                        + "                WHERE   cs_class.table_name = 'GEOM' "                    // NOI18N
-                        + "                ) "                                                       // NOI18N
-                        + "AND             i.attr_object_id = g.id "                                 // NOI18N
-                        + "AND i.class_id IN "                                                       // NOI18N
+
+                "SELECT ocid,\n"
+                        + "  oid,\n"
+                        + "  stringrep,\n"
+                        + "  geometry,\n"
+                        + "  lightweight_json\n"
+                        + "FROM\n"
+                        + "  (SELECT i.class_id ocid,\n"
+                        + "    i.object_id oid,\n"
+                        + "    c.stringrep,\n"
+                        + "    c.geometry,\n"
+                        + "    c.lightweight_json,\n"
+                        + "    row_number() over (partition BY i.class_id, i.object_id order by rownum) rn\n"
+                        + "  FROM geom g,\n"
+                        + "    cs_attr_object_derived i\n"
+                        + "  LEFT OUTER JOIN cs_cache c\n"
+                        + "  ON ( c.class_id       =i.class_id\n"
+                        + "  AND c.object_id       =i.object_id )\n"
+                        + "  WHERE i.attr_class_id =\n"
+                        + "    ( SELECT cs_class.id FROM cs_class WHERE cs_class.table_name = 'GEOM'\n"
+                        + "    )\n"
+                        + "  AND i.attr_object_id                                                                                                                                                                                                                   = g.id\n"
+                        + "  AND i.class_id IN "
                         + classesIn
-                        + " AND sdo_relate(geo_field,sdo_geometry(?, "                               // NOI18N
+                        + " \n"
+                        + "  AND sdo_relate(geo_field,sdo_geometry(?, "
                         + srid
-                        + "), 'mask=anyinteract') = 'TRUE'"                                          // NOI18N
-                        + "ORDER BY        1,2,3",
-                Types.CLOB);                                                                         // NOI18N
+                        + "), 'mask=anyinteract') = 'TRUE'\n"
+                        + "  ORDER BY 1,2,3\n"
+                        + "  )\n"
+                        + "WHERE rn = 1",
+                Types.CLOB); // NOI18N
         ps.setObjects(wkt);
 
         return ps;
