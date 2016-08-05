@@ -467,7 +467,7 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
             ps = new PreparableStatement("SELECT TXT_RESULTS.* FROM (\n"
                             + sql
                             + "\n) as TXT_RESULTS \n"
-                            + "JOIN (" + geoSql + ") AS GEO_RESULTS \n"
+                            + "JOIN (" + geoSql.getStatement() + ") AS GEO_RESULTS \n"
                             + "ON (TXT_RESULTS.ocid=GEO_RESULTS.ocid and TXT_RESULTS.oid=GEO_RESULTS.oid)",
                     new int[0]);
         }
