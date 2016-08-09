@@ -506,7 +506,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         final MetaObjectNode[] ret = new MetaObjectNode[result.size()];
         int i = 0;
         for (final ArrayList row : result) {
-            ret[i] = new MetaObjectNode(domain, (Integer)row.get(1), (Integer)row.get(0));
+            // #177 getMetaObjectNode Integer Cast
+            ret[i] = new MetaObjectNode(domain,
+                    ((Number)row.get(1)).intValue(),
+                    ((Number)row.get(0)).intValue());
             i++;
         }
         return ret;

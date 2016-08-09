@@ -441,21 +441,21 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
             final PreparableStatement geoSql,
             final boolean caseSensitive) {
         final String sql =
-            "SELECT DISTINCT i.class_id ocid,i.object_id as oid, c.stringrep,c.geometry,c.lightweight_json " // NOI18N
-                    + "FROM   cs_attr_string s, "                                                            // NOI18N
-                    + "       cs_attr_object_derived i "                                                     // NOI18N
-                    + "       LEFT OUTER JOIN cs_cache c "                                                   // NOI18N
-                    + "       ON     ( "                                                                     // NOI18N
-                    + "                     c.class_id =i.class_id "                                         // NOI18N
-                    + "              AND    c.object_id=i.object_id "                                        // NOI18N
-                    + "              ) "                                                                     // NOI18N
-                    + "WHERE  i.attr_class_id = s.class_id "                                                 // NOI18N
-                    + "AND    i.attr_object_id=s.object_id "                                                 // NOI18N
+            "SELECT DISTINCT i.class_id ocid, i.object_id as oid, c.stringrep, c.geometry, c.lightweight_json " // NOI18N
+                    + "FROM   cs_attr_string s, "                                                               // NOI18N
+                    + "       cs_attr_object_derived i "                                                        // NOI18N
+                    + "       LEFT OUTER JOIN cs_cache c "                                                      // NOI18N
+                    + "       ON     ( "                                                                        // NOI18N
+                    + "                     c.class_id =i.class_id "                                            // NOI18N
+                    + "              AND    c.object_id=i.object_id "                                           // NOI18N
+                    + "              ) "                                                                        // NOI18N
+                    + "WHERE  i.attr_class_id = s.class_id "                                                    // NOI18N
+                    + "AND    i.attr_object_id=s.object_id "                                                    // NOI18N
                     + "AND    s.string_val "
                     + (caseSensitive ? "" : "i")
                     + "like '%"
                     + searchText
-                    + "%' "                                                                                  // NOI18N
+                    + "%' "                                                                                     // NOI18N
                     + "AND i.class_id IN "
                     + classesIn;
 
@@ -464,11 +464,11 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
         if (geoSql == null) {
             ps = new PreparableStatement(sql, new int[0]);
         } else {
-            ps = new PreparableStatement("select distinct * from ("
+            ps = new PreparableStatement("SELECT TXT_RESULTS.* FROM (\n"
                             + sql
-                            + ") as txt,(select distinct class_id as ocid,object_id as oid,stringrep from ("
-                            + geoSql.getStatement()
-                            + ")as y ) as geo where txt.ocid=geo.ocid and txt.oid=geo.oid",
+                            + "\n) as TXT_RESULTS \n"
+                            + "JOIN (" + geoSql.getStatement() + ") AS GEO_RESULTS \n"
+                            + "ON (TXT_RESULTS.ocid=GEO_RESULTS.ocid and TXT_RESULTS.oid=GEO_RESULTS.oid)",
                     new int[0]);
         }
 
@@ -479,34 +479,33 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
 
     @Override
     public PreparableStatement getDefaultGeoSearchStmt(final String wkt, final String srid, final String classesIn) {
-        final PreparableStatement ps = new PreparableStatement("SELECT DISTINCT i.class_id , "       // NOI18N
-                        + "                i.object_id, "                                            // NOI18N
-                        + "                c.stringrep,c.geometry,c.lightweight_json "               // NOI18N
-                        + "FROM            geom g, "                                                 // NOI18N
-                        + "                cs_attr_object_derived i "                                // NOI18N
-                        + "                LEFT OUTER JOIN cs_cache c "                              // NOI18N
-                        + "                ON              ( "                                       // NOI18N
-                        + "                                                c.class_id =i.class_id "  // NOI18N
-                        + "                                AND             c.object_id=i.object_id " // NOI18N
-                        + "                                ) "                                       // NOI18N
-                        + "WHERE           i.attr_class_id = "                                       // NOI18N
-                        + "                ( SELECT cs_class.id "                                    // NOI18N
-                        + "                FROM    cs_class "                                        // NOI18N
-                        + "                WHERE   cs_class.table_name::text = 'GEOM'::text "        // NOI18N
-                        + "                ) "                                                       // NOI18N
-                        + "AND             i.attr_object_id = g.id "                                 // NOI18N
+        final PreparableStatement ps = new PreparableStatement(
+                "SELECT DISTINCT i.class_id ocid, i.object_id as oid, c.stringrep, c.geometry, c.lightweight_json " // NOI18N
+                        + "FROM            geom g, "                                                                // NOI18N
+                        + "                cs_attr_object_derived i "                                               // NOI18N
+                        + "                LEFT OUTER JOIN cs_cache c "                                             // NOI18N
+                        + "                ON              ( "                                                      // NOI18N
+                        + "                                                c.class_id =i.class_id "                 // NOI18N
+                        + "                                AND             c.object_id=i.object_id "                // NOI18N
+                        + "                                ) "                                                      // NOI18N
+                        + "WHERE           i.attr_class_id = "                                                      // NOI18N
+                        + "                ( SELECT cs_class.id "                                                   // NOI18N
+                        + "                FROM    cs_class "                                                       // NOI18N
+                        + "                WHERE   cs_class.table_name::text = 'GEOM'::text "                       // NOI18N
+                        + "                ) "                                                                      // NOI18N
+                        + "AND             i.attr_object_id = g.id "                                                // NOI18N
                         + "AND i.class_id IN "
-                        + classesIn                                                                  // NOI18N
+                        + classesIn                                                                                 // NOI18N
                         + "AND geo_field && st_GeometryFromText('SRID="
                         + srid
                         + ";"
                         + wkt
-                        + "') "                                                                      // NOI18N
+                        + "') "                                                                                     // NOI18N
                         + "AND st_intersects(geo_field,st_GeometryFromText('SRID="
                         + srid
                         + ";"
                         + wkt
-                        + "')) "                                                                     // NOI18N
+                        + "')) "                                                                                    // NOI18N
                         + "ORDER BY        1,2,3",
                 new int[0]);
         ps.setObjects(new Object[0]);
