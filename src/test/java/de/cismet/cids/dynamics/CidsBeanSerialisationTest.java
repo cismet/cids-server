@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.concurrent.Semaphore;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.openide.util.Lookup;
@@ -52,7 +53,7 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
         return cidsBeans;
     }
 
-    //@Test
+    @Test
     @UseDataProvider("getCidsBeans")
     public void test01SerializeCidsBeanDeduplication(CidsBean cidsBean) throws Exception {
         try {
@@ -74,7 +75,7 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
         }
     }
 
-    //@Test
+    @Test
     @UseDataProvider("getCidsBeans")
     public void test02SerializeCidsBean(CidsBean cidsBean) throws Exception {
         try {
@@ -95,7 +96,7 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
         }
     }
 
-    //@Test
+    @Test
     @UseDataProvider("getCidsBeans")
     public void test03SerializeUpdatedCidsBeanId(CidsBean cidsBean) throws Throwable {
 
@@ -161,7 +162,7 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
         }
     }
 
-    //@Test
+    @Test
     @UseDataProvider("getCidsBeans")
     public void test04SerializeUpdatedCidsBeanObject(CidsBean cidsBean) throws Throwable {
 
@@ -248,7 +249,14 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
         }
     }
 
-    //@Test
+    /**
+     * Test skipped till #175 is fixed
+     *
+     * @param cidsBean
+     * @throws Throwable
+     */
+    @Ignore
+    @Test
     @UseDataProvider("getCidsBeans")
     public void test05SerializeUpdatedArrayProperty(CidsBean cidsBean) throws Throwable {
 
@@ -330,7 +338,14 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
         }
     }
 
-    //@Test
+    /**
+     * Test skipped till #175 is fixed
+     *
+     * @param cidsBean
+     * @throws Throwable
+     */
+    @Ignore
+    @Test
     @UseDataProvider("getCidsBeans")
     public void test06SerializeAddArrayElement(CidsBean cidsBean) throws Throwable {
 
@@ -464,11 +479,13 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
     }
 
     /**
-     * Simple remove array element test without Mockito Spy
+     * Simple remove array element test without Mockito Spy Test skipped till
+     * #175 is fixed
      *
      * @param cidsBean
      * @throws Throwable
      */
+    @Ignore
     @Test
     @UseDataProvider("getCidsBeans")
     public void test07SerializeRemoveArrayElementNoSpy(CidsBean cidsBean) throws Throwable {
@@ -491,6 +508,9 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
 
             final CidsBean removedCidsBean = updatedCidsBean.getBeanCollectionProperty("kategorien").remove(0);
 
+            // Problem in CidsBean.listElementsRemoved: See #174
+            // ReferencingObjectAttribute of cached MetaObjects from intraObjectCacheEnabled-CidsBeanJsonDeserializer 
+            // point to the wrong parent ObjectAttribute (kategorie[] vs hauptkategorie)
             Assert.assertNotNull("CidsBEan successfully removed from collection",
                     removedCidsBean);
             Assert.assertEquals("Bean Collection size decreased after removal",
@@ -512,7 +532,14 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
         }
     }
 
-    //@Test
+    /**
+     * Test skipped till #175 is fixed
+     *
+     * @param cidsBean
+     * @throws Throwable
+     */
+    @Ignore
+    @Test
     @UseDataProvider("getCidsBeans")
     public void test08SerializeRemoveAndAddArrayElement(CidsBean cidsBean) throws Throwable {
 
@@ -691,7 +718,15 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
         }
     }
 
-    //@Test
+    /**
+     *
+     * Test skipped till #175 is fixed
+     *
+     * @param cidsBean
+     * @throws Throwable
+     */
+    @Ignore
+    @Test
     @UseDataProvider("getCidsBeans")
     public void test09SerializeReplaceArrayElement(CidsBean cidsBean) throws Throwable {
 
