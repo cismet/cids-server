@@ -40,7 +40,9 @@ import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
  * @version  $Revision$, $Date$
  */
 @ServiceProvider(service = RestApiCidsServerSearch.class)
-public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearch implements RestApiCidsServerSearch {
+@Deprecated
+public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearch implements RestApiCidsServerSearch,
+    LightweightMetaObjectsSearch {
 
     //~ Static fields/initializers ---------------------------------------------
 

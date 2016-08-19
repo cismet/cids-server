@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.concurrent.Semaphore;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.openide.util.Lookup;
@@ -54,7 +55,7 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
 
     @Test
     @UseDataProvider("getCidsBeans")
-    public void testSerializeCidsBeanDeduplication(CidsBean cidsBean) throws Exception {
+    public void test01SerializeCidsBeanDeduplication(CidsBean cidsBean) throws Exception {
         try {
 
             LOGGER.debug("testSerializeCidsBean: " + cidsBean.getPrimaryKeyValue());
@@ -76,7 +77,7 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
 
     @Test
     @UseDataProvider("getCidsBeans")
-    public void testSerializeCidsBean(CidsBean cidsBean) throws Exception {
+    public void test02SerializeCidsBean(CidsBean cidsBean) throws Exception {
         try {
             LOGGER.debug("testSerializeCidsBean: " + cidsBean.getPrimaryKeyValue());
             final String cidsBeanJson = cidsBean.toJSONString(false);
@@ -97,7 +98,7 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
 
     @Test
     @UseDataProvider("getCidsBeans")
-    public void testSerializeUpdatedCidsBeanId(CidsBean cidsBean) throws Throwable {
+    public void test03SerializeUpdatedCidsBeanId(CidsBean cidsBean) throws Throwable {
 
         final LinkedList<Throwable> throwablesFromThread = new LinkedList<Throwable>();
 
@@ -163,7 +164,7 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
 
     @Test
     @UseDataProvider("getCidsBeans")
-    public void testSerializeUpdatedCidsBeanObject(CidsBean cidsBean) throws Throwable {
+    public void test04SerializeUpdatedCidsBeanObject(CidsBean cidsBean) throws Throwable {
 
         Assume.assumeTrue(cidsBean.getCidsBeanInfo().getClassKey().equalsIgnoreCase("SPH_SPIELHALLE"));
 
@@ -248,9 +249,16 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
         }
     }
 
+    /**
+     * Test skipped till #175 is fixed
+     *
+     * @param cidsBean
+     * @throws Throwable
+     */
+    @Ignore
     @Test
     @UseDataProvider("getCidsBeans")
-    public void testSerializeUpdatedArrayProperty(CidsBean cidsBean) throws Throwable {
+    public void test05SerializeUpdatedArrayProperty(CidsBean cidsBean) throws Throwable {
 
         Assume.assumeTrue(cidsBean.getCidsBeanInfo().getClassKey().equalsIgnoreCase("SPH_SPIELHALLE"));
 
@@ -330,9 +338,16 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
         }
     }
 
+    /**
+     * Test skipped till #175 is fixed
+     *
+     * @param cidsBean
+     * @throws Throwable
+     */
+    @Ignore
     @Test
     @UseDataProvider("getCidsBeans")
-    public void testSerializeAddArrayElement(CidsBean cidsBean) throws Throwable {
+    public void test06SerializeAddArrayElement(CidsBean cidsBean) throws Throwable {
 
         Assume.assumeTrue(cidsBean.getCidsBeanInfo().getClassKey().equalsIgnoreCase("SPH_SPIELHALLE"));
 
@@ -463,9 +478,70 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
         }
     }
 
+    /**
+     * Simple remove array element test without Mockito Spy Test skipped till
+     * #175 is fixed
+     *
+     * @param cidsBean
+     * @throws Throwable
+     */
+    @Ignore
     @Test
     @UseDataProvider("getCidsBeans")
-    public void testSerializeRemoveAndAddArrayElement(CidsBean cidsBean) throws Throwable {
+    public void test07SerializeRemoveArrayElementNoSpy(CidsBean cidsBean) throws Throwable {
+
+        Assume.assumeTrue(cidsBean.getCidsBeanInfo().getClassKey().equalsIgnoreCase("SPH_SPIELHALLE"));
+        try {
+            LOGGER.debug("testSerializeRemoveArrayElement: " + cidsBean.getPrimaryKeyValue());
+
+            final String cidsBeanJson = cidsBean.toJSONString(true);
+
+            final CidsBean updatedCidsBean = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
+
+            final MetaObject metaObjectSpy = updatedCidsBean.getMetaObject();
+            updatedCidsBean.setMetaObject(metaObjectSpy);
+
+            int arrayElements = ((Collection) updatedCidsBean.getProperty("kategorien")).size();
+            ObjectAttribute[] arrayArray = ((MetaObject) metaObjectSpy.getAttributeByFieldName("kategorien").getValue()).getAttribs();
+            Assert.assertEquals("MetaObject array size machtes Bean Collection size",
+                    arrayArray.length, arrayElements);
+
+            final CidsBean removedCidsBean = updatedCidsBean.getBeanCollectionProperty("kategorien").remove(0);
+
+            // Problem in CidsBean.listElementsRemoved: See #174
+            // ReferencingObjectAttribute of cached MetaObjects from intraObjectCacheEnabled-CidsBeanJsonDeserializer 
+            // point to the wrong parent ObjectAttribute (kategorie[] vs hauptkategorie)
+            Assert.assertNotNull("CidsBEan successfully removed from collection",
+                    removedCidsBean);
+            Assert.assertEquals("Bean Collection size decreased after removal",
+                    arrayElements - 1, ((Collection) updatedCidsBean.getProperty("kategorien")).size());
+
+            arrayElements = ((Collection) updatedCidsBean.getProperty("kategorien")).size();
+            arrayArray = ((MetaObject) metaObjectSpy.getAttributeByFieldName("kategorien").getValue()).getAttribs();
+            Assert.assertEquals("MetaObject array size machtes Bean Collection size after removal",
+                    arrayArray.length, arrayElements);
+
+        } catch (AssertionError ae) {
+            LOGGER.error("testSerializeUpdatedCidsBean failed with: " + ae.getMessage(), ae);
+            throw ae;
+
+        } catch (Exception ex) {
+
+            LOGGER.error(ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
+    /**
+     * Test skipped till #175 is fixed
+     *
+     * @param cidsBean
+     * @throws Throwable
+     */
+    @Ignore
+    @Test
+    @UseDataProvider("getCidsBeans")
+    public void test08SerializeRemoveAndAddArrayElement(CidsBean cidsBean) throws Throwable {
 
         Assume.assumeTrue(cidsBean.getCidsBeanInfo().getClassKey().equalsIgnoreCase("SPH_SPIELHALLE"));
 
@@ -478,16 +554,21 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
 
             final CidsBean updatedCidsBean = CidsBean.createNewCidsBeanFromJSON(true, cidsBeanJson);
 
-            final MetaObject metaObjectSpy = Mockito.spy(updatedCidsBean.getMetaObject());
-            updatedCidsBean.setMetaObject(metaObjectSpy);
+            //final MetaObject metaObjectSpy = Mockito.spy(updatedCidsBean.getMetaObject());
+            final MetaObject metaObjectSpy = updatedCidsBean.getMetaObject();
+            //updatedCidsBean.setMetaObject(metaObjectSpy);
 
-            final Semaphore semaphore = new Semaphore(1);
+            //final Semaphore semaphore = new Semaphore(1);
             final int arrayElements = ((Collection) updatedCidsBean.getProperty("kategorien")).size();
 
             final CidsBean removedCidsBean = updatedCidsBean.getBeanCollectionProperty("kategorien").remove(0);
 
             Assert.assertNotNull("CidsBEan successfully removed from collection",
                     removedCidsBean);
+
+            final ObjectAttribute[] arrayArray = ((MetaObject) metaObjectSpy.getAttributeByFieldName("kategorien").getValue()).getAttribs();
+            Assert.assertTrue("MetaObject Dummy Array Element size smaller after removing an element",
+                    arrayArray.length < arrayElements);
 
             // wait for property change event!
             EventQueue.invokeAndWait(new Runnable() {
@@ -519,11 +600,11 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
                         LOGGER.error(t.getMessage(), t);
                         throwablesFromThread.add(t);
                     } finally {
-                        semaphore.release();
+                        //semaphore.release();
                     }
                 }
             });
-            semaphore.acquire();
+            //semaphore.acquire();
 
             Mockito.reset(metaObjectSpy);
             final MetaClassCacheService classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
@@ -569,11 +650,11 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
                         LOGGER.error(t.getMessage(), t);
                         throwablesFromThread.add(t);
                     } finally {
-                        semaphore.release();
+                        //semaphore.release();
                     }
                 }
             });
-            semaphore.acquire();
+            //semaphore.acquire();
 
             Mockito.reset(metaObjectSpy);
             final String name = "Klettern für Dollars";
@@ -614,11 +695,11 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
                         LOGGER.error(t.getMessage(), t);
                         throwablesFromThread.add(t);
                     } finally {
-                        semaphore.release();
+                        //semaphore.release();
                     }
                 }
             });
-            semaphore.acquire();
+            //semaphore.acquire();
 
             Assert.assertNotEquals("updated CidsBean is different from original CidsBean",
                     updatedCidsBean.toJSONString(true), cidsBeanJson);
@@ -637,9 +718,17 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
         }
     }
 
+    /**
+     *
+     * Test skipped till #175 is fixed
+     *
+     * @param cidsBean
+     * @throws Throwable
+     */
+    @Ignore
     @Test
     @UseDataProvider("getCidsBeans")
-    public void testSerializeReplaceArrayElement(CidsBean cidsBean) throws Throwable {
+    public void test09SerializeReplaceArrayElement(CidsBean cidsBean) throws Throwable {
 
         Assume.assumeTrue(cidsBean.getCidsBeanInfo().getClassKey().equalsIgnoreCase("SPH_SPIELHALLE"));
 
@@ -659,17 +748,15 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
 //            Assert.assertEquals("Status of Dummay Array MetaObject is modified",
 //                                ((MetaObject) metaObjectSpy.getAttributeByFieldName("kategorien").getValue()).getStatus(),
 //                                MetaObject.NEW);
-
             final Semaphore semaphore = new Semaphore(1);
             final int arrayElements = ((Collection) updatedCidsBean.getProperty("kategorien")).size();
 
             final MetaClassCacheService classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
             final CidsBean arrayEntryBean = classCacheService.getMetaClass("CIDS", "SPH_KATEGORIE").getEmptyInstance().getBean();
             arrayEntryBean.setProperty("name", "Climbing for Dollars");
-            
+
             //FIXME: This does not work -> listElementReplaced not implemented in CidsBean
             //updatedCidsBean.getBeanCollectionProperty("kategorien").set(0, arrayEntryBean);
-            
             updatedCidsBean.getBeanCollectionProperty("kategorien").remove(0);
             updatedCidsBean.getBeanCollectionProperty("kategorien").add(0, arrayEntryBean);
 
@@ -696,7 +783,6 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
 //                        Assert.assertEquals("Status of Dummay Array MetaObject is modified",
 //                                MetaObject.NEW,
 //                                ((MetaObject) metaObjectSpy.getAttributeByFieldName("kategorien").getValue()).getStatus());
-
                         final ObjectAttribute[] arrayArray = ((MetaObject) metaObjectSpy.getAttributeByFieldName("kategorien").getValue()).getAttribs();
                         Assert.assertTrue("Array size of bean collection property and MetaObject dummy array object matches",
                                 arrayArray.length == arrayElements);
@@ -708,7 +794,6 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
 //                        Assert.assertEquals("CidsBean and MetaObject array entries are equal",
 //                                ((CidsBean[]) arrayCollection.toArray(new CidsBean[arrayCollection.size()]))[0].toJSONString(true),
 //                                ((CidsBean) ((CidsBean) ((MetaObject) arrayArray[0].getValue()).getBean()).getProperty("kategorie")).toJSONString(true));
-
                     } catch (Throwable t) {
                         LOGGER.error(t.getMessage(), t);
                         throwablesFromThread.add(t);

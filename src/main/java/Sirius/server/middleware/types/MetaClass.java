@@ -309,6 +309,14 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
                 oAttr.setOptional(mai.isOptional());
 
                 oAttr.setClassKey(mai.getForeignKeyClassId() + "@" + domain); // NOI18N
+
+                // FIX for #166
+                if (!mai.isVirtual()) {
+                    oAttr.setJavaType(mai.getJavaclassname());
+                } else {
+                    oAttr.setJavaType(java.lang.Object.class.getCanonicalName());
+                }
+
                 o.addAttribute(oAttr);
             }
 

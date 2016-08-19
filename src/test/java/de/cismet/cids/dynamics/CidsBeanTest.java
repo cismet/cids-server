@@ -52,7 +52,10 @@ public class CidsBeanTest {
     private static MetaClass BETREIBER_META_CLASS;
 
     private CidsBean cidsBean = null;
+    private MetaObject metaObject = null;
     private MetaObject metaObjectSpy = null;
+    private CidsBean referenceCidsBean = null;
+    private MetaObject referenceMetaObject = null;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -85,11 +88,14 @@ public class CidsBeanTest {
      */
     @Before
     public void setUp() {
-        final DefaultMetaObject metaObject = (DefaultMetaObject) SPIELHALLE_META_CLASS.getEmptyInstance();
+        metaObject = (DefaultMetaObject) SPIELHALLE_META_CLASS.getEmptyInstance();
         //System.out.println(metaObject.getStatus());
         cidsBean = metaObject.getBean();
         metaObjectSpy = Mockito.spy(metaObject);
         cidsBean.setMetaObject(metaObjectSpy);
+
+        referenceMetaObject = (MetaObject) SPIELHALLE_META_CLASS.getEmptyInstance();
+        referenceCidsBean = referenceMetaObject.getBean();
     }
 
     /**
@@ -99,6 +105,7 @@ public class CidsBeanTest {
     public void tearDown() {
         cidsBean = null;
         metaObjectSpy = null;
+        referenceCidsBean = null;
         Mockito.validateMockitoUsage();
     }
 
@@ -153,66 +160,82 @@ public class CidsBeanTest {
 //    }
     @Test
     //@UseDataProvider("getMetaObjects")
-    public void testGetCidsBeanInfo() throws Exception {
+    public void test01getCidsBeanInfo() throws Exception {
 
         try {
             final CidsBeanInfo beanInfo = cidsBean.getCidsBeanInfo();
-            LOGGER.info("testGetCidsBeanInfo: " + beanInfo);
+            LOGGER.debug("testGetCidsBeanInfo: " + beanInfo);
 
             // Mockito Spy Object: verify that a certain method has been called
             Mockito.verify(metaObjectSpy, Mockito.atLeastOnce()).getMetaClass();
 
+            Assert.assertSame("referenceCidsBean.getMetaObject() matches referenceMetaObject",
+                    referenceMetaObject,
+                    referenceCidsBean.getMetaObject());
+            Assert.assertSame("cidsBean.getMetaObject() matches metaObjectSpy",
+                    metaObjectSpy,
+                    cidsBean.getMetaObject());
+            LOGGER.info("testGetCidsBeanInfo passed!");
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage(), ex);
             throw ex;
         } catch (Error e) {
             LOGGER.error(e.getMessage(), e);
+            LOGGER.debug(metaObjectSpy.getDebugString());
             throw e;
         }
     }
 
     @Test
-    public void testGetPrimaryKeyProperty() throws Exception {
+    public void test02getPrimaryKeyProperty() throws Exception {
 
         try {
-            LOGGER.info("testGetPrimaryKeyProperty: " + cidsBean.getPrimaryKeyValue());
+            LOGGER.debug("testGetPrimaryKeyProperty: " + cidsBean.getPrimaryKeyValue());
             // Mockito Spy Object: verify that a certain method has never been called
             Mockito.verify(metaObjectSpy, Mockito.never()).getAttributeByFieldName(Mockito.anyString());
+            LOGGER.info("testGetPrimaryKeyProperty '" + cidsBean.getPrimaryKeyValue() + "' passed!");
 
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage(), ex);
             throw ex;
         } catch (Error e) {
             LOGGER.error(e.getMessage(), e);
+            LOGGER.debug(metaObjectSpy.getDebugString());
             throw e;
         }
     }
 
     @Test
-    public void testSetPrimaryKeyProperty() throws Throwable {
+    public void test03setPrimaryKeyProperty() throws Throwable {
 
         final LinkedList<Throwable> throwablesFromThread = new LinkedList<Throwable>();
 
         try {
             final Semaphore semaphore = new Semaphore(1);
             final int newId = 666;
+            referenceCidsBean.setProperty(SPIELHALLE_META_CLASS.getPrimaryKey().toLowerCase(), newId);
             cidsBean.setProperty(SPIELHALLE_META_CLASS.getPrimaryKey().toLowerCase(), newId);
-            LOGGER.info("testSetPrimaryKeyProperty: " + newId);
+            LOGGER.debug("testSetPrimaryKeyProperty: " + newId);
 
             // wait for property change event!
             EventQueue.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
                     try {
+                        Assert.assertEquals("Reference CidsBean and Reference MetaObject PKs do match",
+                                referenceCidsBean.getCidsBeanInfo().getObjectKey(), referenceMetaObject.getPrimaryKey().getValue().toString());
+
                         // Mockito Spy Object: verify that a certain method has been called
                         Mockito.verify(metaObjectSpy, Mockito.times(1)).getAttributeByFieldName(Mockito.anyString());
                         Mockito.verify(metaObjectSpy, Mockito.times(1)).setStatus(MetaObject.MODIFIED);
 
                         Assert.assertEquals("CidsBean and MetaObject PKs do match",
                                 cidsBean.getCidsBeanInfo().getObjectKey(), metaObjectSpy.getPrimaryKey().getValue().toString());
-                        LOGGER.debug("testSetPrimaryKeyProperty passed: " + cidsBean.getCidsBeanInfo().getObjectKey());
+                        LOGGER.info("testSetPrimaryKeyProperty passed: " + cidsBean.getCidsBeanInfo().getObjectKey());
                     } catch (Throwable t) {
                         LOGGER.error(t.getMessage(), t);
+                        LOGGER.debug(referenceMetaObject.getDebugString());
+                        LOGGER.debug(metaObjectSpy.getDebugString());
                         throwablesFromThread.add(t);
                     } finally {
                         semaphore.release();
@@ -223,9 +246,13 @@ public class CidsBeanTest {
 
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage(), ex);
+            LOGGER.debug(referenceMetaObject.getDebugString());
+            LOGGER.debug(metaObjectSpy.getDebugString());
             throw ex;
         } catch (Error e) {
             LOGGER.error(e.getMessage(), e);
+            LOGGER.debug(referenceMetaObject.getDebugString());
+            LOGGER.debug(metaObjectSpy.getDebugString());
             throw e;
         } finally {
             if (!throwablesFromThread.isEmpty()) {
@@ -235,32 +262,43 @@ public class CidsBeanTest {
     }
 
     @Test
-    public void testSetStringProperty() throws Throwable {
+    public void test04setStringProperty() throws Throwable {
 
         final LinkedList<Throwable> throwablesFromThread = new LinkedList<Throwable>();
 
         try {
             final Semaphore semaphore = new Semaphore(1);
             final String name = "Spielhölle";
+            referenceCidsBean.setProperty("name", name);
             cidsBean.setProperty("name", name);
-            LOGGER.info("testSetStringProperty: " + name);
+            LOGGER.debug("testSetStringProperty: " + name);
 
             // wait for property change event!
             EventQueue.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        // Mockito Spy Object: verify that a certain method has been called
+                        Assert.assertEquals("Reference CidsBean and Reference MetaObject names do match after changing property",
+                                referenceCidsBean.getProperty("name"),
+                                referenceMetaObject.getAttributeByFieldName("name").getValue().toString());
+
+// Mockito Spy Object: verify that a certain method has been called
                         Mockito.verify(metaObjectSpy, Mockito.times(1)).getAttributeByFieldName("name");
                         Mockito.verify(metaObjectSpy, Mockito.times(1)).setStatus(MetaObject.MODIFIED);
 
-                        Assert.assertEquals("CidsBean and MetaObject PKs do match after changing property",
+                        Assert.assertNotNull("MetaObject name attribute available",
+                                metaObjectSpy.getAttributeByFieldName("name"));
+                        Assert.assertNotNull("MetaObject name attribute value not null",
+                                metaObjectSpy.getAttributeByFieldName("name").getValue());
+                        Assert.assertEquals("CidsBean and MetaObject names do match after changing property",
                                 cidsBean.getProperty("name"),
                                 metaObjectSpy.getAttributeByFieldName("name").getValue().toString());
 
-                        LOGGER.debug("testSetStringProperty passed: " + cidsBean.getProperty("name"));
+                        LOGGER.info("testSetStringProperty passed: " + cidsBean.getProperty("name"));
                     } catch (Throwable t) {
                         LOGGER.error(t.getMessage(), t);
+                        LOGGER.debug(referenceMetaObject.getDebugString());
+                        LOGGER.debug(metaObjectSpy.getDebugString());
                         throwablesFromThread.add(t);
 
                     } finally {
@@ -271,23 +309,30 @@ public class CidsBeanTest {
             semaphore.acquire();
 
             Mockito.reset(metaObjectSpy);
+            referenceCidsBean.setProperty("name", name);
             cidsBean.setProperty("name", name);
             EventQueue.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
                     try {
+                        Assert.assertEquals("Reference CidsBean and Reference MetaObject names do match after changing property again",
+                                referenceCidsBean.getProperty("name"),
+                                referenceMetaObject.getAttributeByFieldName("name").getValue().toString());
+
                         // Mockito Spy Object: verify that a certain method has been called
                         Mockito.verify(metaObjectSpy, Mockito.times(1)).getAttributeByFieldName("name");
                         // verify that modified status is not set again!
                         Mockito.verify(metaObjectSpy, Mockito.never()).setStatus(Mockito.anyInt());
 
-                        Assert.assertEquals("CidsBean and MetaObject PKs do match after changing property again",
+                        Assert.assertEquals("CidsBean and MetaObject names do match after changing property again",
                                 cidsBean.getProperty("name"),
                                 metaObjectSpy.getAttributeByFieldName("name").getValue().toString());
 
-                        LOGGER.debug("testSetStringProperty passed: " + cidsBean.getProperty("name"));
+                        LOGGER.info("testSetStringProperty passed: " + cidsBean.getProperty("name"));
                     } catch (Throwable t) {
                         LOGGER.error(t.getMessage(), t);
+                        LOGGER.debug(referenceMetaObject.getDebugString());
+                        LOGGER.debug(metaObjectSpy.getDebugString());
                         throwablesFromThread.add(t);
                     } finally {
                         semaphore.release();
@@ -300,10 +345,16 @@ public class CidsBeanTest {
 
             final String newName = "Lucky Casino";
             cidsBean.setProperty("name", newName);
+            referenceCidsBean.setProperty("name", newName);
             EventQueue.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
                     try {
+
+                        Assert.assertEquals("Reference MetaObject property successfully updated",
+                                newName,
+                                referenceMetaObject.getAttributeByFieldName("name").getValue().toString());
+
                         // Mockito Spy Object: verify that a certain method has been called
                         Mockito.verify(metaObjectSpy, Mockito.times(1)).getAttributeByFieldName("name");
                         // verify that modified status is not set again!
@@ -313,17 +364,23 @@ public class CidsBeanTest {
                                 newName,
                                 cidsBean.getProperty("name"));
 
+                        Assert.assertNotNull("MetaObject name attribute available",
+                                metaObjectSpy.getAttributeByFieldName("name"));
+                        Assert.assertNotNull("MetaObject name attribute value not null",
+                                metaObjectSpy.getAttributeByFieldName("name").getValue());
                         Assert.assertEquals("MetaObject property successfully updated",
                                 newName,
                                 metaObjectSpy.getAttributeByFieldName("name").getValue().toString());
 
-                        Assert.assertEquals("CidsBean and MetaObject PKs do match after changing property again",
+                        Assert.assertEquals("CidsBean and MetaObject names do match after changing property again",
                                 cidsBean.getProperty("name"),
                                 metaObjectSpy.getAttributeByFieldName("name").getValue().toString());
 
-                        LOGGER.debug("testSetStringProperty passed: " + cidsBean.getProperty("name"));
+                        LOGGER.info("testSetStringProperty passed: " + cidsBean.getProperty("name"));
                     } catch (Throwable t) {
                         LOGGER.error(t.getMessage(), t);
+                        LOGGER.debug(referenceMetaObject.getDebugString());
+                        LOGGER.debug(metaObjectSpy.getDebugString());
                         throwablesFromThread.add(t);
                     } finally {
                         semaphore.release();
@@ -334,9 +391,13 @@ public class CidsBeanTest {
 
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage(), ex);
+            LOGGER.debug(referenceMetaObject.getDebugString());
+            LOGGER.debug(metaObjectSpy.getDebugString());
             throw ex;
         } catch (Error e) {
             LOGGER.error(e.getMessage(), e);
+            LOGGER.debug(referenceMetaObject.getDebugString());
+            LOGGER.debug(metaObjectSpy.getDebugString());
             throw e;
         } finally {
             if (!throwablesFromThread.isEmpty()) {
@@ -346,28 +407,40 @@ public class CidsBeanTest {
     }
 
     @Test
-    public void testSetCidsBeanProperty() throws Throwable {
+    public void test05setCidsBeanProperty() throws Throwable {
 
         final LinkedList<Throwable> throwablesFromThread = new LinkedList<Throwable>();
 
         try {
             final Semaphore semaphore = new Semaphore(1);
             final CidsBean betreiberBean = BETREIBER_META_CLASS.getEmptyInstance().getBean();
+            final CidsBean referenceBetreiberBean = BETREIBER_META_CLASS.getEmptyInstance().getBean();
             final String name = "Mike Hansen";
             cidsBean.setProperty("betreiber", betreiberBean);
-            LOGGER.info("testSetCidsBeanProperty: " + betreiberBean.getMOString());
+            referenceCidsBean.setProperty("betreiber", referenceBetreiberBean);
+            LOGGER.debug("testSetCidsBeanProperty: " + betreiberBean.getMOString());
 
             // wait for property change event!
             EventQueue.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
                     try {
+
+                        Assert.assertTrue("Reference MetaObject Attribute is MetaObject",
+                                MetaObject.class.isAssignableFrom(referenceMetaObject.getAttributeByFieldName("betreiber").getValue().getClass()));
+
+                        Assert.assertEquals("updated Reference CidsBean and Reference MetaObject Properties do match",
+                                referenceBetreiberBean.toJSONString(true),
+                                ((MetaObject) referenceMetaObject.getAttributeByFieldName("betreiber").getValue()).getBean().toJSONString(true));
+
                         // Mockito Spy Object: verify that a certain method has been called
                         Mockito.verify(metaObjectSpy, Mockito.times(1)).getAttributeByFieldName("betreiber");
                         Mockito.verify(metaObjectSpy, Mockito.times(1)).setStatus(MetaObject.MODIFIED);
 
                         //System.out.println(metaObjectSpy.getStatus());
-                        Assert.assertNotNull("BidsBean property correctly set",
+                        Assert.assertNotNull("CidsBean property correctly set: " + metaObjectSpy.getAttributeByFieldName("betreiber"),
+                                metaObjectSpy.getAttributeByFieldName("betreiber"));
+                        Assert.assertNotNull("CidsBean property correctly set: " + metaObjectSpy.getAttributeByFieldName("betreiber").getValue(),
                                 metaObjectSpy.getAttributeByFieldName("betreiber").getValue());
 
                         Assert.assertTrue("MetaObject Attribute is MetaObject",
@@ -377,9 +450,11 @@ public class CidsBeanTest {
                                 betreiberBean.toJSONString(true),
                                 ((MetaObject) metaObjectSpy.getAttributeByFieldName("betreiber").getValue()).getBean().toJSONString(true));
 
-                        LOGGER.debug("testSetCidsBeanProperty passed");
+                        LOGGER.info("testSetCidsBeanProperty passed");
                     } catch (Throwable t) {
                         LOGGER.error(t.getMessage(), t);
+                        LOGGER.debug(referenceMetaObject.getDebugString());
+                        LOGGER.debug(metaObjectSpy.getDebugString());
                         throwablesFromThread.add(t);
                     } finally {
                         semaphore.release();
@@ -392,17 +467,35 @@ public class CidsBeanTest {
             final MetaObject subMetaObjectSpy = Mockito.spy(betreiberBean.getMetaObject());
             betreiberBean.setMetaObject(subMetaObjectSpy);
             ((CidsBean) cidsBean.getProperty("betreiber")).setProperty("name", name);
+            ((CidsBean) referenceCidsBean.getProperty("betreiber")).setProperty("name", name);
 
             EventQueue.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
                     try {
+                        Assert.assertTrue("Status of new Reference MetaObject is set to NEW",
+                                ((MetaObject) referenceMetaObject.getAttributeByFieldName("betreiber").getValue()).getStatus()
+                                == MetaObject.NEW);
+
+                        Assert.assertEquals("new Reference CidsBean and Reference MetaObject Properties do match",
+                                betreiberBean.getProperty("name"),
+                                ((MetaObject) referenceMetaObject.getAttributeByFieldName("betreiber").getValue()).getBean().getProperty("name"));
+
+                        Assert.assertEquals("updated Reference CidsBean and Reference MetaObject Properties do match",
+                                betreiberBean.getProperty("name"),
+                                referenceBetreiberBean.getMetaObject().getAttributeByFieldName("name").getValue());
+
                         // Mockito Spy Object: verify that a certain method has been called
-                        Mockito.verify(metaObjectSpy, Mockito.never()).setStatus(Mockito.anyInt());
+                        //Mockito.verify(metaObjectSpy, Mockito.never()).setStatus(Mockito.anyInt());
                         Mockito.verify(subMetaObjectSpy, Mockito.times(1)).getAttributeByFieldName("name");
                         Mockito.verify(subMetaObjectSpy, Mockito.times(1)).setStatus(MetaObject.MODIFIED);
 
                         //System.out.println(((MetaObject)metaObjectSpy.getAttributeByFieldName("betreiber").getValue()).getStatus() );
+                        Assert.assertNotNull("CidsBean property correctly set: " + metaObjectSpy.getAttributeByFieldName("betreiber"),
+                                metaObjectSpy.getAttributeByFieldName("betreiber"));
+                        Assert.assertNotNull("CidsBean property correctly set: " + metaObjectSpy.getAttributeByFieldName("betreiber").getValue(),
+                                metaObjectSpy.getAttributeByFieldName("betreiber").getValue());
+
                         Assert.assertTrue("Status of new MetaObject is set to NEW",
                                 ((MetaObject) metaObjectSpy.getAttributeByFieldName("betreiber").getValue()).getStatus()
                                 == MetaObject.NEW);
@@ -415,9 +508,11 @@ public class CidsBeanTest {
                                 betreiberBean.getProperty("name"),
                                 subMetaObjectSpy.getAttributeByFieldName("name").getValue());
 
-                        LOGGER.debug("testSetCidsBeanProperty passed: " + betreiberBean.getProperty("name"));
+                        LOGGER.info("testSetCidsBeanProperty passed: " + betreiberBean.getProperty("name"));
                     } catch (Throwable t) {
                         LOGGER.error(t.getMessage(), t);
+                        LOGGER.debug(referenceMetaObject.getDebugString());
+                        LOGGER.debug(metaObjectSpy.getDebugString());
                         throwablesFromThread.add(t);
                     } finally {
                         semaphore.release();
@@ -428,10 +523,15 @@ public class CidsBeanTest {
 
             Mockito.reset(metaObjectSpy);
             betreiberBean.setProperty("name", name);
+            referenceBetreiberBean.setProperty("name", name);
             EventQueue.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
                     try {
+                        Assert.assertEquals("updated CidsBean and MetaObject Properties do match after updating them again",
+                                referenceBetreiberBean.getProperty("name"),
+                                ((MetaObject) referenceMetaObject.getAttributeByFieldName("betreiber").getValue()).getBean().getProperty("name"));
+
                         // Mockito Spy Object: verify that a certain method has not been called
                         Mockito.verify(metaObjectSpy, Mockito.never()).setStatus(MetaObject.MODIFIED);
 
@@ -439,9 +539,11 @@ public class CidsBeanTest {
                                 betreiberBean.getProperty("name"),
                                 ((MetaObject) metaObjectSpy.getAttributeByFieldName("betreiber").getValue()).getBean().getProperty("name"));
 
-                        LOGGER.debug("testSetCidsBeanProperty passed: " + betreiberBean.getProperty("name"));
+                        LOGGER.info("testSetCidsBeanProperty passed: " + betreiberBean.getProperty("name"));
                     } catch (Throwable t) {
                         LOGGER.error(t.getMessage(), t);
+                        LOGGER.debug(referenceMetaObject.getDebugString());
+                        LOGGER.debug(metaObjectSpy.getDebugString());
                         throwablesFromThread.add(t);
                     } finally {
                         semaphore.release();
@@ -452,9 +554,131 @@ public class CidsBeanTest {
 
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage(), ex);
+            LOGGER.debug(referenceMetaObject.getDebugString());
+            LOGGER.debug(metaObjectSpy.getDebugString());
             throw ex;
         } catch (Error e) {
             LOGGER.error(e.getMessage(), e);
+            LOGGER.debug(referenceMetaObject.getDebugString());
+            LOGGER.debug(metaObjectSpy.getDebugString());
+            throw e;
+        } finally {
+            if (!throwablesFromThread.isEmpty()) {
+                throw (throwablesFromThread.getLast());
+            }
+        }
+    }
+
+    @Test
+    public void test06setCidsBeanNtoMArrayProperty() throws Throwable {
+
+        final LinkedList<Throwable> throwablesFromThread = new LinkedList<Throwable>();
+
+        try {
+            final Semaphore semaphore = new Semaphore(1);
+            final CidsBean kategorieBean = SPIELHALLE_META_CLASS.getEmptyInstance().getBean();
+            final CidsBean referenceKategorieBean = SPIELHALLE_META_CLASS.getEmptyInstance().getBean();
+
+            final MetaObject kategorieMetaObject = kategorieBean.getMetaObject();
+            final MetaObject referenceKategorieMetaObject = referenceKategorieBean.getMetaObject();
+
+            final String name = "UnitTestCategory";
+            kategorieBean.setProperty("name", name);
+            referenceKategorieBean.setProperty("name", name);
+
+            Assert.assertNull("new referenceKategorieMetaObject not yet assigned to spiehalle object",
+                    referenceKategorieMetaObject.getReferencingObjectAttribute());
+
+            Assert.assertNull("new kategorieMetaObject not yet assigned to spiehalle object",
+                    kategorieMetaObject.getReferencingObjectAttribute());
+
+            cidsBean.getBeanCollectionProperty("kategorien").add(kategorieBean);
+            referenceCidsBean.getBeanCollectionProperty("kategorien").add(referenceKategorieBean);
+
+            LOGGER.debug("testSetCidsBeanNtoMArrayProperty: " + kategorieBean.getMOString());
+
+            // wait for property change event!
+            EventQueue.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+
+                        Assert.assertSame("new referenceKategorieMetaObject properly assigned to CidsBean array",
+                                referenceKategorieMetaObject,
+                                referenceCidsBean.getBeanCollectionProperty("kategorien").get(
+                                referenceCidsBean.getBeanCollectionProperty("kategorien").size() - 1).getMetaObject());
+                        Assert.assertNotNull("new referenceKategorieMetaObject assigned to spiehalle object",
+                                referenceKategorieMetaObject.getReferencingObjectAttribute());
+                        Assert.assertNotNull("new referenceKategorieMetaObject ReferencingObjectAttribute intermediate array object correctly set",
+                                referenceKategorieMetaObject.getReferencingObjectAttribute().getParentObject());
+                        Assert.assertNotNull("new referenceKategorieMetaObject ReferencingObjectAttribute intermediate array object ReferencingObjectAttribute correctly set",
+                                referenceKategorieMetaObject.getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute());
+                        Assert.assertTrue("new referenceKategorieMetaObject ReferencingObjectAttribute intermediate array object ReferencingObjectAttribute is array attribute",
+                                referenceKategorieMetaObject.getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute().isArray());
+                        Assert.assertNotNull("new referenceKategorieMetaObject ReferencingObjectAttribute intermediate array object ReferencingObjectAttribute parent object correctly set",
+                                referenceKategorieMetaObject.getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute().getParentObject());
+                        Assert.assertTrue("new referenceKategorieMetaObject ReferencingObjectAttribute intermediate array object ReferencingObjectAttribute parent object is Dummy",
+                                referenceKategorieMetaObject.getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute().getParentObject().isDummy());
+                        Assert.assertNotNull("new referenceKategorieMetaObject ReferencingObjectAttribute intermediate array object ReferencingObjectAttribute dummy object ReferencingObjectAttribute correctly set",
+                                referenceKategorieMetaObject.getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute());
+                        Assert.assertNotNull("new referenceKategorieMetaObject ReferencingObjectAttribute intermediate array object ReferencingObjectAttribute dummy object ReferencingObjectAttribute object correctly set",
+                                referenceKategorieMetaObject.getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute().getParentObject());
+                        Assert.assertSame("new referenceKategorieMetaObject ReferencingObjectAttribute intermediate array object ReferencingObjectAttribute dummy object ReferencingObjectAttribute object correctly set to spielhalle object",
+                                referenceMetaObject,
+                                referenceKategorieMetaObject.getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute().getParentObject());
+
+                        // Mockito Spy Object: verify that a certain method has been called
+                        //Mockito.verify(metaObjectSpy, Mockito.times(1)).getAttributeByFieldName("kategorie");
+                        //Mockito.verify(metaObjectSpy, Mockito.times(1)).setStatus(MetaObject.MODIFIED);
+                        Assert.assertSame("new kategorieMetaObject properly assigned to CidsBean array",
+                                kategorieMetaObject,
+                                cidsBean.getBeanCollectionProperty("kategorien").get(
+                                cidsBean.getBeanCollectionProperty("kategorien").size() - 1).getMetaObject());
+                        Assert.assertNotNull("new kategorieMetaObject assigned to spiehalle object",
+                                kategorieMetaObject.getReferencingObjectAttribute());
+                        Assert.assertNotNull("new kategorieMetaObject ReferencingObjectAttribute intermediate array object correctly set",
+                                kategorieMetaObject.getReferencingObjectAttribute().getParentObject());
+                        Assert.assertNotNull("new kategorieMetaObject ReferencingObjectAttribute intermediate array object ReferencingObjectAttribute correctly set",
+                                kategorieMetaObject.getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute());
+                        Assert.assertTrue("new kategorieMetaObject ReferencingObjectAttribute intermediate array object ReferencingObjectAttribute is array attribute",
+                                kategorieMetaObject.getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute().isArray());
+                        Assert.assertNotNull("new kategorieMetaObject ReferencingObjectAttribute intermediate array object ReferencingObjectAttribute parent object correctly set",
+                                kategorieMetaObject.getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute().getParentObject());
+                        Assert.assertTrue("new kategorieMetaObject ReferencingObjectAttribute intermediate array object ReferencingObjectAttribute parent object is Dummy",
+                                kategorieMetaObject.getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute().getParentObject().isDummy());
+                        Assert.assertNotNull("new kategorieMetaObject ReferencingObjectAttribute intermediate array object ReferencingObjectAttribute dummy object ReferencingObjectAttribute correctly set",
+                                kategorieMetaObject.getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute());
+                        Assert.assertNotNull("new kategorieMetaObject ReferencingObjectAttribute intermediate array object ReferencingObjectAttribute dummy object ReferencingObjectAttribute object correctly set",
+                                kategorieMetaObject.getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute().getParentObject());
+
+                        // test against origion meta object and not Mockity metaObjectSpy since 
+                        // Mockity doesn't update all reference to parent MO!!!!!
+                        Assert.assertSame("new kategorieMetaObject ReferencingObjectAttribute intermediate array object ReferencingObjectAttribute dummy object ReferencingObjectAttribute object correctly set to spielhalle object",
+                                metaObject,
+                                kategorieMetaObject.getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute().getParentObject().getReferencingObjectAttribute().getParentObject());
+
+                        LOGGER.info("testSetCidsBeanNtoMArrayProperty passed!");
+                    } catch (Throwable t) {
+                        LOGGER.error(t.getMessage(), t);
+                        LOGGER.debug(referenceMetaObject.getDebugString());
+                        LOGGER.debug(metaObjectSpy.getDebugString());
+                        throwablesFromThread.add(t);
+                    } finally {
+                        semaphore.release();
+                    }
+                }
+            });
+            semaphore.acquire();
+
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            LOGGER.debug(referenceMetaObject.getDebugString());
+            LOGGER.debug(metaObjectSpy.getDebugString());
+            throw ex;
+        } catch (Error e) {
+            LOGGER.error(e.getMessage(), e);
+            LOGGER.debug(referenceMetaObject.getDebugString());
+            LOGGER.debug(metaObjectSpy.getDebugString());
             throw e;
         } finally {
             if (!throwablesFromThread.isEmpty()) {
