@@ -89,69 +89,71 @@ public class SearchServiceImpl {
         // caches the dynamic children due to performance reasons
         final HashMap<String, String> dynChildCache = new HashMap<String, String>();
 
-        for (final Object tmp : searchResults) {
-            if (tmp instanceof MetaObjectNode) {
-                final MetaObjectNode node = (MetaObjectNode)tmp;
-                final String key = node.getDomain() + ";" + node.getClassId();
+        if (searchResults != null) {
+            for (final Object tmp : searchResults) {
+                if (tmp instanceof MetaObjectNode) {
+                    final MetaObjectNode node = (MetaObjectNode)tmp;
+                    final String key = node.getDomain() + ";" + node.getClassId();
 
-                if (dynChildCache.containsKey(key)) {
-                    // the dynamic children is contained in the cache
-                    String dynamicChildrenStatement = dynChildCache.get(key);
+                    if (dynChildCache.containsKey(key)) {
+                        // the dynamic children is contained in the cache
+                        String dynamicChildrenStatement = dynChildCache.get(key);
 
-                    if (dynamicChildrenStatement != null) {
-                        // replace the object id wildcard with the object id. This wildcard can be used within the
-                        // dynamic children sql statements
-                        dynamicChildrenStatement = dynamicChildrenStatement.replace((CharSequence)"<object_id>",
-                                (CharSequence)String.valueOf(node.getObjectId()));
-                        node.setDynamicChildrenStatement(dynamicChildrenStatement);
-                        node.setDynamic(true);
-                        node.setLeaf(node.getDynamicChildrenStatement() == null);
-                    }
-                } else {
-                    try {
-                        // the dynamic children is not contained in the cache
-                        final MetaClass cl = ((MetaService)activeLocalServers.get(node.getDomain())).getClass(
-                                user,
-                                node.getClassId());
-                        ClassAttribute dynChild = cl.getClassAttribute("searchHit_dynamicChildren");
-                        final ClassAttribute attribute = cl.getClassAttribute("searchHit_dynamicChildrenAttribute");
-                        boolean hasAttribute = false;
-                        String value = null;
-
-                        if (attribute != null) {
-                            value = ((UserService)activeLocalServers.get(node.getDomain())).getConfigAttr(
-                                    user,
-                                    (String)attribute.getValue());
-
-                            if (value != null) {
-                                hasAttribute = true;
-                            }
-                        }
-
-                        if (hasAttribute) {
-                            final ClassAttribute otherDynChild = cl.getClassAttribute(value);
-
-                            if (otherDynChild != null) {
-                                dynChild = otherDynChild;
-                            }
-                        }
-
-                        if ((dynChild != null) && ((attribute == null) || hasAttribute)) {
-                            String sqlText = (String)dynChild.getValue();
-                            dynChildCache.put(key, sqlText);
-
+                        if (dynamicChildrenStatement != null) {
                             // replace the object id wildcard with the object id. This wildcard can be used within the
                             // dynamic children sql statements
-                            sqlText = sqlText.replace((CharSequence)"<object_id>",
+                            dynamicChildrenStatement = dynamicChildrenStatement.replace((CharSequence)"<object_id>",
                                     (CharSequence)String.valueOf(node.getObjectId()));
-                            node.setDynamicChildrenStatement(sqlText);
+                            node.setDynamicChildrenStatement(dynamicChildrenStatement);
                             node.setDynamic(true);
                             node.setLeaf(node.getDynamicChildrenStatement() == null);
-                        } else {
-                            dynChildCache.put(key, node.getDynamicChildrenStatement());
                         }
-                    } catch (RemoteException e) {
-                        logger.error("Error while trying to add the dynamic children to the search results.", e);
+                    } else {
+                        try {
+                            // the dynamic children is not contained in the cache
+                            final MetaClass cl = ((MetaService)activeLocalServers.get(node.getDomain())).getClass(
+                                    user,
+                                    node.getClassId());
+                            ClassAttribute dynChild = cl.getClassAttribute("searchHit_dynamicChildren");
+                            final ClassAttribute attribute = cl.getClassAttribute("searchHit_dynamicChildrenAttribute");
+                            boolean hasAttribute = false;
+                            String value = null;
+
+                            if (attribute != null) {
+                                value = ((UserService)activeLocalServers.get(node.getDomain())).getConfigAttr(
+                                        user,
+                                        (String)attribute.getValue());
+
+                                if (value != null) {
+                                    hasAttribute = true;
+                                }
+                            }
+
+                            if (hasAttribute) {
+                                final ClassAttribute otherDynChild = cl.getClassAttribute(value);
+
+                                if (otherDynChild != null) {
+                                    dynChild = otherDynChild;
+                                }
+                            }
+
+                            if ((dynChild != null) && ((attribute == null) || hasAttribute)) {
+                                String sqlText = (String)dynChild.getValue();
+                                dynChildCache.put(key, sqlText);
+
+                                // replace the object id wildcard with the object id. This wildcard can be used within
+                                // the dynamic children sql statements
+                                sqlText = sqlText.replace((CharSequence)"<object_id>",
+                                        (CharSequence)String.valueOf(node.getObjectId()));
+                                node.setDynamicChildrenStatement(sqlText);
+                                node.setDynamic(true);
+                                node.setLeaf(node.getDynamicChildrenStatement() == null);
+                            } else {
+                                dynChildCache.put(key, node.getDynamicChildrenStatement());
+                            }
+                        } catch (RemoteException e) {
+                            logger.error("Error while trying to add the dynamic children to the search results.", e);
+                        }
                     }
                 }
             }
