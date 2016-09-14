@@ -767,7 +767,9 @@ public final class RESTfulSerialInterface {
                 "domain="
                         + domain,
                 "object="
-                        + metaObject.toString());
+                        + metaObject.getID()
+                        + "@"
+                        + metaObject.getMetaClass().getTableName());
 
             return createResponse(callserver.insertMetaObject(user, metaObject, domain));
         } catch (final IOException e) {
@@ -813,7 +815,9 @@ public final class RESTfulSerialInterface {
                 "domain="
                         + domain,
                 "object="
-                        + metaObject.toString());
+                        + metaObject.getID()
+                        + "@"
+                        + metaObject.getMetaClass().getTableName());
 
             return createResponse(callserver.updateMetaObject(user, metaObject, domain));
         } catch (final IOException e) {
@@ -859,7 +863,9 @@ public final class RESTfulSerialInterface {
                 "domain="
                         + domain,
                 "object="
-                        + metaObject.toString());
+                        + metaObject.getID()
+                        + "@"
+                        + metaObject.getMetaClass().getTableName());
 
             return createResponse(callserver.deleteMetaObject(user, metaObject, domain));
         } catch (final IOException e) {
