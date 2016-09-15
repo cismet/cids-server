@@ -15,6 +15,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.log4j.Logger;
 
@@ -59,7 +60,6 @@ import de.cismet.cidsx.server.api.types.SearchParameter;
 import de.cismet.cidsx.server.api.types.SearchParameterInfo;
 import de.cismet.cidsx.server.api.types.SearchParameters;
 import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
-import org.apache.commons.lang.ArrayUtils;
 
 /**
  * Helper Methods for dealing with CidsServerSearch and and SearchInfo.
@@ -387,8 +387,7 @@ public class ServerSearchFactory {
             }
 
             /*if (searchParameterInfo.isArray()) {
-                paramClassName += "[]";
-            }*/
+             *  paramClassName += "[]";}*/
 
             try {
                 final Class paramClass = ClassUtils.getClass(paramClassName);
@@ -398,49 +397,45 @@ public class ServerSearchFactory {
                     }
                     paramValue = fromBase64String(searchParameter.getValue().toString());
                 } else if (searchParameterInfo.isArray()) {
-
                     // jackson created a collection, not an array!
                     if (Collection.class.isInstance(searchParameter.getValue())) {
-                        
                         final Collection paramCollection = (Collection)searchParameter.getValue();
                         final Object[] arrayInstance;
-                        if(paramClass.isPrimitive()) {
+                        if (paramClass.isPrimitive()) {
                             arrayInstance = (Object[])Array.newInstance(
-                                    ClassUtils.primitiveToWrapper(paramClass), 
+                                    ClassUtils.primitiveToWrapper(paramClass),
                                     paramCollection.size());
                         } else {
                             arrayInstance = (Object[])Array.newInstance(
-                                    paramClass, 
+                                    paramClass,
                                     paramCollection.size());
                         }
-                        
+
                         paramClassName += "[]";
                         /*final Class paramArrayClass = ClassUtils.getClass(paramClassName);
-                        
-                        paramValue = Arrays.copyOf(
-                                paramCollection.toArray(arrayInstance),
-                                paramCollection.size(),
-                                paramArrayClass);*/
-                        
-                        if(paramClass.equals(boolean.class)) {
-                             paramValue = ArrayUtils.toPrimitive((Boolean[])paramCollection.toArray(arrayInstance));
-                        } else if(paramClass.equals(byte.class)) {
-                             paramValue = ArrayUtils.toPrimitive((Byte[])paramCollection.toArray(arrayInstance));
-                        } else if(paramClass.equals(char.class)) {
-                             paramValue = ArrayUtils.toPrimitive((Character[])paramCollection.toArray(arrayInstance));
-                        } else if(paramClass.equals(double.class)) {
-                             paramValue = ArrayUtils.toPrimitive((Double[])paramCollection.toArray(arrayInstance));
-                        } else if(paramClass.equals(float.class)) {
-                             paramValue = ArrayUtils.toPrimitive((Float[])paramCollection.toArray(arrayInstance));
-                        } else if(paramClass.equals(int.class)) {
-                             paramValue = ArrayUtils.toPrimitive((Integer[])paramCollection.toArray(arrayInstance));
-                        } else if(paramClass.equals(long.class)) {
-                             paramValue = ArrayUtils.toPrimitive((Long[])paramCollection.toArray(arrayInstance));
-                        } else if(paramClass.equals(short.class)) {
-                             paramValue = ArrayUtils.toPrimitive((Short[])paramCollection.toArray(arrayInstance));
+                         *
+                         * paramValue = Arrays.copyOf(     paramCollection.toArray(arrayInstance),
+                         * paramCollection.size(),     paramArrayClass);*/
+
+                        if (paramClass.equals(boolean.class)) {
+                            paramValue = ArrayUtils.toPrimitive((Boolean[])paramCollection.toArray(arrayInstance));
+                        } else if (paramClass.equals(byte.class)) {
+                            paramValue = ArrayUtils.toPrimitive((Byte[])paramCollection.toArray(arrayInstance));
+                        } else if (paramClass.equals(char.class)) {
+                            paramValue = ArrayUtils.toPrimitive((Character[])paramCollection.toArray(arrayInstance));
+                        } else if (paramClass.equals(double.class)) {
+                            paramValue = ArrayUtils.toPrimitive((Double[])paramCollection.toArray(arrayInstance));
+                        } else if (paramClass.equals(float.class)) {
+                            paramValue = ArrayUtils.toPrimitive((Float[])paramCollection.toArray(arrayInstance));
+                        } else if (paramClass.equals(int.class)) {
+                            paramValue = ArrayUtils.toPrimitive((Integer[])paramCollection.toArray(arrayInstance));
+                        } else if (paramClass.equals(long.class)) {
+                            paramValue = ArrayUtils.toPrimitive((Long[])paramCollection.toArray(arrayInstance));
+                        } else if (paramClass.equals(short.class)) {
+                            paramValue = ArrayUtils.toPrimitive((Short[])paramCollection.toArray(arrayInstance));
                         } else {
                             paramValue = paramCollection.toArray(arrayInstance);
-                        }          
+                        }
                     } else {
                         final String message = "Search Parameter Type Missmatch: Type of parameter '"
                                     + paramKey + "' specified in search parameter info as '" + paramClassName
@@ -586,8 +581,9 @@ public class ServerSearchFactory {
     }
 
     /**
-     * Converts a Jackson ObjectNode search result collection to the respective Java Objects. Support MetaClass, MetaObject,
-     * MetaNode by default and tries to deserialize binary (Base 64 encoded) and jackson serialized objects.<br>
+     * Converts a Jackson ObjectNode search result collection to the respective Java Objects. Support MetaClass,
+     * MetaObject, MetaNode by default and tries to deserialize binary (Base 64 encoded) and jackson serialized objects.
+     * <br>
      * <strong>Warning:</strong><br>
      * Does not support automatic deserialization of LightWightMetaObjects! A helper method for LightWightMetaObject
      * deserialization is available at

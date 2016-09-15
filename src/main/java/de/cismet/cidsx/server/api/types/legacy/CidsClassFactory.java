@@ -869,7 +869,7 @@ public class CidsClassFactory {
      *
      * @return  DOCUMENT ME!
      */
-    protected Policy createPolicy(String policyName) {
+    public Policy createPolicy(String policyName) {
         if ((policyName == null) || policyName.isEmpty()
                     || (!policyName.equalsIgnoreCase("DEFAULT")
                         && !policyName.equalsIgnoreCase("STANDARD")

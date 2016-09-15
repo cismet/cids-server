@@ -75,17 +75,17 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Helper Method creates JTS Geometry Object from WKT String with SRID
+     * Helper Method creates JTS Geometry Object from WKT String with SRID.
      *
      * @param   ewkt  WKT String with SRID
      *
      * @return  DOCUMENT ME!
      */
     public static Geometry fromEwkt(final String ewkt) {
-        if(ewkt == null || ewkt.isEmpty()) {
+        if ((ewkt == null) || ewkt.isEmpty()) {
             return null;
         }
-        
+
         final int skIndex = ewkt.indexOf(';');
 
         final String wkt;
@@ -109,8 +109,8 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
             return geom;
         } catch (final ParseException ex) {
             if (LOG.isDebugEnabled()) {
-                LOG.error("Cannot create geometry from WKT String '" + ewkt + ": " 
-                        + ex.getMessage(), ex);
+                LOG.error("Cannot create geometry from WKT String '" + ewkt + ": "
+                            + ex.getMessage(), ex);
             }
 
             return null;

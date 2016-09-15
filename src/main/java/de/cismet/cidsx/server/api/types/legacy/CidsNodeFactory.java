@@ -11,11 +11,13 @@ import Sirius.server.middleware.types.MetaNode;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.middleware.types.Node;
 import Sirius.server.newuser.permission.Policy;
+
 import com.vividsolutions.jts.geom.Geometry;
-import de.cismet.cids.dynamics.CidsBeanJsonDeserializer;
-import de.cismet.cids.dynamics.CidsBeanJsonSerializer;
 
 import org.apache.log4j.Logger;
+
+import de.cismet.cids.dynamics.CidsBeanJsonDeserializer;
+import de.cismet.cids.dynamics.CidsBeanJsonSerializer;
 
 import de.cismet.cidsx.server.api.types.CidsNode;
 
@@ -169,7 +171,7 @@ public class CidsNodeFactory {
         if (MetaObjectNode.class.isAssignableFrom(legacyNode.getClass())) {
             final MetaObjectNode metaObjectNode = (MetaObjectNode)legacyNode;
             objectId = metaObjectNode.getObjectId();
-            
+
             if (className == null) {
                 LOG.warn("className == null, trying to derive class name from object node '" + name + "' (" + id + ")");
                 if ((metaObjectNode.getObject() != null) && (metaObjectNode.getObject().getMetaClass() != null)) {
