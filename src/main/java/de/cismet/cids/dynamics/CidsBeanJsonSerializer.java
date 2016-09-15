@@ -5,10 +5,6 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.cismet.cids.dynamics;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -55,7 +51,7 @@ public class CidsBeanJsonSerializer extends StdSerializer<CidsBean> {
      *
      * @return  DOCUMENT ME!
      */
-    private static String toEwkt(final Geometry geom) {
+    public static String toEwkt(final Geometry geom) {
         if (geom == null) {
             return null;
         }

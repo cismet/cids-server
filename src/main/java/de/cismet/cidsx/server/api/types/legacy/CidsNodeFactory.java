@@ -11,6 +11,9 @@ import Sirius.server.middleware.types.MetaNode;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.middleware.types.Node;
 import Sirius.server.newuser.permission.Policy;
+import com.vividsolutions.jts.geom.Geometry;
+import de.cismet.cids.dynamics.CidsBeanJsonDeserializer;
+import de.cismet.cids.dynamics.CidsBeanJsonSerializer;
 
 import org.apache.log4j.Logger;
 
@@ -74,6 +77,8 @@ public class CidsNodeFactory {
         final String dynamicChildrenStatement = cidsNode.getDynamicChildren();
         final boolean sqlSort = cidsNode.isClientSort();
         final boolean isDynamic = cidsNode.isDynamic();
+        final Geometry cachedGeometry = CidsBeanJsonDeserializer.fromEwkt(cidsNode.getCachedGeometry());
+        final String lightweightJson = cidsNode.getLightweightJson();
 
         final Node legacyNode;
 
@@ -96,8 +101,8 @@ public class CidsNodeFactory {
                     icon,
                     derivePermissionsFromClass,
                     artificialId,
-                    null,
-                    null); // TODO: Check4CashedGeomAndLightweightJson
+                    cachedGeometry,
+                    lightweightJson);
             // FIXME: creation of class tree nodes disbaled! how to determine if a cids node shall be converted to class
             // tree node or simple tree node? } else if (cidsNode.getClassKey() != null &&
             // !cidsNode.getClassKey().isEmpty()) { LOG.debug("node '" + cidsNode.getName() + "' (" + cidsNode.getId() +
@@ -158,10 +163,13 @@ public class CidsNodeFactory {
         final int objectId;
         final String classKey;
         final boolean dynamic = legacyNode.isDynamic();
+        final String cachedGeometry;
+        final String lightweightJson;
 
         if (MetaObjectNode.class.isAssignableFrom(legacyNode.getClass())) {
             final MetaObjectNode metaObjectNode = (MetaObjectNode)legacyNode;
             objectId = metaObjectNode.getObjectId();
+            
             if (className == null) {
                 LOG.warn("className == null, trying to derive class name from object node '" + name + "' (" + id + ")");
                 if ((metaObjectNode.getObject() != null) && (metaObjectNode.getObject().getMetaClass() != null)) {
@@ -176,12 +184,17 @@ public class CidsNodeFactory {
                 LOG.error("could not set object key of object node '" + name + "' (" + id
                             + "), domain or classKey == null");
             }
+
+            cachedGeometry = CidsBeanJsonSerializer.toEwkt(metaObjectNode.getCashedGeometry());
+            lightweightJson = metaObjectNode.getLightweightJson();
         } else {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("node '" + name + "' (" + id + ") is no meta object node -> class node or pure node");
             }
             objectId = -1;
             objectKey = null;
+            cachedGeometry = null;
+            lightweightJson = null;
         }
 
         // cannot derive class name from meta class node since meta class node
@@ -213,6 +226,8 @@ public class CidsNodeFactory {
                 leaf,
                 dynamic,
                 icon,
+                cachedGeometry,
+                lightweightJson,
                 iconFactory,
                 policy,
                 artificialId,
