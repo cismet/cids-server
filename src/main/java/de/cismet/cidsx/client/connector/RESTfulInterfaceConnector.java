@@ -19,7 +19,6 @@ import Sirius.server.middleware.types.Node;
 import Sirius.server.middleware.types.StringPatternFormater;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
-import Sirius.server.newuser.UserGroup;
 
 import Sirius.util.image.Image;
 
