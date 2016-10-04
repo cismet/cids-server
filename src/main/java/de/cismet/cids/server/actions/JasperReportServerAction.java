@@ -60,9 +60,7 @@ public abstract class JasperReportServerAction implements UserAwareServerAction,
      */
     protected byte[] generateReport(final Map<String, Object> parameters, final JRDataSource dataSource)
             throws Exception {
-        final JasperReport report = (JasperReport)JRLoader.loadObject(
-                JasperReportServerAction.class.getResourceAsStream(getJasperPath()));
-        final JasperPrint print = JasperFillManager.fillReport(report, parameters, dataSource);
+        final JasperPrint print = JasperFillManager.fillReport(getJasperReport(), parameters, dataSource);
 
         ByteArrayOutputStream os = null;
         try {
@@ -82,7 +80,7 @@ public abstract class JasperReportServerAction implements UserAwareServerAction,
      *
      * @return  DOCUMENT ME!
      */
-    protected abstract String getJasperPath();
+    protected abstract JasperReport getJasperReport();
 
     @Override
     public User getUser() {
