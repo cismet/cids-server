@@ -200,6 +200,11 @@
           <version>1.6.4</version>
           <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports</artifactId>
+            <version>6.0.4</version>
+        </dependency>        
     </dependencies>
 
     <build>
