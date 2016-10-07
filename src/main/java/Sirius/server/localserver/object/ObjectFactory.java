@@ -1039,12 +1039,18 @@ public final class ObjectFactory extends Shutdown {
         final UserGroup userGroup = user.getUserGroup();
         final Collection<Integer> userGroupIds = new ArrayList<Integer>();
         if (userGroup != null) {
-            LOG.info("get top nodes for UserGroup:" + userGroup.getName() + "@" + user.getDomain());               // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("get top nodes for UserGroup:" + userGroup.getName() + "@" + user.getDomain());               // NOI18N
+            }
             userGroupIds.add(userGroup.getId());
         } else {
-            LOG.info("get top nodes for UserGroups:");                                                             // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("get top nodes for UserGroups:");                                                             // NOI18N
+            }
             for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
-                LOG.info("                            :" + potentialUserGroup.getName() + "@" + user.getDomain()); // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("                            :" + potentialUserGroup.getName() + "@" + user.getDomain()); // NOI18N
+                }
                 userGroupIds.add(potentialUserGroup.getId());
             }
         }
