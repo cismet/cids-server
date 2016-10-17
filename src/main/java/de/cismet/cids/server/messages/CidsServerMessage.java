@@ -33,6 +33,7 @@ public class CidsServerMessage implements Serializable {
 
     private final Integer id;
     private final Object content;
+    private final boolean renotify;
     private final String category;
     private final Date timestamp;
 

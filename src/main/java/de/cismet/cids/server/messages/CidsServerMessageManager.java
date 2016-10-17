@@ -15,6 +15,7 @@ package de.cismet.cids.server.messages;
 import Sirius.server.newuser.User;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -32,19 +33,22 @@ public interface CidsServerMessageManager {
      *
      * @param  category  DOCUMENT ME!
      * @param  object    DOCUMENT ME!
+     * @param  renotify  DOCUMENT ME!
      */
-    void publishMessage(final String category, final Object object);
+    void publishMessage(final String category, final Object object, final boolean renotify);
 
     /**
      * DOCUMENT ME!
      *
      * @param  category                         DOCUMENT ME!
      * @param  object                           DOCUMENT ME!
+     * @param  renotify                         DOCUMENT ME!
      * @param  ids                              DOCUMENT ME!
      * @param  trueForUserKeysFalseForGroupIds  DOCUMENT ME!
      */
     void publishMessage(final String category,
             final Object object,
+            final boolean renotify,
             final Set ids,
             final boolean trueForUserKeysFalseForGroupIds);
 
@@ -53,29 +57,15 @@ public interface CidsServerMessageManager {
      *
      * @param  category       DOCUMENT ME!
      * @param  object         DOCUMENT ME!
+     * @param  renotify       DOCUMENT ME!
      * @param  userGroupKeys  DOCUMENT ME!
      * @param  userKeys       DOCUMENT ME!
      */
     void publishMessage(final String category,
             final Object object,
+            final boolean renotify,
             final Set userGroupKeys,
             final Set userKeys);
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    Collection<CidsServerMessage> getLastMessages();
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    Collection<CidsServerMessage> getLastMessages(final User user);
 
     /**
      * DOCUMENT ME!
@@ -85,26 +75,7 @@ public interface CidsServerMessageManager {
      *
      * @return  DOCUMENT ME!
      */
-    Collection<CidsServerMessage> getLastMessages(final User user, final Integer biggerThen);
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   category  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    CidsServerMessage getLastMessage(final String category);
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   category  DOCUMENT ME!
-     * @param   user      DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    CidsServerMessage getLastMessage(final String category, final User user);
+    Collection<CidsServerMessage> getLastMessages(final User user, final Map<String, Integer> biggerThen);
 
     /**
      * DOCUMENT ME!
@@ -115,7 +86,7 @@ public interface CidsServerMessageManager {
      *
      * @return  DOCUMENT ME!
      */
-    CidsServerMessage getLastMessage(final String category, final User user, final Integer biggerThen);
+    CidsServerMessage getLastMessage(final String category, final User user, final int biggerThen);
 
     /**
      * DOCUMENT ME!

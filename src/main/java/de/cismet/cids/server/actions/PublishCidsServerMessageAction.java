@@ -45,7 +45,7 @@ public class PublishCidsServerMessageAction implements ServerAction, UserAwareSe
 
         //~ Enum constants -----------------------------------------------------
 
-        CATEGORY, USER, USERGROUP
+        CATEGORY, USER, USERGROUP, RENOTIFY
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -76,6 +76,7 @@ public class PublishCidsServerMessageAction implements ServerAction, UserAwareSe
     public Object execute(final Object body, final ServerActionParameter... params) {
         final Object message = body;
         String category = null;
+        boolean renotify = false;
 
         final Set userGroupKeys = new HashSet();
         final Set userKeys = new HashSet();
@@ -83,6 +84,8 @@ public class PublishCidsServerMessageAction implements ServerAction, UserAwareSe
             if (sap != null) {
                 if (sap.getKey().equals(ParameterType.CATEGORY.toString())) {
                     category = (String)sap.getValue();
+                } else if (sap.getKey().equals(ParameterType.RENOTIFY.toString())) {
+                    renotify = Boolean.TRUE.equals((Boolean)sap.getValue());
                 } else if (sap.getKey().equals(ParameterType.USERGROUP.toString())) {
                     userGroupKeys.add(sap.getValue());
                 } else if (sap.getKey().equals(ParameterType.USER.toString())) {
@@ -91,7 +94,7 @@ public class PublishCidsServerMessageAction implements ServerAction, UserAwareSe
             }
         }
 
-        CidsServerMessageManagerImpl.getInstance().publishMessage(category, message, userGroupKeys, userKeys);
+        CidsServerMessageManagerImpl.getInstance().publishMessage(category, message, renotify, userGroupKeys, userKeys);
 
         return null;
     }

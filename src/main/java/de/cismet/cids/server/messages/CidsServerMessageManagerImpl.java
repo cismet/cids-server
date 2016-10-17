@@ -85,10 +85,11 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
      *
      * @param  category  DOCUMENT ME!
      * @param  object    DOCUMENT ME!
+     * @param  renotify  DOCUMENT ME!
      */
     @Override
-    public void publishMessage(final String category, final Object object) {
-        CidsServerMessageManagerImpl.this.publishMessage(category, object, null, null);
+    public void publishMessage(final String category, final Object object, final boolean renotify) {
+        publishMessage(category, object, renotify, null, null);
     }
 
     /**
@@ -96,18 +97,20 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
      *
      * @param  category                          DOCUMENT ME!
      * @param  object                            DOCUMENT ME!
+     * @param  renotify                          DOCUMENT ME!
      * @param  keys                              DOCUMENT ME!
      * @param  trueForUserKeysFalseForGroupKeys  DOCUMENT ME!
      */
     @Override
     public void publishMessage(final String category,
             final Object object,
+            final boolean renotify,
             final Set keys,
             final boolean trueForUserKeysFalseForGroupKeys) {
         if (trueForUserKeysFalseForGroupKeys) {
-            CidsServerMessageManagerImpl.this.publishMessage(category, object, null, keys);
+            publishMessage(category, object, renotify, null, keys);
         } else {
-            CidsServerMessageManagerImpl.this.publishMessage(category, object, keys, null);
+            publishMessage(category, object, renotify, keys, null);
         }
     }
 
@@ -116,12 +119,14 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
      *
      * @param  category       DOCUMENT ME!
      * @param  object         DOCUMENT ME!
+     * @param  renotify       DOCUMENT ME!
      * @param  userGroupKeys  DOCUMENT ME!
      * @param  userKeys       DOCUMENT ME!
      */
     @Override
     public void publishMessage(final String category,
             final Object object,
+            final boolean renotify,
             final Set userGroupKeys,
             final Set userKeys) {
         final int newMessageId;
@@ -130,7 +135,7 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
             newMessageId = ++messageId;
         }
 
-        final CidsServerMessage message = new CidsServerMessage(newMessageId, object, category, new Date());
+        final CidsServerMessage message = new CidsServerMessage(newMessageId, object, renotify, category, new Date());
 
         if ((userKeys != null) && !userKeys.isEmpty()) {
             userKeyMap.put(message, new HashSet(userKeys));
@@ -176,44 +181,23 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
     }
 
     @Override
-    public Collection<CidsServerMessage> getLastMessages() {
-        return getLastMessages(null, null);
-    }
-
-    @Override
-    public Collection<CidsServerMessage> getLastMessages(final User user) {
-        return getLastMessages(user, null);
-    }
-
-    @Override
-    public Collection<CidsServerMessage> getLastMessages(final User user, final Integer biggerThen) {
+    public Collection<CidsServerMessage> getLastMessages(final User user,
+            final Map<String, Integer> biggerThenPerCategory) {
         final Collection<CidsServerMessage> messages = new ArrayList<CidsServerMessage>(messagesPerCategoryMap.keySet()
                         .size());
+
+        final int defaultBiggerThen = -1;
         for (final String category : messagesPerCategoryMap.keySet()) {
-            final CidsServerMessage message = getLastMessage(category, user, biggerThen);
+            final Integer biggerThen = biggerThenPerCategory.get(category);
+            final CidsServerMessage message = getLastMessage(
+                    category,
+                    user,
+                    (biggerThen != null) ? biggerThen : defaultBiggerThen);
             if (message != null) {
                 messages.add(message);
             }
         }
         return messages;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   category  DOCUMENT ME!
-     * @param   user      DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    @Override
-    public CidsServerMessage getLastMessage(final String category, final User user) {
-        return getLastMessage(category, user, null);
-    }
-
-    @Override
-    public CidsServerMessage getLastMessage(final String category) {
-        return getLastMessage(category, null, null);
     }
 
     /**
@@ -226,7 +210,7 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
      * @return  DOCUMENT ME!
      */
     @Override
-    public CidsServerMessage getLastMessage(final String category, final User user, final Integer biggerThen) {
+    public CidsServerMessage getLastMessage(final String category, final User user, final int biggerThen) {
         final LinkedList<CidsServerMessage> messages = (LinkedList<CidsServerMessage>)messagesPerCategoryMap.get(
                 category);
         final Iterator<CidsServerMessage> itBackwards = messages.descendingIterator();
@@ -235,7 +219,7 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
         while (itBackwards.hasNext() && !abort) {
             final CidsServerMessage message = itBackwards.next();
 
-            if ((biggerThen != null) && (message.getId() <= biggerThen)) {
+            if (!message.isRenotify() && (message.getId() <= biggerThen)) {
                 abort = true;
                 continue;
             }

@@ -14,6 +14,7 @@ package de.cismet.cids.server.actions;
 import Sirius.server.newuser.User;
 
 import java.util.Collection;
+import java.util.Map;
 
 import de.cismet.cids.server.messages.CidsServerMessage;
 import de.cismet.cids.server.messages.CidsServerMessageManagerImpl;
@@ -41,11 +42,11 @@ public class CheckCidsServerMessageAction implements ServerAction, UserAwareServ
      *
      * @version  $Revision$, $Date$
      */
-    public enum ParameterType {
+    public enum Parameter {
 
         //~ Enum constants -----------------------------------------------------
 
-        LAST_MESSAGE_ID
+        LAST_MESSAGE_IDS, INTERVALL
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -74,18 +75,21 @@ public class CheckCidsServerMessageAction implements ServerAction, UserAwareServ
      */
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
-        Integer lastMessageId = null;
+        Map<String, Integer> lastMessageIdPerCategory = null;
+        Integer intervall = null;
 
         for (final ServerActionParameter sap : params) {
             if (sap != null) {
-                if (sap.getKey().equals(ParameterType.LAST_MESSAGE_ID.toString())) {
-                    lastMessageId = (Integer)sap.getValue();
+                if (sap.getKey().equals(Parameter.LAST_MESSAGE_IDS.toString())) {
+                    lastMessageIdPerCategory = (Map)sap.getValue();
+                } else if (sap.getKey().equals(Parameter.INTERVALL.toString())) {
+                    intervall = (Integer)sap.getValue();
                 }
             }
         }
 
         final Collection<CidsServerMessage> messages = CidsServerMessageManagerImpl.getInstance()
-                    .getLastMessages(getUser(), lastMessageId);
+                    .getLastMessages(getUser(), lastMessageIdPerCategory);
 
         return messages;
     }
