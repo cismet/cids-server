@@ -55,6 +55,8 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
     private final CidsServerMessageManagerListenerHandler listenerHandler =
         new CidsServerMessageManagerListenerHandler();
 
+    private final Map<String, Long> userActivityTimeMap = new HashMap<String, Long>();
+
     private int messageId = 0;
 
     //~ Constructors -----------------------------------------------------------
@@ -268,6 +270,33 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
         }
 
         return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  userKey               DOCUMENT ME!
+     * @param  nextExpectedActivity  DOCUMENT ME!
+     */
+    public void logUserActivity(final String userKey, final Long nextExpectedActivity) {
+        userActivityTimeMap.put(userKey, nextExpectedActivity);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Set<String> getActiveUsers() {
+        final Set<String> activeUsers = new HashSet<String>();
+        final long currentTimeInMs = System.currentTimeMillis();
+        for (final String userKey : userActivityTimeMap.keySet()) {
+            final Long expectedTs = userActivityTimeMap.get(userKey);
+            if ((expectedTs != null) && (expectedTs > currentTimeInMs)) {
+                activeUsers.add(userKey);
+            }
+        }
+        return activeUsers;
     }
 
     //~ Inner Classes ----------------------------------------------------------

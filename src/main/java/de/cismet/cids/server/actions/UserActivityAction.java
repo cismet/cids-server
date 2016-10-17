@@ -13,8 +13,10 @@ package de.cismet.cids.server.actions;
 
 import Sirius.server.newuser.User;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import de.cismet.cids.server.messages.CidsServerMessage;
 import de.cismet.cids.server.messages.CidsServerMessageManagerImpl;
@@ -26,14 +28,14 @@ import de.cismet.cids.server.messages.CidsServerMessageManagerImpl;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = ServerAction.class)
-public class CheckCidsServerMessageAction implements ServerAction, UserAwareServerAction {
+public class UserActivityAction implements ServerAction {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
-            CheckCidsServerMessageAction.class);
+            UserActivityAction.class);
 
-    public static final String TASK_NAME = "checkCidsServerMessage";
+    public static final String TASK_NAME = "userActivity";
 
     //~ Enums ------------------------------------------------------------------
 
@@ -46,24 +48,10 @@ public class CheckCidsServerMessageAction implements ServerAction, UserAwareServ
 
         //~ Enum constants -----------------------------------------------------
 
-        LAST_MESSAGE_IDS, INTERVALL
+        USER_LIST
     }
-
-    //~ Instance fields --------------------------------------------------------
-
-    private User user;
 
     //~ Methods ----------------------------------------------------------------
-
-    @Override
-    public User getUser() {
-        return user;
-    }
-
-    @Override
-    public void setUser(final User user) {
-        this.user = user;
-    }
 
     /**
      * DOCUMENT ME!
@@ -75,29 +63,21 @@ public class CheckCidsServerMessageAction implements ServerAction, UserAwareServ
      */
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
-        final Long currentTimeInMs = System.currentTimeMillis();
-        Map<String, Integer> lastMessageIdPerCategory = null;
-        Integer intervall = null;
-
+        boolean userList = false;
         for (final ServerActionParameter sap : params) {
             if (sap != null) {
-                if (sap.getKey().equals(Parameter.LAST_MESSAGE_IDS.toString())) {
-                    lastMessageIdPerCategory = (Map)sap.getValue();
-                } else if (sap.getKey().equals(Parameter.INTERVALL.toString())) {
-                    intervall = (Integer)sap.getValue();
+                if (sap.getKey().equals(Parameter.USER_LIST.toString())) {
+                    userList = Boolean.TRUE.equals(sap.getValue());
                 }
             }
         }
 
-        if (intervall != null) {
-            CidsServerMessageManagerImpl.getInstance()
-                    .logUserActivity(getUser().getName(), currentTimeInMs + (intervall * 2));
+        final Set<String> activeUsers = CidsServerMessageManagerImpl.getInstance().getActiveUsers();
+        if (userList) {
+            return Arrays.asList(params);
+        } else {
+            return activeUsers.size();
         }
-
-        final Collection<CidsServerMessage> messages = CidsServerMessageManagerImpl.getInstance()
-                    .getLastMessages(getUser(), lastMessageIdPerCategory);
-
-        return messages;
     }
 
     /**
