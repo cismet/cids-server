@@ -24,6 +24,7 @@ import java.io.StringReader;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * DOCUMENT ME!
@@ -71,9 +72,8 @@ public class CachedServerResourcesLoader {
      *
      * @param  resource  DOCUMENT ME!
      */
-    public void loadJasperReportResource(final JasperReportServerResources resource) {
-        final String resourceValue = resource.getValue();
-        loadResource(resourceValue, Type.JASPER_REPORT);
+    public void loadJasperReportResource(final String resource) {
+        loadResource(resource, Type.JASPER_REPORT);
     }
 
     /**
@@ -81,9 +81,8 @@ public class CachedServerResourcesLoader {
      *
      * @param  resource  DOCUMENT ME!
      */
-    public void loadTextResource(final TextServerResources resource) {
-        final String resourceValue = resource.getValue();
-        loadResource(resourceValue, Type.TEXT);
+    public void loadTextResource(final String resource) {
+        loadResource(resource, Type.TEXT);
     }
 
     /**
@@ -91,9 +90,8 @@ public class CachedServerResourcesLoader {
      *
      * @param  resource  DOCUMENT ME!
      */
-    public void loadTruetypeFontResource(final TruetypeFontServerResources resource) {
-        final String resourceValue = resource.getValue();
-        loadResource(resourceValue, Type.TRUETYPE_FONT);
+    public void loadTruetypeFontResource(final String resource) {
+        loadResource(resource, Type.TRUETYPE_FONT);
     }
 
     /**
@@ -149,12 +147,11 @@ public class CachedServerResourcesLoader {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public JasperReport getJasperReportResource(final JasperReportServerResources resource) throws Exception {
-        final String resourceValue = resource.getValue();
-        if (!resourceMap.containsKey(getResourceKey(resourceValue, Type.JASPER_REPORT))) {
+    public JasperReport getJasperReportResource(final String resource) throws Exception {
+        if (!resourceMap.containsKey(getResourceKey(resource, Type.JASPER_REPORT))) {
             loadJasperReportResource(resource);
         }
-        return (JasperReport)getResource(resourceValue, Type.JASPER_REPORT);
+        return (JasperReport)getResource(resource, Type.JASPER_REPORT);
     }
 
     /**
@@ -166,12 +163,28 @@ public class CachedServerResourcesLoader {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public String getStringResource(final TextServerResources resource) throws Exception {
-        final String resourceValue = resource.getValue();
-        if (!resourceMap.containsKey(getResourceKey(resourceValue, Type.TEXT))) {
+    public String getStringResource(final String resource) throws Exception {
+        if (!resourceMap.containsKey(getResourceKey(resource, Type.TEXT))) {
             loadTextResource(resource);
         }
-        return (String)getResource(resourceValue, Type.TEXT);
+        return (String)getResource(resource, Type.TEXT);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   resource  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Properties getPropertiesResource(final String resource) {
+        final Properties properties = new Properties();
+        try {
+            properties.load(getStringReaderResource(resource));
+        } catch (final Exception ex) {
+            LOG.error("error while reading properties", ex);
+        }
+        return properties;
     }
 
     /**
@@ -183,7 +196,7 @@ public class CachedServerResourcesLoader {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public StringReader getStringReaderResource(final TextServerResources resource) throws Exception {
+    public StringReader getStringReaderResource(final String resource) throws Exception {
         return new StringReader(getStringResource(resource));
     }
 
@@ -196,12 +209,11 @@ public class CachedServerResourcesLoader {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public Font getTrueTypeFontResource(final TruetypeFontServerResources resource) throws Exception {
-        final String resourceValue = resource.getValue();
-        if (!resourceMap.containsKey(getResourceKey(resourceValue, Type.TRUETYPE_FONT))) {
+    public Font getTrueTypeFontResource(final String resource) throws Exception {
+        if (!resourceMap.containsKey(getResourceKey(resource, Type.TRUETYPE_FONT))) {
             loadTruetypeFontResource(resource);
         }
-        return (Font)getResource(resourceValue, Type.TRUETYPE_FONT);
+        return (Font)getResource(resource, Type.TRUETYPE_FONT);
     }
 
     /**
