@@ -2382,7 +2382,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         if (body != null) {
             try {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("creating Multi Part Form Data '" + MediaType.APPLICATION_OCTET_STREAM_TYPE + "'");
+                    LOG.debug("creating Multi Part Form Data '" + MediaType.APPLICATION_OCTET_STREAM + "'");
                 }
                 final ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 final ObjectOutputStream oos = new ObjectOutputStream(bos);
