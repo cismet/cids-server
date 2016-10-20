@@ -36,7 +36,7 @@ public class ActionServiceImpl implements ActionService {
 
     //~ Instance fields --------------------------------------------------------
 
-    private Map activeLocalServers;
+    private final Map activeLocalServers;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -60,6 +60,12 @@ public class ActionServiceImpl implements ActionService {
             final String taskdomain,
             final Object body,
             final ServerActionParameter... params) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("executing task '" + taskname + "' with " + params.length
+                        + " server action parameters and body object: " + (body != null)
+                        + " for user '" + user.getName() + "'");
+        }
+
         return ((Sirius.server.middleware.interfaces.domainserver.ActionService)activeLocalServers.get(taskdomain))
                     .executeTask(user, taskname, body, params);
     }
