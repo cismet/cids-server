@@ -172,7 +172,9 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             try {
                 CachedServerResourcesLoader.getInstance().setResourcesBasePath(properties.getServerResourcesBasePath());
             } catch (final Exception ex) {
-                LOG.warn("ServerResourcePath could not be determined. CachedServerResourcesLoader will not work as expected !", ex);
+                logger.warn(
+                    "ServerResourcePath could not be determined. CachedServerResourcesLoader will not work as expected !",
+                    ex);
             }
 
             final Collection<? extends ServerAction> serverActions = Lookup.getDefault().lookupAll(ServerAction.class);
