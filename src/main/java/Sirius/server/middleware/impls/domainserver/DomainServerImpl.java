@@ -76,6 +76,7 @@ import de.cismet.cids.server.search.QueryPostProcessor;
 import de.cismet.cids.server.ws.rest.RESTfulService;
 
 import de.cismet.cids.utils.ClassloadingHelper;
+import de.cismet.cids.utils.serverresources.CachedServerResourcesLoader;
 
 /**
  * DOCUMENT ME!
@@ -167,6 +168,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             }
 
             historyServer = dbServer.getHistoryServer();
+
+            CachedServerResourcesLoader.getInstance().setResourcesBasePath(properties.getServerResourcesBasePath());
 
             final Collection<? extends ServerAction> serverActions = Lookup.getDefault().lookupAll(ServerAction.class);
             for (final ServerAction serverAction : serverActions) {

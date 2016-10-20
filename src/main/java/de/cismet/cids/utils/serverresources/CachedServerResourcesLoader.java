@@ -17,11 +17,12 @@ import net.sf.jasperreports.engine.util.JRLoader;
 
 import org.apache.commons.io.IOUtils;
 
-import java.awt.Font;
-
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -50,12 +51,13 @@ public class CachedServerResourcesLoader {
 
         //~ Enum constants -----------------------------------------------------
 
-        JASPER_REPORT, TEXT, TRUETYPE_FONT
+        JASPER_REPORT, TEXT, BINARY
     }
 
     //~ Instance fields --------------------------------------------------------
 
-    private final Map<String, Object> resourceMap = new HashMap<String, Object>();
+    private final Map<String, Object> resourceMap = Collections.synchronizedMap(new HashMap<String, Object>());
+    private String resourcesBasePath = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -70,72 +72,109 @@ public class CachedServerResourcesLoader {
     /**
      * DOCUMENT ME!
      *
-     * @param  resource  DOCUMENT ME!
+     * @param  resourcesBasePath  DOCUMENT ME!
      */
-    public void loadJasperReportResource(final String resource) {
-        loadResource(resource, Type.JASPER_REPORT);
+    public void setResourcesBasePath(final String resourcesBasePath) {
+        this.resourcesBasePath = resourcesBasePath;
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param  resource  DOCUMENT ME!
+     * @param   resource  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
      */
-    public void loadTextResource(final String resource) {
-        loadResource(resource, Type.TEXT);
+    public JasperReport loadJasperReportResource(final String resource) throws Exception {
+        return (JasperReport)loadResource(resource, Type.JASPER_REPORT);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param  resource  DOCUMENT ME!
+     * @param   resource  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
      */
-    public void loadTruetypeFontResource(final String resource) {
-        loadResource(resource, Type.TRUETYPE_FONT);
+    public String loadTextResource(final String resource) throws Exception {
+        return (String)loadResource(resource, Type.TEXT);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param  resourcePath  DOCUMENT ME!
-     * @param  type          DOCUMENT ME!
+     * @param   resource  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
      */
-    private void loadResource(final String resourcePath, final Type type) {
-        final String resourceKey = getResourceKey(resourcePath, type);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("ResourceLoader loads: " + resourceKey);
-        }
+    public byte[] loadBinaryResource(final String resource) throws Exception {
+        return (byte[])loadResource(resource, Type.BINARY);
+    }
 
-        final InputStream inputStream = CachedServerResourcesLoader.class.getResourceAsStream(resourcePath);
-        Object resource;
-        if (type != null) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   resourcePath  DOCUMENT ME!
+     * @param   type          DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    private Object loadResource(final String resourcePath, final Type type) throws Exception {
+        synchronized (resourceMap) {
+            final String resourceKey = getResourceKey(resourcePath, type);
+            LOG.info("ResourceLoader loading " + resourceKey);
+
             try {
-                switch (type) {
-                    case TEXT: {
-                        resource = IOUtils.toString(inputStream);
-                    }
-                    break;
-                    case JASPER_REPORT: {
-                        resource = JRLoader.loadObject(inputStream);
-                    }
-                    break;
-                    case TRUETYPE_FONT: {
-                        resource = Font.createFont(Font.TRUETYPE_FONT, inputStream);
-                    }
-                    break;
-                    default: {
-                        resource = null;
-                    }
+                final String resourceFullPath = resourcesBasePath + resourcePath;
+                final File resourceFile = new File(resourceFullPath);
+                if (!resourceFile.exists()) {
+                    throw new Exception(resourcePath + " not found in " + resourcesBasePath);
                 }
-            } catch (final Exception ex) {
-                LOG.warn("Exception while loading resource: " + resourceKey, ex);
-                resource = ex;
-            }
-        } else {
-            resource = null;
-        }
+                final InputStream inputStream = new FileInputStream(resourceFile);
+                Object resource;
+                if (type != null) {
+                    try {
+                        switch (type) {
+                            case TEXT: {
+                                resource = IOUtils.toString(inputStream);
+                            }
+                            break;
+                            case JASPER_REPORT: {
+                                resource = JRLoader.loadObject(inputStream);
+                            }
+                            break;
+                            case BINARY: {
+                                resource = IOUtils.toByteArray(inputStream);
+                            }
+                            break;
+                            default: {
+                                resource = null;
+                            }
+                        }
+                    } catch (final Exception ex) {
+                        LOG.warn("Exception while loading resource: " + resourceKey, ex);
+                        resource = ex;
+                    }
+                } else {
+                    resource = null;
+                }
 
-        resourceMap.put(resourceKey, resource);
+                resourceMap.put(resourceKey, resource);
+
+                return resource;
+            } catch (final Exception ex) {
+                LOG.warn("ResourceLoader failed on loading " + resourceKey, ex);
+                throw ex;
+            }
+        }
     }
 
     /**
@@ -148,8 +187,10 @@ public class CachedServerResourcesLoader {
      * @throws  Exception  DOCUMENT ME!
      */
     public JasperReport getJasperReportResource(final String resource) throws Exception {
-        if (!resourceMap.containsKey(getResourceKey(resource, Type.JASPER_REPORT))) {
-            loadJasperReportResource(resource);
+        synchronized (resourceMap) {
+            if (!resourceMap.containsKey(getResourceKey(resource, Type.JASPER_REPORT))) {
+                loadJasperReportResource(resource);
+            }
         }
         return (JasperReport)getResource(resource, Type.JASPER_REPORT);
     }
@@ -163,9 +204,11 @@ public class CachedServerResourcesLoader {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public String getStringResource(final String resource) throws Exception {
-        if (!resourceMap.containsKey(getResourceKey(resource, Type.TEXT))) {
-            loadTextResource(resource);
+    public String getTextResource(final String resource) throws Exception {
+        synchronized (resourceMap) {
+            if (!resourceMap.containsKey(getResourceKey(resource, Type.TEXT))) {
+                loadTextResource(resource);
+            }
         }
         return (String)getResource(resource, Type.TEXT);
     }
@@ -176,14 +219,12 @@ public class CachedServerResourcesLoader {
      * @param   resource  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
      */
-    public Properties getPropertiesResource(final String resource) {
+    public Properties getPropertiesResource(final String resource) throws Exception {
         final Properties properties = new Properties();
-        try {
-            properties.load(getStringReaderResource(resource));
-        } catch (final Exception ex) {
-            LOG.error("error while reading properties", ex);
-        }
+        properties.load(getStringReaderResource(resource));
         return properties;
     }
 
@@ -197,7 +238,7 @@ public class CachedServerResourcesLoader {
      * @throws  Exception  DOCUMENT ME!
      */
     public StringReader getStringReaderResource(final String resource) throws Exception {
-        return new StringReader(getStringResource(resource));
+        return new StringReader(getTextResource(resource));
     }
 
     /**
@@ -209,11 +250,13 @@ public class CachedServerResourcesLoader {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public Font getTrueTypeFontResource(final String resource) throws Exception {
-        if (!resourceMap.containsKey(getResourceKey(resource, Type.TRUETYPE_FONT))) {
-            loadTruetypeFontResource(resource);
+    public byte[] getBinaryResource(final String resource) throws Exception {
+        synchronized (resourceMap) {
+            if (!resourceMap.containsKey(getResourceKey(resource, Type.BINARY))) {
+                loadBinaryResource(resource);
+            }
         }
-        return (Font)getResource(resource, Type.TRUETYPE_FONT);
+        return (byte[])getResource(resource, Type.BINARY);
     }
 
     /**
@@ -231,6 +274,7 @@ public class CachedServerResourcesLoader {
             LOG.debug("Resource requested from ResourcePreloader [" + type.toString() + "]:" + resourcePath,
                 new Exception());
         }
+
         final String resourceKey = getResourceKey(resourcePath, type);
         final Object resource = resourceMap.get(resourceKey);
         if (resource instanceof Exception) {
@@ -251,7 +295,7 @@ public class CachedServerResourcesLoader {
      * @return  DOCUMENT ME!
      */
     private static String getResourceKey(final String resourcePath, final Type type) {
-        return "[" + type.toString() + "]" + resourcePath;
+        return "[" + type.toString() + "] " + resourcePath;
     }
 
     /**
