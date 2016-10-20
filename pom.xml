@@ -2,13 +2,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- 
-        FIXME: Replace deprecated cids-parent by cismet-parent
-    -->
     <parent>
-        <groupId>de.cismet.cids</groupId>
-        <artifactId>cids-parent</artifactId>
-        <version>5.0</version>
+        <groupId>de.cismet</groupId>
+        <artifactId>cismet-parent</artifactId>
+        <version>5.0.1</version>
     </parent>
 
     <groupId>de.cismet.cids</groupId>
@@ -46,7 +43,7 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>cismet-ext-bom</artifactId>
-                <version>5.0</version>
+                <version>5.0.1</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -72,7 +69,10 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest-types</artifactId>
-                <version>5.0</version>
+                <!--
+                    FIXME: replace with release version when action api enhancements have been merged!
+                -->
+                <version>5.0-UBA</version>
             </dependency>
             <!-- END: managed cids-dependencies -->
         </dependencies>
@@ -182,6 +182,26 @@
             <groupId>org.mortbay.jetty</groupId>
             <artifactId>jetty-util</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util-lookup</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
         <!-- END: managed dependencies -->
         
         <dependency>
@@ -215,31 +235,11 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.5-20081211</version>
-        </dependency>
-        <dependency>
-            <groupId>org.netbeans.api</groupId>
-            <artifactId>org-openide-util</artifactId>
-            <version>RELEASE701</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
-        </dependency>
-        <dependency>
             <groupId>postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>9.1-903.jdbc4</version>
         </dependency>
-        <dependency>
-            <groupId>org.netbeans.api</groupId>
-            <artifactId>org-openide-util-lookup</artifactId>
-            <version>RELEASE701</version>
-        </dependency>
-        
+
         <!-- BEGIN: Runtime dependencies -->
         <!--
             By inlcuding this !runtime! binding we are forwarding
@@ -387,13 +387,6 @@
             </plugins>
         </pluginManagement>
         
-        
         <finalName>cidsServer</finalName>
     </build>
 </project>
-
-
-
-
-
-

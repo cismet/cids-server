@@ -2277,7 +2277,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             }
 
             try {
-                return getResponsePOST("executeTask", queryParams, Object.class); // NOI18N
+                final Object response = getResponsePOST("executeTask", queryParams, Object.class); // NOI18N
+                return response;
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
