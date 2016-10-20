@@ -133,6 +133,9 @@ public class CachedServerResourcesLoader {
             LOG.info("ResourceLoader loading " + resourceKey);
 
             try {
+                if (resourcesBasePath == null) {
+                    throw new Exception("resourcesBasePath is null");
+                }
                 final String resourceFullPath = resourcesBasePath + resourcePath;
                 final File resourceFile = new File(resourceFullPath);
                 if (!resourceFile.exists()) {
