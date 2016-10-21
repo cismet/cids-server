@@ -80,7 +80,7 @@ public abstract class JasperReportServerAction implements UserAwareServerAction,
      *
      * @return  DOCUMENT ME!
      */
-    protected abstract JasperReport getJasperReport();
+    protected abstract JasperReport getJasperReport() throws Exception;
 
     @Override
     public User getUser() {
