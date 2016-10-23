@@ -43,8 +43,7 @@ public class BandwidthTestAction extends DownloadFileAction {
             final ServerProperties serverProps = DomainServerImpl.getServerProperties();
             final String serverRespath = serverProps.getServerResourcesBasePath();
             final String s = serverProps.getFileSeparator();
-            final String filePath = "/de/cismet/cids/tools/bandwidthTest/" + fileSizeInMb.toString()
-                        + "MB.zip";
+            final String filePath = "/bandwidthTest/" + fileSizeInMb.toString() + "MB.zip";
             final Object ret;
             if ("/".equals(s)) {
                 ret = super.execute(serverRespath + filePath);
