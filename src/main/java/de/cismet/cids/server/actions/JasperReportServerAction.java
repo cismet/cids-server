@@ -79,6 +79,8 @@ public abstract class JasperReportServerAction implements UserAwareServerAction,
      * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
      */
     protected abstract JasperReport getJasperReport() throws Exception;
 
