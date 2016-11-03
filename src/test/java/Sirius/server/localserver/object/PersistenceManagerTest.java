@@ -397,7 +397,7 @@ public class PersistenceManagerTest {
     }
 
     /**
-     * TODO: cs_all_attr_mapping tests
+     * TODO: cs_attr_object tests
      *
      * @param   classId   DOCUMENT ME!
      * @param   objectId  DOCUMENT ME!
