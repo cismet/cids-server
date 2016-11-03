@@ -228,7 +228,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     }
 
     /**
-     * mscholl: Inserts the index in cs_attr_string and cs_all_attr_mapping for the given metaobject. If the metaobject
+     * mscholl: Inserts the index in cs_attr_string and cs_attr_object for the given metaobject. If the metaobject
      * does not contain a metaclass it is skipped.
      *
      * @param   connection  DOCUMENT ME!
@@ -401,7 +401,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     for (final int row : mapRows) {
                         insertCount += row;
                     }
-                    LOG.debug("cs_all_attr_mapping: inserted " + insertCount + " rows"); // NOI18N
+                    LOG.debug("cs_attr_object: inserted " + insertCount + " rows"); // NOI18N
                 }
             }
             if (mo.getMetaClass().isIndexed()) {
@@ -422,7 +422,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     }
 
     /**
-     * mscholl: Updates the index of cs_attr_string and cs_all_attr_mapping for the given metaobject. Update for a
+     * mscholl: Updates the index of cs_attr_string and cs_attr_object for the given metaobject. Update for a
      * certain attribute will only be done if the attribute is changed.
      *
      * @param       connection  DOCUMENT ME!
@@ -667,7 +667,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     }
 
     /**
-     * mscholl: Deletes the index from cs_attr_string and cs_all_attr_mapping for a given metaobject. If the metaobject
+     * mscholl: Deletes the index from cs_attr_string and cs_attr_object for a given metaobject. If the metaobject
      * does not contain a metaclass it is skipped.
      *
      * @param   connection  DOCUMENT ME!
@@ -716,8 +716,8 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
             final int mapDeriveRows = psAttrDerive.executeUpdate();
             if (LOG.isDebugEnabled()) {
                 LOG.debug("cs_attr_string: deleted " + strRows + " rows");                   // NOI18N
-                LOG.debug("cs_all_attr_mapping: deleted " + mapRows + " rows");              // NOI18N
-                LOG.debug("cs_all_attr_mapping_derive: deleted " + mapDeriveRows + " rows"); // NOI18N
+                LOG.debug("cs_attr_object: deleted " + mapRows + " rows");              // NOI18N
+                LOG.debug("cs_attr_object_derived: deleted " + mapDeriveRows + " rows"); // NOI18N
             }
         } catch (final SQLException e) {
             LOG.error(
