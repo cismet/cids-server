@@ -91,7 +91,11 @@ public final class PermissionHolder implements Serializable {
      * @param  perm  DOCUMENT ME!
      */
     public void addPermission(final UserGroup ug, final Permission perm) {
-        addPermission(ug.getKey().toString(), perm);
+        if ((ug != null) && (perm != null)) {
+            addPermission(ug.getKey().toString(), perm);
+        } else {
+            LOG.warn("cannot add permission: UserGroup or Permission is null!");
+        }
     }
 
     /**
@@ -101,7 +105,11 @@ public final class PermissionHolder implements Serializable {
      * @param  perm  DOCUMENT ME!
      */
     public void addPermission(final Mapable m, final Permission perm) {
-        addPermission(m.getKey().toString(), perm);
+        if ((m != null) && (perm != null)) {
+            addPermission(m.getKey().toString(), perm);
+        } else {
+            LOG.warn("cannot add permission: Mapable or Permission is null!");
+        }
     }
 
     /**

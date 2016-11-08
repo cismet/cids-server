@@ -1123,24 +1123,31 @@ public final class ObjectFactory extends Shutdown {
                 }
 
                 // konstruktion des Keys abhaengig von attr.getKey :-(
-                final Attribute a = (Attribute)attrs.get(attrkey + "@" + o.getClassID()); // NOI18N
+                final Attribute attribute = (Attribute)attrs.get(attrkey + "@" + o.getClassID()); // NOI18N
 
-                if (a == null) {
-                    LOG.error("No attribute found for attrKey. It is therefore skipped ::" + attrkey); // NOI18N
+                if (attribute == null) {
+                    LOG.error("No attribute found for attrKey. It is therefore skipped ::" + attrkey);                              // NOI18N
                     continue;
                 } else {
-                    final PermissionHolder p = a.getPermissions();
-
-                    if (p == null) {
+                    PermissionHolder permissionHolder = attribute.getPermissions();
+                    if (permissionHolder == null) {
                         LOG.error(
                             "Attribute does not contain Permissionholder. PermissionHolder is therefore initialised for attribut::" // NOI18N
-                                    + a);
-
-                        a.setPermissions(
-                            new PermissionHolder(classCache.getClass(o.getClassID()).getAttributePolicy()));
+                                    + attribute);
+                        permissionHolder = new PermissionHolder(classCache.getClass(o.getClassID())
+                                        .getAttributePolicy());
+                        attribute.setPermissions(permissionHolder);
                     }
 
-                    p.addPermission(userGroup, new Permission(permId, permKey));
+                    final Permission permission = new Permission(permId, permKey);
+                    // check if all user groups shall be used (see #16 and #190)
+                    if (userGroup != null) {
+                        permissionHolder.addPermission(userGroup, permission);
+                    } else {
+                        for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
+                            permissionHolder.addPermission(potentialUserGroup, permission);
+                        }
+                    }
                 }
             }
         } catch (final SQLException e) {

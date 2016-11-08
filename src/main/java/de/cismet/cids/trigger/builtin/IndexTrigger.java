@@ -228,8 +228,8 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     }
 
     /**
-     * mscholl: Inserts the index in cs_attr_string and cs_attr_object for the given metaobject. If the metaobject
-     * does not contain a metaclass it is skipped.
+     * mscholl: Inserts the index in cs_attr_string and cs_attr_object for the given metaobject. If the metaobject does
+     * not contain a metaclass it is skipped.
      *
      * @param   connection  DOCUMENT ME!
      * @param   mo          the metaobject which will be newly created
@@ -391,7 +391,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     for (final int row : strRows) {
                         insertCount += row;
                     }
-                    LOG.debug("cs_attr_string: inserted " + insertCount + " rows");      // NOI18N
+                    LOG.debug("cs_attr_string: inserted " + insertCount + " rows"); // NOI18N
                 }
             }
             if (psAttrMap != null) {
@@ -409,11 +409,11 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
             }
         } catch (final SQLException e) {
             LOG.error(
-                "could not insert index for object '"                                    // NOI18N
+                "could not insert index for object '"                               // NOI18N
                         + mo.getID()
-                        + "' of class '"                                                 // NOI18N
+                        + "' of class '"                                            // NOI18N
                         + mo.getClass()
-                        + "'",                                                           // NOI18N
+                        + "'",                                                      // NOI18N
                 e);
             throw e;
         } finally {
@@ -422,8 +422,8 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     }
 
     /**
-     * mscholl: Updates the index of cs_attr_string and cs_attr_object for the given metaobject. Update for a
-     * certain attribute will only be done if the attribute is changed.
+     * mscholl: Updates the index of cs_attr_string and cs_attr_object for the given metaobject. Update for a certain
+     * attribute will only be done if the attribute is changed.
      *
      * @param       connection  DOCUMENT ME!
      * @param       mo          the metaobject which will be updated
@@ -667,8 +667,8 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     }
 
     /**
-     * mscholl: Deletes the index from cs_attr_string and cs_attr_object for a given metaobject. If the metaobject
-     * does not contain a metaclass it is skipped.
+     * mscholl: Deletes the index from cs_attr_string and cs_attr_object for a given metaobject. If the metaobject does
+     * not contain a metaclass it is skipped.
      *
      * @param   connection  DOCUMENT ME!
      * @param   mo          the metaobject which will be deleted
@@ -715,17 +715,17 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
             final int mapRows = psAttrMap.executeUpdate();
             final int mapDeriveRows = psAttrDerive.executeUpdate();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("cs_attr_string: deleted " + strRows + " rows");                   // NOI18N
-                LOG.debug("cs_attr_object: deleted " + mapRows + " rows");              // NOI18N
+                LOG.debug("cs_attr_string: deleted " + strRows + " rows");               // NOI18N
+                LOG.debug("cs_attr_object: deleted " + mapRows + " rows");               // NOI18N
                 LOG.debug("cs_attr_object_derived: deleted " + mapDeriveRows + " rows"); // NOI18N
             }
         } catch (final SQLException e) {
             LOG.error(
-                "could not delete index for object '"                                        // NOI18N
+                "could not delete index for object '"                                    // NOI18N
                         + mo.getID()
-                        + "' of class '"                                                     // NOI18N
+                        + "' of class '"                                                 // NOI18N
                         + mo.getClass()
-                        + "'",                                                               // NOI18N
+                        + "'",                                                           // NOI18N
                 e);
             // TODO: consider to wrap exception
             throw e;
