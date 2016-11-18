@@ -98,21 +98,11 @@ public class UpdateCacheTrigger extends AbstractDBAwareCidsTrigger {
                     @Override
                     protected ResultSet doInBackground() throws Exception {
                         try {
-                            final String name = cidsBean.toString();
-                            if ((name == null) || name.equals("")) {
-                                getDbServer().getActiveDBConnection()
-                                        .submitInternalUpdate(
-                                            DBConnection.DESC_DELETE_CACHEENTRY,
+                            return getDbServer().getActiveDBConnection()
+                                        .submitInternalQuery(
+                                            DBConnection.DESC_UPDATE_CACHEENTRY,
                                             cidsBean.getMetaObject().getClassID(),
                                             cidsBean.getMetaObject().getID());
-                                return null;
-                            } else {
-                                return getDbServer().getActiveDBConnection()
-                                            .submitInternalQuery(
-                                                DBConnection.DESC_UPDATE_CACHEENTRY,
-                                                cidsBean.getMetaObject().getClassID(),
-                                                cidsBean.getMetaObject().getID());
-                            }
                         } catch (SQLException e) {
                             getDbServer().getActiveDBConnection()
                                     .submitInternalUpdate(
