@@ -7,7 +7,12 @@
 ****************************************************/
 package de.cismet.cidsx.server.api.types.legacy;
 
+import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.middleware.types.MetaObject;
+import Sirius.server.middleware.types.Node;
+
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.io.IOUtils;
@@ -26,6 +31,8 @@ import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 
+import de.cismet.cids.dynamics.CidsBean;
+
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
 
@@ -36,6 +43,11 @@ import de.cismet.cidsx.server.actions.RestApiCidsServerAction;
 import de.cismet.cidsx.server.api.types.ActionInfo;
 import de.cismet.cidsx.server.api.types.ActionParameterInfo;
 import de.cismet.cidsx.server.api.types.ActionTask;
+import de.cismet.cidsx.server.api.types.CidsClass;
+import de.cismet.cidsx.server.api.types.CidsNode;
+import de.cismet.cidsx.server.api.types.ParameterInfo;
+
+import static de.cismet.cidsx.server.api.types.legacy.ServerSearchFactory.toBase64String;
 
 /**
  * Helper Methods for dealing with ServerAction and and ActionInfo.
@@ -407,5 +419,76 @@ public class ServerActionFactory {
      */
     public ActionParameterInfo getDefaultReturnDescription() {
         return defaultReturnDescription;
+    }
+
+    /**
+     * Converts a java.lang.Object action result to aJSON Object (ObjectNodes). Supports MetaClass, MetaObject, MetaNode
+     * by default and tries to serialize binary (Base 64 encoded) and plain java objects.<br>
+     * <strong>Warning:</strong><br>
+     * Does not support automatic serialization of LightWightMetaObjects! A helper method for LightWightMetaObject to
+     * CidsBean serialization is available at
+     * {@link CidsBeanFactory#cidsBeanFromLightweightMetaObject(Sirius.server.middleware.types.LightweightMetaObject, Sirius.server.middleware.types.MetaClass) )}
+     *
+     * @param   actionResult    DOCUMENT ME!
+     * @param   resultType      resultParameterInfo DOCUMENT ME!
+     * @param   classNameCache  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public Object transformLegacyActionResult(
+            final Object actionResult,
+            final Type resultType,
+            final ClassNameCache classNameCache) throws Exception {
+        final boolean isMetaClass = resultType == Type.ENTITY_INFO;
+        final boolean isMetaObject = resultType == Type.ENTITY;
+        final boolean isLightWightMetaObject = resultType == Type.ENTITY_REFERENCE;
+        final boolean isMetaNode = resultType == Type.NODE;
+        final boolean isBinaryObject = resultType == Type.JAVA_SERIALIZABLE;
+
+        // FIXME: Merge with ServerSearchFactory.jsonNodesFromResultCollection()
+        if (isMetaClass) {
+            if (MetaClass.class.isAssignableFrom(actionResult.getClass())) {
+                final MetaClass metaClass = (MetaClass)actionResult;
+                final CidsClass cidsClass = CidsClassFactory.getFactory().restCidsClassFromLegacyCidsClass(metaClass);
+                return MAPPER.convertValue(cidsClass, JsonNode.class);
+            } else {
+                final String message = "cannot convert action result to MetaClass, wrong result type:'"
+                            + actionResult.getClass().getSimpleName() + "' ";
+                LOG.error(message);
+                throw new Exception(message);
+            }
+        } else if (isMetaObject || isLightWightMetaObject) {
+            if (MetaObject.class.isAssignableFrom(actionResult.getClass())) {
+                final MetaObject metaObject = (MetaObject)actionResult;
+                final CidsBean cidsBean = metaObject.getBean();
+                return MAPPER.reader().readTree(cidsBean.toJSONString(false));
+            } else {
+                final String message = "cannot convert action result to MetaObject, wrong result type:'"
+                            + actionResult.getClass().getSimpleName() + "' ";
+                LOG.error(message);
+                throw new Exception(message);
+            }
+        } else if (isMetaNode) {
+            if (Node.class.isAssignableFrom(actionResult.getClass())) {
+                final Node legacyNode = (Node)actionResult;
+                final String className = classNameCache.getClassNameForClassId(legacyNode.getDomain(),
+                        legacyNode.getClassId());
+                final CidsNode cidsNode = CidsNodeFactory.getFactory()
+                            .restCidsNodeFromLegacyCidsNode(legacyNode, className);
+                return MAPPER.convertValue(cidsNode, JsonNode.class);
+            } else {
+                final String message = "cannot convert action result to MetaNode, wrong result type:'"
+                            + actionResult.getClass().getSimpleName() + "' ";
+                LOG.error(message);
+                throw new Exception(message);
+            }
+        } else if (isBinaryObject) {
+            final String stringRepresentation = toBase64String(actionResult);
+            return stringRepresentation;
+        } else {
+            return actionResult;
+        }
     }
 }
