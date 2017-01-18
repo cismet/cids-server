@@ -8,7 +8,6 @@
 package Sirius.server.sql;
 
 import Sirius.server.Shutdownable;
-import Sirius.server.search.Query;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -21,28 +20,6 @@ import java.sql.SQLException;
  * @version  $Revision$, $Date$
  */
 public interface DBBackend extends Shutdownable {
-
-    //~ Instance fields --------------------------------------------------------
-
-    String SQL_CODE_ALREADY_CLOSED = "FFFFF"; // NOI18N
-    String SQL_CODE_INVALID_DESC = "FFFF01";  // NOI18N
-
-    // TODO: exchange simple descriptor string with small descriptor class that contains additional metadata regarding
-    // the query specific information
-    String DESC_VERIFY_USER_PW = "verify_user_password";                                   // NOI18N
-    String DESC_FETCH_DOMAIN_ID_FROM_DOMAIN_STRING = "fetch_domain_id_from_domain_string"; // NOI18N
-    String DESC_FETCH_CONFIG_ATTR_KEY_ID = "fetch_config_attr_key_id";                     // NOI18N
-    String DESC_FETCH_CONFIG_ATTR_USER_VALUE = "fetch_config_attr_user_value";             // NOI18N
-    String DESC_FETCH_CONFIG_ATTR_UG_VALUE = "fetch_config_attr_ug_value";                 // NOI18N
-    String DESC_FETCH_CONFIG_ATTR_DOMAIN_VALUE = "fetch_config_attr_domain_value";         // NOI18N
-    String DESC_FETCH_HISTORY = "fetch_history";                                           // NOI18N
-    String DESC_FETCH_HISTORY_LIMIT = "fetch_history_limit";                               // NOI18N
-    String DESC_INSERT_HISTORY_ENTRY = "insert_history_entry";                             // NOI18N
-    String DESC_HAS_HISTORY = "has_history";                                               // NOI18N
-    String DESC_TABLE_HAS_COLUMN = "table_has_column";                                     // NOI18N
-    String DESC_DELETE_STRINGREPCACHEENTRY = "delete_stringrepcacheentry";                 // NOI18N
-    String DESC_INSERT_STRINGREPCACHEENTRY = "insert_stringrepcacheentry";                 // NOI18N
-    String DESC_UPDATE_STRINGREPCACHEENTRY = "update_stringrepcacheentry";                 // NOI18N
 
     //~ Methods ----------------------------------------------------------------
 
@@ -160,20 +137,6 @@ public interface DBBackend extends Shutdownable {
      * This operation shall throw a <code>SQLException</code> if the {@link Shutdownable#shutdown()} has already been
      * called.
      *
-     * @param   q  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  SQLException  DOCUMENT ME!
-     */
-    ResultSet submitQuery(final Query q) throws SQLException;
-
-    /**
-     * DOCUMENT ME!<br/>
-     * <br/>
-     * This operation shall throw a <code>SQLException</code> if the {@link Shutdownable#shutdown()} has already been
-     * called.
-     *
      * @param   descriptor  DOCUMENT ME!
      * @param   parameters  DOCUMENT ME!
      *
@@ -197,18 +160,4 @@ public interface DBBackend extends Shutdownable {
      * @throws  SQLException  DOCUMENT ME!
      */
     int submitUpdate(final int sqlID, final Object... parameters) throws SQLException;
-
-    /**
-     * DOCUMENT ME!<br/>
-     * <br/>
-     * This operation shall throw a <code>SQLException</code> if the {@link Shutdownable#shutdown()} has already been
-     * called.
-     *
-     * @param   q  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  SQLException  DOCUMENT ME!
-     */
-    int submitUpdate(final Query q) throws SQLException;
 }

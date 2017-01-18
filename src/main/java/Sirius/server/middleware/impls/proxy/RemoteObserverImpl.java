@@ -13,12 +13,13 @@
 package Sirius.server.middleware.impls.proxy;
 
 import Sirius.server.*;
-import Sirius.server.middleware.interfaces.domainserver.*;
+import Sirius.server.MetaClassCache;
+import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
+import Sirius.server.middleware.interfaces.domainserver.InfoService;
 import Sirius.server.naming.NameServer;
 import Sirius.server.observ.*;
 
 import java.rmi.*;
-import java.rmi.server.*;
 /**
  * DOCUMENT ME!
  *
@@ -85,6 +86,11 @@ public class RemoteObserverImpl {
                 activeLocalServers.put(localServers[i].getName(), localServer);
                 if (logger.isDebugEnabled()) {
                     logger.debug("\t" + localServers[i].getName()); // NOI18N
+                }
+                if (localServer instanceof InfoService) {
+                    final InfoService is = (InfoService)localServer;
+                    MetaClassCache.getInstance().setAllClasses(is.getAllClassInformation(), localServers[i].getName());
+                    System.out.println(localServers[i].getName() + " added to the MetaClassCache [by observed change]");
                 }
             }
             if (logger.isDebugEnabled()) {

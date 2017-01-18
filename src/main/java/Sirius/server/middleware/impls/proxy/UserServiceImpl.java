@@ -13,6 +13,7 @@
 package Sirius.server.middleware.impls.proxy;
 //import Sirius.middleware.interfaces.domainserver.*;
 
+import Sirius.server.middleware.interfaces.domainserver.UserService;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 import Sirius.server.newuser.UserGroup;
@@ -85,13 +86,13 @@ public class UserServiceImpl {
         if (LOG.isDebugEnabled()) {
             LOG.debug("getUser calles for user::" + userName); // NOI18N
 
-            LOG.debug("userLsName:" + userLsName);                            // NOI18N
-            LOG.debug("userName:" + userName);                                // NOI18N
-            LOG.debug("userGroupLsName:" + userGroupLsName);                  // NOI18N
-            LOG.debug("userGroupName:" + userGroupName);                      // NOI18N
+            LOG.debug("userLsName:" + userLsName);           // NOI18N
+            LOG.debug("userName:" + userName);               // NOI18N
+            LOG.debug("userGroupLsName:" + userGroupLsName); // NOI18N
+//            LOG.debug("userGroupName:" + userGroupName);                      // NOI18N
             LOG.debug((("password:" + password) == null) ? "null" : "*****"); // NOI18N
         }
-        final User u = userServer.getUser(userLsName, userGroupName, userGroupLsName, userName, password);
+        final User u = userServer.getUser(userGroupLsName, userGroupName, userLsName, userName, password);
 
         boolean validated = false;
 
@@ -211,7 +212,11 @@ public class UserServiceImpl {
             domain = user.getDomain();
             realKey = key;
         }
-        return ((Sirius.server.middleware.interfaces.domainserver.UserService)activeLocalServers.get(domain))
-                    .getConfigAttr(user, realKey);
+        final UserService userService = (UserService)activeLocalServers.get(domain);
+        if (userService != null) {
+            return userService.getConfigAttr(user, realKey);
+        } else {
+            return null;
+        }
     }
 }

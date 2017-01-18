@@ -7,6 +7,7 @@
 ****************************************************/
 package Sirius.server.newuser.permission;
 
+import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
 
 import Sirius.util.Mapable;
@@ -90,7 +91,11 @@ public final class PermissionHolder implements Serializable {
      * @param  perm  DOCUMENT ME!
      */
     public void addPermission(final UserGroup ug, final Permission perm) {
-        addPermission(ug.getKey().toString(), perm);
+        if ((ug != null) && (perm != null)) {
+            addPermission(ug.getKey().toString(), perm);
+        } else {
+            LOG.warn("cannot add permission: UserGroup or Permission is null!");
+        }
     }
 
     /**
@@ -100,7 +105,11 @@ public final class PermissionHolder implements Serializable {
      * @param  perm  DOCUMENT ME!
      */
     public void addPermission(final Mapable m, final Permission perm) {
-        addPermission(m.getKey().toString(), perm);
+        if ((m != null) && (perm != null)) {
+            addPermission(m.getKey().toString(), perm);
+        } else {
+            LOG.warn("cannot add permission: Mapable or Permission is null!");
+        }
     }
 
     /**
@@ -116,17 +125,31 @@ public final class PermissionHolder implements Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   user  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public boolean hasReadPermission(final UserGroup ug) {
-        try {
-            return hasPermission(ug.getKey().toString(), READPERMISSION);
-        } catch (final Exception e) {
-            LOG.error("error in hasReadPermission (ug = " // NOI18N
-                        + ug
-                        + "). Will return false.", e); // NOI18N
+    public boolean hasReadPermission(final User user) {
+        if (user != null) {
+            final UserGroup userGroup = user.getUserGroup();
+            try {
+                if (userGroup != null) {
+                    return hasPermission(userGroup.getKey().toString(), READPERMISSION);
+                } else {
+                    for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
+                        if (hasPermission(potentialUserGroup.getKey().toString(), READPERMISSION)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            } catch (final Exception e) {
+                LOG.error("error in hasReadPermission (ug = " // NOI18N
+                            + userGroup
+                            + "). Will return false.", e); // NOI18N
+                return false;
+            }
+        } else {
             return false;
         }
     }
@@ -134,17 +157,31 @@ public final class PermissionHolder implements Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   user  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public boolean hasWritePermission(final UserGroup ug) {
-        try {
-            return hasPermission(ug.getKey().toString(), WRITEPERMISSION);
-        } catch (final Exception e) {
-            LOG.error("Error in hasWritePermission (ug = " // NOI18N
-                        + ug
-                        + "). Will return false.", e); // NOI18N
+    public boolean hasWritePermission(final User user) {
+        if (user != null) {
+            final UserGroup userGroup = user.getUserGroup();
+            if (userGroup != null) {
+                try {
+                    return hasPermission(userGroup.getKey().toString(), WRITEPERMISSION);
+                } catch (final Exception e) {
+                    LOG.error("Error in hasWritePermission (ug = " // NOI18N
+                                + userGroup
+                                + "). Will return false.", e); // NOI18N
+                    return false;
+                }
+            } else {
+                for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
+                    if (hasPermission(potentialUserGroup.getKey().toString(), WRITEPERMISSION)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        } else {
             return false;
         }
     }

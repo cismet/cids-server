@@ -5,14 +5,14 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package Sirius.server.middleware.types;
 
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
+import Sirius.server.sql.DialectProvider;
+import Sirius.server.sql.SQLTools;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -28,6 +28,8 @@ import org.jdesktop.observablecollections.ObservableList;
 import org.jdesktop.observablecollections.ObservableListListener;
 
 import org.openide.util.Lookup;
+
+import java.math.BigDecimal;
 
 import java.security.ProtectionDomain;
 
@@ -143,29 +145,26 @@ public class BeanFactory {
                 final CidsBean bean = (CidsBean)javaClass.newInstance();
                 final ObjectAttribute[] attribs = metaObject.getAttribs();
                 for (final ObjectAttribute a : attribs) {
-                    final String field = a.getMai().getFieldName().toLowerCase();
-                    Object value = a.getValue();
-                    a.setParentObject(metaObject);
-                    if (value instanceof MetaObject) {
-                        final MetaObject tmpMO = (MetaObject)value;
-                        if (tmpMO.isDummy()) {
-                            // 1-n Beziehung (Array)
-                            final List<CidsBean> arrayElements = new ArrayList();
-                            final ObservableList<CidsBean> observableArrayElements = ObservableCollections
-                                        .observableList(
-                                            arrayElements);
-                            final ObjectAttribute[] arrayOAs = tmpMO.getAttribs();
-                            for (final ObjectAttribute arrayElementOA : arrayOAs) {
-                                arrayElementOA.setParentObject(tmpMO);
-                                final MetaObject arrayElementMO = (MetaObject)arrayElementOA.getValue();
-                                // In diesem MetaObject gibt es nun genau ein Attribut das als Value ein MetaObject hat
-                                final ObjectAttribute[] arrayElementAttribs = arrayElementMO.getAttribs();
-                                for (final ObjectAttribute targetArrayElement : arrayElementAttribs) {
-                                    targetArrayElement.setParentObject(arrayElementMO);
-                                    final Object targetArrayElementValObj = targetArrayElement.getValue();
-                                    if (targetArrayElementValObj instanceof MetaObject) {
-                                        final MetaObject targetMO = (MetaObject)targetArrayElementValObj;
-                                        final CidsBean cdBean = targetMO.getBean();
+                    if (!a.getMai().isExtensionAttribute()) {
+                        final String field = a.getMai().getFieldName().toLowerCase();
+                        Object value = a.getValue();
+                        // a.setParentObject(metaObject); // disabled -> fixed in #172
+                        if (value instanceof MetaObject) {
+                            final MetaObject tmpMO = (MetaObject)value;
+                            if (tmpMO.isDummy()) {
+                                final List<CidsBean> arrayElements = new ArrayList();
+                                final ObservableList<CidsBean> observableArrayElements = ObservableCollections
+                                            .observableList(
+                                                arrayElements);
+                                final ObjectAttribute[] arrayOAs = tmpMO.getAttribs();
+
+                                // 1-n Beziehung (Array)
+                                if (a.getMai().isVirtual() && a.getMai().isForeignKey()
+                                            && (a.getMai().getForeignKeyClassId() < 0)) {
+                                    for (final ObjectAttribute arrayElementOA : arrayOAs) {
+                                        // arrayElementOA.setParentObject(tmpMO);  // disabled -> fixed in #172
+                                        final MetaObject arrayElementMO = (MetaObject)arrayElementOA.getValue();
+                                        final CidsBean cdBean = arrayElementMO.getBean();
                                         if (cdBean != null) {
                                             cdBean.setBacklinkInformation(field, bean);
                                             observableArrayElements.add(cdBean);
@@ -173,27 +172,59 @@ public class BeanFactory {
                                             LOG.warn(
                                                 "getBean() delivered null -> could be a possible problem with rights/policy?"); // NOI18N
                                         }
-                                        break;
                                     }
+                                    value = observableArrayElements;
+                                    addObservableListListener(observableArrayElements, bean, field);
+                                } else {
+                                    // n-m Beziehung (Array)
+                                    for (final ObjectAttribute arrayElementOA : arrayOAs) {
+                                        // arrayElementOA.setParentObject(tmpMO);  // disabled -> fixed in #172
+                                        final MetaObject arrayElementMO = (MetaObject)arrayElementOA.getValue();
+                                        // In diesem MetaObject gibt es nun genau ein Attribut das als Value ein
+                                        // MetaObject hat
+                                        final ObjectAttribute[] arrayElementAttribs = arrayElementMO.getAttribs();
+                                        for (final ObjectAttribute targetArrayElement : arrayElementAttribs) {
+                                            // targetArrayElement.setParentObject(arrayElementMO);  // disabled ->
+                                            // fixed in #172
+                                            final Object targetArrayElementValObj = targetArrayElement.getValue();
+                                            if (targetArrayElementValObj instanceof MetaObject) {
+                                                final MetaObject targetMO = (MetaObject)targetArrayElementValObj;
+                                                final CidsBean cdBean = targetMO.getBean();
+                                                if (cdBean != null) {
+                                                    cdBean.setBacklinkInformation(field, bean);
+                                                    observableArrayElements.add(cdBean);
+                                                } else {
+                                                    LOG.warn(
+                                                        "getBean() delivered null -> could be a possible problem with rights/policy?"); // NOI18N
+                                                }
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    value = observableArrayElements;
+                                    addObservableListListener(observableArrayElements, bean, field);
                                 }
+                            } else {
+                                // 1-1 Beziehung
+                                final CidsBean tmpMOBean = tmpMO.getBean();
+                                value = tmpMOBean;
+                                tmpMOBean.setBacklinkInformation(field, bean);
                             }
+                        } else if ((value == null) && (a.isArray() || a.isVirtualOneToManyAttribute())) {
+                            // lege leeren Vector an, sonst wirds sp?ter zu kompliziert
+                            final List<?> arrayElements = new ArrayList();
+                            final ObservableList observableArrayElements = ObservableCollections.observableList(
+                                    arrayElements);
                             value = observableArrayElements;
                             addObservableListListener(observableArrayElements, bean, field);
-                        } else {
-                            // 1-1 Beziehung
-                            final CidsBean tmpMOBean = tmpMO.getBean();
-                            value = tmpMOBean;
-                            tmpMOBean.setBacklinkInformation(field, bean);
                         }
-                    } else if ((value == null) && a.isArray()) {
-                        // lege leeren Vector an, sonst wirds sp?ter zu kompliziert
-                        final List<?> arrayElements = new ArrayList();
-                        final ObservableList observableArrayElements = ObservableCollections.observableList(
-                                arrayElements);
-                        value = observableArrayElements;
-                        addObservableListListener(observableArrayElements, bean, field);
+
+                        if (mc.getPrimaryKey().equalsIgnoreCase(field) && (value instanceof BigDecimal)) {
+                            // FIXME: this is probably not what we want
+                            value = ((BigDecimal)value).intValue();
+                        }
+                        bean.setProperty(field, value);
                     }
-                    bean.setProperty(field, value);
                 }
                 // bean.addPropertyChangeListener(metaObject);
                 bean.setMetaObject(metaObject);
@@ -320,11 +351,16 @@ public class BeanFactory {
             final String fieldname = mai.getFieldName().toLowerCase();
             String attributeJavaClassName = mai.getJavaclassname();
 
-            if (mai.isArray()) {
+            // FIXME: some drivers (such as oracle) map any number to BigDecimal
+            // at least for the primary key field we assume integer
+            if (mai.getFieldName().equalsIgnoreCase(metaClass.getPrimaryKey())) {
+                attributeJavaClassName = Integer.class.getName();
+            } else if (mai.isArray() || (mai.isVirtual() && (mai.getForeignKeyClassId() < 0))) {
                 attributeJavaClassName = "org.jdesktop.observablecollections.ObservableList"; // NOI18N
             } else if (mai.isForeignKey()) {
-                if (attributeJavaClassName.equals("org.postgis.PGgeometry")) {                // NOI18N
-                    attributeJavaClassName = "com.vividsolutions.jts.geom.Geometry";          // NOI18N
+                if (SQLTools.getGeometryFactory(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                            .isGeometryColumn(attributeJavaClassName)) {                      // NOI18N
+                    attributeJavaClassName = Geometry.class.getName();
                 } else {
                     attributeJavaClassName = CIDS_DYNAMICS_SUPERCLASS;
                 }

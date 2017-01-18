@@ -12,22 +12,15 @@
  */
 package Sirius.server.middleware.impls.proxy;
 
-import Sirius.server.localserver.attribute.*;
 import Sirius.server.middleware.interfaces.proxy.*;
 import Sirius.server.middleware.interfaces.proxy.SearchService;
 import Sirius.server.middleware.types.*;
 import Sirius.server.newuser.*;
-import Sirius.server.search.*;
-import Sirius.server.search.Query;
-import Sirius.server.search.SearchResult;
-import Sirius.server.sql.SystemStatement;
 
 import java.rmi.*;
 import java.rmi.registry.*;
 
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Vector;
 /**
  * DOCUMENT ME!
  *

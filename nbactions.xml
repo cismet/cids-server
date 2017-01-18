@@ -19,6 +19,7 @@
             <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
         </goals>
         <properties>
+            <maven.test.skip>true</maven.test.skip>
             <jalopy.skip>true</jalopy.skip>
             <exec.format.skip>true</exec.format.skip>
             <exec.classpathScope>runtime</exec.classpathScope>
@@ -50,6 +51,7 @@
             <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
         </goals>
         <properties>
+            <jalopy.skip>true</jalopy.skip>
             <exec.format.skip>true</exec.format.skip>
             <exec.args>${profiler.args} -classpath %classpath Sirius.server.middleware.impls.domainserver.DomainServerImpl runtime.properties</exec.args>
             <exec.workingdir>${de.cismet.cids.server.workingDir}</exec.workingdir>
@@ -58,24 +60,73 @@
         </properties>
     </action>
     <action>
-            <actionName>build</actionName>
-            <goals>
-                <goal>install</goal>
-            </goals>
-            <properties>
-                <!-- tests reactivated because only fast tests are executed currently -->
-                <maven.test.skip>false</maven.test.skip>
-            </properties>
-        </action>
+        <actionName>build</actionName>
+        <goals>
+            <goal>install</goal>
+        </goals>
+        <properties>
+            <!-- tests reactivated because only fast tests are executed currently -->
+            <maven.test.skip>true</maven.test.skip>
+            <jalopy.skip>true</jalopy.skip>
+        </properties>
+    </action>
     <action>
-            <actionName>rebuild</actionName>
+        <actionName>rebuild</actionName>
+        <goals>
+            <goal>clean</goal>
+            <goal>install</goal>
+        </goals>
+        <properties>
+            <!-- tests reactivated because only fast tests are executed currently -->
+            <maven.test.skip>false</maven.test.skip>
+        </properties>
+    </action>
+    <action>
+        <actionName>run.single.main</actionName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
+        <goals>
+            <goal>process-classes</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
+        </goals>
+        <properties>
+            <exec.args>-classpath %classpath ${packageClassName}</exec.args>
+            <exec.executable>java</exec.executable>
+            <exec.classpathScope>${classPathScope}</exec.classpathScope>
+            <skipTests>true</skipTests>
+            <jalopy.skip>true</jalopy.skip>
+        </properties>
+    </action>
+    <action>
+        <actionName>debug.single.main</actionName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
+        <goals>
+            <goal>process-classes</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
+        </goals>
+        <properties>
+            <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath ${packageClassName}</exec.args>
+            <exec.executable>java</exec.executable>
+            <exec.classpathScope>${classPathScope}</exec.classpathScope>
+            <jpda.listen>true</jpda.listen>
+            <skipTests>true</skipTests>
+            <jalopy.skip>true</jalopy.skip>
+        </properties>
+    </action>
+    <action>
+            <actionName>test.single</actionName>
+            <packagings>
+                <packaging>*</packaging>
+            </packagings>
             <goals>
-                <goal>clean</goal>
-                <goal>install</goal>
+                <goal>test-compile</goal>
+                <goal>test</goal>
             </goals>
             <properties>
-                <!-- tests reactivated because only fast tests are executed currently -->
-                <maven.test.skip>false</maven.test.skip>
+                <test>${packageClassName}</test>
             </properties>
         </action>
 </actions>

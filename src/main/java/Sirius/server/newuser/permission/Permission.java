@@ -95,13 +95,4 @@ public class Permission implements java.io.Serializable {
     public String toString() {
         return "ID " + id + " KEY " + key; // NOI18N
     }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public String toSQL() {
-        return "insert into cs_permission values (" + id + ", " + key + ")"; // NOI18N
-    }
 }

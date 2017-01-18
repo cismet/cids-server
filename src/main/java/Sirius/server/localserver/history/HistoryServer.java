@@ -17,8 +17,10 @@ import Sirius.server.middleware.types.HistoryObject;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
+import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.permission.PermissionHolder;
 import Sirius.server.sql.DBConnection;
+import Sirius.server.sql.DBConnectionPool;
 
 import org.apache.log4j.Logger;
 
@@ -165,7 +167,7 @@ public final class HistoryServer extends Shutdown {
             throw new HistoryException(message);
         }
 
-        if (!permHolder.hasReadPermission(usr.getUserGroup())) {
+        if (!permHolder.hasReadPermission(usr)) {
             final String message = "given user's usergroup has no read permission for class: " + clazz // NOI18N
                         + " || user: " + usr;                                                          // NOI18N
             LOG.warn(message);
@@ -173,15 +175,19 @@ public final class HistoryServer extends Shutdown {
         }
 
         if (clazz.getClassAttribute(ClassAttribute.HISTORY_ENABLED) != null) {
-            final DBConnection con = server.getConnectionPool().getDBConnection();
+            final DBConnectionPool conPool = server.getConnectionPool();
             ResultSet set = null;
             try {
                 final int expectedElements;
                 if (elements < 1) {
-                    set = con.submitInternalQuery(DBConnection.DESC_FETCH_HISTORY, classId, objectId);
+                    set = conPool.submitInternalQuery(DBConnection.DESC_FETCH_HISTORY, classId, objectId);
                     expectedElements = 15;
                 } else {
-                    set = con.submitInternalQuery(DBConnection.DESC_FETCH_HISTORY_LIMIT, classId, objectId, elements);
+                    set = conPool.submitInternalQuery(
+                            DBConnection.DESC_FETCH_HISTORY_LIMIT,
+                            classId,
+                            objectId,
+                            elements);
                     expectedElements = elements;
                 }
 
@@ -198,7 +204,7 @@ public final class HistoryServer extends Shutdown {
 
                     // add the initial object
                     DBConnection.closeResultSets(set);
-                    set = con.submitInternalQuery(DBConnection.DESC_FETCH_HISTORY_LIMIT, classId, objectId, 1);
+                    set = conPool.submitInternalQuery(DBConnection.DESC_FETCH_HISTORY_LIMIT, classId, objectId, 1);
                     set.next();
                     final String jsonData = set.getString(1);
                     final Date timestamp = new Date(set.getTimestamp(2).getTime());
@@ -244,8 +250,7 @@ public final class HistoryServer extends Shutdown {
         final int objectId = mo.getID();
         ResultSet set = null;
         try {
-            set = server.getConnectionPool().getDBConnection()
-                        .submitInternalQuery(DBConnection.DESC_HAS_HISTORY, classId, objectId);
+            set = server.getConnectionPool().submitInternalQuery(DBConnection.DESC_HAS_HISTORY, classId, objectId);
             // only one result - the count
             set.next();
 
@@ -276,13 +281,13 @@ public final class HistoryServer extends Shutdown {
      */
     private MetaObject getMetaObject(final int classId, final int objectId, final User usr) throws HistoryException {
         try {
-            final MetaObject mo = server.getObject(objectId + "@" + classId, usr.getUserGroup());
+            final MetaObject mo = server.getObject(objectId + "@" + classId, usr);
             if (mo == null) {
                 throw new HistoryException("server did not provide metaobject: classId: " + classId // NOI18N
                             + " || objectId: " + objectId // NOI18N
                             + " || usr: " + usr); // NOI18N
             }
-            final MetaClass[] allReadableMCs = server.getClasses(usr.getUserGroup());
+            final MetaClass[] allReadableMCs = server.getClasses(usr);
 
             assert allReadableMCs.length > 0 : "at least the metaclass of the metaobject must be readable"; // NOI18N
 
@@ -448,19 +453,24 @@ public final class HistoryServer extends Shutdown {
                 final int classId = mo.getClassID();
                 final int objectId = mo.getId();
                 final Integer usrId = (user == null) ? null : user.getId();
-                final Integer ugId = (user == null) ? null : user.getUserGroup().getId();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("check for all userGroups");
+                }
+                // TODO check for all userGroups
+                final UserGroup userGroup = user.getUserGroup();
+                final Integer ugId = (user == null) ? null : userGroup.getId();
                 final Timestamp valid_from = new Timestamp(timestamp.getTime());
-                final String jsonData = mo.isPersistent() ? mo.getBean().toJSONString() : JSON_DELETED;
+                final String jsonData = mo.isPersistent() ? mo.getBean().toJSONString(true) : JSON_DELETED;
 
-                final DBConnection con = server.getConnectionPool().getDBConnection();
-                final int result = con.submitInternalUpdate(
-                        DBConnection.DESC_INSERT_HISTORY_ENTRY,
-                        classId,
-                        objectId,
-                        usrId,
-                        ugId,
-                        valid_from,
-                        jsonData);
+                final int result = server.getConnectionPool()
+                            .submitInternalUpdate(
+                                DBConnection.DESC_INSERT_HISTORY_ENTRY,
+                                classId,
+                                objectId,
+                                usrId,
+                                ugId,
+                                valid_from,
+                                jsonData);
 
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("history entry insertion result: " + result);                  // NOI18N

@@ -16,13 +16,6 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.Node;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
-import Sirius.server.newuser.UserGroup;
-import Sirius.server.search.CidsServerSearch;
-import Sirius.server.search.Query;
-import Sirius.server.search.SearchOption;
-import Sirius.server.search.SearchResult;
-import Sirius.server.search.store.Info;
-import Sirius.server.search.store.QueryData;
 
 import Sirius.util.image.Image;
 
@@ -57,13 +50,19 @@ import java.util.Vector;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import de.cismet.cids.server.CallServerService;
+import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.search.CidsServerSearch;
 import de.cismet.cids.server.ws.SSLConfig;
+
+import de.cismet.cidsx.server.search.builtin.legacy.LightweightMetaObjectsByQuerySearch;
 
 import de.cismet.netutil.Proxy;
 
@@ -83,6 +82,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient Logger LOG = Logger.getLogger(RESTfulSerialInterfaceConnector.class);
+    private static final String MULTITHREADEDHTTPCONNECTION_IGNORE_EXCEPTION =
+        "Interrupted while waiting in MultiThreadedHttpConnectionManager";
     private static final int TIMEOUT = 10000;
 
     //~ Instance fields --------------------------------------------------------
@@ -166,7 +167,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      *
      * @param   sslConfig  DOCUMENT ME!
      *
-     * @throws  IllegalStateException  DOCUMENT ME!
+     * @throws  SSLInitializationException  IllegalStateException SSLInititializationException IllegalStateException
+     *                                      DOCUMENT ME!
      */
     private void initSSL(final SSLConfig sslConfig) {
         if (LOG.isInfoEnabled()) {
@@ -198,22 +200,44 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
             // init context
             final SSLContext context = SSLContext.getInstance(SSLConfig.CONTEXT_TYPE_TLS);
+
+            // Use the CidsTrustManager to validate the default certificates and the cismet certificate
+            final CidsTrustManager trustManager;
+            X509TrustManager cidsManager = null;
+            TrustManager[] trustManagerArray = null;
+
+            if ((tmf != null) && (tmf.getTrustManagers() != null) && (tmf.getTrustManagers().length == 1)) {
+                if (tmf.getTrustManagers()[0] instanceof X509TrustManager) {
+                    cidsManager = (X509TrustManager)tmf.getTrustManagers()[0];
+                }
+            }
+
+            try {
+                trustManager = new CidsTrustManager(cidsManager);
+                trustManagerArray = new TrustManager[] { trustManager };
+            } catch (Exception e) {
+                LOG.error("Cannot create CidsTrustManager.", e);
+                trustManagerArray = (tmf == null) ? null : tmf.getTrustManagers();
+            }
+
             context.init(
                 (kmf == null) ? null : kmf.getKeyManagers(),
-                (tmf == null) ? null : tmf.getTrustManagers(),
+                trustManagerArray,
                 null);
 
             SSLContext.setDefault(context);
             HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
             HttpsURLConnection.setDefaultHostnameVerifier(new SSLHostnameVerifier());
         } catch (final NoSuchAlgorithmException e) {
-            throw new IllegalStateException("system does not support SSL", e);            // NOI18N
+            throw new SSLInitializationException("system does not support SSL", e);            // NOI18N       (kmf ==
+                                                                                               // null) ? null :
+                                                                                               // kmf.getKeyManagers(),
         } catch (final KeyStoreException e) {
-            throw new IllegalStateException("system does not support java keystores", e); // NOI18N
+            throw new SSLInitializationException("system does not support java keystores", e); // NOI18N
         } catch (final KeyManagementException e) {
-            throw new IllegalStateException("ssl context init properly initialised", e);  // NOI18N
+            throw new SSLInitializationException("ssl context init properly initialised", e);  // NOI18N
         } catch (final UnrecoverableKeyException e) {
-            throw new IllegalStateException("cannot get key from keystore", e);           // NOI18N
+            throw new SSLInitializationException("cannot get key from keystore", e);           // NOI18N
         }
     }
 
@@ -373,9 +397,27 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             throw new IllegalStateException("neither builder nor type may be null"); // NOI18N
         }
 
-        final byte[] bytes = builder.post(byte[].class, queryData);
-
-        return Converter.deserialiseFromBase64(bytes, type);
+        try {
+            final byte[] bytes = builder.post(byte[].class, queryData);
+            return Converter.deserialiseFromBase64(bytes, type);
+        } catch (final RuntimeException ex) {
+            if ((ex.getCause() != null) && (ex.getCause() instanceof IllegalThreadStateException)) {
+                if (ex.getCause().getMessage().equals(MULTITHREADEDHTTPCONNECTION_IGNORE_EXCEPTION)) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(
+                            "ignoring \""
+                                    + MULTITHREADEDHTTPCONNECTION_IGNORE_EXCEPTION
+                                    + "\" IllegalThreadStateException",
+                            ex);
+                    }
+                } else {
+                    LOG.warn("Error while querying request", ex);
+                }
+                return null;
+            } else {
+                throw ex;
+            }
+        }
     }
 
     /**
@@ -867,52 +909,79 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     }
 
     /**
-     * DOCUMENT ME!
+     * Performs a Search for LightweightMetaObjects by Query.<br>
+     * <strong>Note:</strong> This operation is delegated to the
+     * {@link #customServerSearch(Sirius.server.newuser.User, de.cismet.cids.server.search.CidsServerSearch)} operation
+     * and implemented by {@link LightweightMetaObjectsByQuerySearch}
      *
-     * @param   usr    DOCUMENT ME!
-     * @param   query  DOCUMENT ME!
+     * @param       classId               class id of LWMOs
+     * @param       user                  user performing the request
+     * @param       query                 query to search for LWMO. Has to select at lest the primary key (ID) of the
+     *                                    Meta Object
+     * @param       representationFields  must match fields in query
      *
-     * @return  DOCUMENT ME!
+     * @return      Array of LWMOs or empty array
      *
-     * @throws  RemoteException  DOCUMENT ME!
+     * @throws      RemoteException  if any error occurs
+     *
+     * @deprecated  should be replaced by custom search
      */
     @Override
-    public Node[] getMetaObjectNode(final User usr, final Query query) throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
+    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
+            final User user,
+            final String query,
+            final String[] representationFields) throws RemoteException {
+        return this.getLightweightMetaObjectsByQuery(
+                classId,
+                user,
+                query,
+                representationFields,
+                null);
+    }
 
-            if (usr != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
-            }
-            if (query != null) {
-                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
-            }
+    /**
+     * Performs a Search for LightweightMetaObjects by Query.<br>
+     * <strong>Note:</strong> This operation is delegated to the
+     * {@link #customServerSearch(Sirius.server.newuser.User, de.cismet.cids.server.search.CidsServerSearch)} operation
+     * and implemented by {@link LightweightMetaObjectsByQuerySearch}
+     *
+     * @param       classId                class id of LWMOs
+     * @param       user                   user performing the request
+     * @param       query                  query to search for LWMO. Has to select at lest the primary key (ID) of the
+     *                                     Meta Object
+     * @param       representationFields   must match fields in query
+     * @param       representationPattern  string format pattern for toStrin Operation
+     *
+     * @return      Array of LWMOs or empty array
+     *
+     * @throws      RemoteException  if any error occurs
+     *
+     * @deprecated  should be replaced by custom search
+     */
+    @Override
+    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
+            final User user,
+            final String query,
+            final String[] representationFields,
+            final String representationPattern) throws RemoteException {
+        LOG.warn("delegating getLightweightMetaObjectsByQuery for class + '"
+                    + classId + "' with query '" + query + "' to legacy custom server search!");
 
-            try {
-                return getResponsePOST("getMetaObjectNodeByQuery", queryParams, Node[].class); // NOI18N
-            } catch (final UniformInterfaceException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("exception during request, remapping", ex);
-                }
+        final LightweightMetaObjectsByQuerySearch lightweightMetaObjectsByQuerySearch =
+            new LightweightMetaObjectsByQuerySearch();
 
-                final ClientResponse response = ex.getResponse();
+        lightweightMetaObjectsByQuerySearch.setDomain(user.getDomain());
+        lightweightMetaObjectsByQuerySearch.setClassId(classId);
+        lightweightMetaObjectsByQuerySearch.setQuery(query);
+        lightweightMetaObjectsByQuerySearch.setRepresentationFields(representationFields);
+        lightweightMetaObjectsByQuerySearch.setRepresentationPattern(representationPattern);
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
-                } else {
-                    throw remEx;
-                }
-            }
-        } catch (final IOException ex) {
-            final String message = "could not convert params"; // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
+        final Collection lwmoCollection = this.customServerSearch(user, lightweightMetaObjectsByQuerySearch);
+
+        final LightweightMetaObject[] lightweightMetaObjects = (LightweightMetaObject[])lwmoCollection.toArray(
+                new LightweightMetaObject[lwmoCollection.size()]);
+
+        return lightweightMetaObjects;
     }
 
     /**
@@ -981,97 +1050,6 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
             try {
                 return getResponsePOST("getMetaObjectByStringAndDomain", queryParams, MetaObject[].class); // NOI18N
-            } catch (final UniformInterfaceException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("exception during request, remapping", ex);
-                }
-
-                final ClientResponse response = ex.getResponse();
-
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
-                } else {
-                    throw remEx;
-                }
-            }
-        } catch (final IOException ex) {
-            final String message = "could not convert params"; // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   usr    DOCUMENT ME!
-     * @param   query  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public MetaObject[] getMetaObject(final User usr, final Query query) throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (usr != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
-            }
-            if (query != null) {
-                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
-            }
-
-            try {
-                return getResponsePOST("getMetaObjectByQuery", queryParams, MetaObject[].class); // NOI18N
-            } catch (final UniformInterfaceException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("exception during request, remapping", ex);
-                }
-
-                final ClientResponse response = ex.getResponse();
-
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
-                } else {
-                    throw remEx;
-                }
-            }
-        } catch (final IOException ex) {
-            final String message = "could not convert params"; // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    @Override
-    public MetaObject[] getMetaObject(final User usr, final Query query, final String domain) throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (usr != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
-            }
-            if (query != null) {
-                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
-            }
-            if (query != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
-            }
-
-            try {
-                return getResponsePOST("getMetaObjectByQueryAndDomain", queryParams, MetaObject[].class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1182,59 +1160,6 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
             try {
                 return getResponsePOST("insertMetaObject", queryParams, MetaObject.class); // NOI18N
-            } catch (final UniformInterfaceException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("exception during request, remapping", ex);
-                }
-
-                final ClientResponse response = ex.getResponse();
-
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
-                } else {
-                    throw remEx;
-                }
-            }
-        } catch (final IOException ex) {
-            final String message = "could not convert params"; // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user    DOCUMENT ME!
-     * @param   query   DOCUMENT ME!
-     * @param   domain  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public int insertMetaObject(final User user, final Query query, final String domain) throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
-            }
-            if (query != null) {
-                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
-            }
-            if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
-            }
-
-            try {
-                return getResponsePOST("insertMetaObjectByQuery", queryParams, int.class); // NOI18N
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("exception during request, remapping", ex);
@@ -1935,782 +1860,6 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     /**
      * DOCUMENT ME!
      *
-     * @param   classId                DOCUMENT ME!
-     * @param   user                   DOCUMENT ME!
-     * @param   query                  DOCUMENT ME!
-     * @param   representationFields   DOCUMENT ME!
-     * @param   representationPattern  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
-            final User user,
-            final String query,
-            final String[] representationFields,
-            final String representationPattern) throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId));
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
-            }
-            if (query != null) {
-                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
-            }
-            if (representationFields != null) {
-                queryParams.add(PARAM_REP_FIELDS, Converter.serialiseToString(representationFields));
-            }
-            if (representationPattern != null) {
-                queryParams.add(PARAM_REP_PATTERN, Converter.serialiseToString(representationPattern));
-            }
-
-            try {
-                return getResponsePOST(
-                        "getLightweightMetaObjectsByQueryAndPattern", // NOI18N
-                        queryParams,
-                        LightweightMetaObject[].class);
-            } catch (final UniformInterfaceException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("exception during request, remapping", ex);
-                }
-
-                final ClientResponse response = ex.getResponse();
-
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
-                } else {
-                    throw remEx;
-                }
-            }
-        } catch (final IOException ex) {
-            final String message = "could not convert params"; // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   classId               DOCUMENT ME!
-     * @param   user                  DOCUMENT ME!
-     * @param   query                 DOCUMENT ME!
-     * @param   representationFields  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
-            final User user,
-            final String query,
-            final String[] representationFields) throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId));
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
-            }
-            if (query != null) {
-                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
-            }
-            if (representationFields != null) {
-                queryParams.add(PARAM_REP_FIELDS, Converter.serialiseToString(representationFields));
-            }
-
-            try {
-                return getResponsePOST(
-                        "getLightweightMetaObjectsByQuery", // NOI18N
-                        queryParams,
-                        LightweightMetaObject[].class);
-            } catch (final UniformInterfaceException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("exception during request, remapping", ex);
-                }
-
-                final ClientResponse response = ex.getResponse();
-
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
-                } else {
-                    throw remEx;
-                }
-            }
-        } catch (final IOException ex) {
-            final String message = "could not convert params"; // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user  DOCUMENT ME!
-     * @param   data  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public boolean storeQuery(final User user, final QueryData data) throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
-            }
-            if (data != null) {
-                queryParams.add(PARAM_QUERY_DATA, Converter.serialiseToString(data));
-            }
-
-            try {
-                return getResponsePOST("storeQuery", queryParams, boolean.class); // NOI18N
-            } catch (final UniformInterfaceException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("exception during request, remapping", ex);
-                }
-
-                final ClientResponse response = ex.getResponse();
-
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
-                } else {
-                    throw remEx;
-                }
-            }
-        } catch (final IOException ex) {
-            final String message = "could not convert params"; // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public Info[] getQueryInfos(final User user) throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
-            }
-
-            try {
-                return getResponsePOST("getQueryInfosByUser", queryParams, Info[].class); // NOI18N
-            } catch (final UniformInterfaceException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("exception during request, remapping", ex);
-                }
-
-                final ClientResponse response = ex.getResponse();
-
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
-                } else {
-                    throw remEx;
-                }
-            }
-        } catch (final IOException ex) {
-            final String message = "could not convert params"; // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   userGroup  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public Info[] getQueryInfos(final UserGroup userGroup) throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (userGroup != null) {
-                queryParams.add(PARAM_USERGROUP, Converter.serialiseToString(userGroup));
-            }
-
-            try {
-                return getResponsePOST("getQueryInfosByUserGroup", queryParams, Info[].class); // NOI18N
-            } catch (final UniformInterfaceException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("exception during request, remapping", ex);
-                }
-
-                final ClientResponse response = ex.getResponse();
-
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
-                } else {
-                    throw remEx;
-                }
-            }
-        } catch (final IOException ex) {
-            final String message = "could not convert params"; // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   id      DOCUMENT ME!
-     * @param   domain  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public QueryData getQuery(final int id, final String domain) throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            queryParams.add(PARAM_QUERY_ID, Converter.serialiseToString(id));
-
-            if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
-            }
-
-            try {
-                return getResponsePOST("getQuery", queryParams, QueryData.class); // NOI18N
-            } catch (final UniformInterfaceException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("exception during request, remapping", ex);
-                }
-
-                final ClientResponse response = ex.getResponse();
-
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
-                } else {
-                    throw remEx;
-                }
-            }
-        } catch (final IOException ex) {
-            final String message = "could not convert params"; // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   id      DOCUMENT ME!
-     * @param   domain  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public boolean delete(final int id, final String domain) throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            queryParams.add(PARAM_QUERY_ID, Converter.serialiseToString(id));
-
-            if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
-            }
-
-            try {
-                return getResponsePOST("delete", queryParams, boolean.class); // NOI18N
-            } catch (final UniformInterfaceException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("exception during request, remapping", ex);
-                }
-
-                final ClientResponse response = ex.getResponse();
-
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
-                } else {
-                    throw remEx;
-                }
-            }
-        } catch (final IOException ex) {
-            final String message = "could not convert params"; // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user         DOCUMENT ME!
-     * @param   name         DOCUMENT ME!
-     * @param   description  DOCUMENT ME!
-     * @param   statement    DOCUMENT ME!
-     * @param   resultType   DOCUMENT ME!
-     * @param   isUpdate     DOCUMENT ME!
-     * @param   isBatch      DOCUMENT ME!
-     * @param   isRoot       DOCUMENT ME!
-     * @param   isUnion      DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public int addQuery(final User user,
-            final String name,
-            final String description,
-            final String statement,
-            final int resultType,
-            final char isUpdate,
-            final char isBatch,
-            final char isRoot,
-            final char isUnion) throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
-            }
-            if (name != null) {
-                queryParams.add(PARAM_QUERY_NAME, Converter.serialiseToString(name));
-            }
-            if (description != null) {
-                queryParams.add(PARAM_DESCRIPTION, Converter.serialiseToString(description));
-            }
-            if (statement != null) {
-                queryParams.add(PARAM_STATEMENT, Converter.serialiseToString(statement));
-            }
-
-            queryParams.add(PARAM_RESULT_TYPE, Converter.serialiseToString(resultType));
-            queryParams.add(PARAM_IS_BATCH, Converter.serialiseToString(isBatch));
-            queryParams.add(PARAM_IS_UPDATE, Converter.serialiseToString(isUpdate));
-            queryParams.add(PARAM_IS_ROOT, Converter.serialiseToString(isRoot));
-            queryParams.add(PARAM_IS_UNION, Converter.serialiseToString(isUnion));
-
-            try {
-                return getResponsePOST("addQueryFull", queryParams, int.class); // NOI18N
-            } catch (final UniformInterfaceException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("exception during request, remapping", ex);
-                }
-
-                final ClientResponse response = ex.getResponse();
-
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
-                } else {
-                    throw remEx;
-                }
-            }
-        } catch (final IOException ex) {
-            final String message = "could not convert params"; // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user         DOCUMENT ME!
-     * @param   name         DOCUMENT ME!
-     * @param   description  DOCUMENT ME!
-     * @param   statement    DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public int addQuery(final User user, final String name, final String description, final String statement)
-            throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
-            }
-            if (name != null) {
-                queryParams.add(PARAM_QUERY_NAME, Converter.serialiseToString(name));
-            }
-            if (description != null) {
-                queryParams.add(PARAM_DESCRIPTION, Converter.serialiseToString(description));
-            }
-            if (statement != null) {
-                queryParams.add(PARAM_STATEMENT, Converter.serialiseToString(statement));
-            }
-
-            try {
-                return getResponsePOST("addQuery", queryParams, int.class); // NOI18N
-            } catch (final UniformInterfaceException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("exception during request, remapping", ex);
-                }
-
-                final ClientResponse response = ex.getResponse();
-
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
-                } else {
-                    throw remEx;
-                }
-            }
-        } catch (final IOException ex) {
-            final String message = "could not convert params"; // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user           DOCUMENT ME!
-     * @param   queryId        DOCUMENT ME!
-     * @param   typeId         DOCUMENT ME!
-     * @param   paramkey       DOCUMENT ME!
-     * @param   description    DOCUMENT ME!
-     * @param   isQueryResult  DOCUMENT ME!
-     * @param   queryPosition  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public boolean addQueryParameter(final User user,
-            final int queryId,
-            final int typeId,
-            final String paramkey,
-            final String description,
-            final char isQueryResult,
-            final int queryPosition) throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
-            }
-
-            queryParams.add(PARAM_QUERY_ID, Converter.serialiseToString(queryId));
-
-            if (paramkey != null) {
-                queryParams.add(PARAM_PARAM_KEY, Converter.serialiseToString(paramkey));
-            }
-            if (description != null) {
-                queryParams.add(PARAM_DESCRIPTION, Converter.serialiseToString(description));
-            }
-            if (typeId >= 0) {
-                queryParams.add(PARAM_TYPE_ID, Converter.serialiseToString(typeId));
-            }
-
-            queryParams.add(PARAM_QUERY_RESULT, Converter.serialiseToString(isQueryResult));
-            queryParams.add(PARAM_QUERY_POSITION, Converter.serialiseToString(queryPosition));
-
-            try {
-                return getResponsePOST("addQueryParameterFull", queryParams, boolean.class); // NOI18N
-            } catch (final UniformInterfaceException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("exception during request, remapping", ex);
-                }
-
-                final ClientResponse response = ex.getResponse();
-
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
-                } else {
-                    throw remEx;
-                }
-            }
-        } catch (final IOException ex) {
-            final String message = "could not convert params"; // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user         DOCUMENT ME!
-     * @param   queryId      DOCUMENT ME!
-     * @param   paramkey     DOCUMENT ME!
-     * @param   description  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public boolean addQueryParameter(final User user,
-            final int queryId,
-            final String paramkey,
-            final String description) throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
-            }
-
-            queryParams.add(PARAM_QUERY_ID, Converter.serialiseToString(queryId));
-
-            if (paramkey != null) {
-                queryParams.add(PARAM_PARAM_KEY, Converter.serialiseToString(paramkey));
-            }
-            if (description != null) {
-                queryParams.add(PARAM_DESCRIPTION, Converter.serialiseToString(description));
-            }
-
-            try {
-                return getResponsePOST("addQueryParameter", queryParams, boolean.class); // NOI18N
-            } catch (final UniformInterfaceException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("exception during request, remapping", ex);
-                }
-
-                final ClientResponse response = ex.getResponse();
-
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
-                } else {
-                    throw remEx;
-                }
-            }
-        } catch (final IOException ex) {
-            final String message = "could not convert params"; // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public HashMap getSearchOptions(final User user) throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
-            }
-
-            try {
-                return getResponsePOST("getSearchOptionsByUser", queryParams, HashMap.class); // NOI18N
-            } catch (final UniformInterfaceException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("exception during request, remapping", ex);
-                }
-
-                final ClientResponse response = ex.getResponse();
-
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
-                } else {
-                    throw remEx;
-                }
-            }
-        } catch (final IOException ex) {
-            final String message = "could not convert params"; // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user    DOCUMENT ME!
-     * @param   domain  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public HashMap getSearchOptions(final User user, final String domain) throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
-            }
-            if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
-            }
-
-            try {
-                return getResponsePOST("getSearchOptionsByDomain", queryParams, HashMap.class); // NOI18N
-            } catch (final UniformInterfaceException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("exception during request, remapping", ex);
-                }
-
-                final ClientResponse response = ex.getResponse();
-
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
-                } else {
-                    throw remEx;
-                }
-            }
-        } catch (final IOException ex) {
-            final String message = "could not convert params"; // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user           DOCUMENT ME!
-     * @param   classIds       DOCUMENT ME!
-     * @param   searchOptions  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public SearchResult search(final User user, final String[] classIds, final SearchOption[] searchOptions)
-            throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
-            }
-            if (classIds != null) {
-                queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classIds));
-            }
-            if (searchOptions != null) {
-                queryParams.add(PARAM_SEARCH_OPTIONS, Converter.serialiseToString(searchOptions));
-            }
-
-            try {
-                return getResponsePOST("search", queryParams, SearchResult.class); // NOI18N
-            } catch (final UniformInterfaceException ex) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("exception during request, remapping", ex);
-                }
-
-                final ClientResponse response = ex.getResponse();
-
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
-                if (remEx == null) {
-                    throw ex;
-                } else {
-                    throw remEx;
-                }
-            }
-        } catch (final IOException ex) {
-            final String message = "could not convert params"; // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @param   lsName  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -3095,6 +2244,60 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             throw new RemoteException(message, ex);
         } catch (final ClassNotFoundException e) {
             final String message = "could not create MetaObject[]";                   // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        }
+    }
+
+    @Override
+    public Object executeTask(final User user,
+            final String taskname,
+            final String taskdomain,
+            final Object body,
+            final ServerActionParameter... params) throws RemoteException {
+        try {
+            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
+
+            if (user != null) {
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+            }
+
+            if (taskname != null) {
+                queryParams.add(PARAM_TASKNAME, Converter.serialiseToString(taskname));
+            }
+            if (taskdomain != null) {
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(taskdomain));
+            }
+            if (body != null) {
+                queryParams.add(PARAM_BODY, Converter.serialiseToString(body));
+            }
+
+            if (params != null) {
+                queryParams.add(PARAM_PARAMELIPSE, Converter.serialiseToString(params));
+            }
+
+            try {
+                return getResponsePOST("executeTask", queryParams, Object.class); // NOI18N
+            } catch (final UniformInterfaceException ex) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("exception during request, remapping", ex);
+                }
+
+                final ClientResponse response = ex.getResponse();
+
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                if (remEx == null) {
+                    throw ex;
+                } else {
+                    throw remEx;
+                }
+            }
+        } catch (final IOException ex) {
+            final String message = "could not convert params"; // NOI18N
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        } catch (final ClassNotFoundException e) {
+            final String message = "could not create class";   // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }

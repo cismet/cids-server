@@ -26,8 +26,6 @@ import Sirius.server.middleware.types.Node;
 import Sirius.server.naming.NameServer;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.permission.Policy;
-import Sirius.server.search.Query;
-import Sirius.server.search.QueryExecuter;
 
 import Sirius.util.NodeComparator;
 
@@ -52,8 +50,6 @@ public class MetaServiceImpl implements MetaService {
     private Map activeLocalServers;
     private NameServer nameServer;
     private Server[] localServers;
-    // resolves Query tree
-    private QueryExecuter qex;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -71,7 +67,6 @@ public class MetaServiceImpl implements MetaService {
         this.nameServer = nameServer;
         // this.localServers = localServers;
         this.localServers = nameServer.getServers(ServerType.LOCALSERVER);
-        qex = new QueryExecuter(activeLocalServers);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -334,67 +329,12 @@ public class MetaServiceImpl implements MetaService {
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node[] getMetaObjectNode(final User usr, final Query query) throws RemoteException {
-        if (logger != null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("<CS> getMetaObjectNode for user" + usr + "query ::" + query);                         // NOI18N
-            }
-        }
-        return
-            ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(usr.getDomain())) // ?? BUG !?! das bedeutet ich kann nur Objekte meiner Domain anfragen
-            .getMetaObjectNode(usr, query);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   usr    DOCUMENT ME!
-     * @param   query  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
     public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
         return getMetaObject(usr, query, usr.getDomain());
     }
 
     @Override
     public MetaObject[] getMetaObject(final User usr, final String query, final String domain) throws RemoteException {
-        if (logger != null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("<CS> getMetaObject for [user=" + usr + "|domain=" + domain + "|query=" + query + "]"); // NOI18N
-            }
-        }
-
-        final Sirius.server.middleware.interfaces.domainserver.MetaService metaService =
-            (Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain);
-
-        if (metaService == null) {
-            throw new RemoteException("no server registered for domain: " + domain); // NOI18N
-        }
-
-        return metaService.getMetaObject(usr, query);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   usr    DOCUMENT ME!
-     * @param   query  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public MetaObject[] getMetaObject(final User usr, final Query query) throws RemoteException {
-        return getMetaObject(usr, query, usr.getDomain());
-    }
-
-    @Override
-    public MetaObject[] getMetaObject(final User usr, final Query query, final String domain) throws RemoteException {
         if (logger != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("<CS> getMetaObject for [user=" + usr + "|domain=" + domain + "|query=" + query + "]"); // NOI18N
@@ -477,28 +417,6 @@ public class MetaServiceImpl implements MetaService {
     /**
      * DOCUMENT ME!
      *
-     * @param   user    DOCUMENT ME!
-     * @param   query   DOCUMENT ME!
-     * @param   domain  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    public int insertMetaObject(final User user, final Query query, final String domain) throws RemoteException {
-        if (logger != null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("<CS>insertMetaObject  for user" + user + "query ::" + query + " domain::" + domain); // NOI18N
-            }
-        }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain))
-                    .insertMetaObject(user, query);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @param   user        DOCUMENT ME!
      * @param   metaObject  DOCUMENT ME!
      * @param   domain      DOCUMENT ME!
@@ -539,7 +457,7 @@ public class MetaServiceImpl implements MetaService {
     @Override
     public int updateMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        if (logger != null) {
+        if ((logger != null) && !(metaObject instanceof LightweightMetaObject)) {
             if (logger.isDebugEnabled()) {
                 logger.debug(
                     "<CS>updateMetaObject  for user" // NOI18N

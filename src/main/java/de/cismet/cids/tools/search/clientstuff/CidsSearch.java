@@ -7,13 +7,9 @@
 ****************************************************/
 package de.cismet.cids.tools.search.clientstuff;
 
-import Sirius.server.middleware.types.MetaClass;
-import Sirius.server.search.CidsServerSearch;
-import Sirius.server.search.SearchOption;
-
-import java.util.Collection;
-
 import javax.swing.ImageIcon;
+
+import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
 
 /**
  * DOCUMENT ME!
@@ -30,7 +26,7 @@ public interface CidsSearch {
      *
      * @return  DOCUMENT ME!
      */
-    CidsServerSearch getServerSearch();
+    MetaObjectNodeServerSearch getServerSearch();
 
     /**
      * DOCUMENT ME!

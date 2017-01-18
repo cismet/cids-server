@@ -20,7 +20,6 @@ import Sirius.server.sql.ExceptionHandler;
 
 import org.apache.log4j.Logger;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -43,14 +42,12 @@ public final class UserStore extends Shutdown {
     //~ Instance fields --------------------------------------------------------
 
     protected DBConnectionPool conPool;
-
     protected Vector users;
     protected Vector userGroups;
     // protected Hashtable userGroupHash;
     protected Vector memberships;
     // protected Hashtable membershipHash;// by userIDplusLsName
     protected ServerProperties properties;
-    protected PreparedStatement validateUser;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -70,7 +67,7 @@ public final class UserStore extends Shutdown {
         // membershipHash = new Hashtable(101);
 
         try {
-            final ResultSet userTable = conPool.submitQuery("get_all_users", new Object[0]); // NOI18N
+            final ResultSet userTable = conPool.submitInternalQuery(DBConnection.DESC_GET_ALL_USERS, new Object[0]);
 
             // --------------------load users--------------------------------------------------
 
@@ -96,15 +93,23 @@ public final class UserStore extends Shutdown {
 
             // --------------------load userGroups--------------------------------------------------
 
-            final ResultSet userGroupTable = conPool.submitQuery("get_all_usergroups", new Object[0]); // NOI18N
+            final ResultSet userGroupTable = conPool.submitInternalQuery(
+                    DBConnection.DESC_GET_ALL_USERGROUPS,
+                    new Object[0]);
 
             while (userGroupTable.next()) {
                 try {
+                    String domain = userGroupTable.getString("domain_name"); // NOI18N
+                    if ("LOCAL".equals(domain)) {                            // NOI18N
+                        domain = properties.getServerName();
+                    }
+
                     final UserGroup tmp = new UserGroup(
                             userGroupTable.getInt("id"),             // NOI18N
                             userGroupTable.getString("name").trim(), // NOI18N
-                            properties.getServerName(),
-                            userGroupTable.getString("descr"));      // NOI18N
+                            domain,
+                            userGroupTable.getString("descr"),
+                            userGroupTable.getInt("prio"));          // NOI18N
                     userGroups.addElement(tmp);
                 } catch (Exception e) {
                     LOG.error(e);
@@ -119,7 +124,9 @@ public final class UserStore extends Shutdown {
 
             // --------------------load memberships--------------------------------------------------
 
-            final ResultSet memberTable = conPool.submitQuery("get_all_memberships", new Object[0]); // NOI18N
+            final ResultSet memberTable = conPool.submitInternalQuery(
+                    DBConnection.DESC_GET_ALL_MEMBERSHIPS,
+                    new Object[0]);
 
             while (memberTable.next()) {
                 try {
@@ -149,11 +156,6 @@ public final class UserStore extends Shutdown {
 
             memberTable.close();
 
-            // prepare statement for validate user (called very often) :-)
-            final String valUser =
-                "select count(*) from cs_usr as u ,cs_ug as ug ,cs_ug_membership as m where u.id=m.usr_id and  ug.id = m.ug_id and trim(login_name) = ? and trim(ug.name) = ?"; // NOI18N
-            validateUser = conPool.getConnection().prepareStatement(valUser);
-
             addShutdown(new AbstractShutdownable() {
 
                     @Override
@@ -165,7 +167,6 @@ public final class UserStore extends Shutdown {
                         users.clear();
                         userGroups.clear();
                         memberships.clear();
-                        DBConnection.closeStatements(validateUser);
                     }
                 });
         } catch (java.lang.Exception e) {
@@ -219,10 +220,10 @@ public final class UserStore extends Shutdown {
         final java.lang.Object[] params = new java.lang.Object[3];
 
         params[0] = newPassword;
-        params[1] = user.getName().toLowerCase();
+        params[1] = user.getName();
         params[2] = oldPassword;
 
-        if (conPool.submitUpdate("change_user_password", params) > 0) { // NOI18N
+        if (conPool.submitInternalUpdate(DBConnection.DESC_CHANGE_USER_PASSWORD, params) > 0) {
             return true;
         } else {
             return false;
@@ -236,7 +237,6 @@ public final class UserStore extends Shutdown {
      *
      * @return  DOCUMENT ME!
      */
-
     // FIXME: WHATS THE PURPOSE OF THIS IMPL???
     public boolean validateUser(final User user) {
         return true;
@@ -258,8 +258,8 @@ public final class UserStore extends Shutdown {
             // TODO: should username and password be trimmed?
             result = conPool.submitInternalQuery(
                     DBConnection.DESC_VERIFY_USER_PW,
-                    user.getName().trim().toLowerCase(),
-                    password.trim().toLowerCase());
+                    user.getName(),
+                    password);
             return result.next() && (result.getInt(1) == 1);
         } finally {
             DBConnection.closeResultSets(result);
@@ -276,7 +276,7 @@ public final class UserStore extends Shutdown {
      *
      * @throws  SQLException  DOCUMENT ME!
      */
-    public String getConfigAttr(final User user, final String key) throws SQLException {
+    public synchronized String getConfigAttr(final User user, final String key) throws SQLException {
         if ((user == null) || (key == null)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("user and/or key is null, returning null: user: " + user + " || key: " + key);
@@ -304,17 +304,60 @@ public final class UserStore extends Shutdown {
 
         assert keyId > 0 : "invalid key id"; // NOI18N
 
+        final UserGroup userGroup = user.getUserGroup();
+        if (userGroup != null) {
+            return getConfigAttrForUserGroup(keyId, user, userGroup);
+        } else {
+            final ResultSet exemptGroupValueSet = conPool.submitInternalQuery(
+                    DBConnection.DESC_FETCH_CONFIG_ATTR_EXEMPT_VALUE,
+                    user.getId(),
+                    keyId);
+            final int groupId;
+            if (exemptGroupValueSet.next()) {
+                groupId = exemptGroupValueSet.getInt(1);
+            } else {
+                groupId = -1;
+            }
+
+            for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
+                final String configAttr = getConfigAttrForUserGroup(keyId, user, potentialUserGroup);
+                if (groupId < 0) {
+                    if (configAttr != null) {
+                        return configAttr;
+                    }
+                } else if (potentialUserGroup.getId() == groupId) {
+                    return configAttr;
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   keyId      DOCUMENT ME!
+     * @param   user       DOCUMENT ME!
+     * @param   userGroup  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    private String getConfigAttrForUserGroup(final int keyId, final User user, final UserGroup userGroup)
+            throws SQLException {
         ResultSet userValueSet = null;
         ResultSet ugValueSet = null;
         ResultSet domainValueSet = null;
+
         try {
             final String userName = user.getName();
-            final String userGroupName = user.getUserGroup().getName();
+            final String userGroupName = userGroup.getName();
             final String domain;
-            if (properties.getServerName().equals(user.getUserGroup().getDomain())) {
+            if (properties.getServerName().equals(userGroup.getDomain())) {
                 domain = "LOCAL"; // NOI18N
             } else {
-                domain = user.getUserGroup().getDomain();
+                domain = userGroup.getDomain();
             }
 
             final String value;

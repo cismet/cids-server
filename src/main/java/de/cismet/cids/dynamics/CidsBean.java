@@ -5,10 +5,6 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.cismet.cids.dynamics;
 
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
@@ -19,8 +15,16 @@ import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+
+import com.vividsolutions.jts.geom.Geometry;
+
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
 import org.jdesktop.observablecollections.ObservableList;
@@ -35,13 +39,19 @@ import java.beans.PropertyDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import de.cismet.cids.json.IntraObjectCacheJsonParams;
+
 import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
+
+import static de.cismet.cids.dynamics.CidsBean.mapper;
 
 /**
  * DOCUMENT ME!
@@ -49,11 +59,41 @@ import de.cismet.cids.utils.MetaClassCacheService;
  * @author   hell
  * @version  $Revision$, $Date$
  */
+//@JsonSerialize(using = CidsBeanJsonSerializer.class)
+//@JsonDeserialize(using = CidsBeanJsonDeserializer.class)
 public class CidsBean implements PropertyChangeListener {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient Logger LOG = Logger.getLogger(CidsBean.class);
+    static final ObjectMapper mapper = new ObjectMapper();
+    static final ObjectMapper intraObjectCacheMapper = new ObjectMapper();
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   bean   DOCUMENT ME!
+     * @param   field  DOCUMENT ME!
+     * @param   n      DOCUMENT ME!
+     *
+     * @throws  Exception         DOCUMENT ME!
+     * @throws  RuntimeException  DOCUMENT ME!
+     */
+    static JsonFactory fac = new JsonFactory();
+
+    static {
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        final SimpleModule regularModule = new SimpleModule("NOIOC", new Version(1, 0, 0, null, null, null));
+        regularModule.addSerializer(new CidsBeanJsonSerializer());
+        regularModule.addDeserializer(CidsBean.class, new CidsBeanJsonDeserializer());
+        mapper.registerModule(regularModule);
+
+        intraObjectCacheMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        final SimpleModule intraObjectCacheModule = new SimpleModule("IOC", new Version(1, 0, 0, null, null, null));
+        intraObjectCacheModule.addSerializer(new IntraObjectCacheEnabledCidsBeanJsonSerializer());
+        intraObjectCacheModule.addDeserializer(CidsBean.class, new IntraObjectCacheEnabledCidsBeanJsonDeserializer());
+        intraObjectCacheMapper.registerModule(intraObjectCacheModule);
+    }
 
     //~ Instance fields --------------------------------------------------------
 
@@ -62,9 +102,31 @@ public class CidsBean implements PropertyChangeListener {
     protected String backlinkFieldname;
     protected CidsBean backlinkObject;
     protected boolean artificialChange;
+    protected transient IntraObjectCacheJsonParams jsonSerializerParams;
+    String pkFieldName = null;
+    HashMap<String, CidsBean> intraObjectCache = new HashMap<String, CidsBean>();
+
     private CustomBeanPermissionProvider customPermissionProvider;
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ObjectMapper getCidsBeanObjectMapper() {
+        return mapper;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ObjectMapper getCidsBeanIntraObjectCacheMapper() {
+        return intraObjectCacheMapper;
+    }
 
     /**
      * DOCUMENT ME!
@@ -105,7 +167,7 @@ public class CidsBean implements PropertyChangeListener {
      * @return  DOCUMENT ME!
      */
     public boolean getHasWritePermission(final User user) {
-        return metaObject.getMetaClass().getPermissions().hasWritePermission(user.getUserGroup());
+        return metaObject.getMetaClass().getPermissions().hasWritePermission(user);
     }
 
     /**
@@ -116,37 +178,11 @@ public class CidsBean implements PropertyChangeListener {
      * @return  DOCUMENT ME!
      */
     public boolean hasObjectWritePermission(final User user) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("hasObjectWritePermission for user: " + user); // NOI18N
-        }
-
-        if (customPermissionProvider == null) {
-            try {
-                final Class cpp = ClassloadingHelper.getDynamicClass(getMetaObject().getMetaClass(),
-                        ClassloadingHelper.CLASS_TYPE.PERMISSION_PROVIDER);
-
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("custom write permission provider retrieval result: " + cpp); // NOI18N
-                }
-
-                if (cpp == null) {
-                    return true;
-                }
-
-                customPermissionProvider = (CustomBeanPermissionProvider)cpp.getConstructor().newInstance();
-                customPermissionProvider.setCidsBean(this);
-            } catch (final Exception ex) {
-                // FIXME: probably this behaviour is error prone since we allow write permission if there is a problem
-                // with the loading of the custom permission provider, which probably would say "NO" if it was loaded
-                // correctly
-                LOG.warn("error during creation of custom permission provider", ex); // NOI18N
-            }
-        }
-
-        if (customPermissionProvider != null) {
-            return customPermissionProvider.getCustomWritePermissionDecisionforUser(user);
+        if (metaObject != null) {
+            return metaObject.hasObjectWritePermission(user);
         } else {
-            return true;
+            LOG.error("meta object is null. The write permission cannot be determined.");
+            return false;
         }
     }
 
@@ -385,25 +421,44 @@ public class CidsBean implements PropertyChangeListener {
         final ObjectAttribute oa = metaObject.getAttributeByFieldName(field);
 
         // if oa is array we won't have to do anything because the listElement* operations take care of array elements
-        if (!oa.isArray()) {
+        if (!oa.isArray() && !oa.isVirtualOneToManyAttribute()) {
             final Object oldValue = oa.getValue();
             final Object value = evt.getNewValue();
+            boolean realChanges = false;
             if (oa.referencesObject() && (value instanceof CidsBean) && (value != null)) {
                 final CidsBean cbv = (CidsBean)value;
+                realChanges = ((oldValue == null)
+                                || ((oldValue instanceof MetaObject)
+                                    && !((Sirius.server.middleware.types.MetaObject)oldValue).getBean().toJSONString(
+                                        true).equals(
+                                        cbv.toJSONString(true))));
                 oa.setValue(cbv.getMetaObject());
                 cbv.setBacklinkInformation(field, this);
                 if (cbv.getMetaObject().getStatus() == MetaObject.TO_DELETE) {
                     cbv.getMetaObject().setStatus(MetaObject.MODIFIED);
                 }
-            } else {
+            } else if (((oldValue == null) && (value != null))
+                        || ((oldValue instanceof Geometry)
+                            && (System.identityHashCode(oldValue) != System.identityHashCode(value)))
+                        || ((oldValue != null) && !oldValue.equals(value))) {
                 oa.setValue(value);
+                realChanges = true;
             }
 
             if (LOG.isDebugEnabled()) {
-                LOG.debug("a property changed:" + metaObject.getDebugString()); // NOI18N
+                if (realChanges) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("a property changed:" + metaObject.getDebugString()); // NOI18N
+                    }
+                } else if (LOG.isDebugEnabled()) {
+                    LOG.debug(
+                        "a property changed, but the content of the object was not changed. seams to be a caching or normalization move.:"
+                                + metaObject.getDebugString());                         // NOI18N
+                }
             }
 
-            if (((oldValue == null) && (value != null)) || ((oldValue != null) && !oldValue.equals(value))) {
+            if (((oldValue == null) && (value != null))
+                        || ((oldValue != null) && realChanges)) {
                 oa.setChanged(true);
                 metaObject.setStatus(MetaObject.MODIFIED);
 
@@ -425,7 +480,7 @@ public class CidsBean implements PropertyChangeListener {
             referencingOA.setChanged(true);
             final Sirius.server.localserver.object.Object parent = referencingOA.getParentObject();
             parent.setStatus(MetaObject.MODIFIED); // funzt jetzt weil beim Erzeugen der Bean nochmals gesetzt (funzt
-            // nicht weil �ber den MetaObject Konstruktor eine neue Adresse
+            // nicht weil über den MetaObject Konstruktor eine neue Adresse
             // genutzt wird. Der andere Kram funktioniert aber, da die
             // gleichen ObjectAttributes genutzt werden.)
             referencingOA = parent.getReferencingObjectAttribute();
@@ -478,6 +533,49 @@ public class CidsBean implements PropertyChangeListener {
     }
 
     /**
+     * DOCUMENT ME!
+     *
+     * @param   fieldname  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RuntimeException  DOCUMENT ME!
+     */
+    public CidsBean getEmptyBeanFromArrayAttribute(final String fieldname) {
+        final MetaClassCacheService classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
+        if (classCacheService != null) {
+            final ObjectAttribute oa = getMetaObject().getAttributeByFieldName(fieldname);
+            // abs weil im 1:n Fall eine negative class-id im foreign-key-field steht
+            final MetaClass firstMC = classCacheService.getMetaClass(
+                    getMetaObject().getDomain(),
+                    Math.abs(oa.getMai().getForeignKeyClassId()));
+            if (oa.isVirtualOneToManyAttribute()) {
+                final CidsBean newOne = firstMC.getEmptyInstance().getBean();
+                return newOne;
+            } else if (oa.isArray()) {
+                final HashMap hm = firstMC.getMemberAttributeInfos();
+                final Iterator it = hm.values().iterator();
+                while (it.hasNext()) {
+                    final Object tmp = it.next();
+                    if (tmp instanceof MemberAttributeInfo) {
+                        if (((MemberAttributeInfo)tmp).isForeignKey()) {
+                            final int classId = ((MemberAttributeInfo)tmp).getForeignKeyClassId();
+                            final MetaClass targetClass = classCacheService.getMetaClass(firstMC.getDomain(), classId);
+                            final CidsBean newOne = targetClass.getEmptyInstance().getBean();
+                            return newOne;
+                        }
+                    }
+                }
+                throw new RuntimeException("Missconfigured Array-Class"); // NOI18N
+            } else {
+                throw new RuntimeException("Must be an Array-Attribute"); // NOI18N
+            }
+        } else {
+            throw new RuntimeException("Could not lookup MetaClassCacheService"); // NOI18N
+        }
+    }
+
+    /**
      * Convenience Method. Wraps <code>PropertyUtils.setProperty(this, name, value);</code>
      *
      * @param   name   DOCUMENT ME!
@@ -490,7 +588,37 @@ public class CidsBean implements PropertyChangeListener {
             // TODO seems to call nonexisting properties on array classes?
             PropertyUtils.setProperty(this, name, value);
         } catch (Exception e) {
-            LOG.error("Fehler in setProperty:" + name + "\n", e);
+            LOG.warn("Error in setProperty:" + name + ". Result will be null. No exception is being thrown.", e); // NOI18N
+        }
+    }
+
+    /**
+     * Sets a property but does not set the change status flag.
+     *
+     * @param   name   DOCUMENT ME!
+     * @param   value  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    void quiteSetProperty(final String name, final Object value) throws Exception {
+        setProperty(name, value);
+        if (metaObject.getAttributeByFieldName(name) != null) {
+            metaObject.getAttributeByFieldName(name).setChanged(false);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   name   DOCUMENT ME!
+     * @param   value  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    void setPropertyForceChanged(final String name, final Object value) throws Exception {
+        setProperty(name, value);
+        if (metaObject.getAttributeByFieldName(name) != null) {
+            metaObject.getAttributeByFieldName(name).setChanged(true);
         }
     }
 
@@ -505,7 +633,7 @@ public class CidsBean implements PropertyChangeListener {
         try {
             return PropertyUtils.getProperty(this, name);
         } catch (Exception e) {
-            LOG.error("Fehler in getproperty:" + name, e); // NOI18N
+            LOG.warn("Error in getproperty:" + name + ". Result will be null. No exception is being thrown.", e); // NOI18N
         }
 
         return null;
@@ -536,6 +664,7 @@ public class CidsBean implements PropertyChangeListener {
             final int length) {
         final List<CidsBean> old = new ArrayList<CidsBean>(list);
 
+        // FIXME: #171
         for (int i = index; i < (index + length); ++i) {
             try {
                 old.remove(i - (list.size() - old.size()));
@@ -545,61 +674,82 @@ public class CidsBean implements PropertyChangeListener {
                         final CidsBean cb = (CidsBean)o;
                         cb.setBacklinkInformation(arrayfield, this);
                         final ObjectAttribute oa = this.getMetaObject().getAttributeByFieldName(arrayfield);
-
+                        final MemberAttributeInfo mai = oa.getMai();
                         walkUpAndSetChangedAndModified(oa);
-                        // ArrayElement anlegen
-                        final MetaClass zwischenTabellenKlasse = (MetaClass)(getMetaObject().getAllClasses()).get(
-                                getMetaObject().getDomain()
-                                        + oa.getMai().getForeignKeyClassId());
-                        final MetaObject arrayElement = zwischenTabellenKlasse.getEmptyInstance();
 
-                        final ObjectAttribute[] arrayElementAttrs = arrayElement.getAttribs();
-                        for (final ObjectAttribute arrayElementAttribute : arrayElementAttrs) {
-                            arrayElementAttribute.setParentObject(arrayElement);
-                            if (arrayElementAttribute.isPrimaryKey()) {
-                                arrayElementAttribute.setValue(-1);
-                            } else if (arrayElementAttribute.referencesObject()) {
-                                arrayElementAttribute.setValue(cb.getMetaObject());
-                                arrayElementAttribute.setChanged(true);
-                                cb.getMetaObject().setReferencingObjectAttribute(arrayElementAttribute);
-                            } else {
-                                arrayElementAttribute.setValue(getMetaObject().getID());
-                            }
-                        }
-
-                        // Wen noch kein Dummy-Objekt existiert (Wert ist noch null)
+                        // Wenn noch kein Dummy-Objekt existiert (Wert ist noch null)
                         // Anlegen eines Dummy-Objektes
-                        if (oa.getValue() == null) {
+                        MetaObject dummy = (MetaObject)oa.getValue();
+                        if (dummy == null) {
+                            final int classId = oa.isVirtualOneToManyAttribute() ? (-1 * mai.getForeignKeyClassId())
+                                                                                 : mai.getForeignKeyClassId();
                             final Sirius.server.localserver.object.Object dummyO =
                                 new Sirius.server.localserver.object.DefaultObject(
                                     getMetaObject().getID(),
-                                    oa.getMai().getForeignKeyClassId());
-                            final MetaObject dummyMO = new DefaultMetaObject(dummyO, getMetaObject().getDomain());
-                            dummyMO.setReferencingObjectAttribute(oa);
-                            dummyMO.setDummy(true);
-                            dummyMO.setStatus(MetaObject.NEW);
-                            oa.setValue(dummyMO);
+                                    classId);
+                            dummy = new DefaultMetaObject(dummyO, getMetaObject().getDomain());
+                            dummy.setReferencingObjectAttribute(oa);
+                            dummy.setDummy(true);
+                            dummy.setStatus(MetaObject.NEW);
+                            oa.setValue(dummy);
                             oa.setChanged(true);
                         }
 
-                        // hinzufuegen eines Attributes, das auf das angelegte Arrayelement zeigt
-                        final MetaObject dummy = (MetaObject)oa.getValue();
-                        dummy.setStatus(MetaObject.MODIFIED);
-                        int counter = dummy.getAttribs().length;
-                        // MAI des ArrayFeldes des Hauptobjektes
-                        final MemberAttributeInfo mai = oa.getMai();
-                        final ObjectAttribute dummyOA = new ObjectAttribute(
-                                mai.getId()
-                                        + "."
-                                        + ++counter,
-                                mai,
-                                -1,
-                                arrayElement,
-                                zwischenTabellenKlasse.getAttributePolicy());
-                        dummyOA.setParentObject(dummy);
-                        dummyOA.setChanged(true);
-                        dummy.addAttribute(dummyOA);
-                        arrayElement.setReferencingObjectAttribute(dummyOA);
+                        // 1:n Beziehung??
+                        if (oa.isVirtualOneToManyAttribute()) {
+                            final ObjectAttribute[] arrayElementAttrs = dummy.getAttribs();
+
+                            dummy.setStatus(MetaObject.MODIFIED);
+                            final ObjectAttribute entryToAddOA = new ObjectAttribute(
+                                    null,
+                                    mai,
+                                    -1,
+                                    cb.getMetaObject(),
+                                    cb.getMetaObject().getMetaClass().getAttributePolicy());
+                            entryToAddOA.setParentObject(dummy);
+                            entryToAddOA.setClassKey(mai.getForeignKeyClassId() + "@" + dummy.getDomain());
+                            entryToAddOA.setChanged(true);
+                            dummy.addAttribute(entryToAddOA);
+                            cb.getMetaObject().setReferencingObjectAttribute(entryToAddOA);
+
+//                            entryToAddOA.setValue(getMetaObject());
+                        } else { // n-m Beziehung
+                            // ArrayElement anlegen
+                            final MetaClass zwischenTabellenKlasse = (MetaClass)(getMetaObject().getAllClasses()).get(
+                                    getMetaObject().getDomain()
+                                            + oa.getMai().getForeignKeyClassId());
+                            final MetaObject arrayElement = zwischenTabellenKlasse.getEmptyInstance();
+
+                            final ObjectAttribute[] arrayElementAttrs = arrayElement.getAttribs();
+                            for (final ObjectAttribute arrayElementAttribute : arrayElementAttrs) {
+                                arrayElementAttribute.setParentObject(arrayElement);
+                                if (arrayElementAttribute.isPrimaryKey()) {
+                                    arrayElementAttribute.setValue(-1);
+                                } else if (arrayElementAttribute.referencesObject()) {
+                                    arrayElementAttribute.setValue(cb.getMetaObject());
+                                    arrayElementAttribute.setChanged(true);
+                                    cb.getMetaObject().setReferencingObjectAttribute(arrayElementAttribute);
+                                } else {
+                                    arrayElementAttribute.setValue(getMetaObject().getID());
+                                }
+                            }
+
+                            // hinzufuegen eines Attributes, das auf das angelegte Arrayelement zeigt
+                            dummy.setStatus(MetaObject.MODIFIED);
+                            final ObjectAttribute[] attribs = dummy.getAttribs();
+
+                            final ObjectAttribute dummyOA = new ObjectAttribute(
+                                    null,
+                                    mai,
+                                    -1,
+                                    arrayElement,
+                                    zwischenTabellenKlasse.getAttributePolicy());
+                            dummyOA.setParentObject(dummy);
+                            dummyOA.setClassKey(mai.getForeignKeyClassId() + "@" + zwischenTabellenKlasse.getDomain());
+                            dummyOA.setChanged(true);
+                            dummy.addAttribute(dummyOA);
+                            arrayElement.setReferencingObjectAttribute(dummyOA);
+                        }
                     } else {
                         throw new IllegalArgumentException("Every element of an array must be a CidsBean"); // NOI18N
                     }
@@ -632,23 +782,39 @@ public class CidsBean implements PropertyChangeListener {
             final CidsBean cidsBean = (CidsBean)element;
             final ObjectAttribute deepestReferencingAttribute = cidsBean.getMetaObject()
                         .getReferencingObjectAttribute();
+            final ObjectAttribute oa = this.getMetaObject().getAttributeByFieldName(arrayfield);
+            final MetaObject dummy = (MetaObject)oa.getValue();
+            final boolean virtualOneToMany = oa.isVirtualOneToManyAttribute();
             if ((cidsBean.getMetaObject().getStatus() == MetaObject.TO_DELETE)
-                        || (cidsBean.getMetaObject().getStatus() == MetaObject.MODIFIED)) {
-                deepestReferencingAttribute.setChanged(true);
+                        || ((cidsBean.getMetaObject().getStatus() == MetaObject.MODIFIED)
+                            || (cidsBean.getMetaObject().getStatus() == MetaObject.NO_STATUS))) {
+                if (virtualOneToMany) {
+                    oa.setChanged(true);
+                    cidsBean.getMetaObject().setStatus(MetaObject.TO_DELETE);
+                } else {
+                    deepestReferencingAttribute.setChanged(true);
+                }
             } else if (cidsBean.getMetaObject().getStatus() == MetaObject.NEW) {
                 // wurde gerade erst angelegt, braucht nur entfernt zu werden
-                deepestReferencingAttribute.setValue(null);
+                if (virtualOneToMany) {
+                    dummy.removeAttribute(deepestReferencingAttribute);
+                } else {
+                    deepestReferencingAttribute.setValue(null);
+                }
             }
-            final Sirius.server.localserver.object.Object arrayEntry = deepestReferencingAttribute.getParentObject();
-            if (arrayEntry.getStatus() == MetaObject.NEW) {
-                // wurde gerade erst angelegt, braucht nur entfernt zu werden
-                final ObjectAttribute toDelete = arrayEntry.getReferencingObjectAttribute();
-                toDelete.getParentObject().removeAttribute(toDelete);
-            } else if ((arrayEntry.getStatus() != MetaObject.TEMPLATE)
-                        || (arrayEntry.getStatus() != MetaObject.TEMPLATE)) {
-                arrayEntry.setStatus(MetaObject.TO_DELETE);
-                final ObjectAttribute referencingOA = arrayEntry.getReferencingObjectAttribute();
-                walkUpAndSetChangedAndModified(referencingOA);
+            if (!virtualOneToMany) {
+                final Sirius.server.localserver.object.Object arrayEntry =
+                    deepestReferencingAttribute.getParentObject();
+                if (arrayEntry.getStatus() == MetaObject.NEW) {
+                    // wurde gerade erst angelegt, braucht nur entfernt zu werden
+                    final ObjectAttribute toDelete = arrayEntry.getReferencingObjectAttribute();
+                    toDelete.getParentObject().removeAttribute(toDelete);
+                } else if ((arrayEntry.getStatus() != MetaObject.TEMPLATE)
+                            || (arrayEntry.getStatus() != MetaObject.TEMPLATE)) {
+                    arrayEntry.setStatus(MetaObject.TO_DELETE);
+                    final ObjectAttribute referencingOA = arrayEntry.getReferencingObjectAttribute();
+                    walkUpAndSetChangedAndModified(referencingOA);
+                }
             }
         }
         getMetaObject().setStatus(MetaObject.MODIFIED);
@@ -671,8 +837,10 @@ public class CidsBean implements PropertyChangeListener {
             final int index,
             final Object oldElement) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("listElementReplaced: " + this, new Exception());
+            LOG.warn("listElementReplaced: " + this, new Exception());
         }
+
+        // FIXME: implement or throw unsupported operation exception!
     }
 
     /**
@@ -704,6 +872,27 @@ public class CidsBean implements PropertyChangeListener {
      * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
+     */
+    public String getPrimaryKeyFieldname() {
+        if (pkFieldName == null) {
+            pkFieldName = getMetaObject().getMetaClass().getPrimaryKey();
+        }
+        return pkFieldName;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Integer getPrimaryKeyValue() {
+        return (Integer)getProperty(getPrimaryKeyFieldname().toLowerCase());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      *
      * @throws  Error  DOCUMENT ME!
      */
@@ -720,61 +909,112 @@ public class CidsBean implements PropertyChangeListener {
     /**
      * DOCUMENT ME!
      *
+     * @param   intraObjectCacheEnabled  DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      */
-    // FIXME: use a JSON API such as Jackson
-    public String toJSONString() {
-        return beanToJSONStringHelper(this, 0);
+    public String toJSONString(final boolean intraObjectCacheEnabled) {
+        final IntraObjectCacheJsonParams params = new IntraObjectCacheJsonParams();
+        params.setCacheDuplicates(intraObjectCacheEnabled);
+
+        return toJSONString(params);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   bean   DOCUMENT ME!
-     * @param   depth  DOCUMENT ME!
+     * @param   intraObjectCacheEnabled  DOCUMENT ME!
+     * @param   jsonOmitNull             DOCUMENT ME!
+     * @param   jsonLevel                DOCUMENT ME!
+     * @param   jsonPropFields           DOCUMENT ME!
+     * @param   jsonPropExpand           DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    // FIXME: use a JSON API such as Jackson
-    private String beanToJSONStringHelper(final CidsBean bean, final int depth) {
-        final StringBuilder sb = new StringBuilder();
-        final char[] einrueckung = new char[depth];
-        for (int i = 0; i < einrueckung.length; ++i) {
-            einrueckung[i] = '\t';
-        }
-        sb.append(einrueckung).append('{').append('\n');
-        final String[] propNames = bean.getPropertyNames();
-        for (int i = 0; i < propNames.length; ++i) {
-            final String attribute = propNames[i];
-            sb.append(einrueckung).append('\t').append('"').append(attribute).append("\": ");
-            final Object object = bean.getProperty(attribute);
-            if (object instanceof CidsBean) {
-                sb.append('\n');
-                sb.append(beanToJSONStringHelper((CidsBean)object, depth + 1));
-                sb.append('\n');
-            } else if (object instanceof List) {
-                final List<CidsBean> collection = (List<CidsBean>)object;
-                sb.append('\n').append(einrueckung).append('[');
-                for (int j = 0; j < collection.size(); ++j) {
-                    final CidsBean colBean = collection.get(j);
-                    sb.append(beanToJSONStringHelper(colBean, depth + 1));
-                    if (j < (collection.size() - 1)) {
-                        sb.append(',');
-                        sb.append('\n');
-                    }
-                }
-                sb.append('\n').append(einrueckung).append(']');
-            } else {
-                sb.append('"').append(StringEscapeUtils.escapeJava(String.valueOf(object))).append('"');
-            }
-            if (i < (propNames.length - 1)) {
-                sb.append(',');
-            }
-            sb.append('\n');
-        }
-        sb.append(einrueckung).append("}");
+    public String toJSONString(final boolean intraObjectCacheEnabled,
+            final boolean jsonOmitNull,
+            final int jsonLevel,
+            final Collection<String> jsonPropFields,
+            final Collection<String> jsonPropExpand) {
+        final IntraObjectCacheJsonParams params = new IntraObjectCacheJsonParams();
+        params.setCacheDuplicates(intraObjectCacheEnabled);
+        params.setOmitNull(jsonOmitNull);
+        params.setMaxLevel(jsonLevel);
+        params.setFieldsPropNames(jsonPropFields);
+        params.setExpandPropNames(jsonPropExpand);
 
-        return sb.toString();
+        return toJSONString(params);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   params  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String toJSONString(final IntraObjectCacheJsonParams params) {
+        try {
+            setJsonSerializerParams(params);
+            final boolean intraObjectCacheEnabled = (params != null) && params.isCacheDuplicates();
+
+            this.intraObjectCache.clear();
+            if (intraObjectCacheEnabled) {
+                return intraObjectCacheMapper.writeValueAsString(this);
+            } else {
+                return mapper.writeValueAsString(this);
+            }
+        } catch (Exception ex) {
+            LOG.error("Error in Json Output", ex);
+            return "{\"error\":\"Error during Json Production\",\"exception\":\"" + ex
+                        + "\",\"details\":\"see the log\"}";
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   intraObjectCacheEnabled  DOCUMENT ME!
+     * @param   beans                    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static String toJSONString(final boolean intraObjectCacheEnabled, final Collection<CidsBean> beans) {
+        final IntraObjectCacheJsonParams params = new IntraObjectCacheJsonParams();
+        params.setCacheDuplicates(intraObjectCacheEnabled);
+
+        return toJSONString(params, beans);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   params  DOCUMENT ME!
+     * @param   beans   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static String toJSONString(final IntraObjectCacheJsonParams params, final Collection<CidsBean> beans) {
+        try {
+            for (final CidsBean bean : beans) {
+                bean.setJsonSerializerParams(params);
+            }
+            return intraObjectCacheMapper.writeValueAsString(beans);
+        } catch (Exception ex) {
+            LOG.error("Error in serialization of Cidsbeans Array");
+            return null;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public CidsBeanInfo getCidsBeanInfo() {
+        return new CidsBeanInfo(getMetaObject().getMetaClass().getDomain(),
+                getMetaObject().getMetaClass().getTableName(),
+                getPrimaryKeyValue());
     }
 
     /**
@@ -823,6 +1063,61 @@ public class CidsBean implements PropertyChangeListener {
         }
 
         return newBean;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   intraObjectCacheEnabled  DOCUMENT ME!
+     * @param   json                     DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static CidsBean createNewCidsBeanFromJSON(final boolean intraObjectCacheEnabled, final String json)
+            throws Exception {
+        // #174 boolean flag intraObjectCacheEnabled in CidsBean.createNewCidsBeanFromJSON() is not evaluated
+        if (intraObjectCacheEnabled) {
+            return intraObjectCacheMapper.readValue(json, CidsBean.class);
+        } else {
+            LOG.warn("ignoring intraObjectCache disabled flag! https://github.com/cismet/cids-server/issues/175");
+            // return mapper.readValue(json, CidsBean.class);
+            return intraObjectCacheMapper.readValue(json, CidsBean.class);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   intraObjectCacheEnabled  DOCUMENT ME!
+     * @param   json                     DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static Collection<CidsBean> createNewCidsBeansFromJSONCollection(final boolean intraObjectCacheEnabled,
+            final String json) throws Exception {
+        final TypeFactory t = TypeFactory.defaultInstance();
+
+        final Collection<CidsBean> jsonBeans;
+        // #174 boolean flag intraObjectCacheEnabled in CidsBean.createNewCidsBeanFromJSON() is not evaluated
+        if (intraObjectCacheEnabled) {
+            jsonBeans = intraObjectCacheMapper.readValue(
+                    json,
+                    t.constructCollectionType(Collection.class, CidsBean.class));
+        } else {
+            LOG.warn("ignoring intraObjectCache disabled flag! https://github.com/cismet/cids-server/issues/175");
+//            jsonBeans = mapper..readValue(
+//                json,
+//                t.constructCollectionType(Collection.class, CidsBean.class));
+            jsonBeans = intraObjectCacheMapper.readValue(
+                    json,
+                    t.constructCollectionType(Collection.class, CidsBean.class));
+        }
+
+        return jsonBeans;
     }
 
     /**
@@ -897,5 +1192,23 @@ public class CidsBean implements PropertyChangeListener {
      */
     public static boolean checkWritePermission(final User user, final CidsBean bean) {
         return bean.getHasWritePermission(user) && bean.hasObjectWritePermission(user);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public IntraObjectCacheJsonParams getJsonSerializerParams() {
+        return jsonSerializerParams;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  jsonSerializerParams  DOCUMENT ME!
+     */
+    protected void setJsonSerializerParams(final IntraObjectCacheJsonParams jsonSerializerParams) {
+        this.jsonSerializerParams = jsonSerializerParams;
     }
 }

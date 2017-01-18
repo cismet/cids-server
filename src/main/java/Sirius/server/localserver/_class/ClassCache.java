@@ -12,24 +12,29 @@ import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
+import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.permission.Permission;
-import Sirius.server.newuser.permission.PermissionHolder;
 import Sirius.server.newuser.permission.Policy;
 import Sirius.server.newuser.permission.PolicyHolder;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DBConnectionPool;
+import Sirius.server.sql.DialectProvider;
 import Sirius.server.sql.ExceptionHandler;
+import Sirius.server.sql.SQLTools;
 
 import Sirius.util.image.Image;
 import Sirius.util.image.IntMapsImage;
 
 import org.apache.log4j.Logger;
 
+import org.openide.util.Lookup;
+
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
+import java.sql.Types;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,7 +93,7 @@ public class ClassCache extends Shutdown {
 
         final DBConnection con = conPool.getDBConnection();
         try {
-            final ResultSet classTable = con.submitQuery("get_all_classes", new Object[0]); // getAllClasses //NOI18N
+            final ResultSet classTable = con.submitInternalQuery(DBConnection.DESC_GET_ALL_CLASSES, new Object[0]); // getAllClasses //NOI18N
 
             if (classTable == null) {
                 LOG.error(
@@ -257,15 +262,15 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u   DOCUMENT ME!
      * @param   id  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public final Class getClass(final UserGroup ug, final int id) {
+    public final Class getClass(final User u, final int id) {
         final Class c = classes.getClass(id);
 
-        if ((c != null) && c.getPermissions().hasPermission(ug.getKey(), PermissionHolder.READPERMISSION)) {
+        if ((c != null) && c.getPermissions().hasReadPermission(u)) {
             return c;
         }
 
@@ -275,17 +280,17 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug         DOCUMENT ME!
+     * @param   u          DOCUMENT ME!
      * @param   tableName  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public final Class getClassNyTableName(final UserGroup ug, final String tableName) throws Exception {
+    public final Class getClassNyTableName(final User u, final String tableName) throws Exception {
         final Class c = getClassByTableName(tableName);
 
-        if ((c != null) && c.getPermissions().hasPermission(ug.getKey(), PermissionHolder.READPERMISSION)) {
+        if ((c != null) && c.getPermissions().hasReadPermission(u)) {
             return c;
         }
 
@@ -304,17 +309,17 @@ public class ClassCache extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public final List getAllClasses(final UserGroup ug) {
+    public final List getAllClasses(final User u) {
         final List all = getAllClasses();
         final List cs = new ArrayList(all.size());
 
         for (int i = 0; i < all.size(); i++) {
             final Class c = (Class)all.get(i);
-            if (c.getPermissions().hasReadPermission(ug)) {
+            if (c.getPermissions().hasReadPermission(u)) {
                 cs.add(c);
             }
         }
@@ -330,7 +335,9 @@ public class ClassCache extends Shutdown {
     private void addAttributes(final DBConnectionPool conPool) {
         final DBConnection con = conPool.getDBConnection();
         try {
-            final ResultSet attribTable = con.submitQuery("get_all_class_attributes", new Object[0]); // NOI18N
+            final ResultSet attribTable = con.submitInternalQuery(
+                    DBConnection.DESC_GET_ALL_CLASS_ATTRIBUTES,
+                    new Object[0]);
 
             int id = 0;
             int classID = 0;
@@ -390,13 +397,25 @@ public class ClassCache extends Shutdown {
                 for (int i = 1; i <= rsmd.getColumnCount(); ++i) {
                     final String fieldname = rsmd.getColumnName(i);
                     final String javaclassname = rsmd.getColumnClassName(i);
-                    fieldtypes.put(fieldname.toLowerCase(), javaclassname);
+                    if (SQLTools.getGeometryFactory(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                                .isGeometryColumn(
+                                    rsmd.getColumnTypeName(i))) {
+                        // we use the jts geometry class for geometry fields, however, the ObjectFactory has to do
+                        // similar conversion
+                        fieldtypes.put(fieldname.toLowerCase(), com.vividsolutions.jts.geom.Geometry.class.getName());
+                    } else if (Types.CLOB == rsmd.getColumnType(i)) {
+                        // since clobs are not serialisable we "use" String with all it's limitations
+                        // this has to be done similarly in ObjectFactory
+                        fieldtypes.put(fieldname.toLowerCase(), String.class.getName());
+                    } else {
+                        fieldtypes.put(fieldname.toLowerCase(), javaclassname);
+                    }
                 }
                 resultset.close();
                 s.close();
             }
 
-            final ResultSet rs = con.submitQuery("get_attribute_info", new Object[0]); // NOI18N
+            final ResultSet rs = con.submitInternalQuery(DBConnection.DESC_GET_ATTRIBUTE_INFO, new Object[0]);
 
             MemberAttributeInfo mai = null;
 
@@ -517,12 +536,14 @@ public class ClassCache extends Shutdown {
                 mai.setComplexEditor(complexEditor);
 
                 mai.setJavaclassname(classfieldtypes.get(classId).get(fieldName.toLowerCase()));
-                if ((mai.getJavaclassname() != null)
-                            && mai.getJavaclassname().equals(org.postgis.PGgeometry.class.getName())) {
-                    mai.setJavaclassname(com.vividsolutions.jts.geom.Geometry.class.getName());
-                }
                 mai.setExtensionAttribute(extensionAttribute);
                 if (mai.isExtensionAttribute()) {
+                    mai.setJavaclassname(java.lang.Object.class.getCanonicalName());
+                    mai.setVirtual(true);
+                }
+
+                if (foreignKeyClassId < 0) {
+                    mai.setVirtual(true);
                     mai.setJavaclassname(java.lang.Object.class.getCanonicalName());
                 }
 
@@ -571,7 +592,7 @@ public class ClassCache extends Shutdown {
 
         final DBConnection con = conPool.getDBConnection();
         try {
-            final ResultSet imgTable = con.submitQuery("get_all_images", new Object[0]); // NOI18N
+            final ResultSet imgTable = con.submitInternalQuery(DBConnection.DESC_GET_ALL_IMAGES, new Object[0]);
 
             while (imgTable.next()) {
                 tmpImage = new Image(iconDirectory + separator + imgTable.getString("file_name").trim()); // NOI18N
@@ -593,7 +614,7 @@ public class ClassCache extends Shutdown {
     private void addClassPermissions(final DBConnectionPool conPool) {
         final DBConnection con = conPool.getDBConnection();
         try {
-            final ResultSet permTable = con.submitQuery("get_all_class_permissions", new Object[0]); // NOI18N
+            final ResultSet permTable = con.submitInternalQuery(DBConnection.DESC_GET_ALL_CLASS_PERMS, new Object[0]);
 
             final String lsName = properties.getServerName();
 

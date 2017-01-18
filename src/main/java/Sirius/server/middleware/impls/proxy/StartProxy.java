@@ -18,20 +18,21 @@ import Sirius.server.property.ServerProperties;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import org.openide.util.Lookup;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 
-import java.rmi.AlreadyBoundException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import java.util.Collection;
 import java.util.MissingResourceException;
 
 import de.cismet.cids.server.CallServerService;
@@ -81,7 +82,7 @@ public final class StartProxy {
         final String fileName = properties.getLog4jPropertyFile();
         if ((fileName != null) && !fileName.isEmpty()) {
             try {
-                PropertyConfigurator.configure(fileName);
+                PropertyConfigurator.configureAndWatch(fileName, 10000);
             } catch (final Exception e) {
                 LOG.warn("could not initialise Log4J", e); // NOI18N
             }
@@ -165,6 +166,15 @@ public final class StartProxy {
                         LOG.debug("cannot list registered services", ex);                              // NOI18N
                     }
                 }
+            }
+        }
+        final Collection<? extends ProxyStartupHook> startupHooks = Lookup.getDefault()
+                    .lookupAll(ProxyStartupHook.class);
+        for (final ProxyStartupHook hook : startupHooks) {
+            try {
+                hook.proxyStarted();
+            } catch (Exception ex) {
+                LOG.error("error durin ServerStartupHook", ex);
             }
         }
     }
@@ -319,21 +329,17 @@ public final class StartProxy {
     private ProxyImpl createAndBindProxy(final ServerProperties properties) throws ServerExitError {
         try {
             final ProxyImpl proxy = new ProxyImpl(properties);
-            Naming.bind("//" + siriusRegistryIP + ":" + serverInfo.getRMIPort() + "/callServer", proxy); // NOI18N
-
+            final String message = "<CS> INFO: Proxy/Callserver/Broker listening for RESTful requests on port: "
+                        + properties.getRestPort();
+            if (LOG.isInfoEnabled()) {
+                LOG.info(message);
+            }
+            System.out.println(message);
             return proxy;
         } catch (final RemoteException ex) {
             final String fatal = "cannot create callserver implementation"; // NOI18N
             LOG.fatal(fatal, ex);
             throw new ServerExitError(fatal, ex);
-        } catch (final AlreadyBoundException e) {
-            final String fatal = "cannot bind callserver";                  // NOI18N
-            LOG.fatal(fatal, e);
-            throw new ServerExitError(fatal, e);
-        } catch (final MalformedURLException e) {
-            final String fatal = "cannot bind callserver";                  // NOI18N
-            LOG.fatal(fatal, e);
-            throw new ServerExitError(fatal, e);
         }
     }
 

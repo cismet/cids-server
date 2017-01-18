@@ -5,11 +5,9 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package Sirius.server.middleware.types;
+
+import Sirius.server.newuser.User;
 
 import Sirius.util.Editable;
 import Sirius.util.Groupable;
@@ -178,7 +176,17 @@ public interface MetaObject extends Sirius.server.localserver.object.Object,
      *
      * @return  Value of property changed.
      */
+    @Deprecated
     boolean isChanged();
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  true, iff the given user has write permission on the object
+     */
+    boolean hasObjectWritePermission(final User user);
 
     /**
      * DOCUMENT ME!
@@ -218,6 +226,7 @@ public interface MetaObject extends Sirius.server.localserver.object.Object,
      *
      * @param  changed  New value of property changed.
      */
+    @Deprecated
     void setChanged(boolean changed);
 
     /**

@@ -5,16 +5,28 @@
     <parent>
         <groupId>de.cismet.cids</groupId>
         <artifactId>cids-parent</artifactId>
-        <version>2.0-SNAPSHOT</version>
+        <version>2.4</version>
     </parent>
 
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server</artifactId>
     <version>2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-
-    <name>cids Server</name>
+ 
+    <properties>
+        <names.cids-server>cids Server</names.cids-server>
+        <jersey.version>1.17.1</jersey.version>
+        <jackson.version>2.2.2</jackson.version>
+    </properties>
+    <name>${names.cids-server}</name>
     <description>!!! description pending !!!</description>
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License</name>
+            <distribution>repo</distribution>
+            <url>http://www.gnu.org/licenses/lgpl-3.0.html</url>
+        </license>
+    </licenses>
 
     <prerequisites>
         <maven>3</maven>
@@ -25,7 +37,12 @@
         <developerConnection>scm:git:git@github.com:cismet/cids-server.git</developerConnection>
         <url>https://github.com/cismet/cids-server</url>
     </scm>
-
+    
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/cismet/cids-server/issues</url>
+    </issueManagement>
+    
     <repositories>
         <repository>
             <id>cismet-repo</id>
@@ -62,22 +79,22 @@
         <dependency>
             <groupId>javassist</groupId>
             <artifactId>javassist</artifactId>
-            <version>3.9.0.GA</version>
+            <version>3.12.1.GA</version>
         </dependency>
         <dependency>
             <groupId>de.cismet.custom</groupId>
             <artifactId>beansbinding</artifactId>
-            <version>1.2.1</version>
+            <version>1.2.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-server</artifactId>
-            <version>1.9.1</version>
+            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.jersey.contribs</groupId>
             <artifactId>jersey-apache-client</artifactId>
-            <version>1.9.1</version>
+            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mortbay.jetty</groupId>
@@ -87,6 +104,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <version>4.12</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -104,8 +122,89 @@
         <dependency>
             <groupId>com.mchange</groupId>
             <artifactId>c3p0</artifactId>
-            <version>0.9.2-pre4</version>
+            <version>0.9.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.5.8</version>
+        </dependency>
+        <dependency>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz</artifactId>
+            <version>2.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>cids-server-rest-types</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.14.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.9-RC2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.javassist</groupId>
+                    <artifactId>javassist</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey.contribs</groupId>
+            <artifactId>jersey-multipart</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jvnet</groupId>
+            <artifactId>mimepull</artifactId>
+            <version>1.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.tngtech.java</groupId>
+            <artifactId>junit-dataprovider</artifactId>
+            <version>1.10.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>1.10.19</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito</artifactId>
+            <version>1.6.4</version>
+            <scope>test</scope>
+          </dependency>
+        <dependency>
+          <groupId>org.powermock</groupId>
+          <artifactId>powermock-core</artifactId>
+          <version>1.6.4</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.powermock</groupId>
+          <artifactId>powermock-module-junit4</artifactId>
+          <version>1.6.4</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports</artifactId>
+            <version>6.0.4</version>
+        </dependency>        
     </dependencies>
 
     <build>
@@ -113,7 +212,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.12</version>
+                <version>2.19.1</version>
                 <configuration>
                     <!-- 
                         all those tests have to be excluded because they require a connection to a postgres db or the
@@ -134,8 +233,8 @@
             <!-- 
                 rmic will most likely be not necessary any more and is thus
                 
-                DEPRECATED
-             -->
+               DEPRECATED
+            -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>rmic-maven-plugin</artifactId>

@@ -10,8 +10,8 @@ package Sirius.server.localserver.method;
 import Sirius.server.AbstractShutdownable;
 import Sirius.server.ServerExitError;
 import Sirius.server.Shutdown;
+import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
-import Sirius.server.newuser.permission.PermissionHolder;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DBConnectionPool;
@@ -57,7 +57,7 @@ public final class MethodCache extends Shutdown {
 
         final DBConnection con = conPool.getDBConnection();
         try {
-            final ResultSet methodTable = con.submitQuery("get_all_methods", new Object[0]); // NOI18N
+            final ResultSet methodTable = con.submitInternalQuery(DBConnection.DESC_GET_ALL_METHODS, new Object[0]);
 
             while (methodTable.next())                             // add all objects to the hashtable
             {
@@ -115,7 +115,7 @@ public final class MethodCache extends Shutdown {
         try {
             final DBConnection con = conPool.getDBConnection();
 
-            final ResultSet permTable = con.submitQuery("get_all_method_permissions", new Object[0]); // NOI18N
+            final ResultSet permTable = con.submitInternalQuery(DBConnection.DESC_GET_ALL_METHOD_PERMS, new Object[0]);
 
             final String lsName = properties.getServerName();
 
@@ -163,19 +163,19 @@ public final class MethodCache extends Shutdown {
     /**
      * ------------------------------------------------------------------------------------------
      *
-     * @param   ug  DOCUMENT ME!
+     * @param   u  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public MethodMap getMethods(final UserGroup ug) throws Exception {
+    public MethodMap getMethods(final User u) throws Exception {
         final MethodMap view = new MethodMap(methodArray.size(), 0.7f);
 
         for (int i = 0; i < methodArray.size(); i++) {
             final Method m = (Method)methodArray.get(i);
 
-            if (m.getPermissions().hasPermission(ug.getKey(), PermissionHolder.READPERMISSION)) {
+            if (m.getPermissions().hasReadPermission(u)) {
                 // view.add(properties.getServerName(),m);
                 view.add((String)m.getKey(), m);
             }
@@ -196,7 +196,7 @@ public final class MethodCache extends Shutdown {
             final DBConnection con = conPool.getDBConnection();
 
             final String sql =
-                "select c.id as c_id , m.plugin_id as p_id,m.method_id as m_id  from cs_class as c, cs_method as m, cs_method_class_assoc as assoc where c.id=assoc.class_id and m.id = assoc.method_id"; // NOI18N
+                "select c.id c_id , m.plugin_id p_id,m.method_id m_id  from cs_class c, cs_method m, cs_method_class_assoc assoc where c.id=assoc.class_id and m.id = assoc.method_id"; // NOI18N
 
             final ResultSet table = con.getConnection().createStatement().executeQuery(sql);
 
