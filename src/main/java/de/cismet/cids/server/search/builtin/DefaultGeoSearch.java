@@ -15,7 +15,6 @@ import Sirius.server.sql.SQLTools;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-import org.apache.jackrabbit.webdav.search.SearchResource;
 import org.apache.log4j.Logger;
 
 import org.openide.util.Lookup;
