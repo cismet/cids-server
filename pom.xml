@@ -260,31 +260,70 @@
         <dependency>
             <groupId>com.tngtech.java</groupId>
             <artifactId>junit-dataprovider</artifactId>
-            <version>1.10.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>1.10.19</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-mockito</artifactId>
-            <version>1.6.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-core</artifactId>
-            <version>1.6.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-module-junit4</artifactId>
-            <version>1.6.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.cismet.commons</groupId>
+            <artifactId>cismet-commons</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <!--
+            ATTENTION: we need to include also all test dependencies required by downstream 
+            test-jars!
+            
+            See https://maven.apache.org/plugins/maven-jar-plugin/examples/create-test-jar.html
+        -->
+        <dependency>
+            <groupId>xmlunit</groupId>
+            <artifactId>xmlunit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.xml.stream</groupId>
+                    <artifactId>stax-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-xml-provider</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.xml.stream</groupId>
+                    <artifactId>stax-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- END: TEST dependencies -->
@@ -297,6 +336,9 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
+                        <dependenciesToScan>
+                            <dependency>de.cismet.commons:cismet-commons</dependency>
+                        </dependenciesToScan>
                         <!-- 
                            all those tests have to be excluded because they require a connection to a postgres db or the
                            remote test helper service, respectively. as this service is only internally available we have
@@ -310,6 +352,12 @@
                             <exclude>**/RESTfulSerialInterfaceConnectorTest.class</exclude>
                             <!-- this is only a pseudo-test for doing basic performance comparison -->
                             <exclude>**/RMIvsRESTTest.class</exclude>
+                            <!--
+                                These tests from cismet-commons do not work from inside a JAR file!
+                            -->
+                            <exclude>**/ClassPathInfoTest.java</exclude>
+                            <exclude>**/MultiPagePictureReaderTest.java</exclude>
+                            <exclude>**/ExifReaderTest.java</exclude>
                         </excludes>
                     </configuration>
                 </plugin>
