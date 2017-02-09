@@ -5,12 +5,12 @@
     <parent>
         <groupId>de.cismet.cids</groupId>
         <artifactId>cids-parent</artifactId>
-        <version>2.4</version>
+        <version>5.0-SNAPSHOT</version>
     </parent>
 
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server</artifactId>
-    <version>4.1-SNAPSHOT</version>
+    <version>5.0-SNAPSHOT</version>
     <packaging>jar</packaging>
  
     <properties>
@@ -18,64 +18,85 @@
         <jersey.version>1.17.1</jersey.version>
         <jackson.version>2.2.2</jackson.version>
     </properties>
+    
     <name>${names.cids-server}</name>
     <description>!!! description pending !!!</description>
-    <licenses>
-        <license>
-            <name>GNU Lesser General Public License</name>
-            <distribution>repo</distribution>
-            <url>http://www.gnu.org/licenses/lgpl-3.0.html</url>
-        </license>
-    </licenses>
-
-    <prerequisites>
-        <maven>3</maven>
-    </prerequisites>
-
+    
     <scm>
         <connection>https://github.com/cismet/cids-server.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cids-server.git</developerConnection>
         <url>https://github.com/cismet/cids-server</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
+    
+    <ciManagement>
+        <system>jenkins</system>
+        <url>https://ci.cismet.de/job/cids-server/</url>
+    </ciManagement>
     
     <issueManagement>
         <system>GitHub</system>
         <url>https://github.com/cismet/cids-server/issues</url>
     </issueManagement>
     
-    <repositories>
-        <repository>
-            <id>cismet-repo</id>
-            <url>https://repo.cismet.de/repo</url>
-            <releases>
-                <enabled>true</enabled>
-                <checksumPolicy>warn</checksumPolicy>
-                <updatePolicy>daily</updatePolicy>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <checksumPolicy>warn</checksumPolicy>
-                <updatePolicy>interval:60</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>
+    <dependencyManagement>  
+        <!-- IMPORT of cismet-ext-bom -->
+        <dependencies>
+            <dependency>
+                <groupId>de.cismet</groupId>
+                <artifactId>cismet-ext-bom</artifactId>
+                <version>5.0-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        
+            <!-- BEGIN: managed cids-dependencies -->
+            <dependency>
+                <groupId>de.cismet.commons</groupId>
+                <artifactId>cismet-commons</artifactId>
+                <version>5.0-SNAPSHOT</version>
+                <type>jar</type>
+            </dependency>
+            <dependency>
+                <groupId>de.cismet.commons</groupId>
+                <artifactId>cismet-commons</artifactId>
+                <version>5.0-SNAPSHOT</version>
+                <type>test-jar</type>
+            </dependency>
+            <dependency>
+                <groupId>de.cismet.custom</groupId>
+                <artifactId>beansbinding</artifactId>
+                <version>5.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>de.cismet.cids</groupId>
+                <artifactId>cids-server-rest-types</artifactId>
+                <version>5.0-SNAPSHOT</version>
+            </dependency>
+            <!-- END: managed cids-dependencies -->
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
+         <!-- BEGIN: cids-dependencies -->
         <dependency>
             <groupId>de.cismet.commons</groupId>
             <artifactId>cismet-commons</artifactId>
-            <version>4.0</version>
         </dependency>
+        <dependency>
+            <groupId>de.cismet.cids</groupId>
+            <artifactId>cids-server-rest-types</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>de.cismet.custom</groupId>
+            <artifactId>beansbinding</artifactId>
+        </dependency>
+        <!-- END: cids-dependencies -->
+        
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
             <version>1.8.0</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.4</version>
         </dependency>
         <dependency>
             <groupId>javassist</groupId>
@@ -83,42 +104,16 @@
             <version>3.12.1.GA</version>
         </dependency>
         <dependency>
-            <groupId>de.cismet.custom</groupId>
-            <artifactId>beansbinding</artifactId>
-            <version>4.0</version>
-        </dependency>
-        <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-server</artifactId>
-            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.jersey.contribs</groupId>
             <artifactId>jersey-apache-client</artifactId>
-            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mortbay.jetty</groupId>
             <artifactId>jetty-embedded</artifactId>
-            <version>6.1.9</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>de.cismet</groupId>
-            <artifactId>remote-test-helper-service</artifactId>
-            <version>1.1</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.netbeans.api</groupId>
-                    <artifactId>org-openide-util</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.mchange</groupId>
@@ -126,29 +121,18 @@
             <version>0.9.5</version>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.5.8</version>
-        </dependency>
-        <dependency>
             <groupId>org.quartz-scheduler</groupId>
             <artifactId>quartz</artifactId>
             <version>2.2.1</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>cids-server-rest-types</artifactId>
-            <version>4.0</version>
-        </dependency>
-        <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.14.4</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.reflections</groupId>
@@ -164,12 +148,38 @@
         <dependency>
             <groupId>com.sun.jersey.contribs</groupId>
             <artifactId>jersey-multipart</artifactId>
-            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jvnet</groupId>
             <artifactId>mimepull</artifactId>
             <version>1.6</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports</artifactId>
+            <version>6.0.4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>stax</groupId>
+                    <artifactId>stax-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.xml.stream</groupId>
+                    <artifactId>stax-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>    
+        <dependency>
+            <groupId>org.postgis</groupId>
+            <artifactId>postgis-jdbc</artifactId>
+            <version>1.3.3</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency> 
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.tngtech.java</groupId>
@@ -201,11 +211,6 @@
           <version>1.6.4</version>
           <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>net.sf.jasperreports</groupId>
-            <artifactId>jasperreports</artifactId>
-            <version>6.0.4</version>
-        </dependency>        
     </dependencies>
 
     <build>
@@ -213,7 +218,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.19.1</version>
                 <configuration>
                     <!-- 
                         all those tests have to be excluded because they require a connection to a postgres db or the
@@ -239,7 +243,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>rmic-maven-plugin</artifactId>
-                <version>1.1</version>
+                <version>1.3</version>
                 <executions>
                     <execution>
                         <id>rmi-compilation</id>
