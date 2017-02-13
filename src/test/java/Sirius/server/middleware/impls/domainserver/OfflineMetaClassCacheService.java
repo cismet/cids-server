@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
  */
 @org.openide.util.lookup.ServiceProvider(
         service = MetaClassCacheService.class,
-        supersedes = {"Sirius.server.middleware.impls.domainserver.DomainServerMetaClassService"})
+        supersedes = {"Sirius.server.middleware.impls.domainserver.DomainServerMetaClassService", "de.cismet.cids.navigator.utils.NavigatorMetaClassService"})
 public class OfflineMetaClassCacheService implements MetaClassCacheService {
 
     protected final static String CLASSES_JSON_PACKAGE = "de/cismet/cids/dynamics/classes/";
