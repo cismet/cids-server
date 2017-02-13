@@ -186,9 +186,9 @@
             <goal>org.codehaus.mojo:exec-maven-plugin:exec</goal>
         </goals>
         <properties>
-            <exec.args>-classpath %classpath Sirius.server.middleware.impls.domainserver.DomainServerImpl runtime.properties</exec.args>
+            <exec.args>${profiler.args} -classpath %classpath Sirius.server.middleware.impls.domainserver.DomainServerImpl runtime.properties</exec.args>
             <exec.workingdir>${de.cismet.cids.server.workingDir}</exec.workingdir>
-            <exec.executable>java</exec.executable>
+            <exec.executable>${profiler.java}</exec.executable>
         </properties>
         <activatedProfiles>
             <activatedProfile>netbeans-fastbuild</activatedProfile>

@@ -253,6 +253,19 @@
             <artifactId>org-openide-util-lookup</artifactId>
             <version>RELEASE701</version>
         </dependency>
+        
+        <!-- BEGIN: Runtime dependencies -->
+        <!--
+            By inlcuding this !runtime! binding we are forwarding
+            all log messages collected by slf4j to log4j!
+        -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- END: Runtime dependencies -->
+        
         <!-- BEGIN: TEST dependencies -->
         <dependency>
             <groupId>junit</groupId>
