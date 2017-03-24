@@ -56,6 +56,9 @@ public abstract class AbstractCidsBeanDeserialisationTest {
                 resources = classLoader.getResource(ENTITIES_JSON_PACKAGE);
 
                 final Scanner scanner = new Scanner((InputStream) resources.getContent()).useDelimiter("\\n");
+                assertTrue("JSON entitiy resources available in " + ENTITIES_JSON_PACKAGE,
+                        scanner.hasNext());
+                
                 while (scanner.hasNext()) {
                     final String jsonFile = ENTITIES_JSON_PACKAGE + scanner.next();
                     LOGGER.info("loading cids entity from json file " + jsonFile);
@@ -70,7 +73,7 @@ public abstract class AbstractCidsBeanDeserialisationTest {
                     }
                 }
 
-                LOGGER.info(CIDS_BEANS_JSON.size() + "CIDS_BEANS_JSON entities loaded");
+                LOGGER.info(CIDS_BEANS_JSON.size() + " CIDS_BEANS_JSON entities loaded");
 
             } catch (Exception ex) {
                 LOGGER.error("could not locate entities json files: " + ex.getMessage(), ex);
@@ -84,14 +87,6 @@ public abstract class AbstractCidsBeanDeserialisationTest {
     
     @BeforeClass
     public static void setUpClass() throws Exception {
-        final Properties log4jProperties = new Properties();
-        log4jProperties.put("log4j.appender.Remote", "org.apache.log4j.net.SocketAppender");
-        log4jProperties.put("log4j.appender.Remote.remoteHost", "localhost");
-        log4jProperties.put("log4j.appender.Remote.port", "4445");
-        log4jProperties.put("log4j.appender.Remote.locationInfo", "true");
-        log4jProperties.put("log4j.rootLogger", "ALL,Remote");
-        org.apache.log4j.PropertyConfigurator.configure(log4jProperties); 
-        
         initCidsBeansJson();
     }
 
