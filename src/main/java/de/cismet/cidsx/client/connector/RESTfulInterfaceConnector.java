@@ -2355,6 +2355,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
                         + webResource.toString());
         }
 
+        // FIXME: Fails if the action does nor return APPLICATION_JSON
         builder.type(MediaType.MULTIPART_FORM_DATA_TYPE).accept(MediaType.APPLICATION_JSON_TYPE);
 
         FormDataMultiPart multiPartData = new FormDataMultiPart();
@@ -2423,6 +2424,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
                         + taskResult.getContentType() + "'");
         }
 
+        // TODO: unwrap / deserialize result depending on conent type!
         return taskResult.getRes();
     }
 
