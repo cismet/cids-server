@@ -2279,9 +2279,12 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
             try {
                 final Object response = getResponsePOST("executeTask", queryParams, Object.class); // NOI18N
-
+                
+                // TEMP. HOTFIX!
+                // SEE https://github.com/cismet/cids-server/issues/188#issuecomment-293573655
+                
                 // ensure backwards compatilbity of RestApiCidsServerAction, unwrap GenericResourceWithContentType
-                if ((response != null) && GenericResourceWithContentType.class.isAssignableFrom(response.getClass())) {
+                /*if ((response != null) && GenericResourceWithContentType.class.isAssignableFrom(response.getClass())) {
                     final GenericResourceWithContentType reponseWithContentType = (GenericResourceWithContentType)
                         response;
                     if (LOG.isDebugEnabled()) {
@@ -2289,7 +2292,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                                     + "' of action '" + taskname + "'");
                     }
                     return reponseWithContentType.getRes();
-                }
+                }*/
 
                 return response;
             } catch (final UniformInterfaceException ex) {
