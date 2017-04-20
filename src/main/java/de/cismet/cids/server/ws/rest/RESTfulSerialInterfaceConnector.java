@@ -62,7 +62,6 @@ import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.search.CidsServerSearch;
 import de.cismet.cids.server.ws.SSLConfig;
 
-import de.cismet.cidsx.server.api.types.GenericResourceWithContentType;
 import de.cismet.cidsx.server.search.builtin.legacy.LightweightMetaObjectsByQuerySearch;
 
 import de.cismet.netutil.Proxy;
@@ -2279,18 +2278,6 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
             try {
                 final Object response = getResponsePOST("executeTask", queryParams, Object.class); // NOI18N
-
-                // ensure backwards compatilbity of RestApiCidsServerAction, unwrap GenericResourceWithContentType
-                if ((response != null) && GenericResourceWithContentType.class.isAssignableFrom(response.getClass())) {
-                    final GenericResourceWithContentType reponseWithContentType = (GenericResourceWithContentType)
-                        response;
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("unwrapping response of type '" + reponseWithContentType.getContentType()
-                                    + "' of action '" + taskname + "'");
-                    }
-                    return reponseWithContentType.getRes();
-                }
-
                 return response;
             } catch (final UniformInterfaceException ex) {
                 if (LOG.isDebugEnabled()) {

@@ -108,7 +108,7 @@ import de.cismet.netutil.Proxy;
  * This is the common CallServerService implementation for interacting with the cids Pure REST API and for translating
  * between cids REST JSON Entities and cids server Java Types.
  *
- * @author   Pascal Dihé (pascal.dihe@cismet.de))
+ * @author   Pascal DihÃ© (pascal.dihe@cismet.de))
  * @version  0.1 2015/04/17
  */
 public class RESTfulInterfaceConnector implements CallServerService {
@@ -2424,8 +2424,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
                         + taskResult.getContentType() + "'");
         }
 
-        // TODO: unwrap / deserialize result depending on conent type!
-        return taskResult.getRes();
+        return taskResult;
     }
 
     // </editor-fold>
