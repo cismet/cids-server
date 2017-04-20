@@ -2,13 +2,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- 
-        FIXME: Replace deprecated cids-parent by cismet-parent
-    -->
     <parent>
-        <groupId>de.cismet.cids</groupId>
-        <artifactId>cids-parent</artifactId>
-        <version>5.0</version>
+        <groupId>de.cismet</groupId>
+        <artifactId>cismet-parent</artifactId>
+        <version>5.0.1</version>
     </parent>
 
     <groupId>de.cismet.cids</groupId>
@@ -46,7 +43,7 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>cismet-ext-bom</artifactId>
-                <version>5.0</version>
+                <version>5.0.1</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -72,7 +69,10 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest-types</artifactId>
-                <version>5.1-SNAPSHOT</version>
+                <!--
+                    FIXME: replace with release version when action api enhancements have been merged!
+                -->
+                <version>5.0-UBA</version>
             </dependency>
             <!-- END: managed cids-dependencies -->
         </dependencies>
