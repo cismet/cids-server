@@ -137,7 +137,7 @@ public class DownloadFileAction implements RestApiCidsServerAction, MetaServiceS
                     "Could  not download file, client did not provide a valid path (parameter FILEPATH)";
                 LOG.error(message);
                 throw new RuntimeException(message);
-            } else if (path.toFile().canRead()) {
+            } else if (!path.toFile().canRead()) {
                 final String message = "Cannot read file at specified path '" + path + "'";
                 LOG.error(message);
                 throw new RuntimeException(message);
