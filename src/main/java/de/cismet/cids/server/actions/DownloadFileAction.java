@@ -30,7 +30,7 @@ import de.cismet.cidsx.server.api.types.GenericResourceWithContentType;
 /**
  * DOCUMENT ME!
  *
- * @author   jruiz
+ * @author   jruiz, Pascal Dihé
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = RestApiCidsServerAction.class)
@@ -104,7 +104,8 @@ public class DownloadFileAction implements RestApiCidsServerAction, MetaServiceS
     }
 
     @Override
-    public GenericResourceWithContentType<byte[]> execute(final Object body,
+    public GenericResourceWithContentType<byte[]> execute(
+            final Object body,
             final ServerActionParameter... params) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("executing '" + this.getTaskName() + "' with "
@@ -131,8 +132,25 @@ public class DownloadFileAction implements RestApiCidsServerAction, MetaServiceS
                 }
             }
 
+            if (path == null) {
+                final String message =
+                    "Could  not download file, client did not provide a valid path (parameter FILEPATH)";
+                LOG.error(message);
+                throw new RuntimeException(message);
+            } else if (path.toFile().canRead()) {
+                final String message = "Cannot read file at specified path '" + path + "'";
+                LOG.error(message);
+                throw new RuntimeException(message);
+            }
+
             String contentType = Files.probeContentType(path);
+            if (contentType == null) {
+                LOG.warn("Content type of file at specified path '" + path + "' could not be determined!");
+            }
             contentType = (contentType != null) ? contentType : MediaType.APPLICATION_OCTET_STREAM;
+
+            // TODO: check requested content type in ActionInfo
+            LOG.info("reading file at specified path '" + path + "' with content type '" + contentType + "'");
 
             // FIXME: not very efficient for large files -> out of memory!
             // return output stream instead?!

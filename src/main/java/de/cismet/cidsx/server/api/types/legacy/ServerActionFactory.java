@@ -45,7 +45,6 @@ import de.cismet.cidsx.server.api.types.ActionParameterInfo;
 import de.cismet.cidsx.server.api.types.ActionTask;
 import de.cismet.cidsx.server.api.types.CidsClass;
 import de.cismet.cidsx.server.api.types.CidsNode;
-import de.cismet.cidsx.server.api.types.ParameterInfo;
 
 import static de.cismet.cidsx.server.api.types.legacy.ServerSearchFactory.toBase64String;
 
@@ -291,13 +290,14 @@ public class ServerActionFactory {
     }
 
     /**
-     * Populates an instance of a ServerAction with parameters from the actionParameters object.
+     * Populates an instance of a ServerAction with parameters from the actionParameters object. Note: Parameters have
+     * been processed by Jackson ObjectMapper!
      *
      * @param   actionTask  DOCUMENT ME!
      *
      * @return  ServerAction with parameters
      */
-    public ServerActionParameter[] ServerActionParametersFromActionTask(
+    public ServerActionParameter[] serverActionParametersFromActionTask(
             final ActionTask actionTask) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("getting parameters from cids server action '" + actionTask.getActionKey() + "'");
@@ -348,7 +348,8 @@ public class ServerActionFactory {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public Object bodyObjectFromFileAttachment(final InputStream fileAttachement,
+    public Object bodyObjectFromFileAttachment(
+            final InputStream fileAttachement,
             final ActionParameterInfo bodyDescription) throws Exception {
         final Object body;
 
@@ -430,6 +431,7 @@ public class ServerActionFactory {
      * {@link CidsBeanFactory#cidsBeanFromLightweightMetaObject(Sirius.server.middleware.types.LightweightMetaObject, Sirius.server.middleware.types.MetaClass) )}
      *
      * @param   actionResult    DOCUMENT ME!
+     * @param   contentType     DOCUMENT ME!
      * @param   resultType      resultParameterInfo DOCUMENT ME!
      * @param   classNameCache  DOCUMENT ME!
      *
@@ -439,6 +441,7 @@ public class ServerActionFactory {
      */
     public Object transformLegacyActionResult(
             final Object actionResult,
+            final String contentType,
             final Type resultType,
             final ClassNameCache classNameCache) throws Exception {
         final boolean isMetaClass = resultType == Type.ENTITY_INFO;
@@ -446,6 +449,8 @@ public class ServerActionFactory {
         final boolean isLightWightMetaObject = resultType == Type.ENTITY_REFERENCE;
         final boolean isMetaNode = resultType == Type.NODE;
         final boolean isBinaryObject = resultType == Type.JAVA_SERIALIZABLE;
+        final boolean isJsonObject = contentType.toLowerCase().equalsIgnoreCase(MediaType.APPLICATION_JSON);
+        final boolean isPlainTextObject = contentType.toLowerCase().contains("text");
 
         // FIXME: Merge with ServerSearchFactory.jsonNodesFromResultCollection()
         if (isMetaClass) {
@@ -487,6 +492,10 @@ public class ServerActionFactory {
         } else if (isBinaryObject) {
             final String stringRepresentation = toBase64String(actionResult);
             return stringRepresentation;
+        } else if (isPlainTextObject) {
+            return String.valueOf(actionResult);
+        } else if (isJsonObject) {
+            return MAPPER.writeValueAsString(actionResult);
         } else {
             return actionResult;
         }
