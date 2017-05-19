@@ -11,8 +11,6 @@
  */
 package de.cismet.cids.server.cidslayer;
 
-import Sirius.server.middleware.types.MetaClass;
-
 /**
  * This Interface provides all information about a cids layer, which are required to visualize and modify objects of a
  * cids layer.
