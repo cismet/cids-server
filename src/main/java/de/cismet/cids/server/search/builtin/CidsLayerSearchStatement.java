@@ -194,8 +194,8 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
                         queryString = new StringBuilder(String.format(
                                     selectCountFromViewWithRestriction,
                                     layerInfo.getSelectString(),
-                                    layerInfo.getSqlGeoField(),
                                     restriction,
+                                    layerInfo.getSqlGeoField(),
                                     x1,
                                     y1,
                                     x2,
@@ -252,8 +252,8 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
                         queryString = new StringBuilder(String.format(
                                     selectFromViewWithRestriction,
                                     layerInfo.getSelectString(),
-                                    layerInfo.getSqlGeoField(),
                                     restriction,
+                                    layerInfo.getSqlGeoField(),
                                     x1,
                                     y1,
                                     x2,
