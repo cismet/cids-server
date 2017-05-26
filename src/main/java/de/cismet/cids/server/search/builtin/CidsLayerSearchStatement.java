@@ -48,20 +48,20 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
 
     private static final Logger LOG = Logger.getLogger(CidsLayerSearchStatement.class);
 
-    private static final String selectFromView = "%s where geo_field && st_setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
+    private static final String selectFromView = "%s where %s && st_setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
     private static final String selectFromViewExactly =
-        "%1$s where geo_field && st_setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d) and st_intersects(geo_field, st_setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d))";
+        "%1$s where %2$s && st_setSrid('BOX3D(%3$s %4$s,%5$s %6$s)'::box3d, %7$d) and st_intersects(%2$s, st_setSrid('BOX3D(%3$s %4$s,%5$s %6$s)'::box3d, %7$d))";
     private static final String selectAll = "%s";
     private static final String selectCountFromView =
-        "Select count(*) from (%s where geo_field && st_setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)) as tmp";
+        "Select count(*) from (%s where %s && st_setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)) as tmp";
     private static final String selectTotalCountFromView = "Select count(*) from (%s) as tmp";
     private static final String selectFromViewWithRestriction =
-        "%s where %s and geo_field && st_setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
+        "%s where %s and %s && st_setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)";
     private static final String selectFromViewExactlyWithRestriction =
-        "%1$s where %7$s and geo_field && st_setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d) and st_intersects(geo_field, st_setSrid('BOX3D(%2$s %3$s,%4$s %5$s)'::box3d, %6$d))";
+        "%1$s where %8$s and %2$s && st_setSrid('BOX3D(%3$s %4$s,%5$s %6$s)'::box3d, %7$d) and st_intersects(%2$s, st_setSrid('BOX3D(%3$s %4$s,%5$s %6$s)'::box3d, %7$d))";
     private static final String selectAllWithRestriction = "%s WHERE %s";
     private static final String selectCountFromViewWithRestriction =
-        "Select count(*) from (%s where %s and geo_field && st_setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)) as tmp";
+        "Select count(*) from (%s where %s and %s && st_setSrid('BOX3D(%s %s,%s %s)'::box3d, %d)) as tmp";
     private static final String selectTotalCountFromViewWithRestriction = "Select count(*) from (%s where %s) as tmp";
 
     //~ Instance fields --------------------------------------------------------
@@ -194,6 +194,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
                         queryString = new StringBuilder(String.format(
                                     selectCountFromViewWithRestriction,
                                     layerInfo.getSelectString(),
+                                    layerInfo.getSqlGeoField(),
                                     restriction,
                                     x1,
                                     y1,
@@ -204,6 +205,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
                         queryString = new StringBuilder(String.format(
                                     selectCountFromView,
                                     layerInfo.getSelectString(),
+                                    layerInfo.getSqlGeoField(),
                                     x1,
                                     y1,
                                     x2,
@@ -227,6 +229,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
                         queryString = new StringBuilder(String.format(
                                     selectFromViewExactlyWithRestriction,
                                     layerInfo.getSelectString(),
+                                    layerInfo.getSqlGeoField(),
                                     x1,
                                     y1,
                                     x2,
@@ -237,6 +240,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
                         queryString = new StringBuilder(String.format(
                                     selectFromViewExactly,
                                     layerInfo.getSelectString(),
+                                    layerInfo.getSqlGeoField(),
                                     x1,
                                     y1,
                                     x2,
@@ -248,6 +252,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
                         queryString = new StringBuilder(String.format(
                                     selectFromViewWithRestriction,
                                     layerInfo.getSelectString(),
+                                    layerInfo.getSqlGeoField(),
                                     restriction,
                                     x1,
                                     y1,
@@ -258,6 +263,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
                         queryString = new StringBuilder(String.format(
                                     selectFromView,
                                     layerInfo.getSelectString(),
+                                    layerInfo.getSqlGeoField(),
                                     x1,
                                     y1,
                                     x2,
