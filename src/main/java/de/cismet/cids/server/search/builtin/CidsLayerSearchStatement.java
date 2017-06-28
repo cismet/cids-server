@@ -459,7 +459,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
      */
     public static ArrayList<ArrayList> uncompressResult(final ArrayList<ArrayList> result) throws IOException,
         ClassNotFoundException {
-        if (result.get(0).get(0) instanceof byte[]) {
+        if ((result != null) && (result.get(0) != null) && (result.get(0).get(0) instanceof byte[])) {
             final GZIPInputStream gzipIn = new GZIPInputStream(new ByteArrayInputStream((byte[])result.get(0).get(0)));
             final ObjectInputStream uncompressedIn = new ObjectInputStream(gzipIn);
             return (ArrayList<ArrayList>)uncompressedIn.readObject();
