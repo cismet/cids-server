@@ -294,6 +294,24 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @return  DOCUMENT ME!
      */
+    public final boolean isCompressionEnabled() {
+        try {
+            return Boolean.valueOf(getString("server.compression.enable"));      // NOI18N
+        } catch (final MissingResourceException e) {
+            final String message = "server.compression.enable property not set"; // NOI18N
+            if (LOG.isInfoEnabled()) {
+                LOG.info(message, e);
+            }
+
+            return false;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public final String getServerProxyURL() {
         return getString("server.proxy.url");
     }
