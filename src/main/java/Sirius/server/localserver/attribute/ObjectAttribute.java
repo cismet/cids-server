@@ -7,6 +7,7 @@
 ****************************************************/
 package Sirius.server.localserver.attribute;
 
+import Sirius.server.localserver.object.DefaultObject;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.permission.PermissionHolder;
 import Sirius.server.newuser.permission.Policy;
@@ -125,9 +126,9 @@ public class ObjectAttribute extends Attribute implements Mapable,
     @Override
     public final void setValue(final Object value) {
         if (value != null) {
-            if (Sirius.server.localserver.object.Object.class.isAssignableFrom(value.getClass())) {
+            if (DefaultObject.class.isAssignableFrom(value.getClass())) {
                 // FIX for #172
-                ((Sirius.server.localserver.object.Object)value).setReferencingObjectAttribute(this);
+                ((DefaultObject)value).setReferencingObjectAttribute(this);
                 super.setValue(value);
             } else if (value instanceof java.lang.String) {
                 // really needed? copied from ObjectAttribute constructor
