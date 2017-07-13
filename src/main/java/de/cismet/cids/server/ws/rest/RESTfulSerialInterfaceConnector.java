@@ -102,7 +102,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param  rootResource  DOCUMENT ME!
      */
     public RESTfulSerialInterfaceConnector(final String rootResource) {
-        this(rootResource, null, null);
+        this(rootResource, null, null, false);
+    }
+
+    /**
+     * Creates a new RESTfulSerialInterfaceConnector object.
+     *
+     * @param  rootResource        DOCUMENT ME!
+     * @param  compressionEnabled  DOCUMENT ME!
+     */
+    public RESTfulSerialInterfaceConnector(final String rootResource, final boolean compressionEnabled) {
+        this(rootResource, null, null, compressionEnabled);
     }
 
     /**
@@ -112,7 +122,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param  proxy         config proxyURL DOCUMENT ME!
      */
     public RESTfulSerialInterfaceConnector(final String rootResource, final Proxy proxy) {
-        this(rootResource, proxy, null);
+        this(rootResource, proxy, null, false);
     }
 
     /**
@@ -122,19 +132,59 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param  sslConfig     DOCUMENT ME!
      */
     public RESTfulSerialInterfaceConnector(final String rootResource, final SSLConfig sslConfig) {
-        this(rootResource, null, sslConfig);
+        this(rootResource, null, sslConfig, false);
+    }
+
+    /**
+     * Creates a new RESTfulSerialInterfaceConnector object.
+     *
+     * @param  rootResource        DOCUMENT ME!
+     * @param  proxy               DOCUMENT ME!
+     * @param  compressionEnabled  DOCUMENT ME!
+     */
+    public RESTfulSerialInterfaceConnector(final String rootResource,
+            final Proxy proxy,
+            final boolean compressionEnabled) {
+        this(rootResource, proxy, null, compressionEnabled);
+    }
+
+    /**
+     * Creates a new RESTfulSerialInterfaceConnector object.
+     *
+     * @param  rootResource        DOCUMENT ME!
+     * @param  sslConfig           DOCUMENT ME!
+     * @param  compressionEnabled  DOCUMENT ME!
+     */
+    public RESTfulSerialInterfaceConnector(final String rootResource,
+            final SSLConfig sslConfig,
+            final boolean compressionEnabled) {
+        this(rootResource, null, sslConfig, compressionEnabled);
     }
 
     /**
      * Creates a new RESTfulSerialInterfaceConnector object.
      *
      * @param  rootResource  DOCUMENT ME!
-     * @param  proxy         proxyConfig proxyURL DOCUMENT ME!
+     * @param  proxy         DOCUMENT ME!
      * @param  sslConfig     DOCUMENT ME!
      */
     public RESTfulSerialInterfaceConnector(final String rootResource,
             final Proxy proxy,
             final SSLConfig sslConfig) {
+        this(rootResource, proxy, sslConfig, false);
+    }
+    /**
+     * Creates a new RESTfulSerialInterfaceConnector object.
+     *
+     * @param  rootResource        DOCUMENT ME!
+     * @param  proxy               proxyConfig proxyURL DOCUMENT ME!
+     * @param  sslConfig           DOCUMENT ME!
+     * @param  compressionEnabled  DOCUMENT ME!
+     */
+    public RESTfulSerialInterfaceConnector(final String rootResource,
+            final Proxy proxy,
+            final SSLConfig sslConfig,
+            final boolean compressionEnabled) {
         if (sslConfig == null) {
             LOG.warn("cannot initialise ssl because sslConfig is null"); // NOI18N
         } else {
@@ -159,7 +209,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
 
         clientCache = new HashMap<String, Client>();
-        this.compressionEnabled = true;
+        this.compressionEnabled = compressionEnabled;
     }
 
     //~ Methods ----------------------------------------------------------------

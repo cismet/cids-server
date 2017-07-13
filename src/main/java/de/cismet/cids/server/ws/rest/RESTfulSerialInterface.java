@@ -134,7 +134,7 @@ public final class RESTfulSerialInterface {
      * @return  DOCUMENT ME!
      */
     private boolean isCompressionEnabled() {
-        return true;
+        return StartProxy.getInstance().getInfo().isCompressionEnabled();
     }
 
     /**
