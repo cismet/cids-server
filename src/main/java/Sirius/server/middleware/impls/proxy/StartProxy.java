@@ -271,7 +271,8 @@ public final class StartProxy {
                     properties.getServerName(),
                     InetAddress.getLocalHost().getHostAddress(),
                     rmiPort,
-                    String.valueOf(properties.getServerPort()));
+                    String.valueOf(properties.getServerPort()),
+                    properties.isCompressionEnabled());
         } catch (final UnknownHostException e) {
             final String message = "SEVERE: could not find host address for localhost"; // NOI18N
             LOG.fatal(message, e);
@@ -396,6 +397,15 @@ public final class StartProxy {
      */
     public ServerStatus getStatus() {
         return status;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Server getInfo() {
+        return serverInfo;
     }
 
     /**
