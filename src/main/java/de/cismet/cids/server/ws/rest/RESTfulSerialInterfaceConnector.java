@@ -92,6 +92,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     private final transient Map<String, Client> clientCache;
 
     private final transient Proxy proxy;
+    private final boolean compressionEnabled;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -101,7 +102,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param  rootResource  DOCUMENT ME!
      */
     public RESTfulSerialInterfaceConnector(final String rootResource) {
-        this(rootResource, null, null);
+        this(rootResource, null, null, false);
+    }
+
+    /**
+     * Creates a new RESTfulSerialInterfaceConnector object.
+     *
+     * @param  rootResource        DOCUMENT ME!
+     * @param  compressionEnabled  DOCUMENT ME!
+     */
+    public RESTfulSerialInterfaceConnector(final String rootResource, final boolean compressionEnabled) {
+        this(rootResource, null, null, compressionEnabled);
     }
 
     /**
@@ -111,7 +122,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param  proxy         config proxyURL DOCUMENT ME!
      */
     public RESTfulSerialInterfaceConnector(final String rootResource, final Proxy proxy) {
-        this(rootResource, proxy, null);
+        this(rootResource, proxy, null, false);
     }
 
     /**
@@ -121,19 +132,59 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param  sslConfig     DOCUMENT ME!
      */
     public RESTfulSerialInterfaceConnector(final String rootResource, final SSLConfig sslConfig) {
-        this(rootResource, null, sslConfig);
+        this(rootResource, null, sslConfig, false);
+    }
+
+    /**
+     * Creates a new RESTfulSerialInterfaceConnector object.
+     *
+     * @param  rootResource        DOCUMENT ME!
+     * @param  proxy               DOCUMENT ME!
+     * @param  compressionEnabled  DOCUMENT ME!
+     */
+    public RESTfulSerialInterfaceConnector(final String rootResource,
+            final Proxy proxy,
+            final boolean compressionEnabled) {
+        this(rootResource, proxy, null, compressionEnabled);
+    }
+
+    /**
+     * Creates a new RESTfulSerialInterfaceConnector object.
+     *
+     * @param  rootResource        DOCUMENT ME!
+     * @param  sslConfig           DOCUMENT ME!
+     * @param  compressionEnabled  DOCUMENT ME!
+     */
+    public RESTfulSerialInterfaceConnector(final String rootResource,
+            final SSLConfig sslConfig,
+            final boolean compressionEnabled) {
+        this(rootResource, null, sslConfig, compressionEnabled);
     }
 
     /**
      * Creates a new RESTfulSerialInterfaceConnector object.
      *
      * @param  rootResource  DOCUMENT ME!
-     * @param  proxy         proxyConfig proxyURL DOCUMENT ME!
+     * @param  proxy         DOCUMENT ME!
      * @param  sslConfig     DOCUMENT ME!
      */
     public RESTfulSerialInterfaceConnector(final String rootResource,
             final Proxy proxy,
             final SSLConfig sslConfig) {
+        this(rootResource, proxy, sslConfig, false);
+    }
+    /**
+     * Creates a new RESTfulSerialInterfaceConnector object.
+     *
+     * @param  rootResource        DOCUMENT ME!
+     * @param  proxy               proxyConfig proxyURL DOCUMENT ME!
+     * @param  sslConfig           DOCUMENT ME!
+     * @param  compressionEnabled  DOCUMENT ME!
+     */
+    public RESTfulSerialInterfaceConnector(final String rootResource,
+            final Proxy proxy,
+            final SSLConfig sslConfig,
+            final boolean compressionEnabled) {
         if (sslConfig == null) {
             LOG.warn("cannot initialise ssl because sslConfig is null"); // NOI18N
         } else {
@@ -158,9 +209,19 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
 
         clientCache = new HashMap<String, Client>();
+        this.compressionEnabled = compressionEnabled;
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private boolean isCompressionEnabled() {
+        return compressionEnabled;
+    }
 
     /**
      * DOCUMENT ME!
@@ -399,8 +460,13 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
         try {
             final byte[] bytes = builder.post(byte[].class, queryData);
-            return Converter.deserialiseFromBase64(bytes, type);
-        } catch (final RuntimeException ex) {
+//            System.out.println(bytes.length);
+            if (isCompressionEnabled()) {
+                return Converter.deserialiseFromGzip(bytes, type);
+            } else {
+                return Converter.deserialiseFromBase64(bytes, type);
+            }
+        } catch (final Exception ex) {
             if ((ex.getCause() != null) && (ex.getCause() instanceof IllegalThreadStateException)) {
                 if (ex.getCause().getMessage().equals(MULTITHREADEDHTTPCONNECTION_IGNORE_EXCEPTION)) {
                     if (LOG.isDebugEnabled()) {
@@ -436,10 +502,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
             if (domainName != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domainName));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domainName, isCompressionEnabled()));
             }
 
             try {
@@ -484,7 +550,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
 
             try {
@@ -530,10 +596,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (node != null) {
-                queryParams.add(PARAM_NODE, Converter.serialiseToString(node));
+                queryParams.add(PARAM_NODE, Converter.serialiseToString(node, isCompressionEnabled()));
             }
             if (usr != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(usr, isCompressionEnabled()));
             }
 
             try {
@@ -580,13 +646,13 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (node != null) {
-                queryParams.add(PARAM_NODE, Converter.serialiseToString(node));
+                queryParams.add(PARAM_NODE, Converter.serialiseToString(node, isCompressionEnabled()));
             }
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
             if (parent != null) {
-                queryParams.add(PARAM_LINK_PARENT, Converter.serialiseToString(parent));
+                queryParams.add(PARAM_LINK_PARENT, Converter.serialiseToString(parent, isCompressionEnabled()));
             }
 
             try {
@@ -632,10 +698,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (node != null) {
-                queryParams.add(PARAM_NODE, Converter.serialiseToString(node));
+                queryParams.add(PARAM_NODE, Converter.serialiseToString(node, isCompressionEnabled()));
             }
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
 
             try {
@@ -682,13 +748,13 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (from != null) {
-                queryParams.add(PARAM_NODE_FROM, Converter.serialiseToString(from));
+                queryParams.add(PARAM_NODE_FROM, Converter.serialiseToString(from, isCompressionEnabled()));
             }
             if (to != null) {
-                queryParams.add(PARAM_NODE_TO, Converter.serialiseToString(to));
+                queryParams.add(PARAM_NODE_TO, Converter.serialiseToString(to, isCompressionEnabled()));
             }
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
 
             try {
@@ -735,13 +801,13 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (from != null) {
-                queryParams.add(PARAM_NODE_FROM, Converter.serialiseToString(from));
+                queryParams.add(PARAM_NODE_FROM, Converter.serialiseToString(from, isCompressionEnabled()));
             }
             if (to != null) {
-                queryParams.add(PARAM_NODE_TO, Converter.serialiseToString(to));
+                queryParams.add(PARAM_NODE_TO, Converter.serialiseToString(to, isCompressionEnabled()));
             }
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
 
             try {
@@ -823,13 +889,13 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (usr != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(usr, isCompressionEnabled()));
             }
 
-            queryParams.add(PARAM_NODE_ID, Converter.serialiseToString(nodeID));
+            queryParams.add(PARAM_NODE_ID, Converter.serialiseToString(nodeID, isCompressionEnabled()));
 
             if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
             }
 
             try {
@@ -875,10 +941,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (usr != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(usr, isCompressionEnabled()));
             }
             if (query != null) {
-                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
+                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query, isCompressionEnabled()));
             }
 
             try {
@@ -1000,10 +1066,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (usr != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(usr, isCompressionEnabled()));
             }
             if (query != null) {
-                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
+                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query, isCompressionEnabled()));
             }
 
             try {
@@ -1039,13 +1105,13 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (usr != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(usr, isCompressionEnabled()));
             }
             if (query != null) {
-                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
+                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query, isCompressionEnabled()));
             }
             if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
             }
 
             try {
@@ -1094,14 +1160,14 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (usr != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(usr));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(usr, isCompressionEnabled()));
             }
 
-            queryParams.add(PARAM_OBJECT_ID, Converter.serialiseToString(objectID));
-            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classID));
+            queryParams.add(PARAM_OBJECT_ID, Converter.serialiseToString(objectID, isCompressionEnabled()));
+            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classID, isCompressionEnabled()));
 
             if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
             }
 
             try {
@@ -1149,13 +1215,13 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
             if (metaObject != null) {
-                queryParams.add(PARAM_METAOBJECT, Converter.serialiseToString(metaObject));
+                queryParams.add(PARAM_METAOBJECT, Converter.serialiseToString(metaObject, isCompressionEnabled()));
             }
             if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
             }
 
             try {
@@ -1203,13 +1269,13 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
             if (metaObject != null) {
-                queryParams.add(PARAM_METAOBJECT, Converter.serialiseToString(metaObject));
+                queryParams.add(PARAM_METAOBJECT, Converter.serialiseToString(metaObject, isCompressionEnabled()));
             }
             if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
             }
 
             try {
@@ -1257,13 +1323,13 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
             if (metaObject != null) {
-                queryParams.add(PARAM_METAOBJECT, Converter.serialiseToString(metaObject));
+                queryParams.add(PARAM_METAOBJECT, Converter.serialiseToString(metaObject, isCompressionEnabled()));
             }
             if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
             }
 
             try {
@@ -1310,13 +1376,13 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
             if (query != null) {
-                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query));
+                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query, isCompressionEnabled()));
             }
             if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
             }
 
             try {
@@ -1362,10 +1428,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
             if (c != null) {
-                queryParams.add(PARAM_METACLASS, Converter.serialiseToString(c));
+                queryParams.add(PARAM_METACLASS, Converter.serialiseToString(c, isCompressionEnabled()));
             }
 
             try {
@@ -1413,13 +1479,13 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
             if (tableName != null) {
-                queryParams.add(PARAM_TABLE_NAME, Converter.serialiseToString(tableName));
+                queryParams.add(PARAM_TABLE_NAME, Converter.serialiseToString(tableName, isCompressionEnabled()));
             }
             if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
             }
 
             try {
@@ -1466,13 +1532,13 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
             if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
             }
 
-            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classID));
+            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classID, isCompressionEnabled()));
 
             try {
                 return getResponsePOST("getClassByID", queryParams, MetaClass.class); // NOI18N
@@ -1517,10 +1583,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
             if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
             }
 
             try {
@@ -1565,7 +1631,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
 
             try {
@@ -1611,10 +1677,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
             if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
             }
 
             try {
@@ -1659,7 +1725,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
 
             try {
@@ -1705,10 +1771,12 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
             if (localServerName != null) {
-                queryParams.add(PARAM_LOCAL_SERVER_NAME, Converter.serialiseToString(localServerName));
+                queryParams.add(
+                    PARAM_LOCAL_SERVER_NAME,
+                    Converter.serialiseToString(localServerName, isCompressionEnabled()));
             }
 
             try {
@@ -1758,16 +1826,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         try {
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
-            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId));
+            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId, isCompressionEnabled()));
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
             if (representationFields != null) {
-                queryParams.add(PARAM_REP_FIELDS, Converter.serialiseToString(representationFields));
+                queryParams.add(
+                    PARAM_REP_FIELDS,
+                    Converter.serialiseToString(representationFields, isCompressionEnabled()));
             }
             if (representationPattern != null) {
-                queryParams.add(PARAM_REP_PATTERN, Converter.serialiseToString(representationPattern));
+                queryParams.add(
+                    PARAM_REP_PATTERN,
+                    Converter.serialiseToString(representationPattern, isCompressionEnabled()));
             }
 
             try {
@@ -1818,13 +1890,15 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         try {
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
-            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId));
+            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId, isCompressionEnabled()));
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
             if (representationFields != null) {
-                queryParams.add(PARAM_REP_FIELDS, Converter.serialiseToString(representationFields));
+                queryParams.add(
+                    PARAM_REP_FIELDS,
+                    Converter.serialiseToString(representationFields, isCompressionEnabled()));
             }
 
             try {
@@ -1872,7 +1946,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (lsName != null) {
-                queryParams.add(PARAM_LS_NAME, Converter.serialiseToString(lsName));
+                queryParams.add(PARAM_LS_NAME, Converter.serialiseToString(lsName, isCompressionEnabled()));
             }
 
             try {
@@ -1960,13 +2034,13 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
             if (oldPassword != null) {
-                queryParams.add(PARAM_OLD_PASSWORD, Converter.serialiseToString(oldPassword));
+                queryParams.add(PARAM_OLD_PASSWORD, Converter.serialiseToString(oldPassword, isCompressionEnabled()));
             }
             if (newPassword != null) {
-                queryParams.add(PARAM_NEW_PASSWORD, Converter.serialiseToString(newPassword));
+                queryParams.add(PARAM_NEW_PASSWORD, Converter.serialiseToString(newPassword, isCompressionEnabled()));
             }
 
             try {
@@ -2029,19 +2103,23 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (userGroupLsName != null) {
-                queryParams.add(PARAM_USERGROUP_LS_NAME, Converter.serialiseToString(userGroupLsName));
+                queryParams.add(
+                    PARAM_USERGROUP_LS_NAME,
+                    Converter.serialiseToString(userGroupLsName, isCompressionEnabled()));
             }
             if (userGroupName != null) {
-                queryParams.add(PARAM_USERGROUP_NAME, Converter.serialiseToString(userGroupName));
+                queryParams.add(
+                    PARAM_USERGROUP_NAME,
+                    Converter.serialiseToString(userGroupName, isCompressionEnabled()));
             }
             if (userLsName != null) {
-                queryParams.add(PARAM_USER_LS_NAME, Converter.serialiseToString(userLsName));
+                queryParams.add(PARAM_USER_LS_NAME, Converter.serialiseToString(userLsName, isCompressionEnabled()));
             }
             if (userName != null) {
-                queryParams.add(PARAM_USERNAME, Converter.serialiseToString(userName));
+                queryParams.add(PARAM_USERNAME, Converter.serialiseToString(userName, isCompressionEnabled()));
             }
             if (password != null) {
-                queryParams.add(PARAM_PASSWORD, Converter.serialiseToString(password));
+                queryParams.add(PARAM_PASSWORD, Converter.serialiseToString(password, isCompressionEnabled()));
             }
 
             try {
@@ -2129,10 +2207,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         try {
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
             if (userName != null) {
-                queryParams.add(PARAM_USERNAME, Converter.serialiseToString(userName));
+                queryParams.add(PARAM_USERNAME, Converter.serialiseToString(userName, isCompressionEnabled()));
             }
             if (lsHome != null) {
-                queryParams.add(PARAM_LS_HOME, Converter.serialiseToString(lsHome));
+                queryParams.add(PARAM_LS_HOME, Converter.serialiseToString(lsHome, isCompressionEnabled()));
             }
 
             return getResponsePOST("getUserGroupNamesByUser", queryParams, Vector.class); // NOI18N
@@ -2152,10 +2230,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         try {
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
             if (key != null) {
-                queryParams.add(PARAM_KEY, Converter.serialiseToString(key));
+                queryParams.add(PARAM_KEY, Converter.serialiseToString(key, isCompressionEnabled()));
             }
 
             return getResponsePOST("getConfigAttr", queryParams, String.class);
@@ -2175,10 +2253,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         try {
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
             if (key != null) {
-                queryParams.add(PARAM_KEY, Converter.serialiseToString(key));
+                queryParams.add(PARAM_KEY, Converter.serialiseToString(key, isCompressionEnabled()));
             }
 
             return getResponsePOST("hasConfigAttr", queryParams, boolean.class);
@@ -2198,10 +2276,12 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         try {
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
             if (serverSearch != null) {
-                queryParams.add(PARAM_CUSTOM_SERVER_SEARCH, Converter.serialiseToString(serverSearch));
+                queryParams.add(
+                    PARAM_CUSTOM_SERVER_SEARCH,
+                    Converter.serialiseToString(serverSearch, isCompressionEnabled()));
             }
 
             return getResponsePOST("customServerSearch", queryParams, Collection.class); // NOI18N
@@ -2224,18 +2304,18 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final int elements) throws RemoteException {
         try {
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId));
-            queryParams.add(PARAM_OBJECT_ID, Converter.serialiseToString(objectId));
+            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId, isCompressionEnabled()));
+            queryParams.add(PARAM_OBJECT_ID, Converter.serialiseToString(objectId, isCompressionEnabled()));
 
             if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
             }
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
 
-            queryParams.add(PARAM_ELEMENTS, Converter.serialiseToString(elements));
+            queryParams.add(PARAM_ELEMENTS, Converter.serialiseToString(elements, isCompressionEnabled()));
 
             return getResponsePOST("getHistory", queryParams, HistoryObject[].class); // NOI18N
         } catch (final IOException ex) {
@@ -2259,21 +2339,21 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
 
             if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user));
+                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
             }
 
             if (taskname != null) {
-                queryParams.add(PARAM_TASKNAME, Converter.serialiseToString(taskname));
+                queryParams.add(PARAM_TASKNAME, Converter.serialiseToString(taskname, isCompressionEnabled()));
             }
             if (taskdomain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(taskdomain));
+                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(taskdomain, isCompressionEnabled()));
             }
             if (body != null) {
-                queryParams.add(PARAM_BODY, Converter.serialiseToString(body));
+                queryParams.add(PARAM_BODY, Converter.serialiseToString(body, isCompressionEnabled()));
             }
 
             if (params != null) {
-                queryParams.add(PARAM_PARAMELIPSE, Converter.serialiseToString(params));
+                queryParams.add(PARAM_PARAMELIPSE, Converter.serialiseToString(params, isCompressionEnabled()));
             }
 
             try {

@@ -26,6 +26,7 @@ import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
 
 import de.cismet.tools.CurrentStackTrace;
+import de.cismet.tools.StaticDebuggingTools;
 
 /**
  * Return Type of a RMI method.
@@ -38,6 +39,7 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
 
     private static final transient Logger LOG = Logger.getLogger(DefaultMetaObject.class);
     private static MetaClassCacheService classCacheService = null;
+    private static Boolean DEBUG_STRING_ENABLED = null;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -101,6 +103,18 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     // --------------------------------------------------------------
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private boolean isDebugStringEnabled() {
+        if (DEBUG_STRING_ENABLED == null) {
+            DEBUG_STRING_ENABLED = StaticDebuggingTools.checkHomeForFile("MoDebugStringEnabled");
+        }
+        return DEBUG_STRING_ENABLED;
+    }
 
     /**
      * Since no middleware.MetaAttribute class exists, we have to update the "old" localserver.Attributes to make them
@@ -714,58 +728,60 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
 
     @Override
     public String getDebugString() {
-        String ret = ""; // NOI18N
-        // System.out.println("class :: "+classID+"object :: " +objectID+"  atrubutes"+ attribHash);
-        // border=\"1\"  bgcolor=\"#E0E0E0\"
-        ret =
-            "<table border=\"1\" rules=\"all\" cellspacing=\"0\" cellpadding=\"2\"> <tr><th colspan=\"3\" align=\"left\">class = " // NOI18N
-                    + classID
-                    + "<br>object id ="                                                                                            // NOI18N
-                    + objectID
-                    + "<br>status = "                                                                                              // NOI18N
-                    + getStatusDebugString()
-                    + "<br>dummy = "                                                                                               // NOI18N
-                    + isDummy()
-                    + "</th></tr>";                                                                                                // NOI18N
+        if (isDebugStringEnabled()) {
+            String ret =
+                "<table border=\"1\" rules=\"all\" cellspacing=\"0\" cellpadding=\"2\"> <tr><th colspan=\"3\" align=\"left\">class = " // NOI18N
+                        + classID
+                        + "<br>object id ="                                                                                            // NOI18N
+                        + objectID
+                        + "<br>status = "                                                                                              // NOI18N
+                        + getStatusDebugString()
+                        + "<br>dummy = "                                                                                               // NOI18N
+                        + isDummy()
+                        + "</th></tr>";                                                                                                // NOI18N
 
-        final ObjectAttribute[] as = getAttribs();
-        for (int i = 0; i < as.length; i++) {
-            if (as[i].referencesObject() && (as[i].getValue() != null)) {
-                ret += "<tr><td bgcolor="                         // NOI18N
-                            + getColorForChangedFlag(as[i].isChanged())
-                            + " valign=\"top\" align=\"right\">"  // NOI18N
-                            + as[i].getName()
-                            + "</td><td bgcolor="                 // NOI18N
-                            + getColorForChangedFlag(as[i].isChanged())
-                            + " valign=\"top\" align=\"right\">[" // NOI18N
-                            + as[i].getMai().getFieldName()
-                            + "]</td><td>"                        // NOI18N
-                            + ((MetaObject)as[i].getValue()).getDebugString()
-                            + "</td></tr>";                       // NOI18N
-            } else {
-                final int maxLength = 255;
-                final String suffix = "...";
-                String string = as[i].toString();
-                if (string.length() >= maxLength) {
-                    string = string.substring(0, maxLength - suffix.length())
-                                + suffix;
+            final ObjectAttribute[] as = getAttribs();
+            for (int i = 0; i < as.length; i++) {
+                if (as[i].referencesObject() && (as[i].getValue() != null)) {
+                    ret += "<tr><td bgcolor="                         // NOI18N
+                                + getColorForChangedFlag(as[i].isChanged())
+                                + " valign=\"top\" align=\"right\">"  // NOI18N
+                                + as[i].getName()
+                                + "</td><td bgcolor="                 // NOI18N
+                                + getColorForChangedFlag(as[i].isChanged())
+                                + " valign=\"top\" align=\"right\">[" // NOI18N
+                                + as[i].getMai().getFieldName()
+                                + "]</td><td>"                        // NOI18N
+                                + ((MetaObject)as[i].getValue()).getDebugString()
+                                + "</td></tr>";                       // NOI18N
+                } else {
+                    final int maxLength = 255;
+                    final String suffix = "...";
+                    String string = as[i].toString();
+                    if (string.length() >= maxLength) {
+                        string = string.substring(0, maxLength - suffix.length())
+                                    + suffix;
+                    }
+
+                    ret += "<tr><td bgcolor="                         // NOI18N
+                                + getColorForChangedFlag(as[i].isChanged())
+                                + " valign=\"top\" align=\"right\">"  // NOI18N
+                                + as[i].getName()
+                                + "</td><td bgcolor="                 // NOI18N
+                                + getColorForChangedFlag(as[i].isChanged())
+                                + " valign=\"top\" align=\"right\">[" // NOI18N
+                                + as[i].getMai().getFieldName()
+                                + "]</td><td>"                        // NOI18N
+                                + string
+                                + "</td></tr>";                       // NOI18N
                 }
-
-                ret += "<tr><td bgcolor="                         // NOI18N
-                            + getColorForChangedFlag(as[i].isChanged())
-                            + " valign=\"top\" align=\"right\">"  // NOI18N
-                            + as[i].getName()
-                            + "</td><td bgcolor="                 // NOI18N
-                            + getColorForChangedFlag(as[i].isChanged())
-                            + " valign=\"top\" align=\"right\">[" // NOI18N
-                            + as[i].getMai().getFieldName()
-                            + "]</td><td>"                        // NOI18N
-                            + string
-                            + "</td></tr>";                       // NOI18N
             }
+            ret += "</table>";                                        // NOI18N
+            return ret;
+        } else {
+            return
+                "DebugString is not enabled. Add a file named \"MoDebugStringEnabled\" in your home directory to enabled it (application restart needed).";
         }
-        ret += "</table>";                                        // NOI18N
-        return ret;
     }
 
     @Override
