@@ -28,29 +28,52 @@ public class Server implements Serializable {
     private final int type;
     /** registry port. */
     private final String rmiPort;
+    /** gzip compression enabled. */
+    private final boolean compressionEnabled;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Konstruktor.
+     * Creates a new Server object.
      *
-     * @param  serverType  Kennzeichnet die Art des Servers. es soll einer der Konstanten
-     *                     {@link #LOCALSERVER LOCALSERVER} oder {@link #CALLSERVER CALLSERVER} verwendet werden.
-     * @param  name        Name mit dem der Server angesprochen wird
-     * @param  ip          the ip of the server and the registry
-     * @param  rmiPort     the port where the rmi registry is running
-     * @param  serverPort  the port where the server is exported
+     * @param  serverType  DOCUMENT ME!
+     * @param  name        DOCUMENT ME!
+     * @param  ip          DOCUMENT ME!
+     * @param  rmiPort     DOCUMENT ME!
+     * @param  serverPort  DOCUMENT ME!
      */
     public Server(final int serverType,
             final String name,
             final String ip,
             final String rmiPort,
             final String serverPort) {
+        this(serverType, name, ip, rmiPort, serverPort, false);
+    }
+
+    /**
+     * Konstruktor.
+     *
+     * @param  serverType          Kennzeichnet die Art des Servers. es soll einer der Konstanten
+     *                             {@link #LOCALSERVER LOCALSERVER} oder {@link #CALLSERVER CALLSERVER} verwendet
+     *                             werden.
+     * @param  name                Name mit dem der Server angesprochen wird
+     * @param  ip                  the ip of the server and the registry
+     * @param  rmiPort             the port where the rmi registry is running
+     * @param  serverPort          the port where the server is exported
+     * @param  compressionEnabled  DOCUMENT ME!
+     */
+    public Server(final int serverType,
+            final String name,
+            final String ip,
+            final String rmiPort,
+            final String serverPort,
+            final boolean compressionEnabled) {
         this.type = serverType;
         this.name = name;
         this.ip = ip;
         this.rmiPort = rmiPort;
         this.serverPort = serverPort;
+        this.compressionEnabled = compressionEnabled;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -156,5 +179,14 @@ public class Server implements Serializable {
      */
     public String getBindString() {
         return "//" + ip + ":" + rmiPort + "/" + type + "/" + name; // NOI18N
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean isCompressionEnabled() {
+        return compressionEnabled;
     }
 }
