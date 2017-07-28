@@ -144,7 +144,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                     properties.getServerName(),
                     InetAddress.getLocalHost().getHostAddress(),
                     properties.getRMIRegistryPort(),
-                    String.valueOf(properties.getServerPort()));
+                    String.valueOf(properties.getServerPort()),
+                    properties.isCompressionEnabled());
 
             dbServer = new DBServer(properties);
 
