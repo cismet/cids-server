@@ -517,7 +517,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -562,7 +565,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -611,7 +617,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -664,7 +673,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -713,7 +725,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -766,7 +781,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -819,7 +837,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -855,7 +876,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
             final ClientResponse response = ex.getResponse();
 
-            final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+            final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                    response,
+                    RemoteException.class,
+                    isCompressionEnabled());
             if (remEx == null) {
                 throw ex;
             } else {
@@ -907,7 +931,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -956,7 +983,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1081,7 +1111,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1123,7 +1156,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1179,7 +1215,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1233,7 +1272,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1287,7 +1329,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1341,7 +1386,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1394,7 +1442,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1443,7 +1494,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1497,7 +1551,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1549,7 +1606,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1598,7 +1658,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1643,7 +1706,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1692,7 +1758,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1737,7 +1806,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1788,7 +1860,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1854,7 +1929,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1913,7 +1991,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1958,7 +2039,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -1997,7 +2081,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
@@ -2052,14 +2139,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
                 if (HttpStatus.SC_UNAUTHORIZED == response.getStatus()) {
-                    final UserException userEx = ServerExceptionMapper.fromResponse(response, UserException.class);
+                    final UserException userEx = ServerExceptionMapper.fromResponse(
+                            response,
+                            UserException.class,
+                            isCompressionEnabled());
                     if (userEx == null) {
                         throw ex;
                     } else {
                         throw userEx;
                     }
                 } else {
-                    final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                    final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                            response,
+                            RemoteException.class,
+                            isCompressionEnabled());
                     if (remEx == null) {
                         throw ex;
                     } else {
@@ -2131,14 +2224,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
                 if (HttpStatus.SC_UNAUTHORIZED == response.getStatus()) {
-                    final UserException userEx = ServerExceptionMapper.fromResponse(response, UserException.class);
+                    final UserException userEx = ServerExceptionMapper.fromResponse(
+                            response,
+                            UserException.class,
+                            isCompressionEnabled());
                     if (userEx == null) {
                         throw ex;
                     } else {
                         throw userEx;
                     }
                 } else {
-                    final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                    final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                            response,
+                            RemoteException.class,
+                            isCompressionEnabled());
                     if (remEx == null) {
                         throw ex;
                     } else {
@@ -2175,7 +2274,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
             final ClientResponse response = ex.getResponse();
 
-            final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+            final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                    response,
+                    RemoteException.class,
+                    isCompressionEnabled());
             if (remEx == null) {
                 throw ex;
             } else {
@@ -2365,7 +2467,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
                 final ClientResponse response = ex.getResponse();
 
-                final RemoteException remEx = ServerExceptionMapper.fromResponse(response, RemoteException.class);
+                final RemoteException remEx = ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        isCompressionEnabled());
                 if (remEx == null) {
                     throw ex;
                 } else {
