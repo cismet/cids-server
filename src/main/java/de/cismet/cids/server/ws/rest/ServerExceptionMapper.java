@@ -8,6 +8,7 @@
 package de.cismet.cids.server.ws.rest;
 
 import Sirius.server.dataretrieval.DataRetrievalException;
+import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.newuser.UserException;
 
 import com.sun.jersey.api.client.ClientResponse;
@@ -42,12 +43,15 @@ public final class ServerExceptionMapper {
     /**
      * DOCUMENT ME!
      *
-     * @param   t        DOCUMENT ME!
-     * @param   builder  DOCUMENT ME!
+     * @param   t                   DOCUMENT ME!
+     * @param   builder             DOCUMENT ME!
+     * @param   compressionEnabled  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public static Response toResponse(final Throwable t, final Response.ResponseBuilder builder) {
+    public static Response toResponse(final Throwable t,
+            final Response.ResponseBuilder builder,
+            final boolean compressionEnabled) {
         final Response.ResponseBuilder response;
         if (builder == null) {
             response = Response.serverError();
@@ -57,7 +61,7 @@ public final class ServerExceptionMapper {
 
         if (t != null) {
             try {
-                response.entity(Converter.serialiseToString(t));
+                response.entity(Converter.serialiseToString(t, compressionEnabled));
             } catch (final IOException ex) {
                 LOG.error("could not serialise throwable", ex); // NOI18N
             }
@@ -69,16 +73,19 @@ public final class ServerExceptionMapper {
     /**
      * DOCUMENT ME!
      *
-     * @param   <T>       DOCUMENT ME!
-     * @param   response  DOCUMENT ME!
-     * @param   type      DOCUMENT ME!
+     * @param   <T>                 DOCUMENT ME!
+     * @param   response            DOCUMENT ME!
+     * @param   type                DOCUMENT ME!
+     * @param   compressionEnabled  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public static <T extends Throwable> T fromResponse(final ClientResponse response, final Class<T> type) {
+    public static <T extends Throwable> T fromResponse(final ClientResponse response,
+            final Class<T> type,
+            final boolean compressionEnabled) {
         if (response != null) {
             try {
-                return Converter.deserialiseFromString(response.getEntity(String.class), type);
+                return Converter.deserialiseFromString(response.getEntity(String.class), type, compressionEnabled);
             } catch (final Exception e) {
                 LOG.warn("could not deserialise throwable", e); // NOI18N
             }
@@ -103,7 +110,10 @@ public final class ServerExceptionMapper {
         public Response toResponse(final DataRetrievalException e) {
             final Response.ResponseBuilder builder = Response.status(HttpStatus.SC_NOT_FOUND);
 
-            return ServerExceptionMapper.toResponse(e, builder);
+            return ServerExceptionMapper.toResponse(
+                    e,
+                    builder,
+                    DomainServerImpl.getServerProperties().isCompressionEnabled());
         }
     }
 
@@ -122,7 +132,10 @@ public final class ServerExceptionMapper {
             final Response.ResponseBuilder builder = Response.status(HttpStatus.SC_UNAUTHORIZED)
                         .header("WWW-Authenticate", "Username/Password realm=cidsServer"); // NOI18N
 
-            return ServerExceptionMapper.toResponse(e, builder);
+            return ServerExceptionMapper.toResponse(
+                    e,
+                    builder,
+                    DomainServerImpl.getServerProperties().isCompressionEnabled());
         }
     }
 
@@ -140,7 +153,10 @@ public final class ServerExceptionMapper {
         public Response toResponse(final RemoteException e) {
             final Response.ResponseBuilder builder = Response.status(HttpStatus.SC_INTERNAL_SERVER_ERROR);
 
-            return ServerExceptionMapper.toResponse(e, builder);
+            return ServerExceptionMapper.toResponse(
+                    e,
+                    builder,
+                    DomainServerImpl.getServerProperties().isCompressionEnabled());
         }
     }
 }
