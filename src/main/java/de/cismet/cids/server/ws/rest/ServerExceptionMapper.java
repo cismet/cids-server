@@ -43,15 +43,13 @@ public final class ServerExceptionMapper {
     /**
      * DOCUMENT ME!
      *
-     * @param   t                   DOCUMENT ME!
-     * @param   builder             DOCUMENT ME!
-     * @param   compressionEnabled  DOCUMENT ME!
+     * @param   t        DOCUMENT ME!
+     * @param   builder  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
     public static Response toResponse(final Throwable t,
-            final Response.ResponseBuilder builder,
-            final boolean compressionEnabled) {
+            final Response.ResponseBuilder builder) {
         final Response.ResponseBuilder response;
         if (builder == null) {
             response = Response.serverError();
@@ -61,7 +59,7 @@ public final class ServerExceptionMapper {
 
         if (t != null) {
             try {
-                response.entity(Converter.serialiseToString(t, compressionEnabled));
+                response.entity(Converter.serialiseToString(t));
             } catch (final IOException ex) {
                 LOG.error("could not serialise throwable", ex); // NOI18N
             }
@@ -73,19 +71,17 @@ public final class ServerExceptionMapper {
     /**
      * DOCUMENT ME!
      *
-     * @param   <T>                 DOCUMENT ME!
-     * @param   response            DOCUMENT ME!
-     * @param   type                DOCUMENT ME!
-     * @param   compressionEnabled  DOCUMENT ME!
+     * @param   <T>       DOCUMENT ME!
+     * @param   response  DOCUMENT ME!
+     * @param   type      DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
     public static <T extends Throwable> T fromResponse(final ClientResponse response,
-            final Class<T> type,
-            final boolean compressionEnabled) {
+            final Class<T> type) {
         if (response != null) {
             try {
-                return Converter.deserialiseFromString(response.getEntity(String.class), type, compressionEnabled);
+                return Converter.deserialiseFromString(response.getEntity(String.class), type);
             } catch (final Exception e) {
                 LOG.warn("could not deserialise throwable", e); // NOI18N
             }
@@ -112,8 +108,7 @@ public final class ServerExceptionMapper {
 
             return ServerExceptionMapper.toResponse(
                     e,
-                    builder,
-                    DomainServerImpl.getServerProperties().isCompressionEnabled());
+                    builder);
         }
     }
 
@@ -134,8 +129,7 @@ public final class ServerExceptionMapper {
 
             return ServerExceptionMapper.toResponse(
                     e,
-                    builder,
-                    DomainServerImpl.getServerProperties().isCompressionEnabled());
+                    builder);
         }
     }
 
@@ -155,8 +149,7 @@ public final class ServerExceptionMapper {
 
             return ServerExceptionMapper.toResponse(
                     e,
-                    builder,
-                    DomainServerImpl.getServerProperties().isCompressionEnabled());
+                    builder);
         }
     }
 }
