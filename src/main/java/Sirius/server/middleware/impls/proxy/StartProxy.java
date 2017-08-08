@@ -59,6 +59,7 @@ public final class StartProxy {
     private final transient String siriusRegistryIP;
     private final transient Server serverInfo;
     private final transient ServerStatus status;
+    private final transient ServerProperties serverProperties;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -76,10 +77,10 @@ public final class StartProxy {
         }
 
         // initialise server properties
-        final ServerProperties properties = initServerProperties(configFile);
+        serverProperties = initServerProperties(configFile);
 
         // init log4j
-        final String fileName = properties.getLog4jPropertyFile();
+        final String fileName = serverProperties.getLog4jPropertyFile();
         if ((fileName != null) && !fileName.isEmpty()) {
             try {
                 PropertyConfigurator.configureAndWatch(fileName, 10000);
@@ -88,7 +89,7 @@ public final class StartProxy {
             }
         }
 
-        if ("proxy".equalsIgnoreCase(properties.getStartMode())) {
+        if ("proxy".equalsIgnoreCase(serverProperties.getStartMode())) {
             if (LOG.isInfoEnabled()) {
                 LOG.info("<CS> INFO: starting RESTful pass-through proxy");
             }
@@ -97,19 +98,19 @@ public final class StartProxy {
             serverInfo = null;
             status = null;
 
-            if (!properties.isRestEnabled()) {
+            if (!serverProperties.isRestEnabled()) {
                 throw new IllegalStateException("if the startmode is proxy then REST must be enabled"); // NOI18N
             }
 
             if (LOG.isInfoEnabled()) {
-                LOG.info("<CS> INFO: pass-through url: " + properties.getServerProxyURL());
+                LOG.info("<CS> INFO: pass-through url: " + serverProperties.getServerProxyURL());
             }
 
-            callServer = new RESTfulSerialInterfaceConnector(properties.getServerProxyURL());
-            RESTfulService.up(properties);
+            callServer = new RESTfulSerialInterfaceConnector(serverProperties.getServerProxyURL());
+            RESTfulService.up(serverProperties);
         } else {
             // init server registry ip
-            siriusRegistryIP = initServerRegistryIP(properties);
+            siriusRegistryIP = initServerRegistryIP(serverProperties);
 
             // TODO: why sout???
             System.out.println("<CS> INFO: siriusRegistryIP:: " + siriusRegistryIP); // NOI18N
@@ -131,19 +132,19 @@ public final class StartProxy {
             }
 
             // init server
-            serverInfo = initServer(properties);
+            serverInfo = initServer(serverProperties);
 
             // init RMI registry
             final Registry rmiRegistry = initRegistry(Integer.valueOf(serverInfo.getRMIPort()));
 
             // create and bind callserver instance
-            callServer = createAndBindProxy(properties);
+            callServer = createAndBindProxy(serverProperties);
             status = new ServerStatus();
 
             // bring up the RESTful Service after initialisation if rest is enabled
-            if (properties.isRestEnabled()) {
+            if (serverProperties.isRestEnabled()) {
                 try {
-                    RESTfulService.up(properties);
+                    RESTfulService.up(serverProperties);
                 } catch (final ServerExitError e) {
                     LOG.error("could not bring up RESTful interface", e); // NOI18N
                 }
@@ -180,6 +181,15 @@ public final class StartProxy {
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public ServerProperties getServerProperties() {
+        return serverProperties;
+    }
 
     /**
      * DOCUMENT ME!
@@ -271,8 +281,7 @@ public final class StartProxy {
                     properties.getServerName(),
                     InetAddress.getLocalHost().getHostAddress(),
                     rmiPort,
-                    String.valueOf(properties.getServerPort()),
-                    properties.isCompressionEnabled());
+                    String.valueOf(properties.getServerPort()));
         } catch (final UnknownHostException e) {
             final String message = "SEVERE: could not find host address for localhost"; // NOI18N
             LOG.fatal(message, e);
