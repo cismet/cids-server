@@ -157,7 +157,6 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
         if (mo != null) {
             return mo.getBean();
         } else {
-//    log...
             return null;
         }
     }
@@ -590,7 +589,10 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public void setReferencingObjectAttribute(final ObjectAttribute referencingObjectAttribute) {
-        getRealMetaObject().setReferencingObjectAttribute(referencingObjectAttribute);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.setReferencingObjectAttribute(referencingObjectAttribute);
+        }
     }
 
     /**
