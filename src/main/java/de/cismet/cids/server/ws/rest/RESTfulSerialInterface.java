@@ -109,6 +109,10 @@ public final class RESTfulSerialInterface {
     public static final String PARAM_BODY = "json";                               // NOI18N
     public static final String PARAM_PARAMELIPSE = "paramelipse";                 // NOI18N
 
+    //~ Instance fields --------------------------------------------------------
+
+    private Boolean compressionEnabled = null;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -134,7 +138,10 @@ public final class RESTfulSerialInterface {
      * @return  DOCUMENT ME!
      */
     private boolean isCompressionEnabled() {
-        return StartProxy.getInstance().getServerProperties().isCompressionEnabled();
+        if (compressionEnabled == null) {
+            compressionEnabled = StartProxy.getInstance().getServerProperties().isCompressionEnabled();
+        }
+        return compressionEnabled;
     }
 
     /**
