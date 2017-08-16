@@ -153,7 +153,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
 
     @Override
     public CidsBean getBean() {
-        return getRealMetaObject().getBean();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getBean();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -584,7 +589,10 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public void setReferencingObjectAttribute(final ObjectAttribute referencingObjectAttribute) {
-        getRealMetaObject().setReferencingObjectAttribute(referencingObjectAttribute);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.setReferencingObjectAttribute(referencingObjectAttribute);
+        }
     }
 
     /**
@@ -698,6 +706,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
                     // this code should only be executed on the server side
                     final MetaObject mo = DomainServerImpl.getServerInstance()
                                 .getMetaObject(getUser(), getObjectID(), getClassID());
+                    cache.put(getKeyForCache(domain, classID, objectID), new SoftReference<MetaObject>(mo));
                     return mo;
                 }
 
