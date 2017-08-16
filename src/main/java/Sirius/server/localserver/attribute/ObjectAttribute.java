@@ -126,7 +126,7 @@ public class ObjectAttribute extends Attribute implements Mapable,
     public final void setValue(final Object value) {
         if (value != null) {
             if (Sirius.server.localserver.object.Object.class.isAssignableFrom(value.getClass())) {
-                // FIX for #172
+                // FIX for #172 ??
                 ((Sirius.server.localserver.object.Object)value).setReferencingObjectAttribute(this);
                 super.setValue(value);
             } else if (value instanceof java.lang.String) {

@@ -153,7 +153,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
 
     @Override
     public CidsBean getBean() {
-        return getRealMetaObject().getBean();
+        final MetaObject mo = getRealMetaObject();
+        if (getRealMetaObject() != null) {
+            return mo.getBean();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -584,7 +589,10 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public void setReferencingObjectAttribute(final ObjectAttribute referencingObjectAttribute) {
-        getRealMetaObject().setReferencingObjectAttribute(referencingObjectAttribute);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.setReferencingObjectAttribute(referencingObjectAttribute);
+        }
     }
 
     /**
