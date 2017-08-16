@@ -202,7 +202,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
 
     @Override
     public String getName() {
-        return getRealMetaObject().getName();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getName();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -408,7 +413,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public LinkedHashMap<java.lang.Object, ObjectAttribute> getAttributes() {
-        return getRealMetaObject().getAttributes();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getAttributes();
+        } else {
+            return null;
+        }
     }
 
     /**
