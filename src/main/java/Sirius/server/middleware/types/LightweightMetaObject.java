@@ -45,11 +45,13 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
 
     static Map<String, SoftReference<MetaObject>> cache = new HashMap<String, SoftReference<MetaObject>>();
 
+    private static transient org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
+            LightweightMetaObject.class);
+
     //~ Instance fields --------------------------------------------------------
 
-    private transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
     // use volantile variable to fix "double checked locking" problem!
-    private transient volatile MetaObject lazyMetaObject;
+    private transient volatile MetaObject fetchedMetaObject;
     private transient MetaService metaService;
     private final Map<String, Object> attributesMap;
     private final int classID;
@@ -57,6 +59,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     private int objectID;
     private String representation;
     private String domain;
+    private ObjectAttribute referencingObjectAttribute;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -76,7 +79,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
         this.objectID = objectID;
         this.domain = domain;
         this.user = user;
-        this.attributesMap = new HashMap<String, Object>();
+        this.attributesMap = new HashMap<>();
         setFormater(new AbstractAttributeRepresentationFormater() {
 
                 @Override
@@ -148,7 +151,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
 
     @Override
     public HashMap getAllClasses() {
-        return getRealMetaObject().getAllClasses();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getAllClasses();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -163,41 +171,71 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
 
     @Override
     public String getComplexEditor() {
-        return getRealMetaObject().getComplexEditor();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getComplexEditor();
+        } else {
+            return null;
+        }
     }
 
     @Override
     public String getDebugString() {
-        return getRealMetaObject().getDebugString();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getDebugString();
+        } else {
+            return null;
+        }
     }
 
     @Override
     public String getDescription() {
-        return getRealMetaObject().getDescription();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getDescription();
+        } else {
+            return null;
+        }
     }
 
     @Override
     public String getEditor() {
-        return getRealMetaObject().getEditor();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getEditor();
+        } else {
+            return null;
+        }
     }
 
     @Override
     public String getGroup() {
-        return getRealMetaObject().getGroup();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getGroup();
+        } else {
+            return null;
+        }
     }
 
     @Override
     public Logger getLogger() {
-        if (log == null) {
-            log = org.apache.log4j.Logger.getLogger(this.getClass());
+        if (LOG == null) {
+            LOG = org.apache.log4j.Logger.getLogger(this.getClass());
         }
 
-        return log;
+        return LOG;
     }
 
     @Override
     public MetaClass getMetaClass() {
-        return getRealMetaObject().getMetaClass();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getMetaClass();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -212,91 +250,156 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
 
     @Override
     public String getPropertyString() {
-        return getRealMetaObject().getPropertyString();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getPropertyString();
+        } else {
+            return null;
+        }
     }
 
     @Override
     public String getRenderer() {
-        return getRealMetaObject().getRenderer();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getRenderer();
+        } else {
+            return null;
+        }
     }
 
     @Override
     public String getSimpleEditor() {
-        return getRealMetaObject().getSimpleEditor();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getSimpleEditor();
+        } else {
+            return null;
+        }
     }
 
     @Override
     public Collection<String> getURLs(final Collection classKeys) {
-        return getRealMetaObject().getURLs(classKeys);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getURLs(classKeys);
+        } else {
+            return null;
+        }
     }
 
     @Override
     public Collection<String> getURLsByName(final Collection classKeys, final Collection urlNames) {
-        return getRealMetaObject().getURLsByName(classKeys, urlNames);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getURLsByName(classKeys, urlNames);
+        } else {
+            return null;
+        }
     }
 
     @Override
     public boolean isChanged() {
-        return getRealMetaObject().isChanged();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.isChanged();
+        } else {
+            return false;
+        }
     }
 
     @Override
     public boolean propertyEquals(final MetaObject tester) {
-        return getRealMetaObject().propertyEquals(tester);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.propertyEquals(tester);
+        } else {
+            return false;
+        }
     }
 
     @Override
     public void setAllClasses(final HashMap classes) {
-        if (alreadyFetched()) {
-            getRealMetaObject().setAllClasses(classes);
+        final MetaObject mo = getRealMetaObject(false);
+        if (mo != null) {
+            mo.setAllClasses(classes);
         }
     }
 
     @Override
     public void setAllClasses() {
-        if (alreadyFetched()) {
-            getRealMetaObject().setAllClasses();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.setAllClasses();
         }
     }
 
     @Override
     public void setAllStatus(final int status) {
-        getRealMetaObject().setAllStatus(status);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.setAllStatus(status);
+        }
     }
 
     @Override
     public void setArrayKey2PrimaryKey() {
-        getRealMetaObject().setArrayKey2PrimaryKey();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.setArrayKey2PrimaryKey();
+        }
     }
 
     @Override
     public void setChanged(final boolean changed) {
-        getRealMetaObject().setChanged(changed);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.setChanged(changed);
+        }
     }
 
     @Override
     public void setEditor(final String editor) {
-        getRealMetaObject().setEditor(editor);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.setEditor(editor);
+        }
     }
 
     @Override
     public void setMetaClass(final MetaClass metaClass) {
-        getRealMetaObject().setMetaClass(metaClass);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.setMetaClass(metaClass);
+        }
     }
 
     @Override
     public boolean setPrimaryKey(final Object key) {
-        return getRealMetaObject().setPrimaryKey(key);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.setPrimaryKey(key);
+        } else {
+            return false;
+        }
     }
 
     @Override
     public void setRenderer(final String renderer) {
-        getRealMetaObject().setRenderer(renderer);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.setRenderer(renderer);
+        }
     }
 
     @Override
     public String toString(final HashMap classes) {
-        return getRealMetaObject().toString(classes);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.toString(classes);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -306,7 +409,10 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public void addAllAttributes(final ObjectAttribute[] objectAttributes) {
-        getRealMetaObject().addAllAttributes(objectAttributes);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.addAllAttributes(objectAttributes);
+        }
     }
 
     /**
@@ -316,7 +422,10 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public void addAttribute(final ObjectAttribute anyAttribute) {
-        getRealMetaObject().addAttribute(anyAttribute);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.addAttribute(anyAttribute);
+        }
     }
 
     /**
@@ -328,7 +437,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public Object constructKey(final Mapable m) {
-        return getRealMetaObject().constructKey(m);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.constructKey(m);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -340,14 +454,19 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public Sirius.server.localserver.object.Object filter(final User u) {
-        return getRealMetaObject().filter(u);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.filter(u);
+        } else {
+            return null;
+        }
     }
 
     /**
      * DOCUMENT ME!
      *
      * @param   objectRepresentation  DOCUMENT ME!
-     * @param   mo                    DOCUMENT ME!
+     * @param   o                     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -355,8 +474,13 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Deprecated
     @Override
-    public Object fromString(final String objectRepresentation, final Object mo) throws Exception {
-        return getRealMetaObject().fromString(objectRepresentation, mo);
+    public Object fromString(final String objectRepresentation, final Object o) throws Exception {
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.fromString(objectRepresentation, o);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -366,7 +490,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public ObjectAttribute[] getAttribs() {
-        return getRealMetaObject().getAttribs();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getAttribs();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -378,7 +507,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public ObjectAttribute getAttribute(final String name) {
-        return getRealMetaObject().getAttribute(name);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getAttribute(name);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -390,7 +524,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public ObjectAttribute getAttributeByFieldName(final String fieldname) {
-        return getRealMetaObject().getAttributeByFieldName(fieldname);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getAttributeByFieldName(fieldname);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -403,7 +542,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public Collection<ObjectAttribute> getAttributeByName(final String name, final int maxResult) {
-        return getRealMetaObject().getAttributeByName(name, maxResult);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getAttributeByName(name, maxResult);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -430,7 +574,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public Collection<ObjectAttribute> getAttributesByName(final Collection names) {
-        return getRealMetaObject().getAttributesByName(names);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getAttributesByName(names);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -443,7 +592,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public Collection<ObjectAttribute> getAttributesByType(final Class c, final int recursionDepth) {
-        return getRealMetaObject().getAttributesByType(c, recursionDepth);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getAttributesByType(c, recursionDepth);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -455,7 +609,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public Collection<ObjectAttribute> getAttributesByType(final Class c) {
-        return getRealMetaObject().getAttributesByType(c);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getAttributesByType(c);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -465,7 +624,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public Object getKey() {
-        return getRealMetaObject().getKey();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getKey();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -475,7 +639,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public ObjectAttribute getPrimaryKey() {
-        return getRealMetaObject().getPrimaryKey();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getPrimaryKey();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -485,7 +654,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public ObjectAttribute getReferencingObjectAttribute() {
-        return getRealMetaObject().getReferencingObjectAttribute();
+        return referencingObjectAttribute;
     }
 
     /**
@@ -495,7 +664,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public int getStatus() {
-        return getRealMetaObject().getStatus();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getStatus();
+        } else {
+            return -1;
+        }
     }
 
     /**
@@ -505,7 +679,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public String getStatusDebugString() {
-        return getRealMetaObject().getStatusDebugString();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getStatusDebugString();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -517,7 +696,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public Collection<ObjectAttribute> getTraversedAttributesByType(final Class c) {
-        return getRealMetaObject().getTraversedAttributesByType(c);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getTraversedAttributesByType(c);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -539,7 +723,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public boolean isPersistent() {
-        return getRealMetaObject().isPersistent();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.isPersistent();
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -549,7 +738,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public boolean isStringCreateable() {
-        return getRealMetaObject().isStringCreateable();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.isStringCreateable();
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -559,7 +753,10 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public void removeAttribute(final ObjectAttribute anyAttribute) {
-        getRealMetaObject().removeAttribute(anyAttribute);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.removeAttribute(anyAttribute);
+        }
     }
 
     /**
@@ -581,7 +778,10 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public void setPersistent(final boolean persistent) {
-        getRealMetaObject().setPersistent(persistent);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.setPersistent(persistent);
+        }
     }
 
     /**
@@ -589,7 +789,10 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public void setPrimaryKeysNull() {
-        getRealMetaObject().setPrimaryKeysNull();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.setPrimaryKeysNull();
+        }
     }
 
     /**
@@ -599,7 +802,9 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public void setReferencingObjectAttribute(final ObjectAttribute referencingObjectAttribute) {
-        final MetaObject mo = getRealMetaObject();
+        this.referencingObjectAttribute = referencingObjectAttribute;
+
+        final MetaObject mo = getRealMetaObject(false);
         if (mo != null) {
             mo.setReferencingObjectAttribute(referencingObjectAttribute);
         }
@@ -612,12 +817,18 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public void setStatus(final int status) {
-        getRealMetaObject().setStatus(status);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.setStatus(status);
+        }
     }
 
     @Override
     public void forceStatus(final int status) {
-        getRealMetaObject().forceStatus(status);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.forceStatus(status);
+        }
     }
 
     /**
@@ -625,7 +836,10 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public void setValuesNull() {
-        getRealMetaObject().setValuesNull();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.setValuesNull();
+        }
     }
 
     /**
@@ -635,7 +849,12 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      */
     @Override
     public FromStringCreator getObjectCreator() {
-        return getRealMetaObject().getObjectCreator();
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.getObjectCreator();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -827,20 +1046,33 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      * Lazy loads for the real MetaObject if needed, the returns it.
      *
      * @return  the real MetaObject which the LWMetaObject is a proxy for.
+     */
+    public MetaObject getRealMetaObject() {
+        return getRealMetaObject(true);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   fetchIfNull  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      *
      * @throws  IllegalStateException  DOCUMENT ME!
      */
-    public MetaObject getRealMetaObject() {
-        if (lazyMetaObject == null) {
-            synchronized (this) {
-                try {
-                    lazyMetaObject = fetchRealMetaObject();
-                } catch (Exception ex) {
-                    throw new IllegalStateException(ex);
+    private MetaObject getRealMetaObject(final boolean fetchIfNull) {
+        if (fetchedMetaObject == null) {
+            if (fetchIfNull) {
+                synchronized (this) {
+                    try {
+                        fetchedMetaObject = fetchRealMetaObject();
+                    } catch (Exception ex) {
+                        throw new IllegalStateException(ex);
+                    }
                 }
             }
         }
-        return lazyMetaObject;
+        return fetchedMetaObject;
     }
 
     /**
@@ -851,7 +1083,11 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     @Override
     public void setID(final int objectID) {
         this.objectID = objectID;
-        getRealMetaObject().setID(objectID);
+
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            mo.setID(objectID);
+        }
     }
 
     /**
@@ -885,11 +1121,16 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      * @return  DOCUMENT ME!
      */
     public boolean alreadyFetched() {
-        return lazyMetaObject != null;
+        return fetchedMetaObject != null;
     }
 
     @Override
     public boolean hasObjectWritePermission(final User user) {
-        return getRealMetaObject().hasObjectWritePermission(user);
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.hasObjectWritePermission(user);
+        } else {
+            return false;
+        }
     }
 }
