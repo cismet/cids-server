@@ -915,15 +915,26 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     private MetaObject fetchRealMetaObject() throws Exception {
         // try the cache
 
-        final SoftReference<MetaObject> refCacheHit = cache.get(getKeyForCache(domain, classID, objectID));
+        final String keyForCache = getKeyForCache(domain, classID, objectID);
+        final SoftReference<MetaObject> refCacheHit = cache.get(keyForCache);
         final MetaObject cacheHit;
         if (refCacheHit != null) {
             cacheHit = refCacheHit.get();
         } else {
             cacheHit = null;
         }
+
         if (cacheHit != null) {
-            return cacheHit;
+            if (NullMetaObject.NULL.equals(cacheHit)) {
+                // checking for the null-representing MetaObject.
+                //
+                // explanation: if we would store "null" as the metaobject,
+                // then the cache would try to fetch the metaobject each time
+                // thinking that the softreference has been cleaned up.
+                return null;
+            } else {
+                return cacheHit;
+            }
         } else {
             if (metaService == null) {
                 // try to get the metaservice over the lookup
@@ -931,28 +942,34 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
                             .lookup(CallServerServiceProvider.class);
                 if (csProvider != null) {
                     metaService = csProvider.getCallServerService();
-                } else {
-                    // this code should only be executed on the server side
-                    final MetaObject mo = DomainServerImpl.getServerInstance()
-                                .getMetaObject(getUser(), getObjectID(), getClassID());
-                    cache.put(getKeyForCache(domain, classID, objectID), new SoftReference<MetaObject>(mo));
-                    return mo;
-                }
 
-                if (metaService == null) {
-                    throw new IllegalStateException(
-                        "Can not retrieve MetaObject, as Metaservice for LightweightMetaObject \""
-                                + toString() // NOI18N
-                                + "\" is null!"); // NOI18N
+                    if (metaService == null) {
+                        throw new IllegalStateException(
+                            "Can not retrieve MetaObject, as Metaservice for LightweightMetaObject \""
+                                    + toString() // NOI18N
+                                    + "\" is null!"); // NOI18N
+                    }
                 }
             }
 
             if (getLogger().isDebugEnabled()) {
                 getLogger().debug("Fetch real Object for " + this);
             }
+            final MetaObject mo;
+            if (metaService != null) { // this code should only be executed on the client side
+                mo = metaService.getMetaObject(getUser(), getObjectID(), getClassID(), getDomain());
+            } else {                   // this code should only be executed on the server side
+                mo = DomainServerImpl.getServerInstance().getMetaObject(getUser(), getObjectID(), getClassID());
+            }
 
-            final MetaObject mo = metaService.getMetaObject(getUser(), getObjectID(), getClassID(), getDomain());
-            cache.put(getKeyForCache(domain, classID, objectID), new SoftReference<MetaObject>(mo));
+            final SoftReference<MetaObject> sr;
+            if (mo == null) {
+                sr = new SoftReference<>(NullMetaObject.NULL);
+            } else {
+                sr = new SoftReference<>(mo);
+            }
+            cache.put(getKeyForCache(domain, classID, objectID), sr);
+
             return mo;
         }
     }
