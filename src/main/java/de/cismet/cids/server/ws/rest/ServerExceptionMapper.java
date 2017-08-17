@@ -8,13 +8,15 @@
 package de.cismet.cids.server.ws.rest;
 
 import Sirius.server.dataretrieval.DataRetrievalException;
-import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
+import Sirius.server.middleware.impls.proxy.StartProxy;
 import Sirius.server.newuser.UserException;
 
 import com.sun.jersey.api.client.ClientResponse;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
+
+import org.openide.util.Lookup;
 
 import java.io.IOException;
 
@@ -23,6 +25,8 @@ import java.rmi.RemoteException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+
+import de.cismet.cids.server.CallServerServiceProvider;
 
 import de.cismet.tools.Converter;
 
@@ -59,7 +63,10 @@ public final class ServerExceptionMapper {
 
         if (t != null) {
             try {
-                response.entity(Converter.serialiseToString(t));
+                final boolean compressionEnabled = StartProxy.getInstance()
+                            .getServerProperties()
+                            .isCompressionEnabled();
+                response.entity(Converter.serialiseToString(t, compressionEnabled));
             } catch (final IOException ex) {
                 LOG.error("could not serialise throwable", ex); // NOI18N
             }
@@ -71,17 +78,23 @@ public final class ServerExceptionMapper {
     /**
      * DOCUMENT ME!
      *
-     * @param   <T>       DOCUMENT ME!
-     * @param   response  DOCUMENT ME!
-     * @param   type      DOCUMENT ME!
+     * @param   <T>                 DOCUMENT ME!
+     * @param   response            DOCUMENT ME!
+     * @param   type                DOCUMENT ME!
+     * @param   compressionEnabled  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
     public static <T extends Throwable> T fromResponse(final ClientResponse response,
-            final Class<T> type) {
+            final Class<T> type,
+            final boolean compressionEnabled) {
         if (response != null) {
             try {
-                return Converter.deserialiseFromString(response.getEntity(String.class), type);
+                final CallServerServiceProvider csProvider = Lookup.getDefault()
+                            .lookup(CallServerServiceProvider.class);
+                if (csProvider != null) {
+                    return Converter.deserialiseFromString(response.getEntity(String.class), type, compressionEnabled);
+                }
             } catch (final Exception e) {
                 LOG.warn("could not deserialise throwable", e); // NOI18N
             }
