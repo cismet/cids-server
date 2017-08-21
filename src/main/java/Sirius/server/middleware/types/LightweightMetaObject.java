@@ -1150,4 +1150,11 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
             return false;
         }
     }
+
+    /**
+     * DOCUMENT ME!
+     */
+    public static void clearCache() {
+        cache.clear();
+    }
 }
