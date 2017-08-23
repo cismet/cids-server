@@ -246,13 +246,14 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
             final User user,
             final int biggerThen,
             final int numOfMessages) {
-        final List<CidsServerMessage> lastMessages = new ArrayList<>();
+        final List<CidsServerMessage> messages = new ArrayList<>();
 
-        final LinkedList<CidsServerMessage> messages = (LinkedList<CidsServerMessage>)messagesPerCategoryMap.get(
+        final LinkedList<CidsServerMessage> categoryMessages = (LinkedList<CidsServerMessage>)
+            messagesPerCategoryMap.get(
                 category);
-        final Iterator<CidsServerMessage> itBackwards = messages.descendingIterator();
+        final Iterator<CidsServerMessage> itBackwards = categoryMessages.descendingIterator();
 
-        while (itBackwards.hasNext() && ((numOfMessages < 0) || (lastMessages.size() < numOfMessages))) {
+        while (itBackwards.hasNext() && ((numOfMessages < 0) || (messages.size() < numOfMessages))) {
             final CidsServerMessage message = itBackwards.next();
 
             if (!message.isRenotify() && (message.getId() <= biggerThen)) {
@@ -260,24 +261,24 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
             }
 
             if (user == null) {
-                lastMessages.add(message);
+                messages.add(message);
                 // is user matching ?
             } else if (userKeyMap.containsKey(message) && (userKeyMap.get(message) != null)
                         && userKeyMap.get(message).contains(user.getKey())) {
-                lastMessages.add(message);
+                messages.add(message);
                 // is group matching ?
             } else if (userGroupKeyMap.containsKey(message)) {
                 final Set userGroupKeys = userGroupKeyMap.get(message);
                 if (userGroupKeys != null) {
                     if (userGroupKeys.contains(user.getUserGroup().getKey())) {
                         // single group
-                        lastMessages.add(message);
+                        messages.add(message);
                     } else {
                         // all groups
                         if (user.getPotentialUserGroups() != null) {
                             for (final UserGroup userGroup : user.getPotentialUserGroups()) {
                                 if (userGroupKeys.contains(userGroup.getKey())) {
-                                    lastMessages.add(message);
+                                    messages.add(message);
                                     break;
                                 }
                             }
@@ -292,12 +293,12 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
                     LOG.warn(ex, ex);
                 }
                 if (csmChecked) {
-                    lastMessages.add(message);
+                    messages.add(message);
                 }
             }
         }
 
-        return null;
+        return messages;
     }
 
     /**
