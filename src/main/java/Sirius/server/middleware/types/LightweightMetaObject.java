@@ -43,10 +43,11 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
 
     //~ Static fields/initializers ---------------------------------------------
 
-    static Map<String, SoftReference<MetaObject>> cache = new HashMap<String, SoftReference<MetaObject>>();
-
     private static transient org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
             LightweightMetaObject.class);
+
+    private static Map<String, SoftReference<MetaObject>> CACHE = new HashMap<String, SoftReference<MetaObject>>();
+    public static final String CACHE_INVALIDATION_MESSAGE = "lwmoCacheInvalidationRequest*";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -900,7 +901,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      *
      * @return  DOCUMENT ME!
      */
-    public String getKeyForCache(final String domain, final int classID, final int objectID) {
+    public static String getKeyForCache(final String domain, final int classID, final int objectID) {
         return new StringBuilder().append(classID).append('@').append(domain).append(',').append(objectID).toString();
     }
 
@@ -916,7 +917,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
         // try the cache
 
         final String keyForCache = getKeyForCache(domain, classID, objectID);
-        final SoftReference<MetaObject> refCacheHit = cache.get(keyForCache);
+        final SoftReference<MetaObject> refCacheHit = CACHE.get(keyForCache);
         final MetaObject cacheHit;
         if (refCacheHit != null) {
             cacheHit = refCacheHit.get();
@@ -968,7 +969,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
             } else {
                 sr = new SoftReference<>(mo);
             }
-            cache.put(getKeyForCache(domain, classID, objectID), sr);
+            CACHE.put(getKeyForCache(domain, classID, objectID), sr);
 
             return mo;
         }
@@ -1155,6 +1156,24 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
      * DOCUMENT ME!
      */
     public static void clearCache() {
-        cache.clear();
+        CACHE.clear();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   domain    mo DOCUMENT ME!
+     * @param   classId   DOCUMENT ME!
+     * @param   objectId  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static boolean invalidateCacheFor(final String domain, final int classId, final int objectId) {
+        final String key = getKeyForCache(domain, classId, objectId);
+        if (CACHE.containsKey(key)) {
+            CACHE.remove(key);
+            return true;
+        }
+        return false;
     }
 }
