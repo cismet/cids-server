@@ -191,8 +191,8 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
             final boolean lastMessageOnly = !category.endsWith("*");
             if (lastMessageOnly) {
                 final CidsServerMessage message = getLastMessage(
-                        category, 
-                        user, 
+                        category,
+                        user,
                         (biggerThen != null) ? biggerThen : defaultBiggerThen);
                 if (message != null) {
                     messages.add(message);
@@ -231,7 +231,7 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
     public List<CidsServerMessage> getAllMessages(final String category, final User user, final int biggerThen) {
         return getMessages(category, user, biggerThen, -1);
     }
-    
+
     /**
      * DOCUMENT ME!
      *
