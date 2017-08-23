@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,18 +45,16 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
 
     //~ Instance fields --------------------------------------------------------
 
-    private final Map<String, LinkedList<CidsServerMessage>> messagesPerCategoryMap =
-        new HashMap<String, LinkedList<CidsServerMessage>>();
+    private final Map<String, LinkedList<CidsServerMessage>> messagesPerCategoryMap = new HashMap<>();
 
-    private final Collection<CidsServerMessageManagerListener> listeners =
-        new LinkedList<CidsServerMessageManagerListener>();
+    private final Collection<CidsServerMessageManagerListener> listeners = new LinkedList<>();
 
-    private final Map<CidsServerMessage, Set> userKeyMap = new HashMap<CidsServerMessage, Set>();
-    private final Map<CidsServerMessage, Set> userGroupKeyMap = new HashMap<CidsServerMessage, Set>();
+    private final Map<CidsServerMessage, Set> userKeyMap = new HashMap<>();
+    private final Map<CidsServerMessage, Set> userGroupKeyMap = new HashMap<>();
     private final CidsServerMessageManagerListenerHandler listenerHandler =
         new CidsServerMessageManagerListenerHandler();
 
-    private final Map<String, Long> userActivityTimeMap = new HashMap<String, Long>();
+    private final Map<String, Long> userActivityTimeMap = new HashMap<>();
 
     private int messageId = 0;
 
@@ -159,7 +158,7 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
     private void putMessage(final String category, final CidsServerMessage message) {
         final LinkedList<CidsServerMessage> messages;
         if (!messagesPerCategoryMap.containsKey(category)) {
-            messages = new LinkedList<CidsServerMessage>();
+            messages = new LinkedList<>();
             messagesPerCategoryMap.put(category, messages);
         } else {
             messages = messagesPerCategoryMap.get(category);
@@ -183,20 +182,27 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
     }
 
     @Override
-    public Collection<CidsServerMessage> getLastMessages(final User user,
-            final Map<String, Integer> biggerThenPerCategory) {
-        final Collection<CidsServerMessage> messages = new ArrayList<CidsServerMessage>(messagesPerCategoryMap.keySet()
-                        .size());
+    public List<CidsServerMessage> getMessages(final User user, final Map<String, Integer> biggerThenPerCategory) {
+        final List<CidsServerMessage> messages = new ArrayList<>(messagesPerCategoryMap.keySet().size());
 
         final int defaultBiggerThen = -1;
         for (final String category : messagesPerCategoryMap.keySet()) {
             final Integer biggerThen = biggerThenPerCategory.get(category);
-            final CidsServerMessage message = getLastMessage(
-                    category,
-                    user,
-                    (biggerThen != null) ? biggerThen : defaultBiggerThen);
-            if (message != null) {
-                messages.add(message);
+            final boolean lastMessageOnly = !category.endsWith("*");
+            if (lastMessageOnly) {
+                final CidsServerMessage message = getLastMessage(
+                        category,
+                        user,
+                        (biggerThen != null) ? biggerThen : defaultBiggerThen);
+                if (message != null) {
+                    messages.add(message);
+                }
+            } else {
+                messages.addAll(
+                    getAllMessages(
+                        category,
+                        user,
+                        (biggerThen != null) ? biggerThen : defaultBiggerThen));
             }
         }
         return messages;
@@ -213,50 +219,72 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
      */
     @Override
     public CidsServerMessage getLastMessage(final String category, final User user, final int biggerThen) {
+        final List<CidsServerMessage> lastMessages = getMessages(category, user, biggerThen, 1);
+        if (lastMessages.isEmpty()) {
+            return null;
+        } else {
+            return lastMessages.iterator().next();
+        }
+    }
+
+    @Override
+    public List<CidsServerMessage> getAllMessages(final String category, final User user, final int biggerThen) {
+        return getMessages(category, user, biggerThen, -1);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   category       DOCUMENT ME!
+     * @param   user           DOCUMENT ME!
+     * @param   biggerThen     DOCUMENT ME!
+     * @param   numOfMessages  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private List<CidsServerMessage> getMessages(final String category,
+            final User user,
+            final int biggerThen,
+            final int numOfMessages) {
+        final List<CidsServerMessage> lastMessages = new ArrayList<>();
+
         final LinkedList<CidsServerMessage> messages = (LinkedList<CidsServerMessage>)messagesPerCategoryMap.get(
                 category);
         final Iterator<CidsServerMessage> itBackwards = messages.descendingIterator();
 
-        boolean abort = false;
-        while (itBackwards.hasNext() && !abort) {
+        while (itBackwards.hasNext() && ((numOfMessages < 0) || (lastMessages.size() < numOfMessages))) {
             final CidsServerMessage message = itBackwards.next();
 
             if (!message.isRenotify() && (message.getId() <= biggerThen)) {
-                abort = true;
-                continue;
+                break;
             }
 
             if (user == null) {
-                return message;
-            }
-
-            // is user matching ?
-            if (userKeyMap.containsKey(message) && (userKeyMap.get(message) != null)
+                lastMessages.add(message);
+                // is user matching ?
+            } else if (userKeyMap.containsKey(message) && (userKeyMap.get(message) != null)
                         && userKeyMap.get(message).contains(user.getKey())) {
-                return message;
-            }
-
-            // is group matching ?
-            if (userGroupKeyMap.containsKey(message)) {
+                lastMessages.add(message);
+                // is group matching ?
+            } else if (userGroupKeyMap.containsKey(message)) {
                 final Set userGroupKeys = userGroupKeyMap.get(message);
                 if (userGroupKeys != null) {
                     if (userGroupKeys.contains(user.getUserGroup().getKey())) {
                         // single group
-                        return message;
+                        lastMessages.add(message);
                     } else {
                         // all groups
                         if (user.getPotentialUserGroups() != null) {
                             for (final UserGroup userGroup : user.getPotentialUserGroups()) {
                                 if (userGroupKeys.contains(userGroup.getKey())) {
-                                    return message;
+                                    lastMessages.add(message);
+                                    break;
                                 }
                             }
                         }
                     }
                 }
-            }
-
-            if (category != null) {
+            } else if (category != null) {
                 boolean csmChecked = false;
                 try {
                     csmChecked = DomainServerImpl.getServerInstance().hasConfigAttr(user, "csm://" + category);
@@ -264,7 +292,7 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
                     LOG.warn(ex, ex);
                 }
                 if (csmChecked) {
-                    return message;
+                    lastMessages.add(message);
                 }
             }
         }
@@ -288,7 +316,7 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
      * @return  DOCUMENT ME!
      */
     public Set<String> getActiveUsers() {
-        final Set<String> activeUsers = new HashSet<String>();
+        final Set<String> activeUsers = new HashSet<>();
         final long currentTimeInMs = System.currentTimeMillis();
         for (final String userKey : userActivityTimeMap.keySet()) {
             final Long expectedTs = userActivityTimeMap.get(userKey);

@@ -95,7 +95,7 @@ public class CheckCidsServerMessageAction implements ServerAction, UserAwareServ
         }
 
         final Collection<CidsServerMessage> messages = CidsServerMessageManagerImpl.getInstance()
-                    .getLastMessages(getUser(), lastMessageIdPerCategory);
+                    .getMessages(getUser(), lastMessageIdPerCategory);
 
         return messages;
     }
