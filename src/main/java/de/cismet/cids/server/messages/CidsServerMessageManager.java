@@ -14,7 +14,7 @@ package de.cismet.cids.server.messages;
 
 import Sirius.server.newuser.User;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -75,7 +75,7 @@ public interface CidsServerMessageManager {
      *
      * @return  DOCUMENT ME!
      */
-    Collection<CidsServerMessage> getLastMessages(final User user, final Map<String, Integer> biggerThen);
+    List<CidsServerMessage> getMessages(final User user, final Map<String, Integer> biggerThen);
 
     /**
      * DOCUMENT ME!
@@ -87,6 +87,17 @@ public interface CidsServerMessageManager {
      * @return  DOCUMENT ME!
      */
     CidsServerMessage getLastMessage(final String category, final User user, final int biggerThen);
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   category    DOCUMENT ME!
+     * @param   user        DOCUMENT ME!
+     * @param   biggerThen  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    List<CidsServerMessage> getAllMessages(final String category, final User user, final int biggerThen);
 
     /**
      * DOCUMENT ME!
