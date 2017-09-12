@@ -9,8 +9,10 @@ import java.util.Calendar;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -22,6 +24,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({TimedLoginRestriction.class})
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TimedLoginRestrictionUnitTest {
 
     private String getCurrentMethodName() {
