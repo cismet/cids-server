@@ -34,7 +34,7 @@ public class LoginRestrictionHelper {
 
     //~ Instance fields --------------------------------------------------------
 
-    private HashMap<String, LoginRestriction> loginRestrictions = new HashMap<String, LoginRestriction>();
+    HashMap<String, LoginRestriction> loginRestrictions = new HashMap<String, LoginRestriction>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -99,7 +99,7 @@ public class LoginRestrictionHelper {
                 r.setKey(lrv.substring(0, lrv.length() - 2));
                 r.setValue(null);
             } else if (lrv.endsWith(")")) {
-                final String[] splits = lrv.substring(0, loginRestrictionValue.length() - 1).split("(");
+                final String[] splits = lrv.substring(0, loginRestrictionValue.length() - 1).split("\\(");
                 r.setKey(splits[0].trim());
                 r.setValue(splits[1].trim());
             } else {
