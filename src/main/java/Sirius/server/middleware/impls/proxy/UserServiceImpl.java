@@ -14,7 +14,9 @@ package Sirius.server.middleware.impls.proxy;
 //import Sirius.middleware.interfaces.domainserver.*;
 
 import Sirius.server.localserver.user.LoginRestriction;
+import Sirius.server.localserver.user.LoginRestrictionHelper;
 import Sirius.server.middleware.interfaces.domainserver.UserService;
+import Sirius.server.newuser.LoginRestrictionUserException;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 import Sirius.server.newuser.UserGroup;
@@ -49,7 +51,6 @@ public class UserServiceImpl {
 
     private UserServer userServer;
     private Hashtable activeLocalServers;
-    private Hashtable<String, LoginRestriction> loginRestrictions = new Hashtable<String, LoginRestriction>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -64,11 +65,6 @@ public class UserServiceImpl {
     public UserServiceImpl(final Hashtable activeLocalServers, final UserServer userServer) throws RemoteException {
         this.activeLocalServers = activeLocalServers;
         this.userServer = userServer;
-        final Collection<? extends LoginRestriction> lookupResults = Lookup.getDefault()
-                    .lookupAll(LoginRestriction.class);
-        for (final LoginRestriction lr : lookupResults) {
-            loginRestrictions.put(lr.getKey(), lr);
-        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -126,66 +122,8 @@ public class UserServiceImpl {
         if (validated) {
             final String loginRestrictionValue = getConfigAttr(u, "login.restriction");
             if (loginRestrictionValue != null) {
-                if (loginRestrictionValue.endsWith("()")) {
-                    final String key = loginRestrictionValue.substring(0, loginRestrictionValue.length() - 2);
-                    final LoginRestriction restriction = loginRestrictions.get(key);
-                    if (restriction != null) {
-                        if (!restriction.isLoginAllowed()) {
-                            throw new UserException("Login failed due to restriction:: " + userName,
-                                false,
-                                true,
-                                false,
-                                false); // NOI18N
-                        }
-                    } else {
-                        throw new UserException("Login failed (Configured Restriction not found):: " + userName,
-                            false,
-                            true,
-                            false,
-                            false);     // NOI18N
-                    }
-                } else if (loginRestrictionValue.endsWith(")")) {
-                    final String[] splits = loginRestrictionValue.substring(0, loginRestrictionValue.length())
-                                .split("(");
-                    final String key = splits[0];
-                    final String value = splits[1];
-                    final LoginRestriction restriction = loginRestrictions.get(key);
-                    if (restriction != null) {
-                        restriction.configure(value);
-                        if (!restriction.isLoginAllowed()) {
-                            throw new UserException("Login failed due to restriction:: " + userName,
-                                false,
-                                true,
-                                false,
-                                false); // NOI18N
-                        }
-                    } else {
-                        throw new UserException("Login failed (Configured Restriction not found):: " + userName,
-                            false,
-                            true,
-                            false,
-                            false);     // NOI18N
-                    }
-                } else {
-                    final LoginRestriction restriction = loginRestrictions.get(loginRestrictionValue);
-                    if (restriction != null) {
-                        if (!restriction.isLoginAllowed()) {
-                            throw new UserException("Login failed due to restriction:: " + userName,
-                                false,
-                                true,
-                                false,
-                                false); // NOI18N
-                        }
-                    } else {
-                        throw new UserException("Login failed (Configured Restriction not found):: " + userName,
-                            false,
-                            true,
-                            false,
-                            false);     // NOI18N
-                    }
-                }
+                LoginRestrictionHelper.getInstance().checkLoginRestriction(loginRestrictionValue);
             }
-
             return u;
         }
 

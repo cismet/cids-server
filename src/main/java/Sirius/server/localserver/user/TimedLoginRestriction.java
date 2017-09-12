@@ -34,7 +34,8 @@ public class TimedLoginRestriction implements LoginRestriction {
     @Override
     public boolean isLoginAllowed() {
         final Calendar rightNow = Calendar.getInstance();
-        final float test = new Float(rightNow.get(Calendar.HOUR_OF_DAY)) + (new Float(rightNow.get(Calendar.MINUTE)) / 60.0f);
+        final float test = new Float(rightNow.get(Calendar.HOUR_OF_DAY))
+                    + (new Float(rightNow.get(Calendar.MINUTE)) / 60.0f);
         return (test >= from) && (test <= to);
     }
 
