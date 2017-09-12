@@ -50,6 +50,14 @@ public class LoginRestrictionIntegrationTest {
     }
 
     @Test
+    public void test_015_LoginRestrictionALLOWTest() throws UserException {
+        System.out.println("TEST " + getCurrentMethodName());
+        LoginRestrictionHelper.getInstance().checkLoginRestriction("ALLOW");
+        LoginRestrictionHelper.getInstance().checkLoginRestriction("ALLOW()");
+        //passes tthe test when no exception is thrown
+    }
+
+    @Test
     public void test_020_TimedLoginRestrictionPassTest() throws UserException {
         System.out.println("TEST " + getCurrentMethodName());
         Calendar mockedCal = Calendar.getInstance();
