@@ -101,6 +101,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      *
      * @param  rootResource  DOCUMENT ME!
      */
+    @Deprecated
     public RESTfulSerialInterfaceConnector(final String rootResource) {
         this(rootResource, null, null, false);
     }
@@ -121,6 +122,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param  rootResource  DOCUMENT ME!
      * @param  proxy         config proxyURL DOCUMENT ME!
      */
+    @Deprecated
     public RESTfulSerialInterfaceConnector(final String rootResource, final Proxy proxy) {
         this(rootResource, proxy, null, false);
     }
@@ -131,6 +133,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param  rootResource  DOCUMENT ME!
      * @param  sslConfig     DOCUMENT ME!
      */
+    @Deprecated
     public RESTfulSerialInterfaceConnector(final String rootResource, final SSLConfig sslConfig) {
         this(rootResource, null, sslConfig, false);
     }
@@ -168,6 +171,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param  proxy         DOCUMENT ME!
      * @param  sslConfig     DOCUMENT ME!
      */
+    @Deprecated
     public RESTfulSerialInterfaceConnector(final String rootResource,
             final Proxy proxy,
             final SSLConfig sslConfig) {
