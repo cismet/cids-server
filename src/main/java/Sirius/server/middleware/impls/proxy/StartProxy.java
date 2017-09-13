@@ -106,7 +106,8 @@ public final class StartProxy {
                 LOG.info("<CS> INFO: pass-through url: " + serverProperties.getServerProxyURL());
             }
 
-            callServer = new RESTfulSerialInterfaceConnector(serverProperties.getServerProxyURL());
+            callServer = new RESTfulSerialInterfaceConnector(serverProperties.getServerProxyURL(),
+                    serverProperties.isCompressionEnabled());
             RESTfulService.up(serverProperties);
         } else {
             // init server registry ip
