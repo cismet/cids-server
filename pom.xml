@@ -20,7 +20,7 @@
         <names.cids-server>cids Server</names.cids-server>
     </properties>
     
-    <name>${names.cids-server}</name>
+    <name>${names.cids-server} [${project.version}]</name>
     <description>!!! description pending !!!</description>
     
     <scm>
