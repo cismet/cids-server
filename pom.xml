@@ -13,21 +13,21 @@
 
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server</artifactId>
-    <version>5.3.1</version>
+    <version>5.4</version>
     <packaging>jar</packaging>
  
     <properties>
         <names.cids-server>cids Server</names.cids-server>
     </properties>
     
-    <name>${names.cids-server}</name>
+    <name>${names.cids-server} [${project.version}]</name>
     <description>!!! description pending !!!</description>
     
     <scm>
         <connection>https://github.com/cismet/cids-server.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cids-server.git</developerConnection>
         <url>https://github.com/cismet/cids-server</url>
-        <tag>v5.3.1</tag>
+        <tag>v5.4</tag>
     </scm>
     
     <ciManagement>
