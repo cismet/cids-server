@@ -13,7 +13,10 @@
 package Sirius.server.middleware.impls.proxy;
 //import Sirius.middleware.interfaces.domainserver.*;
 
+import Sirius.server.localserver.user.LoginRestriction;
+import Sirius.server.localserver.user.LoginRestrictionHelper;
 import Sirius.server.middleware.interfaces.domainserver.UserService;
+import Sirius.server.newuser.LoginRestrictionUserException;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 import Sirius.server.newuser.UserGroup;
@@ -21,9 +24,12 @@ import Sirius.server.newuser.UserServer;
 
 import org.apache.log4j.Logger;
 
+import org.openide.util.Lookup;
+
 import java.rmi.RemoteException;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
@@ -114,6 +120,10 @@ public class UserServiceImpl {
         }
 
         if (validated) {
+            final String loginRestrictionValue = getConfigAttr(u, "login.restriction");
+            if (loginRestrictionValue != null) {
+                LoginRestrictionHelper.getInstance().checkLoginRestriction(loginRestrictionValue);
+            }
             return u;
         }
 
