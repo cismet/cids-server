@@ -47,7 +47,6 @@ public class CidsLayerInitStatement extends AbstractCidsServerSearch {
 
     private final String envelopeQuery = "select st_asText(st_extent(%s)) %s";
     private final String geometryTypeQuery = "SELECT distinct st_geometryType(%1$s) %2$s  where %1$s is not null";
-    private final String envelopeQueryWithRestriction = "select st_asText(st_extent(%s)) %s and (%s)";
     private int classId;
     private String domain;
     private CidsLayerInfo layerInfo;
@@ -108,7 +107,12 @@ public class CidsLayerInitStatement extends AbstractCidsServerSearch {
             if (queryString == null) {
                 query = String.format(envelopeQuery, layerInfo.getSqlGeoField(), tables);
             } else {
-                query = String.format(envelopeQueryWithRestriction, layerInfo.getSqlGeoField(), tables, queryString);
+                query = String.format(envelopeQuery, layerInfo.getSqlGeoField(), tables);
+                if (query.toLowerCase().contains("where")) {
+                    query = query + " and (" + envelopeQuery + ")";
+                } else {
+                    query = query + " WHERE (" + envelopeQuery + ")";
+                }
             }
             final ArrayList<ArrayList> envelope = ms.performCustomSearch(query);
             final String typeQuery = String.format(geometryTypeQuery, layerInfo.getSqlGeoField(), tables);
