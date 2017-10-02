@@ -90,11 +90,7 @@ public final class ServerExceptionMapper {
             final boolean compressionEnabled) {
         if (response != null) {
             try {
-                final CallServerServiceProvider csProvider = Lookup.getDefault()
-                            .lookup(CallServerServiceProvider.class);
-                if (csProvider != null) {
-                    return Converter.deserialiseFromString(response.getEntity(String.class), type, compressionEnabled);
-                }
+                return Converter.deserialiseFromString(response.getEntity(String.class), type, compressionEnabled);
             } catch (final Exception e) {
                 LOG.warn("could not deserialise throwable", e); // NOI18N
             }
