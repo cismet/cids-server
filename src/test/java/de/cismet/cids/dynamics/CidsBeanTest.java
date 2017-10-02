@@ -1,20 +1,11 @@
 package de.cismet.cids.dynamics;
 
-import Sirius.server.localserver.attribute.MemberAttributeInfo;
-import Sirius.server.localserver.attribute.ObjectAttribute;
-import Sirius.server.middleware.types.DefaultMetaObject;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import static org.mockito.Mockito.*;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import de.cismet.cids.utils.MetaClassCacheService;
 import java.awt.EventQueue;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Properties;
-import java.util.PropertyResourceBundle;
 import java.util.concurrent.Semaphore;
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -23,14 +14,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.mockito.Mockito;
 import org.openide.util.Lookup;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 import org.junit.Assert;
 
 /**
@@ -88,7 +74,7 @@ public class CidsBeanTest {
      */
     @Before
     public void setUp() {
-        metaObject = (DefaultMetaObject) SPIELHALLE_META_CLASS.getEmptyInstance();
+        metaObject = SPIELHALLE_META_CLASS.getEmptyInstance();
         //System.out.println(metaObject.getStatus());
         cidsBean = metaObject.getBean();
         metaObjectSpy = Mockito.spy(metaObject);

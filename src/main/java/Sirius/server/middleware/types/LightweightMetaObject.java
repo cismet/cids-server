@@ -934,7 +934,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
                 // thinking that the softreference has been cleaned up.
                 return null;
             } else {
-                return cacheHit;
+                return new BackreferencingCachehitMetaObject(cacheHit, referencingObjectAttribute);
             }
         } else {
             if (metaService == null) {
