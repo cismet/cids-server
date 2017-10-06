@@ -221,6 +221,21 @@ public class BackreferencingCachehitMetaObject implements MetaObject {
     }
 
     @Override
+    public String toString() {
+        return metaObject.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return metaObject.hashCode();
+    }
+
+    @Override
+    public boolean equals(final java.lang.Object obj) {
+        return metaObject.equals(obj);
+    }
+
+    @Override
     public void addAllAttributes(final ObjectAttribute[] objectAttributes) {
         metaObject.addAllAttributes(objectAttributes);
     }
