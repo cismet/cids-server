@@ -38,7 +38,7 @@ public class BackreferencingCachehitMetaObject implements MetaObject {
 
     //~ Instance fields --------------------------------------------------------
 
-    private CidsBean bean;
+    private transient CidsBean bean;
     private ObjectAttribute referencingObjectAttribute;
     private final MetaObject metaObject;
 
