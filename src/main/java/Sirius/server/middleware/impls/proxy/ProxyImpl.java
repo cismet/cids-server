@@ -45,6 +45,7 @@ import java.util.Vector;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
 import de.cismet.cids.server.search.CidsServerSearch;
 
 /**
@@ -387,9 +388,19 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
+    @Deprecated
     public MetaObject getMetaObject(final User usr, final int objectID, final int classID, final String domain)
             throws RemoteException {
-        return metaService.getMetaObject(usr, objectID, classID, domain);
+        return getMetaObject(usr, objectID, classID, domain, ConnectionContext.createDeprecated());
+    }
+
+    @Override
+    public MetaObject getMetaObject(final User usr,
+            final int objectID,
+            final int classID,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
+        return metaService.getMetaObject(usr, objectID, classID, domain, context);
     }
 
     /**
@@ -418,13 +429,29 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
+    @Deprecated
     public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
-        return metaService.getMetaObject(usr, query);
+        return getMetaObject(usr, query, ConnectionContext.createDeprecated());
     }
 
     @Override
+    public MetaObject[] getMetaObject(final User usr, final String query, final ConnectionContext context)
+            throws RemoteException {
+        return metaService.getMetaObject(usr, query, context);
+    }
+
+    @Override
+    @Deprecated
     public MetaObject[] getMetaObject(final User usr, final String query, final String domain) throws RemoteException {
-        return metaService.getMetaObject(usr, query, domain);
+        return getMetaObject(usr, query, domain, ConnectionContext.createDeprecated());
+    }
+
+    @Override
+    public MetaObject[] getMetaObject(final User usr,
+            final String query,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
+        return metaService.getMetaObject(usr, query, domain, context);
     }
 
     /**
@@ -838,11 +865,22 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     }
 
     @Override
+    @Deprecated
     public Object executeTask(final User user,
             final String taskname,
             final String taskdomain,
             final Object body,
             final ServerActionParameter... params) throws RemoteException {
-        return actionService.executeTask(user, taskname, taskdomain, body, params);
+        return executeTask(user, taskname, taskdomain, ConnectionContext.createDeprecated(), body, params);
+    }
+
+    @Override
+    public Object executeTask(final User user,
+            final String taskname,
+            final String taskdomain,
+            final ConnectionContext context,
+            final Object body,
+            final ServerActionParameter... params) throws RemoteException {
+        return actionService.executeTask(user, taskname, taskdomain, context, body, params);
     }
 }

@@ -59,6 +59,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.MissingResourceException;
@@ -72,6 +73,8 @@ import de.cismet.cids.server.actions.ScheduledServerAction;
 import de.cismet.cids.server.actions.ScheduledServerActionManager;
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextLogger;
 import de.cismet.cids.server.search.QueryPostProcessor;
 import de.cismet.cids.server.ws.rest.RESTfulService;
 
@@ -436,7 +439,25 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Deprecated
     public MetaObject getObject(final User user, final String objectID) throws RemoteException {
+        return getObject(user, objectID, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user      DOCUMENT ME!
+     * @param   objectID  DOCUMENT ME!
+     * @param   context   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    public MetaObject getObject(final User user, final String objectID, final ConnectionContext context)
+            throws RemoteException {
+        ConnectionContextLogger.getInstance().logConnectionContext(context, user, "getObject", "objectID:" + objectID);
         try {
             final MetaObject mo = dbServer.getObject(objectID, user);
             if (mo != null) {
@@ -500,11 +521,20 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         return getNodes(usr, tmp)[0];
     }
 
+    @Override
+    @Deprecated
+    public MetaObject getMetaObject(final User usr, final int objectID, final int classID) throws RemoteException {
+        return getMetaObject(usr, objectID, classID, ConnectionContext.createDeprecated());
+    }
+
     // retrieves a Meta data object  referenced by a symbolic pointer to the MIS
     // MetaObject ersetzt DefaultObject
     @Override
-    public MetaObject getMetaObject(final User usr, final int objectID, final int classID) throws RemoteException {
-        return getObject(usr, objectID + "@" + classID); // NOI18N
+    public MetaObject getMetaObject(final User usr,
+            final int objectID,
+            final int classID,
+            final ConnectionContext context) throws RemoteException {
+        return getObject(usr, objectID + "@" + classID, context); // NOI18N
     }
 // Query not yet defined but will be MetaSQL
 
@@ -529,7 +559,15 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     }
 
     @Override
+    @Deprecated
     public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
+        return getMetaObject(usr, query, ConnectionContext.createDeprecated());
+    }
+
+    @Override
+    public MetaObject[] getMetaObject(final User usr, final String query, final ConnectionContext context)
+            throws RemoteException {
+        ConnectionContextLogger.getInstance().logConnectionContext(context, usr, "getMetaObject", "query:" + query);
         final MetaObjectNode[] nodes = (MetaObjectNode[])(getMetaObjectNode(usr, query));
         final MetaObject[] ret = new MetaObject[nodes.length];
         int i = 0;
@@ -1145,10 +1183,31 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     }
 
     @Override
+    @Deprecated
     public Object executeTask(final User user,
             final String taskname,
             final Object body,
             final ServerActionParameter... params) throws RemoteException {
+        return executeTask(user, taskname, ConnectionContext.createDeprecated(), body, params);
+    }
+
+    @Override
+    public Object executeTask(final User user,
+            final String taskname,
+            final ConnectionContext context,
+            final Object body,
+            final ServerActionParameter... params) throws RemoteException {
+        ConnectionContextLogger.getInstance()
+                .logConnectionContext(
+                    context,
+                    user,
+                    "executeTask",
+                    "taskname:"
+                    + taskname,
+                    "body:"
+                    + body,
+                    "params:"
+                    + Arrays.toString(params));
         if (hasConfigAttr(user, SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX + taskname)) {
             final ServerAction serverAction = serverActionMap.get(taskname);
 

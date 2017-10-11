@@ -23,6 +23,7 @@ import java.rmi.RemoteException;
 
 import java.util.ArrayList;
 
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
 import de.cismet.cids.server.search.QueryPostProcessor;
 
 /**
@@ -68,7 +69,21 @@ public interface MetaService extends Remote {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Deprecated
     MetaObject[] getMetaObject(User usr, String query) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr      DOCUMENT ME!
+     * @param   query    DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    MetaObject[] getMetaObject(User usr, String query, ConnectionContext context) throws RemoteException;
 
     /**
      * DOCUMENT ME!
@@ -81,7 +96,22 @@ public interface MetaService extends Remote {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Deprecated
     MetaObject getMetaObject(User usr, int objectID, int classID) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr       DOCUMENT ME!
+     * @param   objectID  DOCUMENT ME!
+     * @param   classID   DOCUMENT ME!
+     * @param   context   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    MetaObject getMetaObject(User usr, int objectID, int classID, ConnectionContext context) throws RemoteException;
     /**
      * inserts metaObject in the MIS XXX NEW Method XXX.
      *

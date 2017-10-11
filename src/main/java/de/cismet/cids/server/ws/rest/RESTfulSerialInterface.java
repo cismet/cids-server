@@ -43,6 +43,7 @@ import javax.ws.rs.core.UriInfo;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
 import de.cismet.cids.server.search.CidsServerSearch;
 
 import de.cismet.commons.security.exceptions.BadHttpStatusCodeException;
@@ -108,6 +109,7 @@ public final class RESTfulSerialInterface {
     public static final String PARAM_TASKNAME = "taskname";                       // NOI18N
     public static final String PARAM_BODY = "json";                               // NOI18N
     public static final String PARAM_PARAMELIPSE = "paramelipse";                 // NOI18N
+    public static final String PARAM_CONTEXT = "context";                         // NOI18N
 
     //~ Instance fields --------------------------------------------------------
 
@@ -260,6 +262,7 @@ public final class RESTfulSerialInterface {
      * @param   hsr              DOCUMENT ME!
      * @param   userBytes        user DOCUMENT ME!
      * @param   domainNameBytes  DOCUMENT ME!
+     * @param   contextBytes     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -271,11 +274,16 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getRootsByDomain(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
-            @FormParam(PARAM_DOMAIN) final String domainNameBytes) throws RemoteException {
+            @FormParam(PARAM_DOMAIN) final String domainNameBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getRootsByDomain", "[bytes]", "domain=[bytes]");
 
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String domain = Converter.deserialiseFromString(
                     domainNameBytes,
                     String.class,
@@ -297,8 +305,9 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr        DOCUMENT ME!
-     * @param   userBytes  user DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   userBytes     user DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -309,11 +318,16 @@ public final class RESTfulSerialInterface {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getRoots(@Context final HttpServletRequest hsr,
-            @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
+            @FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getRoots", "[bytes]");
 
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             nameTheThread(hsr, "/getRoots", user.toString());
 
             return createResponse(getCallserver().getRoots(user));
@@ -331,9 +345,10 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr        DOCUMENT ME!
-     * @param   nodeBytes  node DOCUMENT ME!
-     * @param   usrBytes   usr DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   nodeBytes     node DOCUMENT ME!
+     * @param   usrBytes      usr DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -345,10 +360,15 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getChildren(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_NODE) final String nodeBytes,
-            @FormParam(PARAM_USER) final String usrBytes) throws RemoteException {
+            @FormParam(PARAM_USER) final String usrBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getChildren", "[bytes]", "node=[bytes]");
 
         try {
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final Node node = Converter.deserialiseFromString(nodeBytes, Node.class, isCompressionEnabled());
             final User user = Converter.deserialiseFromString(usrBytes, User.class, isCompressionEnabled());
             nameTheThread(hsr, "/getChildren", user.toString(), "node=" + ((node != null) ? node.toString() : "null"));
@@ -368,10 +388,11 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr          DOCUMENT ME!
-     * @param   nodeBytes    node DOCUMENT ME!
-     * @param   parentBytes  DOCUMENT ME!
-     * @param   userBytes    user DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   nodeBytes     node DOCUMENT ME!
+     * @param   parentBytes   DOCUMENT ME!
+     * @param   userBytes     user DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -384,9 +405,14 @@ public final class RESTfulSerialInterface {
     public Response addNode(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_NODE) final String nodeBytes,
             @FormParam(PARAM_LINK_PARENT) final String parentBytes,
-            @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
+            @FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/addNode", "[bytes]", "node=[bytes]");
         try {
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final Node node = Converter.deserialiseFromString(nodeBytes, Node.class, isCompressionEnabled());
             final Link parent = Converter.deserialiseFromString(parentBytes, Link.class, isCompressionEnabled());
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
@@ -407,9 +433,10 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr        DOCUMENT ME!
-     * @param   nodeBytes  node DOCUMENT ME!
-     * @param   userBytes  user DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   nodeBytes     node DOCUMENT ME!
+     * @param   userBytes     user DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -421,12 +448,17 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response deleteNode(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_NODE) final String nodeBytes,
-            @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
+            @FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/deleteNode", "[bytes]", "node=[bytes]");
 
         try {
             final Node node = Converter.deserialiseFromString(nodeBytes, Node.class, isCompressionEnabled());
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             nameTheThread(hsr, "/deleteNode", user.toString(), "node=" + ((node != null) ? node.toString() : "null"));
 
             return createResponse(getCallserver().deleteNode(node, user));
@@ -444,10 +476,11 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr        DOCUMENT ME!
-     * @param   fromBytes  from DOCUMENT ME!
-     * @param   toBytes    to DOCUMENT ME!
-     * @param   userBytes  user DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   fromBytes     from DOCUMENT ME!
+     * @param   toBytes       to DOCUMENT ME!
+     * @param   userBytes     user DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -460,11 +493,16 @@ public final class RESTfulSerialInterface {
     public Response addLink(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_NODE_FROM) final String fromBytes,
             @FormParam(PARAM_NODE_TO) final String toBytes,
-            @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
+            @FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/addLink", "[bytes]", "link=[bytes]");
 
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final Node from = Converter.deserialiseFromString(fromBytes, Node.class, isCompressionEnabled());
             final Node to = Converter.deserialiseFromString(toBytes, Node.class, isCompressionEnabled());
             nameTheThread(
@@ -491,10 +529,11 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr        DOCUMENT ME!
-     * @param   fromBytes  from DOCUMENT ME!
-     * @param   toBytes    to DOCUMENT ME!
-     * @param   userBytes  user DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   fromBytes     from DOCUMENT ME!
+     * @param   toBytes       to DOCUMENT ME!
+     * @param   userBytes     user DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -507,11 +546,16 @@ public final class RESTfulSerialInterface {
     public Response deleteLink(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_NODE_FROM) final String fromBytes,
             @FormParam(PARAM_NODE_TO) final String toBytes,
-            @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
+            @FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/deleteLink", "[bytes]", "link=[bytes]");
 
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final Node from = Converter.deserialiseFromString(fromBytes, Node.class, isCompressionEnabled());
             final Node to = Converter.deserialiseFromString(toBytes, Node.class, isCompressionEnabled());
             nameTheThread(
@@ -561,10 +605,11 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr          DOCUMENT ME!
-     * @param   userBytes    usr DOCUMENT ME!
-     * @param   nodeIDBytes  DOCUMENT ME!
-     * @param   domainBytes  DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   userBytes     usr DOCUMENT ME!
+     * @param   nodeIDBytes   DOCUMENT ME!
+     * @param   domainBytes   DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -577,10 +622,15 @@ public final class RESTfulSerialInterface {
     public Response getMetaObjectNode(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_NODE_ID) final String nodeIDBytes,
-            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+            @FormParam(PARAM_DOMAIN) final String domainBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getMetaObjectNodeByID", "[bytes]", "domain=[bytes]", "nodeId=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final int nodeID = Converter.deserialiseFromString(nodeIDBytes, int.class, isCompressionEnabled());
             final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
             nameTheThread(hsr, "/getMetaObjectNodeByID", user.toString(), "domain=" + domain, ",nodeId=" + nodeID);
@@ -600,9 +650,10 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr         DOCUMENT ME!
-     * @param   usrBytes    usr DOCUMENT ME!
-     * @param   queryBytes  DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   usrBytes      usr DOCUMENT ME!
+     * @param   queryBytes    DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -614,10 +665,15 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getMetaObjectNodeByString(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String usrBytes,
-            @FormParam(PARAM_QUERY) final String queryBytes) throws RemoteException {
+            @FormParam(PARAM_QUERY) final String queryBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getMetaObjectNodeByString", "[bytes]", "query=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(usrBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String query = Converter.deserialiseFromString(queryBytes, String.class, isCompressionEnabled());
             nameTheThread(hsr, "/getMetaObjectNodeByString", user.toString(), "query=" + query);
 
@@ -636,9 +692,10 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr         DOCUMENT ME!
-     * @param   usrBytes    usr DOCUMENT ME!
-     * @param   queryBytes  DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   usrBytes      usr DOCUMENT ME!
+     * @param   queryBytes    DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -650,10 +707,15 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getMetaObjectByString(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String usrBytes,
-            @FormParam(PARAM_QUERY) final String queryBytes) throws RemoteException {
+            @FormParam(PARAM_QUERY) final String queryBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getMetaObjectByString", "[bytes]", "query=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(usrBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String query = Converter.deserialiseFromString(queryBytes, String.class, isCompressionEnabled());
             nameTheThread(hsr, "/getMetaObjectByString", user.toString(), "query=" + query);
 
@@ -672,10 +734,11 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr          DOCUMENT ME!
-     * @param   usrBytes     DOCUMENT ME!
-     * @param   queryBytes   DOCUMENT ME!
-     * @param   domainBytes  DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   usrBytes      DOCUMENT ME!
+     * @param   queryBytes    DOCUMENT ME!
+     * @param   domainBytes   DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -688,10 +751,15 @@ public final class RESTfulSerialInterface {
     public Response getMetaObjectByString(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String usrBytes,
             @FormParam(PARAM_QUERY) final String queryBytes,
-            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+            @FormParam(PARAM_DOMAIN) final String domainBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getMetaObjectByStringAndDomain", "[bytes]", "domain=[bytes]", " query=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(usrBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String query = Converter.deserialiseFromString(queryBytes, String.class, isCompressionEnabled());
             final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
             nameTheThread(
@@ -723,6 +791,7 @@ public final class RESTfulSerialInterface {
      * @param   objectIDBytes  DOCUMENT ME!
      * @param   classIDBytes   DOCUMENT ME!
      * @param   domainBytes    DOCUMENT ME!
+     * @param   contextBytes   DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -736,10 +805,16 @@ public final class RESTfulSerialInterface {
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_OBJECT_ID) final String objectIDBytes,
             @FormParam(PARAM_CLASS_ID) final String classIDBytes,
-            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+            @FormParam(PARAM_DOMAIN) final String domainBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getMetaObjectByID", "[bytes]", "domain=[bytes]", "classId=[bytes]", "objectId=[bytes]");
+
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final int objectID = Converter.deserialiseFromString(objectIDBytes, int.class, isCompressionEnabled());
             final int classID = Converter.deserialiseFromString(classIDBytes, int.class, isCompressionEnabled());
             final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
@@ -773,6 +848,7 @@ public final class RESTfulSerialInterface {
      * @param   userBytes        user DOCUMENT ME!
      * @param   metaObjectBytes  DOCUMENT ME!
      * @param   domainBytes      DOCUMENT ME!
+     * @param   contextBytes     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -785,10 +861,15 @@ public final class RESTfulSerialInterface {
     public Response insertMetaObject(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_METAOBJECT) final String metaObjectBytes,
-            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+            @FormParam(PARAM_DOMAIN) final String domainBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/insertMetaObject", "[bytes]", "domain=[bytes]", "object=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final MetaObject metaObject = Converter.deserialiseFromString(
                     metaObjectBytes,
                     MetaObject.class,
@@ -824,6 +905,7 @@ public final class RESTfulSerialInterface {
      * @param   userBytes        user DOCUMENT ME!
      * @param   metaObjectBytes  DOCUMENT ME!
      * @param   domainBytes      DOCUMENT ME!
+     * @param   contextBytes     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -836,10 +918,15 @@ public final class RESTfulSerialInterface {
     public Response updateMetaObject(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_METAOBJECT) final String metaObjectBytes,
-            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+            @FormParam(PARAM_DOMAIN) final String domainBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/updateMetaObject", "[bytes]", "domain=[bytes]", "object=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final MetaObject metaObject = Converter.deserialiseFromString(
                     metaObjectBytes,
                     MetaObject.class,
@@ -875,6 +962,7 @@ public final class RESTfulSerialInterface {
      * @param   userBytes        user DOCUMENT ME!
      * @param   metaObjectBytes  DOCUMENT ME!
      * @param   domainBytes      DOCUMENT ME!
+     * @param   contextBytes     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -887,10 +975,15 @@ public final class RESTfulSerialInterface {
     public Response deleteMetaObject(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_METAOBJECT) final String metaObjectBytes,
-            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+            @FormParam(PARAM_DOMAIN) final String domainBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/deleteMetaObject", "[bytes]", "domain=[bytes]", "object=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final MetaObject metaObject = Converter.deserialiseFromString(
                     metaObjectBytes,
                     MetaObject.class,
@@ -922,10 +1015,11 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr          DOCUMENT ME!
-     * @param   userBytes    user DOCUMENT ME!
-     * @param   queryBytes   DOCUMENT ME!
-     * @param   domainBytes  DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   userBytes     user DOCUMENT ME!
+     * @param   queryBytes    DOCUMENT ME!
+     * @param   domainBytes   DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -938,10 +1032,15 @@ public final class RESTfulSerialInterface {
     public Response update(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_QUERY) final String queryBytes,
-            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+            @FormParam(PARAM_DOMAIN) final String domainBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/update", "[bytes]", "domain=[bytes]", "query=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String query = Converter.deserialiseFromString(queryBytes, String.class, isCompressionEnabled());
             final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
             nameTheThread(hsr, "/update", user.toString(), "domain=" + domain, "query=" + query);
@@ -964,6 +1063,7 @@ public final class RESTfulSerialInterface {
      * @param   hsr             DOCUMENT ME!
      * @param   userBytes       user DOCUMENT ME!
      * @param   metaClassBytes  c DOCUMENT ME!
+     * @param   contextBytes    DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -975,10 +1075,15 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getInstance(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
-            @FormParam(PARAM_METACLASS) final String metaClassBytes) throws RemoteException {
+            @FormParam(PARAM_METACLASS) final String metaClassBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getInstance", "[bytes]", "class=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final MetaClass metaClass = Converter.deserialiseFromString(
                     metaClassBytes,
                     MetaClass.class,
@@ -1004,6 +1109,7 @@ public final class RESTfulSerialInterface {
      * @param   userBytes       user DOCUMENT ME!
      * @param   tableNameBytes  DOCUMENT ME!
      * @param   domainBytes     DOCUMENT ME!
+     * @param   contextBytes    DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1016,10 +1122,15 @@ public final class RESTfulSerialInterface {
     public Response getClassByTableName(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_TABLE_NAME) final String tableNameBytes,
-            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+            @FormParam(PARAM_DOMAIN) final String domainBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getClassByTableName", "[bytes]", "domain=[bytes]", "tableName=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String tableName = Converter.deserialiseFromString(
                     tableNameBytes,
                     String.class,
@@ -1046,6 +1157,7 @@ public final class RESTfulSerialInterface {
      * @param   userBytes     user DOCUMENT ME!
      * @param   classIdBytes  classID DOCUMENT ME!
      * @param   domainBytes   DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1058,10 +1170,15 @@ public final class RESTfulSerialInterface {
     public Response getClass(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_CLASS_ID) final String classIdBytes,
-            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+            @FormParam(PARAM_DOMAIN) final String domainBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getClassByID", "[bytes]", "domain=[bytes]", "classId=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class, isCompressionEnabled());
             final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
             nameTheThread(hsr, "/getClassByID", user.toString(), "domain=" + domain, "classId=" + classId);
@@ -1081,9 +1198,10 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr          DOCUMENT ME!
-     * @param   userBytes    user DOCUMENT ME!
-     * @param   domainBytes  DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   userBytes     user DOCUMENT ME!
+     * @param   domainBytes   DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1095,10 +1213,15 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getClasses(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
-            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+            @FormParam(PARAM_DOMAIN) final String domainBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getClasses", "[bytes]", "domain=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
             nameTheThread(hsr, "/getClasses", user.toString(), "domain=" + domain);
             return createResponse(getCallserver().getClasses(user, domain));
@@ -1116,8 +1239,9 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr        DOCUMENT ME!
-     * @param   userBytes  user DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   userBytes     user DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1128,10 +1252,15 @@ public final class RESTfulSerialInterface {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getClassTreeNodes(@Context final HttpServletRequest hsr,
-            @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
+            @FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getClassTreeNodesByUser", "[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             nameTheThread(hsr, "/getClassTreeNodesByUser", user.toString());
 
             return createResponse(getCallserver().getClassTreeNodes(user));
@@ -1149,9 +1278,10 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr          DOCUMENT ME!
-     * @param   userBytes    user DOCUMENT ME!
-     * @param   domainBytes  DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   userBytes     user DOCUMENT ME!
+     * @param   domainBytes   DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1163,10 +1293,15 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getClassTreeNodes(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
-            @FormParam(PARAM_DOMAIN) final String domainBytes) throws RemoteException {
+            @FormParam(PARAM_DOMAIN) final String domainBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getClassTreeNodesByDomain", "[bytes]", "domain=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
             nameTheThread(hsr, "/getClassTreeNodesByDomain", user.toString(), "domain=" + domain);
 
@@ -1185,8 +1320,9 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr        DOCUMENT ME!
-     * @param   userBytes  user DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   userBytes     user DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1197,10 +1333,15 @@ public final class RESTfulSerialInterface {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getMethodsByUser(@Context final HttpServletRequest hsr,
-            @FormParam(PARAM_USER) final String userBytes) throws RemoteException {
+            @FormParam(PARAM_USER) final String userBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getMethodsByUser", "[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             nameTheThread(hsr, "/getMethodsByUser", user.toString());
 
             return createResponse(getCallserver().getMethods(user));
@@ -1221,6 +1362,7 @@ public final class RESTfulSerialInterface {
      * @param   hsr                   DOCUMENT ME!
      * @param   userBytes             user DOCUMENT ME!
      * @param   localServerNameBytes  DOCUMENT ME!
+     * @param   contextBytes          DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1232,10 +1374,15 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getMethods(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
-            @FormParam(PARAM_LOCAL_SERVER_NAME) final String localServerNameBytes) throws RemoteException {
+            @FormParam(PARAM_LOCAL_SERVER_NAME) final String localServerNameBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getMethodsByDomain", "[bytes]", "domain=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String localServerName = Converter.deserialiseFromString(
                     localServerNameBytes,
                     String.class,
@@ -1262,6 +1409,7 @@ public final class RESTfulSerialInterface {
      * @param   userBytes                   user DOCUMENT ME!
      * @param   representationFieldsBytes   DOCUMENT ME!
      * @param   representationPatternBytes  DOCUMENT ME!
+     * @param   contextBytes                DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1275,11 +1423,16 @@ public final class RESTfulSerialInterface {
             @FormParam(PARAM_CLASS_ID) final String classIdBytes,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_REP_FIELDS) final String representationFieldsBytes,
-            @FormParam(PARAM_REP_PATTERN) final String representationPatternBytes) throws RemoteException {
+            @FormParam(PARAM_REP_PATTERN) final String representationPatternBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getAllLightweightMetaObjectsForClassByPattern", "[bytes]", "classId=[bytes]", "...");
         try {
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class, isCompressionEnabled());
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String[] representationFields = Converter.deserialiseFromString(
                     representationFieldsBytes,
                     String[].class,
@@ -1319,6 +1472,7 @@ public final class RESTfulSerialInterface {
      * @param   classIdBytes               DOCUMENT ME!
      * @param   userBytes                  user DOCUMENT ME!
      * @param   representationFieldsBytes  DOCUMENT ME!
+     * @param   contextBytes               DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1331,11 +1485,16 @@ public final class RESTfulSerialInterface {
     public Response getAllLightweightMetaObjectsForClass(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_CLASS_ID) final String classIdBytes,
             @FormParam(PARAM_USER) final String userBytes,
-            @FormParam(PARAM_REP_FIELDS) final String representationFieldsBytes) throws RemoteException {
+            @FormParam(PARAM_REP_FIELDS) final String representationFieldsBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getAllLightweightMetaObjectsForClass", "[bytes]", "classId=[bytes]", "...");
         try {
-            final int classId = Converter.deserialiseFromString(classIdBytes, int.class, isCompressionEnabled());
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
+            final int classId = Converter.deserialiseFromString(classIdBytes, int.class, isCompressionEnabled());
             final String[] representationFields = Converter.deserialiseFromString(
                     representationFieldsBytes,
                     String[].class,
@@ -1366,6 +1525,7 @@ public final class RESTfulSerialInterface {
      * @param   queryBytes                  DOCUMENT ME!
      * @param   representationFieldsBytes   DOCUMENT ME!
      * @param   representationPatternBytes  DOCUMENT ME!
+     * @param   contextBytes                DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1380,11 +1540,16 @@ public final class RESTfulSerialInterface {
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_QUERY) final String queryBytes,
             @FormParam(PARAM_REP_FIELDS) final String representationFieldsBytes,
-            @FormParam(PARAM_REP_PATTERN) final String representationPatternBytes) throws RemoteException {
+            @FormParam(PARAM_REP_PATTERN) final String representationPatternBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getLightweightMetaObjectsByQueryAndPattern", "[bytes]", "classId=[bytes]", "...");
         try {
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class, isCompressionEnabled());
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String query = Converter.deserialiseFromString(queryBytes, String.class, isCompressionEnabled());
             final String[] representationFields = Converter.deserialiseFromString(
                     representationFieldsBytes,
@@ -1427,6 +1592,7 @@ public final class RESTfulSerialInterface {
      * @param   userBytes                  user DOCUMENT ME!
      * @param   queryBytes                 DOCUMENT ME!
      * @param   representationFieldsBytes  DOCUMENT ME!
+     * @param   contextBytes               DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1440,11 +1606,16 @@ public final class RESTfulSerialInterface {
             @FormParam(PARAM_CLASS_ID) final String classIdBytes,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_QUERY) final String queryBytes,
-            @FormParam(PARAM_REP_FIELDS) final String representationFieldsBytes) throws RemoteException {
+            @FormParam(PARAM_REP_FIELDS) final String representationFieldsBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getLightweightMetaObjectsByQuery", "[bytes]", "classId=[bytes]", "...");
         try {
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class, isCompressionEnabled());
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String query = Converter.deserialiseFromString(queryBytes, String.class, isCompressionEnabled());
             final String[] representationFields = Converter.deserialiseFromString(
                     representationFieldsBytes,
@@ -1471,8 +1642,9 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr          DOCUMENT ME!
-     * @param   lsNameBytes  DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   lsNameBytes   DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1483,9 +1655,14 @@ public final class RESTfulSerialInterface {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getDefaultIconsByLSName(@Context final HttpServletRequest hsr,
-            @FormParam(PARAM_LS_NAME) final String lsNameBytes) throws RemoteException {
+            @FormParam(PARAM_LS_NAME) final String lsNameBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getDefaultIconsByLSName", "anonymous", "domain=[bytes]");
         try {
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String lsName = Converter.deserialiseFromString(lsNameBytes, String.class, isCompressionEnabled());
             nameTheThread(hsr, "/getDefaultIconsByLSName", "anonymous", "domain=" + lsName);
 
@@ -1504,7 +1681,8 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr  DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1513,11 +1691,20 @@ public final class RESTfulSerialInterface {
     @POST
     @Path("/getDefaultIcons")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getDefaultIcons(@Context final HttpServletRequest hsr) throws RemoteException {
+    public Response getDefaultIcons(@Context final HttpServletRequest hsr,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getDefaultIcons", "anonymous");
         try {
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             return createResponse(getCallserver().getDefaultIcons());
         } catch (final IOException e) {
+            final String message = "could not get default icons"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
             final String message = "could not get default icons"; // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
@@ -1531,6 +1718,7 @@ public final class RESTfulSerialInterface {
      * @param   userBytes         user DOCUMENT ME!
      * @param   oldPasswordBytes  DOCUMENT ME!
      * @param   newPasswordBytes  DOCUMENT ME!
+     * @param   contextBytes      DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1544,10 +1732,15 @@ public final class RESTfulSerialInterface {
     public Response changePasswordGET(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_OLD_PASSWORD) final String oldPasswordBytes,
-            @FormParam(PARAM_NEW_PASSWORD) final String newPasswordBytes) throws RemoteException, UserException {
+            @FormParam(PARAM_NEW_PASSWORD) final String newPasswordBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException, UserException {
         nameTheThread(hsr, "/changePassword", "[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String oldPassword = Converter.deserialiseFromString(
                     oldPasswordBytes,
                     String.class,
@@ -1579,6 +1772,7 @@ public final class RESTfulSerialInterface {
      * @param   uLsNameBytes   DOCUMENT ME!
      * @param   unameBytes     DOCUMENT ME!
      * @param   passwordBytes  DOCUMENT ME!
+     * @param   contextBytes   DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1594,9 +1788,15 @@ public final class RESTfulSerialInterface {
             @FormParam(PARAM_USERGROUP_NAME) final String ugNameBytes,
             @FormParam(PARAM_USER_LS_NAME) final String uLsNameBytes,
             @FormParam(PARAM_USERNAME) final String unameBytes,
-            @FormParam(PARAM_PASSWORD) final String passwordBytes) throws RemoteException, UserException {
+            @FormParam(PARAM_PASSWORD) final String passwordBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException, UserException {
         nameTheThread(hsr, "/getUser", "[bytes]");
+
         try {
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String ugLsName = Converter.deserialiseFromString(
                     ugLsNameBytes,
                     String.class,
@@ -1625,7 +1825,8 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr  DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1634,12 +1835,21 @@ public final class RESTfulSerialInterface {
     @POST
     @Path("/getUserGroupNames")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getUserGroupNames(@Context final HttpServletRequest hsr) throws RemoteException {
+    public Response getUserGroupNames(@Context final HttpServletRequest hsr,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getUserGroupNames", "anonymous");
         try {
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             return createResponse(getCallserver().getUserGroupNames());
         } catch (final IOException e) {
             final String message = "could not get usergroup names"; // NOI18N
+            LOG.error(message, e);
+            throw new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            final String message = "ould not get usergroup names";  // NOI18N
             LOG.error(message, e);
             throw new RemoteException(message, e);
         }
@@ -1648,9 +1858,10 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr          DOCUMENT ME!
-     * @param   unameBytes   DOCUMENT ME!
-     * @param   lsHomeBytes  DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   unameBytes    DOCUMENT ME!
+     * @param   lsHomeBytes   DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1662,9 +1873,14 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getUserGroupNamesGET(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USERNAME) final String unameBytes,
-            @FormParam(PARAM_LS_HOME) final String lsHomeBytes) throws RemoteException {
+            @FormParam(PARAM_LS_HOME) final String lsHomeBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getUserGroupNamesByUser", "[bytes]", "userdomain=[bytes]");
         try {
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String uname = Converter.deserialiseFromString(unameBytes, String.class, isCompressionEnabled());
             final String lsHome = Converter.deserialiseFromString(lsHomeBytes, String.class, isCompressionEnabled());
             nameTheThread(hsr, "/getUserGroupNamesByUser", uname, "userdomain=" + lsHome);
@@ -1684,9 +1900,10 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr        DOCUMENT ME!
-     * @param   userBytes  DOCUMENT ME!
-     * @param   keyBytes   DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   userBytes     DOCUMENT ME!
+     * @param   keyBytes      DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1698,10 +1915,15 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getConfigAttr(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
-            @FormParam(PARAM_KEY) final String keyBytes) throws RemoteException {
+            @FormParam(PARAM_KEY) final String keyBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getConfigAttr", "[bytes]", "key=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String key = Converter.deserialiseFromString(keyBytes, String.class, isCompressionEnabled());
             nameTheThread(hsr, "/getConfigAttr", user.toString(), "key=" + key);
 
@@ -1720,9 +1942,10 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr        DOCUMENT ME!
-     * @param   userBytes  DOCUMENT ME!
-     * @param   keyBytes   DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   userBytes     DOCUMENT ME!
+     * @param   keyBytes      DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1734,10 +1957,15 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response hasConfigAttr(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
-            @FormParam(PARAM_KEY) final String keyBytes) throws RemoteException {
+            @FormParam(PARAM_KEY) final String keyBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/hasConfigAttr", "[bytes]", "key=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String key = Converter.deserialiseFromString(keyBytes, String.class, isCompressionEnabled());
             nameTheThread(hsr, "/hasConfigAttr", user.toString(), "key=" + key);
 
@@ -1759,6 +1987,7 @@ public final class RESTfulSerialInterface {
      * @param   hsr                      DOCUMENT ME!
      * @param   userBytes                DOCUMENT ME!
      * @param   customServerSearchBytes  DOCUMENT ME!
+     * @param   contextBytes             DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1770,10 +1999,15 @@ public final class RESTfulSerialInterface {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response customServerSearchPOST(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
-            @FormParam(PARAM_CUSTOM_SERVER_SEARCH) final String customServerSearchBytes) throws RemoteException {
+            @FormParam(PARAM_CUSTOM_SERVER_SEARCH) final String customServerSearchBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/customServerSearch", "[bytes]", "serverSearch=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final CidsServerSearch serverSearch = Converter.deserialiseFromString(
                     customServerSearchBytes,
                     CidsServerSearch.class,
@@ -1806,6 +2040,7 @@ public final class RESTfulSerialInterface {
      * @param   domainBytes    DOCUMENT ME!
      * @param   userBytes      DOCUMENT ME!
      * @param   elementsBytes  DOCUMENT ME!
+     * @param   contextBytes   DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1820,9 +2055,14 @@ public final class RESTfulSerialInterface {
             @FormParam(PARAM_OBJECT_ID) final String objectIdBytes,
             @FormParam(PARAM_DOMAIN) final String domainBytes,
             @FormParam(PARAM_USER) final String userBytes,
-            @FormParam(PARAM_ELEMENTS) final String elementsBytes) throws RemoteException {
+            @FormParam(PARAM_ELEMENTS) final String elementsBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getHistory", "[bytes]");
         try {
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class, isCompressionEnabled());
             final int objectId = Converter.deserialiseFromString(objectIdBytes, int.class, isCompressionEnabled());
             final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
@@ -1851,6 +2091,7 @@ public final class RESTfulSerialInterface {
      * @param   tasknameBytes     DOCUMENT ME!
      * @param   bodyBytes         DOCUMENT ME!
      * @param   paramelipseBytes  DOCUMENT ME!
+     * @param   contextBytes      DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1865,10 +2106,15 @@ public final class RESTfulSerialInterface {
             @FormParam(PARAM_DOMAIN) final String taskdomainBytes,
             @FormParam(PARAM_TASKNAME) final String tasknameBytes,
             @FormParam(PARAM_BODY) final String bodyBytes,
-            @FormParam(PARAM_PARAMELIPSE) final String paramelipseBytes) throws RemoteException {
+            @FormParam(PARAM_PARAMELIPSE) final String paramelipseBytes,
+            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/executeTask", "[bytes]", "domain=[bytes]", "taskname=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String taskdomain = Converter.deserialiseFromString(
                     taskdomainBytes,
                     String.class,
@@ -1884,7 +2130,7 @@ public final class RESTfulSerialInterface {
                     isCompressionEnabled());
             nameTheThread(hsr, "/executeTask", user.toString(), "domain=" + taskdomain, "taskname=" + taskname);
 
-            return createResponse(getCallserver().executeTask(user, taskname, taskdomain, body, params), null);
+            return createResponse(getCallserver().executeTask(user, taskname, taskdomain, context, body, params), null);
         } catch (final IOException e) {
             final String message = "could not execute task"; // NOI18N
             LOG.error(message, e);
@@ -1911,13 +2157,14 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr         DOCUMENT ME!
-     * @param   uriInfo     DOCUMENT ME!
-     * @param   headers     DOCUMENT ME!
-     * @param   authString  DOCUMENT ME!
-     * @param   taskname    DOCUMENT ME!
-     * @param   taskdomain  DOCUMENT ME!
-     * @param   body        DOCUMENT ME!
+     * @param   hsr           DOCUMENT ME!
+     * @param   uriInfo       DOCUMENT ME!
+     * @param   headers       DOCUMENT ME!
+     * @param   authString    DOCUMENT ME!
+     * @param   taskname      DOCUMENT ME!
+     * @param   taskdomain    DOCUMENT ME!
+     * @param   contextBytes  DOCUMENT ME!
+     * @param   body          DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1933,6 +2180,7 @@ public final class RESTfulSerialInterface {
             @HeaderParam("Authorization") final String authString,
             @PathParam("taskname") final String taskname,
             @PathParam("taskdomain") final String taskdomain,
+            @FormParam(PARAM_CONTEXT) final String contextBytes,
             final Object body) throws RemoteException {
         nameTheThread(
             hsr,
@@ -1942,12 +2190,18 @@ public final class RESTfulSerialInterface {
                     + taskdomain,
             "taskname="
                     + taskname);
+
         try {
             if (authString == null) {
                 return Response.status(Response.Status.UNAUTHORIZED)
                             .header("WWW-Authenticate", "Basic realm=\"Please Authenticate with cids Credentials\"")
                             .build();
             }
+            final ConnectionContext context = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
+
             final User u = getCidsUserFromBasicAuth(authString);
             System.out.println(taskname + "@" + taskdomain);
             nameTheThread(
@@ -1963,6 +2217,7 @@ public final class RESTfulSerialInterface {
                     u,
                     taskname,
                     taskdomain,
+                    context,
                     body,
                     ServerActionParameter.fromMVMap(uriInfo.getQueryParameters()));
 
@@ -1997,7 +2252,7 @@ public final class RESTfulSerialInterface {
             @HeaderParam("Authorization") final String authString,
             @PathParam("taskname") final String taskname,
             @PathParam("taskdomain") final String taskdomain) throws RemoteException {
-        return executeTaskWithPost(hsr, uriInfo, headers, authString, taskname, taskdomain, null);
+        return executeTaskWithPost(hsr, uriInfo, headers, authString, taskname, taskdomain, null, null);
     }
 
     /**

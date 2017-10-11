@@ -18,6 +18,8 @@ import Sirius.server.newuser.User;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+
 /**
  * Interface for retrieving or modifying meta information sets.
  *
@@ -78,7 +80,20 @@ public interface MetaService extends Remote {
      *
      * @throws  RemoteException  server error
      */
+    @Deprecated
     MetaObject[] getMetaObject(User usr, String query) throws RemoteException;
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr      DOCUMENT ME!
+     * @param   query    DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    MetaObject[] getMetaObject(User usr, String query, ConnectionContext context) throws RemoteException;
 
     /**
      * DOCUMENT ME!
@@ -91,7 +106,22 @@ public interface MetaService extends Remote {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Deprecated
     MetaObject[] getMetaObject(User usr, String query, String domain) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr      DOCUMENT ME!
+     * @param   query    DOCUMENT ME!
+     * @param   domain   DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    MetaObject[] getMetaObject(User usr, String query, String domain, ConnectionContext context) throws RemoteException;
 
     /**
      * DOCUMENT ME!
@@ -105,7 +135,24 @@ public interface MetaService extends Remote {
      *
      * @throws  RemoteException  server error
      */
+    @Deprecated
     MetaObject getMetaObject(User usr, int objectID, int classID, String domain) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr       DOCUMENT ME!
+     * @param   objectID  DOCUMENT ME!
+     * @param   classID   DOCUMENT ME!
+     * @param   domain    DOCUMENT ME!
+     * @param   context   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    MetaObject getMetaObject(User usr, int objectID, int classID, String domain, ConnectionContext context)
+            throws RemoteException;
 
     // inserts metaObject in the MIS
 

@@ -21,6 +21,7 @@ import java.rmi.RemoteException;
 import java.util.Map;
 
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
 
 /**
  * DOCUMENT ME!
@@ -36,7 +37,7 @@ public class ActionServiceImpl implements ActionService {
 
     //~ Instance fields --------------------------------------------------------
 
-    private Map activeLocalServers;
+    private final Map activeLocalServers;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -55,12 +56,23 @@ public class ActionServiceImpl implements ActionService {
     //~ Methods ----------------------------------------------------------------
 
     @Override
+    @Deprecated
     public Object executeTask(final User user,
             final String taskname,
             final String taskdomain,
             final Object body,
             final ServerActionParameter... params) throws RemoteException {
+        return executeTask(user, taskname, taskdomain, ConnectionContext.createDeprecated(), body, params);
+    }
+
+    @Override
+    public Object executeTask(final User user,
+            final String taskname,
+            final String taskdomain,
+            final ConnectionContext context,
+            final Object body,
+            final ServerActionParameter... params) throws RemoteException {
         return ((Sirius.server.middleware.interfaces.domainserver.ActionService)activeLocalServers.get(taskdomain))
-                    .executeTask(user, taskname, body, params);
+                    .executeTask(user, taskname, context, body, params);
     }
 }

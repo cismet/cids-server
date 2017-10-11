@@ -36,6 +36,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+
 /**
  * DOCUMENT ME!
  *
@@ -329,12 +331,28 @@ public class MetaServiceImpl implements MetaService {
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
+    @Deprecated
     public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
         return getMetaObject(usr, query, usr.getDomain());
     }
 
     @Override
+    public MetaObject[] getMetaObject(final User usr, final String query, final ConnectionContext context)
+            throws RemoteException {
+        return getMetaObject(usr, query, usr.getDomain(), context);
+    }
+
+    @Override
+    @Deprecated
     public MetaObject[] getMetaObject(final User usr, final String query, final String domain) throws RemoteException {
+        return getMetaObject(usr, query, ConnectionContext.createDeprecated());
+    }
+
+    @Override
+    public MetaObject[] getMetaObject(final User usr,
+            final String query,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
         if (logger != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("<CS> getMetaObject for [user=" + usr + "|domain=" + domain + "|query=" + query + "]"); // NOI18N
@@ -348,7 +366,7 @@ public class MetaServiceImpl implements MetaService {
             throw new RemoteException("no server registered for domain: " + domain); // NOI18N
         }
 
-        return metaService.getMetaObject(usr, query);
+        return metaService.getMetaObject(usr, query, context);
     }
 
     /**
@@ -364,8 +382,18 @@ public class MetaServiceImpl implements MetaService {
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
+    @Deprecated
     public MetaObject getMetaObject(final User usr, final int objectID, final int classID, final String domain)
             throws RemoteException {
+        return getMetaObject(usr, objectID, classID, domain, ConnectionContext.createDeprecated());
+    }
+
+    @Override
+    public MetaObject getMetaObject(final User usr,
+            final int objectID,
+            final int classID,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
         if (logger != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug(
@@ -380,7 +408,7 @@ public class MetaServiceImpl implements MetaService {
             }
         }
         return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain))
-                    .getMetaObject(usr, objectID, classID);
+                    .getMetaObject(usr, objectID, classID, context);
     }
 
     /**

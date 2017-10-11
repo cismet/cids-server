@@ -77,6 +77,7 @@ import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
 import de.cismet.cids.server.search.CidsServerSearch;
 import de.cismet.cids.server.ws.SSLConfig;
 import de.cismet.cids.server.ws.rest.CidsTrustManager;
@@ -1476,6 +1477,147 @@ public class RESTfulInterfaceConnector implements CallServerService {
     }
 
     // </editor-fold>
+    // <editor-fold desc="ACTIONS API" defaultstate="collapsed">
+
+    @Override
+    @Deprecated
+    public Object executeTask(final User user,
+            final String taskname,
+            final String domain,
+            final Object body,
+            final ServerActionParameter... params) throws RemoteException {
+        return executeTask(user, taskname, domain, ConnectionContext.createDeprecated(), body, params);
+    }
+
+    /**
+     * Executes a remote task in the context of the server.<br>
+     * <br>
+     * <strong>Example REST Call:</strong><br>
+     * <code>curl --user admin@SWITCHON:cismet<br>
+     * -F "taskparams"="{""actionKey"": ""downloadFile"",""description"": ""Download a remote file""
+     * };type=application/json"<br>
+     * -F "file"="filetodownload;text/plain"<br>
+     * http://localhost:8890/actions/SWITCHON.downloadFile/tasks?role=all^&resultingInstanceType=result</code>
+     *
+     * @param   user      user performing the request
+     * @param   taskname  name of the task to be performed
+     * @param   domain    domain of the server / task
+     * @param   context   DOCUMENT ME!
+     * @param   body      body parameter of the task, e.g. byte[]
+     * @param   params    0...n action parameters
+     *
+     * @return  result of the task, e.g. byte[]
+     *
+     * @throws  RemoteException  if the task execution fails
+     */
+    @Override
+    public Object executeTask(final User user,
+            final String taskname,
+            final String domain,
+            final ConnectionContext context,
+            final Object body,
+            final ServerActionParameter... params) throws RemoteException {
+        // TODO context implementation
+
+        final GenericResourceWithContentType taskResult;
+        final ActionTask actionTask = new ActionTask();
+        final Map<String, Object> actionParameters = new LinkedHashMap();
+        for (final ServerActionParameter param : params) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("processing ServerActionParameter '" + param.toString() + "'");
+            }
+            actionParameters.put(param.getKey(), param.getValue());
+        }
+
+        actionTask.setActionKey(taskname);
+        actionTask.setParameters(actionParameters);
+
+        final MultivaluedMap queryParameters = this.createUserParameters(user);
+        queryParameters.add("resultingInstanceType", "result");
+        final WebResource webResource = this.createWebResource(ACTIONS_API)
+                    .path(domain + "." + taskname + ACTIONS_API_TASKS)
+                    .queryParams(queryParameters);
+        final WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("executeTask '" + taskname
+                        + "' for user '" + user + "' and domain '"
+                        + domain + "' with " + params.length + " Server Action Parameters: "
+                        + webResource.toString());
+        }
+
+        builder.type(MediaType.MULTIPART_FORM_DATA_TYPE).accept(MediaType.APPLICATION_JSON_TYPE);
+
+        FormDataMultiPart multiPartData = new FormDataMultiPart();
+        try {
+            // taskparams lowercase !!!!!
+            multiPartData = multiPartData.field(
+                    "taskparams",
+                    MAPPER.writeValueAsString(actionTask),
+                    MediaType.APPLICATION_JSON_TYPE);
+        } catch (IOException ex) {
+            final String message = "could not serialize action task '"
+                        + taskname
+                        + "' for user '"
+                        + user
+                        + "' and domain '"
+                        + domain
+                        + "' with "
+                        + params.length
+                        + "': "
+                        + ex.getMessage();
+            LOG.error(message, ex);
+            throw new RemoteException(message, ex);
+        }
+
+        if (body != null) {
+            try {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("creating Multi Part Form Data '" + MediaType.APPLICATION_OCTET_STREAM_TYPE + "'");
+                }
+                final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                final ObjectOutputStream oos = new ObjectOutputStream(bos);
+                oos.writeObject(body);
+                final byte[] bodyBytes = bos.toByteArray();
+
+//                final FormDataBodyPart formDataBodyPart = new FormDataBodyPart(
+//                        "file",
+//                        bodyBytes,
+//                        MediaType.APPLICATION_OCTET_STREAM_TYPE);
+//
+//                multiPartData.bodyPart(formDataBodyPart);
+
+                multiPartData = multiPartData.field("file", bodyBytes,
+                        MediaType.APPLICATION_OCTET_STREAM_TYPE);
+            } catch (Throwable t) {
+                final String message = "could not create binary attachment of action task '"
+                            + taskname
+                            + "' for user '"
+                            + user
+                            + "' and domain '"
+                            + domain
+                            + "' with "
+                            + params.length
+                            + "': "
+                            + t.getMessage();
+                LOG.error(message, t);
+                throw new RemoteException(message, t);
+            }
+        }
+
+        taskResult = builder.post(GenericResourceWithContentType.class, multiPartData);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("executeTask '" + taskname
+                        + "' for user '" + user + "' and domain '"
+                        + domain + "' with " + params.length
+                        + "' Server Action Parameters returned result of type '"
+                        + taskResult.getContentType() + "'");
+        }
+
+        return taskResult.getRes();
+    }
+
+    // </editor-fold>
 
     //~ Instance fields --------------------------------------------------------
 
@@ -1624,12 +1766,18 @@ public class RESTfulInterfaceConnector implements CallServerService {
     //</editor-fold>
     // <editor-fold desc="ENTITIES API" defaultstate="collapsed">
 
+    @Override
+    public MetaObject[] getMetaObject(final User user, final String query) throws RemoteException {
+        return this.getMetaObject(user, query, ConnectionContext.createDeprecated());
+    }
+
     /**
      * See
      * {@link #getLightweightMetaObjectsByQuery(int, Sirius.server.newuser.User, java.lang.String, java.lang.String[]) }.
      *
-     * @param       user   user performing the request
-     * @param       query  SQL query to select meta objects
+     * @param       user     user performing the request
+     * @param       query    SQL query to select meta objects
+     * @param       context  DOCUMENT ME!
      *
      * @return      Array of meta objects or empty array
      *
@@ -1639,8 +1787,15 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  should be replaced by custom search
      */
     @Override
-    public MetaObject[] getMetaObject(final User user, final String query) throws RemoteException {
-        return this.getMetaObject(user, query, user.getDomain());
+    public MetaObject[] getMetaObject(final User user, final String query, final ConnectionContext context)
+            throws RemoteException {
+        return this.getMetaObject(user, query, user.getDomain(), context);
+    }
+
+    @Override
+    @Deprecated
+    public MetaObject[] getMetaObject(final User user, final String query, final String domain) throws RemoteException {
+        return getMetaObject(user, query, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1650,9 +1805,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <strong>Note</strong>: This method is delegated to the cids custom server search {@link MetaObjectsByQuerySearch}
      * and thus deprecated.
      *
-     * @param       user    user performing the request
-     * @param       query   SQL query that returns classId and objectId
-     * @param       domain  DOCUMENT ME!
+     * @param       user     user performing the request
+     * @param       query    SQL query that returns classId and objectId
+     * @param       domain   DOCUMENT ME!
+     * @param       context  DOCUMENT ME!
      *
      * @return      Array of meta objects or empty array
      *
@@ -1661,7 +1817,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  should be replaced by custom search
      */
     @Override
-    public MetaObject[] getMetaObject(final User user, final String query, final String domain) throws RemoteException {
+    public MetaObject[] getMetaObject(final User user,
+            final String query,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
         LOG.warn("delegating getMetaObject(String query, ...) with query '"
                     + query + "' to legacy custom server search!");
 
@@ -1695,8 +1854,19 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
+    @Deprecated
     public MetaObject getMetaObject(final User user, final int objectId, final int classId, final String domain)
             throws RemoteException {
+        return getMetaObject(user, objectId, classId, domain, ConnectionContext.createDeprecated());
+    }
+
+    @Override
+    public MetaObject getMetaObject(final User user,
+            final int objectId,
+            final int classId,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
+        // TODO context implementation
         final String className = this.getClassNameForClassId(user, domain, classId);
 
         final MultivaluedMap queryParameters = this.createUserParameters(user);
@@ -2297,133 +2467,6 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     public MetaObject getInstance(final User user, final MetaClass metaClass) throws RemoteException {
         return metaClass.getEmptyInstance();
-    }
-
-    // </editor-fold>
-    // <editor-fold desc="ACTIONS API" defaultstate="collapsed">
-
-    /**
-     * Executes a remote task in the context of the server.<br>
-     * <br>
-     * <strong>Example REST Call:</strong><br>
-     * <code>curl --user admin@SWITCHON:cismet<br>
-     * -F "taskparams"="{""actionKey"": ""downloadFile"",""description"": ""Download a remote file""
-     * };type=application/json"<br>
-     * -F "file"="filetodownload;text/plain"<br>
-     * http://localhost:8890/actions/SWITCHON.downloadFile/tasks?role=all^&resultingInstanceType=result</code>
-     *
-     * @param   user      user performing the request
-     * @param   taskname  name of the task to be performed
-     * @param   domain    domain of the server / task
-     * @param   body      body parameter of the task, e.g. byte[]
-     * @param   params    0...n action parameters
-     *
-     * @return  result of the task, e.g. byte[]
-     *
-     * @throws  RemoteException  if the task execution fails
-     */
-    @Override
-    public Object executeTask(final User user,
-            final String taskname,
-            final String domain,
-            final Object body,
-            final ServerActionParameter... params) throws RemoteException {
-        final GenericResourceWithContentType taskResult;
-        final ActionTask actionTask = new ActionTask();
-        final Map<String, Object> actionParameters = new LinkedHashMap();
-        for (final ServerActionParameter param : params) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("processing ServerActionParameter '" + param.toString() + "'");
-            }
-            actionParameters.put(param.getKey(), param.getValue());
-        }
-
-        actionTask.setActionKey(taskname);
-        actionTask.setParameters(actionParameters);
-
-        final MultivaluedMap queryParameters = this.createUserParameters(user);
-        queryParameters.add("resultingInstanceType", "result");
-        final WebResource webResource = this.createWebResource(ACTIONS_API)
-                    .path(domain + "." + taskname + ACTIONS_API_TASKS)
-                    .queryParams(queryParameters);
-        final WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
-
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("executeTask '" + taskname
-                        + "' for user '" + user + "' and domain '"
-                        + domain + "' with " + params.length + " Server Action Parameters: "
-                        + webResource.toString());
-        }
-
-        builder.type(MediaType.MULTIPART_FORM_DATA_TYPE).accept(MediaType.APPLICATION_JSON_TYPE);
-
-        FormDataMultiPart multiPartData = new FormDataMultiPart();
-        try {
-            // taskparams lowercase !!!!!
-            multiPartData = multiPartData.field(
-                    "taskparams",
-                    MAPPER.writeValueAsString(actionTask),
-                    MediaType.APPLICATION_JSON_TYPE);
-        } catch (IOException ex) {
-            final String message = "could not serialize action task '"
-                        + taskname
-                        + "' for user '"
-                        + user
-                        + "' and domain '"
-                        + domain
-                        + "' with "
-                        + params.length
-                        + "': "
-                        + ex.getMessage();
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        }
-
-        if (body != null) {
-            try {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("creating Multi Part Form Data '" + MediaType.APPLICATION_OCTET_STREAM_TYPE + "'");
-                }
-                final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                final ObjectOutputStream oos = new ObjectOutputStream(bos);
-                oos.writeObject(body);
-                final byte[] bodyBytes = bos.toByteArray();
-
-//                final FormDataBodyPart formDataBodyPart = new FormDataBodyPart(
-//                        "file",
-//                        bodyBytes,
-//                        MediaType.APPLICATION_OCTET_STREAM_TYPE);
-//
-//                multiPartData.bodyPart(formDataBodyPart);
-
-                multiPartData = multiPartData.field("file", bodyBytes,
-                        MediaType.APPLICATION_OCTET_STREAM_TYPE);
-            } catch (Throwable t) {
-                final String message = "could not create binary attachment of action task '"
-                            + taskname
-                            + "' for user '"
-                            + user
-                            + "' and domain '"
-                            + domain
-                            + "' with "
-                            + params.length
-                            + "': "
-                            + t.getMessage();
-                LOG.error(message, t);
-                throw new RemoteException(message, t);
-            }
-        }
-
-        taskResult = builder.post(GenericResourceWithContentType.class, multiPartData);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("executeTask '" + taskname
-                        + "' for user '" + user + "' and domain '"
-                        + domain + "' with " + params.length
-                        + "' Server Action Parameters returned result of type '"
-                        + taskResult.getContentType() + "'");
-        }
-
-        return taskResult.getRes();
     }
 
     // </editor-fold>
