@@ -290,7 +290,7 @@ public final class RESTfulSerialInterface {
                     isCompressionEnabled());
             nameTheThread(hsr, "/getRootsByDomain", user.toString(), "domain=" + domain);
 
-            return createResponse(getCallserver().getRoots(user, domain));
+            return createResponse(getCallserver().getRoots(user, domain, context));
         } catch (final IOException e) {
             final String message = "could not get roots"; // NOI18N
             LOG.error(message, e);
@@ -330,7 +330,7 @@ public final class RESTfulSerialInterface {
                     isCompressionEnabled());
             nameTheThread(hsr, "/getRoots", user.toString());
 
-            return createResponse(getCallserver().getRoots(user));
+            return createResponse(getCallserver().getRoots(user, context));
         } catch (final IOException e) {
             final String message = "could not get roots"; // NOI18N
             LOG.error(message, e);
@@ -373,7 +373,7 @@ public final class RESTfulSerialInterface {
             final User user = Converter.deserialiseFromString(usrBytes, User.class, isCompressionEnabled());
             nameTheThread(hsr, "/getChildren", user.toString(), "node=" + ((node != null) ? node.toString() : "null"));
 
-            return createResponse(getCallserver().getChildren(node, user));
+            return createResponse(getCallserver().getChildren(node, user, context));
         } catch (final IOException e) {
             final String message = "could not get children"; // NOI18N
             LOG.error(message, e);
@@ -1595,7 +1595,8 @@ public final class RESTfulSerialInterface {
                         classId,
                         user,
                         query,
-                        representationFields));
+                        representationFields,
+                        context));
         } catch (final IOException e) {
             final String message = "could not get LightweightMetaObjects"; // NOI18N
             LOG.error(message, e);

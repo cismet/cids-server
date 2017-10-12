@@ -508,7 +508,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         if (!this.classKeyCache.isDomainCached(domain)) {
             LOG.info("class key cache does not contain class ids for domain '" + domain
                         + "', need to fill the cache first!");
-            this.getClasses(user, domain);
+            this.getClasses(user, domain, context);
         }
 
         className = this.classKeyCache.getClassNameForClassId(domain, classId);
@@ -2556,7 +2556,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 if (!classKeyCache.isDomainCached(domain)) {
                     LOG.warn("class name cache not initialized yet for domain '" + domain
                                 + "', need to fill the cache NOW!");
-                    this.getClasses(user, domain);
+                    this.getClasses(user, domain, context);
                 }
 
                 if (cidsBean != null) {

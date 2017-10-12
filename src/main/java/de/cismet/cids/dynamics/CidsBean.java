@@ -134,28 +134,6 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
     /**
      * DOCUMENT ME!
      *
-     * @param   meta       DOCUMENT ME!
-     * @param   u          DOCUMENT ME!
-     * @param   domain     DOCUMENT ME!
-     * @param   tableName  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    public static CidsBean constructNew(final MetaService meta,
-            final User u,
-            final String domain,
-            final String tableName) throws Exception {
-        final MetaClass mc = meta.getClassByTableName(u, tableName, domain);
-        final MetaObject mo = mc.getEmptyInstance();
-
-        return mo.getBean();
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @return  DOCUMENT ME!
      */
     public MetaObject getMetaObject() {
