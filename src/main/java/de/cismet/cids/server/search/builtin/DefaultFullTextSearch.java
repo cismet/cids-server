@@ -26,6 +26,8 @@ import java.util.HashSet;
 
 import de.cismet.cids.nodepermissions.NoNodePermissionProvidedException;
 
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.QueryPostProcessor;
 import de.cismet.cids.server.search.SearchException;
@@ -40,7 +42,8 @@ import de.cismet.cids.server.search.SearchResultListenerProvider;
  */
 @ServiceProvider(service = FullTextSearch.class)
 public class DefaultFullTextSearch extends AbstractCidsServerSearch implements FullTextSearch,
-    SearchResultListenerProvider {
+    SearchResultListenerProvider,
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -154,7 +157,8 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
                                     }
                                     return result;
                                 }
-                            });
+                            },
+                            getConnectionContext());
                     for (final ArrayList al : result) {
                         // FIXME: yet another hack to circumvent odd type behaviour
                         final int cid = ((Number)al.get(0)).intValue();
@@ -222,5 +226,10 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
     @Override
     public SearchResultListener getSearchResultListener() {
         return searchResultListener;
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return ConnectionContext.create(DefaultFullTextSearch.class.getSimpleName());
     }
 }

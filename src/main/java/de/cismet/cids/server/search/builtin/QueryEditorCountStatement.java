@@ -16,6 +16,8 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
 /**
@@ -24,7 +26,7 @@ import de.cismet.cids.server.search.AbstractCidsServerSearch;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class QueryEditorCountStatement extends AbstractCidsServerSearch {
+public class QueryEditorCountStatement extends AbstractCidsServerSearch implements ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -63,7 +65,7 @@ public class QueryEditorCountStatement extends AbstractCidsServerSearch {
 
             final MetaService ms = (MetaService)getActiveLocalServers().get(domain);
 
-            final ArrayList<ArrayList> result = ms.performCustomSearch(sql);
+            final ArrayList<ArrayList> result = ms.performCustomSearch(sql, getConnectionContext());
 
             final ArrayList<Long> aln = new ArrayList<Long>();
             for (final ArrayList al : result) {
@@ -77,5 +79,10 @@ public class QueryEditorCountStatement extends AbstractCidsServerSearch {
 
             return null;
         }
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return ConnectionContext.create(QueryEditorCountStatement.class.getSimpleName());
     }
 }

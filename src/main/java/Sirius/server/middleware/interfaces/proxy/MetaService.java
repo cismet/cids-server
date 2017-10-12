@@ -281,36 +281,6 @@ public interface MetaService extends Remote {
             throws RemoteException;
 
     /**
-     * insertion, deletion or update of meta data according to the query returns how many object's are effected XXX New
-     * Method XXX.
-     *
-     * @param   user    DOCUMENT ME!
-     * @param   query   DOCUMENT ME!
-     * @param   domain  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Deprecated
-    int update(User user, String query, String domain) throws RemoteException;
-
-    /**
-     * insertion, deletion or update of meta data according to the query returns how many object's are effected.
-     *
-     * @param   user     user token
-     * @param   query    sql query (update, insert, delete)
-     * @param   domain   domain where the query is to be executed
-     * @param   context  DOCUMENT ME!
-     *
-     * @return  how many data sets are affected
-     *
-     * @throws  RemoteException  server error (eg bad sql)
-     */
-    @Deprecated
-    int update(User user, String query, String domain, ConnectionContext context) throws RemoteException;
-
-    /**
      * DOCUMENT ME!
      *
      * @param   user  DOCUMENT ME!

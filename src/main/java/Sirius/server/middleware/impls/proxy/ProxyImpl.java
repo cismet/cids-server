@@ -660,31 +660,6 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
 
     @Override
     @Deprecated
-    public int update(final User user, final String query, final String domain) throws RemoteException {
-        return update(user, query, domain, ConnectionContext.createDeprecated());
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user     DOCUMENT ME!
-     * @param   query    DOCUMENT ME!
-     * @param   domain   DOCUMENT ME!
-     * @param   context  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    @Deprecated
-    public int update(final User user, final String query, final String domain, final ConnectionContext context)
-            throws RemoteException {
-        return metaService.update(user, query, domain, context);
-    }
-
-    @Override
-    @Deprecated
     public MethodMap getMethods(final User user) throws RemoteException {
         return getMethods(user, ConnectionContext.createDeprecated());
     }

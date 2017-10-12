@@ -31,6 +31,8 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
@@ -42,7 +44,7 @@ import de.cismet.cids.tools.CidsLayerUtil;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
+public class CidsLayerSearchStatement extends AbstractCidsServerSearch implements ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -295,7 +297,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
             }
 
             LOG.info(queryString.toString());
-            ArrayList<ArrayList> result = ms.performCustomSearch(queryString.toString());
+            ArrayList<ArrayList> result = ms.performCustomSearch(queryString.toString(), getConnectionContext());
 
             if (compressed) {
                 try {
@@ -466,5 +468,10 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
         } else {
             return result;
         }
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return ConnectionContext.create(CidsLayerSearchStatement.class.getSimpleName());
     }
 }

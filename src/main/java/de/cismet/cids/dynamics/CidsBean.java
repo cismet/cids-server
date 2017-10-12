@@ -47,6 +47,9 @@ import java.util.Map.Entry;
 
 import de.cismet.cids.json.IntraObjectCacheJsonParams;
 
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+
 import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
@@ -61,7 +64,7 @@ import static de.cismet.cids.dynamics.CidsBean.mapper;
  */
 //@JsonSerialize(using = CidsBeanJsonSerializer.class)
 //@JsonDeserialize(using = CidsBeanJsonDeserializer.class)
-public class CidsBean implements PropertyChangeListener {
+public class CidsBean implements PropertyChangeListener, ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -312,15 +315,33 @@ public class CidsBean implements PropertyChangeListener {
      */
     public CidsBean persist(final MetaService metaService, final User user, final String domain) throws Exception {
         if (metaObject.getStatus() == MetaObject.MODIFIED) {
-            metaService.updateMetaObject(user, metaObject, domain);
+            metaService.updateMetaObject(
+                user,
+                metaObject,
+                domain,
+                getConnectionContext());
 
-            return metaService.getMetaObject(user, metaObject.getID(), metaObject.getClassID(), domain).getBean();
+            return metaService.getMetaObject(
+                        user,
+                        metaObject.getID(),
+                        metaObject.getClassID(),
+                        domain,
+                        getConnectionContext())
+                        .getBean();
         } else if (metaObject.getStatus() == MetaObject.TO_DELETE) {
-            metaService.deleteMetaObject(user, metaObject, domain);
+            metaService.deleteMetaObject(
+                user,
+                metaObject,
+                domain,
+                getConnectionContext());
 
             return null;
         } else if (metaObject.getStatus() == MetaObject.NEW) {
-            final MetaObject mo = metaService.insertMetaObject(user, metaObject, domain);
+            final MetaObject mo = metaService.insertMetaObject(
+                    user,
+                    metaObject,
+                    domain,
+                    getConnectionContext());
             if (mo != null) {
                 return mo.getBean();
             }
@@ -1210,5 +1231,10 @@ public class CidsBean implements PropertyChangeListener {
      */
     protected void setJsonSerializerParams(final IntraObjectCacheJsonParams jsonSerializerParams) {
         this.jsonSerializerParams = jsonSerializerParams;
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return ConnectionContext.create(CidsBean.class.getSimpleName());
     }
 }

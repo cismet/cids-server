@@ -197,34 +197,6 @@ public interface MetaService extends Remote {
     /**
      * DOCUMENT ME!
      *
-     * @param   user   DOCUMENT ME!
-     * @param   query  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-
-    @Deprecated
-    int update(User user, String query) throws RemoteException;
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user     DOCUMENT ME!
-     * @param   query    DOCUMENT ME!
-     * @param   context  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Deprecated
-    int update(User user, String query, final ConnectionContext context) throws RemoteException;
-
-    /**
-     * DOCUMENT ME!
-     *
      * @param   user        DOCUMENT ME!
      * @param   metaObject  DOCUMENT ME!
      *

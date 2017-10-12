@@ -2353,39 +2353,6 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
     @Override
     @Deprecated
-    public int update(final User user, final String query, final String domain) throws RemoteException {
-        return update(user, query, domain, ConnectionContext.createDeprecated());
-    }
-
-    /**
-     * <strong>Unsupported Operation.</strong>
-     *
-     * <p>This operation is not supported anymore in the cids REST API, it throws an UnsupportedOperationException!</p>
-     *
-     * @param       user     user token
-     * @param       query    sql query (update, insert, delete)
-     * @param       domain   domain where the query is to be executed
-     * @param       context  DOCUMENT ME!
-     *
-     * @return      how many data sets are affected
-     *
-     * @throws      RemoteException                server error (eg bad sql)
-     * @throws      UnsupportedOperationException  always thrown
-     *
-     * @deprecated  no update by SQL query !
-     */
-    @Override
-    public int update(final User user, final String query, final String domain, final ConnectionContext context)
-            throws RemoteException {
-        final String message = "The method '"
-                    + Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + "' is deprecated and not supported by the cids REST API!";
-        LOG.error(message);
-        throw new UnsupportedOperationException(message);
-    }
-
-    @Override
-    @Deprecated
     public int deleteMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
         return deleteMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());

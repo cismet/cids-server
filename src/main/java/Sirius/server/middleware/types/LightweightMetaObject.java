@@ -31,6 +31,7 @@ import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.CallServerServiceProvider;
 import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.cids.tools.fromstring.FromStringCreator;
 
@@ -40,7 +41,9 @@ import de.cismet.cids.tools.fromstring.FromStringCreator;
  * @author   srichter
  * @version  $Revision$, $Date$
  */
-public final class LightweightMetaObject implements MetaObject, Comparable<LightweightMetaObject> {
+public final class LightweightMetaObject implements MetaObject,
+    Comparable<LightweightMetaObject>,
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -964,14 +967,14 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
                         getObjectID(),
                         getClassID(),
                         getDomain(),
-                        ConnectionContext.create(LightweightMetaObject.class.getSimpleName()));
+                        getConnectionContext());
             } else {                   // this code should only be executed on the server side
                 mo = DomainServerImpl.getServerInstance()
                             .getMetaObject(
                                     getUser(),
                                     getObjectID(),
                                     getClassID(),
-                                    ConnectionContext.create(LightweightMetaObject.class.getSimpleName()));
+                                    getConnectionContext());
             }
 
             final SoftReference<MetaObject> sr;
@@ -1186,5 +1189,10 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
             return true;
         }
         return false;
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return ConnectionContext.create(LightweightMetaObject.class.getSimpleName());
     }
 }

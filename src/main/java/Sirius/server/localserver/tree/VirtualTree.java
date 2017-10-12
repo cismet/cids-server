@@ -36,7 +36,6 @@ import org.openide.util.Lookup;
 
 import java.rmi.RemoteException;
 
-import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -48,6 +47,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+
 import de.cismet.commons.utils.StringUtils;
 
 /**
@@ -56,7 +58,7 @@ import de.cismet.commons.utils.StringUtils;
  * @author   schlob
  * @version  $Revision$, $Date$
  */
-public class VirtualTree extends Shutdown implements AbstractTree {
+public class VirtualTree extends Shutdown implements AbstractTree, ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -835,7 +837,10 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             boolean additionaltreepermissiontag;
             try {
                 additionaltreepermissiontag = DomainServerImpl.getServerInstance()
-                            .hasConfigAttr(user, additionaltreepermissiontagString);
+                            .hasConfigAttr(
+                                    user,
+                                    additionaltreepermissiontagString,
+                                    getConnectionContext());
             } catch (RemoteException ex) {
                 additionaltreepermissiontag = false;
                 LOG.error(ex.getMessage(), ex);
@@ -1150,6 +1155,11 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         }
 
         return nl;
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return ConnectionContext.create(VirtualTree.class.getSimpleName());
     }
 
     //~ Inner Classes ----------------------------------------------------------

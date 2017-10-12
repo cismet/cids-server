@@ -1307,48 +1307,6 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
     @Override
     @Deprecated
-    public int update(final User user, final String query, final String domain) throws RemoteException {
-        return update(user, query, domain, ConnectionContext.createDeprecated());
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user     DOCUMENT ME!
-     * @param   query    DOCUMENT ME!
-     * @param   domain   DOCUMENT ME!
-     * @param   context  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    @Deprecated
-    public int update(final User user, final String query, final String domain, final ConnectionContext context)
-            throws RemoteException {
-        try {
-            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
-                        PARAM_USER,
-                        Converter.serialiseToString(user, isCompressionEnabled()))
-                        .append(PARAM_QUERY, Converter.serialiseToString(query, isCompressionEnabled()))
-                        .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
-
-            return getResponsePOSTWithMappedException("update", queryParams, int.class); // NOI18N
-        } catch (final IOException ex) {
-            final String message = "could not convert params";                           // NOI18N
-            LOG.error(message, ex);
-            throw new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not create class";                             // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    @Override
-    @Deprecated
     public MetaObject getInstance(final User user, final MetaClass c) throws RemoteException {
         return getInstance(user, c, ConnectionContext.createDeprecated());
     }

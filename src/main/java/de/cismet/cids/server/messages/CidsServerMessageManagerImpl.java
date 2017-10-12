@@ -29,13 +29,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+
 /**
  * DOCUMENT ME!
  *
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
+public class CidsServerMessageManagerImpl implements CidsServerMessageManager, ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -288,7 +291,12 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
             } else if (category != null) {
                 boolean csmChecked = false;
                 try {
-                    csmChecked = DomainServerImpl.getServerInstance().hasConfigAttr(user, "csm://" + category);
+                    csmChecked = DomainServerImpl.getServerInstance()
+                                .hasConfigAttr(
+                                        user,
+                                        "csm://"
+                                        + category,
+                                        getConnectionContext());
                 } catch (final RemoteException ex) {
                     LOG.warn(ex, ex);
                 }
@@ -326,6 +334,11 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
             }
         }
         return activeUsers;
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return ConnectionContext.create(CidsServerMessageManagerImpl.class.getSimpleName());
     }
 
     //~ Inner Classes ----------------------------------------------------------

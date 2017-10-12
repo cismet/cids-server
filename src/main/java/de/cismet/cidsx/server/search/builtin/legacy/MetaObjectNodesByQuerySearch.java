@@ -8,8 +8,6 @@
 package de.cismet.cidsx.server.search.builtin.legacy;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
-import Sirius.server.middleware.types.MetaObject;
-import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.middleware.types.Node;
 
 import lombok.Getter;
@@ -26,6 +24,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
@@ -42,7 +42,8 @@ import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
  * @version  $Revision$, $Date$
  */
 @ServiceProvider(service = RestApiCidsServerSearch.class)
-public class MetaObjectNodesByQuerySearch extends AbstractCidsServerSearch implements RestApiCidsServerSearch {
+public class MetaObjectNodesByQuerySearch extends AbstractCidsServerSearch implements RestApiCidsServerSearch,
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -106,7 +107,9 @@ public class MetaObjectNodesByQuerySearch extends AbstractCidsServerSearch imple
                         + this.getQuery() + "'");
         }
         try {
-            final Node[] metaObjectNodes = metaService.getMetaObjectNode(this.getUser(), this.getQuery());
+            final Node[] metaObjectNodes = metaService.getMetaObjectNode(this.getUser(),
+                    this.getQuery(),
+                    getConnectionContext());
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug(metaObjectNodes.length + " Meta Object Nodes found.");
@@ -118,5 +121,10 @@ public class MetaObjectNodesByQuerySearch extends AbstractCidsServerSearch imple
             LOG.error(message, ex);
             throw new SearchException(message, ex);
         }
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return ConnectionContext.create(MetaObjectNodesByQuerySearch.class.getSimpleName());
     }
 }

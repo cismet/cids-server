@@ -1025,51 +1025,6 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
-     * @param   hsr           DOCUMENT ME!
-     * @param   userBytes     user DOCUMENT ME!
-     * @param   queryBytes    DOCUMENT ME!
-     * @param   domainBytes   DOCUMENT ME!
-     * @param   contextBytes  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  WebApplicationException RemoteException DOCUMENT ME!
-     */
-    @POST
-    @Path("/update")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response update(@Context final HttpServletRequest hsr,
-            @FormParam(PARAM_USER) final String userBytes,
-            @FormParam(PARAM_QUERY) final String queryBytes,
-            @FormParam(PARAM_DOMAIN) final String domainBytes,
-            @FormParam(PARAM_CONTEXT) final String contextBytes) throws RemoteException {
-        nameTheThread(hsr, "/update", "[bytes]", "domain=[bytes]", "query=[bytes]");
-        try {
-            final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
-            final ConnectionContext context = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-            final String query = Converter.deserialiseFromString(queryBytes, String.class, isCompressionEnabled());
-            final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
-            nameTheThread(hsr, "/update", user.toString(), "domain=" + domain, "query=" + query);
-
-            return createResponse(getCallserver().update(user, query, domain, context));
-        } catch (final IOException e) {
-            final String message = "could not update"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not update"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @param   hsr             DOCUMENT ME!
      * @param   userBytes       user DOCUMENT ME!
      * @param   metaClassBytes  c DOCUMENT ME!

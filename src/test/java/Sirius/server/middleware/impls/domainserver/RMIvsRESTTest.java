@@ -15,11 +15,11 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.registry.Registry;
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -40,7 +40,7 @@ import de.cismet.cids.server.ws.rest.RESTfulService;
  * @author   mscholl
  * @version  $Revision$, $Date$
  */
-public class RMIvsRESTTest {
+public class RMIvsRESTTest implements ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -153,7 +153,7 @@ public class RMIvsRESTTest {
                 "Administratoren",
                 "WUNDA_BLAU",
                 "cismet",
-                "sb");
+                "sb", ConnectionContext.create(RMIvsRESTTest.class.getSimpleName()));
         final String domain = "WUNDA_BLAU";
         final int objectID = 3;
         final int classID = 106;
@@ -163,7 +163,7 @@ public class RMIvsRESTTest {
         average = 0;
         for (int i = 0; i < 1000; ++i) {
             final long before = System.currentTimeMillis();
-            final MetaObject result = ((MetaService)callserver).getMetaObject(user, objectID, classID, domain);
+            final MetaObject result = ((MetaService)callserver).getMetaObject(user, objectID, classID, domain, getConnectionContext());
             final long after = System.currentTimeMillis();
 
             if ((i % 50) == 0) {
@@ -199,7 +199,7 @@ public class RMIvsRESTTest {
                                     user,
                                     objectID,
                                     classID,
-                                    domain);
+                                    domain, getConnectionContext());
                             final long after = System.currentTimeMillis();
                             final long duration = after - before;
                             if (duration < fastest) {
@@ -249,7 +249,7 @@ public class RMIvsRESTTest {
     @Test
     public void testGetMetaObjectREST() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
-        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet");
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet", getConnectionContext());
         final String domain = "WUNDA_BLAU";
         final int objectID = 3;
         final int classID = 106;
@@ -259,7 +259,7 @@ public class RMIvsRESTTest {
         average = 0;
         for (int i = 0; i < 1000; ++i) {
             final long before = System.currentTimeMillis();
-            final MetaObject result = connector.getMetaObject(user, objectID, classID, domain);
+            final MetaObject result = connector.getMetaObject(user, objectID, classID, domain, getConnectionContext());
             final long after = System.currentTimeMillis();
 
             if ((i % 50) == 0) {
@@ -295,7 +295,8 @@ public class RMIvsRESTTest {
                                     user,
                                     objectID,
                                     classID,
-                                    domain);
+                                    domain, 
+                                    getConnectionContext());
                             final long after = System.currentTimeMillis();
                             final long duration = after - before;
                             if (duration < fastest) {
@@ -333,6 +334,11 @@ public class RMIvsRESTTest {
         System.out.println("REST mt fastest: " + fastest);
         System.out.println("REST mt slowest: " + slowest);
         System.out.println("REST mt average: " + (average / 1000));
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return ConnectionContext.create(RMIvsRESTTest.class.getSimpleName());
     }
 
     //~ Inner Classes ----------------------------------------------------------

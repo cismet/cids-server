@@ -42,13 +42,16 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+
 /**
  * DOCUMENT ME!
  *
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class ScheduledServerActionManager {
+public class ScheduledServerActionManager implements ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -135,6 +138,11 @@ public class ScheduledServerActionManager {
         return supported;
     }
 
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return ConnectionContext.create(ScheduledServerActionManager.class.getSimpleName());
+    }
+
     /**
      * DOCUMENT ME!
      */
@@ -151,6 +159,7 @@ public class ScheduledServerActionManager {
                 list.addAll(Arrays.asList(info.getParams()));
                 domainserver.executeTask(getUserByName(info.getUserName(), info.getGroupName()),
                     info.getTaskName(),
+                    getConnectionContext(),
                     info.getBody(),
                     list.toArray(new ServerActionParameter[0]));
             }

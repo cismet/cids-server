@@ -26,6 +26,8 @@ import java.util.HashSet;
 
 import de.cismet.cids.nodepermissions.NoNodePermissionProvidedException;
 
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.QueryPostProcessor;
 import de.cismet.cids.server.search.SearchException;
@@ -39,7 +41,9 @@ import de.cismet.cids.server.search.SearchResultListenerProvider;
  * @version  $Revision$, $Date$
  */
 @ServiceProvider(service = GeoSearch.class)
-public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSearch, SearchResultListenerProvider {
+public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSearch,
+    SearchResultListenerProvider,
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -142,7 +146,8 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
                                     }
                                     return result;
                                 }
-                            });
+                            },
+                            getConnectionContext());
 
                     for (final ArrayList al : result) {
                         // FIXME: yet another hack to circumvent odd type behaviour
@@ -210,5 +215,10 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
     @Override
     public SearchResultListener getSearchResultListener() {
         return searchResultListener;
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return ConnectionContext.create(DefaultGeoSearch.class.getSimpleName());
     }
 }

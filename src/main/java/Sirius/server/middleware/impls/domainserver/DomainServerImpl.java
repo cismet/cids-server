@@ -784,31 +784,6 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
     @Override
     @Deprecated
-    public int update(final User user, final String metaSQL) throws RemoteException {
-        return update(user, metaSQL, ConnectionContext.createDeprecated());
-    }
-
-    // insertion, deletion or update of meta data according to the query returns how many object's are effected
-    // XXX New Method XXX dummy
-    @Override
-    @Deprecated
-    public int update(final User user, final String metaSQL, final ConnectionContext context) throws RemoteException {
-        try {
-            // return dbServer.getObjectPersitenceManager().update(user, metaSQL);
-
-            logger.error("update with metaSql is no longer supported " + metaSQL + "leads to no result"); // NOI18N
-
-            return -1;
-        } catch (Throwable e) {
-            if (logger != null) {
-                logger.error(e, e);
-            }
-            throw new RemoteException(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    @Deprecated
     public int deleteMetaObject(final User user, final MetaObject metaObject) throws RemoteException {
         return deleteMetaObject(user, metaObject, ConnectionContext.createDeprecated());
     }

@@ -601,39 +601,6 @@ public class MetaServiceImpl implements MetaService {
 
     @Override
     @Deprecated
-    public int update(final User user, final String metaSQL, final String domain) throws RemoteException {
-        return update(user, metaSQL, domain, ConnectionContext.createDeprecated());
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user     DOCUMENT ME!
-     * @param   metaSQL  DOCUMENT ME!
-     * @param   domain   DOCUMENT ME!
-     * @param   context  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Override
-    @Deprecated
-    public int update(final User user, final String metaSQL, final String domain, final ConnectionContext context)
-            throws RemoteException {
-        if (logger != null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("<CS>update  for user" + user + "metaSQL ::" + metaSQL + " domain::" + domain); // NOI18N
-            }
-        }
-        return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain)).update(
-                user,
-                metaSQL,
-                context);
-    }
-
-    @Override
-    @Deprecated
     public MetaObject getInstance(final User user, final MetaClass c) throws RemoteException {
         return getInstance(user, c, ConnectionContext.createDeprecated());
     }
