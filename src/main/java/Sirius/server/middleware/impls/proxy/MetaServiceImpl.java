@@ -49,8 +49,8 @@ public class MetaServiceImpl implements MetaService {
     //~ Instance fields --------------------------------------------------------
 
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
-    private Map activeLocalServers;
-    private NameServer nameServer;
+    private final Map activeLocalServers;
+    private final NameServer nameServer;
     private Server[] localServers;
 
     //~ Constructors -----------------------------------------------------------
@@ -73,19 +73,27 @@ public class MetaServiceImpl implements MetaService {
 
     //~ Methods ----------------------------------------------------------------
 
+    @Override
+    @Deprecated
+    public MetaClass getClass(final User user, final int classID, final String domain) throws RemoteException {
+        return getClass(user, classID, domain, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
      * @param   user     DOCUMENT ME!
      * @param   classID  DOCUMENT ME!
      * @param   domain   DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MetaClass getClass(final User user, final int classID, final String domain) throws RemoteException {
+    public MetaClass getClass(final User user, final int classID, final String domain, final ConnectionContext context)
+            throws RemoteException {
         if (logger != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("getClass ::" + classID + " user::" + user + " domain::" + domain); // NOI18N
@@ -93,7 +101,15 @@ public class MetaServiceImpl implements MetaService {
         }
         return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain)).getClass(
                 user,
-                classID);
+                classID,
+                context);
+    }
+
+    @Override
+    @Deprecated
+    public MetaClass getClassByTableName(final User user, final String tableName, final String domain)
+            throws RemoteException {
+        return getClassByTableName(user, tableName, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -102,50 +118,68 @@ public class MetaServiceImpl implements MetaService {
      * @param   user       DOCUMENT ME!
      * @param   tableName  DOCUMENT ME!
      * @param   domain     DOCUMENT ME!
+     * @param   context    DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MetaClass getClassByTableName(final User user, final String tableName, final String domain)
-            throws RemoteException {
+    public MetaClass getClassByTableName(final User user,
+            final String tableName,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
         return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain))
-                    .getClassByTableName(user, tableName);
+                    .getClassByTableName(user, tableName, context);
+    }
+
+    @Override
+    @Deprecated
+    public MetaClass[] getClasses(final User user, final String domain) throws RemoteException {
+        return getClasses(user, domain, ConnectionContext.createDeprecated());
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   user    DOCUMENT ME!
-     * @param   domain  DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   domain   DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MetaClass[] getClasses(final User user, final String domain) throws RemoteException {
+    public MetaClass[] getClasses(final User user, final String domain, final ConnectionContext context)
+            throws RemoteException {
         if (logger != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("getClasses for User : " + user); // NOI18N
             }
         }
         return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain))
-                    .getClasses(user);
+                    .getClasses(user, context);
+    }
+
+    @Override
+    @Deprecated
+    public Node[] getClassTreeNodes(final User user) throws RemoteException {
+        return getClassTreeNodes(user, ConnectionContext.createDeprecated());
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   user  DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node[] getClassTreeNodes(final User user) throws RemoteException {
+    public Node[] getClassTreeNodes(final User user, final ConnectionContext context) throws RemoteException {
         if (logger != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("<CS> getClassTreeNodes for user" + user); // NOI18N
@@ -168,7 +202,8 @@ public class MetaServiceImpl implements MetaService {
                 try {
                     final NodeReferenceList children =
                         ((Sirius.server.middleware.interfaces.domainserver.MetaService)iter.next()).getClassTreeNodes(
-                            user);
+                            user,
+                            context);
 
                     if ((children != null) && (children.getLocalNodes() != null)) {
                         final Node[] tmp = children.getLocalNodes();
@@ -203,36 +238,52 @@ public class MetaServiceImpl implements MetaService {
         return classNodes;
     }
 
+    @Override
+    @Deprecated
+    public Node[] getClassTreeNodes(final User user, final String localServerName) throws RemoteException {
+        return getClassTreeNodes(user, localServerName, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
      * @param   user             DOCUMENT ME!
      * @param   localServerName  DOCUMENT ME!
+     * @param   context          DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node[] getClassTreeNodes(final User user, final String localServerName) throws RemoteException {
+    public Node[] getClassTreeNodes(final User user, final String localServerName, final ConnectionContext context)
+            throws RemoteException {
         if (logger != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("<CS> getClassTreeNode for user" + user); // NOI18N
             }
         }
         return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(localServerName))
-                    .getClassTreeNodes(user).getLocalNodes();
+                    .getClassTreeNodes(user, context).getLocalNodes();
+    }
+
+    @Override
+    @Deprecated
+    public String[] getDomains() throws RemoteException {
+        return getDomains(ConnectionContext.createDeprecated());
     }
 
     /**
      * DOCUMENT ME!
+     *
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public String[] getDomains() throws RemoteException {
+    public String[] getDomains(final ConnectionContext context) throws RemoteException {
         if (logger != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("<CS> getDomains called "); // NOI18N
@@ -251,19 +302,29 @@ public class MetaServiceImpl implements MetaService {
         return lsnames;
     }
 
+    @Override
+    @Deprecated
+    public Node getMetaObjectNode(final User usr, final int nodeID, final String lsName) throws RemoteException {
+        return getMetaObjectNode(usr, nodeID, lsName, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   usr     DOCUMENT ME!
-     * @param   nodeID  DOCUMENT ME!
-     * @param   lsName  DOCUMENT ME!
+     * @param   usr      DOCUMENT ME!
+     * @param   nodeID   DOCUMENT ME!
+     * @param   lsName   DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node getMetaObjectNode(final User usr, final int nodeID, final String lsName) throws RemoteException {
+    public Node getMetaObjectNode(final User usr,
+            final int nodeID,
+            final String lsName,
+            final ConnectionContext context) throws RemoteException {
         // usr wird nicht beachtet fuer spaetere anpassungen
 
         if (logger != null) {
@@ -299,18 +360,26 @@ public class MetaServiceImpl implements MetaService {
         return n;
     }
 
+    @Override
+    @Deprecated
+    public Node[] getMetaObjectNode(final User usr, final String query) throws RemoteException {
+        return getMetaObjectNode(usr, query, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   usr    DOCUMENT ME!
-     * @param   query  DOCUMENT ME!
+     * @param   usr      DOCUMENT ME!
+     * @param   query    DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node[] getMetaObjectNode(final User usr, final String query) throws RemoteException {
+    public Node[] getMetaObjectNode(final User usr, final String query, final ConnectionContext context)
+            throws RemoteException {
         if (logger != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("<CS> getMetaObjectNode for user" + usr + "queryString ::" + query); // NOI18N
@@ -411,20 +480,30 @@ public class MetaServiceImpl implements MetaService {
                     .getMetaObject(usr, objectID, classID, context);
     }
 
+    @Override
+    @Deprecated
+    public MetaObject insertMetaObject(final User user, final MetaObject metaObject, final String domain)
+            throws RemoteException {
+        return insertMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
      * @param   user        DOCUMENT ME!
      * @param   metaObject  DOCUMENT ME!
      * @param   domain      DOCUMENT ME!
+     * @param   context     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MetaObject insertMetaObject(final User user, final MetaObject metaObject, final String domain)
-            throws RemoteException {
+    public MetaObject insertMetaObject(final User user,
+            final MetaObject metaObject,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
         if (logger != null) {
             if (logger != null) {
                 if (logger.isDebugEnabled()) {
@@ -439,7 +518,14 @@ public class MetaServiceImpl implements MetaService {
             }
         }
         return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain))
-                    .insertMetaObject(user, metaObject);
+                    .insertMetaObject(user, metaObject, context);
+    }
+
+    @Override
+    @Deprecated
+    public int deleteMetaObject(final User user, final MetaObject metaObject, final String domain)
+            throws RemoteException {
+        return deleteMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -448,14 +534,17 @@ public class MetaServiceImpl implements MetaService {
      * @param   user        DOCUMENT ME!
      * @param   metaObject  DOCUMENT ME!
      * @param   domain      DOCUMENT ME!
+     * @param   context     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public int deleteMetaObject(final User user, final MetaObject metaObject, final String domain)
-            throws RemoteException {
+    public int deleteMetaObject(final User user,
+            final MetaObject metaObject,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
         if (logger != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug(
@@ -468,7 +557,14 @@ public class MetaServiceImpl implements MetaService {
             }
         }
         return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain))
-                    .deleteMetaObject(user, metaObject);
+                    .deleteMetaObject(user, metaObject, context);
+    }
+
+    @Override
+    @Deprecated
+    public int updateMetaObject(final User user, final MetaObject metaObject, final String domain)
+            throws RemoteException {
+        return updateMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -477,14 +573,17 @@ public class MetaServiceImpl implements MetaService {
      * @param   user        DOCUMENT ME!
      * @param   metaObject  DOCUMENT ME!
      * @param   domain      DOCUMENT ME!
+     * @param   context     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public int updateMetaObject(final User user, final MetaObject metaObject, final String domain)
-            throws RemoteException {
+    public int updateMetaObject(final User user,
+            final MetaObject metaObject,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
         if ((logger != null) && !(metaObject instanceof LightweightMetaObject)) {
             if (logger.isDebugEnabled()) {
                 logger.debug(
@@ -497,7 +596,13 @@ public class MetaServiceImpl implements MetaService {
             }
         }
         return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain))
-                    .updateMetaObject(user, metaObject);
+                    .updateMetaObject(user, metaObject, context);
+    }
+
+    @Override
+    @Deprecated
+    public int update(final User user, final String metaSQL, final String domain) throws RemoteException {
+        return update(user, metaSQL, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -506,13 +611,16 @@ public class MetaServiceImpl implements MetaService {
      * @param   user     DOCUMENT ME!
      * @param   metaSQL  DOCUMENT ME!
      * @param   domain   DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public int update(final User user, final String metaSQL, final String domain) throws RemoteException {
+    @Deprecated
+    public int update(final User user, final String metaSQL, final String domain, final ConnectionContext context)
+            throws RemoteException {
         if (logger != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("<CS>update  for user" + user + "metaSQL ::" + metaSQL + " domain::" + domain); // NOI18N
@@ -520,41 +628,57 @@ public class MetaServiceImpl implements MetaService {
         }
         return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain)).update(
                 user,
-                metaSQL);
+                metaSQL,
+                context);
+    }
+
+    @Override
+    @Deprecated
+    public MetaObject getInstance(final User user, final MetaClass c) throws RemoteException {
+        return getInstance(user, c, ConnectionContext.createDeprecated());
     }
 
     /**
      * creates an Instance of a MetaObject with all attribute values set to default.
      *
-     * @param   user  DOCUMENT ME!
-     * @param   c     DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   c        DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MetaObject getInstance(final User user, final MetaClass c) throws RemoteException {
+    public MetaObject getInstance(final User user, final MetaClass c, final ConnectionContext context)
+            throws RemoteException {
         if (logger != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("<CS>getInstance  for user" + user + "metaClass ::" + c); // NOI18N
             }
         }
         return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(c.getDomain()))
-                    .getInstance(user, c);
+                    .getInstance(user, c, context);
+    }
+
+    @Override
+    @Deprecated
+    public MethodMap getMethods(final User user) throws RemoteException {
+        return getMethods(user, ConnectionContext.createDeprecated());
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   user  DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MethodMap getMethods(final User user) throws RemoteException {
+    public MethodMap getMethods(final User user, final ConnectionContext context) throws RemoteException {
         if (logger != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("<CS>getMethods for user" + user); // NOI18N
@@ -566,24 +690,32 @@ public class MetaServiceImpl implements MetaService {
             final Sirius.server.middleware.interfaces.domainserver.MetaService s =
                 (Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(
                     localServers[i].getName().trim());
-            result.putAll(s.getMethods(user));
+            result.putAll(s.getMethods(user, context));
         }
 
         return result;
     }
 
+    @Override
+    @Deprecated
+    public MethodMap getMethods(final User user, final String lsName) throws RemoteException {
+        return getMethods(user, lsName, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   user    DOCUMENT ME!
-     * @param   lsName  DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   lsName   DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MethodMap getMethods(final User user, final String lsName) throws RemoteException {
+    public MethodMap getMethods(final User user, final String lsName, final ConnectionContext context)
+            throws RemoteException {
         if (logger != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("<CS>getMethods for user" + user + " domain::" + lsName); // NOI18N
@@ -591,7 +723,20 @@ public class MetaServiceImpl implements MetaService {
         }
         final Sirius.server.middleware.interfaces.domainserver.MetaService s =
             (Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(lsName.trim());
-        return s.getMethods(user);
+        return s.getMethods(user, context);
+    }
+
+    @Override
+    @Deprecated
+    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classId,
+            final User user,
+            final String[] representationFields,
+            final String representationPattern) throws RemoteException {
+        return getAllLightweightMetaObjectsForClass(
+                classId,
+                user,
+                representationFields,
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -601,6 +746,7 @@ public class MetaServiceImpl implements MetaService {
      * @param   user                   DOCUMENT ME!
      * @param   representationFields   DOCUMENT ME!
      * @param   representationPattern  DOCUMENT ME!
+     * @param   context                DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -610,10 +756,28 @@ public class MetaServiceImpl implements MetaService {
     public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classId,
             final User user,
             final String[] representationFields,
-            final String representationPattern) throws RemoteException {
+            final String representationPattern,
+            final ConnectionContext context) throws RemoteException {
         final Sirius.server.middleware.interfaces.domainserver.MetaService s =
             (Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(user.getDomain());
-        return s.getAllLightweightMetaObjectsForClass(classId, user, representationFields, representationPattern);
+        return s.getAllLightweightMetaObjectsForClass(
+                classId,
+                user,
+                representationFields,
+                representationPattern,
+                context);
+    }
+
+    @Override
+    @Deprecated
+    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classId,
+            final User user,
+            final String[] representationFields) throws RemoteException {
+        return getAllLightweightMetaObjectsForClass(
+                classId,
+                user,
+                representationFields,
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -622,6 +786,7 @@ public class MetaServiceImpl implements MetaService {
      * @param   classId               DOCUMENT ME!
      * @param   user                  DOCUMENT ME!
      * @param   representationFields  DOCUMENT ME!
+     * @param   context               DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -630,10 +795,27 @@ public class MetaServiceImpl implements MetaService {
     @Override
     public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classId,
             final User user,
-            final String[] representationFields) throws RemoteException {
+            final String[] representationFields,
+            final ConnectionContext context) throws RemoteException {
         final Sirius.server.middleware.interfaces.domainserver.MetaService s =
             (Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(user.getDomain());
-        return s.getAllLightweightMetaObjectsForClass(classId, user, representationFields);
+        return s.getAllLightweightMetaObjectsForClass(classId, user, representationFields, context);
+    }
+
+    @Override
+    @Deprecated
+    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
+            final User user,
+            final String query,
+            final String[] representationFields,
+            final String representationPattern) throws RemoteException {
+        return getLightweightMetaObjectsByQuery(
+                classId,
+                user,
+                query,
+                representationFields,
+                representationPattern,
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -644,6 +826,7 @@ public class MetaServiceImpl implements MetaService {
      * @param   query                  DOCUMENT ME!
      * @param   representationFields   DOCUMENT ME!
      * @param   representationPattern  DOCUMENT ME!
+     * @param   context                DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -654,10 +837,31 @@ public class MetaServiceImpl implements MetaService {
             final User user,
             final String query,
             final String[] representationFields,
-            final String representationPattern) throws RemoteException {
+            final String representationPattern,
+            final ConnectionContext context) throws RemoteException {
         final Sirius.server.middleware.interfaces.domainserver.MetaService s =
             (Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(user.getDomain());
-        return s.getLightweightMetaObjectsByQuery(classId, user, query, representationFields, representationPattern);
+        return s.getLightweightMetaObjectsByQuery(
+                classId,
+                user,
+                query,
+                representationFields,
+                representationPattern,
+                context);
+    }
+
+    @Override
+    @Deprecated
+    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
+            final User user,
+            final String query,
+            final String[] representationFields) throws RemoteException {
+        return getLightweightMetaObjectsByQuery(
+                classId,
+                user,
+                query,
+                representationFields,
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -667,6 +871,7 @@ public class MetaServiceImpl implements MetaService {
      * @param   user                  DOCUMENT ME!
      * @param   query                 DOCUMENT ME!
      * @param   representationFields  DOCUMENT ME!
+     * @param   context               DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -676,10 +881,11 @@ public class MetaServiceImpl implements MetaService {
     public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
             final User user,
             final String query,
-            final String[] representationFields) throws RemoteException {
+            final String[] representationFields,
+            final ConnectionContext context) throws RemoteException {
         final Sirius.server.middleware.interfaces.domainserver.MetaService s =
             (Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(user.getDomain());
-        return s.getLightweightMetaObjectsByQuery(classId, user, query, representationFields);
+        return s.getLightweightMetaObjectsByQuery(classId, user, query, representationFields, context);
     }
 
     /**
@@ -709,14 +915,25 @@ public class MetaServiceImpl implements MetaService {
     }
 
     @Override
+    @Deprecated
     public HistoryObject[] getHistory(final int classId,
             final int objectId,
             final String domain,
             final User user,
             final int elements) throws RemoteException {
+        return getHistory(classId, objectId, domain, user, elements, ConnectionContext.createDeprecated());
+    }
+
+    @Override
+    public HistoryObject[] getHistory(final int classId,
+            final int objectId,
+            final String domain,
+            final User user,
+            final int elements,
+            final ConnectionContext context) throws RemoteException {
         final Sirius.server.middleware.interfaces.domainserver.MetaService service =
             (Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(domain);
 
-        return service.getHistory(classId, objectId, user, elements);
+        return service.getHistory(classId, objectId, user, elements, context);
     }
 }

@@ -74,10 +74,10 @@ public class ConnectionContextLog {
         return String.format(
                 LOG_FORMAT,
                 DateFormat.getDateTimeInstance().format(timestamp),
-                user.getName(),
-                user.getDomain(),
-                context.getContent(),
+                (user != null) ? user.getName() : null,
+                (user != null) ? user.getDomain() : null,
+                (context != null) ? context.getContent() : null,
                 methodName,
-                Arrays.toString(methodParams));
+                (methodParams != null) ? Arrays.toString(methodParams) : null);
     }
 }

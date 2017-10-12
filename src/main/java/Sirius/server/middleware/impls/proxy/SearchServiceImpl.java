@@ -10,6 +10,7 @@ package Sirius.server.middleware.impls.proxy;
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.interfaces.domainserver.UserService;
+import Sirius.server.middleware.interfaces.proxy.SearchService;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.naming.NameServer;
@@ -20,6 +21,8 @@ import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashMap;
 
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextLogger;
 import de.cismet.cids.server.search.CidsServerSearch;
 
 /**
@@ -28,7 +31,7 @@ import de.cismet.cids.server.search.CidsServerSearch;
  * @author   schlob
  * @version  $Revision$, $Date$
  */
-public class SearchServiceImpl {
+public class SearchServiceImpl implements SearchService {
 
     //~ Instance fields --------------------------------------------------------
 
@@ -65,7 +68,29 @@ public class SearchServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Override
+    @Deprecated
     public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) throws RemoteException {
+        return customServerSearch(user, serverSearch, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user          DOCUMENT ME!
+     * @param   serverSearch  DOCUMENT ME!
+     * @param   context       DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public Collection customServerSearch(final User user,
+            final CidsServerSearch serverSearch,
+            final ConnectionContext context) throws RemoteException {
+        ConnectionContextLogger.getInstance()
+                .logConnectionContext(context, user, "customServerSearch", "serverSearch:" + serverSearch);
         serverSearch.setUser(user);
         serverSearch.setActiveLocalServers(new HashMap(activeLocalServers));
         try {

@@ -11,7 +11,7 @@ import Sirius.server.newuser.*;
 
 import java.rmi.*;
 
-import java.util.*;
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
 
 /**
  * DOCUMENT ME!
@@ -24,7 +24,7 @@ public interface UserService extends Remote {
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * change password.
+     * DOCUMENT ME!
      *
      * @param   user         DOCUMENT ME!
      * @param   oldPassword  DOCUMENT ME!
@@ -35,7 +35,25 @@ public interface UserService extends Remote {
      * @throws  RemoteException  DOCUMENT ME!
      * @throws  UserException    DOCUMENT ME!
      */
+    @Deprecated
     boolean changePassword(User user, String oldPassword, String newPassword) throws RemoteException, UserException;
+    /**
+     * change password.
+     *
+     * @param   user         DOCUMENT ME!
+     * @param   oldPassword  DOCUMENT ME!
+     * @param   newPassword  DOCUMENT ME!
+     * @param   context      DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     * @throws  UserException    DOCUMENT ME!
+     */
+    boolean changePassword(final User user,
+            final String oldPassword,
+            final String newPassword,
+            final ConnectionContext context) throws RemoteException, UserException;
 
     /**
      * DOCUMENT ME!
@@ -47,7 +65,21 @@ public interface UserService extends Remote {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    boolean validateUser(User user, String password) throws RemoteException;
+    @Deprecated
+    boolean validateUser(final User user, final String password) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user      DOCUMENT ME!
+     * @param   password  DOCUMENT ME!
+     * @param   context   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    boolean validateUser(final User user, String password, final ConnectionContext context) throws RemoteException;
 
     /**
      * DOCUMENT ME!
@@ -59,11 +91,25 @@ public interface UserService extends Remote {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Deprecated
     String getConfigAttr(final User user, final String key) throws RemoteException;
 
     /**
      * DOCUMENT ME!
      *
+     * @param   user     DOCUMENT ME!
+     * @param   key      DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    String getConfigAttr(final User user, final String key, final ConnectionContext context) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   user  DOCUMENT ME!
      * @param   key   DOCUMENT ME!
      *
@@ -71,5 +117,19 @@ public interface UserService extends Remote {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Deprecated
     boolean hasConfigAttr(final User user, final String key) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user     DOCUMENT ME!
+     * @param   key      DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    boolean hasConfigAttr(final User user, final String key, final ConnectionContext context) throws RemoteException;
 }

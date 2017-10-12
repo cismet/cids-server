@@ -13,8 +13,8 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import java.util.Collection;
-import java.util.HashMap;
 
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
 import de.cismet.cids.server.search.CidsServerSearch;
 
 /**
@@ -37,5 +37,20 @@ public interface SearchService extends Remote {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Deprecated
     Collection customServerSearch(final User user, CidsServerSearch serverSearch) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user          DOCUMENT ME!
+     * @param   serverSearch  DOCUMENT ME!
+     * @param   context       DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    Collection customServerSearch(final User user, CidsServerSearch serverSearch, final ConnectionContext context)
+            throws RemoteException;
 }
