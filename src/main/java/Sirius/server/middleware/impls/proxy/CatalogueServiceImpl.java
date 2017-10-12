@@ -113,7 +113,7 @@ public class CatalogueServiceImpl implements CatalogueService {
                 // nodes from links
 
                 if (ls != null) {
-                    n = ls.getNodes(user, groupedLinks[i].getIDs());
+                    n = ls.getNodes(user, groupedLinks[i].getIDs(), context);
                 } else                                                        // create dummy node to show that system
                                                                               // is not available
                 {

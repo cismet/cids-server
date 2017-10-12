@@ -338,7 +338,7 @@ public class MetaServiceImpl implements MetaService {
         ids[0] = nodeID;
 
         if (name != null) {
-            n = ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)name).getNodes(usr, ids)[0];
+            n = ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)name).getNodes(usr, ids, context)[0];
         } else {
             final Node error = new MetaNode(
                     ids[0],
@@ -386,7 +386,7 @@ public class MetaServiceImpl implements MetaService {
             }
         }
         return ((Sirius.server.middleware.interfaces.domainserver.MetaService)activeLocalServers.get(usr.getDomain()))
-                    .getMetaObjectNode(usr, query);
+                    .getMetaObjectNode(usr, query, context);
     }
 
     /**
@@ -402,7 +402,7 @@ public class MetaServiceImpl implements MetaService {
     @Override
     @Deprecated
     public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
-        return getMetaObject(usr, query, usr.getDomain());
+        return getMetaObject(usr, query, usr.getDomain(), ConnectionContext.createDeprecated());
     }
 
     @Override

@@ -418,7 +418,7 @@ public final class RESTfulSerialInterface {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
             nameTheThread(hsr, "/addNode", user.toString(), "node=" + ((node != null) ? node.toString() : "null"));
 
-            return createResponse(getCallserver().addNode(node, parent, user));
+            return createResponse(getCallserver().addNode(node, parent, user, context));
         } catch (final IOException e) {
             final String message = "could not add node"; // NOI18N
             LOG.error(message, e);
@@ -461,7 +461,7 @@ public final class RESTfulSerialInterface {
                     isCompressionEnabled());
             nameTheThread(hsr, "/deleteNode", user.toString(), "node=" + ((node != null) ? node.toString() : "null"));
 
-            return createResponse(getCallserver().deleteNode(node, user));
+            return createResponse(getCallserver().deleteNode(node, user, context));
         } catch (final IOException e) {
             final String message = "could not delete node"; // NOI18N
             LOG.error(message, e);
@@ -1354,7 +1354,7 @@ public final class RESTfulSerialInterface {
                     isCompressionEnabled());
             nameTheThread(hsr, "/getMethodsByUser", user.toString());
 
-            return createResponse(getCallserver().getMethods(user));
+            return createResponse(getCallserver().getMethods(user, context));
         } catch (final IOException e) {
             final String message = "could not get methods"; // NOI18N
             LOG.error(message, e);
@@ -1399,7 +1399,7 @@ public final class RESTfulSerialInterface {
                     isCompressionEnabled());
             nameTheThread(hsr, "/getMethodsByDomain", user.toString(), "domain=" + localServerName);
 
-            return createResponse(getCallserver().getMethods(user, localServerName));
+            return createResponse(getCallserver().getMethods(user, localServerName, context));
         } catch (final IOException e) {
             final String message = "could not get methods"; // NOI18N
             LOG.error(message, e);
@@ -1463,7 +1463,8 @@ public final class RESTfulSerialInterface {
                         classId,
                         user,
                         representationFields,
-                        representationPattern));
+                        representationPattern,
+                        context));
         } catch (final IOException e) {
             final String message = "could not get LightwightMetaObjects for class";  // NOI18N
             LOG.error(message, e);
@@ -1514,7 +1515,8 @@ public final class RESTfulSerialInterface {
             return createResponse(getCallserver().getAllLightweightMetaObjectsForClass(
                         classId,
                         user,
-                        representationFields));
+                        representationFields,
+                        context));
         } catch (final IOException e) {
             final String message = "could not get LightweightMetaObjects for class"; // NOI18N
             LOG.error(message, e);
@@ -1582,7 +1584,8 @@ public final class RESTfulSerialInterface {
                         user,
                         query,
                         representationFields,
-                        representationPattern));
+                        representationPattern,
+                        context));
         } catch (final IOException e) {
             final String message = "could not get LightweightMetaObjects"; // NOI18N
             LOG.error(message, e);

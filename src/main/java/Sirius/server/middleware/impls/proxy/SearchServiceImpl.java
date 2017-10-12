@@ -95,7 +95,7 @@ public class SearchServiceImpl implements SearchService {
         serverSearch.setActiveLocalServers(new HashMap(activeLocalServers));
         try {
             final Collection searchResults = serverSearch.performServerSearch();
-            addDynamicChildren(user, searchResults);
+            addDynamicChildren(user, searchResults, context);
             return searchResults;
         } catch (Exception e) {
             logger.error("Error in customSearch", e);
@@ -109,8 +109,9 @@ public class SearchServiceImpl implements SearchService {
      *
      * @param  user           the user
      * @param  searchResults  the collection with the results of the search
+     * @param  context        DOCUMENT ME!
      */
-    private void addDynamicChildren(final User user, final Collection searchResults) {
+    private void addDynamicChildren(final User user, final Collection searchResults, final ConnectionContext context) {
         // caches the dynamic children due to performance reasons
         final HashMap<String, String> dynChildCache = new HashMap<String, String>();
 
@@ -138,7 +139,8 @@ public class SearchServiceImpl implements SearchService {
                             // the dynamic children is not contained in the cache
                             final MetaClass cl = ((MetaService)activeLocalServers.get(node.getDomain())).getClass(
                                     user,
-                                    node.getClassId());
+                                    node.getClassId(),
+                                    context);
                             ClassAttribute dynChild = cl.getClassAttribute("searchHit_dynamicChildren");
                             final ClassAttribute attribute = cl.getClassAttribute("searchHit_dynamicChildrenAttribute");
                             boolean hasAttribute = false;
@@ -147,7 +149,8 @@ public class SearchServiceImpl implements SearchService {
                             if (attribute != null) {
                                 value = ((UserService)activeLocalServers.get(node.getDomain())).getConfigAttr(
                                         user,
-                                        (String)attribute.getValue());
+                                        (String)attribute.getValue(),
+                                        context);
 
                                 if (value != null) {
                                     hasAttribute = true;

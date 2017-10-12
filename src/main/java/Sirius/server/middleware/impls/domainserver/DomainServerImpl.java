@@ -1605,7 +1605,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                     + body,
                     "params:"
                     + Arrays.toString(params));
-        if (hasConfigAttr(user, SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX + taskname)) {
+        if (hasConfigAttr(user, SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX + taskname, context)) {
             final ServerAction serverAction = serverActionMap.get(taskname);
 
             if (serverAction instanceof MetaServiceStore) {

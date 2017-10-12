@@ -493,13 +493,16 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   user     DOCUMENT ME!
      * @param   domain   DOCUMENT ME!
      * @param   classId  DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    private String getClassNameForClassId(final User user, final String domain, final int classId)
-            throws RemoteException {
+    private String getClassNameForClassId(final User user,
+            final String domain,
+            final int classId,
+            final ConnectionContext context) throws RemoteException {
         final String className;
 
         if (!this.classKeyCache.isDomainCached(domain)) {
@@ -1091,7 +1094,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         if (!this.classKeyCache.isDomainCached(domain)) {
             LOG.info("class key cache does not contain class ids for domain '" + domain
                         + "', need to fill the cache first!");
-            this.getClasses(user, domain);
+            this.getClasses(user, domain, context);
         }
 
         final String className = this.classKeyCache.getClassNameForClassId(domain, classId);
@@ -1104,7 +1107,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
             throw new RemoteException(message);
         }
 
-        return this.getClassByTableName(user, className, domain);
+        return this.getClassByTableName(user, className, domain, context);
     }
 
     @Override
@@ -2093,7 +2096,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final String domain,
             final ConnectionContext context) throws RemoteException {
         // TODO context implementation
-        final String className = this.getClassNameForClassId(user, domain, classId);
+        final String className = this.getClassNameForClassId(user, domain, classId, context);
 
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         queryParameters.add("deduplicate", "true");
@@ -2200,7 +2203,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final ConnectionContext context) throws RemoteException {
         // TODO context implementation
         final int classId = metaObject.getClassID();
-        final String className = this.getClassNameForClassId(user, domain, classId);
+        final String className = this.getClassNameForClassId(user, domain, classId, context);
 
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         queryParameters.add("requestResultingInstance", "true");
@@ -2306,7 +2309,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final ConnectionContext context) throws RemoteException {
         final int objectId = metaObject.getID();
         final int classId = metaObject.getClassID();
-        final String className = this.getClassNameForClassId(user, domain, classId);
+        final String className = this.getClassNameForClassId(user, domain, classId, context);
 
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         queryParameters.add("requestResultingInstance", "false");
@@ -2411,7 +2414,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         // TODO context implementation
         final int objectId = metaObject.getID();
         final int classId = metaObject.getClassID();
-        final String className = this.getClassNameForClassId(user, domain, classId);
+        final String className = this.getClassNameForClassId(user, domain, classId, context);
 
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         final WebResource webResource = this.createWebResource(ENTITIES_API)
@@ -2492,7 +2495,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final ConnectionContext context) throws RemoteException {
         // TODO context implementation
         final String domain = user.getDomain();
-        final String className = this.getClassNameForClassId(user, domain, classId);
+        final String className = this.getClassNameForClassId(user, domain, classId, context);
         final AbstractAttributeRepresentationFormater representationFormater;
         final LightweightMetaObject[] lightweightMetaObjects;
         final int representationFieldsLength = (representationFields != null) ? representationFields.length : 0;

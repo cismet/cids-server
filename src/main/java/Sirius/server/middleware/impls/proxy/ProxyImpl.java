@@ -365,7 +365,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      */
     @Override
     public Node[] getClassTreeNodes(final User user, final ConnectionContext context) throws RemoteException {
-        return metaService.getClassTreeNodes(user);
+        return metaService.getClassTreeNodes(user, context);
     }
 
     @Override
@@ -655,7 +655,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             final MetaObject metaObject,
             final String domain,
             final ConnectionContext context) throws RemoteException {
-        return metaService.updateMetaObject(user, metaObject, domain);
+        return metaService.updateMetaObject(user, metaObject, domain, context);
     }
 
     @Override

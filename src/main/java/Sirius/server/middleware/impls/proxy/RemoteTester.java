@@ -21,6 +21,8 @@ import java.rmi.*;
 import java.rmi.registry.*;
 
 import java.util.Iterator;
+
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
 /**
  * DOCUMENT ME!
  *
@@ -83,7 +85,13 @@ public class RemoteTester {
 
         // oder mit login
         // ug_domain,ug_name,u_domain,u_name,password
-        final User u = us.getUser(domain, "Administratoren", domain, "admin", "x"); // NOI18N
+        final User u = us.getUser(
+                domain,
+                "Administratoren",
+                domain,
+                "admin",
+                "x",
+                ConnectionContext.create(RemoteTester.class.getSimpleName())); // NOI18N
 
         System.out.println(u + "  user token retrieved"); // NOI18N
 
@@ -105,8 +113,13 @@ public class RemoteTester {
         // Beispiel:
         // Template f\u00FCr eine Object der ersten Klasse
         // MetaObject mo = meta.getInstance(u,cs[0]);
-        final MetaObject mo = meta.getMetaObject(u, 5646, 6, "WUNDA_BLAU"); // NOI18N
-        System.out.println("metaobject::" + mo);                            // NOI18N
+        final MetaObject mo = meta.getMetaObject(
+                u,
+                5646,
+                6,
+                "WUNDA_BLAU",
+                ConnectionContext.create(RemoteTester.class.getSimpleName())); // NOI18N
+        System.out.println("metaobject::" + mo);                               // NOI18N
 
 // alle attribute des Objects
         // ObjectAttribute[] attribs = mo.getAttribs();

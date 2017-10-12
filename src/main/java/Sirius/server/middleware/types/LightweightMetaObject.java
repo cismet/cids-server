@@ -30,6 +30,7 @@ import java.util.Set;
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.CallServerServiceProvider;
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
 
 import de.cismet.cids.tools.fromstring.FromStringCreator;
 
@@ -958,9 +959,19 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
             }
             final MetaObject mo;
             if (metaService != null) { // this code should only be executed on the client side
-                mo = metaService.getMetaObject(getUser(), getObjectID(), getClassID(), getDomain());
+                mo = metaService.getMetaObject(
+                        getUser(),
+                        getObjectID(),
+                        getClassID(),
+                        getDomain(),
+                        ConnectionContext.create(LightweightMetaObject.class.getSimpleName()));
             } else {                   // this code should only be executed on the server side
-                mo = DomainServerImpl.getServerInstance().getMetaObject(getUser(), getObjectID(), getClassID());
+                mo = DomainServerImpl.getServerInstance()
+                            .getMetaObject(
+                                    getUser(),
+                                    getObjectID(),
+                                    getClassID(),
+                                    ConnectionContext.create(LightweightMetaObject.class.getSimpleName()));
             }
 
             final SoftReference<MetaObject> sr;
