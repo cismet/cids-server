@@ -22,14 +22,14 @@ import java.util.Date;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class ConnectionContextLogger {
+public class ServerConnectionContextLogger {
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new ConnectionContextLogger object.
      */
-    private ConnectionContextLogger() {
+    private ServerConnectionContextLogger() {
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -39,7 +39,7 @@ public class ConnectionContextLogger {
      *
      * @return  DOCUMENT ME!
      */
-    public static ConnectionContextLogger getInstance() {
+    public static ServerConnectionContextLogger getInstance() {
         return LazyInitialiser.INSTANCE;
     }
 
@@ -51,14 +51,18 @@ public class ConnectionContextLogger {
      * @param  methodName  DOCUMENT ME!
      * @param  params      DOCUMENT ME!
      */
-    public void logConnectionContext(ConnectionContext context,
+    public void logConnectionContext(ServerConnectionContext context,
             final User user,
             final String methodName,
             final Object... params) {
         if (context == null) {
-            context = ConnectionContext.createDeprecated();
+            context = ServerConnectionContext.createDeprecated();
         }
-        final ConnectionContextLog contextLog = new ConnectionContextLog(new Date(), user, context, methodName, params);
+        final ServerConnectionContextLog contextLog = new ServerConnectionContextLog(new Date(),
+                user,
+                context,
+                methodName,
+                params);
         System.out.println(contextLog);
     }
 
@@ -73,7 +77,7 @@ public class ConnectionContextLogger {
 
         //~ Static fields/initializers -----------------------------------------
 
-        private static final ConnectionContextLogger INSTANCE = new ConnectionContextLogger();
+        private static final ServerConnectionContextLogger INSTANCE = new ServerConnectionContextLogger();
 
         //~ Constructors -------------------------------------------------------
 

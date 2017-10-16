@@ -24,8 +24,9 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
@@ -43,7 +44,7 @@ import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
  */
 @ServiceProvider(service = RestApiCidsServerSearch.class)
 public class MetaObjectNodesByQuerySearch extends AbstractCidsServerSearch implements RestApiCidsServerSearch,
-    ConnectionContextProvider {
+    ServerConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -109,7 +110,7 @@ public class MetaObjectNodesByQuerySearch extends AbstractCidsServerSearch imple
         try {
             final Node[] metaObjectNodes = metaService.getMetaObjectNode(this.getUser(),
                     this.getQuery(),
-                    getConnectionContext());
+                    getServerConnectionContext());
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug(metaObjectNodes.length + " Meta Object Nodes found.");
@@ -124,7 +125,7 @@ public class MetaObjectNodesByQuerySearch extends AbstractCidsServerSearch imple
     }
 
     @Override
-    public ConnectionContext getConnectionContext() {
-        return ConnectionContext.create(MetaObjectNodesByQuerySearch.class.getSimpleName());
+    public ServerConnectionContext getServerConnectionContext() {
+        return ServerConnectionContext.create(getClass().getSimpleName());
     }
 }

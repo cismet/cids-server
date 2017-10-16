@@ -21,8 +21,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
 /**
@@ -31,7 +32,7 @@ import de.cismet.cids.server.search.AbstractCidsServerSearch;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class CsvExportSearchStatement extends AbstractCidsServerSearch implements ConnectionContextProvider {
+public class CsvExportSearchStatement extends AbstractCidsServerSearch implements ServerConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -98,7 +99,7 @@ public class CsvExportSearchStatement extends AbstractCidsServerSearch implement
             final MetaClass metaClass = ms.getClassByTableName(
                     getUser(),
                     metaClassName.toLowerCase(),
-                    getConnectionContext());
+                    getServerConnectionContext());
             if ((metaClass != null) && !metaClass.getAttributeByName("Queryable").isEmpty()) {
                 final MetaObject moDummy = metaClass.getEmptyInstance();
 
@@ -127,7 +128,7 @@ public class CsvExportSearchStatement extends AbstractCidsServerSearch implement
                             + "FROM " + metaClass.getTableName() + " "
                             + "WHERE " + whereCause;
 
-                final ArrayList<ArrayList> results = ms.performCustomSearch(sql, getConnectionContext());
+                final ArrayList<ArrayList> results = ms.performCustomSearch(sql, getServerConnectionContext());
 
                 final ArrayList<String> rows = new ArrayList<String>();
                 for (final ArrayList result : results) {
@@ -208,7 +209,7 @@ public class CsvExportSearchStatement extends AbstractCidsServerSearch implement
     }
 
     @Override
-    public ConnectionContext getConnectionContext() {
-        return ConnectionContext.create(CsvExportSearchStatement.class.getSimpleName());
+    public ServerConnectionContext getServerConnectionContext() {
+        return ServerConnectionContext.create(getClass().getSimpleName());
     }
 }

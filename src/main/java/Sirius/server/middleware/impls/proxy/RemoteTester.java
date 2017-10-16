@@ -22,7 +22,8 @@ import java.rmi.registry.*;
 
 import java.util.Iterator;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+
 /**
  * DOCUMENT ME!
  *
@@ -91,7 +92,7 @@ public class RemoteTester {
                 domain,
                 "admin",
                 "x",
-                ConnectionContext.create(RemoteTester.class.getSimpleName())); // NOI18N
+                ClientConnectionContext.create(RemoteTester.class.getSimpleName())); // NOI18N
 
         System.out.println(u + "  user token retrieved"); // NOI18N
 
@@ -118,8 +119,8 @@ public class RemoteTester {
                 5646,
                 6,
                 "WUNDA_BLAU",
-                ConnectionContext.create(RemoteTester.class.getSimpleName())); // NOI18N
-        System.out.println("metaobject::" + mo);                               // NOI18N
+                ClientConnectionContext.create(RemoteTester.class.getSimpleName())); // NOI18N
+        System.out.println("metaobject::" + mo);                                     // NOI18N
 
 // alle attribute des Objects
         // ObjectAttribute[] attribs = mo.getAttribs();

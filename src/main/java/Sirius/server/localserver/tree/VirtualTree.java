@@ -47,8 +47,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
 
 import de.cismet.commons.utils.StringUtils;
 
@@ -58,7 +59,7 @@ import de.cismet.commons.utils.StringUtils;
  * @author   schlob
  * @version  $Revision$, $Date$
  */
-public class VirtualTree extends Shutdown implements AbstractTree, ConnectionContextProvider {
+public class VirtualTree extends Shutdown implements AbstractTree, ServerConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -840,7 +841,7 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
                             .hasConfigAttr(
                                     user,
                                     additionaltreepermissiontagString,
-                                    getConnectionContext());
+                                    getServerConnectionContext());
             } catch (RemoteException ex) {
                 additionaltreepermissiontag = false;
                 LOG.error(ex.getMessage(), ex);
@@ -1158,8 +1159,8 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
     }
 
     @Override
-    public ConnectionContext getConnectionContext() {
-        return ConnectionContext.create(VirtualTree.class.getSimpleName());
+    public ServerConnectionContext getServerConnectionContext() {
+        return ServerConnectionContext.create(getClass().getSimpleName());
     }
 
     //~ Inner Classes ----------------------------------------------------------

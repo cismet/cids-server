@@ -24,8 +24,9 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
@@ -35,7 +36,7 @@ import de.cismet.cids.server.search.SearchException;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-public class DistinctValuesSearch extends AbstractCidsServerSearch implements ConnectionContextProvider {
+public class DistinctValuesSearch extends AbstractCidsServerSearch implements ServerConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -72,7 +73,7 @@ public class DistinctValuesSearch extends AbstractCidsServerSearch implements Co
                 final String query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
                                     .getDialect())
                             .getDistinctValuesSearchStmt(metaClass, attribute);
-                final ArrayList<ArrayList> results = ms.performCustomSearch(query, getConnectionContext());
+                final ArrayList<ArrayList> results = ms.performCustomSearch(query, getServerConnectionContext());
                 return results;
             } catch (RemoteException ex) {
                 LOG.error(ex.getMessage(), ex);
@@ -85,7 +86,7 @@ public class DistinctValuesSearch extends AbstractCidsServerSearch implements Co
     }
 
     @Override
-    public ConnectionContext getConnectionContext() {
-        return ConnectionContext.create(DistinctValuesSearch.class.getSimpleName());
+    public ServerConnectionContext getServerConnectionContext() {
+        return ServerConnectionContext.create(getClass().getSimpleName());
     }
 }

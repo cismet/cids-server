@@ -24,8 +24,8 @@ import Sirius.util.*;
 
 import java.rmi.*;
 
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
 import de.cismet.cids.server.connectioncontext.ConnectionContext;
-
 /**
  * DOCUMENT ME!
  *
@@ -58,7 +58,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     @Deprecated
     public Node[] getChildren(final Node node, final User user) throws RemoteException {
-        return getChildren(node, user, ConnectionContext.createDeprecated());
+        return getChildren(node, user, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -189,7 +189,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     @Deprecated
     public Node[] getRoots(final User user, final String localServerName) throws RemoteException {
-        return getRoots(user, localServerName, ConnectionContext.createDeprecated());
+        return getRoots(user, localServerName, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -225,7 +225,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     @Deprecated
     public Node[] getRoots(final User user) throws RemoteException {
-        return getRoots(user, ConnectionContext.createDeprecated());
+        return getRoots(user, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -347,7 +347,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     @Deprecated
     public Node addNode(final Node node, final Link parent, final User user) throws RemoteException {
-        return addNode(node, parent, user, ConnectionContext.createDeprecated());
+        return addNode(node, parent, user, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -376,7 +376,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     @Deprecated
     public boolean deleteNode(final Node node, final User user) throws RemoteException {
-        return deleteNode(node, user, ConnectionContext.createDeprecated());
+        return deleteNode(node, user, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -404,7 +404,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     @Deprecated
     public boolean addLink(final Node from, final Node to, final User user) throws RemoteException {
-        return addLink(from, to, user, ConnectionContext.createDeprecated());
+        return addLink(from, to, user, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -433,7 +433,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     @Deprecated
     public boolean deleteLink(final Node from, final Node to, final User user) throws RemoteException {
-        return deleteLink(from, to, user, ConnectionContext.createDeprecated());
+        return deleteLink(from, to, user, ClientConnectionContext.createDeprecated());
     }
 
     /**

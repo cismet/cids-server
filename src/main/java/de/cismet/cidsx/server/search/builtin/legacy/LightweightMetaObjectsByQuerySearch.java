@@ -24,11 +24,11 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
-import de.cismet.cids.server.search.builtin.DefaultFullTextSearch;
 
 import de.cismet.cidsx.base.types.Type;
 
@@ -46,7 +46,7 @@ import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
 @Deprecated
 public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearch implements RestApiCidsServerSearch,
     LightweightMetaObjectsSearch,
-    ConnectionContextProvider {
+    ServerConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -138,14 +138,14 @@ public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearc
                         query,
                         representationFields,
                         representationPattern,
-                        getConnectionContext());
+                        getServerConnectionContext());
             } else {
                 lightWightMetaObjects = metaService.getLightweightMetaObjectsByQuery(
                         classId,
                         this.getUser(),
                         query,
                         representationFields,
-                        getConnectionContext());
+                        getServerConnectionContext());
             }
             if (LOG.isDebugEnabled()) {
                 LOG.debug(lightWightMetaObjects.length + " Lightweight Meta Objects found");
@@ -160,7 +160,7 @@ public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearc
     }
 
     @Override
-    public ConnectionContext getConnectionContext() {
-        return ConnectionContext.create(LightweightMetaObjectsByQuerySearch.class.getSimpleName());
+    public ServerConnectionContext getServerConnectionContext() {
+        return ServerConnectionContext.create(getClass().getSimpleName());
     }
 }

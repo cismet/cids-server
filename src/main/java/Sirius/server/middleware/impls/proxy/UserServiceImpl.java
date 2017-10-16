@@ -29,6 +29,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
 
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
 import de.cismet.cids.server.connectioncontext.ConnectionContext;
 
 /**
@@ -92,7 +93,7 @@ public class UserServiceImpl {
                 userLsName,
                 userName,
                 password,
-                ConnectionContext.createDeprecated());
+                ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -167,7 +168,7 @@ public class UserServiceImpl {
      */
     @Deprecated
     public Vector getUserGroupNames() throws RemoteException {
-        return getUserGroupNames(ConnectionContext.createDeprecated());
+        return getUserGroupNames(ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -217,7 +218,7 @@ public class UserServiceImpl {
      */
     @Deprecated
     public Vector getUserGroupNames(final String userName, final String lsHome) throws RemoteException {
-        return getUserGroupNames(userName, lsHome, ConnectionContext.createDeprecated());
+        return getUserGroupNames(userName, lsHome, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -254,7 +255,7 @@ public class UserServiceImpl {
     @Deprecated
     public boolean changePassword(final User user, final String oldPassword, final String newPassword)
             throws RemoteException, UserException {
-        return changePassword(user, oldPassword, newPassword, ConnectionContext.createDeprecated());
+        return changePassword(user, oldPassword, newPassword, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -293,7 +294,7 @@ public class UserServiceImpl {
      */
     @Deprecated
     public String getConfigAttr(final User user, final String key) throws RemoteException {
-        return getConfigAttr(user, key, ConnectionContext.createDeprecated());
+        return getConfigAttr(user, key, ClientConnectionContext.createDeprecated());
     }
 
     /**

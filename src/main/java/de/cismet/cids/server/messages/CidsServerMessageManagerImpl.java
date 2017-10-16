@@ -29,8 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
 
 /**
  * DOCUMENT ME!
@@ -38,7 +39,7 @@ import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class CidsServerMessageManagerImpl implements CidsServerMessageManager, ConnectionContextProvider {
+public class CidsServerMessageManagerImpl implements CidsServerMessageManager, ServerConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -296,7 +297,7 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager, C
                                         user,
                                         "csm://"
                                         + category,
-                                        getConnectionContext());
+                                        getServerConnectionContext());
                 } catch (final RemoteException ex) {
                     LOG.warn(ex, ex);
                 }
@@ -337,8 +338,8 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager, C
     }
 
     @Override
-    public ConnectionContext getConnectionContext() {
-        return ConnectionContext.create(CidsServerMessageManagerImpl.class.getSimpleName());
+    public ServerConnectionContext getServerConnectionContext() {
+        return ServerConnectionContext.create(getClass().getSimpleName());
     }
 
     //~ Inner Classes ----------------------------------------------------------

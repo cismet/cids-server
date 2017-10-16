@@ -25,8 +25,9 @@ import java.util.Collection;
 
 import de.cismet.cids.nodepermissions.NoNodePermissionProvidedException;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
 import de.cismet.cids.server.search.SearchException;
@@ -39,7 +40,7 @@ import de.cismet.cids.server.search.SearchException;
  * @version  $Revision$, $Date$
  */
 public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaObjectNodeServerSearch,
-    ConnectionContextProvider {
+    ServerConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -118,7 +119,7 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
                 }
 
                 LOG.info(query);
-                final ArrayList<ArrayList> results = ms.performCustomSearch(query, getConnectionContext());
+                final ArrayList<ArrayList> results = ms.performCustomSearch(query, getServerConnectionContext());
 
                 for (final ArrayList al : results) {
                     final int cid = (Integer)al.get(0);
@@ -191,7 +192,7 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
     }
 
     @Override
-    public ConnectionContext getConnectionContext() {
-        return ConnectionContext.create(QueryEditorSearch.class.getSimpleName());
+    public ServerConnectionContext getServerConnectionContext() {
+        return ServerConnectionContext.create(getClass().getSimpleName());
     }
 }

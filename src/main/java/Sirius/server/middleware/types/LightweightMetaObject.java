@@ -30,8 +30,11 @@ import java.util.Set;
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.CallServerServiceProvider;
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+import de.cismet.cids.server.actions.ScheduledServerActionManager;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
 
 import de.cismet.cids.tools.fromstring.FromStringCreator;
 
@@ -43,7 +46,8 @@ import de.cismet.cids.tools.fromstring.FromStringCreator;
  */
 public final class LightweightMetaObject implements MetaObject,
     Comparable<LightweightMetaObject>,
-    ConnectionContextProvider {
+    ServerConnectionContextProvider,
+    ClientConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -967,14 +971,14 @@ public final class LightweightMetaObject implements MetaObject,
                         getObjectID(),
                         getClassID(),
                         getDomain(),
-                        getConnectionContext());
+                        getClientConnectionContext());
             } else {                   // this code should only be executed on the server side
                 mo = DomainServerImpl.getServerInstance()
                             .getMetaObject(
                                     getUser(),
                                     getObjectID(),
                                     getClassID(),
-                                    getConnectionContext());
+                                    getServerConnectionContext());
             }
 
             final SoftReference<MetaObject> sr;
@@ -1192,7 +1196,12 @@ public final class LightweightMetaObject implements MetaObject,
     }
 
     @Override
-    public ConnectionContext getConnectionContext() {
-        return ConnectionContext.create(LightweightMetaObject.class.getSimpleName());
+    public ClientConnectionContext getClientConnectionContext() {
+        return ClientConnectionContext.create(ScheduledServerActionManager.class.getSimpleName());
+    }
+
+    @Override
+    public ServerConnectionContext getServerConnectionContext() {
+        return ServerConnectionContext.create(getClass().getSimpleName());
     }
 }

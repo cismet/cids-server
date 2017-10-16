@@ -15,8 +15,7 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.registry.Registry;
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
 
 import org.junit.After;
 import org.junit.Before;
@@ -33,6 +32,7 @@ import java.util.Properties;
 
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
 import de.cismet.cids.server.ws.rest.RESTfulService;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
 
 /**
  * DOCUMENT ME!
@@ -40,7 +40,7 @@ import de.cismet.cids.server.ws.rest.RESTfulService;
  * @author   mscholl
  * @version  $Revision$, $Date$
  */
-public class RMIvsRESTTest implements ConnectionContextProvider {
+public class RMIvsRESTTest implements ClientConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -148,12 +148,11 @@ public class RMIvsRESTTest implements ConnectionContextProvider {
     public void testGetMetaObjectRMI() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
         final Object callserver = Naming.lookup("rmi://localhost/callServer");
-        final User user = ((UserService)callserver).getUser(
-                "WUNDA_BLAU",
+        final User user = ((UserService)callserver).getUser("WUNDA_BLAU",
                 "Administratoren",
                 "WUNDA_BLAU",
                 "cismet",
-                "sb", ConnectionContext.create(RMIvsRESTTest.class.getSimpleName()));
+                "sb", ClientConnectionContext.create(RMIvsRESTTest.class.getSimpleName()));
         final String domain = "WUNDA_BLAU";
         final int objectID = 3;
         final int classID = 106;
@@ -163,7 +162,7 @@ public class RMIvsRESTTest implements ConnectionContextProvider {
         average = 0;
         for (int i = 0; i < 1000; ++i) {
             final long before = System.currentTimeMillis();
-            final MetaObject result = ((MetaService)callserver).getMetaObject(user, objectID, classID, domain, getConnectionContext());
+            final MetaObject result = ((MetaService)callserver).getMetaObject(user, objectID, classID, domain, getClientConnectionContext());
             final long after = System.currentTimeMillis();
 
             if ((i % 50) == 0) {
@@ -199,7 +198,7 @@ public class RMIvsRESTTest implements ConnectionContextProvider {
                                     user,
                                     objectID,
                                     classID,
-                                    domain, getConnectionContext());
+                                    domain, getClientConnectionContext());
                             final long after = System.currentTimeMillis();
                             final long duration = after - before;
                             if (duration < fastest) {
@@ -249,7 +248,7 @@ public class RMIvsRESTTest implements ConnectionContextProvider {
     @Test
     public void testGetMetaObjectREST() throws Exception {
         System.out.println("\nTEST: " + getCurrentMethodName());
-        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet", getConnectionContext());
+        final User user = connector.getUser("WUNDA_BLAU", "Administratoren", "WUNDA_BLAU", "admin", "cismet", getClientConnectionContext());
         final String domain = "WUNDA_BLAU";
         final int objectID = 3;
         final int classID = 106;
@@ -259,7 +258,7 @@ public class RMIvsRESTTest implements ConnectionContextProvider {
         average = 0;
         for (int i = 0; i < 1000; ++i) {
             final long before = System.currentTimeMillis();
-            final MetaObject result = connector.getMetaObject(user, objectID, classID, domain, getConnectionContext());
+            final MetaObject result = connector.getMetaObject(user, objectID, classID, domain, getClientConnectionContext());
             final long after = System.currentTimeMillis();
 
             if ((i % 50) == 0) {
@@ -296,7 +295,7 @@ public class RMIvsRESTTest implements ConnectionContextProvider {
                                     objectID,
                                     classID,
                                     domain, 
-                                    getConnectionContext());
+                                    getClientConnectionContext());
                             final long after = System.currentTimeMillis();
                             final long duration = after - before;
                             if (duration < fastest) {
@@ -337,8 +336,8 @@ public class RMIvsRESTTest implements ConnectionContextProvider {
     }
 
     @Override
-    public ConnectionContext getConnectionContext() {
-        return ConnectionContext.create(RMIvsRESTTest.class.getSimpleName());
+    public ClientConnectionContext getClientConnectionContext() {
+        return ClientConnectionContext.create(RMIvsRESTTest.class.getSimpleName());
     }
 
     //~ Inner Classes ----------------------------------------------------------

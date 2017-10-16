@@ -45,6 +45,7 @@ import java.util.Vector;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
 import de.cismet.cids.server.connectioncontext.ConnectionContext;
 import de.cismet.cids.server.search.CidsServerSearch;
 
@@ -163,7 +164,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Deprecated
     @Override
     public Node[] getChildren(final Node node, final User usr) throws RemoteException {
-        return getChildren(node, usr, ConnectionContext.createDeprecated());
+        return getChildren(node, usr, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -188,7 +189,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     @Deprecated
     public Node[] getRoots(final User user, final String localServerName) throws RemoteException {
-        return getRoots(user, localServerName, ConnectionContext.createDeprecated());
+        return getRoots(user, localServerName, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -211,7 +212,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     @Deprecated
     public Node[] getRoots(final User user) throws RemoteException {
-        return getRoots(user, ConnectionContext.createDeprecated());
+        return getRoots(user, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -232,7 +233,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     @Deprecated
     public Node addNode(final Node node, final Link parent, final User user) throws RemoteException {
-        return addNode(node, parent, user, ConnectionContext.createDeprecated());
+        return addNode(node, parent, user, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -256,7 +257,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Deprecated
     @Override
     public boolean deleteNode(final Node node, final User user) throws RemoteException {
-        return deleteNode(node, user, ConnectionContext.createDeprecated());
+        return deleteNode(node, user, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -279,7 +280,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Deprecated
     @Override
     public boolean addLink(final Node from, final Node to, final User user) throws RemoteException {
-        return addLink(from, to, user, ConnectionContext.createDeprecated());
+        return addLink(from, to, user, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -303,7 +304,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Deprecated
     @Override
     public boolean deleteLink(final Node from, final Node to, final User user) throws RemoteException {
-        return deleteLink(from, to, user, ConnectionContext.createDeprecated());
+        return deleteLink(from, to, user, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -327,7 +328,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     @Deprecated
     public Node[] getClassTreeNodes(final User user, final String localServerName) throws RemoteException {
-        return getClassTreeNodes(user, localServerName, ConnectionContext.createDeprecated());
+        return getClassTreeNodes(user, localServerName, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -350,7 +351,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     @Deprecated
     public Node[] getClassTreeNodes(final User user) throws RemoteException {
-        return getClassTreeNodes(user, ConnectionContext.createDeprecated());
+        return getClassTreeNodes(user, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -371,7 +372,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     @Deprecated
     public MetaClass getClass(final User user, final int classID, final String localServerName) throws RemoteException {
-        return getClass(user, classID, localServerName, ConnectionContext.createDeprecated());
+        return getClass(user, classID, localServerName, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -398,7 +399,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Deprecated
     public MetaClass getClassByTableName(final User user, final String tableName, final String localServerName)
             throws RemoteException {
-        return getClassByTableName(user, tableName, localServerName, ConnectionContext.createDeprecated());
+        return getClassByTableName(user, tableName, localServerName, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -424,7 +425,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     @Deprecated
     public MetaClass[] getClasses(final User user, final String localServerName) throws RemoteException {
-        return getClasses(user, localServerName, ConnectionContext.createDeprecated());
+        return getClasses(user, localServerName, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -447,7 +448,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     @Deprecated
     public String[] getDomains() throws RemoteException {
-        return getDomains(ConnectionContext.createDeprecated());
+        return getDomains(ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -467,7 +468,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     @Deprecated
     public Node getMetaObjectNode(final User usr, final int nodeID, final String domain) throws RemoteException {
-        return getMetaObjectNode(usr, nodeID, domain, ConnectionContext.createDeprecated());
+        return getMetaObjectNode(usr, nodeID, domain, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -506,7 +507,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Deprecated
     public MetaObject getMetaObject(final User usr, final int objectID, final int classID, final String domain)
             throws RemoteException {
-        return getMetaObject(usr, objectID, classID, domain, ConnectionContext.createDeprecated());
+        return getMetaObject(usr, objectID, classID, domain, ClientConnectionContext.createDeprecated());
     }
 
     @Override
@@ -521,7 +522,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     @Deprecated
     public Node[] getMetaObjectNode(final User usr, final String query) throws RemoteException {
-        return getMetaObjectNode(usr, query, ConnectionContext.createDeprecated());
+        return getMetaObjectNode(usr, query, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -554,7 +555,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     @Deprecated
     public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
-        return getMetaObject(usr, query, ConnectionContext.createDeprecated());
+        return getMetaObject(usr, query, ClientConnectionContext.createDeprecated());
     }
 
     @Override
@@ -566,7 +567,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     @Deprecated
     public MetaObject[] getMetaObject(final User usr, final String query, final String domain) throws RemoteException {
-        return getMetaObject(usr, query, domain, ConnectionContext.createDeprecated());
+        return getMetaObject(usr, query, domain, ClientConnectionContext.createDeprecated());
     }
 
     @Override
@@ -581,7 +582,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Deprecated
     public int deleteMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        return deleteMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
+        return deleteMetaObject(user, metaObject, domain, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -608,7 +609,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Deprecated
     public MetaObject insertMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        return insertMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
+        return insertMetaObject(user, metaObject, domain, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -635,7 +636,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Deprecated
     public int updateMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        return updateMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
+        return updateMetaObject(user, metaObject, domain, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -661,7 +662,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     @Deprecated
     public MethodMap getMethods(final User user) throws RemoteException {
-        return getMethods(user, ConnectionContext.createDeprecated());
+        return getMethods(user, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -682,7 +683,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     @Deprecated
     public MethodMap getMethods(final User user, final String lsName) throws RemoteException {
-        return getMethods(user, lsName, ConnectionContext.createDeprecated());
+        return getMethods(user, lsName, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -742,7 +743,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
                 userLsName,
                 userName,
                 password,
-                ConnectionContext.createDeprecated());
+                ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -781,7 +782,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     @Deprecated
     public Vector getUserGroupNames() throws RemoteException {
-        return getUserGroupNames(ConnectionContext.createDeprecated());
+        return getUserGroupNames(ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -801,7 +802,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     @Deprecated
     public Vector getUserGroupNames(final String userName, final String lsHome) throws RemoteException {
-        return getUserGroupNames(userName, lsHome, ConnectionContext.createDeprecated());
+        return getUserGroupNames(userName, lsHome, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -825,7 +826,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     public boolean changePassword(final User user, final String oldPassword, final String newPassword)
             throws RemoteException, UserException {
-        return changePassword(user, oldPassword, newPassword, ConnectionContext.createDeprecated());
+        return changePassword(user, oldPassword, newPassword, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -933,7 +934,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     @Deprecated
     public MetaObject getInstance(final User user, final MetaClass c) throws RemoteException {
-        return getInstance(user, c, ConnectionContext.createDeprecated());
+        return getInstance(user, c, ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -965,7 +966,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
                 user,
                 representationFields,
                 representationPattern,
-                ConnectionContext.createDeprecated());
+                ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -1006,7 +1007,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
                 classId,
                 user,
                 representationFields,
-                ConnectionContext.createDeprecated());
+                ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -1044,7 +1045,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
                 query,
                 representationFields,
                 representationPattern,
-                ConnectionContext.createDeprecated());
+                ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -1090,7 +1091,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
                 user,
                 query,
                 representationFields,
-                ConnectionContext.createDeprecated());
+                ClientConnectionContext.createDeprecated());
     }
 
     /**
@@ -1119,7 +1120,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Deprecated
     @Override
     public String getConfigAttr(final User user, final String key) throws RemoteException {
-        return getConfigAttr(user, key, ConnectionContext.createDeprecated());
+        return getConfigAttr(user, key, ClientConnectionContext.createDeprecated());
     }
 
     @Override
@@ -1131,7 +1132,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Deprecated
     @Override
     public boolean hasConfigAttr(final User user, final String key) throws RemoteException {
-        return hasConfigAttr(user, key, ConnectionContext.createDeprecated());
+        return hasConfigAttr(user, key, ClientConnectionContext.createDeprecated());
     }
 
     @Override
@@ -1143,7 +1144,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     @Deprecated
     public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) throws RemoteException {
-        return customServerSearch(user, serverSearch, ConnectionContext.createDeprecated());
+        return customServerSearch(user, serverSearch, ClientConnectionContext.createDeprecated());
     }
 
     @Override
@@ -1160,7 +1161,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             final String domain,
             final User user,
             final int elements) throws RemoteException {
-        return getHistory(classId, objectId, domain, user, elements, ConnectionContext.createDeprecated());
+        return getHistory(classId, objectId, domain, user, elements, ClientConnectionContext.createDeprecated());
     }
 
     @Override
@@ -1180,7 +1181,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             final String taskdomain,
             final Object body,
             final ServerActionParameter... params) throws RemoteException {
-        return executeTask(user, taskname, taskdomain, ConnectionContext.createDeprecated(), body, params);
+        return executeTask(user, taskname, taskdomain, ClientConnectionContext.createDeprecated(), body, params);
     }
 
     @Override

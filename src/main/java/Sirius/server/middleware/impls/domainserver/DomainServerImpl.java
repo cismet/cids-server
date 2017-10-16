@@ -74,7 +74,8 @@ import de.cismet.cids.server.actions.ScheduledServerActionManager;
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextLogger;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContextLogger;
 import de.cismet.cids.server.search.QueryPostProcessor;
 import de.cismet.cids.server.ws.rest.RESTfulService;
 
@@ -250,13 +251,14 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public NodeReferenceList getChildren(final Node node, final User user) throws RemoteException {
-        return getChildren(node, user, ConnectionContext.createDeprecated());
+        return getChildren(node, user, ServerConnectionContext.createDeprecated());
     }
 
     @Override
     public NodeReferenceList getChildren(final Node node, final User user, final ConnectionContext context)
             throws RemoteException {
-        ConnectionContextLogger.getInstance().logConnectionContext(context, user, "getChildren", "node:" + node);
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context, user, "getChildren", "node:" + node);
         try {
             if (userstore.validateUser(user)) {
                 return dbServer.getChildren(node, user);
@@ -276,12 +278,13 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public NodeReferenceList getRoots(final User user) throws RemoteException {
-        return getRoots(user, ConnectionContext.createDeprecated());
+        return getRoots(user, ServerConnectionContext.createDeprecated());
     }
 
     @Override
     public NodeReferenceList getRoots(final User user, final ConnectionContext context) throws RemoteException {
-        ConnectionContextLogger.getInstance().logConnectionContext(context, user, "getRoots");
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context, user, "getRoots");
 
         try {
             if (userstore.validateUser(user)) {
@@ -312,14 +315,20 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public Node addNode(final Node node, final Link parent, final User user) throws RemoteException {
-        return addNode(node, parent, user, ConnectionContext.createDeprecated());
+        return addNode(node, parent, user, ServerConnectionContext.createDeprecated());
     }
 
     @Override
     public Node addNode(final Node node, final Link parent, final User user, final ConnectionContext context)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext(context, user, "addNode", "node:" + node, "parent:" + parent);
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context,
+                    user,
+                    "addNode",
+                    "node:"
+                    + node,
+                    "parent:"
+                    + parent);
         try {
             return dbServer.getTree().addNode(node, parent, user);
         } catch (Throwable e) {
@@ -331,13 +340,14 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public boolean deleteNode(final Node node, final User user) throws RemoteException {
-        return deleteNode(node, user, ConnectionContext.createDeprecated());
+        return deleteNode(node, user, ServerConnectionContext.createDeprecated());
     }
 
     @Override
     public boolean deleteNode(final Node node, final User user, final ConnectionContext context)
             throws RemoteException {
-        ConnectionContextLogger.getInstance().logConnectionContext(context, user, "deleteNode", "node:" + node);
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context, user, "deleteNode", "node:" + node);
         try {
             return dbServer.getTree().deleteNode(node, user);
         } catch (Throwable e) {
@@ -351,14 +361,14 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public boolean addLink(final Node from, final Node to, final User user) throws RemoteException {
-        return addLink(from, to, user, ConnectionContext.createDeprecated());
+        return addLink(from, to, user, ServerConnectionContext.createDeprecated());
     }
 
     @Override
     public boolean addLink(final Node from, final Node to, final User user, final ConnectionContext context)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext(context, user, "addLink", "from:" + from, "to:" + to);
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context, user, "addLink", "from:" + from, "to:" + to);
         try {
             return dbServer.getTree().addLink(from, to, user);
         } catch (Throwable e) {
@@ -372,14 +382,14 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public boolean deleteLink(final Node from, final Node to, final User user) throws RemoteException {
-        return deleteLink(from, to, user, ConnectionContext.createDeprecated());
+        return deleteLink(from, to, user, ServerConnectionContext.createDeprecated());
     }
 
     @Override
     public boolean deleteLink(final Node from, final Node to, final User user, final ConnectionContext context)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext(context, user, "deleteLink", "from:" + from, "to:" + to);
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context, user, "deleteLink", "from:" + from, "to:" + to);
         try {
             return dbServer.getTree().deleteLink(from, to, user);
         } catch (Throwable e) {
@@ -393,13 +403,17 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public Node[] getNodes(final User user, final int[] ids) throws RemoteException {
-        return getNodes(user, ids, ConnectionContext.createDeprecated());
+        return getNodes(user, ids, ServerConnectionContext.createDeprecated());
     }
 
     @Override
     public Node[] getNodes(final User user, final int[] ids, final ConnectionContext context) throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext(context, user, "getNodes", "ids:" + Arrays.toString(ids));
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context,
+                    user,
+                    "getNodes",
+                    "ids:"
+                    + Arrays.toString(ids));
         try {
             return dbServer.getNodes(ids, user);
         } catch (Throwable e) {
@@ -413,13 +427,14 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public NodeReferenceList getClassTreeNodes(final User user) throws RemoteException {
-        return getClassTreeNodes(user, ConnectionContext.createDeprecated());
+        return getClassTreeNodes(user, ServerConnectionContext.createDeprecated());
     }
 
     @Override
     public NodeReferenceList getClassTreeNodes(final User user, final ConnectionContext context)
             throws RemoteException {
-        ConnectionContextLogger.getInstance().logConnectionContext(context, user, "getClassTreeNodes");
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context, user, "getClassTreeNodes");
         try {
             if (userstore.validateUser(user)) {
                 return dbServer.getClassTreeNodes(user);
@@ -437,12 +452,13 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public MetaClass[] getClasses(final User user) throws RemoteException {
-        return getClasses(user, ConnectionContext.createDeprecated());
+        return getClasses(user, ServerConnectionContext.createDeprecated());
     }
 
     @Override
     public MetaClass[] getClasses(final User user, final ConnectionContext context) throws RemoteException {
-        ConnectionContextLogger.getInstance().logConnectionContext(context, user, "getClasses");
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context, user, "getClasses");
         try { // if(userstore.validateUser(user))
             return dbServer.getClasses(user);
 
@@ -458,17 +474,17 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public MetaClass getClass(final User user, final int classID) throws RemoteException {
-        return getClass(user, classID, ConnectionContext.createDeprecated());
+        return getClass(user, classID, ServerConnectionContext.createDeprecated());
     }
 
     @Override
     public MetaClass getClass(final User user, final int classID, final ConnectionContext context)
             throws RemoteException {
-        ConnectionContextLogger.getInstance().logConnectionContext(
-            context,
-            null,
-            "getClass",
-            "classID:"
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context,
+                    null,
+                    "getClass",
+                    "classID:"
                     + classID);
 
         try { // if(userstore.validateUser(user))
@@ -486,15 +502,14 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public MetaClass getClassByTableName(final User user, final String tableName) throws RemoteException {
-        return getClassByTableName(user, tableName, ConnectionContext.createDeprecated());
+        return getClassByTableName(user, tableName, ServerConnectionContext.createDeprecated());
     }
 
     @Override
     public MetaClass getClassByTableName(final User user, final String tableName, final ConnectionContext context)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext(
-                    context,
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context,
                     null,
                     "getClassByTableName",
                     "tableName:"
@@ -522,7 +537,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
      */
     @Deprecated
     public MetaObject[] getObjects(final User user, final String[] objectIDs) throws RemoteException {
-        return getObjects(user, objectIDs, ConnectionContext.createDeprecated());
+        return getObjects(user, objectIDs, ServerConnectionContext.createDeprecated());
     }
 
     /**
@@ -539,8 +554,12 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public MetaObject[] getObjects(final User user, final String[] objectIDs, final ConnectionContext context)
             throws RemoteException {
         try {
-            ConnectionContextLogger.getInstance()
-                    .logConnectionContext(context, user, "getObjects", "objectIDs:" + Arrays.toString(objectIDs));
+            ServerConnectionContextLogger.getInstance()
+                    .logConnectionContext((ServerConnectionContext)context,
+                        user,
+                        "getObjects",
+                        "objectIDs:"
+                        + Arrays.toString(objectIDs));
 
             return dbServer.getObjects(objectIDs, user);
         } catch (Throwable e) {
@@ -563,7 +582,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
      */
     @Deprecated
     public MetaObject getObject(final User user, final String objectID) throws RemoteException {
-        return getObject(user, objectID, ConnectionContext.createDeprecated());
+        return getObject(user, objectID, ServerConnectionContext.createDeprecated());
     }
 
     /**
@@ -579,7 +598,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
      */
     public MetaObject getObject(final User user, final String objectID, final ConnectionContext context)
             throws RemoteException {
-        ConnectionContextLogger.getInstance().logConnectionContext(context, user, "getObject", "objectID:" + objectID);
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context, user, "getObject", "objectID:" + objectID);
         try {
             final MetaObject mo = dbServer.getObject(objectID, user);
             if (mo != null) {
@@ -637,7 +657,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public Node getMetaObjectNode(final User usr, final int nodeID) throws RemoteException {
-        return getMetaObjectNode(usr, nodeID, ConnectionContext.createDeprecated());
+        return getMetaObjectNode(usr, nodeID, ServerConnectionContext.createDeprecated());
     }
 
     // retrieves a Meta data object( as Node)  referenced by a symbolic pointer to the MIS
@@ -653,7 +673,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public MetaObject getMetaObject(final User usr, final int objectID, final int classID) throws RemoteException {
-        return getMetaObject(usr, objectID, classID, ConnectionContext.createDeprecated());
+        return getMetaObject(usr, objectID, classID, ServerConnectionContext.createDeprecated());
     }
 
     // retrieves a Meta data object  referenced by a symbolic pointer to the MIS
@@ -670,7 +690,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public MetaObjectNode[] getMetaObjectNode(final User usr, final String query) throws RemoteException {
-        return getMetaObjectNode(usr, query, ConnectionContext.createDeprecated());
+        return getMetaObjectNode(usr, query, ServerConnectionContext.createDeprecated());
     }
 
     @Override
@@ -697,13 +717,14 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
-        return getMetaObject(usr, query, ConnectionContext.createDeprecated());
+        return getMetaObject(usr, query, ServerConnectionContext.createDeprecated());
     }
 
     @Override
     public MetaObject[] getMetaObject(final User usr, final String query, final ConnectionContext context)
             throws RemoteException {
-        ConnectionContextLogger.getInstance().logConnectionContext(context, usr, "getMetaObject", "query:" + query);
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context, usr, "getMetaObject", "query:" + query);
         final MetaObjectNode[] nodes = (MetaObjectNode[])(getMetaObjectNode(usr, query, context));
         final MetaObject[] ret = new MetaObject[nodes.length];
         int i = 0;
@@ -724,14 +745,18 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public MetaObject insertMetaObject(final User user, final MetaObject metaObject) throws RemoteException {
-        return insertMetaObject(user, metaObject, ConnectionContext.createDeprecated());
+        return insertMetaObject(user, metaObject, ServerConnectionContext.createDeprecated());
     }
 
     @Override
     public MetaObject insertMetaObject(final User user, final MetaObject metaObject, final ConnectionContext context)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext(context, user, "insertMetaObject", "metaObject:" + metaObject);
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context,
+                    user,
+                    "insertMetaObject",
+                    "metaObject:"
+                    + metaObject);
         if (logger != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug(
@@ -757,7 +782,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public int updateMetaObject(final User user, final MetaObject metaObject) throws RemoteException {
-        return updateMetaObject(user, metaObject, ConnectionContext.createDeprecated());
+        return updateMetaObject(user, metaObject, ServerConnectionContext.createDeprecated());
     }
 
     @Override
@@ -767,8 +792,12 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             logger.debug("<html><body>update called for :+: <p>" + metaObject.getDebugString() + "</p></body></html>"); // NOI18N
         }
 
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext(context, user, "updateMetaObject", "metaObject:" + metaObject);
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context,
+                    user,
+                    "updateMetaObject",
+                    "metaObject:"
+                    + metaObject);
 
         try {
             dbServer.getObjectPersitenceManager().updateMetaObject(user, metaObject);
@@ -785,7 +814,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public int deleteMetaObject(final User user, final MetaObject metaObject) throws RemoteException {
-        return deleteMetaObject(user, metaObject, ConnectionContext.createDeprecated());
+        return deleteMetaObject(user, metaObject, ServerConnectionContext.createDeprecated());
     }
 
     @Override
@@ -795,8 +824,12 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             logger.debug("delete called for" + metaObject); // NOI18N
         }
 
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext(context, user, "deleteMetaObject", "metaObject:" + metaObject);
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context,
+                    user,
+                    "deleteMetaObject",
+                    "metaObject:"
+                    + metaObject);
 
         try {
             return dbServer.getObjectPersitenceManager().deleteMetaObject(user, metaObject);
@@ -811,14 +844,15 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public MetaObject getInstance(final User user, final MetaClass c) throws RemoteException {
-        return getInstance(user, c, ConnectionContext.createDeprecated());
+        return getInstance(user, c, ServerConnectionContext.createDeprecated());
     }
 
     // creates an Instance of a MetaObject with all attribute values set to default
     @Override
     public MetaObject getInstance(final User user, final MetaClass c, final ConnectionContext context)
             throws RemoteException {
-        ConnectionContextLogger.getInstance().logConnectionContext(context, user, "getInstance", "c:" + c);
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context, user, "getInstance", "c:" + c);
 
         if (logger.isDebugEnabled()) {
             logger.debug("usergetInstance :: " + user + "  class " + c); // NOI18N
@@ -843,16 +877,16 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public MethodMap getMethods(final User user) throws RemoteException {
-        return getMethods(user, ConnectionContext.createDeprecated());
+        return getMethods(user, ServerConnectionContext.createDeprecated());
     }
 
     @Override
     public MethodMap getMethods(final User user, final ConnectionContext context) throws RemoteException {
         // if(userstore.validateUser(user))
-        ConnectionContextLogger.getInstance().logConnectionContext(
-            context,
-            null,
-            "getMethods");
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context,
+                    null,
+                    "getMethods");
 
         return dbServer.getMethods(); // dbServer.getMethods(user.getuserGroup()); // instead
 
@@ -870,7 +904,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 user,
                 representationFields,
                 representationPattern,
-                ConnectionContext.createDeprecated());
+                ServerConnectionContext.createDeprecated());
     }
 
     @Override
@@ -879,9 +913,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String[] representationFields,
             final String representationPattern,
             final ConnectionContext context) throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext(
-                    context,
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context,
                     null,
                     "getAllLightweightMetaObjectsForClass",
                     "classId:"
@@ -910,7 +943,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 classId,
                 user,
                 representationFields,
-                ConnectionContext.createDeprecated());
+                ServerConnectionContext.createDeprecated());
     }
 
     @Override
@@ -919,9 +952,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String[] representationFields,
             final ConnectionContext context) throws RemoteException {
         try {
-            ConnectionContextLogger.getInstance()
-                    .logConnectionContext(
-                        context,
+            ServerConnectionContextLogger.getInstance()
+                    .logConnectionContext((ServerConnectionContext)context,
                         null,
                         "getAllLightweightMetaObjectsForClass",
                         "classId:"
@@ -950,7 +982,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 query,
                 representationFields,
                 representationPattern,
-                ConnectionContext.createDeprecated());
+                ServerConnectionContext.createDeprecated());
     }
 
     @Override
@@ -960,9 +992,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String[] representationFields,
             final String representationPattern,
             final ConnectionContext context) throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext(
-                    context,
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context,
                     user,
                     "getLightweightMetaObjectsByQuery",
                     "query:"
@@ -994,7 +1025,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 user,
                 query,
                 representationFields,
-                ConnectionContext.createDeprecated());
+                ServerConnectionContext.createDeprecated());
     }
 
     @Override
@@ -1003,9 +1034,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String query,
             final String[] representationFields,
             final ConnectionContext context) throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext(
-                    context,
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context,
                     user,
                     "getLightweightMetaObjectsByQuery",
                     "query:"
@@ -1029,7 +1059,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Deprecated
     public boolean changePassword(final User user, final String oldPassword, final String newPassword)
             throws RemoteException {
-        return changePassword(user, oldPassword, newPassword, ConnectionContext.createDeprecated());
+        return changePassword(user, oldPassword, newPassword, ServerConnectionContext.createDeprecated());
     }
 
     @Override
@@ -1037,9 +1067,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String oldPassword,
             final String newPassword,
             final ConnectionContext context) throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext(
-                    context,
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context,
                     user,
                     "changePassword",
                     "oldPassword:*censored*",
@@ -1055,15 +1084,14 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public boolean validateUser(final User user, final String password) throws RemoteException {
-        return validateUser(user, password, ConnectionContext.createDeprecated());
+        return validateUser(user, password, ServerConnectionContext.createDeprecated());
     }
 
     @Override
     public boolean validateUser(final User user, final String password, final ConnectionContext context)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext(
-                    context,
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context,
                     user,
                     "validateUser",
                     "password:*censored*");
@@ -1079,7 +1107,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public ArrayList<ArrayList> performCustomSearch(final String query) throws RemoteException {
-        return performCustomSearch(query, ConnectionContext.createDeprecated());
+        return performCustomSearch(query, ServerConnectionContext.createDeprecated());
     }
 
     @Override
@@ -1092,7 +1120,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Deprecated
     public ArrayList<ArrayList> performCustomSearch(final String query, final QueryPostProcessor qpp)
             throws RemoteException {
-        return performCustomSearch(query, qpp, ConnectionContext.createDeprecated());
+        return performCustomSearch(query, qpp, ServerConnectionContext.createDeprecated());
     }
 
     @Override
@@ -1156,7 +1184,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public ArrayList<ArrayList> performCustomSearch(final PreparableStatement ps) throws RemoteException {
-        return performCustomSearch(ps, ConnectionContext.createDeprecated());
+        return performCustomSearch(ps, ServerConnectionContext.createDeprecated());
     }
 
     @Override
@@ -1169,15 +1197,21 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Deprecated
     public ArrayList<ArrayList> performCustomSearch(final PreparableStatement ps, final QueryPostProcessor qpp)
             throws RemoteException {
-        return performCustomSearch(ps, qpp, ConnectionContext.createDeprecated());
+        return performCustomSearch(ps, qpp, ServerConnectionContext.createDeprecated());
     }
 
     @Override
     public ArrayList<ArrayList> performCustomSearch(final PreparableStatement ps,
             final QueryPostProcessor qpp,
             final ConnectionContext context) throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext(context, null, "performCustomSearch", "ps:" + ps, "qpp:" + qpp);
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context,
+                    null,
+                    "performCustomSearch",
+                    "ps:"
+                    + ps,
+                    "qpp:"
+                    + qpp);
         try {
             final PreparedStatement stmt = ps.parameterise(getConnectionPool().getDBConnection().getConnection());
             final ResultSet rs = stmt.executeQuery();
@@ -1487,17 +1521,17 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public String getConfigAttr(final User user, final String key) throws RemoteException {
-        return getConfigAttr(user, key, ConnectionContext.createDeprecated());
+        return getConfigAttr(user, key, ServerConnectionContext.createDeprecated());
     }
 
     @Override
     public String getConfigAttr(final User user, final String key, final ConnectionContext context)
             throws RemoteException {
-        ConnectionContextLogger.getInstance().logConnectionContext(
-            context,
-            user,
-            "getConfigAttr",
-            "key:"
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context,
+                    user,
+                    "getConfigAttr",
+                    "key:"
                     + key);
         try {
             return userstore.getConfigAttr(user, key);
@@ -1511,7 +1545,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public boolean hasConfigAttr(final User user, final String key) throws RemoteException {
-        return hasConfigAttr(user, key, ConnectionContext.createDeprecated());
+        return hasConfigAttr(user, key, ServerConnectionContext.createDeprecated());
     }
 
     @Override
@@ -1524,7 +1558,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Deprecated
     public HistoryObject[] getHistory(final int classId, final int objectId, final User user, final int elements)
             throws RemoteException {
-        return getHistory(classId, objectId, user, elements, ConnectionContext.createDeprecated());
+        return getHistory(classId, objectId, user, elements, ServerConnectionContext.createDeprecated());
     }
 
     @Override
@@ -1534,9 +1568,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final int elements,
             final ConnectionContext context) throws RemoteException {
         try {
-            ConnectionContextLogger.getInstance()
-                    .logConnectionContext(
-                        context,
+            ServerConnectionContextLogger.getInstance()
+                    .logConnectionContext((ServerConnectionContext)context,
                         user,
                         "getHistory",
                         "classId:"
@@ -1560,7 +1593,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String taskname,
             final Object body,
             final ServerActionParameter... params) throws RemoteException {
-        return executeTask(user, taskname, ConnectionContext.createDeprecated(), body, params);
+        return executeTask(user, taskname, ServerConnectionContext.createDeprecated(), body, params);
     }
 
     @Override
@@ -1569,9 +1602,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final ConnectionContext context,
             final Object body,
             final ServerActionParameter... params) throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext(
-                    context,
+        ServerConnectionContextLogger.getInstance()
+                .logConnectionContext((ServerConnectionContext)context,
                     user,
                     "executeTask",
                     "taskname:"

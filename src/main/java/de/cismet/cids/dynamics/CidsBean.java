@@ -47,8 +47,8 @@ import java.util.Map.Entry;
 
 import de.cismet.cids.json.IntraObjectCacheJsonParams;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
 
 import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.ClassloadingHelper;
@@ -64,7 +64,7 @@ import static de.cismet.cids.dynamics.CidsBean.mapper;
  */
 //@JsonSerialize(using = CidsBeanJsonSerializer.class)
 //@JsonDeserialize(using = CidsBeanJsonDeserializer.class)
-public class CidsBean implements PropertyChangeListener, ConnectionContextProvider {
+public class CidsBean implements PropertyChangeListener, ClientConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -297,21 +297,21 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
                 user,
                 metaObject,
                 domain,
-                getConnectionContext());
+                getClientConnectionContext());
 
             return metaService.getMetaObject(
                         user,
                         metaObject.getID(),
                         metaObject.getClassID(),
                         domain,
-                        getConnectionContext())
+                        getClientConnectionContext())
                         .getBean();
         } else if (metaObject.getStatus() == MetaObject.TO_DELETE) {
             metaService.deleteMetaObject(
                 user,
                 metaObject,
                 domain,
-                getConnectionContext());
+                getClientConnectionContext());
 
             return null;
         } else if (metaObject.getStatus() == MetaObject.NEW) {
@@ -319,7 +319,7 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
                     user,
                     metaObject,
                     domain,
-                    getConnectionContext());
+                    getClientConnectionContext());
             if (mo != null) {
                 return mo.getBean();
             }
@@ -1212,7 +1212,7 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
     }
 
     @Override
-    public ConnectionContext getConnectionContext() {
-        return ConnectionContext.create(CidsBean.class.getSimpleName());
+    public ClientConnectionContext getClientConnectionContext() {
+        return ClientConnectionContext.create(CidsBean.class.getSimpleName());
     }
 }

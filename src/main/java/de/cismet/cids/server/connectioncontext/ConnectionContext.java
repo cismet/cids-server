@@ -12,12 +12,9 @@
  */
 package de.cismet.cids.server.connectioncontext;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.io.Serializable;
 
-import java.util.Arrays;
+import java.util.Map;
 
 /**
  * DOCUMENT ME!
@@ -25,55 +22,61 @@ import java.util.Arrays;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-@Getter
-@Setter
-public class ConnectionContext implements Serializable {
+public interface ConnectionContext extends Serializable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-    private static final transient boolean SHOW_FULL_DEPRECATED_STACKTRACE = false;
-
-    //~ Instance fields --------------------------------------------------------
-
-    private final String content;
-
-    //~ Constructors -----------------------------------------------------------
+    //~ Enums ------------------------------------------------------------------
 
     /**
-     * Creates a new RESTFulSerialContext object.
+     * DOCUMENT ME!
      *
-     * @param  content  DOCUMENT ME!
+     * @version  $Revision$, $Date$
      */
-    private ConnectionContext(final String content) {
-        this.content = content;
+    public enum Origin {
+
+        //~ Enum constants -----------------------------------------------------
+
+        SERVER, CLIENT, UNKNOWN
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public enum Category {
+
+        //~ Enum constants -----------------------------------------------------
+
+        EDITOR, RENDERER, CATALOGUE, ACTION, SEARCH, UNKNOWN
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    @Override
-    public String toString() {
-        return "context";
-    }
-
     /**
      * DOCUMENT ME!
      *
-     * @param   context  DOCUMENT ME!
-     *
      * @return  DOCUMENT ME!
      */
-    public static ConnectionContext create(final String context) {
-        return new ConnectionContext(context);
-    }
+    String getContent();
 
     /**
      * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public static ConnectionContext createDeprecated() {
-        final StackTraceElement[] elements = new Exception().getStackTrace();
-        return new ConnectionContext("DEPRECATED "
-                        + (SHOW_FULL_DEPRECATED_STACKTRACE ? Arrays.toString(elements) : elements[1].toString()));
-    }
+    Origin getOrigin();
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    Category getCategory();
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    Map<String, String> getAdditionalFields();
 }

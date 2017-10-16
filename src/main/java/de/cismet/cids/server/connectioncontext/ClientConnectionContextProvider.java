@@ -18,7 +18,7 @@ package de.cismet.cids.server.connectioncontext;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public interface ConnectionContextProvider {
+public interface ClientConnectionContextProvider {
 
     //~ Methods ----------------------------------------------------------------
 
@@ -27,5 +27,5 @@ public interface ConnectionContextProvider {
      *
      * @return  DOCUMENT ME!
      */
-    ConnectionContext getConnectionContext();
+    ClientConnectionContext getClientConnectionContext();
 }

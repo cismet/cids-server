@@ -24,8 +24,10 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
@@ -43,7 +45,7 @@ import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
  */
 @ServiceProvider(service = RestApiCidsServerSearch.class)
 public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implements RestApiCidsServerSearch,
-    ConnectionContextProvider {
+    ServerConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -109,7 +111,7 @@ public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implement
         try {
             final MetaObject[] metaObjects = metaService.getMetaObject(this.getUser(),
                     this.getQuery(),
-                    getConnectionContext());
+                    getServerConnectionContext());
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug(metaObjects.length + " Meta Objects found.");
@@ -124,7 +126,7 @@ public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implement
     }
 
     @Override
-    public ConnectionContext getConnectionContext() {
-        return ConnectionContext.create(MetaObjectsByQuerySearch.class.getSimpleName());
+    public ServerConnectionContext getServerConnectionContext() {
+        return ServerConnectionContext.create(getClass().getSimpleName());
     }
 }

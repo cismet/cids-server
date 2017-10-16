@@ -26,8 +26,9 @@ import java.util.HashSet;
 
 import de.cismet.cids.nodepermissions.NoNodePermissionProvidedException;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
+import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.QueryPostProcessor;
 import de.cismet.cids.server.search.SearchException;
@@ -43,7 +44,7 @@ import de.cismet.cids.server.search.SearchResultListenerProvider;
 @ServiceProvider(service = FullTextSearch.class)
 public class DefaultFullTextSearch extends AbstractCidsServerSearch implements FullTextSearch,
     SearchResultListenerProvider,
-    ConnectionContextProvider {
+    ServerConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -158,7 +159,7 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
                                     return result;
                                 }
                             },
-                            getConnectionContext());
+                            getServerConnectionContext());
                     for (final ArrayList al : result) {
                         // FIXME: yet another hack to circumvent odd type behaviour
                         final int cid = ((Number)al.get(0)).intValue();
@@ -229,7 +230,7 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
     }
 
     @Override
-    public ConnectionContext getConnectionContext() {
-        return ConnectionContext.create(DefaultFullTextSearch.class.getSimpleName());
+    public ServerConnectionContext getServerConnectionContext() {
+        return ServerConnectionContext.create(getClass().getSimpleName());
     }
 }
