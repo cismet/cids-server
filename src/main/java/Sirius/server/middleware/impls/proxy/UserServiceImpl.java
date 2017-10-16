@@ -148,7 +148,7 @@ public class UserServiceImpl {
         }
 
         if (validated) {
-            final String loginRestrictionValue = getConfigAttr(u, "login.restriction");
+            final String loginRestrictionValue = getConfigAttr(u, "login.restriction", context);
             if (loginRestrictionValue != null) {
                 LoginRestrictionHelper.getInstance().checkLoginRestriction(loginRestrictionValue);
             }

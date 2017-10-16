@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextLogger;
 
 /**
  * DOCUMENT ME!
@@ -284,6 +285,8 @@ public class MetaServiceImpl implements MetaService {
      */
     @Override
     public String[] getDomains(final ConnectionContext context) throws RemoteException {
+        ConnectionContextLogger.getInstance().logConnectionContext(context, null, "getDomains");
+
         if (logger != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("<CS> getDomains called "); // NOI18N
@@ -326,6 +329,8 @@ public class MetaServiceImpl implements MetaService {
             final String lsName,
             final ConnectionContext context) throws RemoteException {
         // usr wird nicht beachtet fuer spaetere anpassungen
+        ConnectionContextLogger.getInstance()
+                .logConnectionContext(context, usr, "getMetaObjectNode", "nodeID:" + nodeID, "lsName:" + lsName);
 
         if (logger != null) {
             if (logger.isDebugEnabled()) {
