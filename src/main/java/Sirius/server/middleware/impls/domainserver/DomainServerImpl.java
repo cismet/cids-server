@@ -1068,13 +1068,12 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
             System.out.println("<LS> ConfigFile: " + args[0]); // NOI18N
 
-            // abfragen, ob schon eine  RMI Registry exitiert.
             try {
-                LocateRegistry.getRegistry(rmiPort);
-                // wenn keine Registry vorhanden, wird an dieser Stelle Exception ausgeloest
-            } catch (Exception e) {
-                // wenn nicht, neue Registry starten und auf portnummer setzen
                 LocateRegistry.createRegistry(rmiPort);
+            } catch (final Exception e) {
+                System.out.println("could not create rmi registry. it probably already has been created on port: "
+                            + rmiPort);
+                LocateRegistry.getRegistry(rmiPort);
             }
 
             if (properties.getStartMode().equalsIgnoreCase("simple")) { // NOI18N
