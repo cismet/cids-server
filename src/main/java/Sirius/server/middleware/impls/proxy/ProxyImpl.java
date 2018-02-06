@@ -49,6 +49,8 @@ import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
 import de.cismet.cids.server.connectioncontext.ConnectionContext;
 import de.cismet.cids.server.search.CidsServerSearch;
 
+import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
+
 /**
  * Benoetigte Keys fuer configFile: registryIps<br>
  * serverName<br>
@@ -129,6 +131,14 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
 
             register();
             registerAsObserver(registryIps[0] + ":" + rmiPort);
+
+            try {
+                ServerResourcesLoader.getInstance().setResourcesBasePath(properties.getServerResourcesBasePath());
+            } catch (final Exception ex) {
+                LOG.warn(
+                    "ServerResourcePath could not be determined. CachedServerResourcesLoader will not work as expected !",
+                    ex);
+            }
 
             catService = new CatalogueServiceImpl(activeLocalServers);
             metaService = new MetaServiceImpl(activeLocalServers, nameServer);
