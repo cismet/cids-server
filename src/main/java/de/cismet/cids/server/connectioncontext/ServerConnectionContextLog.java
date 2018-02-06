@@ -73,7 +73,7 @@ public class ServerConnectionContextLog {
 
     @Override
     public String toString() {
-        if (ConnectionContext.Origin.UNKNOWN == context.getOrigin() || null == context.getOrigin()) {
+        if ((ConnectionContext.Origin.UNKNOWN == context.getOrigin()) || (null == context.getOrigin())) {
             return String.format(
                     LOG_UNKNOWN_FORMAT,
                     DateFormat.getDateTimeInstance().format(timestamp),

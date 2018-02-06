@@ -121,8 +121,8 @@ public interface UserService extends Remote {
      *
      * @throws  RemoteException  server error (eg no domain servers online)
      */
-    Vector getUserGroupNames(final ConnectionContext context) throws RemoteException;    // Vector contains String[2]
-                                                                                         // name +lsName
+    Vector getUserGroupNames(final ConnectionContext context) throws RemoteException; // Vector contains String[2]
+                                                                                      // name +lsName
 
     /**
      * DOCUMENT ME!
