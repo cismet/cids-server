@@ -92,7 +92,7 @@ public class RemoteTester {
                 domain,
                 "admin",
                 "x",
-                ClientConnectionContext.create(RemoteTester.class.getSimpleName())); // NOI18N
+                getClientConnectionContext()); // NOI18N
 
         System.out.println(u + "  user token retrieved"); // NOI18N
 
@@ -119,8 +119,8 @@ public class RemoteTester {
                 5646,
                 6,
                 "WUNDA_BLAU",
-                ClientConnectionContext.create(RemoteTester.class.getSimpleName())); // NOI18N
-        System.out.println("metaobject::" + mo);                                     // NOI18N
+                getClientConnectionContext());   // NOI18N
+        System.out.println("metaobject::" + mo); // NOI18N
 
 // alle attribute des Objects
         // ObjectAttribute[] attribs = mo.getAttribs();
@@ -163,6 +163,15 @@ public class RemoteTester {
         while (iter.hasNext()) {
             System.out.println(iter.next());
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ClientConnectionContext getClientConnectionContext() {
+        return ClientConnectionContext.create(RemoteTester.class.getSimpleName());
     }
 }
 

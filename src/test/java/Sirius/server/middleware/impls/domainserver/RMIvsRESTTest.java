@@ -152,7 +152,7 @@ public class RMIvsRESTTest implements ClientConnectionContextProvider {
                 "Administratoren",
                 "WUNDA_BLAU",
                 "cismet",
-                "sb", ClientConnectionContext.create(RMIvsRESTTest.class.getSimpleName()));
+                "sb", getClientConnectionContext());
         final String domain = "WUNDA_BLAU";
         final int objectID = 3;
         final int classID = 106;
@@ -337,7 +337,7 @@ public class RMIvsRESTTest implements ClientConnectionContextProvider {
 
     @Override
     public ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(RMIvsRESTTest.class.getSimpleName());
+        return ClientConnectionContext.create(getClass().getSimpleName());
     }
 
     //~ Inner Classes ----------------------------------------------------------

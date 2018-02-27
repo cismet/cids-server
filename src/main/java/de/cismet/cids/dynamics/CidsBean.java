@@ -1213,6 +1213,6 @@ public class CidsBean implements PropertyChangeListener, ClientConnectionContext
 
     @Override
     public ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(CidsBean.class.getSimpleName());
+        return ClientConnectionContext.create(getClass().getSimpleName());
     }
 }

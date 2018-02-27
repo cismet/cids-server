@@ -62,19 +62,31 @@ public class ServerConnectionContext extends AbstractConnectionContext {
      */
     public static ServerConnectionContext createDeprecated() {
         final StackTraceElement[] elements = new Exception().getStackTrace();
-        return create(DEPRECATED_CONTENT
-                        + (SHOW_FULL_DEPRECATED_STACKTRACE ? Arrays.toString(elements) : elements[1].toString()));
+        final String context = DEPRECATED_CONTENT
+                    + (SHOW_FULL_DEPRECATED_STACKTRACE ? Arrays.toString(elements) : elements[1].toString());
+        return create(context);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   content  DOCUMENT ME!
+     * @return  DOCUMENT ME!
+     */
+    public static ServerConnectionContext create() {
+        final StackTraceElement element = Thread.currentThread().getStackTrace()[2];
+        final String context = element.getClassName() + ":" + element.getMethodName();
+        return create(context);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public static ServerConnectionContext create(final String content) {
-        return new ServerConnectionContext(Origin.SERVER, Category.UNKNOWN, content, null);
+    public static ServerConnectionContext create(final String context) {
+        return new ServerConnectionContext(Origin.SERVER, Category.UNKNOWN, context, null);
     }
 
     /**

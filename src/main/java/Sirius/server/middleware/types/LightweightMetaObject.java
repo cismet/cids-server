@@ -1197,7 +1197,7 @@ public final class LightweightMetaObject implements MetaObject,
 
     @Override
     public ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(ScheduledServerActionManager.class.getSimpleName());
+        return ClientConnectionContext.create(getClass().getSimpleName());
     }
 
     @Override
