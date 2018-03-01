@@ -1633,6 +1633,8 @@ public final class RESTfulSerialInterface {
                         oldPassword,
                         newPassword,
                         createServerConnectionContext(hsr, context)));
+        } catch (final UserException ex) {
+            throw ex;
         } catch (final Exception ex) {
             final String message = "could not change password"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1693,6 +1695,8 @@ public final class RESTfulSerialInterface {
                         uname,
                         password,
                         createServerConnectionContext(hsr, context)));
+        } catch (final UserException ex) {
+            throw ex;
         } catch (final Exception ex) {
             final String message = "could not get user"; // NOI18N
             throw createRemoteException(ex, message);
@@ -2148,17 +2152,11 @@ public final class RESTfulSerialInterface {
         return ServerConnectionContext.createFromClientContext(context, hsr.getLocalAddr());
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   exception  DOCUMENT ME!
-     * @param   message    DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
     private RemoteException createRemoteException(final Exception exception, final String message) {
         try {
             throw exception;
+        } catch (final RemoteException e) {
+            return e;
         } catch (final IOException e) {
             LOG.error(message, e);
             return new RemoteException(message, e);
@@ -2170,4 +2168,5 @@ public final class RESTfulSerialInterface {
             return new RemoteException(message, e);
         }
     }
+    
 }
