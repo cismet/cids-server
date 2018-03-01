@@ -63,7 +63,11 @@ public class ServerConnectionContextLogger {
                 context,
                 methodName,
                 params);
-        System.out.println(contextLog);
+        if (ConnectionContext.Category.DEPRECATED.equals(context.getCategory())) {
+//            System.err.println(contextLog);
+        } else {
+            System.out.println(contextLog);
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------

@@ -171,7 +171,7 @@ public class RemoteTester {
      * @return  DOCUMENT ME!
      */
     public static ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(RemoteTester.class.getSimpleName());
+        return ClientConnectionContext.createDeprecated();
     }
 }
 

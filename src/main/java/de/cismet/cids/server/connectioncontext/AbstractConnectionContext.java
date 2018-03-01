@@ -27,15 +27,15 @@ import java.util.HashMap;
 @Getter
 @Setter
 @AllArgsConstructor
-public abstract class AbstractConnectionContext implements ConnectionContext {
+public abstract class AbstractConnectionContext<C extends Object> implements ConnectionContext<C> {
 
     //~ Static fields/initializers ---------------------------------------------
 
     protected static final transient boolean SHOW_FULL_DEPRECATED_STACKTRACE = false;
-    protected static final transient String DEPRECATED_CONTENT = "DEPRECATED";
 
     //~ Instance fields --------------------------------------------------------
 
     private final Category category;
+    private final C content;
     private final HashMap<String, String> additionalFields = new HashMap<>();
 }

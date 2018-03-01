@@ -22,7 +22,7 @@ import java.util.Map;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public interface ConnectionContext extends Serializable {
+public interface ConnectionContext<C extends Object> extends Serializable {
 
     //~ Enums ------------------------------------------------------------------
 
@@ -47,7 +47,7 @@ public interface ConnectionContext extends Serializable {
 
         //~ Enum constants -----------------------------------------------------
 
-        EDITOR, RENDERER, CATALOGUE, ACTION, SEARCH, UNKNOWN
+        EDITOR, RENDERER, CATALOGUE, ACTION, SEARCH, LEGACY, OTHER, DEPRECATED
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -57,7 +57,7 @@ public interface ConnectionContext extends Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    String getContent();
+    C getContent();
 
     /**
      * DOCUMENT ME!

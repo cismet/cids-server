@@ -13,26 +13,21 @@
 package de.cismet.cids.server.connectioncontext;
 
 /**
- * DOCUMENT ME!
+ * DOCUMENT ME!s.
  *
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public interface ServerConnectionContextProvider {
+public class SearchConnectionContext extends ClientConnectionContext {
 
-    //~ Methods ----------------------------------------------------------------
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    ServerConnectionContext getServerConnectionContext();
+    //~ Constructors -----------------------------------------------------------
 
     /**
-     * DOCUMENT ME!
+     * Creates a new RendererConnectionContext object.
      *
-     * @param  serverConnectionContext  DOCUMENT ME!
+     * @param  canonicalSearchClassName  DOCUMENT ME!
      */
-    void setServerConnectionContext(ServerConnectionContext serverConnectionContext);
+    public SearchConnectionContext(final String canonicalSearchClassName) {
+        super(Category.SEARCH, canonicalSearchClassName);
+    }
 }

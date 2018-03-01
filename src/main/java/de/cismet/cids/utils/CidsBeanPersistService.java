@@ -13,13 +13,16 @@ package de.cismet.cids.utils;
 
 import de.cismet.cids.dynamics.CidsBean;
 
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+
 /**
  * DOCUMENT ME!
  *
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public interface CidsBeanPersistService {
+public interface CidsBeanPersistService extends ConnectionContextProvider {
 
     //~ Methods ----------------------------------------------------------------
 
@@ -33,4 +36,11 @@ public interface CidsBeanPersistService {
      * @throws  Exception  DOCUMENT ME!
      */
     CidsBean persistCidsBean(CidsBean cidsBean) throws Exception;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  connectionContext  DOCUMENT ME!
+     */
+    void setClientConnectionContext(ClientConnectionContext connectionContext);
 }

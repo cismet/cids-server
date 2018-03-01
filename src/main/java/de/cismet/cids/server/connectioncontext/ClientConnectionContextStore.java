@@ -18,21 +18,16 @@ package de.cismet.cids.server.connectioncontext;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public interface ServerConnectionContextProvider {
+public interface ClientConnectionContextStore extends ConnectionContextProvider {
 
     //~ Methods ----------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @param  connectionContext  DOCUMENT ME!
      */
-    ServerConnectionContext getServerConnectionContext();
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  serverConnectionContext  DOCUMENT ME!
-     */
-    void setServerConnectionContext(ServerConnectionContext serverConnectionContext);
+    void setConnectionContext(ClientConnectionContext connectionContext);
+    @Override
+    ClientConnectionContext getConnectionContext();
 }

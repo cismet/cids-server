@@ -25,11 +25,10 @@ import java.util.Arrays;
  */
 @Getter
 @Setter
-public class ServerConnectionContext extends AbstractConnectionContext {
+public class ServerConnectionContext extends AbstractConnectionContext<String> {
 
     //~ Instance fields --------------------------------------------------------
 
-    private final String content;
     private final Origin origin;
     private final String clientAddress;
 
@@ -47,8 +46,7 @@ public class ServerConnectionContext extends AbstractConnectionContext {
             final Category category,
             final String content,
             final String clientHost) {
-        super(category);
-        this.content = content;
+        super(category, content);
         this.origin = origin;
         this.clientAddress = clientHost;
     }
@@ -62,19 +60,7 @@ public class ServerConnectionContext extends AbstractConnectionContext {
      */
     public static ServerConnectionContext createDeprecated() {
         final StackTraceElement[] elements = new Exception().getStackTrace();
-        final String context = DEPRECATED_CONTENT
-                    + (SHOW_FULL_DEPRECATED_STACKTRACE ? Arrays.toString(elements) : elements[1].toString());
-        return create(context);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public static ServerConnectionContext create() {
-        final StackTraceElement element = Thread.currentThread().getStackTrace()[2];
-        final String context = element.getClassName() + ":" + element.getMethodName();
+        final String context = (SHOW_FULL_DEPRECATED_STACKTRACE ? Arrays.toString(elements) : elements[1].toString());
         return create(context);
     }
 
@@ -86,25 +72,25 @@ public class ServerConnectionContext extends AbstractConnectionContext {
      * @return  DOCUMENT ME!
      */
     public static ServerConnectionContext create(final String context) {
-        return new ServerConnectionContext(Origin.SERVER, Category.UNKNOWN, context, null);
+        return new ServerConnectionContext(Origin.SERVER, Category.DEPRECATED, context, null);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   clientConnectionContext  DOCUMENT ME!
-     * @param   localAddress             DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     * @param   localAddress       DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public static ServerConnectionContext createFromClientContext(final ClientConnectionContext clientConnectionContext,
+    public static ServerConnectionContext createFromClientContext(final ClientConnectionContext connectionContext,
             final String localAddress) {
         final ServerConnectionContext serverConnectionContext = new ServerConnectionContext(
                 Origin.CLIENT,
-                clientConnectionContext.getCategory(),
-                clientConnectionContext.getContent(),
+                connectionContext.getCategory(),
+                connectionContext.getContent(),
                 localAddress);
-        serverConnectionContext.getAdditionalFields().putAll(clientConnectionContext.getAdditionalFields());
+        serverConnectionContext.getAdditionalFields().putAll(connectionContext.getAdditionalFields());
         return serverConnectionContext;
     }
 }

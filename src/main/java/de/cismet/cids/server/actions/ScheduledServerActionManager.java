@@ -87,6 +87,9 @@ public class ScheduledServerActionManager implements ServerConnectionContextProv
     private final DomainServerImpl domainserver;
     private final String domain;
 
+    private ServerConnectionContext serverConnectionContext = ServerConnectionContext.create(getClass()
+                    .getSimpleName());
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -141,7 +144,12 @@ public class ScheduledServerActionManager implements ServerConnectionContextProv
 
     @Override
     public ServerConnectionContext getServerConnectionContext() {
-        return ServerConnectionContext.create(getClass().getSimpleName());
+        return serverConnectionContext;
+    }
+
+    @Override
+    public void setServerConnectionContext(final ServerConnectionContext serverConnectionContext) {
+        this.serverConnectionContext = serverConnectionContext;
     }
 
     /**

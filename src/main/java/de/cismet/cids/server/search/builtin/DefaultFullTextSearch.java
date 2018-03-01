@@ -26,7 +26,6 @@ import java.util.HashSet;
 
 import de.cismet.cids.nodepermissions.NoNodePermissionProvidedException;
 
-import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
 import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
 import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
@@ -58,6 +57,9 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
     private boolean caseSensitive;
     private Geometry geometry;
     private GeoSearch geoSearch;
+
+    private ServerConnectionContext serverConnectionContext = ServerConnectionContext.create(getClass()
+                    .getSimpleName());
 
     //~ Methods ----------------------------------------------------------------
 
@@ -231,6 +233,11 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
 
     @Override
     public ServerConnectionContext getServerConnectionContext() {
-        return ServerConnectionContext.create(getClass().getSimpleName());
+        return serverConnectionContext;
+    }
+
+    @Override
+    public void setServerConnectionContext(final ServerConnectionContext serverConnectionContext) {
+        this.serverConnectionContext = serverConnectionContext;
     }
 }

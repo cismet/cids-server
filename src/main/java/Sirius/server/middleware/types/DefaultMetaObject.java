@@ -20,6 +20,11 @@ import java.util.*;
 import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.dynamics.CustomBeanPermissionProvider;
 
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ConnectionContextStore;
+
 import de.cismet.cids.tools.tostring.*;
 
 import de.cismet.cids.utils.ClassloadingHelper;
@@ -33,7 +38,8 @@ import de.cismet.tools.StaticDebuggingTools;
  *
  * @version  $Revision$, $Date$
  */
-public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultObject implements MetaObject {
+public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultObject implements MetaObject,
+    ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -56,6 +62,7 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     private MetaClass metaClass;
     private transient HashMap classes;
     private transient CidsBean bean = null;
+    private transient ConnectionContext connectionContext;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -150,13 +157,17 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
                 }
 
                 if (theObject instanceof LightweightObject) {
-                    objectAttribute.setValue(new LightweightMetaObject(
+                    final LightweightMetaObject lwmo = new LightweightMetaObject(
                             theObject.getClassID(),
                             theObject.getID(),
                             domain,
-                            user));
+                            user);
+                    lwmo.setConnectionContext(getConnectionContext());
+                    objectAttribute.setValue(lwmo);
                 } else {
-                    objectAttribute.setValue(new DefaultMetaObject(theObject, domain, user));
+                    final DefaultMetaObject mo = new DefaultMetaObject(theObject, domain, user);
+                    mo.setConnectionContext(getConnectionContext());
+                    objectAttribute.setValue(mo);
                 }
                 // disabled! why?
                 // attr[i].setClassKey(ob.getClassID()+"@"+domain);
@@ -883,5 +894,15 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
                 objectAttribute.setObjectID(objectID);
             }
         }
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
+
+    @Override
+    public void setConnectionContext(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
     }
 }

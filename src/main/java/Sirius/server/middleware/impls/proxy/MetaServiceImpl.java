@@ -317,7 +317,7 @@ public class MetaServiceImpl implements MetaService {
     /**
      * DOCUMENT ME!
      *
-     * @param   usr      DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
      * @param   nodeID   DOCUMENT ME!
      * @param   lsName   DOCUMENT ME!
      * @param   context  DOCUMENT ME!
@@ -327,14 +327,14 @@ public class MetaServiceImpl implements MetaService {
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node getMetaObjectNode(final User usr,
+    public Node getMetaObjectNode(final User user,
             final int nodeID,
             final String lsName,
             final ConnectionContext context) throws RemoteException {
         // usr wird nicht beachtet fuer spaetere anpassungen
         ServerConnectionContextLogger.getInstance()
                 .logConnectionContext((ServerConnectionContext)context,
-                    usr,
+                    user,
                     "getMetaObjectNode",
                     "nodeID:"
                     + nodeID,
@@ -343,7 +343,7 @@ public class MetaServiceImpl implements MetaService {
 
         if (logger != null) {
             if (logger.isDebugEnabled()) {
-                logger.debug("<CS> getMetaObjectNode for user" + usr + "node ::" + nodeID + " domain" + lsName); // NOI18N
+                logger.debug("<CS> getMetaObjectNode for user" + user + "node ::" + nodeID + " domain" + lsName); // NOI18N
             }
         }
         final java.lang.Object name = activeLocalServers.get(lsName);
@@ -352,7 +352,7 @@ public class MetaServiceImpl implements MetaService {
         ids[0] = nodeID;
 
         if (name != null) {
-            n = ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)name).getNodes(usr, ids, context)[0];
+            n = ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)name).getNodes(user, ids, context)[0];
         } else {
             final Node error = new MetaNode(
                     ids[0],

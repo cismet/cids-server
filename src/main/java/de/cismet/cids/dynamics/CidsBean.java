@@ -48,7 +48,8 @@ import java.util.Map.Entry;
 import de.cismet.cids.json.IntraObjectCacheJsonParams;
 
 import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.ClassloadingHelper;
@@ -64,7 +65,7 @@ import static de.cismet.cids.dynamics.CidsBean.mapper;
  */
 //@JsonSerialize(using = CidsBeanJsonSerializer.class)
 //@JsonDeserialize(using = CidsBeanJsonDeserializer.class)
-public class CidsBean implements PropertyChangeListener, ClientConnectionContextProvider {
+public class CidsBean implements PropertyChangeListener, ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -110,6 +111,7 @@ public class CidsBean implements PropertyChangeListener, ClientConnectionContext
     HashMap<String, CidsBean> intraObjectCache = new HashMap<String, CidsBean>();
 
     private CustomBeanPermissionProvider customPermissionProvider;
+    private ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass().getSimpleName());
 
     //~ Methods ----------------------------------------------------------------
 
@@ -291,27 +293,47 @@ public class CidsBean implements PropertyChangeListener, ClientConnectionContext
      *
      * @throws  Exception  DOCUMENT ME!
      */
+    @Deprecated
     public CidsBean persist(final MetaService metaService, final User user, final String domain) throws Exception {
+        return persist(metaService, user, domain, null);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   metaService        DOCUMENT ME!
+     * @param   user               DOCUMENT ME!
+     * @param   domain             DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public CidsBean persist(final MetaService metaService,
+            final User user,
+            final String domain,
+            final ClientConnectionContext connectionContext) throws Exception {
         if (metaObject.getStatus() == MetaObject.MODIFIED) {
             metaService.updateMetaObject(
                 user,
                 metaObject,
                 domain,
-                getClientConnectionContext());
+                connectionContext);
 
             return metaService.getMetaObject(
                         user,
                         metaObject.getID(),
                         metaObject.getClassID(),
                         domain,
-                        getClientConnectionContext())
+                        connectionContext)
                         .getBean();
         } else if (metaObject.getStatus() == MetaObject.TO_DELETE) {
             metaService.deleteMetaObject(
                 user,
                 metaObject,
                 domain,
-                getClientConnectionContext());
+                connectionContext);
 
             return null;
         } else if (metaObject.getStatus() == MetaObject.NEW) {
@@ -319,7 +341,7 @@ public class CidsBean implements PropertyChangeListener, ClientConnectionContext
                     user,
                     metaObject,
                     domain,
-                    getClientConnectionContext());
+                    connectionContext);
             if (mo != null) {
                 return mo.getBean();
             }
@@ -335,9 +357,24 @@ public class CidsBean implements PropertyChangeListener, ClientConnectionContext
      *
      * @throws  Exception  DOCUMENT ME!
      */
+    @Deprecated
     public CidsBean persist() throws Exception {
+        return persist(null);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public CidsBean persist(final ClientConnectionContext connectionContext) throws Exception {
         final CidsBeanPersistService persistService = Lookup.getDefault().lookup(CidsBeanPersistService.class);
         if (persistService != null) {
+            persistService.setClientConnectionContext(connectionContext);
             return persistService.persistCidsBean(this);
         }
 
@@ -686,12 +723,14 @@ public class CidsBean implements PropertyChangeListener, ClientConnectionContext
                                 new Sirius.server.localserver.object.DefaultObject(
                                     getMetaObject().getID(),
                                     classId);
-                            dummy = new DefaultMetaObject(dummyO, getMetaObject().getDomain());
-                            dummy.setReferencingObjectAttribute(oa);
-                            dummy.setDummy(true);
-                            dummy.setStatus(MetaObject.NEW);
-                            oa.setValue(dummy);
+                            final DefaultMetaObject mo = new DefaultMetaObject(dummyO, getMetaObject().getDomain());
+                            mo.setConnectionContext(getConnectionContext());
+                            mo.setReferencingObjectAttribute(oa);
+                            mo.setDummy(true);
+                            mo.setStatus(MetaObject.NEW);
+                            oa.setValue(mo);
                             oa.setChanged(true);
+                            dummy = mo;
                         }
 
                         // 1:n Beziehung??
@@ -1212,7 +1251,7 @@ public class CidsBean implements PropertyChangeListener, ClientConnectionContext
     }
 
     @Override
-    public ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(getClass().getSimpleName());
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }

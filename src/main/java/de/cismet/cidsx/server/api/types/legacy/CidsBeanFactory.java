@@ -36,13 +36,17 @@ import java.util.regex.Pattern;
 
 import de.cismet.cids.dynamics.CidsBean;
 
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+
 /**
  * Factory with help method for converting between LightweightMetaObjects and cids Beans.
  *
  * @author   Pascal Dihé
  * @version  $Revision$, $Date$
  */
-public class CidsBeanFactory {
+public class CidsBeanFactory implements ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -52,11 +56,15 @@ public class CidsBeanFactory {
     private static final Pattern OBJECTID_PATTERN = Pattern.compile("([^/?]+)(?=/?(?:$|\\?))");
 
     private static final transient Logger LOG = Logger.getLogger(CidsBeanFactory.class);
-    private static final CidsBeanFactory factory = new CidsBeanFactory();
+    private static final CidsBeanFactory FACTORY = new CidsBeanFactory();
 
     //~ Instance fields --------------------------------------------------------
 
     private final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+
+    private final transient ConnectionContext connectionContext = ClientConnectionContext.create(
+            ConnectionContext.Category.LEGACY,
+            getClass().getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -74,7 +82,7 @@ public class CidsBeanFactory {
      * @return  DOCUMENT ME!
      */
     public static final CidsBeanFactory getFactory() {
-        return factory;
+        return FACTORY;
     }
 
     /**
@@ -243,6 +251,7 @@ public class CidsBeanFactory {
                 domain,
                 user,
                 lmoAttributes);
+        lightweightMetaObject.setConnectionContext(getConnectionContext());
 
         if (objectNode.has(LEGACY_DISPLAY_NAME)) {
             if (LOG.isDebugEnabled()) {
@@ -332,6 +341,7 @@ public class CidsBeanFactory {
                 domain,
                 user,
                 lmoAttributes);
+        lightweightMetaObject.setConnectionContext(getConnectionContext());
 
         if (representationFormater != null) {
             lightweightMetaObject.setFormater(representationFormater);
@@ -489,6 +499,11 @@ public class CidsBeanFactory {
         {
             return "-1";
         }
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }
 
