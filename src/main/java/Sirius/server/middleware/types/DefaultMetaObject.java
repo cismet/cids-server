@@ -20,9 +20,7 @@ import java.util.*;
 import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.dynamics.CustomBeanPermissionProvider;
 
-import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
 import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 import de.cismet.cids.server.connectioncontext.ConnectionContextStore;
 
 import de.cismet.cids.tools.tostring.*;

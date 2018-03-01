@@ -64,7 +64,7 @@ public class ServerConnectionContextLogger {
                 methodName,
                 params);
         if (ConnectionContext.Category.DEPRECATED.equals(context.getCategory())) {
-//            System.err.println(contextLog);
+            System.err.println("***** " + contextLog);
         } else {
             System.out.println(contextLog);
         }

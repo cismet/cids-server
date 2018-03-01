@@ -24,6 +24,11 @@ public interface ClientConnectionContextStore extends ConnectionContextProvider 
 
     /**
      * DOCUMENT ME!
+     */
+    void initAfterConnectionContext();
+
+    /**
+     * DOCUMENT ME!
      *
      * @param  connectionContext  DOCUMENT ME!
      */
