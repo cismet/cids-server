@@ -45,7 +45,6 @@ import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.search.CidsServerSearch;
 
-import de.cismet.commons.security.exceptions.BadHttpStatusCodeException;
 
 import de.cismet.tools.Converter;
 
@@ -283,14 +282,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getRootsByDomain", user.toString(), "domain=" + domain);
 
             return createResponse(getCallserver().getRoots(user, domain));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get roots"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get roots"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -317,14 +311,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getRoots", user.toString());
 
             return createResponse(getCallserver().getRoots(user));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get roots"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get roots"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -354,14 +343,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getChildren", user.toString(), "node=" + ((node != null) ? node.toString() : "null"));
 
             return createResponse(getCallserver().getChildren(node, user));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get children"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get children"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -393,14 +377,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/addNode", user.toString(), "node=" + ((node != null) ? node.toString() : "null"));
 
             return createResponse(getCallserver().addNode(node, parent, user));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not add node"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not add node"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -430,14 +409,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/deleteNode", user.toString(), "node=" + ((node != null) ? node.toString() : "null"));
 
             return createResponse(getCallserver().deleteNode(node, user));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not delete node"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not delete node"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -477,14 +451,9 @@ public final class RESTfulSerialInterface {
                         + ((to != null) ? to.toString() : "null"));
 
             return createResponse(getCallserver().addLink(from, to, user));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not add link"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not add link"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -524,14 +493,9 @@ public final class RESTfulSerialInterface {
                         + ((to != null) ? to.toString() : "null"));
 
             return createResponse(getCallserver().deleteLink(from, to, user));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not delete link"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not delete link"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -551,10 +515,9 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getDomains", "anonymous");
         try {
             return createResponse(getCallserver().getDomains());
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get domains"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -586,14 +549,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getMetaObjectNodeByID", user.toString(), "domain=" + domain, ",nodeId=" + nodeID);
 
             return createResponse(getCallserver().getMetaObjectNode(user, nodeID, domain));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get metaobject node"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get metaobject node"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -622,14 +580,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getMetaObjectNodeByString", user.toString(), "query=" + query);
 
             return createResponse(getCallserver().getMetaObjectNode(user, query));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get metaobject node"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get metaobject node"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -658,14 +611,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getMetaObjectByString", user.toString(), "query=" + query);
 
             return createResponse(getCallserver().getMetaObject(user, query));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get metaobject"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get metaobject"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -704,14 +652,9 @@ public final class RESTfulSerialInterface {
                         + query);
 
             return createResponse(getCallserver().getMetaObject(user, query, domain));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get metaobject"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get metaobject"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -755,14 +698,9 @@ public final class RESTfulSerialInterface {
                         + objectID);
 
             return createResponse(getCallserver().getMetaObject(user, objectID, classID, domain));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get metaobject"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get metaobject"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -806,14 +744,9 @@ public final class RESTfulSerialInterface {
                         + metaObject.getMetaClass().getTableName());
 
             return createResponse(getCallserver().insertMetaObject(user, metaObject, domain));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not insert metaobject"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not insert metaobject"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -857,14 +790,9 @@ public final class RESTfulSerialInterface {
                         + metaObject.getMetaClass().getTableName());
 
             return createResponse(getCallserver().updateMetaObject(user, metaObject, domain));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not update metaobject"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not update metaobject"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -908,14 +836,9 @@ public final class RESTfulSerialInterface {
                         + metaObject.getMetaClass().getTableName());
 
             return createResponse(getCallserver().deleteMetaObject(user, metaObject, domain));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not delete metaobject"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not delete metaobject"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -947,14 +870,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/update", user.toString(), "domain=" + domain, "query=" + query);
 
             return createResponse(getCallserver().update(user, query, domain));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not update"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not update"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -986,14 +904,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getInstance", user.toString(), "class=" + metaClass.toString());
 
             return createResponse(getCallserver().getInstance(user, metaClass));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get instance"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get instance"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1028,14 +941,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getClassByTableName", user.toString(), "domain=" + domain, "tableName=" + tableName);
 
             return createResponse(getCallserver().getClassByTableName(user, tableName, domain));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get metaclass"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get metaclass"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1067,14 +975,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getClassByID", user.toString(), "domain=" + domain, "classId=" + classId);
 
             return createResponse(getCallserver().getClass(user, classId, domain));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get metaclass"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get metaclass"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1099,17 +1002,12 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getClasses", "[bytes]", "domain=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
-            final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
-            nameTheThread(hsr, "/getClasses", user.toString(), "domain=" + domain);
-            return createResponse(getCallserver().getClasses(user, domain));
-        } catch (final IOException e) {
+            nameTheThread(hsr, "/getClassTreeNodesByUser", user.toString());
+
+            return createResponse(getCallserver().getClassTreeNodes(user));
+        } catch (final Exception ex) {
             final String message = "could not get metaclasses"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get metaclasses"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1135,14 +1033,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getClassTreeNodesByUser", user.toString());
 
             return createResponse(getCallserver().getClassTreeNodes(user));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get classtree nodes"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get classtree nodes"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1171,14 +1064,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getClassTreeNodesByDomain", user.toString(), "domain=" + domain);
 
             return createResponse(getCallserver().getClassTreeNodes(user, domain));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get classtree nodes"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get classtree nodes"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1204,14 +1092,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getMethodsByUser", user.toString());
 
             return createResponse(getCallserver().getMethods(user));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get methods"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get methods"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1243,14 +1126,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getMethodsByDomain", user.toString(), "domain=" + localServerName);
 
             return createResponse(getCallserver().getMethods(user, localServerName));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get methods"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get methods"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1301,14 +1179,9 @@ public final class RESTfulSerialInterface {
                         user,
                         representationFields,
                         representationPattern));
-        } catch (final IOException e) {
-            final String message = "could not get LightwightMetaObjects for class";  // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
+        } catch (final Exception ex) {
             final String message = "could not get LightweightMetaObjects for class"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1346,14 +1219,9 @@ public final class RESTfulSerialInterface {
                         classId,
                         user,
                         representationFields));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get LightweightMetaObjects for class"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get LightweightMetaObjects for class"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1408,14 +1276,9 @@ public final class RESTfulSerialInterface {
                         query,
                         representationFields,
                         representationPattern));
-        } catch (final IOException e) {
-            final String message = "could not get LightweightMetaObjects"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
+        } catch (final Exception ex) {
             final String message = "could not get LightWeightMetaObjects"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1457,14 +1320,9 @@ public final class RESTfulSerialInterface {
                         user,
                         query,
                         representationFields));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get LightweightMetaObjects"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get LightweightMetaObjects"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1490,14 +1348,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getDefaultIconsByLSName", "anonymous", "domain=" + lsName);
 
             return createResponse(getCallserver().getDefaultIcons(lsName));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get icons"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get icons"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1517,10 +1370,9 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getDefaultIcons", "anonymous");
         try {
             return createResponse(getCallserver().getDefaultIcons());
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get default icons"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1559,14 +1411,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/changePassword", user.toString());
 
             return createResponse(getCallserver().changePassword(user, oldPassword, newPassword));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not change password"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not change password"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1611,14 +1458,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getUser", uname);
 
             return createResponse(getCallserver().getUser(ugLsName, ugName, uLsName, uname, password));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get user"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get user"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1638,10 +1480,9 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getUserGroupNames", "anonymous");
         try {
             return createResponse(getCallserver().getUserGroupNames());
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get usergroup names"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1670,14 +1511,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getUserGroupNamesByUser", uname, "userdomain=" + lsHome);
 
             return createResponse(getCallserver().getUserGroupNames(uname, lsHome));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get usergroup names"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get usergroup names"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1706,14 +1542,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getConfigAttr", user.toString(), "key=" + key);
 
             return createResponse(getCallserver().getConfigAttr(user, key));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not get config attr"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get config attr"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1742,14 +1573,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/hasConfigAttr", user.toString(), "key=" + key);
 
             return createResponse(getCallserver().hasConfigAttr(user, key));
-        } catch (final IOException e) {
+        } catch (final Exception ex) {
             final String message = "could not determine config attr"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not determine config attr"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1786,14 +1612,9 @@ public final class RESTfulSerialInterface {
                         + serverSearch.getClass().getCanonicalName());
 
             return createResponse(getCallserver().customServerSearch(user, serverSearch));
-        } catch (final IOException e) {
-            final String message = "could not execute custom search"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not execute custom search"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+        } catch (final Exception ex) {
+            final String message = "could not execute custom search";
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1831,14 +1652,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getHistory", user.toString());
 
             return createResponse(getCallserver().getHistory(classId, objectId, domain, user, elements));
-        } catch (final IOException e) {
-            final String message = "could not get history"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not get history"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+        } catch (final Exception ex) {
+            final String message = "could not get history";
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1885,26 +1701,9 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/executeTask", user.toString(), "domain=" + taskdomain, "taskname=" + taskname);
 
             return createResponse(getCallserver().executeTask(user, taskname, taskdomain, body, params), null);
-        } catch (final IOException e) {
-            final String message = "could not execute task"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final ClassNotFoundException e) {
-            final String message = "could not execute task"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
-        } catch (final RuntimeException e) {
-            final String message = "could not execute task"; // NOI18N
-            final Throwable cause = e.getCause();
-            if (cause instanceof BadHttpStatusCodeException) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug(message, e);
-                }
-                throw new RemoteException(message);
-            } else {
-                LOG.error(message, e);
-                throw new RemoteException(message, e);
-            }
+        } catch (final Exception ex) {
+            final String message = "could not execute task";
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -1967,10 +1766,9 @@ public final class RESTfulSerialInterface {
                     ServerActionParameter.fromMVMap(uriInfo.getQueryParameters()));
 
             return Response.ok(resp).build();
-        } catch (Exception e) {
+        } catch (Exception ex) {
             final String message = "could not testExecute Task"; // NOI18N
-            LOG.error(message, e);
-            throw new RemoteException(message, e);
+            throw createRemoteException(ex, message);
         }
     }
 
@@ -2023,4 +1821,20 @@ public final class RESTfulSerialInterface {
 
         return getCallserver().getUser(ugLsName, ugName, uLsName, uname, password);
     }
+
+    private RemoteException createRemoteException(final Exception exception, final String message) {
+        try {
+            throw exception;
+        } catch (final IOException e) {
+            LOG.error(message, e);
+            return new RemoteException(message, e);
+        } catch (final ClassNotFoundException e) {
+            LOG.error(message, e);
+            return new RemoteException(message, e);
+        } catch (final Exception e) {
+            LOG.fatal(message, e);
+            return new RemoteException(message, e);
+        }
+    }
+    
 }
