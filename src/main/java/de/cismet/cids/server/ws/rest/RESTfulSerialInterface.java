@@ -2152,6 +2152,14 @@ public final class RESTfulSerialInterface {
         return ServerConnectionContext.createFromClientContext(context, hsr.getLocalAddr());
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   exception  DOCUMENT ME!
+     * @param   message    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     private RemoteException createRemoteException(final Exception exception, final String message) {
         try {
             throw exception;
@@ -2168,5 +2176,4 @@ public final class RESTfulSerialInterface {
             return new RemoteException(message, e);
         }
     }
-    
 }
