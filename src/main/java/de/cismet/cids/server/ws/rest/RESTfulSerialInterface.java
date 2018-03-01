@@ -1411,6 +1411,8 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/changePassword", user.toString());
 
             return createResponse(getCallserver().changePassword(user, oldPassword, newPassword));
+        } catch (final UserException ex) {
+            throw ex;
         } catch (final Exception ex) {
             final String message = "could not change password"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1458,6 +1460,8 @@ public final class RESTfulSerialInterface {
             nameTheThread(hsr, "/getUser", uname);
 
             return createResponse(getCallserver().getUser(ugLsName, ugName, uLsName, uname, password));
+        } catch (final UserException ex) {
+            throw ex;
         } catch (final Exception ex) {
             final String message = "could not get user"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1825,6 +1829,8 @@ public final class RESTfulSerialInterface {
     private RemoteException createRemoteException(final Exception exception, final String message) {
         try {
             throw exception;
+        } catch (final RemoteException e) {
+            return e;
         } catch (final IOException e) {
             LOG.error(message, e);
             return new RemoteException(message, e);
