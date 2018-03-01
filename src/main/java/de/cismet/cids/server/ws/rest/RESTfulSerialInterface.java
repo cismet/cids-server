@@ -45,7 +45,6 @@ import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.search.CidsServerSearch;
 
-
 import de.cismet.tools.Converter;
 
 /**
@@ -1002,9 +1001,10 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getClasses", "[bytes]", "domain=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
-            nameTheThread(hsr, "/getClassTreeNodesByUser", user.toString());
+            final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
+            nameTheThread(hsr, "/getClasses", user.toString());
 
-            return createResponse(getCallserver().getClassTreeNodes(user));
+            return createResponse(getCallserver().getClasses(user, domain));
         } catch (final Exception ex) {
             final String message = "could not get metaclasses"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1826,6 +1826,14 @@ public final class RESTfulSerialInterface {
         return getCallserver().getUser(ugLsName, ugName, uLsName, uname, password);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   exception  DOCUMENT ME!
+     * @param   message    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     private RemoteException createRemoteException(final Exception exception, final String message) {
         try {
             throw exception;
@@ -1842,5 +1850,4 @@ public final class RESTfulSerialInterface {
             return new RemoteException(message, e);
         }
     }
-    
 }
