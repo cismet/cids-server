@@ -31,12 +31,13 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
-import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
-import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
 import de.cismet.cids.tools.CidsLayerUtil;
+
+import de.cismet.connectioncontext.ServerConnectionContext;
+import de.cismet.connectioncontext.ServerConnectionContextStore;
 
 /**
  * DOCUMENT ME!
@@ -44,7 +45,7 @@ import de.cismet.cids.tools.CidsLayerUtil;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-public class CidsLayerSearchStatement extends AbstractCidsServerSearch implements ServerConnectionContextProvider {
+public class CidsLayerSearchStatement extends AbstractCidsServerSearch implements ServerConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -84,8 +85,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch implement
     private CidsLayerInfo layerInfo;
     private boolean compressed = false;
 
-    private ServerConnectionContext serverConnectionContext = ServerConnectionContext.create(getClass()
-                    .getSimpleName());
+    private ServerConnectionContext connectionContext = ServerConnectionContext.create(getClass().getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -300,7 +300,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch implement
             }
 
             LOG.info(queryString.toString());
-            ArrayList<ArrayList> result = ms.performCustomSearch(queryString.toString(), getServerConnectionContext());
+            ArrayList<ArrayList> result = ms.performCustomSearch(queryString.toString(), getConnectionContext());
 
             if (compressed) {
                 try {
@@ -474,12 +474,16 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch implement
     }
 
     @Override
-    public ServerConnectionContext getServerConnectionContext() {
-        return serverConnectionContext;
+    public ServerConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     @Override
-    public void setServerConnectionContext(final ServerConnectionContext serverConnectionContext) {
-        this.serverConnectionContext = serverConnectionContext;
+    public void initAfterConnectionContext() {
+    }
+
+    @Override
+    public void setConnectionContext(final ServerConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
     }
 }

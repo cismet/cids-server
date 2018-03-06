@@ -21,11 +21,13 @@ import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashMap;
 
-import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
 import de.cismet.cids.server.connectioncontext.ServerConnectionContextLogger;
 import de.cismet.cids.server.search.CidsServerSearch;
+
+import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ServerConnectionContext;
+import de.cismet.connectioncontext.ServerConnectionContextStore;
 
 /**
  * DOCUMENT ME!
@@ -79,9 +81,9 @@ public class SearchServiceImpl implements SearchService {
     /**
      * DOCUMENT ME!
      *
-     * @param   user          DOCUMENT ME!
-     * @param   serverSearch  DOCUMENT ME!
-     * @param   context       DOCUMENT ME!
+     * @param   user               DOCUMENT ME!
+     * @param   serverSearch       DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -90,18 +92,22 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public Collection customServerSearch(final User user,
             final CidsServerSearch serverSearch,
-            final ConnectionContext context) throws RemoteException {
+            final ConnectionContext connectionContext) throws RemoteException {
         ServerConnectionContextLogger.getInstance()
-                .logConnectionContext((ServerConnectionContext)context,
+                .logConnectionContext((ServerConnectionContext)connectionContext,
                     user,
                     "customServerSearch",
                     "serverSearch:"
                     + serverSearch);
         serverSearch.setUser(user);
         serverSearch.setActiveLocalServers(new HashMap(activeLocalServers));
+        if (serverSearch instanceof ServerConnectionContextStore) {
+            ((ServerConnectionContextStore)serverSearch).setConnectionContext((ServerConnectionContext)
+                connectionContext);
+        }
         try {
             final Collection searchResults = serverSearch.performServerSearch();
-            addDynamicChildren(user, searchResults, context);
+            addDynamicChildren(user, searchResults, connectionContext);
             return searchResults;
         } catch (Exception e) {
             logger.error("Error in customSearch", e);

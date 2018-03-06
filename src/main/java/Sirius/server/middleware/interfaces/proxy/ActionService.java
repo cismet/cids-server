@@ -12,7 +12,8 @@ import Sirius.server.newuser.User;
 import java.rmi.RemoteException;
 
 import de.cismet.cids.server.actions.ServerActionParameter;
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
+
+import de.cismet.connectioncontext.ConnectionContext;
 
 /**
  * DOCUMENT ME!

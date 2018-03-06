@@ -30,10 +30,11 @@ import java.util.Set;
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.CallServerServiceProvider;
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextStore;
 
 import de.cismet.cids.tools.fromstring.FromStringCreator;
+
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
 
 /**
  * DOCUMENT ME!

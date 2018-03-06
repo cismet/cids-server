@@ -47,10 +47,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
-import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
-
 import de.cismet.commons.utils.StringUtils;
+
+import de.cismet.connectioncontext.ConnectionContextProvider;
+import de.cismet.connectioncontext.ServerConnectionContext;
 
 /**
  * Klasse um auf den in der DB gespeicherten Graphen zuzugreifen.
@@ -58,7 +58,7 @@ import de.cismet.commons.utils.StringUtils;
  * @author   schlob
  * @version  $Revision$, $Date$
  */
-public class VirtualTree extends Shutdown implements AbstractTree, ServerConnectionContextProvider {
+public class VirtualTree extends Shutdown implements AbstractTree, ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -73,7 +73,7 @@ public class VirtualTree extends Shutdown implements AbstractTree, ServerConnect
     private PolicyHolder policyHolder = null;
     private ClassCache classCache = null;
 
-    private ServerConnectionContext serverConnectionContext = ServerConnectionContext.create(getClass()
+    private final ServerConnectionContext serverConnectionContext = ServerConnectionContext.create(getClass()
                     .getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
@@ -843,7 +843,7 @@ public class VirtualTree extends Shutdown implements AbstractTree, ServerConnect
                             .hasConfigAttr(
                                     user,
                                     additionaltreepermissiontagString,
-                                    getServerConnectionContext());
+                                    getConnectionContext());
             } catch (RemoteException ex) {
                 additionaltreepermissiontag = false;
                 LOG.error(ex.getMessage(), ex);
@@ -1161,13 +1161,8 @@ public class VirtualTree extends Shutdown implements AbstractTree, ServerConnect
     }
 
     @Override
-    public ServerConnectionContext getServerConnectionContext() {
+    public ServerConnectionContext getConnectionContext() {
         return serverConnectionContext;
-    }
-
-    @Override
-    public void setServerConnectionContext(final ServerConnectionContext serverConnectionContext) {
-        this.serverConnectionContext = serverConnectionContext;
     }
 
     //~ Inner Classes ----------------------------------------------------------

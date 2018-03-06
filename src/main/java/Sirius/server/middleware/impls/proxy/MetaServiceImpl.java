@@ -36,10 +36,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
 import de.cismet.cids.server.connectioncontext.ServerConnectionContextLogger;
+
+import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ServerConnectionContext;
 
 /**
  * DOCUMENT ME!

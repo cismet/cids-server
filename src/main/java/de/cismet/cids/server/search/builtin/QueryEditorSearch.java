@@ -25,11 +25,12 @@ import java.util.Collection;
 
 import de.cismet.cids.nodepermissions.NoNodePermissionProvidedException;
 
-import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
-import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
 import de.cismet.cids.server.search.SearchException;
+
+import de.cismet.connectioncontext.ServerConnectionContext;
+import de.cismet.connectioncontext.ServerConnectionContextStore;
 
 /**
  * As this search allows the user to specify a where clause he has to know what backend the server it is executed on
@@ -39,7 +40,7 @@ import de.cismet.cids.server.search.SearchException;
  * @version  $Revision$, $Date$
  */
 public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaObjectNodeServerSearch,
-    ServerConnectionContextProvider {
+    ServerConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -54,8 +55,7 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
     private final int limit;
     private final int offset;
 
-    private ServerConnectionContext serverConnectionContext = ServerConnectionContext.create(getClass()
-                    .getSimpleName());
+    private ServerConnectionContext connectionContext = ServerConnectionContext.create(getClass().getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -121,7 +121,7 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
                 }
 
                 LOG.info(query);
-                final ArrayList<ArrayList> results = ms.performCustomSearch(query, getServerConnectionContext());
+                final ArrayList<ArrayList> results = ms.performCustomSearch(query, getConnectionContext());
 
                 for (final ArrayList al : results) {
                     final int cid = (Integer)al.get(0);
@@ -194,12 +194,16 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
     }
 
     @Override
-    public ServerConnectionContext getServerConnectionContext() {
-        return serverConnectionContext;
+    public ServerConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     @Override
-    public void setServerConnectionContext(final ServerConnectionContext serverConnectionContext) {
-        this.serverConnectionContext = serverConnectionContext;
+    public void setConnectionContext(final ServerConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
+    }
+
+    @Override
+    public void initAfterConnectionContext() {
     }
 }

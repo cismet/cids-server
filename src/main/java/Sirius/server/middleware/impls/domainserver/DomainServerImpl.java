@@ -73,14 +73,16 @@ import de.cismet.cids.server.actions.ScheduledServerAction;
 import de.cismet.cids.server.actions.ScheduledServerActionManager;
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
 import de.cismet.cids.server.connectioncontext.ServerConnectionContextLogger;
 import de.cismet.cids.server.search.QueryPostProcessor;
 import de.cismet.cids.server.ws.rest.RESTfulService;
 
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
+
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
+import de.cismet.connectioncontext.ServerConnectionContext;
 
 /**
  * DOCUMENT ME!
@@ -207,6 +209,11 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                     if (hook.getDomain().equalsIgnoreCase(properties.getServerName())
                                 || hook.getDomain().equalsIgnoreCase(
                                     DomainServerStartupHook.START_ON_DOMAIN.ANY.toString())) {
+                        if (hook instanceof ConnectionContextStore) {
+                            ((ConnectionContextStore)hook).setConnectionContext(ServerConnectionContext.create(
+                                    ConnectionContext.Category.OTHER,
+                                    hook.getClass().getSimpleName()));
+                        }
                         hook.domainServerStarted();
                     }
                 }

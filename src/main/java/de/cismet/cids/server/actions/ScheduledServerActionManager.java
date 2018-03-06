@@ -42,9 +42,8 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
-import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+import de.cismet.connectioncontext.ServerConnectionContext;
 
 /**
  * DOCUMENT ME!
@@ -52,7 +51,7 @@ import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class ScheduledServerActionManager implements ServerConnectionContextProvider {
+public class ScheduledServerActionManager implements ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -87,7 +86,7 @@ public class ScheduledServerActionManager implements ServerConnectionContextProv
     private final DomainServerImpl domainserver;
     private final String domain;
 
-    private ServerConnectionContext serverConnectionContext = ServerConnectionContext.create(getClass()
+    private final ServerConnectionContext serverConnectionContext = ServerConnectionContext.create(getClass()
                     .getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
@@ -143,13 +142,8 @@ public class ScheduledServerActionManager implements ServerConnectionContextProv
     }
 
     @Override
-    public ServerConnectionContext getServerConnectionContext() {
+    public ServerConnectionContext getConnectionContext() {
         return serverConnectionContext;
-    }
-
-    @Override
-    public void setServerConnectionContext(final ServerConnectionContext serverConnectionContext) {
-        this.serverConnectionContext = serverConnectionContext;
     }
 
     /**
@@ -168,7 +162,7 @@ public class ScheduledServerActionManager implements ServerConnectionContextProv
                 list.addAll(Arrays.asList(info.getParams()));
                 domainserver.executeTask(getUserByName(info.getUserName(), info.getGroupName()),
                     info.getTaskName(),
-                    getServerConnectionContext(),
+                    getConnectionContext(),
                     info.getBody(),
                     list.toArray(new ServerActionParameter[0]));
             }

@@ -19,6 +19,11 @@ import java.util.Map;
 import de.cismet.cids.server.messages.CidsServerMessage;
 import de.cismet.cids.server.messages.CidsServerMessageManagerImpl;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+import de.cismet.connectioncontext.ConnectionContextStore;
+import de.cismet.connectioncontext.ServerConnectionContext;
+
 /**
  * DOCUMENT ME!
  *
@@ -26,7 +31,7 @@ import de.cismet.cids.server.messages.CidsServerMessageManagerImpl;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = ServerAction.class)
-public class CheckCidsServerMessageAction implements ServerAction, UserAwareServerAction {
+public class CheckCidsServerMessageAction implements ServerAction, UserAwareServerAction, ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -51,9 +56,21 @@ public class CheckCidsServerMessageAction implements ServerAction, UserAwareServ
 
     //~ Instance fields --------------------------------------------------------
 
+    private ConnectionContext connectionContext = ServerConnectionContext.create(getClass().getSimpleName());
+
     private User user;
 
     //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
+
+    @Override
+    public void setConnectionContext(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
+    }
 
     @Override
     public User getUser() {
@@ -95,7 +112,7 @@ public class CheckCidsServerMessageAction implements ServerAction, UserAwareServ
         }
 
         final Collection<CidsServerMessage> messages = CidsServerMessageManagerImpl.getInstance()
-                    .getMessages(getUser(), lastMessageIdPerCategory);
+                    .getMessages(getUser(), lastMessageIdPerCategory, getConnectionContext());
 
         return messages;
     }

@@ -11,7 +11,7 @@ import Sirius.server.newuser.*;
 
 import java.rmi.*;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 
 /**
  * DOCUMENT ME!

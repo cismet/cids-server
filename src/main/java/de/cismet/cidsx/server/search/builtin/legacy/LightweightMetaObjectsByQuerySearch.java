@@ -24,8 +24,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
-import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
@@ -34,6 +32,9 @@ import de.cismet.cidsx.base.types.Type;
 import de.cismet.cidsx.server.api.types.SearchInfo;
 import de.cismet.cidsx.server.api.types.SearchParameterInfo;
 import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
+
+import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ClientConnectionContextStore;
 
 /**
  * Builtin Legacy Search to delegate the operation getLightweightMetaObjectsByQuery to the cids Pure REST Search API.
@@ -45,7 +46,7 @@ import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
 @Deprecated
 public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearch implements RestApiCidsServerSearch,
     LightweightMetaObjectsSearch,
-    ServerConnectionContextProvider {
+    ClientConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -60,8 +61,7 @@ public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearc
     @Getter @Setter private String[] representationFields;
     @Getter @Setter private String representationPattern;
 
-    private ServerConnectionContext serverConnectionContext = ServerConnectionContext.create(getClass()
-                    .getSimpleName());
+    private ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass().getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -75,7 +75,7 @@ public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearc
         searchInfo.setDescription(
             "Builtin Legacy Search to delegate the operation getLightweightMetaObjectsByQuery to the cids Pure REST Search API.");
 
-        final List<SearchParameterInfo> parameterDescription = new LinkedList<SearchParameterInfo>();
+        final List<SearchParameterInfo> parameterDescription = new LinkedList<>();
         SearchParameterInfo searchParameterInfo;
 
         searchParameterInfo = new SearchParameterInfo();
@@ -140,14 +140,14 @@ public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearc
                         query,
                         representationFields,
                         representationPattern,
-                        getServerConnectionContext());
+                        getConnectionContext());
             } else {
                 lightWightMetaObjects = metaService.getLightweightMetaObjectsByQuery(
                         classId,
                         this.getUser(),
                         query,
                         representationFields,
-                        getServerConnectionContext());
+                        getConnectionContext());
             }
             if (LOG.isDebugEnabled()) {
                 LOG.debug(lightWightMetaObjects.length + " Lightweight Meta Objects found");
@@ -162,12 +162,16 @@ public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearc
     }
 
     @Override
-    public ServerConnectionContext getServerConnectionContext() {
-        return serverConnectionContext;
+    public ClientConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     @Override
-    public void setServerConnectionContext(final ServerConnectionContext serverConnectionContext) {
-        this.serverConnectionContext = serverConnectionContext;
+    public void initAfterConnectionContext() {
+    }
+
+    @Override
+    public void setConnectionContext(final ClientConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
     }
 }

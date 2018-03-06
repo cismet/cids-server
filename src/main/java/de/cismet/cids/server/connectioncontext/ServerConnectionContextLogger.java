@@ -14,7 +14,12 @@ package de.cismet.cids.server.connectioncontext;
 
 import Sirius.server.newuser.User;
 
+import org.apache.log4j.Logger;
+
 import java.util.Date;
+
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ServerConnectionContext;
 
 /**
  * DOCUMENT ME!
@@ -23,6 +28,10 @@ import java.util.Date;
  * @version  $Revision$, $Date$
  */
 public class ServerConnectionContextLogger {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final transient Logger LOG = Logger.getLogger(ServerConnectionContextLogger.class);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -64,9 +73,14 @@ public class ServerConnectionContextLogger {
                 methodName,
                 params);
         if (ConnectionContext.Category.DEPRECATED.equals(context.getCategory())) {
-            System.err.println("***** " + contextLog);
+            final Exception ex = (Exception)context.getAdditionalFields().get("EXCEPTION");
+            if (ex != null) {
+                LOG.fatal(contextLog, ex);
+            } else {
+                LOG.fatal(contextLog);
+            }
         } else {
-            System.out.println(contextLog);
+            LOG.info(contextLog);
         }
     }
 

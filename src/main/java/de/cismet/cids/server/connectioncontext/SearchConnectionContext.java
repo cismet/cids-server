@@ -12,6 +12,8 @@
  */
 package de.cismet.cids.server.connectioncontext;
 
+import de.cismet.connectioncontext.ClientConnectionContext;
+
 /**
  * DOCUMENT ME!s.
  *

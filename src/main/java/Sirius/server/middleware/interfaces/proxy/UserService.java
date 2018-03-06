@@ -16,7 +16,7 @@ import java.rmi.RemoteException;
 
 import java.util.Vector;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 
 /**
  * encapsulates methods relatad to user management.

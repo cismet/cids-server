@@ -18,7 +18,7 @@ import Sirius.server.newuser.User;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 
 /**
  * Interface for retrieving or modifying meta information sets.

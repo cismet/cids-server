@@ -16,13 +16,15 @@ import Sirius.server.middleware.types.MetaObject;
 
 import de.cismet.connectioncontext.ClientConnectionContext;
 
+import de.cismet.connectioncontext.ConnectionContext.Category;
+
 /**
  * DOCUMENT ME!
  *
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class RendererConnectionContext extends ClientConnectionContext {
+public class EditorConnectionContext extends ClientConnectionContext {
 
     //~ Constructors -----------------------------------------------------------
 
@@ -31,7 +33,7 @@ public class RendererConnectionContext extends ClientConnectionContext {
      *
      * @param  mo  DOCUMENT ME!
      */
-    public RendererConnectionContext(final MetaObject mo) {
+    public EditorConnectionContext(final MetaObject mo) {
         super(Category.RENDERER, constructContext(mo));
     }
 

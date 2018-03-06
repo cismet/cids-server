@@ -14,8 +14,9 @@ import java.rmi.RemoteException;
 
 import java.util.Collection;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
 import de.cismet.cids.server.search.CidsServerSearch;
+
+import de.cismet.connectioncontext.ConnectionContext;
 
 /**
  * encapsulates query, search mechanisms.

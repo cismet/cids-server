@@ -24,8 +24,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
-import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
@@ -35,6 +33,9 @@ import de.cismet.cidsx.server.api.types.SearchInfo;
 import de.cismet.cidsx.server.api.types.SearchParameterInfo;
 import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
 
+import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 /**
  * Builtin Legacy Search to delegate the operation getMetaObjects(String query, ...) the cids Pure REST Search API.
  *
@@ -43,7 +44,7 @@ import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
  */
 @ServiceProvider(service = RestApiCidsServerSearch.class)
 public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implements RestApiCidsServerSearch,
-    ServerConnectionContextProvider {
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -55,7 +56,7 @@ public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implement
     @Getter @Setter private String domain;
     @Getter @Setter private String query;
 
-    private ServerConnectionContext serverConnectionContext = ServerConnectionContext.create(getClass()
+    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
                     .getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
@@ -112,7 +113,7 @@ public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implement
         try {
             final MetaObject[] metaObjects = metaService.getMetaObject(this.getUser(),
                     this.getQuery(),
-                    getServerConnectionContext());
+                    getConnectionContext());
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug(metaObjects.length + " Meta Objects found.");
@@ -127,12 +128,7 @@ public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implement
     }
 
     @Override
-    public ServerConnectionContext getServerConnectionContext() {
-        return serverConnectionContext;
-    }
-
-    @Override
-    public void setServerConnectionContext(final ServerConnectionContext serverConnectionContext) {
-        this.serverConnectionContext = serverConnectionContext;
+    public ClientConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }

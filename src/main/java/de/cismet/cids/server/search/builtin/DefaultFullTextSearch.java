@@ -26,13 +26,14 @@ import java.util.HashSet;
 
 import de.cismet.cids.nodepermissions.NoNodePermissionProvidedException;
 
-import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
-import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.QueryPostProcessor;
 import de.cismet.cids.server.search.SearchException;
 import de.cismet.cids.server.search.SearchResultListener;
 import de.cismet.cids.server.search.SearchResultListenerProvider;
+
+import de.cismet.connectioncontext.ServerConnectionContext;
+import de.cismet.connectioncontext.ServerConnectionContextStore;
 
 /**
  * DOCUMENT ME!
@@ -43,7 +44,7 @@ import de.cismet.cids.server.search.SearchResultListenerProvider;
 @ServiceProvider(service = FullTextSearch.class)
 public class DefaultFullTextSearch extends AbstractCidsServerSearch implements FullTextSearch,
     SearchResultListenerProvider,
-    ServerConnectionContextProvider {
+    ServerConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -58,8 +59,7 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
     private Geometry geometry;
     private GeoSearch geoSearch;
 
-    private ServerConnectionContext serverConnectionContext = ServerConnectionContext.create(getClass()
-                    .getSimpleName());
+    private ServerConnectionContext connectionContext = ServerConnectionContext.create(getClass().getSimpleName());
 
     //~ Methods ----------------------------------------------------------------
 
@@ -161,7 +161,7 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
                                     return result;
                                 }
                             },
-                            getServerConnectionContext());
+                            getConnectionContext());
                     for (final ArrayList al : result) {
                         // FIXME: yet another hack to circumvent odd type behaviour
                         final int cid = ((Number)al.get(0)).intValue();
@@ -232,12 +232,16 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
     }
 
     @Override
-    public ServerConnectionContext getServerConnectionContext() {
-        return serverConnectionContext;
+    public ServerConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     @Override
-    public void setServerConnectionContext(final ServerConnectionContext serverConnectionContext) {
-        this.serverConnectionContext = serverConnectionContext;
+    public void initAfterConnectionContext() {
+    }
+
+    @Override
+    public void setConnectionContext(final ServerConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
     }
 }

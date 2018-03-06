@@ -16,9 +16,10 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
-import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
+
+import de.cismet.connectioncontext.ServerConnectionContext;
+import de.cismet.connectioncontext.ServerConnectionContextStore;
 
 /**
  * DOCUMENT ME!
@@ -26,7 +27,7 @@ import de.cismet.cids.server.search.AbstractCidsServerSearch;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class QueryEditorCountStatement extends AbstractCidsServerSearch implements ServerConnectionContextProvider {
+public class QueryEditorCountStatement extends AbstractCidsServerSearch implements ServerConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -41,8 +42,7 @@ public class QueryEditorCountStatement extends AbstractCidsServerSearch implemen
     private final String whereClause;
     private final String domain;
 
-    private ServerConnectionContext serverConnectionContext = ServerConnectionContext.create(getClass()
-                    .getSimpleName());
+    private ServerConnectionContext connectionContext = ServerConnectionContext.create(getClass().getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -68,7 +68,7 @@ public class QueryEditorCountStatement extends AbstractCidsServerSearch implemen
 
             final MetaService ms = (MetaService)getActiveLocalServers().get(domain);
 
-            final ArrayList<ArrayList> result = ms.performCustomSearch(sql, getServerConnectionContext());
+            final ArrayList<ArrayList> result = ms.performCustomSearch(sql, getConnectionContext());
 
             final ArrayList<Long> aln = new ArrayList<Long>();
             for (final ArrayList al : result) {
@@ -85,12 +85,16 @@ public class QueryEditorCountStatement extends AbstractCidsServerSearch implemen
     }
 
     @Override
-    public ServerConnectionContext getServerConnectionContext() {
-        return serverConnectionContext;
+    public ServerConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     @Override
-    public void setServerConnectionContext(final ServerConnectionContext serverConnectionContext) {
-        this.serverConnectionContext = serverConnectionContext;
+    public void initAfterConnectionContext() {
+    }
+
+    @Override
+    public void setConnectionContext(final ServerConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
     }
 }

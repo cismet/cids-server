@@ -23,8 +23,9 @@ import java.rmi.RemoteException;
 
 import java.util.ArrayList;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
 import de.cismet.cids.server.search.QueryPostProcessor;
+
+import de.cismet.connectioncontext.ConnectionContext;
 
 /**
  * Interface for retrieving or modifying meta information sets.

@@ -22,7 +22,7 @@ import java.rmi.registry.*;
 
 import java.util.Iterator;
 
-import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ClientConnectionContext;
 
 /**
  * DOCUMENT ME!

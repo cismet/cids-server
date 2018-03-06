@@ -22,6 +22,9 @@ import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ServerConnectionContext;
+
 /**
  * DOCUMENT ME!
  *
@@ -34,9 +37,9 @@ public class ServerConnectionContextLog {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String LOG_UNKNOWN_FORMAT = "[%s %s@%s] %s =UNKNOWN=> %s %s";
-    private static final String LOG_SERVER_FORMAT = "[%s %s@%s] %s =SERVER=> %s %s";
-    private static final String LOG_CLIENT_FORMAT = "[%s %s@%s] %s =CLIENT(%s)=> %s %s";
+    private static final String LOG_UNKNOWN_FORMAT = "[%s %s@%s] %s(%s) =UNKNOWN=> %s %s";
+    private static final String LOG_SERVER_FORMAT = "[%s %s@%s] %s(%s) =SERVER=> %s %s";
+    private static final String LOG_CLIENT_FORMAT = "[%s %s@%s] %s(%s) =CLIENT(%s)=> %s %s";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -79,6 +82,7 @@ public class ServerConnectionContextLog {
                     DateFormat.getDateTimeInstance().format(timestamp),
                     (user != null) ? user.getName() : null,
                     (user != null) ? user.getDomain() : null,
+                    (context != null) ? context.getCategory().name() : null,
                     (context != null) ? context.getContent() : null,
                     methodName,
                     (methodParams != null) ? Arrays.toString(methodParams) : null);
@@ -88,6 +92,7 @@ public class ServerConnectionContextLog {
                     DateFormat.getDateTimeInstance().format(timestamp),
                     (user != null) ? user.getName() : null,
                     (user != null) ? user.getDomain() : null,
+                    (context != null) ? context.getCategory().name() : null,
                     (context != null) ? context.getContent() : null,
                     methodName,
                     (methodParams != null) ? Arrays.toString(methodParams) : null);
@@ -97,6 +102,7 @@ public class ServerConnectionContextLog {
                     DateFormat.getDateTimeInstance().format(timestamp),
                     (user != null) ? user.getName() : null,
                     (user != null) ? user.getDomain() : null,
+                    (context != null) ? context.getCategory().name() : null,
                     (context != null) ? context.getContent() : null,
                     (context != null) ? context.getClientAddress() : null,
                     methodName,

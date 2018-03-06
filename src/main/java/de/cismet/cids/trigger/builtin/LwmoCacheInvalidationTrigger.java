@@ -23,6 +23,8 @@ import de.cismet.cids.trigger.CidsTriggerKey;
 
 import de.cismet.commons.concurrency.CismetConcurrency;
 
+import de.cismet.connectioncontext.ServerConnectionContext;
+
 /**
  * DOCUMENT ME!
  *
@@ -130,7 +132,8 @@ public class LwmoCacheInvalidationTrigger extends AbstractCidsTrigger {
                                 .publishMessage(
                                     LightweightMetaObject.CACHE_INVALIDATION_MESSAGE,
                                     new MetaObjectNode(cidsBean),
-                                    false);
+                                    false,
+                                    ServerConnectionContext.createDeprecated());
                                 return null;
                             }
                         });

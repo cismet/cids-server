@@ -20,13 +20,13 @@ import java.util.*;
 import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.dynamics.CustomBeanPermissionProvider;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextStore;
-
 import de.cismet.cids.tools.tostring.*;
 
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
+
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.tools.CurrentStackTrace;
 import de.cismet.tools.StaticDebuggingTools;

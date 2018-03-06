@@ -24,10 +24,11 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
-import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
+
+import de.cismet.connectioncontext.ServerConnectionContext;
+import de.cismet.connectioncontext.ServerConnectionContextStore;
 
 /**
  * DOCUMENT ME!
@@ -35,7 +36,7 @@ import de.cismet.cids.server.search.SearchException;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-public class DistinctValuesSearch extends AbstractCidsServerSearch implements ServerConnectionContextProvider {
+public class DistinctValuesSearch extends AbstractCidsServerSearch implements ServerConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -47,8 +48,7 @@ public class DistinctValuesSearch extends AbstractCidsServerSearch implements Se
     private String attribute;
     private String DOMAIN;
 
-    private ServerConnectionContext serverConnectionContext = ServerConnectionContext.create(getClass()
-                    .getSimpleName());
+    private ServerConnectionContext connectionContext = ServerConnectionContext.create(getClass().getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -75,7 +75,7 @@ public class DistinctValuesSearch extends AbstractCidsServerSearch implements Se
                 final String query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
                                     .getDialect())
                             .getDistinctValuesSearchStmt(metaClass, attribute);
-                final ArrayList<ArrayList> results = ms.performCustomSearch(query, getServerConnectionContext());
+                final ArrayList<ArrayList> results = ms.performCustomSearch(query, getConnectionContext());
                 return results;
             } catch (RemoteException ex) {
                 LOG.error(ex.getMessage(), ex);
@@ -88,12 +88,16 @@ public class DistinctValuesSearch extends AbstractCidsServerSearch implements Se
     }
 
     @Override
-    public ServerConnectionContext getServerConnectionContext() {
-        return serverConnectionContext;
+    public ServerConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     @Override
-    public void setServerConnectionContext(final ServerConnectionContext serverConnectionContext) {
-        this.serverConnectionContext = serverConnectionContext;
+    public void initAfterConnectionContext() {
+    }
+
+    @Override
+    public void setConnectionContext(final ServerConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
     }
 }

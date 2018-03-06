@@ -18,6 +18,10 @@ import java.util.Set;
 
 import de.cismet.cids.server.messages.CidsServerMessageManagerImpl;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
+import de.cismet.connectioncontext.ServerConnectionContext;
+
 /**
  * DOCUMENT ME!
  *
@@ -25,7 +29,7 @@ import de.cismet.cids.server.messages.CidsServerMessageManagerImpl;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = ServerAction.class)
-public class PublishCidsServerMessageAction implements ServerAction, UserAwareServerAction {
+public class PublishCidsServerMessageAction implements ServerAction, UserAwareServerAction, ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -50,9 +54,21 @@ public class PublishCidsServerMessageAction implements ServerAction, UserAwareSe
 
     //~ Instance fields --------------------------------------------------------
 
+    private ConnectionContext connectionContext = ServerConnectionContext.create(getClass().getSimpleName());
+
     private User user;
 
     //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
+
+    @Override
+    public void setConnectionContext(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
+    }
 
     @Override
     public User getUser() {
@@ -94,7 +110,8 @@ public class PublishCidsServerMessageAction implements ServerAction, UserAwareSe
             }
         }
 
-        CidsServerMessageManagerImpl.getInstance().publishMessage(category, message, renotify, userGroupKeys, userKeys);
+        CidsServerMessageManagerImpl.getInstance()
+                .publishMessage(category, message, renotify, userGroupKeys, userKeys, getConnectionContext());
 
         return null;
     }

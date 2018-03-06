@@ -29,8 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import de.cismet.cids.server.connectioncontext.ServerConnectionContext;
-import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
+import de.cismet.connectioncontext.ConnectionContext;
 
 /**
  * DOCUMENT ME!
@@ -38,7 +37,7 @@ import de.cismet.cids.server.connectioncontext.ServerConnectionContextProvider;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class CidsServerMessageManagerImpl implements CidsServerMessageManager, ServerConnectionContextProvider {
+public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -60,9 +59,6 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager, S
     private final Map<String, Long> userActivityTimeMap = new HashMap<>();
 
     private int messageId = 0;
-
-    private ServerConnectionContext serverConnectionContext = ServerConnectionContext.create(getClass()
-                    .getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -90,13 +86,17 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager, S
     /**
      * DOCUMENT ME!
      *
-     * @param  category  DOCUMENT ME!
-     * @param  object    DOCUMENT ME!
-     * @param  renotify  DOCUMENT ME!
+     * @param  category           DOCUMENT ME!
+     * @param  object             DOCUMENT ME!
+     * @param  renotify           DOCUMENT ME!
+     * @param  connectionContext  DOCUMENT ME!
      */
     @Override
-    public void publishMessage(final String category, final Object object, final boolean renotify) {
-        publishMessage(category, object, renotify, null, null);
+    public void publishMessage(final String category,
+            final Object object,
+            final boolean renotify,
+            final ConnectionContext connectionContext) {
+        publishMessage(category, object, renotify, null, null, connectionContext);
     }
 
     /**
@@ -107,42 +107,52 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager, S
      * @param  renotify                          DOCUMENT ME!
      * @param  keys                              DOCUMENT ME!
      * @param  trueForUserKeysFalseForGroupKeys  DOCUMENT ME!
+     * @param  connectionContext                 DOCUMENT ME!
      */
     @Override
     public void publishMessage(final String category,
             final Object object,
             final boolean renotify,
             final Set keys,
-            final boolean trueForUserKeysFalseForGroupKeys) {
+            final boolean trueForUserKeysFalseForGroupKeys,
+            final ConnectionContext connectionContext) {
         if (trueForUserKeysFalseForGroupKeys) {
-            publishMessage(category, object, renotify, null, keys);
+            publishMessage(category, object, renotify, null, keys, connectionContext);
         } else {
-            publishMessage(category, object, renotify, keys, null);
+            publishMessage(category, object, renotify, keys, null, connectionContext);
         }
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param  category       DOCUMENT ME!
-     * @param  object         DOCUMENT ME!
-     * @param  renotify       DOCUMENT ME!
-     * @param  userGroupKeys  DOCUMENT ME!
-     * @param  userKeys       DOCUMENT ME!
+     * @param  category           DOCUMENT ME!
+     * @param  object             DOCUMENT ME!
+     * @param  renotify           DOCUMENT ME!
+     * @param  userGroupKeys      DOCUMENT ME!
+     * @param  userKeys           DOCUMENT ME!
+     * @param  connectionContext  DOCUMENT ME!
      */
     @Override
     public void publishMessage(final String category,
             final Object object,
             final boolean renotify,
             final Set userGroupKeys,
-            final Set userKeys) {
+            final Set userKeys,
+            final ConnectionContext connectionContext) {
         final int newMessageId;
 
         synchronized (this) {
             newMessageId = ++messageId;
         }
 
-        final CidsServerMessage message = new CidsServerMessage(newMessageId, object, renotify, category, new Date());
+        final CidsServerMessage message = new CidsServerMessage(
+                newMessageId,
+                object,
+                renotify,
+                category,
+                new Date(),
+                connectionContext);
 
         if ((userKeys != null) && !userKeys.isEmpty()) {
             userKeyMap.put(message, new HashSet(userKeys));
@@ -188,7 +198,9 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager, S
     }
 
     @Override
-    public List<CidsServerMessage> getMessages(final User user, final Map<String, Integer> biggerThenPerCategory) {
+    public List<CidsServerMessage> getMessages(final User user,
+            final Map<String, Integer> biggerThenPerCategory,
+            final ConnectionContext connectionContext) {
         final List<CidsServerMessage> messages = new ArrayList<>(messagesPerCategoryMap.keySet().size());
 
         final int defaultBiggerThen = -1;
@@ -199,7 +211,8 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager, S
                 final CidsServerMessage message = getLastMessage(
                         category,
                         user,
-                        (biggerThen != null) ? biggerThen : defaultBiggerThen);
+                        (biggerThen != null) ? biggerThen : defaultBiggerThen,
+                        connectionContext);
                 if (message != null) {
                     messages.add(message);
                 }
@@ -208,7 +221,8 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager, S
                     getAllMessages(
                         category,
                         user,
-                        (biggerThen != null) ? biggerThen : defaultBiggerThen));
+                        (biggerThen != null) ? biggerThen : defaultBiggerThen,
+                        connectionContext));
             }
         }
         return messages;
@@ -217,15 +231,19 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager, S
     /**
      * DOCUMENT ME!
      *
-     * @param   category    DOCUMENT ME!
-     * @param   user        DOCUMENT ME!
-     * @param   biggerThen  DOCUMENT ME!
+     * @param   category           DOCUMENT ME!
+     * @param   user               DOCUMENT ME!
+     * @param   biggerThen         DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
     @Override
-    public CidsServerMessage getLastMessage(final String category, final User user, final int biggerThen) {
-        final List<CidsServerMessage> lastMessages = getMessages(category, user, biggerThen, 1);
+    public CidsServerMessage getLastMessage(final String category,
+            final User user,
+            final int biggerThen,
+            final ConnectionContext connectionContext) {
+        final List<CidsServerMessage> lastMessages = getMessages(category, user, biggerThen, 1, connectionContext);
         if (lastMessages.isEmpty()) {
             return null;
         } else {
@@ -234,24 +252,29 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager, S
     }
 
     @Override
-    public List<CidsServerMessage> getAllMessages(final String category, final User user, final int biggerThen) {
-        return getMessages(category, user, biggerThen, -1);
+    public List<CidsServerMessage> getAllMessages(final String category,
+            final User user,
+            final int biggerThen,
+            final ConnectionContext connectionContext) {
+        return getMessages(category, user, biggerThen, -1, connectionContext);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   category       DOCUMENT ME!
-     * @param   user           DOCUMENT ME!
-     * @param   biggerThen     DOCUMENT ME!
-     * @param   numOfMessages  DOCUMENT ME!
+     * @param   category           DOCUMENT ME!
+     * @param   user               DOCUMENT ME!
+     * @param   biggerThen         DOCUMENT ME!
+     * @param   numOfMessages      DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
     private List<CidsServerMessage> getMessages(final String category,
             final User user,
             final int biggerThen,
-            final int numOfMessages) {
+            final int numOfMessages,
+            final ConnectionContext connectionContext) {
         final List<CidsServerMessage> messages = new ArrayList<>();
 
         final LinkedList<CidsServerMessage> categoryMessages = (LinkedList<CidsServerMessage>)
@@ -299,7 +322,7 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager, S
                                         user,
                                         "csm://"
                                         + category,
-                                        getServerConnectionContext());
+                                        connectionContext);
                 } catch (final RemoteException ex) {
                     LOG.warn(ex, ex);
                 }
@@ -337,16 +360,6 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager, S
             }
         }
         return activeUsers;
-    }
-
-    @Override
-    public ServerConnectionContext getServerConnectionContext() {
-        return serverConnectionContext;
-    }
-
-    @Override
-    public void setServerConnectionContext(final ServerConnectionContext serverConnectionContext) {
-        this.serverConnectionContext = serverConnectionContext;
     }
 
     //~ Inner Classes ----------------------------------------------------------
