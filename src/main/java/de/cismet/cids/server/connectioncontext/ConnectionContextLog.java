@@ -22,8 +22,8 @@ import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
 
+import de.cismet.connectioncontext.AbstractConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
-import de.cismet.connectioncontext.ServerConnectionContext;
 
 /**
  * DOCUMENT ME!
@@ -33,7 +33,7 @@ import de.cismet.connectioncontext.ServerConnectionContext;
  */
 @Getter
 @Setter
-public class ServerConnectionContextLog {
+public class ConnectionContextLog {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -45,7 +45,7 @@ public class ServerConnectionContextLog {
 
     private final Date timestamp;
     private final User user;
-    private final ServerConnectionContext context;
+    private final ConnectionContext connectionContext;
     private final String methodName;
     private final Object[] methodParams;
 
@@ -54,20 +54,20 @@ public class ServerConnectionContextLog {
     /**
      * Creates a new ConnectionContextLog object.
      *
-     * @param  timestamp     DOCUMENT ME!
-     * @param  user          DOCUMENT ME!
-     * @param  context       DOCUMENT ME!
-     * @param  methodName    DOCUMENT ME!
-     * @param  methodParams  DOCUMENT ME!
+     * @param  timestamp          DOCUMENT ME!
+     * @param  user               DOCUMENT ME!
+     * @param  connectionContext  DOCUMENT ME!
+     * @param  methodName         DOCUMENT ME!
+     * @param  methodParams       DOCUMENT ME!
      */
-    public ServerConnectionContextLog(final Date timestamp,
+    public ConnectionContextLog(final Date timestamp,
             final User user,
-            final ServerConnectionContext context,
+            final ConnectionContext connectionContext,
             final String methodName,
             final Object[] methodParams) {
         this.timestamp = timestamp;
         this.user = user;
-        this.context = context;
+        this.connectionContext = connectionContext;
         this.methodName = methodName;
         this.methodParams = methodParams;
     }
@@ -76,24 +76,25 @@ public class ServerConnectionContextLog {
 
     @Override
     public String toString() {
-        if ((ConnectionContext.Origin.UNKNOWN == context.getOrigin()) || (null == context.getOrigin())) {
+        if ((ConnectionContext.Origin.UNKNOWN == connectionContext.getOrigin())
+                    || (null == connectionContext.getOrigin())) {
             return String.format(
                     LOG_UNKNOWN_FORMAT,
                     DateFormat.getDateTimeInstance().format(timestamp),
                     (user != null) ? user.getName() : null,
                     (user != null) ? user.getDomain() : null,
-                    (context != null) ? context.getCategory().name() : null,
-                    (context != null) ? context.getContent() : null,
+                    (connectionContext != null) ? connectionContext.getCategory().name() : null,
+                    (connectionContext != null) ? connectionContext.getContent() : null,
                     methodName,
                     (methodParams != null) ? Arrays.toString(methodParams) : null);
-        } else if (ConnectionContext.Origin.SERVER == context.getOrigin()) {
+        } else if (ConnectionContext.Origin.SERVER == connectionContext.getOrigin()) {
             return String.format(
                     LOG_SERVER_FORMAT,
                     DateFormat.getDateTimeInstance().format(timestamp),
                     (user != null) ? user.getName() : null,
                     (user != null) ? user.getDomain() : null,
-                    (context != null) ? context.getCategory().name() : null,
-                    (context != null) ? context.getContent() : null,
+                    (connectionContext != null) ? connectionContext.getCategory().name() : null,
+                    (connectionContext != null) ? connectionContext.getContent() : null,
                     methodName,
                     (methodParams != null) ? Arrays.toString(methodParams) : null);
         } else {
@@ -102,9 +103,11 @@ public class ServerConnectionContextLog {
                     DateFormat.getDateTimeInstance().format(timestamp),
                     (user != null) ? user.getName() : null,
                     (user != null) ? user.getDomain() : null,
-                    (context != null) ? context.getCategory().name() : null,
-                    (context != null) ? context.getContent() : null,
-                    (context != null) ? context.getClientAddress() : null,
+                    (connectionContext != null) ? connectionContext.getCategory().name() : null,
+                    (connectionContext != null) ? connectionContext.getContent() : null,
+                    (connectionContext != null)
+                        ? connectionContext.getAdditionalFields().get(
+                            AbstractConnectionContext.ADDITIONAL_FIELD__CLIENT_IP) : null,
                     methodName,
                     (methodParams != null) ? Arrays.toString(methodParams) : null);
         }

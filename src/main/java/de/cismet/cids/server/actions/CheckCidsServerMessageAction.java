@@ -20,9 +20,7 @@ import de.cismet.cids.server.messages.CidsServerMessage;
 import de.cismet.cids.server.messages.CidsServerMessageManagerImpl;
 
 import de.cismet.connectioncontext.ConnectionContext;
-import de.cismet.connectioncontext.ConnectionContextProvider;
 import de.cismet.connectioncontext.ConnectionContextStore;
-import de.cismet.connectioncontext.ServerConnectionContext;
 
 /**
  * DOCUMENT ME!
@@ -56,7 +54,7 @@ public class CheckCidsServerMessageAction implements ServerAction, UserAwareServ
 
     //~ Instance fields --------------------------------------------------------
 
-    private ConnectionContext connectionContext = ServerConnectionContext.create(getClass().getSimpleName());
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     private User user;
 
@@ -68,7 +66,7 @@ public class CheckCidsServerMessageAction implements ServerAction, UserAwareServ
     }
 
     @Override
-    public void setConnectionContext(final ConnectionContext connectionContext) {
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
         this.connectionContext = connectionContext;
     }
 

@@ -32,8 +32,8 @@ import de.cismet.cids.server.search.SearchException;
 import de.cismet.cids.server.search.SearchResultListener;
 import de.cismet.cids.server.search.SearchResultListenerProvider;
 
-import de.cismet.connectioncontext.ServerConnectionContext;
-import de.cismet.connectioncontext.ServerConnectionContextStore;
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
 
 /**
  * DOCUMENT ME!
@@ -44,7 +44,7 @@ import de.cismet.connectioncontext.ServerConnectionContextStore;
 @ServiceProvider(service = FullTextSearch.class)
 public class DefaultFullTextSearch extends AbstractCidsServerSearch implements FullTextSearch,
     SearchResultListenerProvider,
-    ServerConnectionContextStore {
+    ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -59,7 +59,7 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
     private Geometry geometry;
     private GeoSearch geoSearch;
 
-    private ServerConnectionContext connectionContext = ServerConnectionContext.create(getClass().getSimpleName());
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Methods ----------------------------------------------------------------
 
@@ -232,16 +232,12 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
     }
 
     @Override
-    public ServerConnectionContext getConnectionContext() {
+    public ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 
     @Override
-    public void initAfterConnectionContext() {
-    }
-
-    @Override
-    public void setConnectionContext(final ServerConnectionContext connectionContext) {
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
         this.connectionContext = connectionContext;
     }
 }

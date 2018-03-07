@@ -22,7 +22,6 @@ import java.util.Map;
 
 import de.cismet.cids.server.actions.ServerActionParameter;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
 
 /**
@@ -64,7 +63,7 @@ public class ActionServiceImpl implements ActionService {
             final String taskdomain,
             final Object body,
             final ServerActionParameter... params) throws RemoteException {
-        return executeTask(user, taskname, taskdomain, ClientConnectionContext.createDeprecated(), body, params);
+        return executeTask(user, taskname, taskdomain, ConnectionContext.createDeprecated(), body, params);
     }
 
     @Override

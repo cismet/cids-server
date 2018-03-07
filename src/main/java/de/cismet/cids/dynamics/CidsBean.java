@@ -51,7 +51,6 @@ import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
@@ -111,7 +110,7 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
     HashMap<String, CidsBean> intraObjectCache = new HashMap<String, CidsBean>();
 
     private CustomBeanPermissionProvider customPermissionProvider;
-    private ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass().getSimpleName());
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Methods ----------------------------------------------------------------
 
@@ -313,7 +312,7 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
     public CidsBean persist(final MetaService metaService,
             final User user,
             final String domain,
-            final ClientConnectionContext connectionContext) throws Exception {
+            final ConnectionContext connectionContext) throws Exception {
         if (metaObject.getStatus() == MetaObject.MODIFIED) {
             metaService.updateMetaObject(
                 user,
@@ -371,7 +370,7 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public CidsBean persist(final ClientConnectionContext connectionContext) throws Exception {
+    public CidsBean persist(final ConnectionContext connectionContext) throws Exception {
         final CidsBeanPersistService persistService = Lookup.getDefault().lookup(CidsBeanPersistService.class);
         if (persistService != null) {
             persistService.setClientConnectionContext(connectionContext);
@@ -724,7 +723,7 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
                                     getMetaObject().getID(),
                                     classId);
                             final DefaultMetaObject mo = new DefaultMetaObject(dummyO, getMetaObject().getDomain());
-                            mo.setConnectionContext(getConnectionContext());
+                            mo.initWithConnectionContext(getConnectionContext());
                             mo.setReferencingObjectAttribute(oa);
                             mo.setDummy(true);
                             mo.setStatus(MetaObject.NEW);

@@ -33,8 +33,8 @@ import de.cismet.cidsx.server.api.types.SearchInfo;
 import de.cismet.cidsx.server.api.types.SearchParameterInfo;
 import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
-import de.cismet.connectioncontext.ClientConnectionContextStore;
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
 
 /**
  * Builtin Legacy Search to delegate the operation getLightweightMetaObjectsByQuery to the cids Pure REST Search API.
@@ -46,7 +46,7 @@ import de.cismet.connectioncontext.ClientConnectionContextStore;
 @Deprecated
 public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearch implements RestApiCidsServerSearch,
     LightweightMetaObjectsSearch,
-    ClientConnectionContextStore {
+    ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -61,7 +61,7 @@ public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearc
     @Getter @Setter private String[] representationFields;
     @Getter @Setter private String representationPattern;
 
-    private ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass().getSimpleName());
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -162,16 +162,12 @@ public class LightweightMetaObjectsByQuerySearch extends AbstractCidsServerSearc
     }
 
     @Override
-    public ClientConnectionContext getConnectionContext() {
+    public ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 
     @Override
-    public void initAfterConnectionContext() {
-    }
-
-    @Override
-    public void setConnectionContext(final ClientConnectionContext connectionContext) {
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
         this.connectionContext = connectionContext;
     }
 }

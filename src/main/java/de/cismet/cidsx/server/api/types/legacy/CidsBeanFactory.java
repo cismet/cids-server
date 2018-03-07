@@ -36,7 +36,6 @@ import java.util.regex.Pattern;
 
 import de.cismet.cids.dynamics.CidsBean;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
@@ -62,7 +61,7 @@ public class CidsBeanFactory implements ConnectionContextProvider {
 
     private final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
 
-    private final transient ConnectionContext connectionContext = ClientConnectionContext.create(
+    private final transient ConnectionContext connectionContext = ConnectionContext.create(
             ConnectionContext.Category.LEGACY,
             getClass().getSimpleName());
 
@@ -251,7 +250,7 @@ public class CidsBeanFactory implements ConnectionContextProvider {
                 domain,
                 user,
                 lmoAttributes);
-        lightweightMetaObject.setConnectionContext(getConnectionContext());
+        lightweightMetaObject.initWithConnectionContext(getConnectionContext());
 
         if (objectNode.has(LEGACY_DISPLAY_NAME)) {
             if (LOG.isDebugEnabled()) {
@@ -341,7 +340,7 @@ public class CidsBeanFactory implements ConnectionContextProvider {
                 domain,
                 user,
                 lmoAttributes);
-        lightweightMetaObject.setConnectionContext(getConnectionContext());
+        lightweightMetaObject.initWithConnectionContext(getConnectionContext());
 
         if (representationFormater != null) {
             lightweightMetaObject.setFormater(representationFormater);

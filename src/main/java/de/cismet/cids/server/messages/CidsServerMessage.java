@@ -17,8 +17,6 @@ import lombok.Getter;
 
 import java.io.Serializable;
 
-import java.sql.Connection;
-
 import java.util.Date;
 
 import de.cismet.connectioncontext.ConnectionContext;

@@ -12,7 +12,7 @@
  */
 package de.cismet.cids.server.connectioncontext;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 
 /**
  * DOCUMENT ME!s.
@@ -20,7 +20,7 @@ import de.cismet.connectioncontext.ClientConnectionContext;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class SearchConnectionContext extends ClientConnectionContext {
+public class SearchConnectionContext extends ConnectionContext {
 
     //~ Constructors -----------------------------------------------------------
 

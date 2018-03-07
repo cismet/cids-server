@@ -102,7 +102,6 @@ import de.cismet.cidsx.server.search.builtin.legacy.LightweightMetaObjectsByQuer
 import de.cismet.cidsx.server.search.builtin.legacy.MetaObjectNodesByQuerySearch;
 import de.cismet.cidsx.server.search.builtin.legacy.MetaObjectsByQuerySearch;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
 
 import de.cismet.netutil.Proxy;
@@ -606,7 +605,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     @Deprecated
     public Node[] getRoots(final User user) throws RemoteException {
-        return getRoots(user, ClientConnectionContext.createDeprecated());
+        return getRoots(user, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -631,7 +630,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Deprecated
     @Override
     public Node[] getChildren(final Node node, final User user) throws RemoteException {
-        return getChildren(node, user, ClientConnectionContext.createDeprecated());
+        return getChildren(node, user, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -749,7 +748,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     @Deprecated
     public Node addNode(final Node node, final Link parent, final User user) throws RemoteException {
-        return addNode(node, parent, user, ClientConnectionContext.createDeprecated());
+        return addNode(node, parent, user, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -781,7 +780,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Deprecated
     @Override
     public boolean deleteNode(final Node node, final User user) throws RemoteException {
-        return deleteNode(node, user, ClientConnectionContext.createDeprecated());
+        return deleteNode(node, user, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -812,7 +811,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     @Deprecated
     public boolean addLink(final Node from, final Node to, final User user) throws RemoteException {
-        return addLink(from, to, user, ClientConnectionContext.createDeprecated());
+        return addLink(from, to, user, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -844,7 +843,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Deprecated
     @Override
     public boolean deleteLink(final Node from, final Node to, final User user) throws RemoteException {
-        return deleteLink(from, to, user, ClientConnectionContext.createDeprecated());
+        return deleteLink(from, to, user, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -876,7 +875,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     @Deprecated
     public Node getMetaObjectNode(final User user, final int nodeID, final String domain) throws RemoteException {
-        return getMetaObjectNode(user, nodeID, domain, ClientConnectionContext.createDeprecated());
+        return getMetaObjectNode(user, nodeID, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -952,7 +951,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
     @Override
     public Node[] getMetaObjectNode(final User user, final String query) throws RemoteException {
-        return getMetaObjectNode(user, query, ClientConnectionContext.createDeprecated());
+        return getMetaObjectNode(user, query, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -997,7 +996,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     @Deprecated
     public Node[] getClassTreeNodes(final User user) throws RemoteException {
-        return getClassTreeNodes(user, ClientConnectionContext.createDeprecated());
+        return getClassTreeNodes(user, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1026,7 +1025,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     @Deprecated
     public Node[] getClassTreeNodes(final User user, final String domain) throws RemoteException {
-        return getClassTreeNodes(user, domain, ClientConnectionContext.createDeprecated());
+        return getClassTreeNodes(user, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1057,13 +1056,13 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     @Deprecated
     public MethodMap getMethods(final User user) throws RemoteException {
-        return getMethods(user, ClientConnectionContext.createDeprecated());
+        return getMethods(user, ConnectionContext.createDeprecated());
     }
 
     @Override
     @Deprecated
     public MetaClass getClass(final User user, final int classId, final String domain) throws RemoteException {
-        return getClass(user, classId, domain, ClientConnectionContext.createDeprecated());
+        return getClass(user, classId, domain, ConnectionContext.createDeprecated());
     }
 
     // <editor-fold desc="ENTITY INFO (CLASSES) API" defaultstate="collapsed">
@@ -1116,7 +1115,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Deprecated
     public MetaClass getClassByTableName(final User user, final String tableName, final String domain)
             throws RemoteException {
-        return getClassByTableName(user, tableName, domain, ClientConnectionContext.createDeprecated());
+        return getClassByTableName(user, tableName, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1185,7 +1184,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     @Deprecated
     public MetaClass[] getClasses(final User user, final String domain) throws RemoteException {
-        return getClasses(user, domain, ClientConnectionContext.createDeprecated());
+        return getClasses(user, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1270,7 +1269,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     public boolean changePassword(final User user, final String oldPassword, final String newPassword)
             throws RemoteException, UserException {
-        return changePassword(user, oldPassword, newPassword, ClientConnectionContext.createDeprecated());
+        return changePassword(user, oldPassword, newPassword, ConnectionContext.createDeprecated());
     }
 
     // </editor-fold>
@@ -1301,7 +1300,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     @Deprecated
     public MethodMap getMethods(final User user, final String localServerName) throws RemoteException {
-        return getMethods(user, localServerName, ClientConnectionContext.createDeprecated());
+        return getMethods(user, localServerName, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1332,7 +1331,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     @Deprecated
     public String[] getDomains() throws RemoteException {
-        return getDomains(ClientConnectionContext.createDeprecated());
+        return getDomains(ConnectionContext.createDeprecated());
     }
 
     // </editor-fold>
@@ -1415,7 +1414,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final String domain,
             final User user,
             final int elements) throws RemoteException {
-        return getHistory(classId, objectId, domain, user, elements, ClientConnectionContext.createDeprecated());
+        return getHistory(classId, objectId, domain, user, elements, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1500,7 +1499,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 userLsName,
                 userName,
                 password,
-                ClientConnectionContext.createDeprecated());
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1569,7 +1568,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Deprecated
     @Override
     public Vector getUserGroupNames() throws RemoteException {
-        return getUserGroupNames(ClientConnectionContext.createDeprecated());
+        return getUserGroupNames(ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1598,7 +1597,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Deprecated
     @Override
     public Vector getUserGroupNames(final String userName, final String lsHome) throws RemoteException {
-        return getUserGroupNames(userName, lsHome, ClientConnectionContext.createDeprecated());
+        return getUserGroupNames(userName, lsHome, ConnectionContext.createDeprecated());
     }
     /**
      * TODO: Implement Method in Users API or remove.<br>
@@ -1629,7 +1628,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Deprecated
     @Override
     public String getConfigAttr(final User user, final String key) throws RemoteException {
-        return getConfigAttr(user, key, ClientConnectionContext.createDeprecated());
+        return getConfigAttr(user, key, ConnectionContext.createDeprecated());
     }
 
     // </editor-fold>
@@ -1664,7 +1663,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Deprecated
     @Override
     public boolean hasConfigAttr(final User user, final String key) throws RemoteException {
-        return hasConfigAttr(user, key, ClientConnectionContext.createDeprecated());
+        return hasConfigAttr(user, key, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1701,7 +1700,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final String domain,
             final Object body,
             final ServerActionParameter... params) throws RemoteException {
-        return executeTask(user, taskname, domain, ClientConnectionContext.createDeprecated(), body, params);
+        return executeTask(user, taskname, domain, ConnectionContext.createDeprecated(), body, params);
     }
 
     /**
@@ -1849,13 +1848,13 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Deprecated
     @Override
     public Node[] getRoots(final User user, final String domainName) throws RemoteException {
-        return getRoots(user, domainName, ClientConnectionContext.createDeprecated());
+        return getRoots(user, domainName, ConnectionContext.createDeprecated());
     }
 
     @Override
     @Deprecated
     public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) throws RemoteException {
-        return customServerSearch(user, serverSearch, ClientConnectionContext.createDeprecated());
+        return customServerSearch(user, serverSearch, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1999,7 +1998,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
     @Override
     public MetaObject[] getMetaObject(final User user, final String query) throws RemoteException {
-        return this.getMetaObject(user, query, ClientConnectionContext.createDeprecated());
+        return this.getMetaObject(user, query, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -2026,7 +2025,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     @Deprecated
     public MetaObject[] getMetaObject(final User user, final String query, final String domain) throws RemoteException {
-        return getMetaObject(user, query, domain, ClientConnectionContext.createDeprecated());
+        return getMetaObject(user, query, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -2088,7 +2087,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Deprecated
     public MetaObject getMetaObject(final User user, final int objectId, final int classId, final String domain)
             throws RemoteException {
-        return getMetaObject(user, objectId, classId, domain, ClientConnectionContext.createDeprecated());
+        return getMetaObject(user, objectId, classId, domain, ConnectionContext.createDeprecated());
     }
 
     @Override
@@ -2179,7 +2178,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Deprecated
     public MetaObject insertMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        return insertMetaObject(user, metaObject, domain, ClientConnectionContext.createDeprecated());
+        return insertMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -2285,7 +2284,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Deprecated
     public int updateMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        return updateMetaObject(user, metaObject, domain, ClientConnectionContext.createDeprecated());
+        return updateMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -2357,7 +2356,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Deprecated
     public int deleteMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        return deleteMetaObject(user, metaObject, domain, ClientConnectionContext.createDeprecated());
+        return deleteMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -2435,7 +2434,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 user,
                 representationFields,
                 representationPattern,
-                ClientConnectionContext.createDeprecated());
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -2616,7 +2615,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 classId,
                 user,
                 representationFields,
-                ClientConnectionContext.createDeprecated());
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -2657,7 +2656,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 query,
                 representationFields,
                 representationPattern,
-                ClientConnectionContext.createDeprecated());
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -2718,7 +2717,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 user,
                 query,
                 representationFields,
-                ClientConnectionContext.createDeprecated());
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -2758,7 +2757,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     @Deprecated
     public MetaObject getInstance(final User user, final MetaClass metaClass) throws RemoteException {
-        return getInstance(user, metaClass, ClientConnectionContext.createDeprecated());
+        return getInstance(user, metaClass, ConnectionContext.createDeprecated());
     }
 
     /**

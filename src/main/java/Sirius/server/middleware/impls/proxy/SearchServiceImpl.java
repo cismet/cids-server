@@ -21,13 +21,11 @@ import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashMap;
 
-import de.cismet.cids.server.connectioncontext.ServerConnectionContextLogger;
+import de.cismet.cids.server.connectioncontext.ConnectionContextLogger;
 import de.cismet.cids.server.search.CidsServerSearch;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
-import de.cismet.connectioncontext.ServerConnectionContext;
-import de.cismet.connectioncontext.ServerConnectionContextStore;
+import de.cismet.connectioncontext.ConnectionContextStore;
 
 /**
  * DOCUMENT ME!
@@ -75,7 +73,7 @@ public class SearchServiceImpl implements SearchService {
     @Override
     @Deprecated
     public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) throws RemoteException {
-        return customServerSearch(user, serverSearch, ClientConnectionContext.createDeprecated());
+        return customServerSearch(user, serverSearch, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -93,17 +91,16 @@ public class SearchServiceImpl implements SearchService {
     public Collection customServerSearch(final User user,
             final CidsServerSearch serverSearch,
             final ConnectionContext connectionContext) throws RemoteException {
-        ServerConnectionContextLogger.getInstance()
-                .logConnectionContext((ServerConnectionContext)connectionContext,
+        ConnectionContextLogger.getInstance()
+                .logConnectionContext((ConnectionContext)connectionContext,
                     user,
                     "customServerSearch",
                     "serverSearch:"
                     + serverSearch);
         serverSearch.setUser(user);
         serverSearch.setActiveLocalServers(new HashMap(activeLocalServers));
-        if (serverSearch instanceof ServerConnectionContextStore) {
-            ((ServerConnectionContextStore)serverSearch).setConnectionContext((ServerConnectionContext)
-                connectionContext);
+        if (serverSearch instanceof ConnectionContextStore) {
+            ((ConnectionContextStore)serverSearch).initWithConnectionContext((ConnectionContext)connectionContext);
         }
         try {
             final Collection searchResults = serverSearch.performServerSearch();

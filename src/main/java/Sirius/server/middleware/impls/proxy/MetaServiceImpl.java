@@ -36,11 +36,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import de.cismet.cids.server.connectioncontext.ServerConnectionContextLogger;
+import de.cismet.cids.server.connectioncontext.ConnectionContextLogger;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
-import de.cismet.connectioncontext.ServerConnectionContext;
 
 /**
  * DOCUMENT ME!
@@ -80,7 +78,7 @@ public class MetaServiceImpl implements MetaService {
     @Override
     @Deprecated
     public MetaClass getClass(final User user, final int classID, final String domain) throws RemoteException {
-        return getClass(user, classID, domain, ClientConnectionContext.createDeprecated());
+        return getClass(user, classID, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -113,7 +111,7 @@ public class MetaServiceImpl implements MetaService {
     @Deprecated
     public MetaClass getClassByTableName(final User user, final String tableName, final String domain)
             throws RemoteException {
-        return getClassByTableName(user, tableName, domain, ClientConnectionContext.createDeprecated());
+        return getClassByTableName(user, tableName, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -140,7 +138,7 @@ public class MetaServiceImpl implements MetaService {
     @Override
     @Deprecated
     public MetaClass[] getClasses(final User user, final String domain) throws RemoteException {
-        return getClasses(user, domain, ClientConnectionContext.createDeprecated());
+        return getClasses(user, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -169,7 +167,7 @@ public class MetaServiceImpl implements MetaService {
     @Override
     @Deprecated
     public Node[] getClassTreeNodes(final User user) throws RemoteException {
-        return getClassTreeNodes(user, ClientConnectionContext.createDeprecated());
+        return getClassTreeNodes(user, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -245,7 +243,7 @@ public class MetaServiceImpl implements MetaService {
     @Override
     @Deprecated
     public Node[] getClassTreeNodes(final User user, final String localServerName) throws RemoteException {
-        return getClassTreeNodes(user, localServerName, ClientConnectionContext.createDeprecated());
+        return getClassTreeNodes(user, localServerName, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -274,7 +272,7 @@ public class MetaServiceImpl implements MetaService {
     @Override
     @Deprecated
     public String[] getDomains() throws RemoteException {
-        return getDomains(ClientConnectionContext.createDeprecated());
+        return getDomains(ConnectionContext.createDeprecated());
     }
 
     /**
@@ -288,8 +286,7 @@ public class MetaServiceImpl implements MetaService {
      */
     @Override
     public String[] getDomains(final ConnectionContext context) throws RemoteException {
-        ServerConnectionContextLogger.getInstance()
-                .logConnectionContext((ServerConnectionContext)context, null, "getDomains");
+        ConnectionContextLogger.getInstance().logConnectionContext((ConnectionContext)context, null, "getDomains");
 
         if (logger != null) {
             if (logger.isDebugEnabled()) {
@@ -312,7 +309,7 @@ public class MetaServiceImpl implements MetaService {
     @Override
     @Deprecated
     public Node getMetaObjectNode(final User usr, final int nodeID, final String lsName) throws RemoteException {
-        return getMetaObjectNode(usr, nodeID, lsName, ClientConnectionContext.createDeprecated());
+        return getMetaObjectNode(usr, nodeID, lsName, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -333,8 +330,8 @@ public class MetaServiceImpl implements MetaService {
             final String lsName,
             final ConnectionContext context) throws RemoteException {
         // usr wird nicht beachtet fuer spaetere anpassungen
-        ServerConnectionContextLogger.getInstance()
-                .logConnectionContext((ServerConnectionContext)context,
+        ConnectionContextLogger.getInstance()
+                .logConnectionContext((ConnectionContext)context,
                     user,
                     "getMetaObjectNode",
                     "nodeID:"
@@ -378,7 +375,7 @@ public class MetaServiceImpl implements MetaService {
     @Override
     @Deprecated
     public Node[] getMetaObjectNode(final User usr, final String query) throws RemoteException {
-        return getMetaObjectNode(usr, query, ClientConnectionContext.createDeprecated());
+        return getMetaObjectNode(usr, query, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -417,7 +414,7 @@ public class MetaServiceImpl implements MetaService {
     @Override
     @Deprecated
     public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
-        return getMetaObject(usr, query, usr.getDomain(), ClientConnectionContext.createDeprecated());
+        return getMetaObject(usr, query, usr.getDomain(), ConnectionContext.createDeprecated());
     }
 
     @Override
@@ -429,7 +426,7 @@ public class MetaServiceImpl implements MetaService {
     @Override
     @Deprecated
     public MetaObject[] getMetaObject(final User usr, final String query, final String domain) throws RemoteException {
-        return getMetaObject(usr, query, ClientConnectionContext.createDeprecated());
+        return getMetaObject(usr, query, ConnectionContext.createDeprecated());
     }
 
     @Override
@@ -469,7 +466,7 @@ public class MetaServiceImpl implements MetaService {
     @Deprecated
     public MetaObject getMetaObject(final User usr, final int objectID, final int classID, final String domain)
             throws RemoteException {
-        return getMetaObject(usr, objectID, classID, domain, ClientConnectionContext.createDeprecated());
+        return getMetaObject(usr, objectID, classID, domain, ConnectionContext.createDeprecated());
     }
 
     @Override
@@ -499,7 +496,7 @@ public class MetaServiceImpl implements MetaService {
     @Deprecated
     public MetaObject insertMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        return insertMetaObject(user, metaObject, domain, ClientConnectionContext.createDeprecated());
+        return insertMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -540,7 +537,7 @@ public class MetaServiceImpl implements MetaService {
     @Deprecated
     public int deleteMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        return deleteMetaObject(user, metaObject, domain, ClientConnectionContext.createDeprecated());
+        return deleteMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -579,7 +576,7 @@ public class MetaServiceImpl implements MetaService {
     @Deprecated
     public int updateMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        return updateMetaObject(user, metaObject, domain, ClientConnectionContext.createDeprecated());
+        return updateMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -617,7 +614,7 @@ public class MetaServiceImpl implements MetaService {
     @Override
     @Deprecated
     public MetaObject getInstance(final User user, final MetaClass c) throws RemoteException {
-        return getInstance(user, c, ClientConnectionContext.createDeprecated());
+        return getInstance(user, c, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -646,7 +643,7 @@ public class MetaServiceImpl implements MetaService {
     @Override
     @Deprecated
     public MethodMap getMethods(final User user) throws RemoteException {
-        return getMethods(user, ClientConnectionContext.createDeprecated());
+        return getMethods(user, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -681,7 +678,7 @@ public class MetaServiceImpl implements MetaService {
     @Override
     @Deprecated
     public MethodMap getMethods(final User user, final String lsName) throws RemoteException {
-        return getMethods(user, lsName, ClientConnectionContext.createDeprecated());
+        return getMethods(user, lsName, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -718,7 +715,7 @@ public class MetaServiceImpl implements MetaService {
                 classId,
                 user,
                 representationFields,
-                ClientConnectionContext.createDeprecated());
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -759,7 +756,7 @@ public class MetaServiceImpl implements MetaService {
                 classId,
                 user,
                 representationFields,
-                ClientConnectionContext.createDeprecated());
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -797,7 +794,7 @@ public class MetaServiceImpl implements MetaService {
                 query,
                 representationFields,
                 representationPattern,
-                ClientConnectionContext.createDeprecated());
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -843,7 +840,7 @@ public class MetaServiceImpl implements MetaService {
                 user,
                 query,
                 representationFields,
-                ClientConnectionContext.createDeprecated());
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -903,7 +900,7 @@ public class MetaServiceImpl implements MetaService {
             final String domain,
             final User user,
             final int elements) throws RemoteException {
-        return getHistory(classId, objectId, domain, user, elements, ClientConnectionContext.createDeprecated());
+        return getHistory(classId, objectId, domain, user, elements, ConnectionContext.createDeprecated());
     }
 
     @Override

@@ -18,8 +18,11 @@ import org.apache.log4j.Logger;
 
 import java.util.Date;
 
+import de.cismet.connectioncontext.AbstractConnectionContext;
+
+import de.cismet.connectioncontext.AbstractConnectionContext.Category;
+
 import de.cismet.connectioncontext.ConnectionContext;
-import de.cismet.connectioncontext.ServerConnectionContext;
 
 /**
  * DOCUMENT ME!
@@ -27,18 +30,18 @@ import de.cismet.connectioncontext.ServerConnectionContext;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class ServerConnectionContextLogger {
+public class ConnectionContextLogger {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final transient Logger LOG = Logger.getLogger(ServerConnectionContextLogger.class);
+    private static final transient Logger LOG = Logger.getLogger(ConnectionContextLogger.class);
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new ConnectionContextLogger object.
      */
-    private ServerConnectionContextLogger() {
+    private ConnectionContextLogger() {
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -48,7 +51,7 @@ public class ServerConnectionContextLogger {
      *
      * @return  DOCUMENT ME!
      */
-    public static ServerConnectionContextLogger getInstance() {
+    public static ConnectionContextLogger getInstance() {
         return LazyInitialiser.INSTANCE;
     }
 
@@ -60,27 +63,26 @@ public class ServerConnectionContextLogger {
      * @param  methodName  DOCUMENT ME!
      * @param  params      DOCUMENT ME!
      */
-    public void logConnectionContext(ServerConnectionContext context,
+    public void logConnectionContext(ConnectionContext context,
             final User user,
             final String methodName,
             final Object... params) {
         if (context == null) {
-            context = ServerConnectionContext.createDeprecated();
+            context = ConnectionContext.createDeprecated();
         }
-        final ServerConnectionContextLog contextLog = new ServerConnectionContextLog(new Date(),
+        final ConnectionContextLog contextLog = new ConnectionContextLog(new Date(),
                 user,
                 context,
                 methodName,
                 params);
-        if (ConnectionContext.Category.DEPRECATED.equals(context.getCategory())) {
-            final Exception ex = (Exception)context.getAdditionalFields().get("EXCEPTION");
-            if (ex != null) {
-                LOG.fatal(contextLog, ex);
-            } else {
-                LOG.fatal(contextLog);
-            }
+        final Exception ex = (Exception)context.getAdditionalFields()
+                    .get(AbstractConnectionContext.ADDITIONAL_FIELD__STACKTRACE_EXCEPTION);
+        if (Category.DEPRECATED.equals(context.getCategory())) {
+            LOG.fatal(contextLog, ex);
+        } else if (Category.DUMMY.equals(context.getCategory())) {
+            LOG.error(contextLog, ex);
         } else {
-            LOG.info(contextLog);
+            LOG.info(contextLog, ex);
         }
     }
 
@@ -95,7 +97,7 @@ public class ServerConnectionContextLogger {
 
         //~ Static fields/initializers -----------------------------------------
 
-        private static final ServerConnectionContextLogger INSTANCE = new ServerConnectionContextLogger();
+        private static final ConnectionContextLogger INSTANCE = new ConnectionContextLogger();
 
         //~ Constructors -------------------------------------------------------
 

@@ -14,7 +14,7 @@ package de.cismet.cids.server.connectioncontext;
 
 import Sirius.server.middleware.types.MetaObject;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 
 /**
  * DOCUMENT ME!
@@ -22,7 +22,7 @@ import de.cismet.connectioncontext.ClientConnectionContext;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class RendererConnectionContext extends ClientConnectionContext {
+public class RendererConnectionContext extends ConnectionContext {
 
     //~ Constructors -----------------------------------------------------------
 

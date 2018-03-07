@@ -29,8 +29,8 @@ import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
-import de.cismet.connectioncontext.ServerConnectionContext;
-import de.cismet.connectioncontext.ServerConnectionContextStore;
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
 
 /**
  * As this search allows the user to specify a where clause he has to know what backend the server it is executed on
@@ -40,7 +40,7 @@ import de.cismet.connectioncontext.ServerConnectionContextStore;
  * @version  $Revision$, $Date$
  */
 public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaObjectNodeServerSearch,
-    ServerConnectionContextStore {
+    ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -55,7 +55,7 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
     private final int limit;
     private final int offset;
 
-    private ServerConnectionContext connectionContext = ServerConnectionContext.create(getClass().getSimpleName());
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -194,16 +194,12 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
     }
 
     @Override
-    public ServerConnectionContext getConnectionContext() {
+    public ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 
     @Override
-    public void setConnectionContext(final ServerConnectionContext connectionContext) {
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
         this.connectionContext = connectionContext;
-    }
-
-    @Override
-    public void initAfterConnectionContext() {
     }
 }

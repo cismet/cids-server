@@ -1199,7 +1199,7 @@ public final class LightweightMetaObject implements MetaObject,
     }
 
     @Override
-    public void setConnectionContext(final ConnectionContext connectionContext) {
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
         this.connectionContext = connectionContext;
     }
 }

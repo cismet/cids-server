@@ -48,9 +48,10 @@ import java.util.List;
 import java.util.Map;
 
 import de.cismet.commons.utils.StringUtils;
+import de.cismet.connectioncontext.AbstractConnectionContext;
 
+import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
-import de.cismet.connectioncontext.ServerConnectionContext;
 
 /**
  * Klasse um auf den in der DB gespeicherten Graphen zuzugreifen.
@@ -73,8 +74,7 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
     private PolicyHolder policyHolder = null;
     private ClassCache classCache = null;
 
-    private final ServerConnectionContext serverConnectionContext = ServerConnectionContext.create(getClass()
-                    .getSimpleName());
+    private final ConnectionContext connectionContext = ConnectionContext.create(AbstractConnectionContext.Category.OTHER, getClass().getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -1161,8 +1161,8 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
     }
 
     @Override
-    public ServerConnectionContext getConnectionContext() {
-        return serverConnectionContext;
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     //~ Inner Classes ----------------------------------------------------------

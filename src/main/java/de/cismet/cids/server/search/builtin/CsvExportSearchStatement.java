@@ -23,8 +23,8 @@ import java.util.List;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
-import de.cismet.connectioncontext.ServerConnectionContext;
-import de.cismet.connectioncontext.ServerConnectionContextStore;
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
 
 /**
  * DOCUMENT ME!
@@ -32,7 +32,7 @@ import de.cismet.connectioncontext.ServerConnectionContextStore;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class CsvExportSearchStatement extends AbstractCidsServerSearch implements ServerConnectionContextStore {
+public class CsvExportSearchStatement extends AbstractCidsServerSearch implements ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -52,7 +52,7 @@ public class CsvExportSearchStatement extends AbstractCidsServerSearch implement
     private String dateFormat = "dd.MM.yyyy";
     private String[] booleanFormat = new String[] { "no", "yes" };
 
-    private ServerConnectionContext connectionContext = ServerConnectionContext.create(getClass().getSimpleName());
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -211,16 +211,12 @@ public class CsvExportSearchStatement extends AbstractCidsServerSearch implement
     }
 
     @Override
-    public ServerConnectionContext getConnectionContext() {
+    public ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 
     @Override
-    public void initAfterConnectionContext() {
-    }
-
-    @Override
-    public void setConnectionContext(final ServerConnectionContext connectionContext) {
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
         this.connectionContext = connectionContext;
     }
 }

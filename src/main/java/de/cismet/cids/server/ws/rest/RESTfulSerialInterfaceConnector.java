@@ -64,7 +64,6 @@ import de.cismet.cids.server.ws.SSLConfig;
 
 import de.cismet.cidsx.server.search.builtin.legacy.LightweightMetaObjectsByQuerySearch;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
 
 import de.cismet.netutil.Proxy;
@@ -478,7 +477,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public Node[] getRoots(final User user, final String domainName) throws RemoteException {
-        return getRoots(user, ClientConnectionContext.createDeprecated());
+        return getRoots(user, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -500,7 +499,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         PARAM_USER,
                         Converter.serialiseToString(user, isCompressionEnabled()))
                         .append(PARAM_DOMAIN, Converter.serialiseToString(domainName, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
             return getResponsePOST("getRootsByDomain", queryParams, Node[].class); // NOI18N
         } catch (final Exception ex) {
             throw createRemoteException(ex);
@@ -510,7 +509,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public Node[] getRoots(final User user) throws RemoteException {
-        return getRoots(user, ClientConnectionContext.createDeprecated());
+        return getRoots(user, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -529,7 +528,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
                         PARAM_USER,
                         Converter.serialiseToString(user, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getRoots", queryParams, Node[].class); // NOI18N
         } catch (final Exception ex) {
@@ -540,7 +539,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public Node[] getChildren(final Node node, final User usr) throws RemoteException {
-        return getChildren(node, usr, ClientConnectionContext.createDeprecated());
+        return getChildren(node, usr, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -561,7 +560,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         PARAM_NODE,
                         Converter.serialiseToString(node, isCompressionEnabled()))
                         .append(PARAM_USER, Converter.serialiseToString(usr, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getChildren", queryParams, Node[].class); // NOI18N
         } catch (final Exception ex) {
@@ -572,7 +571,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public Node addNode(final Node node, final Link parent, final User user) throws RemoteException {
-        return addNode(node, parent, user, ClientConnectionContext.createDeprecated());
+        return addNode(node, parent, user, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -596,7 +595,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         Converter.serialiseToString(node, isCompressionEnabled()))
                         .append(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()))
                         .append(PARAM_LINK_PARENT, Converter.serialiseToString(parent, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("addNode", queryParams, Node.class); // NOI18N
         } catch (final Exception ex) {
@@ -607,7 +606,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public boolean deleteNode(final Node node, final User user) throws RemoteException {
-        return deleteNode(node, user, ClientConnectionContext.createDeprecated());
+        return deleteNode(node, user, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -629,7 +628,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         PARAM_NODE,
                         Converter.serialiseToString(node, isCompressionEnabled()))
                         .append(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("deleteNode", queryParams, boolean.class); // NOI18N
         } catch (final Exception ex) {
@@ -640,7 +639,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public boolean addLink(final Node from, final Node to, final User user) throws RemoteException {
-        return addLink(from, to, user, ClientConnectionContext.createDeprecated());
+        return addLink(from, to, user, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -664,7 +663,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         Converter.serialiseToString(from, isCompressionEnabled()))
                         .append(PARAM_NODE_TO, Converter.serialiseToString(to, isCompressionEnabled()))
                         .append(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("addLink", queryParams, boolean.class); // NOI18N
         } catch (final Exception ex) {
@@ -675,7 +674,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public boolean deleteLink(final Node from, final Node to, final User user) throws RemoteException {
-        return deleteLink(from, to, user, ClientConnectionContext.createDeprecated());
+        return deleteLink(from, to, user, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -699,7 +698,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         Converter.serialiseToString(from, isCompressionEnabled()))
                         .append(PARAM_NODE_TO, Converter.serialiseToString(to, isCompressionEnabled()))
                         .append(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("deleteLink", queryParams, boolean.class); // NOI18N
         } catch (final Exception ex) {
@@ -710,7 +709,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public String[] getDomains() throws RemoteException {
-        return getDomains(ClientConnectionContext.createDeprecated());
+        return getDomains(ConnectionContext.createDeprecated());
     }
 
     /**
@@ -727,7 +726,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         try {
             final AppendableMultivaluedMapImpl queryParams =
                 new AppendableMultivaluedMapImpl().append(
-                    PARAM_CONTEXT,
+                    PARAM_CONNECTIONCONTEXT,
                     Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getDomains", queryParams, String[].class); // NOI18N
@@ -782,7 +781,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public Node getMetaObjectNode(final User usr, final int nodeID, final String domain) throws RemoteException {
-        return getMetaObjectNode(usr, nodeID, domain, ClientConnectionContext.createDeprecated());
+        return getMetaObjectNode(usr, nodeID, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -808,7 +807,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         Converter.serialiseToString(usr, isCompressionEnabled()))
                         .append(PARAM_NODE_ID, Converter.serialiseToString(nodeID, isCompressionEnabled()))
                         .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getMetaObjectNodeByID", queryParams, Node.class); // NOI18N
         } catch (final Exception ex) {
@@ -819,7 +818,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public Node[] getMetaObjectNode(final User usr, final String query) throws RemoteException {
-        return getMetaObjectNode(usr, query, ClientConnectionContext.createDeprecated());
+        return getMetaObjectNode(usr, query, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -841,7 +840,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         PARAM_USER,
                         Converter.serialiseToString(usr, isCompressionEnabled()))
                         .append(PARAM_QUERY, Converter.serialiseToString(query, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getMetaObjectNodeByString", queryParams, Node[].class); // NOI18N
         } catch (final Exception ex) {
@@ -860,7 +859,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 user,
                 query,
                 representationFields,
-                ClientConnectionContext.createDeprecated());
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -909,7 +908,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 query,
                 representationFields,
                 representationPattern,
-                ClientConnectionContext.createDeprecated());
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -962,7 +961,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
-        return getMetaObject(usr, query, ClientConnectionContext.createDeprecated());
+        return getMetaObject(usr, query, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -984,7 +983,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         PARAM_USER,
                         Converter.serialiseToString(usr, isCompressionEnabled()))
                         .append(PARAM_QUERY, Converter.serialiseToString(query, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getMetaObjectByString", queryParams, MetaObject[].class); // NOI18N
         } catch (final Exception ex) {
@@ -995,7 +994,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public MetaObject[] getMetaObject(final User usr, final String query, final String domain) throws RemoteException {
-        return getMetaObject(usr, query, ClientConnectionContext.createDeprecated());
+        return getMetaObject(usr, query, ConnectionContext.createDeprecated());
     }
 
     @Override
@@ -1009,7 +1008,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         Converter.serialiseToString(usr, isCompressionEnabled()))
                         .append(PARAM_QUERY, Converter.serialiseToString(query, isCompressionEnabled()))
                         .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getMetaObjectByStringAndDomain", queryParams, MetaObject[].class); // NOI18N
         } catch (final Exception ex) {
@@ -1033,7 +1032,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Deprecated
     public MetaObject getMetaObject(final User usr, final int objectID, final int classID, final String domain)
             throws RemoteException {
-        return getMetaObject(usr, objectID, classID, domain, ClientConnectionContext.createDeprecated());
+        return getMetaObject(usr, objectID, classID, domain, ConnectionContext.createDeprecated());
     }
 
     @Override
@@ -1049,7 +1048,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         .append(PARAM_OBJECT_ID, Converter.serialiseToString(objectID, isCompressionEnabled()))
                         .append(PARAM_CLASS_ID, Converter.serialiseToString(classID, isCompressionEnabled()))
                         .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getMetaObjectByID", queryParams, MetaObject.class); // NOI18N
         } catch (final Exception ex) {
@@ -1061,7 +1060,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Deprecated
     public MetaObject insertMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        return insertMetaObject(user, metaObject, domain, ClientConnectionContext.createDeprecated());
+        return insertMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1087,7 +1086,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         Converter.serialiseToString(user, isCompressionEnabled()))
                         .append(PARAM_METAOBJECT, Converter.serialiseToString(metaObject, isCompressionEnabled()))
                         .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("insertMetaObject", queryParams, MetaObject.class); // NOI18N
         } catch (final Exception ex) {
@@ -1099,7 +1098,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Deprecated
     public int updateMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        return updateMetaObject(user, metaObject, domain, ClientConnectionContext.createDeprecated());
+        return updateMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1125,7 +1124,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         Converter.serialiseToString(user, isCompressionEnabled()))
                         .append(PARAM_METAOBJECT, Converter.serialiseToString(metaObject, isCompressionEnabled()))
                         .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("updateMetaObject", queryParams, int.class); // NOI18N
         } catch (final Exception ex) {
@@ -1137,7 +1136,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Deprecated
     public int deleteMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        return deleteMetaObject(user, metaObject, domain, ClientConnectionContext.createDeprecated());
+        return deleteMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1163,7 +1162,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         Converter.serialiseToString(user, isCompressionEnabled()))
                         .append(PARAM_METAOBJECT, Converter.serialiseToString(metaObject, isCompressionEnabled()))
                         .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("deleteMetaObject", queryParams, int.class); // NOI18N
         } catch (final Exception ex) {
@@ -1205,7 +1204,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public MetaObject getInstance(final User user, final MetaClass c) throws RemoteException {
-        return getInstance(user, c, ClientConnectionContext.createDeprecated());
+        return getInstance(user, c, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1227,7 +1226,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         PARAM_USER,
                         Converter.serialiseToString(user, isCompressionEnabled()))
                         .append(PARAM_METACLASS, Converter.serialiseToString(c, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getInstance", queryParams, MetaObject.class); // NOI18N
         } catch (final Exception ex) {
@@ -1239,7 +1238,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Deprecated
     public MetaClass getClassByTableName(final User user, final String tableName, final String domain)
             throws RemoteException {
-        return getClassByTableName(user, tableName, domain, ClientConnectionContext.createDeprecated());
+        return getClassByTableName(user, tableName, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1265,7 +1264,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         Converter.serialiseToString(user, isCompressionEnabled()))
                         .append(PARAM_TABLE_NAME, Converter.serialiseToString(tableName, isCompressionEnabled()))
                         .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getClassByTableName", queryParams, MetaClass.class); // NOI18N
         } catch (final Exception ex) {
@@ -1276,7 +1275,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public MetaClass getClass(final User user, final int classID, final String domain) throws RemoteException {
-        return getClass(user, classID, domain, ClientConnectionContext.createDeprecated());
+        return getClass(user, classID, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1300,7 +1299,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         Converter.serialiseToString(user, isCompressionEnabled()))
                         .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
                         .append(PARAM_CLASS_ID, Converter.serialiseToString(classID, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getClassByID", queryParams, MetaClass.class); // NOI18N
         } catch (final Exception ex) {
@@ -1311,7 +1310,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public MetaClass[] getClasses(final User user, final String domain) throws RemoteException {
-        return getClasses(user, domain, ClientConnectionContext.createDeprecated());
+        return getClasses(user, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1333,7 +1332,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         PARAM_USER,
                         Converter.serialiseToString(user, isCompressionEnabled()))
                         .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getClasses", queryParams, MetaClass[].class); // NOI18N
         } catch (final Exception ex) {
@@ -1344,7 +1343,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public Node[] getClassTreeNodes(final User user) throws RemoteException {
-        return getClassTreeNodes(user, ClientConnectionContext.createDeprecated());
+        return getClassTreeNodes(user, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1363,7 +1362,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
                         PARAM_USER,
                         Converter.serialiseToString(user, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getClassTreeNodesByUser", queryParams, Node[].class); // NOI18N
         } catch (final Exception ex) {
@@ -1374,7 +1373,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public Node[] getClassTreeNodes(final User user, final String domain) throws RemoteException {
-        return getClassTreeNodes(user, domain, ClientConnectionContext.createDeprecated());
+        return getClassTreeNodes(user, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1396,7 +1395,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         PARAM_USER,
                         Converter.serialiseToString(user, isCompressionEnabled()))
                         .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getClassTreeNodesByDomain", queryParams, Node[].class); // NOI18N
         } catch (final Exception ex) {
@@ -1407,7 +1406,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public MethodMap getMethods(final User user) throws RemoteException {
-        return getMethods(user, ClientConnectionContext.createDeprecated());
+        return getMethods(user, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1426,7 +1425,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
                         PARAM_USER,
                         Converter.serialiseToString(user, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getMethodsByUser", queryParams, MethodMap.class); // NOI18N
         } catch (final Exception ex) {
@@ -1437,7 +1436,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public MethodMap getMethods(final User user, final String localServerName) throws RemoteException {
-        return getMethods(user, localServerName, ClientConnectionContext.createDeprecated());
+        return getMethods(user, localServerName, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1461,7 +1460,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         .append(
                                 PARAM_LOCAL_SERVER_NAME,
                                 Converter.serialiseToString(localServerName, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getMethodsByDomain", queryParams, MethodMap.class); // NOI18N
         } catch (final Exception ex) {
@@ -1480,7 +1479,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 user,
                 representationFields,
                 representationPattern,
-                ClientConnectionContext.createDeprecated());
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1513,7 +1512,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         .append(
                                 PARAM_REP_PATTERN,
                                 Converter.serialiseToString(representationPattern, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST(
                     "getAllLightweightMetaObjectsForClassByPattern", // NOI18N
@@ -1533,7 +1532,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 classId,
                 user,
                 representationFields,
-                ClientConnectionContext.createDeprecated());
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1561,7 +1560,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         .append(
                                 PARAM_REP_FIELDS,
                                 Converter.serialiseToString(representationFields, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST(
                     "getAllLightweightMetaObjectsForClass", // NOI18N
@@ -1617,7 +1616,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Deprecated
     public boolean changePassword(final User user, final String oldPassword, final String newPassword)
             throws RemoteException, UserException {
-        return changePassword(user, oldPassword, newPassword, ClientConnectionContext.createDeprecated());
+        return changePassword(user, oldPassword, newPassword, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1644,7 +1643,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         Converter.serialiseToString(user, isCompressionEnabled()))
                         .append(PARAM_OLD_PASSWORD, Converter.serialiseToString(oldPassword, isCompressionEnabled()))
                         .append(PARAM_NEW_PASSWORD, Converter.serialiseToString(newPassword, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("changePassword", queryParams, Boolean.class); // NOI18N
         } catch (final UniformInterfaceException ex) {
@@ -1685,7 +1684,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                 userLsName,
                 userName,
                 password,
-                ClientConnectionContext.createDeprecated());
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1721,7 +1720,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         .append(PARAM_USER_LS_NAME, Converter.serialiseToString(userLsName, isCompressionEnabled()))
                         .append(PARAM_USERNAME, Converter.serialiseToString(userName, isCompressionEnabled()))
                         .append(PARAM_PASSWORD, Converter.serialiseToString(password, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getUser", queryParams, User.class); // NOI18N
         } catch (final UniformInterfaceException ex) {
@@ -1751,7 +1750,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public Vector getUserGroupNames() throws RemoteException {
-        return getUserGroupNames(ClientConnectionContext.createDeprecated());
+        return getUserGroupNames(ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1768,7 +1767,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         try {
             final AppendableMultivaluedMapImpl queryParams =
                 new AppendableMultivaluedMapImpl().append(
-                    PARAM_CONTEXT,
+                    PARAM_CONNECTIONCONTEXT,
                     Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getUserGroupNames", queryParams, Vector.class);
@@ -1780,7 +1779,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public Vector getUserGroupNames(final String userName, final String lsHome) throws RemoteException {
-        return getUserGroupNames(userName, lsHome, ClientConnectionContext.createDeprecated());
+        return getUserGroupNames(userName, lsHome, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1802,7 +1801,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         PARAM_USERNAME,
                         Converter.serialiseToString(userName, isCompressionEnabled()))
                         .append(PARAM_LS_HOME, Converter.serialiseToString(lsHome, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getUserGroupNamesByUser", queryParams, Vector.class); // NOI18N
         } catch (final Exception ex) {
@@ -1813,7 +1812,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public String getConfigAttr(final User user, final String key) throws RemoteException {
-        return getConfigAttr(user, key, ClientConnectionContext.createDeprecated());
+        return getConfigAttr(user, key, ConnectionContext.createDeprecated());
     }
 
     @Override
@@ -1824,7 +1823,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         PARAM_USER,
                         Converter.serialiseToString(user, isCompressionEnabled()))
                         .append(PARAM_KEY, Converter.serialiseToString(key, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getConfigAttr", queryParams, String.class);
         } catch (final Exception ex) {
@@ -1835,7 +1834,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public boolean hasConfigAttr(final User user, final String key) throws RemoteException {
-        return hasConfigAttr(user, key, ClientConnectionContext.createDeprecated());
+        return hasConfigAttr(user, key, ConnectionContext.createDeprecated());
     }
 
     @Override
@@ -1846,7 +1845,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         PARAM_USER,
                         Converter.serialiseToString(user, isCompressionEnabled()))
                         .append(PARAM_KEY, Converter.serialiseToString(key, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("hasConfigAttr", queryParams, boolean.class);
         } catch (final Exception ex) {
@@ -1857,7 +1856,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) throws RemoteException {
-        return customServerSearch(user, serverSearch, ClientConnectionContext.createDeprecated());
+        return customServerSearch(user, serverSearch, ConnectionContext.createDeprecated());
     }
 
     @Override
@@ -1871,7 +1870,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         .append(
                                 PARAM_CUSTOM_SERVER_SEARCH,
                                 Converter.serialiseToString(serverSearch, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("customServerSearch", queryParams, Collection.class); // NOI18N
         } catch (final Exception ex) {
@@ -1886,7 +1885,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final String domain,
             final User user,
             final int elements) throws RemoteException {
-        return getHistory(classId, objectId, domain, user, elements, ClientConnectionContext.createDeprecated());
+        return getHistory(classId, objectId, domain, user, elements, ConnectionContext.createDeprecated());
     }
 
     @Override
@@ -1904,7 +1903,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
                         .append(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()))
                         .append(PARAM_ELEMENTS, Converter.serialiseToString(elements, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getHistory", queryParams, HistoryObject[].class); // NOI18N
         } catch (final Exception ex) {
@@ -1919,7 +1918,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final String taskdomain,
             final Object body,
             final ServerActionParameter... params) throws RemoteException {
-        return executeTask(user, taskname, taskdomain, ClientConnectionContext.createDeprecated(), body, params);
+        return executeTask(user, taskname, taskdomain, ConnectionContext.createDeprecated(), body, params);
     }
 
     @Override
@@ -1935,7 +1934,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         Converter.serialiseToString(user, isCompressionEnabled()))
                         .append(PARAM_TASKNAME, Converter.serialiseToString(taskname, isCompressionEnabled()))
                         .append(PARAM_DOMAIN, Converter.serialiseToString(taskdomain, isCompressionEnabled()))
-                        .append(PARAM_CONTEXT, Converter.serialiseToString(context, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()))
                         .append(PARAM_BODY, Converter.serialiseToString(body, isCompressionEnabled()))
                         .append(PARAM_PARAMELIPSE, Converter.serialiseToString(params, isCompressionEnabled()));
 

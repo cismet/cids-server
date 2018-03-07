@@ -13,7 +13,7 @@ package de.cismet.cids.utils;
 
 import de.cismet.cids.dynamics.CidsBean;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
@@ -42,5 +42,5 @@ public interface CidsBeanPersistService extends ConnectionContextProvider {
      *
      * @param  connectionContext  DOCUMENT ME!
      */
-    void setClientConnectionContext(ClientConnectionContext connectionContext);
+    void setClientConnectionContext(ConnectionContext connectionContext);
 }

@@ -33,7 +33,7 @@ import de.cismet.cidsx.server.api.types.SearchInfo;
 import de.cismet.cidsx.server.api.types.SearchParameterInfo;
 import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
@@ -56,8 +56,7 @@ public class MetaObjectNodesByQuerySearch extends AbstractCidsServerSearch imple
     @Getter @Setter private String domain;
     @Getter @Setter private String query;
 
-    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
-                    .getSimpleName());
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -71,7 +70,7 @@ public class MetaObjectNodesByQuerySearch extends AbstractCidsServerSearch imple
         searchInfo.setDescription(
             "Builtin Legacy Search to delegate the operation getMetaObjectNodes(String query, ...) to the cids Pure REST Search API.");
 
-        final List<SearchParameterInfo> parameterDescription = new LinkedList<SearchParameterInfo>();
+        final List<SearchParameterInfo> parameterDescription = new LinkedList<>();
         SearchParameterInfo searchParameterInfo;
 
         searchParameterInfo = new SearchParameterInfo();
@@ -128,7 +127,7 @@ public class MetaObjectNodesByQuerySearch extends AbstractCidsServerSearch imple
     }
 
     @Override
-    public ClientConnectionContext getConnectionContext() {
+    public ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 }

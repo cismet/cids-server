@@ -160,11 +160,11 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
                             theObject.getID(),
                             domain,
                             user);
-                    lwmo.setConnectionContext(getConnectionContext());
+                    lwmo.initWithConnectionContext(getConnectionContext());
                     objectAttribute.setValue(lwmo);
                 } else {
                     final DefaultMetaObject mo = new DefaultMetaObject(theObject, domain, user);
-                    mo.setConnectionContext(getConnectionContext());
+                    mo.initWithConnectionContext(getConnectionContext());
                     objectAttribute.setValue(mo);
                 }
                 // disabled! why?
@@ -900,7 +900,7 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     }
 
     @Override
-    public void setConnectionContext(final ConnectionContext connectionContext) {
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
         this.connectionContext = connectionContext;
     }
 }

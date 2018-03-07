@@ -22,7 +22,7 @@ import java.rmi.registry.*;
 
 import java.util.Iterator;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 
 /**
  * DOCUMENT ME!
@@ -170,8 +170,8 @@ public class RemoteTester {
      *
      * @return  DOCUMENT ME!
      */
-    public static ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.createDeprecated();
+    public static ConnectionContext getClientConnectionContext() {
+        return ConnectionContext.createDeprecated();
     }
 }
 

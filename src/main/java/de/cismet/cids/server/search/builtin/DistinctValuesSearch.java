@@ -27,8 +27,8 @@ import java.util.Collection;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
-import de.cismet.connectioncontext.ServerConnectionContext;
-import de.cismet.connectioncontext.ServerConnectionContextStore;
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
 
 /**
  * DOCUMENT ME!
@@ -36,7 +36,7 @@ import de.cismet.connectioncontext.ServerConnectionContextStore;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-public class DistinctValuesSearch extends AbstractCidsServerSearch implements ServerConnectionContextStore {
+public class DistinctValuesSearch extends AbstractCidsServerSearch implements ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -48,7 +48,7 @@ public class DistinctValuesSearch extends AbstractCidsServerSearch implements Se
     private String attribute;
     private String DOMAIN;
 
-    private ServerConnectionContext connectionContext = ServerConnectionContext.create(getClass().getSimpleName());
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -88,16 +88,12 @@ public class DistinctValuesSearch extends AbstractCidsServerSearch implements Se
     }
 
     @Override
-    public ServerConnectionContext getConnectionContext() {
+    public ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 
     @Override
-    public void initAfterConnectionContext() {
-    }
-
-    @Override
-    public void setConnectionContext(final ServerConnectionContext connectionContext) {
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
         this.connectionContext = connectionContext;
     }
 }
