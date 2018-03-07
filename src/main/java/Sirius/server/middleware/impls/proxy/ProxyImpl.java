@@ -1191,16 +1191,16 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             final String taskdomain,
             final Object body,
             final ServerActionParameter... params) throws RemoteException {
-        return executeTask(user, taskname, taskdomain, ConnectionContext.createDeprecated(), body, params);
+        return executeTask(user, taskname, taskdomain, body, ConnectionContext.createDeprecated(), params);
     }
 
     @Override
     public Object executeTask(final User user,
             final String taskname,
             final String taskdomain,
-            final ConnectionContext context,
             final Object body,
+            final ConnectionContext context,
             final ServerActionParameter... params) throws RemoteException {
-        return actionService.executeTask(user, taskname, taskdomain, context, body, params);
+        return actionService.executeTask(user, taskname, taskdomain, body, context, params);
     }
 }

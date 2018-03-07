@@ -1700,7 +1700,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final String domain,
             final Object body,
             final ServerActionParameter... params) throws RemoteException {
-        return executeTask(user, taskname, domain, ConnectionContext.createDeprecated(), body, params);
+        return executeTask(user, taskname, domain, body, ConnectionContext.createDeprecated(), params);
     }
 
     /**
@@ -1728,8 +1728,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
     public Object executeTask(final User user,
             final String taskname,
             final String domain,
-            final ConnectionContext context,
             final Object body,
+            final ConnectionContext context,
             final ServerActionParameter... params) throws RemoteException {
         // TODO context implementation
 

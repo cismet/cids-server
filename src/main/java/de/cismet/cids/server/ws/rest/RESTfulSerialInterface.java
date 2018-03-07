@@ -2018,8 +2018,8 @@ public final class RESTfulSerialInterface {
                         user,
                         taskname,
                         taskdomain,
-                        addOriginToConnectionContext(hsr, connectionContext),
                         body,
+                        addOriginToConnectionContext(hsr, connectionContext),
                         params),
                     null);
         } catch (final Exception ex) {
@@ -2091,8 +2091,8 @@ public final class RESTfulSerialInterface {
                     u,
                     taskname,
                     taskdomain,
-                    addOriginToConnectionContext(hsr, connectionContext),
                     body,
+                    addOriginToConnectionContext(hsr, connectionContext),
                     ServerActionParameter.fromMVMap(uriInfo.getQueryParameters()));
 
             return Response.ok(resp).build();

@@ -160,8 +160,8 @@ public class ScheduledServerActionManager implements ConnectionContextProvider {
                 list.addAll(Arrays.asList(info.getParams()));
                 domainserver.executeTask(getUserByName(info.getUserName(), info.getGroupName()),
                     info.getTaskName(),
-                    getConnectionContext(),
                     info.getBody(),
+                    getConnectionContext(),
                     list.toArray(new ServerActionParameter[0]));
             }
         } catch (final Exception ex) {

@@ -1623,14 +1623,14 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String taskname,
             final Object body,
             final ServerActionParameter... params) throws RemoteException {
-        return executeTask(user, taskname, ConnectionContext.createDeprecated(), body, params);
+        return executeTask(user, taskname, body, ConnectionContext.createDeprecated(), params);
     }
 
     @Override
     public Object executeTask(final User user,
             final String taskname,
-            final ConnectionContext connectionContext,
             final Object body,
+            final ConnectionContext connectionContext,
             final ServerActionParameter... params) throws RemoteException {
         ConnectionContextLogger.getInstance()
                 .logConnectionContext((ConnectionContext)connectionContext,
