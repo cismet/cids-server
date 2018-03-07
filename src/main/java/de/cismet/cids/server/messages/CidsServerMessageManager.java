@@ -30,6 +30,11 @@ public interface CidsServerMessageManager {
 
     //~ Methods ----------------------------------------------------------------
 
+    @Deprecated
+    void publishMessage(final String category,
+            final Object object,
+            final boolean renotify);
+
     /**
      * DOCUMENT ME!
      *
@@ -43,6 +48,12 @@ public interface CidsServerMessageManager {
             final boolean renotify,
             final ConnectionContext connectionContext);
 
+    @Deprecated
+    void publishMessage(final String category,
+            final Object object,
+            final boolean renotify,
+            final Set ids,
+            final boolean trueForUserKeysFalseForGroupIds);
     /**
      * DOCUMENT ME!
      *
@@ -59,6 +70,13 @@ public interface CidsServerMessageManager {
             final Set ids,
             final boolean trueForUserKeysFalseForGroupIds,
             final ConnectionContext connectionContext);
+
+    @Deprecated
+    void publishMessage(final String category,
+            final Object object,
+            final boolean renotify,
+            final Set userGroupKeys,
+            final Set userKeys);
 
     /**
      * DOCUMENT ME!
@@ -77,6 +95,10 @@ public interface CidsServerMessageManager {
             final Set userKeys,
             final ConnectionContext connectionContext);
 
+    @Deprecated
+    List<CidsServerMessage> getMessages(final User user,
+            final Map<String, Integer> biggerThen);
+    
     /**
      * DOCUMENT ME!
      *
@@ -89,6 +111,11 @@ public interface CidsServerMessageManager {
     List<CidsServerMessage> getMessages(final User user,
             final Map<String, Integer> biggerThen,
             final ConnectionContext connectionContext);
+
+    @Deprecated
+    CidsServerMessage getLastMessage(final String category,
+            final User user,
+            final int biggerThen);
 
     /**
      * DOCUMENT ME!
@@ -104,6 +131,11 @@ public interface CidsServerMessageManager {
             final User user,
             final int biggerThen,
             final ConnectionContext connectionContext);
+
+    @Deprecated
+    List<CidsServerMessage> getAllMessages(final String category,
+            final User user,
+            final int biggerThen);
 
     /**
      * DOCUMENT ME!
