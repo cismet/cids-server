@@ -66,7 +66,7 @@ public final class LightweightMetaObject implements MetaObject,
     private String representation;
     private String domain;
     private ObjectAttribute referencingObjectAttribute;
-    private transient ConnectionContext connectionContext;
+    private transient ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 

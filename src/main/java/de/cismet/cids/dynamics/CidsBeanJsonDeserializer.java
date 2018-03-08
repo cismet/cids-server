@@ -47,6 +47,7 @@ import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_FLOAT;
 import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_INT;
 import static com.fasterxml.jackson.core.JsonToken.VALUE_STRING;
 import static com.fasterxml.jackson.core.JsonToken.VALUE_TRUE;
+import de.cismet.connectioncontext.ConnectionContext;
 
 /**
  * DOCUMENT ME!
@@ -166,7 +167,7 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
 //                        if (LOG.isDebugEnabled()) {
 //                            LOG.debug("creating new bean instance '" + key + "'");
 //                        }
-                        cb = CidsBean.createNewCidsBeanFromTableName(bInfo.getDomainKey(), bInfo.getClassKey()); // test
+                        cb = CidsBean.createNewCidsBeanFromTableName(bInfo.getDomainKey(), bInfo.getClassKey(), ConnectionContext.createDeprecated()); // test
                         cb.quiteSetProperty(cb.getPrimaryKeyFieldname().toLowerCase(),
                             Integer.parseInt(bInfo.getObjectKey()));
                     }

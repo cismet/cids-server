@@ -11,6 +11,7 @@ import Sirius.server.middleware.interfaces.domainserver.SystemService;
 import Sirius.server.naming.NameServer;
 
 import Sirius.util.image.Image;
+import de.cismet.connectioncontext.ConnectionContext;
 
 import org.apache.log4j.Logger;
 
@@ -59,7 +60,7 @@ public class SystemServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Image[] getDefaultIcons(final String lsName) throws RemoteException {
+    public Image[] getDefaultIcons(final String lsName, final ConnectionContext connectionContext) throws RemoteException {
         if (LOG.isInfoEnabled()) {
             LOG.info("Info <CS> getDefIcons from " + lsName); // NOI18N
         }
@@ -88,7 +89,7 @@ public class SystemServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Image[] getDefaultIcons() throws RemoteException {
+    public Image[] getDefaultIcons(final ConnectionContext connectionContext) throws RemoteException {
         Image[] i = new Image[0];
         SystemService s = null;
 

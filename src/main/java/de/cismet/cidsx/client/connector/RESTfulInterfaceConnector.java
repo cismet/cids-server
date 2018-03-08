@@ -1359,6 +1359,12 @@ public class RESTfulInterfaceConnector implements CallServerService {
         throw new UnsupportedOperationException(message);
     }
 
+    @Override
+    @Deprecated
+    public Image[] getDefaultIcons(final String domain) throws RemoteException {
+        return getDefaultIcons(domain, ConnectionContext.createDeprecated());
+    }
+    
     /**
      * TODO: To be implemented in cids REST Infrastructure API
      *
@@ -1375,7 +1381,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  should not return binary images!
      */
     @Override
-    public Image[] getDefaultIcons(final String domain) throws RemoteException {
+    public Image[] getDefaultIcons(final String domain, final ConnectionContext connectionContext) throws RemoteException {
         // TODO: Implement method in INFRASTRUCTURE API or remove
         final String message = "The method '"
                     + Thread.currentThread().getStackTrace()[1].getMethodName()
@@ -1384,6 +1390,12 @@ public class RESTfulInterfaceConnector implements CallServerService {
         throw new UnsupportedOperationException(message);
     }
 
+    @Override
+    @Deprecated
+    public Image[] getDefaultIcons() throws RemoteException {
+        return getDefaultIcons(ConnectionContext.createDeprecated());
+    }
+    
     /**
      * TODO: To be implemented in cids REST Infrastructure API
      *
@@ -1398,7 +1410,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  should not return binary images!
      */
     @Override
-    public Image[] getDefaultIcons() throws RemoteException {
+    public Image[] getDefaultIcons(final ConnectionContext connectionContext) throws RemoteException {
         // TODO: Implement method in INFRASTRUCTURE API or remove
         final String message = "The method '"
                     + Thread.currentThread().getStackTrace()[1].getMethodName()

@@ -67,35 +67,6 @@ public class UserServiceImpl {
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param   userGroupLsName  DOCUMENT ME!
-     * @param   userGroupName    DOCUMENT ME!
-     * @param   userLsName       DOCUMENT ME!
-     * @param   userName         DOCUMENT ME!
-     * @param   password         DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     * @throws  UserException    DOCUMENT ME!
-     */
-    @Deprecated
-    public User getUser(final String userGroupLsName,
-            final String userGroupName,
-            final String userLsName,
-            final String userName,
-            final String password) throws RemoteException, UserException {
-        return getUser(
-                userGroupLsName,
-                userGroupName,
-                userLsName,
-                userName,
-                password,
-                ConnectionContext.createDeprecated());
-    }
-
-    /**
      * Wie konnte das jemals gehen Falsche Reihenfolge in Signatur public User getUser( String userLsName, String
      * userName, String userGroupLsName, String userGroupName, String password) throws RemoteException, UserException {.
      *
@@ -159,18 +130,6 @@ public class UserServiceImpl {
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Deprecated
-    public Vector getUserGroupNames() throws RemoteException {
-        return getUserGroupNames(ConnectionContext.createDeprecated());
-    }
-
-    /**
      * result contains strings.
      *
      * @param   context  DOCUMENT ME!
@@ -206,21 +165,6 @@ public class UserServiceImpl {
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param   userName  DOCUMENT ME!
-     * @param   lsHome    DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Deprecated
-    public Vector getUserGroupNames(final String userName, final String lsHome) throws RemoteException {
-        return getUserGroupNames(userName, lsHome, ConnectionContext.createDeprecated());
-    }
-
-    /**
      * result contains string[2] subset of all ugs.
      *
      * @param   userName  DOCUMENT ME!
@@ -245,24 +189,6 @@ public class UserServiceImpl {
      * @param   user         DOCUMENT ME!
      * @param   oldPassword  DOCUMENT ME!
      * @param   newPassword  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     * @throws  UserException    DOCUMENT ME!
-     */
-    @Deprecated
-    public boolean changePassword(final User user, final String oldPassword, final String newPassword)
-            throws RemoteException, UserException {
-        return changePassword(user, oldPassword, newPassword, ConnectionContext.createDeprecated());
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user         DOCUMENT ME!
-     * @param   oldPassword  DOCUMENT ME!
-     * @param   newPassword  DOCUMENT ME!
      * @param   context      DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -279,21 +205,6 @@ public class UserServiceImpl {
         }
         return ((Sirius.server.middleware.interfaces.domainserver.UserService)activeLocalServers.get(user.getDomain()))
                     .changePassword(user, oldPassword, newPassword, context);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user  DOCUMENT ME!
-     * @param   key   DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Deprecated
-    public String getConfigAttr(final User user, final String key) throws RemoteException {
-        return getConfigAttr(user, key, ConnectionContext.createDeprecated());
     }
 
     /**

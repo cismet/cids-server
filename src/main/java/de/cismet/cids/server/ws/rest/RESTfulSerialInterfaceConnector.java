@@ -1571,6 +1571,12 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public Image[] getDefaultIcons(final String lsName) throws RemoteException {
+        return getDefaultIcons(lsName, ConnectionContext.createDeprecated());
+    }
+    
     /**
      * DOCUMENT ME!
      *
@@ -1581,7 +1587,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Image[] getDefaultIcons(final String lsName) throws RemoteException {
+    public Image[] getDefaultIcons(final String lsName, final ConnectionContext connectionContext) throws RemoteException {
         try {
             final AppendableMultivaluedMapImpl queryParams =
                 new AppendableMultivaluedMapImpl().append(
@@ -1594,6 +1600,12 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public Image[] getDefaultIcons() throws RemoteException {
+        return getDefaultIcons(ConnectionContext.createDeprecated());
+    }
+    
     /**
      * DOCUMENT ME!
      *
@@ -1602,7 +1614,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Image[] getDefaultIcons() throws RemoteException {
+    public Image[] getDefaultIcons(final ConnectionContext connectionContext) throws RemoteException {
         try {
             final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl();
 

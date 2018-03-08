@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.cismet.cids.utils.MetaClassCacheService;
 import de.cismet.cidsx.server.api.types.CidsClass;
 import de.cismet.cidsx.server.api.types.legacy.CidsClassFactory;
+import de.cismet.connectioncontext.ConnectionContext;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -73,20 +74,38 @@ public class OfflineMetaClassCacheService implements MetaClassCacheService {
     }
 
     @Override
+    @Deprecated
     public MetaClass getMetaClass(final String domain, final String tableName) {
+        return getMetaClass(domain, tableName, ConnectionContext.createDummy());
+    }
+    
+    @Override
+    public MetaClass getMetaClass(final String domain, final String tableName, final ConnectionContext connectionContext) {
         return ALL_CLASSES_BY_TABLE_NAME.get(tableName);
     }
 
     @Override
+    @Deprecated
     public MetaClass getMetaClass(final String domain, final int classId) {
+        return getMetaClass(domain, classId, ConnectionContext.createDummy());        
+    }
+    
+    @Override
+    public MetaClass getMetaClass(final String domain, final int classId, final ConnectionContext connectionContext) {
         return ALL_CLASSES_BY_ID.get(classId);
     }
 
     @Override
+    @Deprecated
     public HashMap<String, MetaClass> getAllClasses(final String domain) {
+        return getAllClasses(domain, ConnectionContext.createDeprecated());
+    }
+
+    @Override
+    public HashMap getAllClasses(final String domain, final ConnectionContext connectionContext) {
 
         // this is madness!
-        final HashMap<String, MetaClass> allClasses = new HashMap<String, MetaClass>();
+        final HashMap<String, MetaClass> allClasses = new HashMap<>();
         for (Integer classId : ALL_CLASSES_BY_ID.keySet()) {
             final String classKey = domain + classId;
             allClasses.put(classKey, ALL_CLASSES_BY_ID.get(classId));

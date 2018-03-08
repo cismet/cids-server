@@ -23,8 +23,8 @@ public class MetaClassCache {
 
     //~ Instance fields --------------------------------------------------------
 
-    private final HashMap<String, HashMap> allIdClassCaches = new HashMap<String, HashMap>();
-    private final HashMap<String, HashMap> allTableNameClassCaches = new HashMap<String, HashMap>();
+    private final HashMap<String, HashMap> allIdClassCaches = new HashMap<>();
+    private final HashMap<String, HashMap> allTableNameClassCaches = new HashMap<>();
 
     //~ Constructors -----------------------------------------------------------
 

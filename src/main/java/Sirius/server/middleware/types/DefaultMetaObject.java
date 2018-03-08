@@ -603,7 +603,7 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
                 if (classCacheService == null) {
                     LOG.warn("MetaClassCacheService not found via lookup"); // NOI18N
                 } else {
-                    classes = classCacheService.getAllClasses(domain);
+                    classes = classCacheService.getAllClasses(domain, getConnectionContext());
                 }
             } catch (Exception e) {
                 LOG.error("Error while setting classes.", e);               // NOI18N

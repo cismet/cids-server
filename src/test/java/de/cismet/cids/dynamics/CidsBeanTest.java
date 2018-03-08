@@ -3,6 +3,7 @@ package de.cismet.cids.dynamics;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import de.cismet.cids.utils.MetaClassCacheService;
+import de.cismet.connectioncontext.ConnectionContext;
 import java.awt.EventQueue;
 import java.util.LinkedList;
 import java.util.Properties;
@@ -54,10 +55,11 @@ public class CidsBeanTest {
         org.apache.log4j.PropertyConfigurator.configure(log4jProperties);
 
         try {
+            final ConnectionContext connectionContext = ConnectionContext.createDummy();
             final MetaClassCacheService classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
-            SPIELHALLE_META_CLASS = classCacheService.getMetaClass("CIDS", "SPH_SPIELHALLE");
-            BETREIBER_META_CLASS = classCacheService.getMetaClass("CIDS", "SPH_BETREIBER");
-            KATEGORIE_META_CLASS = classCacheService.getMetaClass("CIDS", "SPH_KATEGORIE");
+            SPIELHALLE_META_CLASS = classCacheService.getMetaClass("CIDS", "SPH_SPIELHALLE", connectionContext);
+            BETREIBER_META_CLASS = classCacheService.getMetaClass("CIDS", "SPH_BETREIBER", connectionContext);
+            KATEGORIE_META_CLASS = classCacheService.getMetaClass("CIDS", "SPH_KATEGORIE", connectionContext);
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage(), ex);
             throw ex;

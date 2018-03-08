@@ -713,6 +713,12 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
         return metaService.getMethods(user, lsName, context);
     }
 
+    @Override
+    @Deprecated
+    public Image[] getDefaultIcons(final String lsName) throws RemoteException {
+        return getDefaultIcons(lsName, ConnectionContext.createDeprecated());
+    }
+    
     /**
      * DOCUMENT ME!
      *
@@ -723,10 +729,15 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Image[] getDefaultIcons(final String lsName) throws RemoteException {
-        return systemService.getDefaultIcons(lsName);
+    public Image[] getDefaultIcons(final String lsName, final ConnectionContext connectionContext) throws RemoteException {
+        return systemService.getDefaultIcons(lsName, connectionContext);
     }
 
+    @Override
+    public Image[] getDefaultIcons() throws RemoteException {
+        return getDefaultIcons(ConnectionContext.createDeprecated());
+    }
+    
     /**
      * DOCUMENT ME!
      *
@@ -735,8 +746,8 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Image[] getDefaultIcons() throws RemoteException {
-        return systemService.getDefaultIcons();
+    public Image[] getDefaultIcons(final ConnectionContext connectionContext) throws RemoteException {
+        return systemService.getDefaultIcons(connectionContext);
     }
 
     @Deprecated
