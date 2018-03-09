@@ -103,7 +103,7 @@ public class CsvExportSearchStatement extends AbstractCidsServerSearch implement
                     metaClassName.toLowerCase(),
                     getConnectionContext());
             if ((metaClass != null) && !metaClass.getAttributeByName("Queryable").isEmpty()) {
-                final MetaObject moDummy = metaClass.getEmptyInstance();
+                final MetaObject moDummy = metaClass.getEmptyInstance(getConnectionContext());
 
                 final List<String> formattedFields = new ArrayList<String>(fields.size());
                 for (final String field : fields) {

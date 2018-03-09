@@ -34,6 +34,7 @@ import org.junit.Assert;
 public class CidsBeanTest {
 
     private final static Logger LOGGER = Logger.getLogger(CidsBeanTest.class);
+
     private static MetaClass SPIELHALLE_META_CLASS;
     private static MetaClass KATEGORIE_META_CLASS;
     private static MetaClass BETREIBER_META_CLASS;
@@ -43,6 +44,8 @@ public class CidsBeanTest {
     private MetaObject metaObjectSpy = null;
     private CidsBean referenceCidsBean = null;
     private MetaObject referenceMetaObject = null;
+    
+    private static final ConnectionContext CONNECTION_CONTEXT = ConnectionContext.createDummy();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -55,11 +58,10 @@ public class CidsBeanTest {
         org.apache.log4j.PropertyConfigurator.configure(log4jProperties);
 
         try {
-            final ConnectionContext connectionContext = ConnectionContext.createDummy();
             final MetaClassCacheService classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
-            SPIELHALLE_META_CLASS = classCacheService.getMetaClass("CIDS", "SPH_SPIELHALLE", connectionContext);
-            BETREIBER_META_CLASS = classCacheService.getMetaClass("CIDS", "SPH_BETREIBER", connectionContext);
-            KATEGORIE_META_CLASS = classCacheService.getMetaClass("CIDS", "SPH_KATEGORIE", connectionContext);
+            SPIELHALLE_META_CLASS = classCacheService.getMetaClass("CIDS", "SPH_SPIELHALLE", CONNECTION_CONTEXT);
+            BETREIBER_META_CLASS = classCacheService.getMetaClass("CIDS", "SPH_BETREIBER", CONNECTION_CONTEXT);
+            KATEGORIE_META_CLASS = classCacheService.getMetaClass("CIDS", "SPH_KATEGORIE", CONNECTION_CONTEXT);
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage(), ex);
             throw ex;
@@ -76,13 +78,13 @@ public class CidsBeanTest {
      */
     @Before
     public void setUp() {
-        metaObject = SPIELHALLE_META_CLASS.getEmptyInstance();
+        metaObject = SPIELHALLE_META_CLASS.getEmptyInstance(CONNECTION_CONTEXT);
         //System.out.println(metaObject.getStatus());
         cidsBean = metaObject.getBean();
         metaObjectSpy = Mockito.spy(metaObject);
         cidsBean.setMetaObject(metaObjectSpy);
 
-        referenceMetaObject = (MetaObject) SPIELHALLE_META_CLASS.getEmptyInstance();
+        referenceMetaObject = (MetaObject) SPIELHALLE_META_CLASS.getEmptyInstance(CONNECTION_CONTEXT);
         referenceCidsBean = referenceMetaObject.getBean();
     }
 
@@ -196,7 +198,7 @@ public class CidsBeanTest {
     @Test
     public void test03setPrimaryKeyProperty() throws Throwable {
 
-        final LinkedList<Throwable> throwablesFromThread = new LinkedList<Throwable>();
+        final LinkedList<Throwable> throwablesFromThread = new LinkedList<>();
 
         try {
             final Semaphore semaphore = new Semaphore(1);
@@ -397,12 +399,12 @@ public class CidsBeanTest {
     @Test
     public void test05setCidsBeanProperty() throws Throwable {
 
-        final LinkedList<Throwable> throwablesFromThread = new LinkedList<Throwable>();
+        final LinkedList<Throwable> throwablesFromThread = new LinkedList<>();
 
         try {
             final Semaphore semaphore = new Semaphore(1);
-            final CidsBean betreiberBean = BETREIBER_META_CLASS.getEmptyInstance().getBean();
-            final CidsBean referenceBetreiberBean = BETREIBER_META_CLASS.getEmptyInstance().getBean();
+            final CidsBean betreiberBean = BETREIBER_META_CLASS.getEmptyInstance(CONNECTION_CONTEXT).getBean();
+            final CidsBean referenceBetreiberBean = BETREIBER_META_CLASS.getEmptyInstance(CONNECTION_CONTEXT).getBean();
             final String name = "Mike Hansen";
             cidsBean.setProperty("betreiber", betreiberBean);
             referenceCidsBean.setProperty("betreiber", referenceBetreiberBean);
@@ -560,12 +562,12 @@ public class CidsBeanTest {
     @Test
     public void test06setCidsBeanNtoMArrayProperty() throws Throwable {
 
-        final LinkedList<Throwable> throwablesFromThread = new LinkedList<Throwable>();
+        final LinkedList<Throwable> throwablesFromThread = new LinkedList<>();
 
         try {
             final Semaphore semaphore = new Semaphore(1);
-            final CidsBean kategorieBean = SPIELHALLE_META_CLASS.getEmptyInstance().getBean();
-            final CidsBean referenceKategorieBean = SPIELHALLE_META_CLASS.getEmptyInstance().getBean();
+            final CidsBean kategorieBean = SPIELHALLE_META_CLASS.getEmptyInstance(CONNECTION_CONTEXT).getBean();
+            final CidsBean referenceKategorieBean = SPIELHALLE_META_CLASS.getEmptyInstance(CONNECTION_CONTEXT).getBean();
 
             final MetaObject kategorieMetaObject = kategorieBean.getMetaObject();
             final MetaObject referenceKategorieMetaObject = referenceKategorieBean.getMetaObject();

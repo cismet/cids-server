@@ -585,7 +585,13 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                         "objectIDs:"
                         + Arrays.toString(objectIDs));
 
-            return dbServer.getObjects(objectIDs, user);
+            final MetaObject[] mos = dbServer.getObjects(objectIDs, user);
+            for (final MetaObject mo : mos) {
+                if (mo instanceof ConnectionContextStore) {
+                    ((ConnectionContextStore)mo).initWithConnectionContext(connectionContext);
+                }
+            }
+            return mos;
         } catch (Throwable e) {
             if (logger != null) {
                 logger.error(e, e);
@@ -631,6 +637,9 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         try {
             final MetaObject mo = dbServer.getObject(objectID, user);
             if (mo != null) {
+                if (mo instanceof ConnectionContextStore) {
+                    ((ConnectionContextStore)mo).initWithConnectionContext(connectionContext);
+                }
                 final MetaClass[] classes = dbServer.getClasses(user);
 
                 mo.setAllClasses(getClassHashTable(classes, serverInfo.getName()));
@@ -955,11 +964,15 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                     "representationPattern:"
                     + representationPattern);
         try {
-            return dbServer.getAllLightweightMetaObjectsForClass(
+            final LightweightMetaObject[] lwmos = dbServer.getAllLightweightMetaObjectsForClass(
                     classId,
                     user,
                     representationFields,
                     representationPattern);
+            for (final LightweightMetaObject lwmo : lwmos) {
+                lwmo.initWithConnectionContext(connectionContext);
+            }
+            return lwmos;
         } catch (Throwable ex) {
             throw new RemoteException("Error on getAllLightweightMetaObjectsForClass(...)", ex); // NOI18N
         }
@@ -991,10 +1004,14 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                         + classId,
                         "representationFields:"
                         + Arrays.toString(representationFields));
-            return dbServer.getAllLightweightMetaObjectsForClass(
+            final LightweightMetaObject[] lwmos = dbServer.getAllLightweightMetaObjectsForClass(
                     classId,
                     user,
                     representationFields);
+            for (final LightweightMetaObject lwmo : lwmos) {
+                lwmo.initWithConnectionContext(connectionContext);
+            }
+            return lwmos;            
         } catch (Throwable ex) {
             throw new RemoteException("Error on getAllLightweightMetaObjectsForClass(...)", ex); // NOI18N
         }
@@ -1034,12 +1051,16 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                     "representationPattern:"
                     + representationPattern);
         try {
-            return dbServer.getLightweightMetaObjectsByQuery(
+            final LightweightMetaObject[] lwmos =  dbServer.getLightweightMetaObjectsByQuery(
                     classId,
                     user,
                     query,
                     representationFields,
                     representationPattern);
+            for (final LightweightMetaObject lwmo : lwmos) {
+                lwmo.initWithConnectionContext(connectionContext);
+            }
+            return lwmos;
         } catch (Throwable ex) {
             throw new RemoteException("Error on getLightweightMetaObjectsByQuery(...)", ex); // NOI18N
         }
@@ -1075,7 +1096,11 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                     + Arrays.toString(representationFields));
 
         try {
-            return dbServer.getLightweightMetaObjectsByQuery(classId, user, query, representationFields);
+            final LightweightMetaObject[] lwmos = dbServer.getLightweightMetaObjectsByQuery(classId, user, query, representationFields);
+            for (final LightweightMetaObject lwmo : lwmos) {
+                lwmo.initWithConnectionContext(connectionContext);
+            }
+            return lwmos;
         } catch (Throwable ex) {
             throw new RemoteException("Error on getLightweightMetaObjectsByQuery(...)", ex); // NOI18N
         }

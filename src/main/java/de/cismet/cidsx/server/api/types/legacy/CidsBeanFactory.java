@@ -191,7 +191,7 @@ public class CidsBeanFactory implements ConnectionContextProvider {
             final int classId,
             final String domain,
             final User user) {
-        final LinkedHashMap<String, Object> lmoAttributes = new LinkedHashMap<String, Object>();
+        final LinkedHashMap<String, Object> lmoAttributes = new LinkedHashMap<>();
         final int objectId = Integer.parseInt(CidsBeanFactory.getFactory().getObjectId(objectNode));
         // lmoAttributes.put(metaClass.getPrimaryKey(), objectId);
         // FIXME: assuming that primary key is always ID!
@@ -367,7 +367,7 @@ public class CidsBeanFactory implements ConnectionContextProvider {
      */
     public CidsBean cidsBeanFromLightweightMetaObject(final LightweightMetaObject lightweightMetaObject,
             final MetaClass metaClass) {
-        final MetaObject metaObject = metaClass.getEmptyInstance();
+        final MetaObject metaObject = metaClass.getEmptyInstance(getConnectionContext());
         metaObject.setID(lightweightMetaObject.getObjectID());
         final CidsBean cidsBean = metaObject.getBean();
 

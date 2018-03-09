@@ -70,7 +70,7 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
 
     private static final transient Logger LOG = Logger.getLogger(CidsBean.class);
     static final ObjectMapper mapper = new ObjectMapper();
-    static final ObjectMapper intraObjectCacheMapper = new ObjectMapper();
+    static final ObjectMapper intraObjectCacheMapper = new ObjectMapper();    
 
     /**
      * DOCUMENT ME!
@@ -110,7 +110,7 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
     HashMap<String, CidsBean> intraObjectCache = new HashMap<String, CidsBean>();
 
     private CustomBeanPermissionProvider customPermissionProvider;
-    private ConnectionContext connectionContext = ConnectionContext.createDummy();
+    private final ConnectionContext dummyConnectionContext = ConnectionContext.createDummy();
 
     //~ Methods ----------------------------------------------------------------
 
@@ -560,7 +560,7 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
             final MetaClass mc = classCacheService.getMetaClass(
                     getMetaObject().getDomain(),
                     oa.getMai().getForeignKeyClassId(), getConnectionContext());
-            final CidsBean newOne = mc.getEmptyInstance().getBean();
+            final CidsBean newOne = mc.getEmptyInstance(getConnectionContext()).getBean();
             setProperty(name, newOne);
         } else {
             throw new RuntimeException("Could not lookup MetaClassCacheService"); // NOI18N
@@ -585,7 +585,7 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
                     getMetaObject().getDomain(),
                     Math.abs(oa.getMai().getForeignKeyClassId()), getConnectionContext());
             if (oa.isVirtualOneToManyAttribute()) {
-                final CidsBean newOne = firstMC.getEmptyInstance().getBean();
+                final CidsBean newOne = firstMC.getEmptyInstance(getConnectionContext()).getBean();
                 return newOne;
             } else if (oa.isArray()) {
                 final HashMap hm = firstMC.getMemberAttributeInfos();
@@ -596,7 +596,7 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
                         if (((MemberAttributeInfo)tmp).isForeignKey()) {
                             final int classId = ((MemberAttributeInfo)tmp).getForeignKeyClassId();
                             final MetaClass targetClass = classCacheService.getMetaClass(firstMC.getDomain(), classId, getConnectionContext());
-                            final CidsBean newOne = targetClass.getEmptyInstance().getBean();
+                            final CidsBean newOne = targetClass.getEmptyInstance(getConnectionContext()).getBean();
                             return newOne;
                         }
                     }
@@ -755,7 +755,7 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
                             final MetaClass zwischenTabellenKlasse = (MetaClass)(getMetaObject().getAllClasses()).get(
                                     getMetaObject().getDomain()
                                             + oa.getMai().getForeignKeyClassId());
-                            final MetaObject arrayElement = zwischenTabellenKlasse.getEmptyInstance();
+                            final MetaObject arrayElement = zwischenTabellenKlasse.getEmptyInstance(getConnectionContext());
 
                             final ObjectAttribute[] arrayElementAttrs = arrayElement.getAttribs();
                             for (final ObjectAttribute arrayElementAttribute : arrayElementAttrs) {
@@ -1185,7 +1185,7 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
         if (tableName != null) {
             final MetaClass metaClass = classcache.getMetaClass(domainName, tableName, connectionContext);
             if (metaClass != null) {
-                return metaClass.getEmptyInstance().getBean();
+                return metaClass.getEmptyInstance(connectionContext).getBean();
             }
         }
         throw new Exception("Could not find MetaClass for table " + tableName);
@@ -1269,6 +1269,11 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
 
     @Override
     public ConnectionContext getConnectionContext() {
-        return connectionContext;
+        final MetaObject mo = getMetaObject();
+        if (mo != null && mo instanceof ConnectionContextProvider) {
+            return ((ConnectionContextProvider)mo).getConnectionContext();
+        } else {            
+            return dummyConnectionContext;
+        }
     }
 }

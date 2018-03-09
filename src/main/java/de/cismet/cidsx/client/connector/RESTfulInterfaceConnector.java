@@ -233,8 +233,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 kmf.init(sslConfig.getClientKeystore(), sslConfig.getClientKeyPW());
             }
 
-            // init context
-            final SSLContext context = SSLContext.getInstance(SSLConfig.CONTEXT_TYPE_TLS);
+            // init connectionContext
+            final SSLContext connectionContext = SSLContext.getInstance(SSLConfig.CONTEXT_TYPE_TLS);
 
             // Use the CidsTrustManager to validate the default certificates and the cismet certificate
             final CidsTrustManager trustManager;
@@ -255,20 +255,20 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 trustManagerArray = (tmf == null) ? null : tmf.getTrustManagers();
             }
 
-            context.init(
+            connectionContext.init(
                 (kmf == null) ? null : kmf.getKeyManagers(),
                 trustManagerArray,
                 null);
 
-            SSLContext.setDefault(context);
-            HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
+            SSLContext.setDefault(connectionContext);
+            HttpsURLConnection.setDefaultSSLSocketFactory(connectionContext.getSocketFactory());
             HttpsURLConnection.setDefaultHostnameVerifier(new SSLHostnameVerifier());
         } catch (final NoSuchAlgorithmException e) {
             throw new IllegalStateException("system does not support SSL", e);            // NOI18N
         } catch (final KeyStoreException e) {
             throw new IllegalStateException("system does not support java keystores", e); // NOI18N
         } catch (final KeyManagementException e) {
-            throw new IllegalStateException("ssl context init properly initialised", e);  // NOI18N
+            throw new IllegalStateException("ssl connectionContext init properly initialised", e);  // NOI18N
         } catch (final UnrecoverableKeyException e) {
             throw new IllegalStateException("cannot get key from keystore", e);           // NOI18N
         }
@@ -494,7 +494,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   user     DOCUMENT ME!
      * @param   domain   DOCUMENT ME!
      * @param   classId  DOCUMENT ME!
-     * @param   context  DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -503,13 +503,13 @@ public class RESTfulInterfaceConnector implements CallServerService {
     private String getClassNameForClassId(final User user,
             final String domain,
             final int classId,
-            final ConnectionContext context) throws RemoteException {
+            final ConnectionContext connectionContext) throws RemoteException {
         final String className;
 
         if (!this.classKeyCache.isDomainCached(domain)) {
             LOG.info("class key cache does not contain class ids for domain '" + domain
                         + "', need to fill the cache first!");
-            this.getClasses(user, domain, context);
+            this.getClasses(user, domain, connectionContext);
         }
 
         className = this.classKeyCache.getClassNameForClassId(domain, classId);
@@ -537,16 +537,16 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @param   user        legacy user needed for authentication
      * @param   domainName  DOCUMENT ME!
-     * @param   context     DOCUMENT ME!
+     * @param   connectionContext     DOCUMENT ME!
      *
      * @return  array of legacy root nodes
      *
      * @throws  RemoteException  if any server error occurs
      */
     @Override
-    public Node[] getRoots(final User user, final String domainName, final ConnectionContext context)
+    public Node[] getRoots(final User user, final String domainName, final ConnectionContext connectionContext)
             throws RemoteException {
-        // TODO context implementation
+        // TODO connectionContext implementation
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         queryParameters.add("domain", domainName);
         final WebResource webResource = this.createWebResource(NODES_API).queryParams(queryParameters);
@@ -616,15 +616,15 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * http://localhost:8890/nodes?domain=switchon&role=all</a></code>
      *
      * @param   user     legacy user needed for authentication
-     * @param   context  DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  array of legacy root nodes
      *
      * @throws  RemoteException  if any server error occurs
      */
     @Override
-    public Node[] getRoots(final User user, final ConnectionContext context) throws RemoteException {
-        return this.getRoots(user, user.getDomain(), context);
+    public Node[] getRoots(final User user, final ConnectionContext connectionContext) throws RemoteException {
+        return this.getRoots(user, user.getDomain(), connectionContext);
     }
 
     @Deprecated
@@ -650,14 +650,14 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @param   node     the legacy node that contains either a valid node id or a dynamic children statements
      * @param   user     user performing the request
-     * @param   context  DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  child nodes as legacy node array
      *
      * @throws  RemoteException  if any remote error occurs
      */
     @Override
-    public Node[] getChildren(final Node node, final User user, final ConnectionContext context)
+    public Node[] getChildren(final Node node, final User user, final ConnectionContext connectionContext)
             throws RemoteException {
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         final GenericCollectionResource<CidsNode> restCidsNodes;
@@ -760,7 +760,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   node     TODO
      * @param   parent   TODO
      * @param   user     TODO
-     * @param   context  DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  TODO
      *
@@ -768,7 +768,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @throws  UnsupportedOperationException  Unsupported Operation
      */
     @Override
-    public Node addNode(final Node node, final Link parent, final User user, final ConnectionContext context)
+    public Node addNode(final Node node, final Link parent, final User user, final ConnectionContext connectionContext)
             throws RemoteException {
         // TODO: Implement method in Nodes API or remove
         final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
@@ -791,7 +791,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @param   node     TODO
      * @param   user     TODO
-     * @param   context  DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  TODO
      *
@@ -799,7 +799,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @throws  UnsupportedOperationException  always thrown
      */
     @Override
-    public boolean deleteNode(final Node node, final User user, final ConnectionContext context)
+    public boolean deleteNode(final Node node, final User user, final ConnectionContext connectionContext)
             throws RemoteException {
         // TODO: Implement method in Nodes API or remove
         final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
@@ -823,7 +823,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   from     TODO
      * @param   to       TODO
      * @param   user     TODO
-     * @param   context  DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  TODO
      *
@@ -831,7 +831,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @throws  UnsupportedOperationException  Unsupported Operation
      */
     @Override
-    public boolean addLink(final Node from, final Node to, final User user, final ConnectionContext context)
+    public boolean addLink(final Node from, final Node to, final User user, final ConnectionContext connectionContext)
             throws RemoteException {
         // TODO: Implement method in Nodes API or remove
         final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
@@ -855,7 +855,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   from     TODO
      * @param   to       TODO
      * @param   user     TODO
-     * @param   context  DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  TODO
      *
@@ -863,7 +863,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @throws  UnsupportedOperationException  always thrown
      */
     @Override
-    public boolean deleteLink(final Node from, final Node to, final User user, final ConnectionContext context)
+    public boolean deleteLink(final Node from, final Node to, final User user, final ConnectionContext connectionContext)
             throws RemoteException {
         // TODO: Implement method in Nodes API or remove
         final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
@@ -887,7 +887,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   user     legacy user
      * @param   nodeID   id of the legacy node
      * @param   domain   domain name
-     * @param   context  DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  legacy node object or null
      *
@@ -897,7 +897,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     public Node getMetaObjectNode(final User user,
             final int nodeID,
             final String domain,
-            final ConnectionContext context) throws RemoteException {
+            final ConnectionContext connectionContext) throws RemoteException {
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         final WebResource webResource = this.createWebResource(NODES_API)
                     .path(user.getDomain() + "." + String.valueOf(nodeID))
@@ -963,7 +963,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @param       user     user performing the request
      * @param       query    SQL query that returns classId and objectId
-     * @param       context  DOCUMENT ME!
+     * @param       connectionContext  DOCUMENT ME!
      *
      * @return      Array of meta object nodes or empty array
      *
@@ -972,7 +972,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  should be replaced by custom search
      */
     @Override
-    public Node[] getMetaObjectNode(final User user, final String query, final ConnectionContext context)
+    public Node[] getMetaObjectNode(final User user, final String query, final ConnectionContext connectionContext)
             throws RemoteException {
         LOG.warn("delegating getMetaObjectNodes(String query, ...) with query '"
                     + query + "' to legacy custom server search!");
@@ -985,7 +985,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         final Collection metaObjectNodeCollection = this.customServerSearch(
                 user,
                 metaObjectNodesByQuerySearch,
-                context);
+                connectionContext);
 
         final MetaObjectNode[] metaObjectNodes = (MetaObjectNode[])metaObjectNodeCollection.toArray(
                 new MetaObjectNode[metaObjectNodeCollection.size()]);
@@ -1005,7 +1005,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <p>This operation is not supported anymore in the cids REST API, it returns an empty result!</p>
      *
      * @param       user     parameter is ignored
-     * @param       context  DOCUMENT ME!
+     * @param       connectionContext  DOCUMENT ME!
      *
      * @return      empty node array
      *
@@ -1014,7 +1014,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  ClassTreeNodes no longer supported
      */
     @Override
-    public Node[] getClassTreeNodes(final User user, final ConnectionContext context) throws RemoteException {
+    public Node[] getClassTreeNodes(final User user, final ConnectionContext connectionContext) throws RemoteException {
         final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
                     + "' is deprecated and not supported by Nodes REST API!";
         LOG.warn(message);
@@ -1035,7 +1035,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @param       user     parameter is ignored
      * @param       domain   parameter is ignored
-     * @param       context  DOCUMENT ME!
+     * @param       connectionContext  DOCUMENT ME!
      *
      * @return      empty node array
      *
@@ -1044,7 +1044,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  ClassTreeNodes no longer supported
      */
     @Override
-    public Node[] getClassTreeNodes(final User user, final String domain, final ConnectionContext context)
+    public Node[] getClassTreeNodes(final User user, final String domain, final ConnectionContext connectionContext)
             throws RemoteException {
         final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
                     + "' is deprecated and not supported by Nodes REST API!";
@@ -1078,16 +1078,16 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   user     user performing the request
      * @param   classId  legacy id of the class
      * @param   domain   domain of the class
-     * @param   context  DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  MetaClass matching the ID
      *
      * @throws  RemoteException  if any remote error occurs
      */
     @Override
-    public MetaClass getClass(final User user, final int classId, final String domain, final ConnectionContext context)
+    public MetaClass getClass(final User user, final int classId, final String domain, final ConnectionContext connectionContext)
             throws RemoteException {
-        // TODO context implementation
+        // TODO connectionContext implementation
         if (LOG.isDebugEnabled()) {
             LOG.debug("getClass '" + classId + "@" + domain + "' for user '" + user + "'");
         }
@@ -1095,7 +1095,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         if (!this.classKeyCache.isDomainCached(domain)) {
             LOG.info("class key cache does not contain class ids for domain '" + domain
                         + "', need to fill the cache first!");
-            this.getClasses(user, domain, context);
+            this.getClasses(user, domain, connectionContext);
         }
 
         final String className = this.classKeyCache.getClassNameForClassId(domain, classId);
@@ -1108,7 +1108,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
             throw new RemoteException(message);
         }
 
-        return this.getClassByTableName(user, className, domain, context);
+        return this.getClassByTableName(user, className, domain, connectionContext);
     }
 
     @Override
@@ -1127,7 +1127,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   user       user performing the request
      * @param   tableName  name of the class
      * @param   domain     domain of the class
-     * @param   context    DOCUMENT ME!
+     * @param   connectionContext    DOCUMENT ME!
      *
      * @return  MetaClass matching the (table)name
      *
@@ -1137,7 +1137,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     public MetaClass getClassByTableName(final User user,
             final String tableName,
             final String domain,
-            final ConnectionContext context) throws RemoteException {
+            final ConnectionContext connectionContext) throws RemoteException {
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         final WebResource webResource = this.createWebResource(CLASSES_API)
                     .path(domain + "." + tableName)
@@ -1195,16 +1195,16 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @param   user     legacy cids user performing the request
      * @param   domain   domain (~localserver)
-     * @param   context  DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  Array with all meta classes
      *
      * @throws  RemoteException  if any server error occurs
      */
     @Override
-    public MetaClass[] getClasses(final User user, final String domain, final ConnectionContext context)
+    public MetaClass[] getClasses(final User user, final String domain, final ConnectionContext connectionContext)
             throws RemoteException {
-        // TODO context implementation
+        // TODO connectionContext implementation
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         queryParameters.add("domain", domain);
         final WebResource webResource = this.createWebResource(CLASSES_API).queryParams(queryParameters);
@@ -1280,7 +1280,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <p>This operation is not supported anymore in the cids REST API, it returns an empty result!</p>
      *
      * @param       user     parameter is ignored
-     * @param       context  DOCUMENT ME!
+     * @param       connectionContext  DOCUMENT ME!
      *
      * @return      <strong>empty</strong> MethodMap;
      *
@@ -1289,7 +1289,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  UnsupportedOperation
      */
     @Override
-    public MethodMap getMethods(final User user, final ConnectionContext context) throws RemoteException {
+    public MethodMap getMethods(final User user, final ConnectionContext connectionContext) throws RemoteException {
         final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
                     + "' is deprecated and not supported by the cids REST API!";
         LOG.warn(message);
@@ -1310,7 +1310,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @param       user             parameter is ignored
      * @param       localServerName  parameter is ignored
-     * @param       context          DOCUMENT ME!
+     * @param       connectionContext          DOCUMENT ME!
      *
      * @return      <strong>empty</strong> MethodMap;
      *
@@ -1319,7 +1319,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  UnsupportedOperation
      */
     @Override
-    public MethodMap getMethods(final User user, final String localServerName, final ConnectionContext context)
+    public MethodMap getMethods(final User user, final String localServerName, final ConnectionContext connectionContext)
             throws RemoteException {
         final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
                     + "' is deprecated and not supported by the cids REST API!";
@@ -1342,7 +1342,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
      * Exception!</p>
      *
-     * @param   context  DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  list with domain names
      *
@@ -1350,7 +1350,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @throws  UnsupportedOperationException  always thrown
      */
     @Override
-    public String[] getDomains(final ConnectionContext context) throws RemoteException {
+    public String[] getDomains(final ConnectionContext connectionContext) throws RemoteException {
         // TODO: Implement method in INFRASTRUCTURE API or remove
         final String message = "The method '"
                     + Thread.currentThread().getStackTrace()[1].getMethodName()
@@ -1440,7 +1440,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   domain    TODO
      * @param   user      TODO
      * @param   elements  TODO
-     * @param   context   DOCUMENT ME!
+     * @param   connectionContext   DOCUMENT ME!
      *
      * @return  TODO
      *
@@ -1453,8 +1453,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final String domain,
             final User user,
             final int elements,
-            final ConnectionContext context) throws RemoteException {
-        // TODO context implementation
+            final ConnectionContext connectionContext) throws RemoteException {
+        // TODO connectionContext implementation
         // TODO: Implement method in INFRASTRUCTURE API or remove
         final String message = "The method '"
                     + Thread.currentThread().getStackTrace()[1].getMethodName()
@@ -1477,7 +1477,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   user         TODO
      * @param   oldPassword  TODO
      * @param   newPassword  TODO
-     * @param   context      DOCUMENT ME!
+     * @param   connectionContext      DOCUMENT ME!
      *
      * @return  UnsupportedOperationException
      *
@@ -1489,7 +1489,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     public boolean changePassword(final User user,
             final String oldPassword,
             final String newPassword,
-            final ConnectionContext context) throws RemoteException, UserException {
+            final ConnectionContext connectionContext) throws RemoteException, UserException {
         // TODO:  Implement Method in Users API or remove.
         final String message = "The method '"
                     + Thread.currentThread().getStackTrace()[1].getMethodName()
@@ -1522,7 +1522,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   userLsName       user domain
      * @param   userName         user name
      * @param   password         password of the users
-     * @param   context          DOCUMENT ME!
+     * @param   connectionContext          DOCUMENT ME!
      *
      * @return  legacy user object
      *
@@ -1535,7 +1535,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final String userLsName,
             final String userName,
             final String password,
-            final ConnectionContext context) throws RemoteException, UserException {
+            final ConnectionContext connectionContext) throws RemoteException, UserException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("performing validation of user '" + userName + "' af domain '" + userLsName + "'");
         }
@@ -1589,7 +1589,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <p>See <a href="https://github.com/cismet/cids-server/issues/103">
      * https://github.com/cismet/cids-server/issues/103</a></p>
      *
-     * @param   context  DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  UnsupportedOperationException
      *
@@ -1597,7 +1597,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
     @Override
-    public Vector getUserGroupNames(final ConnectionContext context) throws RemoteException {
+    public Vector getUserGroupNames(final ConnectionContext connectionContext) throws RemoteException {
         // TODO:  Implement Method in Users API or remove.
         final String message = "The method '"
                     + Thread.currentThread().getStackTrace()[1].getMethodName()
@@ -1619,7 +1619,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @param   userName  TODO
      * @param   lsHome    TODO
-     * @param   context   DOCUMENT ME!
+     * @param   connectionContext   DOCUMENT ME!
      *
      * @return  UnsupportedOperationException
      *
@@ -1627,7 +1627,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
     @Override
-    public Vector getUserGroupNames(final String userName, final String lsHome, final ConnectionContext context)
+    public Vector getUserGroupNames(final String userName, final String lsHome, final ConnectionContext connectionContext)
             throws RemoteException {
         // TODO:  Implement Method in Users API or remove.
         final String message = "The method '"
@@ -1654,7 +1654,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @param   user     TODO
      * @param   key      TODO
-     * @param   context  DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  UnsupportedOperationException
      *
@@ -1662,7 +1662,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @throws  UnsupportedOperationException  Implement ConfigAttributes API
      */
     @Override
-    public String getConfigAttr(final User user, final String key, final ConnectionContext context)
+    public String getConfigAttr(final User user, final String key, final ConnectionContext connectionContext)
             throws RemoteException {
         // TODO: Implement ConfigAttributes API.
         final String message = "The method '"
@@ -1684,7 +1684,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @param   user     TODO
      * @param   key      TODO
-     * @param   context  DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  UnsupportedOperationException
      *
@@ -1692,7 +1692,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
     @Override
-    public boolean hasConfigAttr(final User user, final String key, final ConnectionContext context)
+    public boolean hasConfigAttr(final User user, final String key, final ConnectionContext connectionContext)
             throws RemoteException {
         // TODO: Implement ConfigAttributes API.
         final String message = "The method '"
@@ -1716,7 +1716,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     }
 
     /**
-     * Executes a remote task in the context of the server.<br>
+     * Executes a remote task in the connectionContext of the server.<br>
      * <br>
      * <strong>Example REST Call:</strong><br>
      * <code>curl --user admin@SWITCHON:cismet<br>
@@ -1728,7 +1728,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   user      user performing the request
      * @param   taskname  name of the task to be performed
      * @param   domain    domain of the server / task
-     * @param   context   DOCUMENT ME!
+     * @param   connectionContext   DOCUMENT ME!
      * @param   body      body parameter of the task, e.g. byte[]
      * @param   params    0...n action parameters
      *
@@ -1741,9 +1741,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final String taskname,
             final String domain,
             final Object body,
-            final ConnectionContext context,
+            final ConnectionContext connectionContext,
             final ServerActionParameter... params) throws RemoteException {
-        // TODO context implementation
+        // TODO connectionContext implementation
 
         final GenericResourceWithContentType taskResult;
         final ActionTask actionTask = new ActionTask();
@@ -1882,7 +1882,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @param   user          The user performing the request
      * @param   serverSearch  The CidsServerSearch instance
-     * @param   context       DOCUMENT ME!
+     * @param   connectionContext       DOCUMENT ME!
      *
      * @return  Untyped Collection of results
      *
@@ -1891,8 +1891,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     public Collection customServerSearch(final User user,
             final CidsServerSearch serverSearch,
-            final ConnectionContext context) throws RemoteException {
-        // TODO context implementation
+            final ConnectionContext connectionContext) throws RemoteException {
+        // TODO connectionContext implementation
         final String searchKey = serverSearch.getClass().getName();
         final SearchInfo searchInfo = ServerSearchFactory.getFactory().getServerSearchInfo(searchKey);
 
@@ -2019,7 +2019,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @param       user     user performing the request
      * @param       query    SQL query to select meta objects
-     * @param       context  DOCUMENT ME!
+     * @param       connectionContext  DOCUMENT ME!
      *
      * @return      Array of meta objects or empty array
      *
@@ -2029,9 +2029,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  should be replaced by custom search
      */
     @Override
-    public MetaObject[] getMetaObject(final User user, final String query, final ConnectionContext context)
+    public MetaObject[] getMetaObject(final User user, final String query, final ConnectionContext connectionContext)
             throws RemoteException {
-        return this.getMetaObject(user, query, user.getDomain(), context);
+        return this.getMetaObject(user, query, user.getDomain(), connectionContext);
     }
 
     @Override
@@ -2050,7 +2050,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param       user     user performing the request
      * @param       query    SQL query that returns classId and objectId
      * @param       domain   DOCUMENT ME!
-     * @param       context  DOCUMENT ME!
+     * @param       connectionContext  DOCUMENT ME!
      *
      * @return      Array of meta objects or empty array
      *
@@ -2062,7 +2062,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     public MetaObject[] getMetaObject(final User user,
             final String query,
             final String domain,
-            final ConnectionContext context) throws RemoteException {
+            final ConnectionContext connectionContext) throws RemoteException {
         LOG.warn("delegating getMetaObject(String query, ...) with query '"
                     + query + "' to legacy custom server search!");
 
@@ -2071,7 +2071,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         metaObjectsByQuerySearch.setDomain(user.getDomain());
         metaObjectsByQuerySearch.setQuery(query);
 
-        final Collection metaObjectCollection = this.customServerSearch(user, metaObjectsByQuerySearch, context);
+        final Collection metaObjectCollection = this.customServerSearch(user, metaObjectsByQuerySearch, connectionContext);
 
         final MetaObject[] metaObjects = (MetaObject[])metaObjectCollection.toArray(
                 new MetaObject[metaObjectCollection.size()]);
@@ -2107,9 +2107,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final int objectId,
             final int classId,
             final String domain,
-            final ConnectionContext context) throws RemoteException {
-        // TODO context implementation
-        final String className = this.getClassNameForClassId(user, domain, classId, context);
+            final ConnectionContext connectionContext) throws RemoteException {
+        // TODO connectionContext implementation
+        final String className = this.getClassNameForClassId(user, domain, classId, connectionContext);
 
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         queryParameters.add("deduplicate", "true");
@@ -2203,7 +2203,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   user        user token
      * @param   metaObject  the new meta object to be created
      * @param   domain      domain of the meta object
-     * @param   context     DOCUMENT ME!
+     * @param   connectionContext     DOCUMENT ME!
      *
      * @return  the remotely created meta object (resulting instance)
      *
@@ -2213,10 +2213,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
     public MetaObject insertMetaObject(final User user,
             final MetaObject metaObject,
             final String domain,
-            final ConnectionContext context) throws RemoteException {
-        // TODO context implementation
+            final ConnectionContext connectionContext) throws RemoteException {
+        // TODO connectionContext implementation
         final int classId = metaObject.getClassID();
-        final String className = this.getClassNameForClassId(user, domain, classId, context);
+        final String className = this.getClassNameForClassId(user, domain, classId, connectionContext);
 
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         queryParameters.add("requestResultingInstance", "true");
@@ -2309,7 +2309,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   user        user token
      * @param   metaObject  the meta object to be updated
      * @param   domain      domain of the meta object
-     * @param   context     DOCUMENT ME!
+     * @param   connectionContext     DOCUMENT ME!
      *
      * @return  status code (1 == successful)
      *
@@ -2319,10 +2319,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
     public int updateMetaObject(final User user,
             final MetaObject metaObject,
             final String domain,
-            final ConnectionContext context) throws RemoteException {
+            final ConnectionContext connectionContext) throws RemoteException {
         final int objectId = metaObject.getID();
         final int classId = metaObject.getClassID();
-        final String className = this.getClassNameForClassId(user, domain, classId, context);
+        final String className = this.getClassNameForClassId(user, domain, classId, connectionContext);
 
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         queryParameters.add("requestResultingInstance", "false");
@@ -2380,7 +2380,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   user        user token
      * @param   metaObject  the meta object to be deleted
      * @param   domain      the domain of the meta object
-     * @param   context     DOCUMENT ME!
+     * @param   connectionContext     DOCUMENT ME!
      *
      * @return  status code (1 == successful)
      *
@@ -2390,11 +2390,11 @@ public class RESTfulInterfaceConnector implements CallServerService {
     public int deleteMetaObject(final User user,
             final MetaObject metaObject,
             final String domain,
-            final ConnectionContext context) throws RemoteException {
-        // TODO context implementation
+            final ConnectionContext connectionContext) throws RemoteException {
+        // TODO connectionContext implementation
         final int objectId = metaObject.getID();
         final int classId = metaObject.getClassID();
-        final String className = this.getClassNameForClassId(user, domain, classId, context);
+        final String className = this.getClassNameForClassId(user, domain, classId, connectionContext);
 
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         final WebResource webResource = this.createWebResource(ENTITIES_API)
@@ -2461,7 +2461,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   user                   user token
      * @param   representationFields   fields of the LightweightMetaObject
      * @param   representationPattern  the format pattern {@link Formatter}
-     * @param   context                DOCUMENT ME!
+     * @param   connectionContext                DOCUMENT ME!
      *
      * @return  Array of LightweightMetaObjects or null
      *
@@ -2472,10 +2472,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final User user,
             final String[] representationFields,
             final String representationPattern,
-            final ConnectionContext context) throws RemoteException {
-        // TODO context implementation
+            final ConnectionContext connectionContext) throws RemoteException {
+        // TODO connectionContext implementation
         final String domain = user.getDomain();
-        final String className = this.getClassNameForClassId(user, domain, classId, context);
+        final String className = this.getClassNameForClassId(user, domain, classId, connectionContext);
         final AbstractAttributeRepresentationFormater representationFormater;
         final LightweightMetaObject[] lightweightMetaObjects;
         final int representationFieldsLength = (representationFields != null) ? representationFields.length : 0;
@@ -2569,7 +2569,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 if (!classKeyCache.isDomainCached(domain)) {
                     LOG.warn("class name cache not initialized yet for domain '" + domain
                                 + "', need to fill the cache NOW!");
-                    this.getClasses(user, domain, context);
+                    this.getClasses(user, domain, connectionContext);
                 }
 
                 if (cidsBean != null) {
@@ -2637,7 +2637,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   classId               legacy class id of the LightweightMetaObjects
      * @param   user                  user token
      * @param   representationFields  files of the LightweightMetaObject
-     * @param   context               DOCUMENT ME!
+     * @param   connectionContext               DOCUMENT ME!
      *
      * @return  Array of LightweightMetaObjects or null
      *
@@ -2650,9 +2650,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
     public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classId,
             final User user,
             final String[] representationFields,
-            final ConnectionContext context) throws RemoteException {
+            final ConnectionContext connectionContext) throws RemoteException {
         return this.getAllLightweightMetaObjectsForClass(classId, user,
-                representationFields, null, context);
+                representationFields, null, connectionContext);
     }
 
     @Override
@@ -2683,7 +2683,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *                                     Meta Object
      * @param       representationFields   must match fields in query
      * @param       representationPattern  string format pattern for toStrin Operation
-     * @param       context                DOCUMENT ME!
+     * @param       connectionContext                DOCUMENT ME!
      *
      * @return      Array of LWMOs or empty array
      *
@@ -2697,8 +2697,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final String query,
             final String[] representationFields,
             final String representationPattern,
-            final ConnectionContext context) throws RemoteException {
-        // TODO context implementation
+            final ConnectionContext connectionContext) throws RemoteException {
+        // TODO connectionContext implementation
         LOG.warn("delegating getLightweightMetaObjectsByQuery for class + '"
                     + classId + "' with query '" + query + "' to legacy custom server search!");
 
@@ -2711,7 +2711,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         lightweightMetaObjectsByQuerySearch.setRepresentationFields(representationFields);
         lightweightMetaObjectsByQuerySearch.setRepresentationPattern(representationPattern);
 
-        final Collection lwmoCollection = this.customServerSearch(user, lightweightMetaObjectsByQuerySearch, context);
+        final Collection lwmoCollection = this.customServerSearch(user, lightweightMetaObjectsByQuerySearch, connectionContext);
 
         final LightweightMetaObject[] lightweightMetaObjects = (LightweightMetaObject[])lwmoCollection.toArray(
                 new LightweightMetaObject[lwmoCollection.size()]);
@@ -2743,7 +2743,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param       query                 query to search for LWMO. Has to select at lest the primary key (ID) of the
      *                                    Meta Object
      * @param       representationFields  must match fields in query
-     * @param       context               DOCUMENT ME!
+     * @param       connectionContext               DOCUMENT ME!
      *
      * @return      Array of LWMOs or empty array
      *
@@ -2756,14 +2756,14 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final User user,
             final String query,
             final String[] representationFields,
-            final ConnectionContext context) throws RemoteException {
+            final ConnectionContext connectionContext) throws RemoteException {
         return this.getLightweightMetaObjectsByQuery(
                 classId,
                 user,
                 query,
                 representationFields,
                 null,
-                context);
+                connectionContext);
     }
 
     @Override
@@ -2780,16 +2780,16 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @param   user       user performing the request
      * @param   metaClass  class of the new object
-     * @param   context    DOCUMENT ME!
+     * @param   connectionContext    DOCUMENT ME!
      *
      * @return  new meta object of class
      *
      * @throws  RemoteException  if any remote error occurs
      */
     @Override
-    public MetaObject getInstance(final User user, final MetaClass metaClass, final ConnectionContext context)
+    public MetaObject getInstance(final User user, final MetaClass metaClass, final ConnectionContext connectionContext)
             throws RemoteException {
-        return metaClass.getEmptyInstance();
+        return metaClass.getEmptyInstance(connectionContext);
     }
 
     // </editor-fold>

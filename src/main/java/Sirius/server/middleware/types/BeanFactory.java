@@ -123,7 +123,7 @@ public class BeanFactory {
                 if (value == null) {
                     final MetaClass foreignClass = (MetaClass)classCacheService.getAllClasses(domain, connectionContext)
                                 .get(domain + oa.getMai().getForeignKeyClassId());
-                    final MetaObject emptyInstance = foreignClass.getEmptyInstance();
+                    final MetaObject emptyInstance = foreignClass.getEmptyInstance(connectionContext);
                     emptyInstance.setStatus(Sirius.server.localserver.object.Object.TEMPLATE);
                 } else {
                     final MetaObject subObject = (MetaObject)value;

@@ -28,7 +28,8 @@ import org.openide.util.Lookup;
 public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTest {
 
     protected final static ArrayList<CidsBean> CIDS_BEANS = new ArrayList<CidsBean>();
-    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
+    private static final ConnectionContext CONNECTION_CONTEXT = ConnectionContext.createDummy();
+
 
     @DataProvider
     public final static Object[][] getCidsBeans() throws Exception {
@@ -368,7 +369,7 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
             final Semaphore semaphore = new Semaphore(1);
 
             final MetaClassCacheService classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
-            final CidsBean arrayEntryBean = classCacheService.getMetaClass("CIDS", "SPH_KATEGORIE", connectionContext).getEmptyInstance().getBean();
+            final CidsBean arrayEntryBean = classCacheService.getMetaClass("CIDS", "SPH_KATEGORIE", CONNECTION_CONTEXT).getEmptyInstance(CONNECTION_CONTEXT).getBean();
             arrayEntryBean.setProperty("name", "Climbing for Dollars");
             final int arrayElements = ((Collection) updatedCidsBean.getProperty("kategorien")).size();
             updatedCidsBean.addCollectionElement("kategorien", arrayEntryBean);
@@ -610,7 +611,7 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
 
             Mockito.reset(metaObjectSpy);
             final MetaClassCacheService classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
-            final CidsBean arrayEntryBean = classCacheService.getMetaClass("CIDS", "SPH_KATEGORIE", connectionContext).getEmptyInstance().getBean();
+            final CidsBean arrayEntryBean = classCacheService.getMetaClass("CIDS", "SPH_KATEGORIE", CONNECTION_CONTEXT).getEmptyInstance(CONNECTION_CONTEXT).getBean();
             arrayEntryBean.setProperty("name", "Climbing for Dollars");
             updatedCidsBean.addCollectionElement("kategorien", arrayEntryBean);
 
@@ -754,7 +755,7 @@ public class CidsBeanSerialisationTest extends AbstractCidsBeanDeserialisationTe
             final int arrayElements = ((Collection) updatedCidsBean.getProperty("kategorien")).size();
 
             final MetaClassCacheService classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
-            final CidsBean arrayEntryBean = classCacheService.getMetaClass("CIDS", "SPH_KATEGORIE", connectionContext).getEmptyInstance().getBean();
+            final CidsBean arrayEntryBean = classCacheService.getMetaClass("CIDS", "SPH_KATEGORIE", CONNECTION_CONTEXT).getEmptyInstance(CONNECTION_CONTEXT).getBean();
             arrayEntryBean.setProperty("name", "Climbing for Dollars");
 
             //FIXME: This does not work -> listElementReplaced not implemented in CidsBean

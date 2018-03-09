@@ -14,6 +14,8 @@ package de.cismet.cids.server.cidslayer;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaClass;
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
 
 import org.apache.log4j.Logger;
 
@@ -32,7 +34,7 @@ import java.util.Map;
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public class DefaultCidsLayer implements CidsLayerInfo, Serializable {
+public class DefaultCidsLayer implements CidsLayerInfo, Serializable, ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -56,6 +58,8 @@ public class DefaultCidsLayer implements CidsLayerInfo, Serializable {
     private String[] primitiveColumnTypes;
     private String additionalJoins = null;
     private final String domain;
+    
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -120,7 +124,7 @@ public class DefaultCidsLayer implements CidsLayerInfo, Serializable {
         final List<String> sb = new ArrayList<>();
         final StringBuilder joins = new StringBuilder();
         boolean firstAttr = true;
-        final HashMap allClasses = mc.getEmptyInstance().getAllClasses();
+        final HashMap allClasses = mc.getEmptyInstance(getConnectionContext()).getAllClasses();
         final List<String> columnNamesList = new ArrayList<>();
         final List<String> sqlColumnNamesList = new ArrayList<>();
         final List<String> columnPropertyNamesList = new ArrayList<>();
@@ -254,7 +258,7 @@ public class DefaultCidsLayer implements CidsLayerInfo, Serializable {
         if ((catalogueNameMap != null) && (catalogueNameMap.get(attr.getName()) != null)) {
             namePropertyName = catalogueNameMap.get(attr.getName());
         }
-        final ObjectAttribute nameAttr = (ObjectAttribute)foreignClass.getEmptyInstance()
+        final ObjectAttribute nameAttr = (ObjectAttribute)foreignClass.getEmptyInstance(getConnectionContext())
                     .getAttribute(namePropertyName);
 
         if (nameAttr != null) {
@@ -450,4 +454,14 @@ public class DefaultCidsLayer implements CidsLayerInfo, Serializable {
     public String getRestriction() {
         return null;
     }
+
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
+
+    @Override
+    public void initWithConnectionContext(ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
+    }
+        
 }

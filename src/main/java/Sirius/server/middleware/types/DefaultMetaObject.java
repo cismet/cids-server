@@ -60,7 +60,7 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     private MetaClass metaClass;
     private transient HashMap classes;
     private transient CidsBean bean = null;
-    private transient ConnectionContext connectionContext;
+    private transient ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
