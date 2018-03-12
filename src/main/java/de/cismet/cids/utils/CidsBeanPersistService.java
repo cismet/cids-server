@@ -22,7 +22,7 @@ import de.cismet.connectioncontext.ConnectionContextProvider;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public interface CidsBeanPersistService extends ConnectionContextProvider {
+public interface CidsBeanPersistService {
 
     //~ Methods ----------------------------------------------------------------
 
@@ -36,11 +36,4 @@ public interface CidsBeanPersistService extends ConnectionContextProvider {
      * @throws  Exception  DOCUMENT ME!
      */
     CidsBean persistCidsBean(CidsBean cidsBean) throws Exception;
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  connectionContext  DOCUMENT ME!
-     */
-    void setClientConnectionContext(ConnectionContext connectionContext);
 }

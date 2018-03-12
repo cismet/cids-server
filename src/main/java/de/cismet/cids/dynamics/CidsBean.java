@@ -53,6 +53,7 @@ import de.cismet.cids.utils.MetaClassCacheService;
 
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
+import de.cismet.connectioncontext.ConnectionContextStore;
 
 import static de.cismet.cids.dynamics.CidsBean.mapper;
 
@@ -373,7 +374,9 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
     public CidsBean persist(final ConnectionContext connectionContext) throws Exception {
         final CidsBeanPersistService persistService = Lookup.getDefault().lookup(CidsBeanPersistService.class);
         if (persistService != null) {
-            persistService.setClientConnectionContext(connectionContext);
+            if (persistService instanceof ConnectionContextStore) {
+                ((ConnectionContextStore)persistService).initWithConnectionContext(connectionContext);
+            }
             return persistService.persistCidsBean(this);
         }
 
