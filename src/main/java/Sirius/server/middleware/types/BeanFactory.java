@@ -41,6 +41,7 @@ import java.util.Map;
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.utils.MetaClassCacheService;
+
 import de.cismet.connectioncontext.ConnectionContext;
 
 import de.cismet.tools.CurrentStackTrace;
@@ -101,15 +102,21 @@ public class BeanFactory {
         return Long.toHexString(l);
     }
 
-    @Deprecated
-    public void changeNullSubObjectsToTemplates(final CidsBean cidsbean) {
-        changeNullSubObjectsToTemplates(cidsbean, ConnectionContext.createDeprecated());
-    }
-    
     /**
      * DOCUMENT ME!
      *
      * @param  cidsbean  DOCUMENT ME!
+     */
+    @Deprecated
+    public void changeNullSubObjectsToTemplates(final CidsBean cidsbean) {
+        changeNullSubObjectsToTemplates(cidsbean, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  cidsbean           DOCUMENT ME!
+     * @param  connectionContext  DOCUMENT ME!
      */
     public void changeNullSubObjectsToTemplates(final CidsBean cidsbean, final ConnectionContext connectionContext) {
         final MetaObject metaObject = cidsbean.getMetaObject();

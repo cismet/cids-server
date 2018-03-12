@@ -70,7 +70,7 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
 
     private static final transient Logger LOG = Logger.getLogger(CidsBean.class);
     static final ObjectMapper mapper = new ObjectMapper();
-    static final ObjectMapper intraObjectCacheMapper = new ObjectMapper();    
+    static final ObjectMapper intraObjectCacheMapper = new ObjectMapper();
 
     /**
      * DOCUMENT ME!
@@ -559,7 +559,8 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
         if (classCacheService != null) {
             final MetaClass mc = classCacheService.getMetaClass(
                     getMetaObject().getDomain(),
-                    oa.getMai().getForeignKeyClassId(), getConnectionContext());
+                    oa.getMai().getForeignKeyClassId(),
+                    getConnectionContext());
             final CidsBean newOne = mc.getEmptyInstance(getConnectionContext()).getBean();
             setProperty(name, newOne);
         } else {
@@ -583,7 +584,8 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
             // abs weil im 1:n Fall eine negative class-id im foreign-key-field steht
             final MetaClass firstMC = classCacheService.getMetaClass(
                     getMetaObject().getDomain(),
-                    Math.abs(oa.getMai().getForeignKeyClassId()), getConnectionContext());
+                    Math.abs(oa.getMai().getForeignKeyClassId()),
+                    getConnectionContext());
             if (oa.isVirtualOneToManyAttribute()) {
                 final CidsBean newOne = firstMC.getEmptyInstance(getConnectionContext()).getBean();
                 return newOne;
@@ -595,7 +597,9 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
                     if (tmp instanceof MemberAttributeInfo) {
                         if (((MemberAttributeInfo)tmp).isForeignKey()) {
                             final int classId = ((MemberAttributeInfo)tmp).getForeignKeyClassId();
-                            final MetaClass targetClass = classCacheService.getMetaClass(firstMC.getDomain(), classId, getConnectionContext());
+                            final MetaClass targetClass = classCacheService.getMetaClass(firstMC.getDomain(),
+                                    classId,
+                                    getConnectionContext());
                             final CidsBean newOne = targetClass.getEmptyInstance(getConnectionContext()).getBean();
                             return newOne;
                         }
@@ -755,7 +759,8 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
                             final MetaClass zwischenTabellenKlasse = (MetaClass)(getMetaObject().getAllClasses()).get(
                                     getMetaObject().getDomain()
                                             + oa.getMai().getForeignKeyClassId());
-                            final MetaObject arrayElement = zwischenTabellenKlasse.getEmptyInstance(getConnectionContext());
+                            final MetaObject arrayElement = zwischenTabellenKlasse.getEmptyInstance(
+                                    getConnectionContext());
 
                             final ObjectAttribute[] arrayElementAttrs = arrayElement.getAttribs();
                             for (final ObjectAttribute arrayElementAttribute : arrayElementAttrs) {
@@ -1072,13 +1077,6 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
         this.artificialChange = artificialChange;
     }
 
-//    @Deprecated
-//    public static CidsBean createNewCidsBeanFromTableName(final String domainName,
-//            final String tableName,
-//            final Map<String, Object> initialProperties) throws Exception {
-//        return createNewCidsBeanFromTableName(domainName, tableName, initialProperties, ConnectionContext.createDeprecated());
-//    }
-    
     /**
      * DOCUMENT ME!
      *
@@ -1090,9 +1088,33 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
      *
      * @throws  Exception  DOCUMENT ME!
      */
+    @Deprecated
     public static CidsBean createNewCidsBeanFromTableName(final String domainName,
             final String tableName,
-            final Map<String, Object> initialProperties, final ConnectionContext connectionContext) throws Exception {
+            final Map<String, Object> initialProperties) throws Exception {
+        return createNewCidsBeanFromTableName(
+                domainName,
+                tableName,
+                initialProperties,
+                ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   domainName         DOCUMENT ME!
+     * @param   tableName          DOCUMENT ME!
+     * @param   initialProperties  DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static CidsBean createNewCidsBeanFromTableName(final String domainName,
+            final String tableName,
+            final Map<String, Object> initialProperties,
+            final ConnectionContext connectionContext) throws Exception {
         final CidsBean newBean = createNewCidsBeanFromTableName(domainName, tableName, connectionContext);
         for (final Entry<String, Object> property : initialProperties.entrySet()) {
             final Object valuObject = property.getValue();
@@ -1164,11 +1186,6 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
         return jsonBeans;
     }
 
-//    @Deprecated
-//    public static CidsBean createNewCidsBeanFromTableName(final String domainName, final String tableName) throws Exception {
-//        return createNewCidsBeanFromTableName(domainName, tableName, ConnectionContext.createDeprecated());
-//    }
-    
     /**
      * DOCUMENT ME!
      *
@@ -1179,8 +1196,26 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public static CidsBean createNewCidsBeanFromTableName(final String domainName, final String tableName, final ConnectionContext connectionContext)
+    @Deprecated
+    public static CidsBean createNewCidsBeanFromTableName(final String domainName, final String tableName)
             throws Exception {
+        return createNewCidsBeanFromTableName(domainName, tableName, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   domainName         DOCUMENT ME!
+     * @param   tableName          DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static CidsBean createNewCidsBeanFromTableName(final String domainName,
+            final String tableName,
+            final ConnectionContext connectionContext) throws Exception {
         final MetaClassCacheService classcache = Lookup.getDefault().lookup(MetaClassCacheService.class);
         if (tableName != null) {
             final MetaClass metaClass = classcache.getMetaClass(domainName, tableName, connectionContext);
@@ -1191,12 +1226,6 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
         throw new Exception("Could not find MetaClass for table " + tableName);
     }
 
-//    @Deprecated
-//    public static MetaClass getMetaClassFromTableName(final String domainName, final String tableName)
-//            throws Exception {
-//        return getMetaClassFromTableName(domainName, tableName, ConnectionContext.createDeprecated());
-//    }
-            
     /**
      * DOCUMENT ME!
      *
@@ -1207,8 +1236,26 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public static MetaClass getMetaClassFromTableName(final String domainName, final String tableName, final ConnectionContext connectionContext)
+    @Deprecated
+    public static MetaClass getMetaClassFromTableName(final String domainName, final String tableName)
             throws Exception {
+        return getMetaClassFromTableName(domainName, tableName, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   domainName         DOCUMENT ME!
+     * @param   tableName          DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static MetaClass getMetaClassFromTableName(final String domainName,
+            final String tableName,
+            final ConnectionContext connectionContext) throws Exception {
         final MetaClassCacheService classcache = Lookup.getDefault().lookup(MetaClassCacheService.class);
         if (tableName != null) {
             final MetaClass mc = classcache.getMetaClass(domainName, tableName, connectionContext);
@@ -1270,9 +1317,9 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
     @Override
     public ConnectionContext getConnectionContext() {
         final MetaObject mo = getMetaObject();
-        if (mo != null && mo instanceof ConnectionContextProvider) {
+        if ((mo != null) && (mo instanceof ConnectionContextProvider)) {
             return ((ConnectionContextProvider)mo).getConnectionContext();
-        } else {            
+        } else {
             return dummyConnectionContext;
         }
     }

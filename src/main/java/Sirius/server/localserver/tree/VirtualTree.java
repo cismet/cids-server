@@ -48,8 +48,8 @@ import java.util.List;
 import java.util.Map;
 
 import de.cismet.commons.utils.StringUtils;
-import de.cismet.connectioncontext.AbstractConnectionContext;
 
+import de.cismet.connectioncontext.AbstractConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
@@ -74,7 +74,9 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
     private PolicyHolder policyHolder = null;
     private ClassCache classCache = null;
 
-    private final ConnectionContext connectionContext = ConnectionContext.create(AbstractConnectionContext.Category.OTHER, getClass().getSimpleName());
+    private final ConnectionContext connectionContext = ConnectionContext.create(
+            AbstractConnectionContext.Category.OTHER,
+            getClass().getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
 

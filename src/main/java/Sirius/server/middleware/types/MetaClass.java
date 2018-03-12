@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import de.cismet.cids.tools.tostring.ToStringConverter;
 
 import de.cismet.cids.utils.ClassloadingHelper;
+
 import de.cismet.connectioncontext.ConnectionContext;
 
 /**
@@ -279,13 +280,20 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
         return javaClass;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     @Deprecated
     public MetaObject getEmptyInstance() {
         return getEmptyInstance(ConnectionContext.createDeprecated());
     }
-    
+
     /**
      * returns an empty instance of the metaClass. only first level initialization. no arrays. no subobjects.
+     *
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  MetaObject
      */

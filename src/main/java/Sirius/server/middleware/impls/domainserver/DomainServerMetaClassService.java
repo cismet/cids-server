@@ -17,6 +17,7 @@ import Sirius.server.middleware.types.MetaClass;
 import java.util.HashMap;
 
 import de.cismet.cids.utils.MetaClassCacheService;
+
 import de.cismet.connectioncontext.ConnectionContext;
 
 /**
@@ -50,7 +51,7 @@ public class DomainServerMetaClassService implements MetaClassCacheService {
     public HashMap getAllClasses(final String domain) {
         return getAllClasses(domain, ConnectionContext.createDeprecated());
     }
-    
+
     @Override
     public HashMap getAllClasses(final String domain, final ConnectionContext connectionContext) {
         return MetaClassCache.getInstance().getAllClasses(domain);
@@ -61,9 +62,11 @@ public class DomainServerMetaClassService implements MetaClassCacheService {
     public MetaClass getMetaClass(final String domain, final String tableName) {
         return getMetaClass(domain, tableName, ConnectionContext.createDeprecated());
     }
-    
+
     @Override
-    public MetaClass getMetaClass(final String domain, final String tableName, final ConnectionContext connectionContext) {
+    public MetaClass getMetaClass(final String domain,
+            final String tableName,
+            final ConnectionContext connectionContext) {
         return MetaClassCache.getInstance().getMetaClass(domain, tableName);
     }
 
@@ -72,7 +75,7 @@ public class DomainServerMetaClassService implements MetaClassCacheService {
     public MetaClass getMetaClass(final String domain, final int classId) {
         return getMetaClass(domain, classId, ConnectionContext.createDeprecated());
     }
-    
+
     @Override
     public MetaClass getMetaClass(final String domain, final int classId, final ConnectionContext connectionContext) {
         return MetaClassCache.getInstance().getMetaClass(domain, classId);

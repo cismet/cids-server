@@ -14,8 +14,6 @@ package de.cismet.cids.server.cidslayer;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaClass;
-import de.cismet.connectioncontext.ConnectionContext;
-import de.cismet.connectioncontext.ConnectionContextStore;
 
 import org.apache.log4j.Logger;
 
@@ -27,6 +25,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
 
 /**
  * DOCUMENT ME!
@@ -58,7 +59,7 @@ public class DefaultCidsLayer implements CidsLayerInfo, Serializable, Connection
     private String[] primitiveColumnTypes;
     private String additionalJoins = null;
     private final String domain;
-    
+
     private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
@@ -455,13 +456,13 @@ public class DefaultCidsLayer implements CidsLayerInfo, Serializable, Connection
         return null;
     }
 
+    @Override
     public ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 
     @Override
-    public void initWithConnectionContext(ConnectionContext connectionContext) {
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
         this.connectionContext = connectionContext;
     }
-        
 }

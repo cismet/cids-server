@@ -8,9 +8,10 @@
 package Sirius.server.middleware.interfaces.proxy;
 
 import Sirius.util.image.*;
-import de.cismet.connectioncontext.ConnectionContext;
 
 import java.rmi.*;
+
+import de.cismet.connectioncontext.ConnectionContext;
 
 /**
  * gives access to system parameters, resources and configurations of the MIS and its domain servers.
@@ -36,8 +37,18 @@ public interface SystemService extends Remote {
     @Deprecated
     Image[] getDefaultIcons(String lsName) throws RemoteException;
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   lsName             DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     Image[] getDefaultIcons(String lsName, ConnectionContext connectionContext) throws RemoteException;
-    
+
     /**
      * delivers default icons of a random domain used to initialize a client (navigator).
      *
@@ -48,8 +59,17 @@ public interface SystemService extends Remote {
     @Deprecated
     Image[] getDefaultIcons() throws RemoteException;
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
     Image[] getDefaultIcons(ConnectionContext connectionContext) throws RemoteException;
-    
+
     // public Sirius.Server.Server getTranslationServer() throws RemoteException;
 
 }

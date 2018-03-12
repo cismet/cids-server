@@ -38,6 +38,8 @@ import de.cismet.cids.json.IntraObjectCacheJsonParser;
 
 import de.cismet.commons.classloading.BlacklistClassloading;
 
+import de.cismet.connectioncontext.ConnectionContext;
+
 import static com.fasterxml.jackson.core.JsonToken.START_ARRAY;
 import static com.fasterxml.jackson.core.JsonToken.START_OBJECT;
 import static com.fasterxml.jackson.core.JsonToken.VALUE_EMBEDDED_OBJECT;
@@ -47,7 +49,6 @@ import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_FLOAT;
 import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_INT;
 import static com.fasterxml.jackson.core.JsonToken.VALUE_STRING;
 import static com.fasterxml.jackson.core.JsonToken.VALUE_TRUE;
-import de.cismet.connectioncontext.ConnectionContext;
 
 /**
  * DOCUMENT ME!
@@ -167,7 +168,9 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
 //                        if (LOG.isDebugEnabled()) {
 //                            LOG.debug("creating new bean instance '" + key + "'");
 //                        }
-                        cb = CidsBean.createNewCidsBeanFromTableName(bInfo.getDomainKey(), bInfo.getClassKey(), ConnectionContext.createDeprecated()); // test
+                        cb = CidsBean.createNewCidsBeanFromTableName(bInfo.getDomainKey(),
+                                bInfo.getClassKey(),
+                                ConnectionContext.createDeprecated()); // test
                         cb.quiteSetProperty(cb.getPrimaryKeyFieldname().toLowerCase(),
                             Integer.parseInt(bInfo.getObjectKey()));
                     }

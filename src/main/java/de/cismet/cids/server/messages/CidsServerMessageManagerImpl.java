@@ -90,7 +90,7 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
             final boolean renotify) {
         publishMessage(category, object, renotify, ConnectionContext.createDeprecated());
     }
-    
+
     /**
      * DOCUMENT ME!
      *
@@ -113,9 +113,15 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
             final boolean renotify,
             final Set keys,
             final boolean trueForUserKeysFalseForGroupKeys) {
-        publishMessage(category, object, renotify, keys, trueForUserKeysFalseForGroupKeys, ConnectionContext.createDeprecated());
+        publishMessage(
+            category,
+            object,
+            renotify,
+            keys,
+            trueForUserKeysFalseForGroupKeys,
+            ConnectionContext.createDeprecated());
     }
-    
+
     /**
      * DOCUMENT ME!
      *
@@ -148,7 +154,7 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
             final Set userKeys) {
         publishMessage(category, object, renotify, userGroupKeys, userKeys, ConnectionContext.createDeprecated());
     }
-    
+
     /**
      * DOCUMENT ME!
      *
@@ -229,7 +235,7 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
             final Map<String, Integer> biggerThenPerCategory) {
         return getMessages(user, biggerThenPerCategory, ConnectionContext.createDeprecated());
     }
-    
+
     @Override
     public List<CidsServerMessage> getMessages(final User user,
             final Map<String, Integer> biggerThenPerCategory,
@@ -267,7 +273,7 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
             final int biggerThen) {
         return getLastMessage(category, user, biggerThen, ConnectionContext.createDeprecated());
     }
-    
+
     /**
      * DOCUMENT ME!
      *
@@ -298,7 +304,7 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
             final int biggerThen) {
         return getAllMessages(category, user, biggerThen, ConnectionContext.createDeprecated());
     }
-    
+
     @Override
     public List<CidsServerMessage> getAllMessages(final String category,
             final User user,

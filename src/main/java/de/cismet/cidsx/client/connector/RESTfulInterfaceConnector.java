@@ -264,13 +264,13 @@ public class RESTfulInterfaceConnector implements CallServerService {
             HttpsURLConnection.setDefaultSSLSocketFactory(connectionContext.getSocketFactory());
             HttpsURLConnection.setDefaultHostnameVerifier(new SSLHostnameVerifier());
         } catch (final NoSuchAlgorithmException e) {
-            throw new IllegalStateException("system does not support SSL", e);            // NOI18N
+            throw new IllegalStateException("system does not support SSL", e);                     // NOI18N
         } catch (final KeyStoreException e) {
-            throw new IllegalStateException("system does not support java keystores", e); // NOI18N
+            throw new IllegalStateException("system does not support java keystores", e);          // NOI18N
         } catch (final KeyManagementException e) {
-            throw new IllegalStateException("ssl connectionContext init properly initialised", e);  // NOI18N
+            throw new IllegalStateException("ssl connectionContext init properly initialised", e); // NOI18N
         } catch (final UnrecoverableKeyException e) {
-            throw new IllegalStateException("cannot get key from keystore", e);           // NOI18N
+            throw new IllegalStateException("cannot get key from keystore", e);                    // NOI18N
         }
     }
 
@@ -491,9 +491,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
     /**
      * DOCUMENT ME!
      *
-     * @param   user     DOCUMENT ME!
-     * @param   domain   DOCUMENT ME!
-     * @param   classId  DOCUMENT ME!
+     * @param   user               DOCUMENT ME!
+     * @param   domain             DOCUMENT ME!
+     * @param   classId            DOCUMENT ME!
      * @param   connectionContext  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -535,9 +535,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <code><a href="http://localhost:8890/nodes?domain=SWITCHON&limit=100&offset=0&role=all">
      * http://localhost:8890/nodes?domain=SWITCHON&limit=100&offset=0&role=all</a></code>
      *
-     * @param   user        legacy user needed for authentication
-     * @param   domainName  DOCUMENT ME!
-     * @param   connectionContext     DOCUMENT ME!
+     * @param   user               legacy user needed for authentication
+     * @param   domainName         DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  array of legacy root nodes
      *
@@ -615,7 +615,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <code><a href="http://localhost:8890/nodes?domain=switchon&role=all">
      * http://localhost:8890/nodes?domain=switchon&role=all</a></code>
      *
-     * @param   user     legacy user needed for authentication
+     * @param   user               legacy user needed for authentication
      * @param   connectionContext  DOCUMENT ME!
      *
      * @return  array of legacy root nodes
@@ -648,8 +648,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * AS dynamic_children, FALSE AS sql_sort FROM taggroup, cs_class WHERE cs_class.name = 'taggroup' ORDER BY
      * taggroup.name;" http://localhost:8890/nodes/SWITCHON/children?limit=100&offset=0&role=all</code>
      *
-     * @param   node     the legacy node that contains either a valid node id or a dynamic children statements
-     * @param   user     user performing the request
+     * @param   node               the legacy node that contains either a valid node id or a dynamic children statements
+     * @param   user               user performing the request
      * @param   connectionContext  DOCUMENT ME!
      *
      * @return  child nodes as legacy node array
@@ -757,9 +757,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
      * Exception!</p>
      *
-     * @param   node     TODO
-     * @param   parent   TODO
-     * @param   user     TODO
+     * @param   node               TODO
+     * @param   parent             TODO
+     * @param   user               TODO
      * @param   connectionContext  DOCUMENT ME!
      *
      * @return  TODO
@@ -789,8 +789,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
      * Exception!</p>
      *
-     * @param   node     TODO
-     * @param   user     TODO
+     * @param   node               TODO
+     * @param   user               TODO
      * @param   connectionContext  DOCUMENT ME!
      *
      * @return  TODO
@@ -820,9 +820,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
      * Exception!</p>
      *
-     * @param   from     TODO
-     * @param   to       TODO
-     * @param   user     TODO
+     * @param   from               TODO
+     * @param   to                 TODO
+     * @param   user               TODO
      * @param   connectionContext  DOCUMENT ME!
      *
      * @return  TODO
@@ -852,9 +852,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
      * Exception!</p>
      *
-     * @param   from     TODO
-     * @param   to       TODO
-     * @param   user     TODO
+     * @param   from               TODO
+     * @param   to                 TODO
+     * @param   user               TODO
      * @param   connectionContext  DOCUMENT ME!
      *
      * @return  TODO
@@ -863,8 +863,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @throws  UnsupportedOperationException  always thrown
      */
     @Override
-    public boolean deleteLink(final Node from, final Node to, final User user, final ConnectionContext connectionContext)
-            throws RemoteException {
+    public boolean deleteLink(final Node from,
+            final Node to,
+            final User user,
+            final ConnectionContext connectionContext) throws RemoteException {
         // TODO: Implement method in Nodes API or remove
         final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
                     + "' is not yet supported by Nodes REST API!";
@@ -884,9 +886,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <strong>Example REST Call:</strong><br>
      * <code><a href="http://localhost:8890/nodes/SWITCHON.7">http://localhost:8890/nodes/SWITCHON.7</a></code>
      *
-     * @param   user     legacy user
-     * @param   nodeID   id of the legacy node
-     * @param   domain   domain name
+     * @param   user               legacy user
+     * @param   nodeID             id of the legacy node
+     * @param   domain             domain name
      * @param   connectionContext  DOCUMENT ME!
      *
      * @return  legacy node object or null
@@ -961,8 +963,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <strong>Note</strong>: This method is delegated to the cids custom server search
      * {@link MetaObjectNodesByQuerySearch} and thus deprecated.
      *
-     * @param       user     user performing the request
-     * @param       query    SQL query that returns classId and objectId
+     * @param       user               user performing the request
+     * @param       query              SQL query that returns classId and objectId
      * @param       connectionContext  DOCUMENT ME!
      *
      * @return      Array of meta object nodes or empty array
@@ -1004,7 +1006,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * <p>This operation is not supported anymore in the cids REST API, it returns an empty result!</p>
      *
-     * @param       user     parameter is ignored
+     * @param       user               parameter is ignored
      * @param       connectionContext  DOCUMENT ME!
      *
      * @return      empty node array
@@ -1033,8 +1035,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * <p>This operation is not supported anymore in the cids REST API, it returns an empty result!</p>
      *
-     * @param       user     parameter is ignored
-     * @param       domain   parameter is ignored
+     * @param       user               parameter is ignored
+     * @param       domain             parameter is ignored
      * @param       connectionContext  DOCUMENT ME!
      *
      * @return      empty node array
@@ -1075,9 +1077,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <strong>Example REST Call (delegated):</strong><br>
      * <code><a href="http://localhost:8890/classes/SWITCHON.tag">http://localhost:8890/classes/SWITCHON.tag</a></code>
      *
-     * @param   user     user performing the request
-     * @param   classId  legacy id of the class
-     * @param   domain   domain of the class
+     * @param   user               user performing the request
+     * @param   classId            legacy id of the class
+     * @param   domain             domain of the class
      * @param   connectionContext  DOCUMENT ME!
      *
      * @return  MetaClass matching the ID
@@ -1085,8 +1087,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @throws  RemoteException  if any remote error occurs
      */
     @Override
-    public MetaClass getClass(final User user, final int classId, final String domain, final ConnectionContext connectionContext)
-            throws RemoteException {
+    public MetaClass getClass(final User user,
+            final int classId,
+            final String domain,
+            final ConnectionContext connectionContext) throws RemoteException {
         // TODO connectionContext implementation
         if (LOG.isDebugEnabled()) {
             LOG.debug("getClass '" + classId + "@" + domain + "' for user '" + user + "'");
@@ -1124,10 +1128,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <strong>Example REST Call:</strong><br>
      * <code><a href="http://localhost:8890/classes/SWITCHON.tag">http://localhost:8890/classes/SWITCHON.tag</a></code>
      *
-     * @param   user       user performing the request
-     * @param   tableName  name of the class
-     * @param   domain     domain of the class
-     * @param   connectionContext    DOCUMENT ME!
+     * @param   user               user performing the request
+     * @param   tableName          name of the class
+     * @param   domain             domain of the class
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  MetaClass matching the (table)name
      *
@@ -1193,8 +1197,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <code><a href="http://localhost:8890/classes?domain=SWITCHON">http://localhost:8890/classes?domain=SWITCHON</a>
      * </code>
      *
-     * @param   user     legacy cids user performing the request
-     * @param   domain   domain (~localserver)
+     * @param   user               legacy cids user performing the request
+     * @param   domain             domain (~localserver)
      * @param   connectionContext  DOCUMENT ME!
      *
      * @return  Array with all meta classes
@@ -1279,7 +1283,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * <p>This operation is not supported anymore in the cids REST API, it returns an empty result!</p>
      *
-     * @param       user     parameter is ignored
+     * @param       user               parameter is ignored
      * @param       connectionContext  DOCUMENT ME!
      *
      * @return      <strong>empty</strong> MethodMap;
@@ -1308,9 +1312,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * <p>This operation is not supported anymore in the cids REST API, it returns an empty result!</p>
      *
-     * @param       user             parameter is ignored
-     * @param       localServerName  parameter is ignored
-     * @param       connectionContext          DOCUMENT ME!
+     * @param       user               parameter is ignored
+     * @param       localServerName    parameter is ignored
+     * @param       connectionContext  DOCUMENT ME!
      *
      * @return      <strong>empty</strong> MethodMap;
      *
@@ -1319,8 +1323,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  UnsupportedOperation
      */
     @Override
-    public MethodMap getMethods(final User user, final String localServerName, final ConnectionContext connectionContext)
-            throws RemoteException {
+    public MethodMap getMethods(final User user,
+            final String localServerName,
+            final ConnectionContext connectionContext) throws RemoteException {
         final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
                     + "' is deprecated and not supported by the cids REST API!";
         LOG.warn(message);
@@ -1364,14 +1369,15 @@ public class RESTfulInterfaceConnector implements CallServerService {
     public Image[] getDefaultIcons(final String domain) throws RemoteException {
         return getDefaultIcons(domain, ConnectionContext.createDeprecated());
     }
-    
+
     /**
      * TODO: To be implemented in cids REST Infrastructure API
      *
      * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
      * Exception!</p>
      *
-     * @param       domain  name of the domain
+     * @param       domain             name of the domain
+     * @param       connectionContext  DOCUMENT ME!
      *
      * @return      TODO
      *
@@ -1381,7 +1387,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  should not return binary images!
      */
     @Override
-    public Image[] getDefaultIcons(final String domain, final ConnectionContext connectionContext) throws RemoteException {
+    public Image[] getDefaultIcons(final String domain, final ConnectionContext connectionContext)
+            throws RemoteException {
         // TODO: Implement method in INFRASTRUCTURE API or remove
         final String message = "The method '"
                     + Thread.currentThread().getStackTrace()[1].getMethodName()
@@ -1395,12 +1402,14 @@ public class RESTfulInterfaceConnector implements CallServerService {
     public Image[] getDefaultIcons() throws RemoteException {
         return getDefaultIcons(ConnectionContext.createDeprecated());
     }
-    
+
     /**
      * TODO: To be implemented in cids REST Infrastructure API
      *
      * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
      * Exception!</p>
+     *
+     * @param       connectionContext  DOCUMENT ME!
      *
      * @return      TODO
      *
@@ -1435,12 +1444,12 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
      * Exception!</p>
      *
-     * @param   classId   TODO
-     * @param   objectId  TODO
-     * @param   domain    TODO
-     * @param   user      TODO
-     * @param   elements  TODO
-     * @param   connectionContext   DOCUMENT ME!
+     * @param   classId            TODO
+     * @param   objectId           TODO
+     * @param   domain             TODO
+     * @param   user               TODO
+     * @param   elements           TODO
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  TODO
      *
@@ -1474,10 +1483,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <p>See <a href="https://github.com/cismet/cids-server/issues/103">
      * https://github.com/cismet/cids-server/issues/103</a></p>
      *
-     * @param   user         TODO
-     * @param   oldPassword  TODO
-     * @param   newPassword  TODO
-     * @param   connectionContext      DOCUMENT ME!
+     * @param   user               TODO
+     * @param   oldPassword        TODO
+     * @param   newPassword        TODO
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  UnsupportedOperationException
      *
@@ -1517,12 +1526,12 @@ public class RESTfulInterfaceConnector implements CallServerService {
     /**
      * Authenticates a user with the specified name and password at the specified domain.
      *
-     * @param   userGroupLsName  not supported by REST API
-     * @param   userGroupName    not supported by REST API
-     * @param   userLsName       user domain
-     * @param   userName         user name
-     * @param   password         password of the users
-     * @param   connectionContext          DOCUMENT ME!
+     * @param   userGroupLsName    not supported by REST API
+     * @param   userGroupName      not supported by REST API
+     * @param   userLsName         user domain
+     * @param   userName           user name
+     * @param   password           password of the users
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  legacy user object
      *
@@ -1617,9 +1626,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <p>See <a href="https://github.com/cismet/cids-server/issues/103">
      * https://github.com/cismet/cids-server/issues/103</a></p>
      *
-     * @param   userName  TODO
-     * @param   lsHome    TODO
-     * @param   connectionContext   DOCUMENT ME!
+     * @param   userName           TODO
+     * @param   lsHome             TODO
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  UnsupportedOperationException
      *
@@ -1627,8 +1636,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
     @Override
-    public Vector getUserGroupNames(final String userName, final String lsHome, final ConnectionContext connectionContext)
-            throws RemoteException {
+    public Vector getUserGroupNames(final String userName,
+            final String lsHome,
+            final ConnectionContext connectionContext) throws RemoteException {
         // TODO:  Implement Method in Users API or remove.
         final String message = "The method '"
                     + Thread.currentThread().getStackTrace()[1].getMethodName()
@@ -1652,8 +1662,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
      * Exception!</p>
      *
-     * @param   user     TODO
-     * @param   key      TODO
+     * @param   user               TODO
+     * @param   key                TODO
      * @param   connectionContext  DOCUMENT ME!
      *
      * @return  UnsupportedOperationException
@@ -1682,8 +1692,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * TODO: Implement ConfigAttributes API. See <a href="https://github.com/cismet/cids-server/issues/118">
      * https://github.com/cismet/cids-server/issues/118</a>
      *
-     * @param   user     TODO
-     * @param   key      TODO
+     * @param   user               TODO
+     * @param   key                TODO
      * @param   connectionContext  DOCUMENT ME!
      *
      * @return  UnsupportedOperationException
@@ -1725,12 +1735,12 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * -F "file"="filetodownload;text/plain"<br>
      * http://localhost:8890/actions/SWITCHON.downloadFile/tasks?role=all^&resultingInstanceType=result</code>
      *
-     * @param   user      user performing the request
-     * @param   taskname  name of the task to be performed
-     * @param   domain    domain of the server / task
-     * @param   connectionContext   DOCUMENT ME!
-     * @param   body      body parameter of the task, e.g. byte[]
-     * @param   params    0...n action parameters
+     * @param   user               user performing the request
+     * @param   taskname           name of the task to be performed
+     * @param   domain             domain of the server / task
+     * @param   body               body parameter of the task, e.g. byte[]
+     * @param   connectionContext  DOCUMENT ME!
+     * @param   params             0...n action parameters
      *
      * @return  result of the task, e.g. byte[]
      *
@@ -1880,9 +1890,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * http://localhost:8890/searches/SWITCHON.de.cismet.cids.custom.switchon.search.server.MetaObjectUniversalSearchStatement/results
      * </code>
      *
-     * @param   user          The user performing the request
-     * @param   serverSearch  The CidsServerSearch instance
-     * @param   connectionContext       DOCUMENT ME!
+     * @param   user               The user performing the request
+     * @param   serverSearch       The CidsServerSearch instance
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  Untyped Collection of results
      *
@@ -2017,8 +2027,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * See
      * {@link #getLightweightMetaObjectsByQuery(int, Sirius.server.newuser.User, java.lang.String, java.lang.String[]) }.
      *
-     * @param       user     user performing the request
-     * @param       query    SQL query to select meta objects
+     * @param       user               user performing the request
+     * @param       query              SQL query to select meta objects
      * @param       connectionContext  DOCUMENT ME!
      *
      * @return      Array of meta objects or empty array
@@ -2047,9 +2057,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <strong>Note</strong>: This method is delegated to the cids custom server search {@link MetaObjectsByQuerySearch}
      * and thus deprecated.
      *
-     * @param       user     user performing the request
-     * @param       query    SQL query that returns classId and objectId
-     * @param       domain   DOCUMENT ME!
+     * @param       user               user performing the request
+     * @param       query              SQL query that returns classId and objectId
+     * @param       domain             DOCUMENT ME!
      * @param       connectionContext  DOCUMENT ME!
      *
      * @return      Array of meta objects or empty array
@@ -2071,7 +2081,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
         metaObjectsByQuerySearch.setDomain(user.getDomain());
         metaObjectsByQuerySearch.setQuery(query);
 
-        final Collection metaObjectCollection = this.customServerSearch(user, metaObjectsByQuerySearch, connectionContext);
+        final Collection metaObjectCollection = this.customServerSearch(
+                user,
+                metaObjectsByQuerySearch,
+                connectionContext);
 
         final MetaObject[] metaObjects = (MetaObject[])metaObjectCollection.toArray(
                 new MetaObject[metaObjectCollection.size()]);
@@ -2200,10 +2213,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <code>curl --user username@SWITCHON:password -H "Content-Type: application/json" -X POST -d
      * "{$self:'/SWITCHON.contact/31337' }" http://localhost:8890/SWITCHON.contact</code>
      *
-     * @param   user        user token
-     * @param   metaObject  the new meta object to be created
-     * @param   domain      domain of the meta object
-     * @param   connectionContext     DOCUMENT ME!
+     * @param   user               user token
+     * @param   metaObject         the new meta object to be created
+     * @param   domain             domain of the meta object
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  the remotely created meta object (resulting instance)
      *
@@ -2306,10 +2319,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <code>curl --user username@SWITCHON:password -H "Content-Type: application/json" -X PUT -d
      * "{$self:'/SWITCHON.contact/31337' }" http://localhost:8890/SWITCHON.contact/31337</code>
      *
-     * @param   user        user token
-     * @param   metaObject  the meta object to be updated
-     * @param   domain      domain of the meta object
-     * @param   connectionContext     DOCUMENT ME!
+     * @param   user               user token
+     * @param   metaObject         the meta object to be updated
+     * @param   domain             domain of the meta object
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  status code (1 == successful)
      *
@@ -2377,10 +2390,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <strong>Example REST Call:</strong><br>
      * <code>curl --user username@SWITCHON:password -X DELETE http://localhost:8890/switchon.contact/31337</code>
      *
-     * @param   user        user token
-     * @param   metaObject  the meta object to be deleted
-     * @param   domain      the domain of the meta object
-     * @param   connectionContext     DOCUMENT ME!
+     * @param   user               user token
+     * @param   metaObject         the meta object to be deleted
+     * @param   domain             the domain of the meta object
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  status code (1 == successful)
      *
@@ -2461,7 +2474,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   user                   user token
      * @param   representationFields   fields of the LightweightMetaObject
      * @param   representationPattern  the format pattern {@link Formatter}
-     * @param   connectionContext                DOCUMENT ME!
+     * @param   connectionContext      DOCUMENT ME!
      *
      * @return  Array of LightweightMetaObjects or null
      *
@@ -2637,7 +2650,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param   classId               legacy class id of the LightweightMetaObjects
      * @param   user                  user token
      * @param   representationFields  files of the LightweightMetaObject
-     * @param   connectionContext               DOCUMENT ME!
+     * @param   connectionContext     DOCUMENT ME!
      *
      * @return  Array of LightweightMetaObjects or null
      *
@@ -2683,7 +2696,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *                                     Meta Object
      * @param       representationFields   must match fields in query
      * @param       representationPattern  string format pattern for toStrin Operation
-     * @param       connectionContext                DOCUMENT ME!
+     * @param       connectionContext      DOCUMENT ME!
      *
      * @return      Array of LWMOs or empty array
      *
@@ -2711,7 +2724,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
         lightweightMetaObjectsByQuerySearch.setRepresentationFields(representationFields);
         lightweightMetaObjectsByQuerySearch.setRepresentationPattern(representationPattern);
 
-        final Collection lwmoCollection = this.customServerSearch(user, lightweightMetaObjectsByQuerySearch, connectionContext);
+        final Collection lwmoCollection = this.customServerSearch(
+                user,
+                lightweightMetaObjectsByQuerySearch,
+                connectionContext);
 
         final LightweightMetaObject[] lightweightMetaObjects = (LightweightMetaObject[])lwmoCollection.toArray(
                 new LightweightMetaObject[lwmoCollection.size()]);
@@ -2743,7 +2759,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @param       query                 query to search for LWMO. Has to select at lest the primary key (ID) of the
      *                                    Meta Object
      * @param       representationFields  must match fields in query
-     * @param       connectionContext               DOCUMENT ME!
+     * @param       connectionContext     DOCUMENT ME!
      *
      * @return      Array of LWMOs or empty array
      *
@@ -2778,9 +2794,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <strong>Example REST Call:</strong><br>
      * <code><a href="http://localhost:8890/SWITCHON.RESOURCE/emptyInstance">http://localhost:8890/SWITCHON.RESOURCE/emptyInstance</a></code>
      *
-     * @param   user       user performing the request
-     * @param   metaClass  class of the new object
-     * @param   connectionContext    DOCUMENT ME!
+     * @param   user               user performing the request
+     * @param   metaClass          class of the new object
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  new meta object of class
      *
