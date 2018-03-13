@@ -49,6 +49,8 @@ import de.cismet.cids.server.search.CidsServerSearch;
 
 import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
+import de.cismet.connectioncontext.ConnectionContext;
+
 /**
  * Benoetigte Keys fuer configFile: registryIps<br>
  * serverName<br>
@@ -169,22 +171,35 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
         return nameServer;
     }
 
+    @Deprecated
+    @Override
+    public Node[] getChildren(final Node node, final User usr) throws RemoteException {
+        return getChildren(node, usr, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   node  DOCUMENT ME!
-     * @param   usr   DOCUMENT ME!
+     * @param   node     DOCUMENT ME!
+     * @param   usr      DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node[] getChildren(final Node node, final User usr) throws RemoteException {
+    public Node[] getChildren(final Node node, final User usr, final ConnectionContext context) throws RemoteException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("getChildren for: " + node); // NOI18N
         }
-        return catService.getChildren(node, usr);
+        return catService.getChildren(node, usr, context);
+    }
+
+    @Override
+    @Deprecated
+    public Node[] getRoots(final User user, final String localServerName) throws RemoteException {
+        return getRoots(user, localServerName, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -192,91 +207,138 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      *
      * @param   user             DOCUMENT ME!
      * @param   localServerName  DOCUMENT ME!
+     * @param   context          DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node[] getRoots(final User user, final String localServerName) throws RemoteException {
-        return catService.getRoots(user, localServerName);
+    public Node[] getRoots(final User user, final String localServerName, final ConnectionContext context)
+            throws RemoteException {
+        return catService.getRoots(user, localServerName, context);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
     @Override
+    @Deprecated
     public Node[] getRoots(final User user) throws RemoteException {
-        return catService.getRoots(user);
+        return getRoots(user, ConnectionContext.createDeprecated());
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   node    DOCUMENT ME!
-     * @param   parent  DOCUMENT ME!
-     * @param   user    DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
+    public Node[] getRoots(final User user, final ConnectionContext context) throws RemoteException {
+        return catService.getRoots(user, context);
+    }
+
+    @Override
+    @Deprecated
     public Node addNode(final Node node, final Link parent, final User user) throws RemoteException {
-        return catService.addNode(node, parent, user);
+        return addNode(node, parent, user, ConnectionContext.createDeprecated());
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   node  DOCUMENT ME!
-     * @param   user  DOCUMENT ME!
+     * @param   node     DOCUMENT ME!
+     * @param   parent   DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Override
+    public Node addNode(final Node node, final Link parent, final User user, final ConnectionContext context)
+            throws RemoteException {
+        return catService.addNode(node, parent, user, context);
+    }
+
+    @Deprecated
     @Override
     public boolean deleteNode(final Node node, final User user) throws RemoteException {
-        return catService.deleteNode(node, user);
+        return deleteNode(node, user, ConnectionContext.createDeprecated());
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   from  DOCUMENT ME!
-     * @param   to    DOCUMENT ME!
-     * @param   user  DOCUMENT ME!
+     * @param   node     DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Override
+    public boolean deleteNode(final Node node, final User user, final ConnectionContext context)
+            throws RemoteException {
+        return catService.deleteNode(node, user, context);
+    }
+
+    @Deprecated
     @Override
     public boolean addLink(final Node from, final Node to, final User user) throws RemoteException {
-        return catService.addLink(from, to, user);
+        return addLink(from, to, user, ConnectionContext.createDeprecated());
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   from  DOCUMENT ME!
-     * @param   to    DOCUMENT ME!
-     * @param   user  DOCUMENT ME!
+     * @param   from     DOCUMENT ME!
+     * @param   to       DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
+    public boolean addLink(final Node from, final Node to, final User user, final ConnectionContext context)
+            throws RemoteException {
+        return catService.addLink(from, to, user, context);
+    }
+
+    @Deprecated
+    @Override
     public boolean deleteLink(final Node from, final Node to, final User user) throws RemoteException {
-        return catService.deleteLink(from, to, user);
+        return deleteLink(from, to, user, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   from     DOCUMENT ME!
+     * @param   to       DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public boolean deleteLink(final Node from, final Node to, final User user, final ConnectionContext context)
+            throws RemoteException {
+        return catService.deleteLink(from, to, user, context);
+    }
+
+    @Override
+    @Deprecated
+    public Node[] getClassTreeNodes(final User user, final String localServerName) throws RemoteException {
+        return getClassTreeNodes(user, localServerName, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -284,28 +346,43 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      *
      * @param   user             DOCUMENT ME!
      * @param   localServerName  DOCUMENT ME!
+     * @param   context          DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node[] getClassTreeNodes(final User user, final String localServerName) throws RemoteException {
-        return metaService.getClassTreeNodes(user, localServerName);
+    public Node[] getClassTreeNodes(final User user, final String localServerName, final ConnectionContext context)
+            throws RemoteException {
+        return metaService.getClassTreeNodes(user, localServerName, context);
+    }
+
+    @Override
+    @Deprecated
+    public Node[] getClassTreeNodes(final User user) throws RemoteException {
+        return getClassTreeNodes(user, ConnectionContext.createDeprecated());
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   user  DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node[] getClassTreeNodes(final User user) throws RemoteException {
-        return metaService.getClassTreeNodes(user);
+    public Node[] getClassTreeNodes(final User user, final ConnectionContext context) throws RemoteException {
+        return metaService.getClassTreeNodes(user, context);
+    }
+
+    @Override
+    @Deprecated
+    public MetaClass getClass(final User user, final int classID, final String localServerName) throws RemoteException {
+        return getClass(user, classID, localServerName, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -314,14 +391,25 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      * @param   user             DOCUMENT ME!
      * @param   classID          DOCUMENT ME!
      * @param   localServerName  DOCUMENT ME!
+     * @param   context          DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MetaClass getClass(final User user, final int classID, final String localServerName) throws RemoteException {
-        return metaService.getClass(user, classID, localServerName);
+    public MetaClass getClass(final User user,
+            final int classID,
+            final String localServerName,
+            final ConnectionContext context) throws RemoteException {
+        return metaService.getClass(user, classID, localServerName, context);
+    }
+
+    @Override
+    @Deprecated
+    public MetaClass getClassByTableName(final User user, final String tableName, final String localServerName)
+            throws RemoteException {
+        return getClassByTableName(user, tableName, localServerName, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -330,15 +418,24 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      * @param   user             DOCUMENT ME!
      * @param   tableName        DOCUMENT ME!
      * @param   localServerName  DOCUMENT ME!
+     * @param   context          DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MetaClass getClassByTableName(final User user, final String tableName, final String localServerName)
-            throws RemoteException {
-        return metaService.getClassByTableName(user, tableName, localServerName);
+    public MetaClass getClassByTableName(final User user,
+            final String tableName,
+            final String localServerName,
+            final ConnectionContext context) throws RemoteException {
+        return metaService.getClassByTableName(user, tableName, localServerName, context);
+    }
+
+    @Override
+    @Deprecated
+    public MetaClass[] getClasses(final User user, final String localServerName) throws RemoteException {
+        return getClasses(user, localServerName, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -346,42 +443,62 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      *
      * @param   user             DOCUMENT ME!
      * @param   localServerName  DOCUMENT ME!
+     * @param   context          DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MetaClass[] getClasses(final User user, final String localServerName) throws RemoteException {
-        return metaService.getClasses(user, localServerName);
+    public MetaClass[] getClasses(final User user, final String localServerName, final ConnectionContext context)
+            throws RemoteException {
+        return metaService.getClasses(user, localServerName, context);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
     @Override
+    @Deprecated
     public String[] getDomains() throws RemoteException {
-        return metaService.getDomains();
+        return getDomains(ConnectionContext.createDeprecated());
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   usr     DOCUMENT ME!
-     * @param   nodeID  DOCUMENT ME!
-     * @param   domain  DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
+    public String[] getDomains(final ConnectionContext context) throws RemoteException {
+        return metaService.getDomains(context);
+    }
+
+    @Override
+    @Deprecated
     public Node getMetaObjectNode(final User usr, final int nodeID, final String domain) throws RemoteException {
-        return metaService.getMetaObjectNode(usr, nodeID, domain);
+        return getMetaObjectNode(usr, nodeID, domain, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr      DOCUMENT ME!
+     * @param   nodeID   DOCUMENT ME!
+     * @param   domain   DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public Node getMetaObjectNode(final User usr,
+            final int nodeID,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
+        return metaService.getMetaObjectNode(usr, nodeID, domain, context);
     }
 
     /**
@@ -397,24 +514,42 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
+    @Deprecated
     public MetaObject getMetaObject(final User usr, final int objectID, final int classID, final String domain)
             throws RemoteException {
-        return metaService.getMetaObject(usr, objectID, classID, domain);
+        return getMetaObject(usr, objectID, classID, domain, ConnectionContext.createDeprecated());
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   usr    DOCUMENT ME!
-     * @param   query  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
     @Override
+    public MetaObject getMetaObject(final User usr,
+            final int objectID,
+            final int classID,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
+        return metaService.getMetaObject(usr, objectID, classID, domain, context);
+    }
+
+    @Override
+    @Deprecated
     public Node[] getMetaObjectNode(final User usr, final String query) throws RemoteException {
-        return metaService.getMetaObjectNode(usr, query);
+        return getMetaObjectNode(usr, query, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   usr      DOCUMENT ME!
+     * @param   query    DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public Node[] getMetaObjectNode(final User usr, final String query, final ConnectionContext context)
+            throws RemoteException {
+        return metaService.getMetaObjectNode(usr, query, context);
     }
 
     /**
@@ -428,30 +563,36 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
+    @Deprecated
     public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
-        return metaService.getMetaObject(usr, query);
+        return getMetaObject(usr, query, ConnectionContext.createDeprecated());
     }
 
     @Override
+    public MetaObject[] getMetaObject(final User usr, final String query, final ConnectionContext context)
+            throws RemoteException {
+        return metaService.getMetaObject(usr, query, context);
+    }
+
+    @Override
+    @Deprecated
     public MetaObject[] getMetaObject(final User usr, final String query, final String domain) throws RemoteException {
-        return metaService.getMetaObject(usr, query, domain);
+        return getMetaObject(usr, query, domain, ConnectionContext.createDeprecated());
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user        DOCUMENT ME!
-     * @param   metaObject  DOCUMENT ME!
-     * @param   domain      DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
     @Override
+    public MetaObject[] getMetaObject(final User usr,
+            final String query,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
+        return metaService.getMetaObject(usr, query, domain, context);
+    }
+
+    @Override
+    @Deprecated
     public int deleteMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        return metaService.deleteMetaObject(user, metaObject, domain);
+        return deleteMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -460,15 +601,25 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      * @param   user        DOCUMENT ME!
      * @param   metaObject  DOCUMENT ME!
      * @param   domain      DOCUMENT ME!
+     * @param   context     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
+    public int deleteMetaObject(final User user,
+            final MetaObject metaObject,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
+        return metaService.deleteMetaObject(user, metaObject, domain, context);
+    }
+
+    @Override
+    @Deprecated
     public MetaObject insertMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        return metaService.insertMetaObject(user, metaObject, domain);
+        return insertMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -477,86 +628,147 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      * @param   user        DOCUMENT ME!
      * @param   metaObject  DOCUMENT ME!
      * @param   domain      DOCUMENT ME!
+     * @param   context     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
+    public MetaObject insertMetaObject(final User user,
+            final MetaObject metaObject,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
+        return metaService.insertMetaObject(user, metaObject, domain, context);
+    }
+
+    @Override
+    @Deprecated
     public int updateMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        return metaService.updateMetaObject(user, metaObject, domain);
+        return updateMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   user    DOCUMENT ME!
-     * @param   query   DOCUMENT ME!
-     * @param   domain  DOCUMENT ME!
+     * @param   user        DOCUMENT ME!
+     * @param   metaObject  DOCUMENT ME!
+     * @param   domain      DOCUMENT ME!
+     * @param   context     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public int update(final User user, final String query, final String domain) throws RemoteException {
-        return metaService.update(user, query, domain);
+    public int updateMetaObject(final User user,
+            final MetaObject metaObject,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
+        return metaService.updateMetaObject(user, metaObject, domain, context);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
     @Override
+    @Deprecated
     public MethodMap getMethods(final User user) throws RemoteException {
-        return metaService.getMethods(user);
+        return getMethods(user, ConnectionContext.createDeprecated());
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   user    DOCUMENT ME!
-     * @param   lsName  DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
+    public MethodMap getMethods(final User user, final ConnectionContext context) throws RemoteException {
+        return metaService.getMethods(user, context);
+    }
+
+    @Override
+    @Deprecated
     public MethodMap getMethods(final User user, final String lsName) throws RemoteException {
-        return metaService.getMethods(user, lsName);
+        return getMethods(user, lsName, ConnectionContext.createDeprecated());
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   lsName  DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   lsName   DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
+    public MethodMap getMethods(final User user, final String lsName, final ConnectionContext context)
+            throws RemoteException {
+        return metaService.getMethods(user, lsName, context);
+    }
+
+    @Override
+    @Deprecated
     public Image[] getDefaultIcons(final String lsName) throws RemoteException {
-        return systemService.getDefaultIcons(lsName);
+        return getDefaultIcons(lsName, ConnectionContext.createDeprecated());
     }
 
     /**
      * DOCUMENT ME!
      *
+     * @param   lsName             DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Override
+    public Image[] getDefaultIcons(final String lsName, final ConnectionContext connectionContext)
+            throws RemoteException {
+        return systemService.getDefaultIcons(lsName, connectionContext);
+    }
+
     @Override
     public Image[] getDefaultIcons() throws RemoteException {
-        return systemService.getDefaultIcons();
+        return getDefaultIcons(ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public Image[] getDefaultIcons(final ConnectionContext connectionContext) throws RemoteException {
+        return systemService.getDefaultIcons(connectionContext);
+    }
+
+    @Deprecated
+    @Override
+    public User getUser(
+            final String userGroupLsName,
+            final String userGroupName,
+            final String userLsName,
+            final String userName,
+            final String password) throws RemoteException, UserException {
+        return getUser(
+                userGroupLsName,
+                userGroupName,
+                userLsName,
+                userName,
+                password,
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -567,6 +779,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      * @param   userLsName       DOCUMENT ME!
      * @param   userName         DOCUMENT ME!
      * @param   password         DOCUMENT ME!
+     * @param   context          DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -579,26 +792,42 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             final String userGroupName,
             final String userLsName,
             final String userName,
-            final String password) throws RemoteException, UserException {
+            final String password,
+            final ConnectionContext context) throws RemoteException, UserException {
         LOGINLOG.info("Login: " + userName + "@" + userGroupName + "@" + userGroupLsName);
         return userService.getUser(
                 userGroupLsName,
                 userGroupName,
                 userLsName,
                 userName,
-                password);
+                password,
+                context);
+    }
+
+    @Override
+    @Deprecated
+    public Vector getUserGroupNames() throws RemoteException {
+        return getUserGroupNames(ConnectionContext.createDeprecated());
     }
 
     /**
      * DOCUMENT ME!
+     *
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Vector getUserGroupNames() throws RemoteException {
-        return userService.getUserGroupNames();
+    public Vector getUserGroupNames(final ConnectionContext context) throws RemoteException {
+        return userService.getUserGroupNames(context);
+    }
+
+    @Override
+    @Deprecated
+    public Vector getUserGroupNames(final String userName, final String lsHome) throws RemoteException {
+        return getUserGroupNames(userName, lsHome, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -606,14 +835,23 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      *
      * @param   userName  DOCUMENT ME!
      * @param   lsHome    DOCUMENT ME!
+     * @param   context   DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Vector getUserGroupNames(final String userName, final String lsHome) throws RemoteException {
-        return userService.getUserGroupNames(userName, lsHome);
+    public Vector getUserGroupNames(final String userName, final String lsHome, final ConnectionContext context)
+            throws RemoteException {
+        return userService.getUserGroupNames(userName, lsHome, context);
+    }
+
+    @Deprecated
+    @Override
+    public boolean changePassword(final User user, final String oldPassword, final String newPassword)
+            throws RemoteException, UserException {
+        return changePassword(user, oldPassword, newPassword, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -622,6 +860,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      * @param   user         DOCUMENT ME!
      * @param   oldPassword  DOCUMENT ME!
      * @param   newPassword  DOCUMENT ME!
+     * @param   context      DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -629,9 +868,11 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      * @throws  UserException    DOCUMENT ME!
      */
     @Override
-    public boolean changePassword(final User user, final String oldPassword, final String newPassword)
-            throws RemoteException, UserException {
-        return userService.changePassword(user, oldPassword, newPassword);
+    public boolean changePassword(final User user,
+            final String oldPassword,
+            final String newPassword,
+            final ConnectionContext context) throws RemoteException, UserException {
+        return userService.changePassword(user, oldPassword, newPassword, context);
     }
 
     /**
@@ -715,19 +956,42 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
         }
     }
 
+    @Override
+    @Deprecated
+    public MetaObject getInstance(final User user, final MetaClass c) throws RemoteException {
+        return getInstance(user, c, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   user  DOCUMENT ME!
-     * @param   c     DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   c        DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MetaObject getInstance(final User user, final MetaClass c) throws RemoteException {
-        return metaService.getInstance(user, c);
+    public MetaObject getInstance(final User user, final MetaClass c, final ConnectionContext context)
+            throws RemoteException {
+        return metaService.getInstance(user, c, context);
+    }
+
+    @Override
+    @Deprecated
+    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(
+            final int classId,
+            final User user,
+            final String[] representationFields,
+            final String representationPattern) throws RemoteException {
+        return getAllLightweightMetaObjectsForClass(
+                classId,
+                user,
+                representationFields,
+                representationPattern,
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -737,6 +1001,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      * @param   user                   DOCUMENT ME!
      * @param   representationFields   DOCUMENT ME!
      * @param   representationPattern  DOCUMENT ME!
+     * @param   context                DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -747,12 +1012,27 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             final int classId,
             final User user,
             final String[] representationFields,
-            final String representationPattern) throws RemoteException {
+            final String representationPattern,
+            final ConnectionContext context) throws RemoteException {
         return metaService.getAllLightweightMetaObjectsForClass(
                 classId,
                 user,
                 representationFields,
-                representationPattern);
+                representationPattern,
+                context);
+    }
+
+    @Override
+    @Deprecated
+    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(
+            final int classId,
+            final User user,
+            final String[] representationFields) throws RemoteException {
+        return getAllLightweightMetaObjectsForClass(
+                classId,
+                user,
+                representationFields,
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -761,6 +1041,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      * @param   classId               DOCUMENT ME!
      * @param   user                  DOCUMENT ME!
      * @param   representationFields  DOCUMENT ME!
+     * @param   context               DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -770,8 +1051,26 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(
             final int classId,
             final User user,
-            final String[] representationFields) throws RemoteException {
-        return metaService.getAllLightweightMetaObjectsForClass(classId, user, representationFields);
+            final String[] representationFields,
+            final ConnectionContext context) throws RemoteException {
+        return metaService.getAllLightweightMetaObjectsForClass(classId, user, representationFields, context);
+    }
+
+    @Override
+    @Deprecated
+    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(
+            final int classId,
+            final User user,
+            final String query,
+            final String[] representationFields,
+            final String representationPattern) throws RemoteException {
+        return getLightweightMetaObjectsByQuery(
+                classId,
+                user,
+                query,
+                representationFields,
+                representationPattern,
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -782,6 +1081,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      * @param   query                  DOCUMENT ME!
      * @param   representationFields   DOCUMENT ME!
      * @param   representationPattern  DOCUMENT ME!
+     * @param   context                DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -793,13 +1093,30 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             final User user,
             final String query,
             final String[] representationFields,
-            final String representationPattern) throws RemoteException {
+            final String representationPattern,
+            final ConnectionContext context) throws RemoteException {
         return metaService.getLightweightMetaObjectsByQuery(
                 classId,
                 user,
                 query,
                 representationFields,
-                representationPattern);
+                representationPattern,
+                context);
+    }
+
+    @Override
+    @Deprecated
+    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(
+            final int classId,
+            final User user,
+            final String query,
+            final String[] representationFields) throws RemoteException {
+        return getLightweightMetaObjectsByQuery(
+                classId,
+                user,
+                query,
+                representationFields,
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -809,6 +1126,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
      * @param   user                  DOCUMENT ME!
      * @param   query                 DOCUMENT ME!
      * @param   representationFields  DOCUMENT ME!
+     * @param   context               DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -819,23 +1137,56 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             final int classId,
             final User user,
             final String query,
-            final String[] representationFields) throws RemoteException {
-        return metaService.getLightweightMetaObjectsByQuery(classId, user, query, representationFields);
+            final String[] representationFields,
+            final ConnectionContext context) throws RemoteException {
+        return metaService.getLightweightMetaObjectsByQuery(classId, user, query, representationFields, context);
     }
 
+    @Deprecated
     @Override
     public String getConfigAttr(final User user, final String key) throws RemoteException {
-        return userService.getConfigAttr(user, key);
+        return getConfigAttr(user, key, ConnectionContext.createDeprecated());
     }
 
+    @Override
+    public String getConfigAttr(final User user, final String key, final ConnectionContext context)
+            throws RemoteException {
+        return userService.getConfigAttr(user, key, context);
+    }
+
+    @Deprecated
     @Override
     public boolean hasConfigAttr(final User user, final String key) throws RemoteException {
-        return getConfigAttr(user, key) != null;
+        return hasConfigAttr(user, key, ConnectionContext.createDeprecated());
     }
 
     @Override
+    public boolean hasConfigAttr(final User user, final String key, final ConnectionContext context)
+            throws RemoteException {
+        return getConfigAttr(user, key, context) != null;
+    }
+
+    @Override
+    @Deprecated
     public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) throws RemoteException {
-        return searchService.customServerSearch(user, serverSearch);
+        return customServerSearch(user, serverSearch, ConnectionContext.createDeprecated());
+    }
+
+    @Override
+    public Collection customServerSearch(final User user,
+            final CidsServerSearch serverSearch,
+            final ConnectionContext context) throws RemoteException {
+        return searchService.customServerSearch(user, serverSearch, context);
+    }
+
+    @Override
+    @Deprecated
+    public HistoryObject[] getHistory(final int classId,
+            final int objectId,
+            final String domain,
+            final User user,
+            final int elements) throws RemoteException {
+        return getHistory(classId, objectId, domain, user, elements, ConnectionContext.createDeprecated());
     }
 
     @Override
@@ -843,8 +1194,19 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             final int objectId,
             final String domain,
             final User user,
-            final int elements) throws RemoteException {
-        return metaService.getHistory(classId, objectId, domain, user, elements);
+            final int elements,
+            final ConnectionContext context) throws RemoteException {
+        return metaService.getHistory(classId, objectId, domain, user, elements, context);
+    }
+
+    @Override
+    @Deprecated
+    public Object executeTask(final User user,
+            final String taskname,
+            final String taskdomain,
+            final Object body,
+            final ServerActionParameter... params) throws RemoteException {
+        return executeTask(user, taskname, taskdomain, body, ConnectionContext.createDeprecated(), params);
     }
 
     @Override
@@ -852,7 +1214,8 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             final String taskname,
             final String taskdomain,
             final Object body,
+            final ConnectionContext context,
             final ServerActionParameter... params) throws RemoteException {
-        return actionService.executeTask(user, taskname, taskdomain, body, params);
+        return actionService.executeTask(user, taskname, taskdomain, body, context, params);
     }
 }

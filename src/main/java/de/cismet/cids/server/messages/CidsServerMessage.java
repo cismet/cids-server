@@ -19,6 +19,9 @@ import java.io.Serializable;
 
 import java.util.Date;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 /**
  * DOCUMENT ME!
  *
@@ -27,7 +30,7 @@ import java.util.Date;
  */
 @Getter
 @AllArgsConstructor
-public class CidsServerMessage implements Serializable {
+public class CidsServerMessage implements Serializable, ConnectionContextProvider {
 
     //~ Instance fields --------------------------------------------------------
 
@@ -36,6 +39,7 @@ public class CidsServerMessage implements Serializable {
     private final boolean renotify;
     private final String category;
     private final Date timestamp;
+    private final ConnectionContext connectionContext;
 
     //~ Methods ----------------------------------------------------------------
 
@@ -47,5 +51,10 @@ public class CidsServerMessage implements Serializable {
     @Override
     public int hashCode() {
         return id.hashCode();
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }

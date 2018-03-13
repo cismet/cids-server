@@ -36,7 +36,6 @@ import org.openide.util.Lookup;
 
 import java.rmi.RemoteException;
 
-import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -50,13 +49,17 @@ import java.util.Map;
 
 import de.cismet.commons.utils.StringUtils;
 
+import de.cismet.connectioncontext.AbstractConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 /**
  * Klasse um auf den in der DB gespeicherten Graphen zuzugreifen.
  *
  * @author   schlob
  * @version  $Revision$, $Date$
  */
-public class VirtualTree extends Shutdown implements AbstractTree {
+public class VirtualTree extends Shutdown implements AbstractTree, ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -70,6 +73,10 @@ public class VirtualTree extends Shutdown implements AbstractTree {
     private UserGroupIdentifiers idMap;
     private PolicyHolder policyHolder = null;
     private ClassCache classCache = null;
+
+    private final ConnectionContext connectionContext = ConnectionContext.create(
+            AbstractConnectionContext.Category.OTHER,
+            getClass().getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -835,7 +842,10 @@ public class VirtualTree extends Shutdown implements AbstractTree {
             boolean additionaltreepermissiontag;
             try {
                 additionaltreepermissiontag = DomainServerImpl.getServerInstance()
-                            .hasConfigAttr(user, additionaltreepermissiontagString);
+                            .hasConfigAttr(
+                                    user,
+                                    additionaltreepermissiontagString,
+                                    getConnectionContext());
             } catch (RemoteException ex) {
                 additionaltreepermissiontag = false;
                 LOG.error(ex.getMessage(), ex);
@@ -1150,6 +1160,11 @@ public class VirtualTree extends Shutdown implements AbstractTree {
         }
 
         return nl;
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     //~ Inner Classes ----------------------------------------------------------

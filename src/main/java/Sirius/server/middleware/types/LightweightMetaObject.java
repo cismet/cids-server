@@ -33,13 +33,18 @@ import de.cismet.cids.server.CallServerServiceProvider;
 
 import de.cismet.cids.tools.fromstring.FromStringCreator;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
+
 /**
  * DOCUMENT ME!
  *
  * @author   srichter
  * @version  $Revision$, $Date$
  */
-public final class LightweightMetaObject implements MetaObject, Comparable<LightweightMetaObject> {
+public final class LightweightMetaObject implements MetaObject,
+    Comparable<LightweightMetaObject>,
+    ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -61,6 +66,7 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
     private String representation;
     private String domain;
     private ObjectAttribute referencingObjectAttribute;
+    private transient ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -958,9 +964,19 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
             }
             final MetaObject mo;
             if (metaService != null) { // this code should only be executed on the client side
-                mo = metaService.getMetaObject(getUser(), getObjectID(), getClassID(), getDomain());
+                mo = metaService.getMetaObject(
+                        getUser(),
+                        getObjectID(),
+                        getClassID(),
+                        getDomain(),
+                        getConnectionContext());
             } else {                   // this code should only be executed on the server side
-                mo = DomainServerImpl.getServerInstance().getMetaObject(getUser(), getObjectID(), getClassID());
+                mo = DomainServerImpl.getServerInstance()
+                            .getMetaObject(
+                                    getUser(),
+                                    getObjectID(),
+                                    getClassID(),
+                                    getConnectionContext());
             }
 
             final SoftReference<MetaObject> sr;
@@ -1175,5 +1191,15 @@ public final class LightweightMetaObject implements MetaObject, Comparable<Light
             return true;
         }
         return false;
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
+
+    @Override
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
     }
 }

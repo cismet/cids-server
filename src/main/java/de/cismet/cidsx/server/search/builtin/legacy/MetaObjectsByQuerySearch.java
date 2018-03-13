@@ -33,6 +33,9 @@ import de.cismet.cidsx.server.api.types.SearchInfo;
 import de.cismet.cidsx.server.api.types.SearchParameterInfo;
 import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 /**
  * Builtin Legacy Search to delegate the operation getMetaObjects(String query, ...) the cids Pure REST Search API.
  *
@@ -40,7 +43,8 @@ import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
  * @version  $Revision$, $Date$
  */
 @ServiceProvider(service = RestApiCidsServerSearch.class)
-public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implements RestApiCidsServerSearch {
+public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implements RestApiCidsServerSearch,
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -51,6 +55,8 @@ public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implement
     @Getter private final SearchInfo searchInfo;
     @Getter @Setter private String domain;
     @Getter @Setter private String query;
+
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -64,7 +70,7 @@ public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implement
         searchInfo.setDescription(
             "Builtin Legacy Search to delegate the operation getMetaObjects(String query, ...) to the cids Pure REST Search API.");
 
-        final List<SearchParameterInfo> parameterDescription = new LinkedList<SearchParameterInfo>();
+        final List<SearchParameterInfo> parameterDescription = new LinkedList<>();
         SearchParameterInfo searchParameterInfo;
 
         searchParameterInfo = new SearchParameterInfo();
@@ -104,7 +110,9 @@ public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implement
                         + this.getQuery() + "'");
         }
         try {
-            final MetaObject[] metaObjects = metaService.getMetaObject(this.getUser(), this.getQuery());
+            final MetaObject[] metaObjects = metaService.getMetaObject(this.getUser(),
+                    this.getQuery(),
+                    getConnectionContext());
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug(metaObjects.length + " Meta Objects found.");
@@ -116,5 +124,10 @@ public class MetaObjectsByQuerySearch extends AbstractCidsServerSearch implement
             LOG.error(message, ex);
             throw new SearchException(message, ex);
         }
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }

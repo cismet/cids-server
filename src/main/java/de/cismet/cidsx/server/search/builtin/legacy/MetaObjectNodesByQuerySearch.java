@@ -8,8 +8,6 @@
 package de.cismet.cidsx.server.search.builtin.legacy;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
-import Sirius.server.middleware.types.MetaObject;
-import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.middleware.types.Node;
 
 import lombok.Getter;
@@ -35,6 +33,9 @@ import de.cismet.cidsx.server.api.types.SearchInfo;
 import de.cismet.cidsx.server.api.types.SearchParameterInfo;
 import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 /**
  * Builtin Legacy Search to delegate the operation getMetaObjectNodes(String query, ...) the cids Pure REST Search API.
  *
@@ -42,7 +43,8 @@ import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
  * @version  $Revision$, $Date$
  */
 @ServiceProvider(service = RestApiCidsServerSearch.class)
-public class MetaObjectNodesByQuerySearch extends AbstractCidsServerSearch implements RestApiCidsServerSearch {
+public class MetaObjectNodesByQuerySearch extends AbstractCidsServerSearch implements RestApiCidsServerSearch,
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -53,6 +55,8 @@ public class MetaObjectNodesByQuerySearch extends AbstractCidsServerSearch imple
     @Getter private final SearchInfo searchInfo;
     @Getter @Setter private String domain;
     @Getter @Setter private String query;
+
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -66,7 +70,7 @@ public class MetaObjectNodesByQuerySearch extends AbstractCidsServerSearch imple
         searchInfo.setDescription(
             "Builtin Legacy Search to delegate the operation getMetaObjectNodes(String query, ...) to the cids Pure REST Search API.");
 
-        final List<SearchParameterInfo> parameterDescription = new LinkedList<SearchParameterInfo>();
+        final List<SearchParameterInfo> parameterDescription = new LinkedList<>();
         SearchParameterInfo searchParameterInfo;
 
         searchParameterInfo = new SearchParameterInfo();
@@ -106,7 +110,9 @@ public class MetaObjectNodesByQuerySearch extends AbstractCidsServerSearch imple
                         + this.getQuery() + "'");
         }
         try {
-            final Node[] metaObjectNodes = metaService.getMetaObjectNode(this.getUser(), this.getQuery());
+            final Node[] metaObjectNodes = metaService.getMetaObjectNode(this.getUser(),
+                    this.getQuery(),
+                    getConnectionContext());
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug(metaObjectNodes.length + " Meta Object Nodes found.");
@@ -118,5 +124,10 @@ public class MetaObjectNodesByQuerySearch extends AbstractCidsServerSearch imple
             LOG.error(message, ex);
             throw new SearchException(message, ex);
         }
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }

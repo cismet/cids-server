@@ -42,6 +42,8 @@ import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.utils.MetaClassCacheService;
 
+import de.cismet.connectioncontext.ConnectionContext;
+
 import de.cismet.tools.CurrentStackTrace;
 
 /**
@@ -105,7 +107,18 @@ public class BeanFactory {
      *
      * @param  cidsbean  DOCUMENT ME!
      */
+    @Deprecated
     public void changeNullSubObjectsToTemplates(final CidsBean cidsbean) {
+        changeNullSubObjectsToTemplates(cidsbean, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  cidsbean           DOCUMENT ME!
+     * @param  connectionContext  DOCUMENT ME!
+     */
+    public void changeNullSubObjectsToTemplates(final CidsBean cidsbean, final ConnectionContext connectionContext) {
         final MetaObject metaObject = cidsbean.getMetaObject();
         final MetaClass metaClass = metaObject.getMetaClass();
         final String domain = metaObject.getDomain();
@@ -115,13 +128,13 @@ public class BeanFactory {
             } else if (oa.referencesObject()) {
                 final Object value = oa.getValue();
                 if (value == null) {
-                    final MetaClass foreignClass = (MetaClass)classCacheService.getAllClasses(domain)
+                    final MetaClass foreignClass = (MetaClass)classCacheService.getAllClasses(domain, connectionContext)
                                 .get(domain + oa.getMai().getForeignKeyClassId());
-                    final MetaObject emptyInstance = foreignClass.getEmptyInstance();
+                    final MetaObject emptyInstance = foreignClass.getEmptyInstance(connectionContext);
                     emptyInstance.setStatus(Sirius.server.localserver.object.Object.TEMPLATE);
                 } else {
                     final MetaObject subObject = (MetaObject)value;
-                    changeNullSubObjectsToTemplates(subObject.getBean());
+                    changeNullSubObjectsToTemplates(subObject.getBean(), connectionContext);
                 }
             }
         }

@@ -18,6 +18,8 @@ import java.util.HashMap;
 
 import de.cismet.cids.utils.MetaClassCacheService;
 
+import de.cismet.connectioncontext.ConnectionContext;
+
 /**
  * DOCUMENT ME!
  *
@@ -45,17 +47,37 @@ public class DomainServerMetaClassService implements MetaClassCacheService {
     //~ Methods ----------------------------------------------------------------
 
     @Override
+    @Deprecated
     public HashMap getAllClasses(final String domain) {
+        return getAllClasses(domain, ConnectionContext.createDeprecated());
+    }
+
+    @Override
+    public HashMap getAllClasses(final String domain, final ConnectionContext connectionContext) {
         return MetaClassCache.getInstance().getAllClasses(domain);
     }
 
     @Override
+    @Deprecated
     public MetaClass getMetaClass(final String domain, final String tableName) {
+        return getMetaClass(domain, tableName, ConnectionContext.createDeprecated());
+    }
+
+    @Override
+    public MetaClass getMetaClass(final String domain,
+            final String tableName,
+            final ConnectionContext connectionContext) {
         return MetaClassCache.getInstance().getMetaClass(domain, tableName);
     }
 
     @Override
+    @Deprecated
     public MetaClass getMetaClass(final String domain, final int classId) {
+        return getMetaClass(domain, classId, ConnectionContext.createDeprecated());
+    }
+
+    @Override
+    public MetaClass getMetaClass(final String domain, final int classId, final ConnectionContext connectionContext) {
         return MetaClassCache.getInstance().getMetaClass(domain, classId);
     }
 }

@@ -29,6 +29,9 @@ import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
 import de.cismet.cids.server.search.SearchException;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
+
 /**
  * As this search allows the user to specify a where clause he has to know what backend the server it is executed on
  * uses. Thus the search may fail due to wrong dialect.
@@ -36,7 +39,8 @@ import de.cismet.cids.server.search.SearchException;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaObjectNodeServerSearch {
+public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaObjectNodeServerSearch,
+    ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -50,6 +54,8 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
     private final String DOMAIN;
     private final int limit;
     private final int offset;
+
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -115,7 +121,7 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
                 }
 
                 LOG.info(query);
-                final ArrayList<ArrayList> results = ms.performCustomSearch(query);
+                final ArrayList<ArrayList> results = ms.performCustomSearch(query, getConnectionContext());
 
                 for (final ArrayList al : results) {
                     final int cid = (Integer)al.get(0);
@@ -185,5 +191,15 @@ public class QueryEditorSearch extends AbstractCidsServerSearch implements MetaO
         }
 
         return metaObjects;
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
+
+    @Override
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
     }
 }

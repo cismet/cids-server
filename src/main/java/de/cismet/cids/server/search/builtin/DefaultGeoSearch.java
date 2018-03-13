@@ -32,6 +32,9 @@ import de.cismet.cids.server.search.SearchException;
 import de.cismet.cids.server.search.SearchResultListener;
 import de.cismet.cids.server.search.SearchResultListenerProvider;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
+
 /**
  * DOCUMENT ME!
  *
@@ -39,7 +42,9 @@ import de.cismet.cids.server.search.SearchResultListenerProvider;
  * @version  $Revision$, $Date$
  */
 @ServiceProvider(service = GeoSearch.class)
-public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSearch, SearchResultListenerProvider {
+public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSearch,
+    SearchResultListenerProvider,
+    ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -50,6 +55,8 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
 
     private Geometry geometry;
     private transient SearchResultListener searchResultListener;
+
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Methods ----------------------------------------------------------------
 
@@ -142,7 +149,8 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
                                     }
                                     return result;
                                 }
-                            });
+                            },
+                            getConnectionContext());
 
                     for (final ArrayList al : result) {
                         // FIXME: yet another hack to circumvent odd type behaviour
@@ -210,5 +218,15 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
     @Override
     public SearchResultListener getSearchResultListener() {
         return searchResultListener;
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
+
+    @Override
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
     }
 }

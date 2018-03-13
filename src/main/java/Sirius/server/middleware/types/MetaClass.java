@@ -22,6 +22,8 @@ import de.cismet.cids.tools.tostring.ToStringConverter;
 
 import de.cismet.cids.utils.ClassloadingHelper;
 
+import de.cismet.connectioncontext.ConnectionContext;
+
 /**
  * Return Type of a RMI method.
  *
@@ -279,11 +281,23 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
     }
 
     /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    @Deprecated
+    public MetaObject getEmptyInstance() {
+        return getEmptyInstance(ConnectionContext.createDeprecated());
+    }
+
+    /**
      * returns an empty instance of the metaClass. only first level initialization. no arrays. no subobjects.
+     *
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  MetaObject
      */
-    public MetaObject getEmptyInstance() {
+    public MetaObject getEmptyInstance(final ConnectionContext connectionContext) {
         try {
             final Sirius.server.localserver.object.Object o = new Sirius.server.localserver.object.DefaultObject(
                     -1,
@@ -320,7 +334,9 @@ public class MetaClass extends Sirius.server.localserver._class.Class implements
                 o.addAttribute(oAttr);
             }
 
-            return new DefaultMetaObject(o, getDomain());
+            final DefaultMetaObject mo = new DefaultMetaObject(o, getDomain());
+            mo.initWithConnectionContext(connectionContext);
+            return mo;
         } catch (Exception e) {
             getLogger().error("Error in getEmptyInstance", e); // NOI18N
             return null;

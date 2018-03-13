@@ -19,6 +19,9 @@ import java.util.Map;
 import de.cismet.cids.server.messages.CidsServerMessage;
 import de.cismet.cids.server.messages.CidsServerMessageManagerImpl;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
+
 /**
  * DOCUMENT ME!
  *
@@ -26,7 +29,7 @@ import de.cismet.cids.server.messages.CidsServerMessageManagerImpl;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = ServerAction.class)
-public class CheckCidsServerMessageAction implements ServerAction, UserAwareServerAction {
+public class CheckCidsServerMessageAction implements ServerAction, UserAwareServerAction, ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -51,9 +54,21 @@ public class CheckCidsServerMessageAction implements ServerAction, UserAwareServ
 
     //~ Instance fields --------------------------------------------------------
 
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
+
     private User user;
 
     //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
+
+    @Override
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
+    }
 
     @Override
     public User getUser() {
@@ -95,7 +110,7 @@ public class CheckCidsServerMessageAction implements ServerAction, UserAwareServ
         }
 
         final Collection<CidsServerMessage> messages = CidsServerMessageManagerImpl.getInstance()
-                    .getMessages(getUser(), lastMessageIdPerCategory);
+                    .getMessages(getUser(), lastMessageIdPerCategory, getConnectionContext());
 
         return messages;
     }

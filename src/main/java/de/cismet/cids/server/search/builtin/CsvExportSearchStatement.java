@@ -23,13 +23,16 @@ import java.util.List;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
+
 /**
  * DOCUMENT ME!
  *
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class CsvExportSearchStatement extends AbstractCidsServerSearch {
+public class CsvExportSearchStatement extends AbstractCidsServerSearch implements ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -48,6 +51,8 @@ public class CsvExportSearchStatement extends AbstractCidsServerSearch {
     private final String distinctOn;
     private String dateFormat = "dd.MM.yyyy";
     private String[] booleanFormat = new String[] { "no", "yes" };
+
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -93,9 +98,12 @@ public class CsvExportSearchStatement extends AbstractCidsServerSearch {
     public Collection<String> performServerSearch() {
         try {
             final MetaService ms = (MetaService)(getActiveLocalServers().get(domainName));
-            final MetaClass metaClass = ms.getClassByTableName(getUser(), metaClassName.toLowerCase());
+            final MetaClass metaClass = ms.getClassByTableName(
+                    getUser(),
+                    metaClassName.toLowerCase(),
+                    getConnectionContext());
             if ((metaClass != null) && !metaClass.getAttributeByName("Queryable").isEmpty()) {
-                final MetaObject moDummy = metaClass.getEmptyInstance();
+                final MetaObject moDummy = metaClass.getEmptyInstance(getConnectionContext());
 
                 final List<String> formattedFields = new ArrayList<String>(fields.size());
                 for (final String field : fields) {
@@ -122,7 +130,7 @@ public class CsvExportSearchStatement extends AbstractCidsServerSearch {
                             + "FROM " + metaClass.getTableName() + " "
                             + "WHERE " + whereCause;
 
-                final ArrayList<ArrayList> results = ms.performCustomSearch(sql);
+                final ArrayList<ArrayList> results = ms.performCustomSearch(sql, getConnectionContext());
 
                 final ArrayList<String> rows = new ArrayList<String>();
                 for (final ArrayList result : results) {
@@ -200,5 +208,15 @@ public class CsvExportSearchStatement extends AbstractCidsServerSearch {
             }
             return sb.toString();
         }
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
+
+    @Override
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
     }
 }

@@ -30,7 +30,7 @@ import java.util.regex.*;
  * @author   schlob
  * @version  $Revision$, $Date$
  */
-public class NodeComparator implements java.util.Comparator {
+public class NodeComparator implements java.util.Comparator<Node> {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -56,29 +56,17 @@ public class NodeComparator implements java.util.Comparator {
      * @return  DOCUMENT ME!
      */
     @Override
-    public int compare(final Object o1, final Object o2) {
-        String o1String = o1.toString();
-        String o2String = o2.toString();
-
-        if ((o1 instanceof Node) && (o2 instanceof Node)) {
-            o1String = ((Node)o1).getName();
-            o2String = ((Node)o2).getName();
-        }
-
-        if (o1String == null) {
-            o1String = ""; // NOI18N
-        }
-        if (o2String == null) {
-            o2String = ""; // NOI18N
-        }
+    public int compare(final Node o1, final Node o2) {
+        final String o1String = ((o1 != null) && (o1.getName() != null)) ? o1.getName() : "";
+        final String o2String = ((o2 != null) && (o2.getName() != null)) ? o2.getName() : "";
 
         int balance = 0;
 
-        if (o1String.equals(o2String)) {              // beide sind gleich zur\u00FCck 0
+        if (o1String.equals(o2String)) {          // beide sind gleich zur\u00FCck 0
             return balance;
-        } else if (o1String.indexOf(o2String) > -1) { // der eine ist ein Substring des anderen
+        } else if (o1String.contains(o2String)) { // der eine ist ein Substring des anderen
             return 1;
-        } else if (o2String.indexOf(o1String) > -1) {
+        } else if (o2String.contains(o1String)) {
             return -1;
         } else {
             final Object[] o1s = split(o1String, 0);

@@ -7,6 +7,8 @@
 ****************************************************/
 package de.cismet.cids.server.actions;
 
+import de.cismet.connectioncontext.ConnectionContext;
+
 /**
  * DOCUMENT ME!
  *
@@ -25,6 +27,7 @@ public interface ServerAction {
      *
      * @return  DOCUMENT ME!
      */
+    @Deprecated
     Object execute(final Object body, final ServerActionParameter... params);
 
     /**

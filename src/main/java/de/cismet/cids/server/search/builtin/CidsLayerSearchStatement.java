@@ -36,13 +36,16 @@ import de.cismet.cids.server.search.SearchException;
 
 import de.cismet.cids.tools.CidsLayerUtil;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
+
 /**
  * DOCUMENT ME!
  *
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
+public class CidsLayerSearchStatement extends AbstractCidsServerSearch implements ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -81,6 +84,8 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
     private boolean exactSearch = false;
     private CidsLayerInfo layerInfo;
     private boolean compressed = false;
+
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -295,7 +300,7 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
             }
 
             LOG.info(queryString.toString());
-            ArrayList<ArrayList> result = ms.performCustomSearch(queryString.toString());
+            ArrayList<ArrayList> result = ms.performCustomSearch(queryString.toString(), getConnectionContext());
 
             if (compressed) {
                 try {
@@ -466,5 +471,15 @@ public class CidsLayerSearchStatement extends AbstractCidsServerSearch {
         } else {
             return result;
         }
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
+
+    @Override
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
     }
 }
