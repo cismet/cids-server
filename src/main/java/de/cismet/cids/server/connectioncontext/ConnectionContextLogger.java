@@ -63,27 +63,27 @@ public class ConnectionContextLogger {
      * @param  methodName  DOCUMENT ME!
      * @param  params      DOCUMENT ME!
      */
-    public void logConnectionContext(ConnectionContext context,
+    public void logConnectionContext(final ConnectionContext context,
             final User user,
             final String methodName,
             final Object... params) {
-        if (context == null) {
-            context = ConnectionContext.createDeprecated();
-        }
-        final ConnectionContextLog contextLog = new ConnectionContextLog(new Date(),
-                user,
-                context,
-                methodName,
-                params);
-        final Exception ex = (Exception)context.getAdditionalFields()
-                    .get(AbstractConnectionContext.ADDITIONAL_FIELD__STACKTRACE_EXCEPTION);
-        if (Category.DEPRECATED.equals(context.getCategory())) {
-            LOG.fatal(contextLog, ex);
-        } else if (Category.DUMMY.equals(context.getCategory())) {
-            LOG.error(contextLog, ex);
-        } else {
-            LOG.info(contextLog, ex);
-        }
+//        if (context == null) {
+//            context = ConnectionContext.createDeprecated();
+//        }
+//        final ConnectionContextLog contextLog = new ConnectionContextLog(new Date(),
+//                user,
+//                context,
+//                methodName,
+//                params);
+//        final Exception ex = (Exception)context.getAdditionalFields()
+//                    .get(AbstractConnectionContext.ADDITIONAL_FIELD__STACKTRACE_EXCEPTION);
+//        if (Category.DEPRECATED.equals(context.getCategory())) {
+//            LOG.fatal(contextLog, ex);
+//        } else if (Category.DUMMY.equals(context.getCategory())) {
+//            LOG.error(contextLog, ex);
+//        } else {
+//            LOG.info(contextLog, ex);
+//        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
