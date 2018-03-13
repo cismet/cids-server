@@ -13,10 +13,8 @@
 package Sirius.server.middleware.impls.proxy;
 //import Sirius.middleware.interfaces.domainserver.*;
 
-import Sirius.server.localserver.user.LoginRestriction;
 import Sirius.server.localserver.user.LoginRestrictionHelper;
 import Sirius.server.middleware.interfaces.domainserver.UserService;
-import Sirius.server.newuser.LoginRestrictionUserException;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 import Sirius.server.newuser.UserGroup;
@@ -24,15 +22,14 @@ import Sirius.server.newuser.UserServer;
 
 import org.apache.log4j.Logger;
 
-import org.openide.util.Lookup;
-
 import java.rmi.RemoteException;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
+
+import de.cismet.connectioncontext.ConnectionContext;
 
 /**
  * DOCUMENT ME!
@@ -78,6 +75,7 @@ public class UserServiceImpl {
      * @param   userLsName       DOCUMENT ME!
      * @param   userName         DOCUMENT ME!
      * @param   password         DOCUMENT ME!
+     * @param   context          DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -88,7 +86,8 @@ public class UserServiceImpl {
             final String userGroupName,
             final String userLsName,
             final String userName,
-            final String password) throws RemoteException, UserException {
+            final String password,
+            final ConnectionContext context) throws RemoteException, UserException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("getUser calles for user::" + userName); // NOI18N
 
@@ -107,7 +106,7 @@ public class UserServiceImpl {
                 (Sirius.server.middleware.interfaces.domainserver.UserService)activeLocalServers.get(userLsName);
 
             if (us != null) {
-                validated = us.validateUser(u, password);
+                validated = us.validateUser(u, password, context);
             } else {
                 throw new UserException(
                     "Login failed, home server of the user is not reachable :: "
@@ -120,7 +119,7 @@ public class UserServiceImpl {
         }
 
         if (validated) {
-            final String loginRestrictionValue = getConfigAttr(u, "login.restriction");
+            final String loginRestrictionValue = getConfigAttr(u, "login.restriction", context);
             if (loginRestrictionValue != null) {
                 LoginRestrictionHelper.getInstance().checkLoginRestriction(loginRestrictionValue);
             }
@@ -133,11 +132,13 @@ public class UserServiceImpl {
     /**
      * result contains strings.
      *
+     * @param   context  DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Vector getUserGroupNames() throws RemoteException {
+    public Vector getUserGroupNames(final ConnectionContext context) throws RemoteException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("getUserGroupName called"); // NOI18N
         }
@@ -168,12 +169,14 @@ public class UserServiceImpl {
      *
      * @param   userName  DOCUMENT ME!
      * @param   lsHome    DOCUMENT ME!
+     * @param   context   DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Vector getUserGroupNames(final String userName, final String lsHome) throws RemoteException {
+    public Vector getUserGroupNames(final String userName, final String lsHome, final ConnectionContext context)
+            throws RemoteException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("getUserGroupNames called for :username:" + userName); // NOI18N
         }
@@ -186,32 +189,37 @@ public class UserServiceImpl {
      * @param   user         DOCUMENT ME!
      * @param   oldPassword  DOCUMENT ME!
      * @param   newPassword  DOCUMENT ME!
+     * @param   context      DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      * @throws  UserException    DOCUMENT ME!
      */
-    public boolean changePassword(final User user, final String oldPassword, final String newPassword)
-            throws RemoteException, UserException {
+    public boolean changePassword(final User user,
+            final String oldPassword,
+            final String newPassword,
+            final ConnectionContext context) throws RemoteException, UserException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("changePassword called for :user:" + user); // NOI18N
         }
         return ((Sirius.server.middleware.interfaces.domainserver.UserService)activeLocalServers.get(user.getDomain()))
-                    .changePassword(user, oldPassword, newPassword);
+                    .changePassword(user, oldPassword, newPassword, context);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   user  DOCUMENT ME!
-     * @param   key   DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   key      DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public String getConfigAttr(final User user, final String key) throws RemoteException {
+    public String getConfigAttr(final User user, final String key, final ConnectionContext context)
+            throws RemoteException {
         final String domain;
         final String realKey;
         if (key.contains(DOMAINSPLITTER)) {
@@ -224,7 +232,7 @@ public class UserServiceImpl {
         }
         final UserService userService = (UserService)activeLocalServers.get(domain);
         if (userService != null) {
-            return userService.getConfigAttr(user, realKey);
+            return userService.getConfigAttr(user, realKey, context);
         } else {
             return null;
         }

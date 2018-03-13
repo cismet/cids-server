@@ -11,14 +11,11 @@
  */
 package de.cismet.cids.server.search.builtin;
 
-import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.newuser.User;
 
 import org.apache.log4j.Logger;
-
-import java.lang.reflect.Constructor;
 
 import java.rmi.RemoteException;
 
@@ -31,13 +28,16 @@ import de.cismet.cids.server.search.SearchException;
 
 import de.cismet.cids.tools.CidsLayerUtil;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
+
 /**
  * DOCUMENT ME!
  *
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public class CidsLayerInitStatement extends AbstractCidsServerSearch {
+public class CidsLayerInitStatement extends AbstractCidsServerSearch implements ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -51,6 +51,8 @@ public class CidsLayerInitStatement extends AbstractCidsServerSearch {
     private String domain;
     private CidsLayerInfo layerInfo;
     private String queryString = null;
+
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -114,10 +116,10 @@ public class CidsLayerInitStatement extends AbstractCidsServerSearch {
                     query = query + " WHERE (" + envelopeQuery + ")";
                 }
             }
-            final ArrayList<ArrayList> envelope = ms.performCustomSearch(query);
+            final ArrayList<ArrayList> envelope = ms.performCustomSearch(query, getConnectionContext());
             final String typeQuery = String.format(geometryTypeQuery, layerInfo.getSqlGeoField(), tables);
 
-            final ArrayList<ArrayList> geometryType = ms.performCustomSearch(typeQuery);
+            final ArrayList<ArrayList> geometryType = ms.performCustomSearch(typeQuery, getConnectionContext());
             String type = null;
 
             if (geometryType.size() == 1) {
@@ -137,5 +139,15 @@ public class CidsLayerInitStatement extends AbstractCidsServerSearch {
             LOG.error("Error in customSearch", ex);
         }
         return null;
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
+
+    @Override
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
     }
 }

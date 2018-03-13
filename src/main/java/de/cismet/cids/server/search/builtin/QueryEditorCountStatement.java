@@ -18,13 +18,16 @@ import java.util.Collection;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
+
 /**
  * DOCUMENT ME!
  *
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class QueryEditorCountStatement extends AbstractCidsServerSearch {
+public class QueryEditorCountStatement extends AbstractCidsServerSearch implements ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -38,6 +41,8 @@ public class QueryEditorCountStatement extends AbstractCidsServerSearch {
     private final String metaClass;
     private final String whereClause;
     private final String domain;
+
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -63,7 +68,7 @@ public class QueryEditorCountStatement extends AbstractCidsServerSearch {
 
             final MetaService ms = (MetaService)getActiveLocalServers().get(domain);
 
-            final ArrayList<ArrayList> result = ms.performCustomSearch(sql);
+            final ArrayList<ArrayList> result = ms.performCustomSearch(sql, getConnectionContext());
 
             final ArrayList<Long> aln = new ArrayList<Long>();
             for (final ArrayList al : result) {
@@ -77,5 +82,15 @@ public class QueryEditorCountStatement extends AbstractCidsServerSearch {
 
             return null;
         }
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
+
+    @Override
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
     }
 }

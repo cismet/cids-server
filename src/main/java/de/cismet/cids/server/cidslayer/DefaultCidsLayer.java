@@ -26,13 +26,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
+
 /**
  * DOCUMENT ME!
  *
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public class DefaultCidsLayer implements CidsLayerInfo, Serializable {
+public class DefaultCidsLayer implements CidsLayerInfo, Serializable, ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -56,6 +59,8 @@ public class DefaultCidsLayer implements CidsLayerInfo, Serializable {
     private String[] primitiveColumnTypes;
     private String additionalJoins = null;
     private final String domain;
+
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -120,7 +125,7 @@ public class DefaultCidsLayer implements CidsLayerInfo, Serializable {
         final List<String> sb = new ArrayList<>();
         final StringBuilder joins = new StringBuilder();
         boolean firstAttr = true;
-        final HashMap allClasses = mc.getEmptyInstance().getAllClasses();
+        final HashMap allClasses = mc.getEmptyInstance(getConnectionContext()).getAllClasses();
         final List<String> columnNamesList = new ArrayList<>();
         final List<String> sqlColumnNamesList = new ArrayList<>();
         final List<String> columnPropertyNamesList = new ArrayList<>();
@@ -254,7 +259,7 @@ public class DefaultCidsLayer implements CidsLayerInfo, Serializable {
         if ((catalogueNameMap != null) && (catalogueNameMap.get(attr.getName()) != null)) {
             namePropertyName = catalogueNameMap.get(attr.getName());
         }
-        final ObjectAttribute nameAttr = (ObjectAttribute)foreignClass.getEmptyInstance()
+        final ObjectAttribute nameAttr = (ObjectAttribute)foreignClass.getEmptyInstance(getConnectionContext())
                     .getAttribute(namePropertyName);
 
         if (nameAttr != null) {
@@ -449,5 +454,15 @@ public class DefaultCidsLayer implements CidsLayerInfo, Serializable {
     @Override
     public String getRestriction() {
         return null;
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
+
+    @Override
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
     }
 }

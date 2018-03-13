@@ -51,6 +51,10 @@ import de.cismet.cids.utils.CidsBeanPersistService;
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+import de.cismet.connectioncontext.ConnectionContextStore;
+
 import static de.cismet.cids.dynamics.CidsBean.mapper;
 
 /**
@@ -61,7 +65,7 @@ import static de.cismet.cids.dynamics.CidsBean.mapper;
  */
 //@JsonSerialize(using = CidsBeanJsonSerializer.class)
 //@JsonDeserialize(using = CidsBeanJsonDeserializer.class)
-public class CidsBean implements PropertyChangeListener {
+public class CidsBean implements PropertyChangeListener, ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -107,6 +111,7 @@ public class CidsBean implements PropertyChangeListener {
     HashMap<String, CidsBean> intraObjectCache = new HashMap<String, CidsBean>();
 
     private CustomBeanPermissionProvider customPermissionProvider;
+    private final ConnectionContext dummyConnectionContext = ConnectionContext.createDummy();
 
     //~ Methods ----------------------------------------------------------------
 
@@ -126,28 +131,6 @@ public class CidsBean implements PropertyChangeListener {
      */
     public static ObjectMapper getCidsBeanIntraObjectCacheMapper() {
         return intraObjectCacheMapper;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   meta       DOCUMENT ME!
-     * @param   u          DOCUMENT ME!
-     * @param   domain     DOCUMENT ME!
-     * @param   tableName  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    public static CidsBean constructNew(final MetaService meta,
-            final User u,
-            final String domain,
-            final String tableName) throws Exception {
-        final MetaClass mc = meta.getClassByTableName(u, tableName, domain);
-        final MetaObject mo = mc.getEmptyInstance();
-
-        return mo.getBean();
     }
 
     /**
@@ -310,17 +293,55 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @throws  Exception  DOCUMENT ME!
      */
+    @Deprecated
     public CidsBean persist(final MetaService metaService, final User user, final String domain) throws Exception {
-        if (metaObject.getStatus() == MetaObject.MODIFIED) {
-            metaService.updateMetaObject(user, metaObject, domain);
+        return persist(metaService, user, domain, null);
+    }
 
-            return metaService.getMetaObject(user, metaObject.getID(), metaObject.getClassID(), domain).getBean();
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   metaService        DOCUMENT ME!
+     * @param   user               DOCUMENT ME!
+     * @param   domain             DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public CidsBean persist(final MetaService metaService,
+            final User user,
+            final String domain,
+            final ConnectionContext connectionContext) throws Exception {
+        if (metaObject.getStatus() == MetaObject.MODIFIED) {
+            metaService.updateMetaObject(
+                user,
+                metaObject,
+                domain,
+                connectionContext);
+
+            return metaService.getMetaObject(
+                        user,
+                        metaObject.getID(),
+                        metaObject.getClassID(),
+                        domain,
+                        connectionContext)
+                        .getBean();
         } else if (metaObject.getStatus() == MetaObject.TO_DELETE) {
-            metaService.deleteMetaObject(user, metaObject, domain);
+            metaService.deleteMetaObject(
+                user,
+                metaObject,
+                domain,
+                connectionContext);
 
             return null;
         } else if (metaObject.getStatus() == MetaObject.NEW) {
-            final MetaObject mo = metaService.insertMetaObject(user, metaObject, domain);
+            final MetaObject mo = metaService.insertMetaObject(
+                    user,
+                    metaObject,
+                    domain,
+                    connectionContext);
             if (mo != null) {
                 return mo.getBean();
             }
@@ -336,9 +357,26 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @throws  Exception  DOCUMENT ME!
      */
+    @Deprecated
     public CidsBean persist() throws Exception {
+        return persist(null);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public CidsBean persist(final ConnectionContext connectionContext) throws Exception {
         final CidsBeanPersistService persistService = Lookup.getDefault().lookup(CidsBeanPersistService.class);
         if (persistService != null) {
+            if (persistService instanceof ConnectionContextStore) {
+                ((ConnectionContextStore)persistService).initWithConnectionContext(connectionContext);
+            }
             return persistService.persistCidsBean(this);
         }
 
@@ -524,8 +562,9 @@ public class CidsBean implements PropertyChangeListener {
         if (classCacheService != null) {
             final MetaClass mc = classCacheService.getMetaClass(
                     getMetaObject().getDomain(),
-                    oa.getMai().getForeignKeyClassId());
-            final CidsBean newOne = mc.getEmptyInstance().getBean();
+                    oa.getMai().getForeignKeyClassId(),
+                    getConnectionContext());
+            final CidsBean newOne = mc.getEmptyInstance(getConnectionContext()).getBean();
             setProperty(name, newOne);
         } else {
             throw new RuntimeException("Could not lookup MetaClassCacheService"); // NOI18N
@@ -548,9 +587,10 @@ public class CidsBean implements PropertyChangeListener {
             // abs weil im 1:n Fall eine negative class-id im foreign-key-field steht
             final MetaClass firstMC = classCacheService.getMetaClass(
                     getMetaObject().getDomain(),
-                    Math.abs(oa.getMai().getForeignKeyClassId()));
+                    Math.abs(oa.getMai().getForeignKeyClassId()),
+                    getConnectionContext());
             if (oa.isVirtualOneToManyAttribute()) {
-                final CidsBean newOne = firstMC.getEmptyInstance().getBean();
+                final CidsBean newOne = firstMC.getEmptyInstance(getConnectionContext()).getBean();
                 return newOne;
             } else if (oa.isArray()) {
                 final HashMap hm = firstMC.getMemberAttributeInfos();
@@ -560,8 +600,10 @@ public class CidsBean implements PropertyChangeListener {
                     if (tmp instanceof MemberAttributeInfo) {
                         if (((MemberAttributeInfo)tmp).isForeignKey()) {
                             final int classId = ((MemberAttributeInfo)tmp).getForeignKeyClassId();
-                            final MetaClass targetClass = classCacheService.getMetaClass(firstMC.getDomain(), classId);
-                            final CidsBean newOne = targetClass.getEmptyInstance().getBean();
+                            final MetaClass targetClass = classCacheService.getMetaClass(firstMC.getDomain(),
+                                    classId,
+                                    getConnectionContext());
+                            final CidsBean newOne = targetClass.getEmptyInstance(getConnectionContext()).getBean();
                             return newOne;
                         }
                     }
@@ -687,12 +729,14 @@ public class CidsBean implements PropertyChangeListener {
                                 new Sirius.server.localserver.object.DefaultObject(
                                     getMetaObject().getID(),
                                     classId);
-                            dummy = new DefaultMetaObject(dummyO, getMetaObject().getDomain());
-                            dummy.setReferencingObjectAttribute(oa);
-                            dummy.setDummy(true);
-                            dummy.setStatus(MetaObject.NEW);
-                            oa.setValue(dummy);
+                            final DefaultMetaObject mo = new DefaultMetaObject(dummyO, getMetaObject().getDomain());
+                            mo.initWithConnectionContext(getConnectionContext());
+                            mo.setReferencingObjectAttribute(oa);
+                            mo.setDummy(true);
+                            mo.setStatus(MetaObject.NEW);
+                            oa.setValue(mo);
                             oa.setChanged(true);
+                            dummy = mo;
                         }
 
                         // 1:n Beziehung??
@@ -718,7 +762,8 @@ public class CidsBean implements PropertyChangeListener {
                             final MetaClass zwischenTabellenKlasse = (MetaClass)(getMetaObject().getAllClasses()).get(
                                     getMetaObject().getDomain()
                                             + oa.getMai().getForeignKeyClassId());
-                            final MetaObject arrayElement = zwischenTabellenKlasse.getEmptyInstance();
+                            final MetaObject arrayElement = zwischenTabellenKlasse.getEmptyInstance(
+                                    getConnectionContext());
 
                             final ObjectAttribute[] arrayElementAttrs = arrayElement.getAttribs();
                             for (final ObjectAttribute arrayElementAttribute : arrayElementAttrs) {
@@ -1046,10 +1091,34 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @throws  Exception  DOCUMENT ME!
      */
+    @Deprecated
     public static CidsBean createNewCidsBeanFromTableName(final String domainName,
             final String tableName,
             final Map<String, Object> initialProperties) throws Exception {
-        final CidsBean newBean = createNewCidsBeanFromTableName(domainName, tableName);
+        return createNewCidsBeanFromTableName(
+                domainName,
+                tableName,
+                initialProperties,
+                ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   domainName         DOCUMENT ME!
+     * @param   tableName          DOCUMENT ME!
+     * @param   initialProperties  DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static CidsBean createNewCidsBeanFromTableName(final String domainName,
+            final String tableName,
+            final Map<String, Object> initialProperties,
+            final ConnectionContext connectionContext) throws Exception {
+        final CidsBean newBean = createNewCidsBeanFromTableName(domainName, tableName, connectionContext);
         for (final Entry<String, Object> property : initialProperties.entrySet()) {
             final Object valuObject = property.getValue();
             if (valuObject instanceof Collection) {
@@ -1130,13 +1199,31 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @throws  Exception  DOCUMENT ME!
      */
+    @Deprecated
     public static CidsBean createNewCidsBeanFromTableName(final String domainName, final String tableName)
             throws Exception {
+        return createNewCidsBeanFromTableName(domainName, tableName, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   domainName         DOCUMENT ME!
+     * @param   tableName          DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static CidsBean createNewCidsBeanFromTableName(final String domainName,
+            final String tableName,
+            final ConnectionContext connectionContext) throws Exception {
         final MetaClassCacheService classcache = Lookup.getDefault().lookup(MetaClassCacheService.class);
         if (tableName != null) {
-            final MetaClass metaClass = classcache.getMetaClass(domainName, tableName);
+            final MetaClass metaClass = classcache.getMetaClass(domainName, tableName, connectionContext);
             if (metaClass != null) {
-                return metaClass.getEmptyInstance().getBean();
+                return metaClass.getEmptyInstance(connectionContext).getBean();
             }
         }
         throw new Exception("Could not find MetaClass for table " + tableName);
@@ -1152,11 +1239,29 @@ public class CidsBean implements PropertyChangeListener {
      *
      * @throws  Exception  DOCUMENT ME!
      */
+    @Deprecated
     public static MetaClass getMetaClassFromTableName(final String domainName, final String tableName)
             throws Exception {
+        return getMetaClassFromTableName(domainName, tableName, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   domainName         DOCUMENT ME!
+     * @param   tableName          DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static MetaClass getMetaClassFromTableName(final String domainName,
+            final String tableName,
+            final ConnectionContext connectionContext) throws Exception {
         final MetaClassCacheService classcache = Lookup.getDefault().lookup(MetaClassCacheService.class);
         if (tableName != null) {
-            final MetaClass mc = classcache.getMetaClass(domainName, tableName);
+            final MetaClass mc = classcache.getMetaClass(domainName, tableName, connectionContext);
             if (mc != null) {
                 return mc;
             }
@@ -1210,5 +1315,15 @@ public class CidsBean implements PropertyChangeListener {
      */
     protected void setJsonSerializerParams(final IntraObjectCacheJsonParams jsonSerializerParams) {
         this.jsonSerializerParams = jsonSerializerParams;
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        final MetaObject mo = getMetaObject();
+        if ((mo != null) && (mo instanceof ConnectionContextProvider)) {
+            return ((ConnectionContextProvider)mo).getConnectionContext();
+        } else {
+            return dummyConnectionContext;
+        }
     }
 }

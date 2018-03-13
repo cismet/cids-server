@@ -12,6 +12,8 @@ import Sirius.server.newuser.*;
 
 import java.rmi.*;
 
+import de.cismet.connectioncontext.ConnectionContext;
+
 /**
  * Interface for operations on the systems catalogue.
  *
@@ -22,37 +24,76 @@ public interface CatalogueService extends Remote {
 
     //~ Methods ----------------------------------------------------------------
 
-    // retrieves all by this user accessible rootNodes of one localserver
+    /**
+     * retrieves all by this user accessible rootNodes of one localserver.
+     *
+     * @param   user        DOCUMENT ME!
+     * @param   domainName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Deprecated
+    Node[] getRoots(User user, String domainName) throws RemoteException;
+
     /**
      * delivers root nodes of this server, if the server knows this user.
      *
      * @param   user        Usertoken 2 b checked by server, if the user exists on this server the roots are returned
      * @param   domainName  server name
+     * @param   context     DOCUMENT ME!
      *
      * @return  all root nodes of a certain server
      *
      * @throws  RemoteException  server failure or wrong user token
      */
-    Node[] getRoots(User user, String domainName) throws RemoteException;
+    Node[] getRoots(User user, String domainName, ConnectionContext context) throws RemoteException;
 
-    // retrieves all by this user accessible rootNodes
+    /**
+     * retrieves all by this user accessible rootNodes.
+     *
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Deprecated
+    Node[] getRoots(User user) throws RemoteException;
+
     /**
      * delivers root nodes of all servers online, if a server knows this user.
      *
-     * @param   user  user token
+     * @param   user     user token
+     * @param   context  DOCUMENT ME!
      *
      * @return  all rootnodes available from servers online
      *
      * @throws  RemoteException  server error or wrong user token
      */
-    Node[] getRoots(User user) throws RemoteException;
+    Node[] getRoots(User user, ConnectionContext context) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   node  DOCUMENT ME!
+     * @param   usr   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Deprecated
+    Node[] getChildren(Node node, User usr) throws RemoteException;
 
     // retrieves all children of node
     /**
      * delivers all nodes referenced from nodeId visible for usr.
      *
-     * @param   node  id of the parent node
-     * @param   usr   user token to be able to check permission and deliver user tailored views
+     * @param   node     id of the parent node
+     * @param   usr      user token to be able to check permission and deliver user tailored views
+     * @param   context  DOCUMENT ME!
      *
      * @return  all children of this parent visible for this user
      *
@@ -60,7 +101,7 @@ public interface CatalogueService extends Remote {
      */
     // public Node[] getChildren(User usr, int nodeID, String domainName) throws RemoteException;
 
-    Node[] getChildren(Node node, User usr) throws RemoteException;
+    Node[] getChildren(Node node, User usr, ConnectionContext context) throws RemoteException;
 
     // retrieves all parents from the same domain note that this is not a complete set
     // of parents and as the navigation structure is a graph ther can be arbitrarily many
@@ -77,57 +118,105 @@ public interface CatalogueService extends Remote {
      */
     // public Node[] getParents(User usr, int nodeID, String domain) throws RemoteException;
 
+    @Deprecated
+    Node addNode(Node node, Link parent, User user) throws RemoteException;
+
     /**
      * enables User to add a node to the catalogue if User has sufficient permissions the new node will inherit all
      * permissions from the parent node referenced by the parent parameter.
      *
-     * @param   node    new node
-     * @param   parent  reference to the parent node in the catalogue
-     * @param   user    user adding this node,
+     * @param   node     new node
+     * @param   parent   reference to the parent node in the catalogue
+     * @param   user     user adding this node,
+     * @param   context  DOCUMENT ME!
      *
      * @return  returns the node succesfully added
      *
      * @throws  RemoteException  server error
      */
-    Node addNode(Node node, Link parent, User user) throws RemoteException;
+    Node addNode(Node node, Link parent, User user, ConnectionContext context) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   node  DOCUMENT ME!
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Deprecated
+    boolean deleteNode(Node node, User user) throws RemoteException;
 
     /**
      * deletes a certain node and all the references to it <B>on the domain where the node is hosted.</B>
      *
-     * @param   node  node to be deleted
-     * @param   user  the user deleting this node
+     * @param   node     node to be deleted
+     * @param   user     the user deleting this node
+     * @param   context  DOCUMENT ME!
      *
      * @return  whether the node was succesfully deleted
      *
      * @throws  RemoteException  server error eg unsufficient permissions
      */
-    boolean deleteNode(Node node, User user) throws RemoteException;
+    boolean deleteNode(Node node, User user, ConnectionContext context) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   from  DOCUMENT ME!
+     * @param   to    DOCUMENT ME!
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Deprecated
+    boolean addLink(Node from, Node to, User user) throws RemoteException;
 
     /**
      * links 2 existing nodes.
      *
-     * @param   from  parent
-     * @param   to    child
-     * @param   user  user token 2 b checked for sufficient permissions for this action
+     * @param   from     parent
+     * @param   to       child
+     * @param   user     user token 2 b checked for sufficient permissions for this action
+     * @param   context  DOCUMENT ME!
      *
      * @return  whether the linking of the nodes worked
      *
      * @throws  RemoteException  server error eg one node does not exist
      */
-    boolean addLink(Node from, Node to, User user) throws RemoteException;
+    boolean addLink(Node from, Node to, User user, ConnectionContext context) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   from  DOCUMENT ME!
+     * @param   to    DOCUMENT ME!
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Deprecated
+    boolean deleteLink(Node from, Node to, User user) throws RemoteException;
 
     /**
      * removes the link between a parent and a child node.
      *
-     * @param   from  parent
-     * @param   to    child
-     * @param   user  user token 2 b checked for sufficient permissions for this action
+     * @param   from     parent
+     * @param   to       child
+     * @param   user     user token 2 b checked for sufficient permissions for this action
+     * @param   context  DOCUMENT ME!
      *
      * @return  whether the action was completed successfully
      *
      * @throws  RemoteException  server error eg the link and/or the corresponding nodes do not exist
      */
-    boolean deleteLink(Node from, Node to, User user) throws RemoteException;
+    boolean deleteLink(Node from, Node to, User user, ConnectionContext context) throws RemoteException;
 
     // public boolean copySubTree(Node root, User user) throws RemoteException;
 }

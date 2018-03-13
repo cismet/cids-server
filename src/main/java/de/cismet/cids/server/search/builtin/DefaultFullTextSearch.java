@@ -32,6 +32,9 @@ import de.cismet.cids.server.search.SearchException;
 import de.cismet.cids.server.search.SearchResultListener;
 import de.cismet.cids.server.search.SearchResultListenerProvider;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
+
 /**
  * DOCUMENT ME!
  *
@@ -40,7 +43,8 @@ import de.cismet.cids.server.search.SearchResultListenerProvider;
  */
 @ServiceProvider(service = FullTextSearch.class)
 public class DefaultFullTextSearch extends AbstractCidsServerSearch implements FullTextSearch,
-    SearchResultListenerProvider {
+    SearchResultListenerProvider,
+    ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -54,6 +58,8 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
     private boolean caseSensitive;
     private Geometry geometry;
     private GeoSearch geoSearch;
+
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Methods ----------------------------------------------------------------
 
@@ -154,7 +160,8 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
                                     }
                                     return result;
                                 }
-                            });
+                            },
+                            getConnectionContext());
                     for (final ArrayList al : result) {
                         // FIXME: yet another hack to circumvent odd type behaviour
                         final int cid = ((Number)al.get(0)).intValue();
@@ -222,5 +229,15 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
     @Override
     public SearchResultListener getSearchResultListener() {
         return searchResultListener;
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
+
+    @Override
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
     }
 }

@@ -42,13 +42,16 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 /**
  * DOCUMENT ME!
  *
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class ScheduledServerActionManager {
+public class ScheduledServerActionManager implements ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -76,12 +79,13 @@ public class ScheduledServerActionManager {
 
     private PreparedStatement maxId;
 
-    private final HashMap<String, ScheduledServerActionInfo> ssaInfoMap =
-        new HashMap<String, ScheduledServerActionInfo>();
+    private final HashMap<String, ScheduledServerActionInfo> ssaInfoMap = new HashMap<>();
 
     private final UserServer userServer;
     private final DomainServerImpl domainserver;
     private final String domain;
+
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -135,6 +139,11 @@ public class ScheduledServerActionManager {
         return supported;
     }
 
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
+
     /**
      * DOCUMENT ME!
      */
@@ -152,6 +161,7 @@ public class ScheduledServerActionManager {
                 domainserver.executeTask(getUserByName(info.getUserName(), info.getGroupName()),
                     info.getTaskName(),
                     info.getBody(),
+                    getConnectionContext(),
                     list.toArray(new ServerActionParameter[0]));
             }
         } catch (final Exception ex) {

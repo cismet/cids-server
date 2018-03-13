@@ -64,6 +64,8 @@ import de.cismet.cids.server.ws.SSLConfig;
 
 import de.cismet.cidsx.server.search.builtin.legacy.LightweightMetaObjectsByQuerySearch;
 
+import de.cismet.connectioncontext.ConnectionContext;
+
 import de.cismet.netutil.Proxy;
 
 import de.cismet.tools.Converter;
@@ -406,24 +408,6 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     /**
      * DOCUMENT ME!
      *
-     * @param   <T>   DOCUMENT ME!
-     * @param   path  DOCUMENT ME!
-     * @param   type  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  IOException             DOCUMENT ME!
-     * @throws  ClassNotFoundException  DOCUMENT ME!
-     */
-    private <T> T getResponsePOST(final String path, final Class<T> type) throws IOException, ClassNotFoundException {
-        final WebResource.Builder builder = createWebResourceBuilder(path);
-
-        return getResponsePOST(builder, type, null);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @param   <T>        DOCUMENT ME!
      * @param   path       DOCUMENT ME!
      * @param   queryData  DOCUMENT ME!
@@ -490,51 +474,61 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public Node[] getRoots(final User user, final String domainName) throws RemoteException {
+        return getRoots(user, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
      * @param   user        DOCUMENT ME!
      * @param   domainName  DOCUMENT ME!
+     * @param   context     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node[] getRoots(final User user, final String domainName) throws RemoteException {
+    public Node[] getRoots(final User user, final String domainName, final ConnectionContext context)
+            throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-            if (domainName != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domainName, isCompressionEnabled()));
-            }
-
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_DOMAIN, Converter.serialiseToString(domainName, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
             return getResponsePOST("getRootsByDomain", queryParams, Node[].class); // NOI18N
         } catch (final Exception ex) {
             throw createRemoteException(ex);
         }
     }
 
+    @Override
+    @Deprecated
+    public Node[] getRoots(final User user) throws RemoteException {
+        return getRoots(user, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   user  DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node[] getRoots(final User user) throws RemoteException {
+    public Node[] getRoots(final User user, final ConnectionContext context) throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getRoots", queryParams, Node[].class); // NOI18N
         } catch (final Exception ex) {
@@ -542,27 +536,31 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public Node[] getChildren(final Node node, final User usr) throws RemoteException {
+        return getChildren(node, usr, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   node  DOCUMENT ME!
-     * @param   usr   DOCUMENT ME!
+     * @param   node     DOCUMENT ME!
+     * @param   usr      DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node[] getChildren(final Node node, final User usr) throws RemoteException {
+    public Node[] getChildren(final Node node, final User usr, final ConnectionContext context) throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (node != null) {
-                queryParams.add(PARAM_NODE, Converter.serialiseToString(node, isCompressionEnabled()));
-            }
-            if (usr != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(usr, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_NODE,
+                        Converter.serialiseToString(node, isCompressionEnabled()))
+                        .append(PARAM_USER, Converter.serialiseToString(usr, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getChildren", queryParams, Node[].class); // NOI18N
         } catch (final Exception ex) {
@@ -570,31 +568,34 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public Node addNode(final Node node, final Link parent, final User user) throws RemoteException {
+        return addNode(node, parent, user, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   node    DOCUMENT ME!
-     * @param   parent  DOCUMENT ME!
-     * @param   user    DOCUMENT ME!
+     * @param   node     DOCUMENT ME!
+     * @param   parent   DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node addNode(final Node node, final Link parent, final User user) throws RemoteException {
+    public Node addNode(final Node node, final Link parent, final User user, final ConnectionContext context)
+            throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (node != null) {
-                queryParams.add(PARAM_NODE, Converter.serialiseToString(node, isCompressionEnabled()));
-            }
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-            if (parent != null) {
-                queryParams.add(PARAM_LINK_PARENT, Converter.serialiseToString(parent, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_NODE,
+                        Converter.serialiseToString(node, isCompressionEnabled()))
+                        .append(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_LINK_PARENT, Converter.serialiseToString(parent, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("addNode", queryParams, Node.class); // NOI18N
         } catch (final Exception ex) {
@@ -602,27 +603,32 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public boolean deleteNode(final Node node, final User user) throws RemoteException {
+        return deleteNode(node, user, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   node  DOCUMENT ME!
-     * @param   user  DOCUMENT ME!
+     * @param   node     DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public boolean deleteNode(final Node node, final User user) throws RemoteException {
+    public boolean deleteNode(final Node node, final User user, final ConnectionContext context)
+            throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (node != null) {
-                queryParams.add(PARAM_NODE, Converter.serialiseToString(node, isCompressionEnabled()));
-            }
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_NODE,
+                        Converter.serialiseToString(node, isCompressionEnabled()))
+                        .append(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("deleteNode", queryParams, boolean.class); // NOI18N
         } catch (final Exception ex) {
@@ -630,31 +636,34 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public boolean addLink(final Node from, final Node to, final User user) throws RemoteException {
+        return addLink(from, to, user, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   from  DOCUMENT ME!
-     * @param   to    DOCUMENT ME!
-     * @param   user  DOCUMENT ME!
+     * @param   from     DOCUMENT ME!
+     * @param   to       DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public boolean addLink(final Node from, final Node to, final User user) throws RemoteException {
+    public boolean addLink(final Node from, final Node to, final User user, final ConnectionContext context)
+            throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (from != null) {
-                queryParams.add(PARAM_NODE_FROM, Converter.serialiseToString(from, isCompressionEnabled()));
-            }
-            if (to != null) {
-                queryParams.add(PARAM_NODE_TO, Converter.serialiseToString(to, isCompressionEnabled()));
-            }
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_NODE_FROM,
+                        Converter.serialiseToString(from, isCompressionEnabled()))
+                        .append(PARAM_NODE_TO, Converter.serialiseToString(to, isCompressionEnabled()))
+                        .append(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("addLink", queryParams, boolean.class); // NOI18N
         } catch (final Exception ex) {
@@ -662,31 +671,34 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public boolean deleteLink(final Node from, final Node to, final User user) throws RemoteException {
+        return deleteLink(from, to, user, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   from  DOCUMENT ME!
-     * @param   to    DOCUMENT ME!
-     * @param   user  DOCUMENT ME!
+     * @param   from     DOCUMENT ME!
+     * @param   to       DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public boolean deleteLink(final Node from, final Node to, final User user) throws RemoteException {
+    public boolean deleteLink(final Node from, final Node to, final User user, final ConnectionContext context)
+            throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (from != null) {
-                queryParams.add(PARAM_NODE_FROM, Converter.serialiseToString(from, isCompressionEnabled()));
-            }
-            if (to != null) {
-                queryParams.add(PARAM_NODE_TO, Converter.serialiseToString(to, isCompressionEnabled()));
-            }
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_NODE_FROM,
+                        Converter.serialiseToString(from, isCompressionEnabled()))
+                        .append(PARAM_NODE_TO, Converter.serialiseToString(to, isCompressionEnabled()))
+                        .append(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("deleteLink", queryParams, boolean.class); // NOI18N
         } catch (final Exception ex) {
@@ -694,17 +706,30 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public String[] getDomains() throws RemoteException {
+        return getDomains(ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
+     *
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public String[] getDomains() throws RemoteException {
+    public String[] getDomains(final ConnectionContext context) throws RemoteException {
         try {
-            return getResponsePOST("getDomains", String[].class); // NOI18N
+            final AppendableMultivaluedMapImpl queryParams =
+                new AppendableMultivaluedMapImpl().append(
+                    PARAM_CONNECTIONCONTEXT,
+                    Converter.serialiseToString(context, isCompressionEnabled()));
+
+            return getResponsePOST("getDomains", queryParams, String[].class); // NOI18N
         } catch (final Exception ex) {
             throw createRemoteException(ex);
         }
@@ -753,31 +778,36 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public Node getMetaObjectNode(final User usr, final int nodeID, final String domain) throws RemoteException {
+        return getMetaObjectNode(usr, nodeID, domain, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   usr     DOCUMENT ME!
-     * @param   nodeID  DOCUMENT ME!
-     * @param   domain  DOCUMENT ME!
+     * @param   usr      DOCUMENT ME!
+     * @param   nodeID   DOCUMENT ME!
+     * @param   domain   DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node getMetaObjectNode(final User usr, final int nodeID, final String domain) throws RemoteException {
+    public Node getMetaObjectNode(final User usr,
+            final int nodeID,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (usr != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(usr, isCompressionEnabled()));
-            }
-
-            queryParams.add(PARAM_NODE_ID, Converter.serialiseToString(nodeID, isCompressionEnabled()));
-
-            if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(usr, isCompressionEnabled()))
+                        .append(PARAM_NODE_ID, Converter.serialiseToString(nodeID, isCompressionEnabled()))
+                        .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getMetaObjectNodeByID", queryParams, Node.class); // NOI18N
         } catch (final Exception ex) {
@@ -785,32 +815,51 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public Node[] getMetaObjectNode(final User usr, final String query) throws RemoteException {
+        return getMetaObjectNode(usr, query, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   usr    DOCUMENT ME!
-     * @param   query  DOCUMENT ME!
+     * @param   usr      DOCUMENT ME!
+     * @param   query    DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node[] getMetaObjectNode(final User usr, final String query) throws RemoteException {
+    public Node[] getMetaObjectNode(final User usr, final String query, final ConnectionContext context)
+            throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (usr != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(usr, isCompressionEnabled()));
-            }
-            if (query != null) {
-                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(usr, isCompressionEnabled()))
+                        .append(PARAM_QUERY, Converter.serialiseToString(query, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getMetaObjectNodeByString", queryParams, Node[].class); // NOI18N
         } catch (final Exception ex) {
             throw createRemoteException(ex);
         }
+    }
+
+    @Override
+    @Deprecated
+    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
+            final User user,
+            final String query,
+            final String[] representationFields) throws RemoteException {
+        return getLightweightMetaObjectsByQuery(
+                classId,
+                user,
+                query,
+                representationFields,
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -824,6 +873,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param       query                 query to search for LWMO. Has to select at lest the primary key (ID) of the
      *                                    Meta Object
      * @param       representationFields  must match fields in query
+     * @param       context               DOCUMENT ME!
      *
      * @return      Array of LWMOs or empty array
      *
@@ -835,13 +885,30 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
             final User user,
             final String query,
-            final String[] representationFields) throws RemoteException {
+            final String[] representationFields,
+            final ConnectionContext context) throws RemoteException {
         return this.getLightweightMetaObjectsByQuery(
                 classId,
                 user,
                 query,
                 representationFields,
-                null);
+                null,
+                context);
+    }
+
+    @Override
+    public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
+            final User user,
+            final String query,
+            final String[] representationFields,
+            final String representationPattern) throws RemoteException {
+        return getLightweightMetaObjectsByQuery(
+                classId,
+                user,
+                query,
+                representationFields,
+                representationPattern,
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -856,6 +923,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      *                                     Meta Object
      * @param       representationFields   must match fields in query
      * @param       representationPattern  string format pattern for toStrin Operation
+     * @param       context                DOCUMENT ME!
      *
      * @return      Array of LWMOs or empty array
      *
@@ -868,7 +936,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final User user,
             final String query,
             final String[] representationFields,
-            final String representationPattern) throws RemoteException {
+            final String representationPattern,
+            final ConnectionContext context) throws RemoteException {
         LOG.warn("delegating getLightweightMetaObjectsByQuery for class + '"
                     + classId + "' with query '" + query + "' to legacy custom server search!");
 
@@ -881,7 +950,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         lightweightMetaObjectsByQuerySearch.setRepresentationFields(representationFields);
         lightweightMetaObjectsByQuerySearch.setRepresentationPattern(representationPattern);
 
-        final Collection lwmoCollection = this.customServerSearch(user, lightweightMetaObjectsByQuerySearch);
+        final Collection lwmoCollection = this.customServerSearch(user, lightweightMetaObjectsByQuerySearch, context);
 
         final LightweightMetaObject[] lightweightMetaObjects = (LightweightMetaObject[])lwmoCollection.toArray(
                 new LightweightMetaObject[lwmoCollection.size()]);
@@ -889,27 +958,32 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         return lightweightMetaObjects;
     }
 
+    @Override
+    @Deprecated
+    public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
+        return getMetaObject(usr, query, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   usr    DOCUMENT ME!
-     * @param   query  DOCUMENT ME!
+     * @param   usr      DOCUMENT ME!
+     * @param   query    DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MetaObject[] getMetaObject(final User usr, final String query) throws RemoteException {
+    public MetaObject[] getMetaObject(final User usr, final String query, final ConnectionContext context)
+            throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (usr != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(usr, isCompressionEnabled()));
-            }
-            if (query != null) {
-                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(usr, isCompressionEnabled()))
+                        .append(PARAM_QUERY, Converter.serialiseToString(query, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getMetaObjectByString", queryParams, MetaObject[].class); // NOI18N
         } catch (final Exception ex) {
@@ -918,19 +992,23 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     }
 
     @Override
+    @Deprecated
     public MetaObject[] getMetaObject(final User usr, final String query, final String domain) throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
+        return getMetaObject(usr, query, ConnectionContext.createDeprecated());
+    }
 
-            if (usr != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(usr, isCompressionEnabled()));
-            }
-            if (query != null) {
-                queryParams.add(PARAM_QUERY, Converter.serialiseToString(query, isCompressionEnabled()));
-            }
-            if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
-            }
+    @Override
+    public MetaObject[] getMetaObject(final User usr,
+            final String query,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
+        try {
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(usr, isCompressionEnabled()))
+                        .append(PARAM_QUERY, Converter.serialiseToString(query, isCompressionEnabled()))
+                        .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getMetaObjectByStringAndDomain", queryParams, MetaObject[].class); // NOI18N
         } catch (final Exception ex) {
@@ -951,21 +1029,26 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
+    @Deprecated
     public MetaObject getMetaObject(final User usr, final int objectID, final int classID, final String domain)
             throws RemoteException {
+        return getMetaObject(usr, objectID, classID, domain, ConnectionContext.createDeprecated());
+    }
+
+    @Override
+    public MetaObject getMetaObject(final User usr,
+            final int objectID,
+            final int classID,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (usr != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(usr, isCompressionEnabled()));
-            }
-
-            queryParams.add(PARAM_OBJECT_ID, Converter.serialiseToString(objectID, isCompressionEnabled()));
-            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classID, isCompressionEnabled()));
-
-            if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(usr, isCompressionEnabled()))
+                        .append(PARAM_OBJECT_ID, Converter.serialiseToString(objectID, isCompressionEnabled()))
+                        .append(PARAM_CLASS_ID, Converter.serialiseToString(classID, isCompressionEnabled()))
+                        .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getMetaObjectByID", queryParams, MetaObject.class); // NOI18N
         } catch (final Exception ex) {
@@ -973,32 +1056,37 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public MetaObject insertMetaObject(final User user, final MetaObject metaObject, final String domain)
+            throws RemoteException {
+        return insertMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
      * @param   user        DOCUMENT ME!
      * @param   metaObject  DOCUMENT ME!
      * @param   domain      DOCUMENT ME!
+     * @param   context     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MetaObject insertMetaObject(final User user, final MetaObject metaObject, final String domain)
-            throws RemoteException {
+    public MetaObject insertMetaObject(final User user,
+            final MetaObject metaObject,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-            if (metaObject != null) {
-                queryParams.add(PARAM_METAOBJECT, Converter.serialiseToString(metaObject, isCompressionEnabled()));
-            }
-            if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_METAOBJECT, Converter.serialiseToString(metaObject, isCompressionEnabled()))
+                        .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("insertMetaObject", queryParams, MetaObject.class); // NOI18N
         } catch (final Exception ex) {
@@ -1006,37 +1094,11 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   user        DOCUMENT ME!
-     * @param   metaObject  DOCUMENT ME!
-     * @param   domain      DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
     @Override
+    @Deprecated
     public int updateMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-            if (metaObject != null) {
-                queryParams.add(PARAM_METAOBJECT, Converter.serialiseToString(metaObject, isCompressionEnabled()));
-            }
-            if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
-            }
-
-            return getResponsePOST("updateMetaObject", queryParams, int.class); // NOI18N
-        } catch (final Exception ex) {
-            throw createRemoteException(ex);
-        }
+        return updateMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1045,26 +1107,62 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param   user        DOCUMENT ME!
      * @param   metaObject  DOCUMENT ME!
      * @param   domain      DOCUMENT ME!
+     * @param   context     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
+    public int updateMetaObject(final User user,
+            final MetaObject metaObject,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
+        try {
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_METAOBJECT, Converter.serialiseToString(metaObject, isCompressionEnabled()))
+                        .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
+
+            return getResponsePOST("updateMetaObject", queryParams, int.class); // NOI18N
+        } catch (final Exception ex) {
+            throw createRemoteException(ex);
+        }
+    }
+
+    @Override
+    @Deprecated
     public int deleteMetaObject(final User user, final MetaObject metaObject, final String domain)
             throws RemoteException {
-        try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
+        return deleteMetaObject(user, metaObject, domain, ConnectionContext.createDeprecated());
+    }
 
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-            if (metaObject != null) {
-                queryParams.add(PARAM_METAOBJECT, Converter.serialiseToString(metaObject, isCompressionEnabled()));
-            }
-            if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
-            }
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user        DOCUMENT ME!
+     * @param   metaObject  DOCUMENT ME!
+     * @param   domain      DOCUMENT ME!
+     * @param   context     DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public int deleteMetaObject(final User user,
+            final MetaObject metaObject,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
+        try {
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_METAOBJECT, Converter.serialiseToString(metaObject, isCompressionEnabled()))
+                        .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("deleteMetaObject", queryParams, int.class); // NOI18N
         } catch (final Exception ex) {
@@ -1083,7 +1181,6 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    @Override
     public int update(final User user, final String query, final String domain) throws RemoteException {
         try {
             final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
@@ -1104,32 +1201,44 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public MetaObject getInstance(final User user, final MetaClass c) throws RemoteException {
+        return getInstance(user, c, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   user  DOCUMENT ME!
-     * @param   c     DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   c        DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MetaObject getInstance(final User user, final MetaClass c) throws RemoteException {
+    public MetaObject getInstance(final User user, final MetaClass c, final ConnectionContext context)
+            throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-            if (c != null) {
-                queryParams.add(PARAM_METACLASS, Converter.serialiseToString(c, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_METACLASS, Converter.serialiseToString(c, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getInstance", queryParams, MetaObject.class); // NOI18N
         } catch (final Exception ex) {
             throw createRemoteException(ex);
         }
+    }
+
+    @Override
+    @Deprecated
+    public MetaClass getClassByTableName(final User user, final String tableName, final String domain)
+            throws RemoteException {
+        return getClassByTableName(user, tableName, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1138,31 +1247,35 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param   user       DOCUMENT ME!
      * @param   tableName  DOCUMENT ME!
      * @param   domain     DOCUMENT ME!
+     * @param   context    DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MetaClass getClassByTableName(final User user, final String tableName, final String domain)
-            throws RemoteException {
+    public MetaClass getClassByTableName(final User user,
+            final String tableName,
+            final String domain,
+            final ConnectionContext context) throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-            if (tableName != null) {
-                queryParams.add(PARAM_TABLE_NAME, Converter.serialiseToString(tableName, isCompressionEnabled()));
-            }
-            if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_TABLE_NAME, Converter.serialiseToString(tableName, isCompressionEnabled()))
+                        .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getClassByTableName", queryParams, MetaClass.class); // NOI18N
         } catch (final Exception ex) {
             throw createRemoteException(ex);
         }
+    }
+
+    @Override
+    @Deprecated
+    public MetaClass getClass(final User user, final int classID, final String domain) throws RemoteException {
+        return getClass(user, classID, domain, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1171,24 +1284,22 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param   user     DOCUMENT ME!
      * @param   classID  DOCUMENT ME!
      * @param   domain   DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MetaClass getClass(final User user, final int classID, final String domain) throws RemoteException {
+    public MetaClass getClass(final User user, final int classID, final String domain, final ConnectionContext context)
+            throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-            if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
-            }
-
-            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classID, isCompressionEnabled()));
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
+                        .append(PARAM_CLASS_ID, Converter.serialiseToString(classID, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getClassByID", queryParams, MetaClass.class); // NOI18N
         } catch (final Exception ex) {
@@ -1196,27 +1307,32 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public MetaClass[] getClasses(final User user, final String domain) throws RemoteException {
+        return getClasses(user, domain, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   user    DOCUMENT ME!
-     * @param   domain  DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   domain   DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MetaClass[] getClasses(final User user, final String domain) throws RemoteException {
+    public MetaClass[] getClasses(final User user, final String domain, final ConnectionContext context)
+            throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-            if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getClasses", queryParams, MetaClass[].class); // NOI18N
         } catch (final Exception ex) {
@@ -1224,23 +1340,29 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public Node[] getClassTreeNodes(final User user) throws RemoteException {
+        return getClassTreeNodes(user, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   user  DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node[] getClassTreeNodes(final User user) throws RemoteException {
+    public Node[] getClassTreeNodes(final User user, final ConnectionContext context) throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getClassTreeNodesByUser", queryParams, Node[].class); // NOI18N
         } catch (final Exception ex) {
@@ -1248,27 +1370,32 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public Node[] getClassTreeNodes(final User user, final String domain) throws RemoteException {
+        return getClassTreeNodes(user, domain, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   user    DOCUMENT ME!
-     * @param   domain  DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   domain   DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Node[] getClassTreeNodes(final User user, final String domain) throws RemoteException {
+    public Node[] getClassTreeNodes(final User user, final String domain, final ConnectionContext context)
+            throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-            if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getClassTreeNodesByDomain", queryParams, Node[].class); // NOI18N
         } catch (final Exception ex) {
@@ -1276,23 +1403,29 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public MethodMap getMethods(final User user) throws RemoteException {
+        return getMethods(user, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   user  DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MethodMap getMethods(final User user) throws RemoteException {
+    public MethodMap getMethods(final User user, final ConnectionContext context) throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getMethodsByUser", queryParams, MethodMap.class); // NOI18N
         } catch (final Exception ex) {
@@ -1300,34 +1433,53 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public MethodMap getMethods(final User user, final String localServerName) throws RemoteException {
+        return getMethods(user, localServerName, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
      * @param   user             DOCUMENT ME!
      * @param   localServerName  DOCUMENT ME!
+     * @param   context          DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public MethodMap getMethods(final User user, final String localServerName) throws RemoteException {
+    public MethodMap getMethods(final User user, final String localServerName, final ConnectionContext context)
+            throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-            if (localServerName != null) {
-                queryParams.add(
-                    PARAM_LOCAL_SERVER_NAME,
-                    Converter.serialiseToString(localServerName, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(
+                                PARAM_LOCAL_SERVER_NAME,
+                                Converter.serialiseToString(localServerName, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getMethodsByDomain", queryParams, MethodMap.class); // NOI18N
         } catch (final Exception ex) {
             throw createRemoteException(ex);
         }
+    }
+
+    @Override
+    @Deprecated
+    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classId,
+            final User user,
+            final String[] representationFields,
+            final String representationPattern) throws RemoteException {
+        return getAllLightweightMetaObjectsForClass(
+                classId,
+                user,
+                representationFields,
+                representationPattern,
+                ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1337,6 +1489,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param   user                   DOCUMENT ME!
      * @param   representationFields   DOCUMENT ME!
      * @param   representationPattern  DOCUMENT ME!
+     * @param   context                DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1346,25 +1499,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classId,
             final User user,
             final String[] representationFields,
-            final String representationPattern) throws RemoteException {
+            final String representationPattern,
+            final ConnectionContext context) throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId, isCompressionEnabled()));
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-            if (representationFields != null) {
-                queryParams.add(
-                    PARAM_REP_FIELDS,
-                    Converter.serialiseToString(representationFields, isCompressionEnabled()));
-            }
-            if (representationPattern != null) {
-                queryParams.add(
-                    PARAM_REP_PATTERN,
-                    Converter.serialiseToString(representationPattern, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_CLASS_ID,
+                        Converter.serialiseToString(classId, isCompressionEnabled()))
+                        .append(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(
+                                PARAM_REP_FIELDS,
+                                Converter.serialiseToString(representationFields, isCompressionEnabled()))
+                        .append(
+                                PARAM_REP_PATTERN,
+                                Converter.serialiseToString(representationPattern, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST(
                     "getAllLightweightMetaObjectsForClassByPattern", // NOI18N
@@ -1375,12 +1523,25 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classId,
+            final User user,
+            final String[] representationFields) throws RemoteException {
+        return getAllLightweightMetaObjectsForClass(
+                classId,
+                user,
+                representationFields,
+                ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
      * @param   classId               DOCUMENT ME!
      * @param   user                  DOCUMENT ME!
      * @param   representationFields  DOCUMENT ME!
+     * @param   context               DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1389,20 +1550,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     public LightweightMetaObject[] getAllLightweightMetaObjectsForClass(final int classId,
             final User user,
-            final String[] representationFields) throws RemoteException {
+            final String[] representationFields,
+            final ConnectionContext context) throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId, isCompressionEnabled()));
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-            if (representationFields != null) {
-                queryParams.add(
-                    PARAM_REP_FIELDS,
-                    Converter.serialiseToString(representationFields, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_CLASS_ID,
+                        Converter.serialiseToString(classId, isCompressionEnabled()))
+                        .append(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(
+                                PARAM_REP_FIELDS,
+                                Converter.serialiseToString(representationFields, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST(
                     "getAllLightweightMetaObjectsForClass", // NOI18N
@@ -1413,23 +1571,30 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public Image[] getDefaultIcons(final String lsName) throws RemoteException {
+        return getDefaultIcons(lsName, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   lsName  DOCUMENT ME!
+     * @param   lsName             DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Image[] getDefaultIcons(final String lsName) throws RemoteException {
+    public Image[] getDefaultIcons(final String lsName, final ConnectionContext connectionContext)
+            throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (lsName != null) {
-                queryParams.add(PARAM_LS_NAME, Converter.serialiseToString(lsName, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams =
+                new AppendableMultivaluedMapImpl().append(
+                    PARAM_LS_NAME,
+                    Converter.serialiseToString(lsName, isCompressionEnabled()));
 
             return getResponsePOST("getDefaultIconsByLSName", queryParams, Image[].class);
         } catch (final Exception ex) {
@@ -1437,22 +1602,37 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public Image[] getDefaultIcons() throws RemoteException {
+        return getDefaultIcons(ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
+     *
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Image[] getDefaultIcons() throws RemoteException {
+    public Image[] getDefaultIcons(final ConnectionContext connectionContext) throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl();
 
             return getResponsePOST("getDefaultIcons", queryParams, Image[].class);
         } catch (final Exception ex) {
             throw createRemoteException(ex);
         }
+    }
+
+    @Override
+    @Deprecated
+    public boolean changePassword(final User user, final String oldPassword, final String newPassword)
+            throws RemoteException, UserException {
+        return changePassword(user, oldPassword, newPassword, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1461,6 +1641,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param   user         DOCUMENT ME!
      * @param   oldPassword  DOCUMENT ME!
      * @param   newPassword  DOCUMENT ME!
+     * @param   context      DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1468,20 +1649,17 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @throws  UserException    DOCUMENT ME!
      */
     @Override
-    public boolean changePassword(final User user, final String oldPassword, final String newPassword)
-            throws RemoteException, UserException {
+    public boolean changePassword(final User user,
+            final String oldPassword,
+            final String newPassword,
+            final ConnectionContext context) throws RemoteException, UserException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-            if (oldPassword != null) {
-                queryParams.add(PARAM_OLD_PASSWORD, Converter.serialiseToString(oldPassword, isCompressionEnabled()));
-            }
-            if (newPassword != null) {
-                queryParams.add(PARAM_NEW_PASSWORD, Converter.serialiseToString(newPassword, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_OLD_PASSWORD, Converter.serialiseToString(oldPassword, isCompressionEnabled()))
+                        .append(PARAM_NEW_PASSWORD, Converter.serialiseToString(newPassword, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("changePassword", queryParams, Boolean.class); // NOI18N
         } catch (final UniformInterfaceException ex) {
@@ -1508,6 +1686,23 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public User getUser(
+            final String userGroupLsName,
+            final String userGroupName,
+            final String userLsName,
+            final String userName,
+            final String password) throws RemoteException, UserException {
+        return getUser(
+                userGroupLsName,
+                userGroupName,
+                userLsName,
+                userName,
+                password,
+                ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
@@ -1516,6 +1711,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param   userLsName       DOCUMENT ME!
      * @param   userName         DOCUMENT ME!
      * @param   password         DOCUMENT ME!
+     * @param   context          DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -1528,29 +1724,19 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final String userGroupName,
             final String userLsName,
             final String userName,
-            final String password) throws RemoteException, UserException {
+            final String password,
+            final ConnectionContext context) throws RemoteException, UserException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (userGroupLsName != null) {
-                queryParams.add(
-                    PARAM_USERGROUP_LS_NAME,
-                    Converter.serialiseToString(userGroupLsName, isCompressionEnabled()));
-            }
-            if (userGroupName != null) {
-                queryParams.add(
-                    PARAM_USERGROUP_NAME,
-                    Converter.serialiseToString(userGroupName, isCompressionEnabled()));
-            }
-            if (userLsName != null) {
-                queryParams.add(PARAM_USER_LS_NAME, Converter.serialiseToString(userLsName, isCompressionEnabled()));
-            }
-            if (userName != null) {
-                queryParams.add(PARAM_USERNAME, Converter.serialiseToString(userName, isCompressionEnabled()));
-            }
-            if (password != null) {
-                queryParams.add(PARAM_PASSWORD, Converter.serialiseToString(password, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USERGROUP_LS_NAME,
+                        Converter.serialiseToString(userGroupLsName, isCompressionEnabled()))
+                        .append(
+                                PARAM_USERGROUP_NAME,
+                                Converter.serialiseToString(userGroupName, isCompressionEnabled()))
+                        .append(PARAM_USER_LS_NAME, Converter.serialiseToString(userLsName, isCompressionEnabled()))
+                        .append(PARAM_USERNAME, Converter.serialiseToString(userName, isCompressionEnabled()))
+                        .append(PARAM_PASSWORD, Converter.serialiseToString(password, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getUser", queryParams, User.class); // NOI18N
         } catch (final UniformInterfaceException ex) {
@@ -1577,20 +1763,39 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
     }
 
+    @Override
+    @Deprecated
+    public Vector getUserGroupNames() throws RemoteException {
+        return getUserGroupNames(ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
+     *
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Vector getUserGroupNames() throws RemoteException {
+    public Vector getUserGroupNames(final ConnectionContext context) throws RemoteException {
         try {
-            return getResponsePOST("getUserGroupNames", Vector.class); // NOI18N
+            final AppendableMultivaluedMapImpl queryParams =
+                new AppendableMultivaluedMapImpl().append(
+                    PARAM_CONNECTIONCONTEXT,
+                    Converter.serialiseToString(context, isCompressionEnabled()));
+
+            return getResponsePOST("getUserGroupNames", queryParams, Vector.class);
         } catch (final Exception ex) {
             throw createRemoteException(ex);
         }
+    }
+
+    @Override
+    @Deprecated
+    public Vector getUserGroupNames(final String userName, final String lsHome) throws RemoteException {
+        return getUserGroupNames(userName, lsHome, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -1598,21 +1803,21 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      *
      * @param   userName  DOCUMENT ME!
      * @param   lsHome    DOCUMENT ME!
+     * @param   context   DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public Vector getUserGroupNames(final String userName, final String lsHome) throws RemoteException {
+    public Vector getUserGroupNames(final String userName, final String lsHome, final ConnectionContext context)
+            throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-            if (userName != null) {
-                queryParams.add(PARAM_USERNAME, Converter.serialiseToString(userName, isCompressionEnabled()));
-            }
-            if (lsHome != null) {
-                queryParams.add(PARAM_LS_HOME, Converter.serialiseToString(lsHome, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USERNAME,
+                        Converter.serialiseToString(userName, isCompressionEnabled()))
+                        .append(PARAM_LS_HOME, Converter.serialiseToString(lsHome, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getUserGroupNamesByUser", queryParams, Vector.class); // NOI18N
         } catch (final Exception ex) {
@@ -1621,15 +1826,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     }
 
     @Override
+    @Deprecated
     public String getConfigAttr(final User user, final String key) throws RemoteException {
+        return getConfigAttr(user, key, ConnectionContext.createDeprecated());
+    }
+
+    @Override
+    public String getConfigAttr(final User user, final String key, final ConnectionContext context)
+            throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-            if (key != null) {
-                queryParams.add(PARAM_KEY, Converter.serialiseToString(key, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_KEY, Converter.serialiseToString(key, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getConfigAttr", queryParams, String.class);
         } catch (final Exception ex) {
@@ -1638,15 +1848,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     }
 
     @Override
+    @Deprecated
     public boolean hasConfigAttr(final User user, final String key) throws RemoteException {
+        return hasConfigAttr(user, key, ConnectionContext.createDeprecated());
+    }
+
+    @Override
+    public boolean hasConfigAttr(final User user, final String key, final ConnectionContext context)
+            throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-            if (key != null) {
-                queryParams.add(PARAM_KEY, Converter.serialiseToString(key, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_KEY, Converter.serialiseToString(key, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("hasConfigAttr", queryParams, boolean.class);
         } catch (final Exception ex) {
@@ -1655,17 +1870,23 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     }
 
     @Override
+    @Deprecated
     public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) throws RemoteException {
+        return customServerSearch(user, serverSearch, ConnectionContext.createDeprecated());
+    }
+
+    @Override
+    public Collection customServerSearch(final User user,
+            final CidsServerSearch serverSearch,
+            final ConnectionContext context) throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-            if (serverSearch != null) {
-                queryParams.add(
-                    PARAM_CUSTOM_SERVER_SEARCH,
-                    Converter.serialiseToString(serverSearch, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(
+                                PARAM_CUSTOM_SERVER_SEARCH,
+                                Converter.serialiseToString(serverSearch, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("customServerSearch", queryParams, Collection.class); // NOI18N
         } catch (final Exception ex) {
@@ -1674,25 +1895,31 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     }
 
     @Override
+    @Deprecated
     public HistoryObject[] getHistory(final int classId,
             final int objectId,
             final String domain,
             final User user,
             final int elements) throws RemoteException {
+        return getHistory(classId, objectId, domain, user, elements, ConnectionContext.createDeprecated());
+    }
+
+    @Override
+    public HistoryObject[] getHistory(final int classId,
+            final int objectId,
+            final String domain,
+            final User user,
+            final int elements,
+            final ConnectionContext context) throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-            queryParams.add(PARAM_CLASS_ID, Converter.serialiseToString(classId, isCompressionEnabled()));
-            queryParams.add(PARAM_OBJECT_ID, Converter.serialiseToString(objectId, isCompressionEnabled()));
-
-            if (domain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()));
-            }
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-
-            queryParams.add(PARAM_ELEMENTS, Converter.serialiseToString(elements, isCompressionEnabled()));
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_CLASS_ID,
+                        Converter.serialiseToString(classId, isCompressionEnabled()))
+                        .append(PARAM_OBJECT_ID, Converter.serialiseToString(objectId, isCompressionEnabled()))
+                        .append(PARAM_DOMAIN, Converter.serialiseToString(domain, isCompressionEnabled()))
+                        .append(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_ELEMENTS, Converter.serialiseToString(elements, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getHistory", queryParams, HistoryObject[].class); // NOI18N
         } catch (final Exception ex) {
@@ -1701,35 +1928,62 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     }
 
     @Override
+    @Deprecated
     public Object executeTask(final User user,
             final String taskname,
             final String taskdomain,
             final Object body,
             final ServerActionParameter... params) throws RemoteException {
+        return executeTask(user, taskname, taskdomain, body, ConnectionContext.createDeprecated(), params);
+    }
+
+    @Override
+    public Object executeTask(final User user,
+            final String taskname,
+            final String taskdomain,
+            final Object body,
+            final ConnectionContext context,
+            final ServerActionParameter... params) throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
-
-            if (user != null) {
-                queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
-            }
-
-            if (taskname != null) {
-                queryParams.add(PARAM_TASKNAME, Converter.serialiseToString(taskname, isCompressionEnabled()));
-            }
-            if (taskdomain != null) {
-                queryParams.add(PARAM_DOMAIN, Converter.serialiseToString(taskdomain, isCompressionEnabled()));
-            }
-            if (body != null) {
-                queryParams.add(PARAM_BODY, Converter.serialiseToString(body, isCompressionEnabled()));
-            }
-
-            if (params != null) {
-                queryParams.add(PARAM_PARAMELIPSE, Converter.serialiseToString(params, isCompressionEnabled()));
-            }
+            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
+                        PARAM_USER,
+                        Converter.serialiseToString(user, isCompressionEnabled()))
+                        .append(PARAM_TASKNAME, Converter.serialiseToString(taskname, isCompressionEnabled()))
+                        .append(PARAM_DOMAIN, Converter.serialiseToString(taskdomain, isCompressionEnabled()))
+                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()))
+                        .append(PARAM_BODY, Converter.serialiseToString(body, isCompressionEnabled()))
+                        .append(PARAM_PARAMELIPSE, Converter.serialiseToString(params, isCompressionEnabled()));
 
             return getResponsePOST("executeTask", queryParams, Object.class); // NOI18N
         } catch (final Exception ex) {
             throw createRemoteException(ex);
+        }
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    private class AppendableMultivaluedMapImpl extends MultivaluedMapImpl {
+
+        //~ Methods ------------------------------------------------------------
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param   key    DOCUMENT ME!
+         * @param   value  DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        public AppendableMultivaluedMapImpl append(final String key, final Object value) {
+            if ((key != null) && (value != null)) {
+                add(key, value);
+            }
+            return this;
         }
     }
 }

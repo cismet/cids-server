@@ -13,6 +13,7 @@
 package Sirius.server.middleware.impls.proxy;
 
 import Sirius.server.localserver.tree.NodeReferenceList;
+import Sirius.server.middleware.interfaces.proxy.CatalogueService;
 import Sirius.server.middleware.types.Link;
 import Sirius.server.middleware.types.MetaNode;
 import Sirius.server.middleware.types.Node;
@@ -23,19 +24,20 @@ import Sirius.util.*;
 
 import java.rmi.*;
 
+import de.cismet.connectioncontext.ConnectionContext;
 /**
  * DOCUMENT ME!
  *
  * @author   awindholz
  * @version  $Revision$, $Date$
  */
-public class CatalogueServiceImpl {
+public class CatalogueServiceImpl implements CatalogueService {
 
     //~ Instance fields --------------------------------------------------------
 
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
 
-    private java.util.Hashtable activeLocalServers;
+    private final java.util.Hashtable activeLocalServers;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -52,21 +54,30 @@ public class CatalogueServiceImpl {
 
     //~ Methods ----------------------------------------------------------------
 
+    @Override
+    @Deprecated
+    public Node[] getChildren(final Node node, final User user) throws RemoteException {
+        return getChildren(node, user, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   node  DOCUMENT ME!
-     * @param   user  DOCUMENT ME!
+     * @param   node     DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Node[] getChildren(final Node node, final User user) throws RemoteException {
+    @Override
+    public Node[] getChildren(final Node node, final User user, final ConnectionContext context)
+            throws RemoteException {
         try {
             final NodeReferenceList c =
                 ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)activeLocalServers.get(
-                        node.getDomain())).getChildren(node, user);
+                        node.getDomain())).getChildren(node, user, context);
 
             final Link[] links = c.getRemoteLinks();
 
@@ -101,7 +112,7 @@ public class CatalogueServiceImpl {
                 // nodes from links
 
                 if (ls != null) {
-                    n = ls.getNodes(user, groupedLinks[i].getIDs());
+                    n = ls.getNodes(user, groupedLinks[i].getIDs(), context);
                 } else                                                        // create dummy node to show that system
                                                                               // is not available
                 {
@@ -174,12 +185,31 @@ public class CatalogueServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Override
+    @Deprecated
     public Node[] getRoots(final User user, final String localServerName) throws RemoteException {
+        return getRoots(user, localServerName, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user             DOCUMENT ME!
+     * @param   localServerName  DOCUMENT ME!
+     * @param   context          DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public Node[] getRoots(final User user, final String localServerName, final ConnectionContext context)
+            throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("getRoots called " + localServerName); // NOI18N
         }
         return ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)activeLocalServers.get(
-                    localServerName)).getRoots(user).getLocalNodes();
+                    localServerName)).getRoots(user, context).getLocalNodes();
     }
 
     /**
@@ -191,7 +221,24 @@ public class CatalogueServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Override
+    @Deprecated
     public Node[] getRoots(final User user) throws RemoteException {
+        return getRoots(user, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public Node[] getRoots(final User user, final ConnectionContext context) throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("<CS> getRoots user" + user); // NOI18N
         }
@@ -208,7 +255,9 @@ public class CatalogueServiceImpl {
 
             while (iter.hasNext()) {
                 final NodeReferenceList children = (NodeReferenceList)
-                    ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)iter.next()).getRoots(user);
+                    ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)iter.next()).getRoots(
+                        user,
+                        context);
 
                 if ((children != null) && (children.getLocalNodes() != null)) {
                     final Node[] tmp = children.getLocalNodes();
@@ -294,83 +343,119 @@ public class CatalogueServiceImpl {
         return groups;
     }
 
+    @Override
+    @Deprecated
+    public Node addNode(final Node node, final Link parent, final User user) throws RemoteException {
+        return addNode(node, parent, user, ConnectionContext.createDeprecated());
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   node    DOCUMENT ME!
-     * @param   parent  DOCUMENT ME!
-     * @param   user    DOCUMENT ME!
+     * @param   node     DOCUMENT ME!
+     * @param   parent   DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Node addNode(final Node node, final Link parent, final User user) throws RemoteException {
+    @Override
+    public Node addNode(final Node node, final Link parent, final User user, final ConnectionContext context)
+            throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("addNode called node:" + node + "parentLink ::" + parent + " user::" + user); // NOI18N
         }
         return
             ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)activeLocalServers.get(
-                    node.getDomain())).addNode(node, parent, user);
+                    node.getDomain())).addNode(node, parent, user, context);
+    }
+
+    @Override
+    @Deprecated
+    public boolean deleteNode(final Node node, final User user) throws RemoteException {
+        return deleteNode(node, user, ConnectionContext.createDeprecated());
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   node  DOCUMENT ME!
-     * @param   user  DOCUMENT ME!
+     * @param   node     DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public boolean deleteNode(final Node node, final User user) throws RemoteException {
+    @Override
+    public boolean deleteNode(final Node node, final User user, final ConnectionContext context)
+            throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("delete Node called node:" + node + " user::" + user); // NOI18N
         }
         return
             ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)activeLocalServers.get(
-                    node.getDomain())).deleteNode(node, user);
+                    node.getDomain())).deleteNode(node, user, context);
+    }
+
+    @Override
+    @Deprecated
+    public boolean addLink(final Node from, final Node to, final User user) throws RemoteException {
+        return addLink(from, to, user, ConnectionContext.createDeprecated());
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   from  DOCUMENT ME!
-     * @param   to    DOCUMENT ME!
-     * @param   user  DOCUMENT ME!
+     * @param   from     DOCUMENT ME!
+     * @param   to       DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public boolean addLink(final Node from, final Node to, final User user) throws RemoteException {
+    @Override
+    public boolean addLink(final Node from, final Node to, final User user, final ConnectionContext context)
+            throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("addLink called nodeFrom:" + from + "nodeTo ::" + to + " user::" + user); // NOI18N
         }
         return
             ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)activeLocalServers.get(
-                    from.getDomain())).addLink(from, to, user);
+                    from.getDomain())).addLink(from, to, user, context);
+    }
+
+    @Override
+    @Deprecated
+    public boolean deleteLink(final Node from, final Node to, final User user) throws RemoteException {
+        return deleteLink(from, to, user, ConnectionContext.createDeprecated());
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   from  DOCUMENT ME!
-     * @param   to    DOCUMENT ME!
-     * @param   user  DOCUMENT ME!
+     * @param   from     DOCUMENT ME!
+     * @param   to       DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public boolean deleteLink(final Node from, final Node to, final User user) throws RemoteException {
+    @Override
+    public boolean deleteLink(final Node from, final Node to, final User user, final ConnectionContext context)
+            throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("deleteLink called nodeFrom:" + from + "nodeTo ::" + to + " user::" + user); // NOI18N
         }
         return
             ((Sirius.server.middleware.interfaces.domainserver.CatalogueService)activeLocalServers.get(
-                    from.getDomain())).deleteLink(from, to, user);
+                    from.getDomain())).deleteLink(from, to, user, context);
     }
 
 //    public boolean copySubTree(Node root, User user) throws RemoteException

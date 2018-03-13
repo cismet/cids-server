@@ -18,6 +18,8 @@ import java.rmi.RemoteException;
 
 import java.util.Hashtable;
 
+import de.cismet.connectioncontext.ConnectionContext;
+
 /**
  * DOCUMENT ME!
  *
@@ -53,13 +55,15 @@ public class SystemServiceImpl {
     /**
      * DOCUMENT ME!
      *
-     * @param   lsName  DOCUMENT ME!
+     * @param   lsName             DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Image[] getDefaultIcons(final String lsName) throws RemoteException {
+    public Image[] getDefaultIcons(final String lsName, final ConnectionContext connectionContext)
+            throws RemoteException {
         if (LOG.isInfoEnabled()) {
             LOG.info("Info <CS> getDefIcons from " + lsName); // NOI18N
         }
@@ -84,11 +88,13 @@ public class SystemServiceImpl {
     /**
      * DOCUMENT ME!
      *
+     * @param   connectionContext  DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public Image[] getDefaultIcons() throws RemoteException {
+    public Image[] getDefaultIcons(final ConnectionContext connectionContext) throws RemoteException {
         Image[] i = new Image[0];
         SystemService s = null;
 

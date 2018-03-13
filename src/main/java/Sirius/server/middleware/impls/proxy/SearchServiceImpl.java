@@ -10,6 +10,7 @@ package Sirius.server.middleware.impls.proxy;
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.interfaces.domainserver.UserService;
+import Sirius.server.middleware.interfaces.proxy.SearchService;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.naming.NameServer;
@@ -20,7 +21,11 @@ import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashMap;
 
+import de.cismet.cids.server.connectioncontext.ConnectionContextLogger;
 import de.cismet.cids.server.search.CidsServerSearch;
+
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
 
 /**
  * DOCUMENT ME!
@@ -28,7 +33,7 @@ import de.cismet.cids.server.search.CidsServerSearch;
  * @author   schlob
  * @version  $Revision$, $Date$
  */
-public class SearchServiceImpl {
+public class SearchServiceImpl implements SearchService {
 
     //~ Instance fields --------------------------------------------------------
 
@@ -65,12 +70,41 @@ public class SearchServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
+    @Override
+    @Deprecated
     public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) throws RemoteException {
+        return customServerSearch(user, serverSearch, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user               DOCUMENT ME!
+     * @param   serverSearch       DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @Override
+    public Collection customServerSearch(final User user,
+            final CidsServerSearch serverSearch,
+            final ConnectionContext connectionContext) throws RemoteException {
+        ConnectionContextLogger.getInstance()
+                .logConnectionContext((ConnectionContext)connectionContext,
+                    user,
+                    "customServerSearch",
+                    "serverSearch:"
+                    + serverSearch);
         serverSearch.setUser(user);
         serverSearch.setActiveLocalServers(new HashMap(activeLocalServers));
+        if (serverSearch instanceof ConnectionContextStore) {
+            ((ConnectionContextStore)serverSearch).initWithConnectionContext((ConnectionContext)connectionContext);
+        }
         try {
             final Collection searchResults = serverSearch.performServerSearch();
-            addDynamicChildren(user, searchResults);
+            addDynamicChildren(user, searchResults, connectionContext);
             return searchResults;
         } catch (Exception e) {
             logger.error("Error in customSearch", e);
@@ -84,8 +118,9 @@ public class SearchServiceImpl {
      *
      * @param  user           the user
      * @param  searchResults  the collection with the results of the search
+     * @param  context        DOCUMENT ME!
      */
-    private void addDynamicChildren(final User user, final Collection searchResults) {
+    private void addDynamicChildren(final User user, final Collection searchResults, final ConnectionContext context) {
         // caches the dynamic children due to performance reasons
         final HashMap<String, String> dynChildCache = new HashMap<String, String>();
 
@@ -113,7 +148,8 @@ public class SearchServiceImpl {
                             // the dynamic children is not contained in the cache
                             final MetaClass cl = ((MetaService)activeLocalServers.get(node.getDomain())).getClass(
                                     user,
-                                    node.getClassId());
+                                    node.getClassId(),
+                                    context);
                             ClassAttribute dynChild = cl.getClassAttribute("searchHit_dynamicChildren");
                             final ClassAttribute attribute = cl.getClassAttribute("searchHit_dynamicChildrenAttribute");
                             boolean hasAttribute = false;
@@ -122,7 +158,8 @@ public class SearchServiceImpl {
                             if (attribute != null) {
                                 value = ((UserService)activeLocalServers.get(node.getDomain())).getConfigAttr(
                                         user,
-                                        (String)attribute.getValue());
+                                        (String)attribute.getValue(),
+                                        context);
 
                                 if (value != null) {
                                     hasAttribute = true;

@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import de.cismet.connectioncontext.ConnectionContext;
+
 /**
  * DOCUMENT ME!
  *
@@ -35,7 +37,23 @@ public interface CidsServerMessageManager {
      * @param  object    DOCUMENT ME!
      * @param  renotify  DOCUMENT ME!
      */
-    void publishMessage(final String category, final Object object, final boolean renotify);
+    @Deprecated
+    void publishMessage(final String category,
+            final Object object,
+            final boolean renotify);
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  category           DOCUMENT ME!
+     * @param  object             DOCUMENT ME!
+     * @param  renotify           DOCUMENT ME!
+     * @param  connectionContext  DOCUMENT ME!
+     */
+    void publishMessage(final String category,
+            final Object object,
+            final boolean renotify,
+            final ConnectionContext connectionContext);
 
     /**
      * DOCUMENT ME!
@@ -46,11 +64,28 @@ public interface CidsServerMessageManager {
      * @param  ids                              DOCUMENT ME!
      * @param  trueForUserKeysFalseForGroupIds  DOCUMENT ME!
      */
+    @Deprecated
     void publishMessage(final String category,
             final Object object,
             final boolean renotify,
             final Set ids,
             final boolean trueForUserKeysFalseForGroupIds);
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  category                         DOCUMENT ME!
+     * @param  object                           DOCUMENT ME!
+     * @param  renotify                         DOCUMENT ME!
+     * @param  ids                              DOCUMENT ME!
+     * @param  trueForUserKeysFalseForGroupIds  DOCUMENT ME!
+     * @param  connectionContext                DOCUMENT ME!
+     */
+    void publishMessage(final String category,
+            final Object object,
+            final boolean renotify,
+            final Set ids,
+            final boolean trueForUserKeysFalseForGroupIds,
+            final ConnectionContext connectionContext);
 
     /**
      * DOCUMENT ME!
@@ -61,6 +96,7 @@ public interface CidsServerMessageManager {
      * @param  userGroupKeys  DOCUMENT ME!
      * @param  userKeys       DOCUMENT ME!
      */
+    @Deprecated
     void publishMessage(final String category,
             final Object object,
             final boolean renotify,
@@ -70,12 +106,44 @@ public interface CidsServerMessageManager {
     /**
      * DOCUMENT ME!
      *
+     * @param  category           DOCUMENT ME!
+     * @param  object             DOCUMENT ME!
+     * @param  renotify           DOCUMENT ME!
+     * @param  userGroupKeys      DOCUMENT ME!
+     * @param  userKeys           DOCUMENT ME!
+     * @param  connectionContext  DOCUMENT ME!
+     */
+    void publishMessage(final String category,
+            final Object object,
+            final boolean renotify,
+            final Set userGroupKeys,
+            final Set userKeys,
+            final ConnectionContext connectionContext);
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   user        DOCUMENT ME!
      * @param   biggerThen  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    List<CidsServerMessage> getMessages(final User user, final Map<String, Integer> biggerThen);
+    @Deprecated
+    List<CidsServerMessage> getMessages(final User user,
+            final Map<String, Integer> biggerThen);
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user               DOCUMENT ME!
+     * @param   biggerThen         DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    List<CidsServerMessage> getMessages(final User user,
+            final Map<String, Integer> biggerThen,
+            final ConnectionContext connectionContext);
 
     /**
      * DOCUMENT ME!
@@ -86,7 +154,25 @@ public interface CidsServerMessageManager {
      *
      * @return  DOCUMENT ME!
      */
-    CidsServerMessage getLastMessage(final String category, final User user, final int biggerThen);
+    @Deprecated
+    CidsServerMessage getLastMessage(final String category,
+            final User user,
+            final int biggerThen);
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   category           DOCUMENT ME!
+     * @param   user               DOCUMENT ME!
+     * @param   biggerThen         DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    CidsServerMessage getLastMessage(final String category,
+            final User user,
+            final int biggerThen,
+            final ConnectionContext connectionContext);
 
     /**
      * DOCUMENT ME!
@@ -97,7 +183,25 @@ public interface CidsServerMessageManager {
      *
      * @return  DOCUMENT ME!
      */
-    List<CidsServerMessage> getAllMessages(final String category, final User user, final int biggerThen);
+    @Deprecated
+    List<CidsServerMessage> getAllMessages(final String category,
+            final User user,
+            final int biggerThen);
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   category           DOCUMENT ME!
+     * @param   user               DOCUMENT ME!
+     * @param   biggerThen         DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    List<CidsServerMessage> getAllMessages(final String category,
+            final User user,
+            final int biggerThen,
+            final ConnectionContext connectionContext);
 
     /**
      * DOCUMENT ME!
