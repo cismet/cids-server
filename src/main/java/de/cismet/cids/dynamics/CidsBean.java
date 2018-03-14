@@ -359,7 +359,7 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
      */
     @Deprecated
     public CidsBean persist() throws Exception {
-        return persist(null);
+        return persist(ConnectionContext.createDeprecated());
     }
 
     /**
