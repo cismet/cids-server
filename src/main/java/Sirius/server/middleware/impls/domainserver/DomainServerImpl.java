@@ -73,7 +73,7 @@ import de.cismet.cids.server.actions.ScheduledServerAction;
 import de.cismet.cids.server.actions.ScheduledServerActionManager;
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
-import de.cismet.cids.server.connectioncontext.ConnectionContextLogger;
+import de.cismet.cids.server.connectioncontext.ConnectionContextBackend;
 import de.cismet.cids.server.search.QueryPostProcessor;
 import de.cismet.cids.server.ws.rest.RESTfulService;
 
@@ -181,6 +181,14 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                     ex);
             }
 
+            try {
+                ConnectionContextBackend.getInstance().loadRuleSets();
+            } catch (final Exception ex) {
+                logger.warn(
+                    "RuleSets for ConnectionContext loggers couldn't be loaded. ConnectionContextBackend will not work as expected !",
+                    ex);
+            }
+
             final Collection<? extends ServerAction> serverActions = Lookup.getDefault().lookupAll(ServerAction.class);
             for (final ServerAction serverAction : serverActions) {
                 serverActionMap.put(serverAction.getTaskName(), serverAction);
@@ -264,8 +272,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public NodeReferenceList getChildren(final Node node, final User user, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext, user, "getChildren", "node:" + node);
+        ConnectionContextBackend.getInstance().log(connectionContext, user, "getChildren", "node:" + node);
         try {
             if (userstore.validateUser(user)) {
                 return dbServer.getChildren(node, user);
@@ -291,8 +298,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public NodeReferenceList getRoots(final User user, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext, user, "getRoots");
+        ConnectionContextBackend.getInstance().log(connectionContext, user, "getRoots");
 
         try {
             if (userstore.validateUser(user)) {
@@ -329,8 +335,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public Node addNode(final Node node, final Link parent, final User user, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
+        ConnectionContextBackend.getInstance()
+                .log(connectionContext,
                     user,
                     "addNode",
                     "node:"
@@ -354,8 +360,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public boolean deleteNode(final Node node, final User user, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext, user, "deleteNode", "node:" + node);
+        ConnectionContextBackend.getInstance().log(connectionContext, user, "deleteNode", "node:" + node);
         try {
             return dbServer.getTree().deleteNode(node, user);
         } catch (Throwable e) {
@@ -375,13 +380,12 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public boolean addLink(final Node from, final Node to, final User user, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
-                    user,
-                    "addLink",
-                    "from:"
+        ConnectionContextBackend.getInstance().log(connectionContext,
+            user,
+            "addLink",
+            "from:"
                     + from,
-                    "to:"
+            "to:"
                     + to);
         try {
             return dbServer.getTree().addLink(from, to, user);
@@ -404,13 +408,12 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final Node to,
             final User user,
             final ConnectionContext connectionContext) throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
-                    user,
-                    "deleteLink",
-                    "from:"
+        ConnectionContextBackend.getInstance().log(connectionContext,
+            user,
+            "deleteLink",
+            "from:"
                     + from,
-                    "to:"
+            "to:"
                     + to);
         try {
             return dbServer.getTree().deleteLink(from, to, user);
@@ -431,11 +434,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public Node[] getNodes(final User user, final int[] ids, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
-                    user,
-                    "getNodes",
-                    "ids:"
+        ConnectionContextBackend.getInstance().log(connectionContext,
+            user,
+            "getNodes",
+            "ids:"
                     + Arrays.toString(ids));
         try {
             return dbServer.getNodes(ids, user);
@@ -456,8 +458,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public NodeReferenceList getClassTreeNodes(final User user, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext, user, "getClassTreeNodes");
+        ConnectionContextBackend.getInstance().log(connectionContext, user, "getClassTreeNodes");
         try {
             if (userstore.validateUser(user)) {
                 return dbServer.getClassTreeNodes(user);
@@ -480,8 +481,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
     @Override
     public MetaClass[] getClasses(final User user, final ConnectionContext connectionContext) throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext, user, "getClasses");
+        ConnectionContextBackend.getInstance().log(connectionContext, user, "getClasses");
         try { // if(userstore.validateUser(user))
             return dbServer.getClasses(user);
 
@@ -503,11 +503,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public MetaClass getClass(final User user, final int classID, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
-                    user,
-                    "getClass",
-                    "classID:"
+        ConnectionContextBackend.getInstance().log(connectionContext,
+            user,
+            "getClass",
+            "classID:"
                     + classID);
 
         try { // if(userstore.validateUser(user))
@@ -532,8 +531,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public MetaClass getClassByTableName(final User user,
             final String tableName,
             final ConnectionContext connectionContext) throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
+        ConnectionContextBackend.getInstance()
+                .log(connectionContext,
                     user,
                     "getClassByTableName",
                     "tableName:"
@@ -578,8 +577,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public MetaObject[] getObjects(final User user, final String[] objectIDs, final ConnectionContext connectionContext)
             throws RemoteException {
         try {
-            ConnectionContextLogger.getInstance()
-                    .logConnectionContext((ConnectionContext)connectionContext,
+            ConnectionContextBackend.getInstance()
+                    .log(connectionContext,
                         user,
                         "getObjects",
                         "objectIDs:"
@@ -628,11 +627,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
      */
     public MetaObject getObject(final User user, final String objectID, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
-                    user,
-                    "getObject",
-                    "objectID:"
+        ConnectionContextBackend.getInstance().log(connectionContext,
+            user,
+            "getObject",
+            "objectID:"
                     + objectID);
         try {
             final MetaObject mo = dbServer.getObject(objectID, user);
@@ -761,8 +759,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public MetaObject[] getMetaObject(final User user, final String query, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext, user, "getMetaObject", "query:" + query);
+        ConnectionContextBackend.getInstance().log(connectionContext, user, "getMetaObject", "query:" + query);
         final MetaObjectNode[] nodes = (MetaObjectNode[])(getMetaObjectNode(user, query, connectionContext));
         final MetaObject[] ret = new MetaObject[nodes.length];
         int i = 0;
@@ -790,8 +787,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public MetaObject insertMetaObject(final User user,
             final MetaObject metaObject,
             final ConnectionContext connectionContext) throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
+        ConnectionContextBackend.getInstance()
+                .log(connectionContext,
                     user,
                     "insertMetaObject",
                     "metaObject:"
@@ -831,8 +828,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             logger.debug("<html><body>update called for :+: <p>" + metaObject.getDebugString() + "</p></body></html>"); // NOI18N
         }
 
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
+        ConnectionContextBackend.getInstance()
+                .log(connectionContext,
                     user,
                     "updateMetaObject",
                     "metaObject:"
@@ -863,8 +860,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             logger.debug("delete called for" + metaObject); // NOI18N
         }
 
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
+        ConnectionContextBackend.getInstance()
+                .log(connectionContext,
                     user,
                     "deleteMetaObject",
                     "metaObject:"
@@ -890,8 +887,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public MetaObject getInstance(final User user, final MetaClass c, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext, user, "getInstance", "c:" + c);
+        ConnectionContextBackend.getInstance().log(connectionContext, user, "getInstance", "c:" + c);
 
         if (logger.isDebugEnabled()) {
             logger.debug("usergetInstance :: " + user + "  class " + c); // NOI18N
@@ -900,7 +896,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final Sirius.server.localserver.object.Object o = dbServer.getObjectFactory().getInstance(c.getID());
             if (o != null) {
                 final DefaultMetaObject mo = new DefaultMetaObject(o, c.getDomain());
-                mo.initWithConnectionContext((ConnectionContext)connectionContext);
+                mo.initWithConnectionContext(connectionContext);
                 mo.setAllStatus(MetaObject.TEMPLATE);
                 return mo;
             } else {
@@ -923,10 +919,9 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public MethodMap getMethods(final User user, final ConnectionContext connectionContext) throws RemoteException {
         // if(userstore.validateUser(user))
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
-                    user,
-                    "getMethods");
+        ConnectionContextBackend.getInstance().log(connectionContext,
+            user,
+            "getMethods");
 
         return dbServer.getMethods(); // dbServer.getMethods(user.getuserGroup()); // instead
 
@@ -953,8 +948,9 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String[] representationFields,
             final String representationPattern,
             final ConnectionContext connectionContext) throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
+        ConnectionContextBackend.getInstance()
+                .log(
+                    connectionContext,
                     user,
                     "getAllLightweightMetaObjectsForClass",
                     "classId:"
@@ -996,8 +992,9 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String[] representationFields,
             final ConnectionContext connectionContext) throws RemoteException {
         try {
-            ConnectionContextLogger.getInstance()
-                    .logConnectionContext((ConnectionContext)connectionContext,
+            ConnectionContextBackend.getInstance()
+                    .log(
+                        connectionContext,
                         user,
                         "getAllLightweightMetaObjectsForClass",
                         "classId:"
@@ -1040,8 +1037,9 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String[] representationFields,
             final String representationPattern,
             final ConnectionContext connectionContext) throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
+        ConnectionContextBackend.getInstance()
+                .log(
+                    connectionContext,
                     user,
                     "getLightweightMetaObjectsByQuery",
                     "query:"
@@ -1086,8 +1084,9 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String query,
             final String[] representationFields,
             final ConnectionContext connectionContext) throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
+        ConnectionContextBackend.getInstance()
+                .log(
+                    connectionContext,
                     user,
                     "getLightweightMetaObjectsByQuery",
                     "query:"
@@ -1127,8 +1126,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String oldPassword,
             final String newPassword,
             final ConnectionContext connectionContext) throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
+        ConnectionContextBackend.getInstance()
+                .log(connectionContext,
                     user,
                     "changePassword",
                     "oldPassword:*censored*",
@@ -1150,11 +1149,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public boolean validateUser(final User user, final String password, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
-                    user,
-                    "validateUser",
-                    "password:*censored*");
+        ConnectionContextBackend.getInstance().log(connectionContext,
+            user,
+            "validateUser",
+            "password:*censored*");
 
         try {
             return userstore.validateUserPassword(user, password);
@@ -1264,8 +1262,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public ArrayList<ArrayList> performCustomSearch(final PreparableStatement ps,
             final QueryPostProcessor qpp,
             final ConnectionContext connectionContext) throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
+        ConnectionContextBackend.getInstance()
+                .log(connectionContext,
                     null,
                     "performCustomSearch",
                     "ps:"
@@ -1586,11 +1584,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public String getConfigAttr(final User user, final String key, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
-                    user,
-                    "getConfigAttr",
-                    "key:"
+        ConnectionContextBackend.getInstance().log(connectionContext,
+            user,
+            "getConfigAttr",
+            "key:"
                     + key);
         try {
             return userstore.getConfigAttr(user, key);
@@ -1627,8 +1624,9 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final int elements,
             final ConnectionContext connectionContext) throws RemoteException {
         try {
-            ConnectionContextLogger.getInstance()
-                    .logConnectionContext((ConnectionContext)connectionContext,
+            ConnectionContextBackend.getInstance()
+                    .log(
+                        connectionContext,
                         user,
                         "getHistory",
                         "classId:"
@@ -1661,8 +1659,9 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final Object body,
             final ConnectionContext connectionContext,
             final ServerActionParameter... params) throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
+        ConnectionContextBackend.getInstance()
+                .log(
+                    connectionContext,
                     user,
                     "executeTask",
                     "taskname:"
@@ -1674,7 +1673,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         if (hasConfigAttr(user, SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX + taskname, connectionContext)) {
             final ServerAction serverAction = serverActionMap.get(taskname);
             if (serverAction instanceof ConnectionContextStore) {
-                ((ConnectionContextStore)serverAction).initWithConnectionContext((ConnectionContext)connectionContext);
+                ((ConnectionContextStore)serverAction).initWithConnectionContext(connectionContext);
             }
 
             if (serverAction instanceof MetaServiceStore) {

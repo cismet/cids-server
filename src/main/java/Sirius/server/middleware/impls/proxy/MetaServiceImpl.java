@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContextLogger;
+import de.cismet.cids.server.connectioncontext.ConnectionContextBackend;
 
 import de.cismet.connectioncontext.ConnectionContext;
 
@@ -286,7 +286,7 @@ public class MetaServiceImpl implements MetaService {
      */
     @Override
     public String[] getDomains(final ConnectionContext context) throws RemoteException {
-        ConnectionContextLogger.getInstance().logConnectionContext((ConnectionContext)context, null, "getDomains");
+        ConnectionContextBackend.getInstance().log((ConnectionContext)context, null, "getDomains");
 
         if (logger != null) {
             if (logger.isDebugEnabled()) {
@@ -330,8 +330,8 @@ public class MetaServiceImpl implements MetaService {
             final String lsName,
             final ConnectionContext context) throws RemoteException {
         // usr wird nicht beachtet fuer spaetere anpassungen
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)context,
+        ConnectionContextBackend.getInstance()
+                .log((ConnectionContext)context,
                     user,
                     "getMetaObjectNode",
                     "nodeID:"

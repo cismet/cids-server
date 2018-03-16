@@ -1,0 +1,24 @@
+[
+  {  
+    "name": "test",
+    "loggerName": "LOG4J",
+    "rules": [
+      {
+        "className": "treppe",
+        "mode": "BOTH",
+        "rule": "EXCLUDE"
+      }, {
+        "mode": "BOTH",
+        "category": "RENDERER"
+      }
+    ]
+  }, {
+    "name": "deprecated",
+    "loggerName": "console",
+    "rules": [
+      {  
+        "category": "DEPRECATED"
+      }
+    ]
+  }
+]

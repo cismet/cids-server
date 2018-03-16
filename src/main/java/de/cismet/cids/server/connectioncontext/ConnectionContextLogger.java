@@ -12,17 +12,8 @@
  */
 package de.cismet.cids.server.connectioncontext;
 
-import Sirius.server.newuser.User;
-
-import org.apache.log4j.Logger;
-
-import java.util.Date;
-
-import de.cismet.connectioncontext.AbstractConnectionContext;
-
-import de.cismet.connectioncontext.AbstractConnectionContext.Category;
-
-import de.cismet.connectioncontext.ConnectionContext;
+import java.util.List;
+import java.util.Map;
 
 /**
  * DOCUMENT ME!
@@ -30,19 +21,7 @@ import de.cismet.connectioncontext.ConnectionContext;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class ConnectionContextLogger {
-
-    //~ Static fields/initializers ---------------------------------------------
-
-    private static final transient Logger LOG = Logger.getLogger(ConnectionContextLogger.class);
-
-    //~ Constructors -----------------------------------------------------------
-
-    /**
-     * Creates a new ConnectionContextLogger object.
-     */
-    private ConnectionContextLogger() {
-    }
+public interface ConnectionContextLogger {
 
     //~ Methods ----------------------------------------------------------------
 
@@ -51,60 +30,19 @@ public class ConnectionContextLogger {
      *
      * @return  DOCUMENT ME!
      */
-    public static ConnectionContextLogger getInstance() {
-        return LazyInitialiser.INSTANCE;
-    }
+    String getName();
 
     /**
      * DOCUMENT ME!
      *
-     * @param  context     DOCUMENT ME!
-     * @param  user        DOCUMENT ME!
-     * @param  methodName  DOCUMENT ME!
-     * @param  params      DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
-    public void logConnectionContext(final ConnectionContext context,
-            final User user,
-            final String methodName,
-            final Object... params) {
-//        if (context == null) {
-//            context = ConnectionContext.createDeprecated();
-//        }
-//        final ConnectionContextLog contextLog = new ConnectionContextLog(new Date(),
-//                user,
-//                context,
-//                methodName,
-//                params);
-//        final Exception ex = (Exception)context.getAdditionalFields()
-//                    .get(AbstractConnectionContext.ADDITIONAL_FIELD__STACKTRACE_EXCEPTION);
-//        if (Category.DEPRECATED.equals(context.getCategory())) {
-//            LOG.fatal(contextLog, ex);
-//        } else if (Category.DUMMY.equals(context.getCategory())) {
-//            LOG.error(contextLog, ex);
-//        } else {
-//            LOG.info(contextLog, ex);
-//        }
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
+    List<ConnectionContextFilterRuleSet> getFilterRuleSets();
 
     /**
      * DOCUMENT ME!
      *
-     * @version  $Revision$, $Date$
+     * @param  connectionContextLog  DOCUMENT ME!
      */
-    private static final class LazyInitialiser {
-
-        //~ Static fields/initializers -----------------------------------------
-
-        private static final ConnectionContextLogger INSTANCE = new ConnectionContextLogger();
-
-        //~ Constructors -------------------------------------------------------
-
-        /**
-         * Creates a new LazyInitialiser object.
-         */
-        private LazyInitialiser() {
-        }
-    }
+    void log(ConnectionContextLog connectionContextLog);
 }
