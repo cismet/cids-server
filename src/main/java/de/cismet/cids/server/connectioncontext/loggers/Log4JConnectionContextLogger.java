@@ -51,12 +51,8 @@ public class Log4JConnectionContextLogger extends AbstractConnectionContextLogge
         for (final ConnectionContextFilterRuleSet filterRuleSet : getSatisfiedFilterRuleSets(connectionContextLog)) {
             final Map<String, Object> params = filterRuleSet.getLoggerParams();
 
-            final ConnectionContext connectionContext = connectionContextLog.getConnectionContext();
-
-            if (connectionContext.getAdditionalFields().containsKey(
-                            AbstractConnectionContext.ADDITIONAL_FIELD__STACKTRACE_EXCEPTION)) {
-                final Exception ex = (Exception)connectionContext.getAdditionalFields()
-                            .get(AbstractConnectionContext.ADDITIONAL_FIELD__STACKTRACE_EXCEPTION);
+            final Exception ex = connectionContextLog.getStacktraceException();
+            if (ex != null) {
                 LOG.fatal(connectionContextLog, ex);
             } else {
                 LOG.warn(connectionContextLog);

@@ -5,11 +5,18 @@
     "rules": [
       {
         "className": "treppe",
-        "mode": "BOTH",
-        "rule": "EXCLUDE"
+        "exclude": true
       }, {
-        "mode": "BOTH",
         "category": "RENDERER"
+      }
+    ]
+  }, {
+    "name": "test2",
+    "loggerName": "LOG4J",
+    "rules": [
+      {
+        "className": "treppe",
+        "objectId": "527"
       }
     ]
   }, {

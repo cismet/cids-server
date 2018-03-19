@@ -16,6 +16,7 @@ import Sirius.server.newuser.User;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.cismet.connectioncontext.AbstractConnectionContext;
 
 import org.apache.log4j.Logger;
 
@@ -31,7 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import de.cismet.connectioncontext.AbstractConnectionContext.Category;
+
 import de.cismet.connectioncontext.ConnectionContext;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * DOCUMENT ME!
@@ -120,7 +124,7 @@ public class ConnectionContextBackend {
     public void log(final ConnectionContext connectionContext,
             final User user,
             final String methodName,
-            final Object... params) {
+            final Object... params) {      
         final ConnectionContextLog contextLog = new ConnectionContextLog(new Date(),
                 user,
                 connectionContext,
@@ -140,6 +144,26 @@ public class ConnectionContextBackend {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr                DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public ConnectionContext addOriginToConnectionContext(final HttpServletRequest hsr, final ConnectionContext connectionContext) {
+        final ConnectionContext notNullConnectionContext;
+        if (connectionContext == null) {
+            notNullConnectionContext = ConnectionContext.createDeprecated();
+        } else {
+            notNullConnectionContext = connectionContext;
+        }
+        
+        notNullConnectionContext.getInfoFields().put(AbstractConnectionContext.FIELD__CLIENT_IP, hsr.getLocalAddr());
+        return notNullConnectionContext;
+    }
+    
+    /**
+     * DOCUMENT ME!
+     *
      * @param  args  DOCUMENT ME!
      */
     public static void main(final String[] args) {
@@ -153,7 +177,10 @@ public class ConnectionContextBackend {
 
         final ConnectionContextBackend backend = getInstance();
         backend.loadRuleSets();
-        backend.log(ConnectionContext.createDeprecated(), null, "test");
+        final ConnectionContext connectionContext = ConnectionContext.create(Category.RENDERER, "test");
+        connectionContext.getInfoFields().put(AbstractMetaObjectConnectionContext.FIELD__CLASS_NAME, "treppe");
+        connectionContext.getInfoFields().put(AbstractMetaObjectConnectionContext.FIELD__OBJECT_ID, 17);
+        backend.log(connectionContext, null, "test");
     }
 
     //~ Inner Classes ----------------------------------------------------------

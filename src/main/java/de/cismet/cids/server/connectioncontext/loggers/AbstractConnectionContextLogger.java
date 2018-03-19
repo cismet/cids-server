@@ -59,7 +59,7 @@ public abstract class AbstractConnectionContextLogger implements ConnectionConte
      */
     protected Collection<ConnectionContextFilterRuleSet> getSatisfiedFilterRuleSets(
             final ConnectionContextLog connectionContextLog) {
-        return AbstractConnectionContextLogger.this.getSatisfiedFilterRuleSets(connectionContextLog, false);
+        return getSatisfiedFilterRuleSets(connectionContextLog, false);
     }
 
     /**
@@ -75,7 +75,7 @@ public abstract class AbstractConnectionContextLogger implements ConnectionConte
             final boolean abortOnFirstSatisfaction) {
         final Collection<ConnectionContextFilterRuleSet> satisfiedRuleSets = new ArrayList<>();
         for (final ConnectionContextFilterRuleSet filterRuleSet : getFilterRuleSets()) {
-            if (filterRuleSet.accepts(connectionContextLog)) {
+            if (filterRuleSet.isSatisfied(connectionContextLog)) {
                 satisfiedRuleSets.add(filterRuleSet);
                 if (abortOnFirstSatisfaction) {
                     break;

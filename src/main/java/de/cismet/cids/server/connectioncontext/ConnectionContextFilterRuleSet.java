@@ -84,10 +84,10 @@ public class ConnectionContextFilterRuleSet {
      *
      * @return  DOCUMENT ME!
      */
-    public boolean accepts(final ConnectionContextLog log) {
+    public boolean isSatisfied(final ConnectionContextLog log) {
         boolean accept = true;
         for (final ConnectionContextFilterRule filterRule : getRules()) {
-            if (!filterRule.accepts(log)) {
+            if (!filterRule.isSatisfied(log)) {
                 accept = false;
                 break;
             }

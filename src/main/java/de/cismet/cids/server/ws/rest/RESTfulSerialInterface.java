@@ -43,6 +43,7 @@ import javax.ws.rs.core.UriInfo;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.connectioncontext.ConnectionContextBackend;
 import de.cismet.cids.server.search.CidsServerSearch;
 
 import de.cismet.connectioncontext.AbstractConnectionContext;
@@ -319,13 +320,14 @@ public final class RESTfulSerialInterface {
 
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            nameTheThread(hsr, "/getRoots", user.toString());
+
             final ConnectionContext connectionContext = Converter.deserialiseFromString(
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
-            nameTheThread(hsr, "/getRoots", user.toString());
 
-            return createResponse(getCallserver().getRoots(user, addOriginToConnectionContext(hsr, connectionContext)));
+            return createResponse(getCallserver().getRoots(user, ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get roots"; // NOI18N
             throw createRemoteException(ex, message);
@@ -366,7 +368,7 @@ public final class RESTfulSerialInterface {
             return createResponse(getCallserver().getChildren(
                         node,
                         user,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get children"; // NOI18N
             throw createRemoteException(ex, message);
@@ -397,20 +399,21 @@ public final class RESTfulSerialInterface {
             @FormParam(PARAM_CONNECTIONCONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/addNode", "[bytes]", "node=[bytes]");
         try {
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
             final Node node = Converter.deserialiseFromString(nodeBytes, Node.class, isCompressionEnabled());
             final Link parent = Converter.deserialiseFromString(parentBytes, Link.class, isCompressionEnabled());
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
             nameTheThread(hsr, "/addNode", user.toString(), "node=" + ((node != null) ? node.toString() : "null"));
 
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
+
             return createResponse(getCallserver().addNode(
                         node,
                         parent,
                         user,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not add node"; // NOI18N
             throw createRemoteException(ex, message);
@@ -442,16 +445,17 @@ public final class RESTfulSerialInterface {
         try {
             final Node node = Converter.deserialiseFromString(nodeBytes, Node.class, isCompressionEnabled());
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            nameTheThread(hsr, "/deleteNode", user.toString(), "node=" + ((node != null) ? node.toString() : "null"));
+
             final ConnectionContext connectionContext = Converter.deserialiseFromString(
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
-            nameTheThread(hsr, "/deleteNode", user.toString(), "node=" + ((node != null) ? node.toString() : "null"));
 
             return createResponse(getCallserver().deleteNode(
                         node,
                         user,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not delete node"; // NOI18N
             throw createRemoteException(ex, message);
@@ -503,7 +507,7 @@ public final class RESTfulSerialInterface {
                         from,
                         to,
                         user,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not add link"; // NOI18N
             throw createRemoteException(ex, message);
@@ -555,7 +559,7 @@ public final class RESTfulSerialInterface {
                         from,
                         to,
                         user,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not delete link"; // NOI18N
             throw createRemoteException(ex, message);
@@ -583,7 +587,7 @@ public final class RESTfulSerialInterface {
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
-            return createResponse(getCallserver().getDomains(addOriginToConnectionContext(hsr, connectionContext)));
+            return createResponse(getCallserver().getDomains(ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get domains"; // NOI18N
             throw createRemoteException(ex, message);
@@ -627,7 +631,7 @@ public final class RESTfulSerialInterface {
                         user,
                         nodeID,
                         domain,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get metaobject node"; // NOI18N
             throw createRemoteException(ex, message);
@@ -667,7 +671,7 @@ public final class RESTfulSerialInterface {
             return createResponse(getCallserver().getMetaObjectNode(
                         user,
                         query,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get metaobject node"; // NOI18N
             throw createRemoteException(ex, message);
@@ -707,7 +711,7 @@ public final class RESTfulSerialInterface {
             return createResponse(getCallserver().getMetaObject(
                         user,
                         query,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get metaobject"; // NOI18N
             throw createRemoteException(ex, message);
@@ -758,7 +762,7 @@ public final class RESTfulSerialInterface {
                         user,
                         query,
                         domain,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get metaobject"; // NOI18N
             throw createRemoteException(ex, message);
@@ -816,7 +820,7 @@ public final class RESTfulSerialInterface {
                         objectID,
                         classID,
                         domain,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get metaobject"; // NOI18N
             throw createRemoteException(ex, message);
@@ -872,7 +876,7 @@ public final class RESTfulSerialInterface {
                         user,
                         metaObject,
                         domain,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not insert metaobject"; // NOI18N
             throw createRemoteException(ex, message);
@@ -928,7 +932,7 @@ public final class RESTfulSerialInterface {
                         user,
                         metaObject,
                         domain,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not update metaobject"; // NOI18N
             throw createRemoteException(ex, message);
@@ -984,7 +988,7 @@ public final class RESTfulSerialInterface {
                         user,
                         metaObject,
                         domain,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not delete metaobject"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1027,7 +1031,7 @@ public final class RESTfulSerialInterface {
             return createResponse(getCallserver().getInstance(
                         user,
                         metaClass,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get instance"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1074,7 +1078,7 @@ public final class RESTfulSerialInterface {
                         user,
                         tableName,
                         domain,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get metaclass"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1118,7 +1122,7 @@ public final class RESTfulSerialInterface {
                         user,
                         classId,
                         domain,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get metaclass"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1157,7 +1161,7 @@ public final class RESTfulSerialInterface {
             return createResponse(getCallserver().getClasses(
                         user,
                         domain,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get metaclasses"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1193,7 +1197,7 @@ public final class RESTfulSerialInterface {
 
             return createResponse(getCallserver().getClassTreeNodes(
                         user,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get classtree nodes"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1233,7 +1237,7 @@ public final class RESTfulSerialInterface {
             return createResponse(getCallserver().getClassTreeNodes(
                         user,
                         domain,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get classtree nodes"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1269,7 +1273,7 @@ public final class RESTfulSerialInterface {
 
             return createResponse(getCallserver().getMethods(
                         user,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get methods"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1312,7 +1316,7 @@ public final class RESTfulSerialInterface {
             return createResponse(getCallserver().getMethods(
                         user,
                         localServerName,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get methods"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1372,7 +1376,7 @@ public final class RESTfulSerialInterface {
                         user,
                         representationFields,
                         representationPattern,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get LightweightMetaObjects for class"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1419,7 +1423,7 @@ public final class RESTfulSerialInterface {
                         classId,
                         user,
                         representationFields,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get LightweightMetaObjects for class"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1483,7 +1487,7 @@ public final class RESTfulSerialInterface {
                         query,
                         representationFields,
                         representationPattern,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get LightWeightMetaObjects"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1534,7 +1538,7 @@ public final class RESTfulSerialInterface {
                         user,
                         query,
                         representationFields,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get LightweightMetaObjects"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1647,7 +1651,7 @@ public final class RESTfulSerialInterface {
                         user,
                         oldPassword,
                         newPassword,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final UserException ex) {
             throw ex;
         } catch (final Exception ex) {
@@ -1709,7 +1713,7 @@ public final class RESTfulSerialInterface {
                         uLsName,
                         uname,
                         password,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final UserException ex) {
             throw ex;
         } catch (final Exception ex) {
@@ -1779,7 +1783,7 @@ public final class RESTfulSerialInterface {
             return createResponse(getCallserver().getUserGroupNames(
                         uname,
                         lsHome,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get usergroup names"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1819,7 +1823,7 @@ public final class RESTfulSerialInterface {
             return createResponse(getCallserver().getConfigAttr(
                         user,
                         key,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get config attr"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1859,7 +1863,7 @@ public final class RESTfulSerialInterface {
             return createResponse(getCallserver().hasConfigAttr(
                         user,
                         key,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not determine config attr"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1907,7 +1911,7 @@ public final class RESTfulSerialInterface {
             return createResponse(getCallserver().customServerSearch(
                         user,
                         serverSearch,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not execute custom search"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1959,7 +1963,7 @@ public final class RESTfulSerialInterface {
                         domain,
                         user,
                         elements,
-                        addOriginToConnectionContext(hsr, connectionContext)));
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get history"; // NOI18N
             throw createRemoteException(ex, message);
@@ -2019,7 +2023,7 @@ public final class RESTfulSerialInterface {
                         taskname,
                         taskdomain,
                         body,
-                        addOriginToConnectionContext(hsr, connectionContext),
+                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext),
                         params),
                     null);
         } catch (final Exception ex) {
@@ -2076,7 +2080,7 @@ public final class RESTfulSerialInterface {
                     ConnectionContext.class,
                     isCompressionEnabled());
 
-            final User u = getCidsUserFromBasicAuth(authString, addOriginToConnectionContext(hsr, connectionContext));
+            final User u = getCidsUserFromBasicAuth(authString, ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext));
             System.out.println(taskname + "@" + taskdomain);
             nameTheThread(
                 hsr,
@@ -2092,7 +2096,7 @@ public final class RESTfulSerialInterface {
                     taskname,
                     taskdomain,
                     body,
-                    addOriginToConnectionContext(hsr, connectionContext),
+                    ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext),
                     ServerActionParameter.fromMVMap(uriInfo.getQueryParameters()));
 
             return Response.ok(resp).build();
@@ -2152,23 +2156,6 @@ public final class RESTfulSerialInterface {
         final String uname = loginParts[0];
 
         return getCallserver().getUser(ugLsName, ugName, uLsName, uname, password, connectionContext);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   hsr                DOCUMENT ME!
-     * @param   connectionContext  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private static ConnectionContext addOriginToConnectionContext(final HttpServletRequest hsr,
-            final ConnectionContext connectionContext) {
-        if (connectionContext != null) {
-            connectionContext.getAdditionalFields()
-                    .put(AbstractConnectionContext.ADDITIONAL_FIELD__CLIENT_IP, hsr.getLocalAddr());
-        }
-        return connectionContext;
     }
 
     /**

@@ -23,10 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import de.cismet.connectioncontext.ConnectionContext;
+import java.util.Collection;
 
 /**
  * DOCUMENT ME!
@@ -48,36 +45,17 @@ public class ConnectionContextFilterRule {
 
     //~ Static fields/initializers ---------------------------------------------
 
+    private static final String PROPERTY__EXCLUDE = "exclude";
     private static final String PROPERTY__USER_LOGIN = "userLogin";
-    private static final String PROPERTY__USER_LOGINS = "userLogins";
     private static final String PROPERTY__GROUP_NAME = "groupName";
-    private static final String PROPERTY__GROUP_NAMES = "groupNames";
     private static final String PROPERTY__CLASS_NAME = "className";
-    private static final String PROPERTY__CLASS_NAMES = "classNames";
-    private static final String PROPERTY__OBJECT = "object";
-    private static final String PROPERTY__OBJECTS = "objects";
+    private static final String PROPERTY__OBJECT_ID = "objectId";
     private static final String PROPERTY__MODE = "mode";
-    private static final String PROPERTY__MODES = "modes";
     private static final String PROPERTY__CATEGORY = "category";
-    private static final String PROPERTY__CATEGORIES = "categories";
     private static final String PROPERTY__CONTEXT_NAME = "contextName";
-    private static final String PROPERTY__CONTEXT_NAMES = "contextNames";
     private static final String PROPERTY__ORIGIN_IP = "originIp";
-    private static final String PROPERTY__ORIGIN_IPS = "originIps";
 
     //~ Enums ------------------------------------------------------------------
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @version  $Revision$, $Date$
-     */
-    public enum Rule {
-
-        //~ Enum constants -----------------------------------------------------
-
-        INCLUDE, EXCLUDE
-    }
 
     /**
      * DOCUMENT ME!
@@ -93,282 +71,228 @@ public class ConnectionContextFilterRule {
 
     //~ Instance fields --------------------------------------------------------
 
-    @JsonProperty private Rule rule = Rule.INCLUDE;
-    @JsonProperty(PROPERTY__USER_LOGIN)
+    @JsonProperty(PROPERTY__EXCLUDE)
+    private boolean exclude = false;
     private String userLogin;
-    @JsonProperty(PROPERTY__USER_LOGINS)
-    private Set<String> userLogins;
     @JsonProperty(PROPERTY__GROUP_NAME)
     private String groupName;
-    @JsonProperty(PROPERTY__GROUP_NAMES)
-    private Set<String> groupNames;
     @JsonProperty(PROPERTY__CLASS_NAME)
     private String className;
-    @JsonProperty(PROPERTY__CLASS_NAMES)
-    private Set<String> classNames;
-    @JsonProperty(PROPERTY__OBJECT)
-    private ConnectionContextFilterRuleObjectDescriptor object;
-    @JsonProperty(PROPERTY__OBJECTS)
-    private Set<ConnectionContextFilterRuleObjectDescriptor> objects;
+    @JsonProperty(PROPERTY__OBJECT_ID)
+    private String objectId;
     @JsonProperty(PROPERTY__MODE)
-    private Mode mode = Mode.BOTH;
-    @JsonProperty(PROPERTY__MODES)
-    private Set<Mode> modes;
+    private Mode mode;
     @JsonProperty(PROPERTY__CATEGORY)
-    private ConnectionContext.Category category;
-    @JsonProperty(PROPERTY__CATEGORIES)
-    private Set<ConnectionContext.Category> categories;
+    private String category;
     @JsonProperty(PROPERTY__CONTEXT_NAME)
     private String contextName;
-    @JsonProperty(PROPERTY__CONTEXT_NAMES)
-    private Set<String> contextNames;
     @JsonProperty(PROPERTY__ORIGIN_IP)
     private String originIp;
-    @JsonProperty(PROPERTY__ORIGIN_IPS)
-    private Set<String> originIps;
 
     //~ Methods ----------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
-     */
-    public Set<String> getCombinedUserLogins() {
-        return new CombinedSet<>(getUserLogin(), getUserLogins());
-    }
-
-    /**
-     * DOCUMENT ME!
+     * @param   contextLog  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public Set<String> getCombinedGroupNames() {
-        return new CombinedSet<>(getGroupName(), getGroupNames());
-    }
+    public boolean isSatisfied(final ConnectionContextLog contextLog) {
+        final boolean exclude = isExclude();
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public Set<String> getCombinedClassNames() {
-        return new CombinedSet<>(getClassName(), getClassNames());
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public Set<ConnectionContextFilterRuleObjectDescriptor> getCombinedObjects() {
-        return new CombinedSet<>(getObject(), getObjects());
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public Set<ConnectionContextFilterRule.Mode> getCombinedModes() {
-        return new CombinedSet<>(getMode(), getModes());
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public Set<ConnectionContext.Category> getCombinedCategories() {
-        return new CombinedSet<>(getCategory(), getCategories());
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public Set<String> getCombinedContextNames() {
-        return new CombinedSet<>(getContextName(), getContextNames());
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public Set<String> getCombinedOriginIps() {
-        return new CombinedSet<>(getOriginIp(), getOriginIps());
+        return true
+                    && isUserLoginSatisfied(contextLog, exclude)
+                    && isGroupNameSatisfied(contextLog, exclude)
+                    && isClassNameSatisfied(contextLog, exclude)
+                    && isObjectIdSatisfied(contextLog, exclude)
+                    && isModeSatisfied(contextLog, exclude)
+                    && isCategorySatisfied(contextLog, exclude)
+                    && isContextNameSatisfied(contextLog, exclude)
+                    && isOriginIpSatisfied(contextLog, exclude);
     }
 
     /**
      * DOCUMENT ME!
      *
      * @param   contextLog  DOCUMENT ME!
+     * @param   exclude     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public boolean accepts(final ConnectionContextLog contextLog) {
-        return false
-                    || acceptsUserLogin(contextLog)
-                    || acceptsGroupName(contextLog)
-                    || acceptsClassName(contextLog)
-                    || acceptsObject(contextLog)
-                    || acceptsMode(contextLog)
-                    || acceptsCategory(contextLog)
-                    || acceptsContextName(contextLog)
-                    || acceptsOriginIp(contextLog);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   contextLog  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private boolean acceptsUserLogin(final ConnectionContextLog contextLog) {
+    private boolean isUserLoginSatisfied(final ConnectionContextLog contextLog, final boolean exclude) {
+        if (getUserLogin() == null) {
+            return true;
+        }
         final User user = contextLog.getUser();
         final String userLogin = (user != null) ? user.getName() : "";
 
-        return acceptsCombinedAccordingToRule(userLogin, getCombinedUserLogins());
+        return isSatisfied(userLogin, getUserLogin(), exclude);
     }
 
     /**
      * DOCUMENT ME!
      *
      * @param   contextLog  DOCUMENT ME!
+     * @param   exclude     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    private boolean acceptsGroupName(final ConnectionContextLog contextLog) {
+    private boolean isGroupNameSatisfied(final ConnectionContextLog contextLog, final boolean exclude) {
+        if (getGroupName() == null) {
+            return true;
+        }
         final User user = contextLog.getUser();
         final UserGroup userGroup = (user != null) ? user.getUserGroup() : null;
         final String groupName = (userGroup != null) ? userGroup.getName() : "";
 
-        return acceptsCombinedAccordingToRule(groupName, getCombinedGroupNames());
+        return isSatisfied(groupName, getGroupName(), exclude);
     }
 
     /**
      * DOCUMENT ME!
      *
      * @param   contextLog  DOCUMENT ME!
+     * @param   exclude     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    private boolean acceptsClassName(final ConnectionContextLog contextLog) {
-        // accepts(log.getConnectionContext()., getCombinedClassNames())
-        return false;
+    private boolean isClassNameSatisfied(final ConnectionContextLog contextLog, final boolean exclude) {
+        if (getClassName() == null) {
+            return true;
+        }
+        return isSatisfied(contextLog.getClassNames(), getClassName(), exclude);
     }
 
     /**
      * DOCUMENT ME!
      *
      * @param   contextLog  DOCUMENT ME!
+     * @param   exclude     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    private boolean acceptsObject(final ConnectionContextLog contextLog) {
-        // accepts(log.getConnectionContext()., getCombinedObjects())
-        return false;
+    private boolean isObjectIdSatisfied(final ConnectionContextLog contextLog, final boolean exclude) {
+        if (getObjectId() == null) {
+            return true;
+        }
+        return isSatisfied(contextLog.getObjectIds(), getObjectId(), exclude);
     }
 
     /**
      * DOCUMENT ME!
      *
      * @param   contextLog  DOCUMENT ME!
+     * @param   exclude     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    private boolean acceptsMode(final ConnectionContextLog contextLog) {
-        // accepts(log.get, getCombinedModes()) ||
-        return false;
+    private boolean isModeSatisfied(final ConnectionContextLog contextLog, final boolean exclude) {
+        if (getMode() == null) {
+            return true;
+        }
+        return isSatisfied(null, getMode().name(), exclude);
     }
 
     /**
      * DOCUMENT ME!
      *
      * @param   contextLog  DOCUMENT ME!
+     * @param   exclude     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    private boolean acceptsCategory(final ConnectionContextLog contextLog) {
-        final ConnectionContext connectionContext = contextLog.getConnectionContext();
-        return acceptsCombinedAccordingToRule(connectionContext.getCategory(), getCombinedCategories());
+    private boolean isCategorySatisfied(final ConnectionContextLog contextLog, final boolean exclude) {
+        if (getCategory() == null) {
+            return true;
+        }
+        return isSatisfied(contextLog.getCategory(), getCategory(), exclude);
     }
 
     /**
      * DOCUMENT ME!
      *
      * @param   contextLog  DOCUMENT ME!
+     * @param   exclude     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    private boolean acceptsContextName(final ConnectionContextLog contextLog) {
-        final ConnectionContext connectionContext = contextLog.getConnectionContext();
-        return acceptsCombinedAccordingToRule(connectionContext.getContent(), getCombinedContextNames());
+    private boolean isContextNameSatisfied(final ConnectionContextLog contextLog, final boolean exclude) {
+        if (getContextName() == null) {
+            return true;
+        }
+        return isSatisfied(contextLog.getContextName(), getContextName(), exclude);
     }
 
     /**
      * DOCUMENT ME!
      *
      * @param   contextLog  DOCUMENT ME!
+     * @param   exclude     DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    private boolean acceptsOriginIp(final ConnectionContextLog contextLog) {
-        final ConnectionContext connectionContext = contextLog.getConnectionContext();
-        return acceptsCombinedAccordingToRule(connectionContext.getOrigin().toString(), getCombinedOriginIps());
+    private boolean isOriginIpSatisfied(final ConnectionContextLog contextLog, final boolean exclude) {
+        if (getOriginIp() == null) {
+            return true;
+        }
+        return isSatisfied(contextLog.getOriginIp(), getOriginIp(), exclude);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   object   DOCUMENT ME!
+     * @param   filter   DOCUMENT ME!
+     * @param   exclude  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private static boolean isSatisfied(final Object object, final String filter, final boolean exclude) {
+        if (filter.isEmpty()) {
+            return true;
+        }
+        if (object instanceof Collection) {
+            final Collection collection = (Collection)object;
+            if (exclude) {
+                for (final Object objectOfCollection : collection) {
+                    if (isMatching(objectOfCollection, filter)) {
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                for (final Object objectOfCollection : collection) {
+                    if (isMatching(objectOfCollection, filter)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        } else {
+            if (exclude) {
+                return !isMatching(object, filter);
+            } else {
+                return isMatching(object, filter);
+            }
+        }
     }
 
     /**
      * DOCUMENT ME!
      *
      * @param   object  DOCUMENT ME!
-     * @param   set     DOCUMENT ME!
+     * @param   filter  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
-     *
-     * @throws  IllegalArgumentException  DOCUMENT ME!
      */
-    private boolean acceptsCombinedAccordingToRule(final Object object, final Set set) {
-        switch (getRule()) {
-            case INCLUDE: {
-                return !set.isEmpty() && set.contains(object);
-            }
-            case EXCLUDE: {
-                return set.isEmpty() || !set.contains(object);
-            }
-            default: {
-                throw new IllegalArgumentException("rule has to be either INCLUDE or EXCLUDE");
-            }
+    private static boolean isMatching(final Object object, final String filter) {
+        if (filter == null) {
+            return true;
         }
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @version  $Revision$, $Date$
-     */
-    private static class CombinedSet<T> extends HashSet<T> {
-
-        //~ Constructors -------------------------------------------------------
-
-        /**
-         * Creates a new CombinedSet object.
-         *
-         * @param  single    DOCUMENT ME!
-         * @param  multiple  DOCUMENT ME!
-         */
-        public CombinedSet(final T single, final Set<T> multiple) {
-            if (single != null) {
-                add(single);
-            }
-            if (multiple != null) {
-                addAll(multiple);
-            }
+        if (object == null) {
+            return true; // should return false except if filter = *
         }
+        return filter.equalsIgnoreCase(object.toString());
     }
 }
