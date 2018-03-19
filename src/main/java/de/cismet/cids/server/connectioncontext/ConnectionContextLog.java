@@ -21,13 +21,13 @@ import java.text.DateFormat;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import de.cismet.connectioncontext.AbstractConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
-import java.util.HashMap;
 
 /**
  * DOCUMENT ME!
@@ -72,14 +72,15 @@ public class ConnectionContextLog {
             final User user,
             final ConnectionContext connectionContext,
             final String methodName,
-            final Object[] methodParams) {        
+            final Object[] methodParams) {
         this.timestamp = timestamp;
         this.user = user;
         this.methodName = methodName;
         this.methodParams = methodParams;
         this.category = (connectionContext != null) ? connectionContext.getCategory() : null;
 
-        final Map<String, Object> infoFields = (connectionContext != null) ? connectionContext.getInfoFields() : new HashMap<String, Object>();
+        final Map<String, Object> infoFields = (connectionContext != null) ? connectionContext.getInfoFields()
+                                                                           : new HashMap<String, Object>();
 
         // name
         if (infoFields.containsKey(AbstractConnectionContext.FIELD__CONTEXT_NAME)) {

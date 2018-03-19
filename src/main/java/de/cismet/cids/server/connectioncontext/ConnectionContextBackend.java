@@ -12,11 +12,11 @@
  */
 package de.cismet.cids.server.connectioncontext;
 
+import Sirius.server.localserver.history.HistoryServer;
 import Sirius.server.newuser.User;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.cismet.connectioncontext.AbstractConnectionContext;
 
 import org.apache.log4j.Logger;
 
@@ -31,11 +31,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import javax.servlet.http.HttpServletRequest;
+
+import de.cismet.connectioncontext.AbstractConnectionContext;
 
 import de.cismet.connectioncontext.AbstractConnectionContext.Category;
 
 import de.cismet.connectioncontext.ConnectionContext;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * DOCUMENT ME!
@@ -51,6 +58,8 @@ public class ConnectionContextBackend {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     //~ Instance fields --------------------------------------------------------
+
+    private final LogExecutor executor = new LogExecutor();
 
     private final Map<String, ConnectionContextLogger> contextLoggers = new HashMap<>();
 
@@ -124,21 +133,14 @@ public class ConnectionContextBackend {
     public void log(final ConnectionContext connectionContext,
             final User user,
             final String methodName,
-            final Object... params) {      
+            final Object... params) {
         final ConnectionContextLog contextLog = new ConnectionContextLog(new Date(),
                 user,
                 connectionContext,
                 methodName,
                 params);
-        for (final ConnectionContextLogger contextLogger : contextLoggers.values()) {
-            if (contextLogger != null) {
-                try {
-                    contextLogger.log(contextLog);
-                } catch (final Exception ex) {
-                    LOG.warn("exception while logging context with logger " + contextLogger.getName(), ex);
-                }
-            }
-        }
+
+        executor.execute(new LogRunner(contextLog));
     }
 
     /**
@@ -149,18 +151,20 @@ public class ConnectionContextBackend {
      *
      * @return  DOCUMENT ME!
      */
-    public ConnectionContext addOriginToConnectionContext(final HttpServletRequest hsr, final ConnectionContext connectionContext) {
+    public ConnectionContext addOriginToConnectionContext(final HttpServletRequest hsr,
+            final ConnectionContext connectionContext) {
         final ConnectionContext notNullConnectionContext;
         if (connectionContext == null) {
+            LOG.warn("Connection-Context is null, creating new one.", new Exception());
             notNullConnectionContext = ConnectionContext.createDeprecated();
         } else {
             notNullConnectionContext = connectionContext;
         }
-        
+
         notNullConnectionContext.getInfoFields().put(AbstractConnectionContext.FIELD__CLIENT_IP, hsr.getLocalAddr());
         return notNullConnectionContext;
     }
-    
+
     /**
      * DOCUMENT ME!
      *
@@ -202,6 +206,66 @@ public class ConnectionContextBackend {
          * Creates a new LazyInitialiser object.
          */
         private LazyInitialiser() {
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    private static final class LogExecutor extends ThreadPoolExecutor {
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new HistoryExecutor object.
+         */
+        public LogExecutor() {
+            super(
+                1,
+                Integer.MAX_VALUE,
+                0L,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>());
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    private final class LogRunner implements Runnable {
+
+        //~ Instance fields ----------------------------------------------------
+
+        private final ConnectionContextLog contextLog;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new LogRunner object.
+         *
+         * @param  contextLog  DOCUMENT ME!
+         */
+        public LogRunner(final ConnectionContextLog contextLog) {
+            this.contextLog = contextLog;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void run() {
+            for (final ConnectionContextLogger contextLogger : contextLoggers.values()) {
+                if (contextLogger != null) {
+                    try {
+                        contextLogger.log(contextLog);
+                    } catch (final Exception ex) {
+                        LOG.warn("exception while logging context with logger " + contextLogger.getName(), ex);
+                    }
+                }
+            }
         }
     }
 }

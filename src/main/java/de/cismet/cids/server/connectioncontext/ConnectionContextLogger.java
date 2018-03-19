@@ -13,7 +13,6 @@
 package de.cismet.cids.server.connectioncontext;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * DOCUMENT ME!
