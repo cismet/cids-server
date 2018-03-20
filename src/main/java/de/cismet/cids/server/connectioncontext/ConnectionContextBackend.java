@@ -80,36 +80,50 @@ public class ConnectionContextBackend {
 
     /**
      * DOCUMENT ME!
+     *
+     * @param  configFilePath  DOCUMENT ME!
      */
-    public void loadRuleSets() {
-        final File json = new File(
-                "/home/jruiz/git_cismet/040-cids-server/src/main/java/de/cismet/cids/server/connectioncontext/testRuleSet.json");
+    public void loadConfig(final String configFilePath) {
+        if (configFilePath != null) {
+            final File json = new File(configFilePath);
 
-        for (final ConnectionContextLogger connectionContextLogger : contextLoggers.values()) {
-            connectionContextLogger.getFilterRuleSets().clear();
-        }
-
-        try {
-            final List<ConnectionContextFilterRuleSet> ruleSets = OBJECT_MAPPER.readValue(
-                    json,
-                    new TypeReference<List<ConnectionContextFilterRuleSet>>() {
-                    });
-            for (final ConnectionContextFilterRuleSet ruleSet : ruleSets) {
-                final String loggerName = ruleSet.getLoggerName();
-                if (contextLoggers.containsKey(loggerName)) {
-                    final ConnectionContextLogger connectionContextLogger = contextLoggers.get(loggerName);
-                    if (connectionContextLogger != null) {
-                        connectionContextLogger.getFilterRuleSets().add(ruleSet);
-                    } else {
-                        LOG.error("ConnectionContextLogger " + loggerName
-                                    + " is null. Something went wrong while initialization !");
-                    }
-                } else {
-                    LOG.warn("ConnectionContextLogger " + loggerName + " not found !");
-                }
+            for (final ConnectionContextLogger connectionContextLogger : contextLoggers.values()) {
+                connectionContextLogger.getFilterRuleSets().clear();
             }
-        } catch (final IOException ex) {
-            LOG.error("the RuleSets couldn't be loaded", ex);
+
+            try {
+                final ConnectionContextConfig config = OBJECT_MAPPER.readValue(json, ConnectionContextConfig.class);
+                final Collection<ConnectionContextLoggerConfig> loggerConfigs = config.getLoggers();
+                for (final ConnectionContextLoggerConfig loggerConfig : loggerConfigs) {
+                    if (loggerConfig != null) {
+                        final String loggerName = loggerConfig.getName();
+                        if (loggerName != null) {
+                            final ConnectionContextLogger connectionContextLogger = contextLoggers.get(loggerName);
+                            if (connectionContextLogger != null) {
+                                connectionContextLogger.configure(loggerConfig.getConfig());
+                            }
+                        }
+                    }
+                }
+
+                final Collection<ConnectionContextFilterRuleSet> ruleSets = config.getRuleSets();
+                for (final ConnectionContextFilterRuleSet ruleSet : ruleSets) {
+                    final String loggerName = ruleSet.getLoggerName();
+                    if (contextLoggers.containsKey(loggerName)) {
+                        final ConnectionContextLogger connectionContextLogger = contextLoggers.get(loggerName);
+                        if (connectionContextLogger != null) {
+                            connectionContextLogger.getFilterRuleSets().add(ruleSet);
+                        } else {
+                            LOG.error("ConnectionContextLogger " + loggerName
+                                        + " is null. Something went wrong while initialization !");
+                        }
+                    } else {
+                        LOG.warn("ConnectionContextLogger " + loggerName + " not found !");
+                    }
+                }
+            } catch (final IOException ex) {
+                LOG.error("The connection context rulesets couldn't be loaded", ex);
+            }
         }
     }
 
@@ -180,10 +194,10 @@ public class ConnectionContextBackend {
         org.apache.log4j.PropertyConfigurator.configure(p);
 
         final ConnectionContextBackend backend = getInstance();
-        backend.loadRuleSets();
+        backend.loadConfig("/home/jruiz/testRuleSets.json");
         final ConnectionContext connectionContext = ConnectionContext.create(Category.RENDERER, "test");
         connectionContext.getInfoFields().put(AbstractMetaObjectConnectionContext.FIELD__CLASS_NAME, "treppe");
-        connectionContext.getInfoFields().put(AbstractMetaObjectConnectionContext.FIELD__OBJECT_ID, 17);
+        connectionContext.getInfoFields().put(AbstractMetaObjectConnectionContext.FIELD__OBJECT_ID, 527);
         backend.log(connectionContext, null, "test");
     }
 
@@ -260,6 +274,9 @@ public class ConnectionContextBackend {
             for (final ConnectionContextLogger contextLogger : contextLoggers.values()) {
                 if (contextLogger != null) {
                     try {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("giving connection context log to logger: " + contextLogger.getName());
+                        }
                         contextLogger.log(contextLog);
                     } catch (final Exception ex) {
                         LOG.warn("exception while logging context with logger " + contextLogger.getName(), ex);

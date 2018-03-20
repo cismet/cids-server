@@ -35,6 +35,10 @@ public abstract class AbstractConnectionContextLogger implements ConnectionConte
     //~ Methods ----------------------------------------------------------------
 
     @Override
+    public void configure(final Object config) {
+    }
+
+    @Override
     public List<ConnectionContextFilterRuleSet> getFilterRuleSets() {
         return filterRuleSets;
     }

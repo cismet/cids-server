@@ -312,6 +312,24 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      *
      * @return  DOCUMENT ME!
      */
+    public final String getConnectionContextConfig() {
+        try {
+            return getString("server.connectioncontext.config");
+        } catch (final MissingResourceException e) {
+            final String message = "server.connectioncontext.config property not set"; // NOI18N
+            if (LOG.isInfoEnabled()) {
+                LOG.info(message, e);
+            }
+
+            return null;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public final String getServerProxyURL() {
         return getString("server.proxy.url");
     }

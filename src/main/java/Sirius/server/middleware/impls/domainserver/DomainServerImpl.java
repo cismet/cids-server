@@ -182,7 +182,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             }
 
             try {
-                ConnectionContextBackend.getInstance().loadRuleSets();
+                ConnectionContextBackend.getInstance().loadConfig(properties.getConnectionContextConfig());
             } catch (final Exception ex) {
                 logger.warn(
                     "RuleSets for ConnectionContext loggers couldn't be loaded. ConnectionContextBackend will not work as expected !",

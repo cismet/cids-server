@@ -22,9 +22,6 @@ import de.cismet.cids.server.connectioncontext.ConnectionContextFilterRuleSet;
 import de.cismet.cids.server.connectioncontext.ConnectionContextLog;
 import de.cismet.cids.server.connectioncontext.ConnectionContextLogger;
 
-import de.cismet.connectioncontext.AbstractConnectionContext;
-import de.cismet.connectioncontext.ConnectionContext;
-
 /**
  * DOCUMENT ME!
  *
@@ -53,9 +50,9 @@ public class Log4JConnectionContextLogger extends AbstractConnectionContextLogge
 
             final Exception ex = connectionContextLog.getStacktraceException();
             if (ex != null) {
-                LOG.fatal(connectionContextLog, ex);
+                LOG.info(connectionContextLog, ex);
             } else {
-                LOG.warn(connectionContextLog);
+                LOG.info(connectionContextLog);
             }
         }
     }

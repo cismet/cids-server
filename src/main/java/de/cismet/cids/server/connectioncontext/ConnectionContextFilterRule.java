@@ -23,7 +23,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * DOCUMENT ME!
@@ -44,6 +48,10 @@ import java.util.Collection;
 public class ConnectionContextFilterRule {
 
     //~ Static fields/initializers ---------------------------------------------
+
+    private static final String FILTER_WILDCARD = "*";
+    private static final String FILTER_SEPARATOR = ",";
+    private static final String FILTER_RANGE = "-";
 
     private static final String PROPERTY__EXCLUDE = "exclude";
     private static final String PROPERTY__USER_LOGIN = "userLogin";
@@ -73,6 +81,7 @@ public class ConnectionContextFilterRule {
 
     @JsonProperty(PROPERTY__EXCLUDE)
     private boolean exclude = false;
+    @JsonProperty(PROPERTY__USER_LOGIN)
     private String userLogin;
     @JsonProperty(PROPERTY__GROUP_NAME)
     private String groupName;
@@ -249,33 +258,12 @@ public class ConnectionContextFilterRule {
      * @return  DOCUMENT ME!
      */
     private static boolean isSatisfied(final Object object, final String filter, final boolean exclude) {
-        if (filter.isEmpty()) {
+        if ((filter == null) || FILTER_WILDCARD.equals(filter.trim())) {
+            // nothing to filter out if no filter is set
+            // nothing to filter out if wildcard is set
             return true;
         }
-        if (object instanceof Collection) {
-            final Collection collection = (Collection)object;
-            if (exclude) {
-                for (final Object objectOfCollection : collection) {
-                    if (isMatching(objectOfCollection, filter)) {
-                        return false;
-                    }
-                }
-                return true;
-            } else {
-                for (final Object objectOfCollection : collection) {
-                    if (isMatching(objectOfCollection, filter)) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        } else {
-            if (exclude) {
-                return !isMatching(object, filter);
-            } else {
-                return isMatching(object, filter);
-            }
-        }
+        return (exclude) ? (!isMatching(object, filter)) : isMatching(object, filter);
     }
 
     /**
@@ -287,12 +275,87 @@ public class ConnectionContextFilterRule {
      * @return  DOCUMENT ME!
      */
     private static boolean isMatching(final Object object, final String filter) {
-        if (filter == null) {
+        if (object == null) {
+            // nothing to filter out
             return true;
         }
-        if (object == null) {
-            return true; // should return false except if filter = *
+        if (object instanceof String) {
+            return isMatching((String)object, filter);
+        } else if (object instanceof Integer) {
+            return isMatching((Integer)object, filter);
+        } else if (object instanceof Collection) {
+            return isMatching((Collection)object, filter);
+        } else {
+            return isMatching(object.toString(), filter);
         }
-        return filter.equalsIgnoreCase(object.toString());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   string  DOCUMENT ME!
+     * @param   filter  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private static boolean isMatching(final String string, final String filter) {
+        if (filter.contains(FILTER_SEPARATOR)) {
+            for (final String sepFilter : filter.split(FILTER_SEPARATOR)) {
+                if (isMatching(string, sepFilter)) {
+                    return true;
+                }
+            }
+        }
+        final String[] wildcardSplittedFilters = filter.split("\\" + FILTER_WILDCARD);
+        final List<String> quotedTrimedFilters = new ArrayList<>(wildcardSplittedFilters.length);
+
+        for (final String wildcardSplittedFilter : wildcardSplittedFilters) {
+            final String quotedTrimedFilter = Pattern.quote(wildcardSplittedFilter.trim());
+            quotedTrimedFilters.add(quotedTrimedFilter);
+        }
+
+        final String replacedWildcardsAndQuottedFilter = ((filter.startsWith(FILTER_WILDCARD)) ? ".*" : "")
+                    + String.join(".*", quotedTrimedFilters) + ((filter.endsWith(FILTER_WILDCARD)) ? ".*" : "");
+
+        final Pattern pattern = Pattern.compile(replacedWildcardsAndQuottedFilter);
+
+        final Matcher matcher = pattern.matcher(string);
+        return matcher.matches();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   integer  DOCUMENT ME!
+     * @param   filter   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private static boolean isMatching(final Integer integer, final String filter) {
+        if (filter.contains(FILTER_SEPARATOR)) {
+            for (final String sepFilter : filter.split(FILTER_SEPARATOR)) {
+                if (isMatching(integer, sepFilter)) {
+                    return true;
+                }
+            }
+        }
+        return filter.equalsIgnoreCase(integer.toString());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   objects  DOCUMENT ME!
+     * @param   filter   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private static boolean isMatching(final Collection objects, final String filter) {
+        for (final Object object : objects) {
+            if (isMatching(object, filter)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
