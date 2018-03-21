@@ -12,6 +12,8 @@
  */
 package de.cismet.cids.server.connectioncontext;
 
+import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 
 import lombok.Getter;
@@ -19,12 +21,15 @@ import lombok.Setter;
 
 import java.text.DateFormat;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import de.cismet.connectioncontext.AbstractConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
@@ -41,8 +46,8 @@ public class ConnectionContextLog {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String LOG_SERVER_FORMAT = "[%s %s@%s] %s(%s) => %s %s";
-    private static final String LOG_CLIENT_FORMAT = "[%s %s@%s] %s(%s) =(%s)> %s %s";
+    private static final String DEFAULT_FORMAT_STRING =
+        "[${TIME} ${_USER_NAME}@${USER_DOMAIN}] ${CATEGORY}(${CONTEXT_NAME}) =(${CLIENT_IP})> ${METHOD_NAME}(${METHOD_PARAMS})";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -51,7 +56,7 @@ public class ConnectionContextLog {
     private final String contextName;
     private final ConnectionContext.Category category;
     private final String methodName;
-    private final Object[] methodParams;
+    private final Map<String, Object> methodParams;
     private final HashSet<Integer> objectIds = new HashSet<>();
     private final HashSet<String> classNames = new HashSet<>();
     private final Exception stacktraceException;
@@ -72,7 +77,7 @@ public class ConnectionContextLog {
             final User user,
             final ConnectionContext connectionContext,
             final String methodName,
-            final Object[] methodParams) {
+            final Map<String, Object> methodParams) {
         this.timestamp = timestamp;
         this.user = user;
         this.methodName = methodName;
@@ -123,29 +128,196 @@ public class ConnectionContextLog {
 
     //~ Methods ----------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   metaClasses        DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     * @param   user               DOCUMENT ME!
+     * @param   methodName         DOCUMENT ME!
+     * @param   params             DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ConnectionContextLog createForMetaClasses(
+            final MetaClass[] metaClasses,
+            final ConnectionContext connectionContext,
+            final User user,
+            final String methodName,
+            final Map<String, Object> params) {
+        final ConnectionContextLog contextLog = create(connectionContext, user, methodName, params);
+        if ((contextLog != null) && (metaClasses != null)) {
+            final List<String> classNames = new ArrayList<>(metaClasses.length);
+            for (final MetaClass metaClass : metaClasses) {
+                classNames.add((metaClass != null) ? metaClass.getTableName().toLowerCase() : null);
+            }
+            contextLog.getClassNames().addAll(classNames);
+        }
+        return contextLog;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   metaClass          DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     * @param   user               DOCUMENT ME!
+     * @param   methodName         DOCUMENT ME!
+     * @param   params             DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ConnectionContextLog createForMetaClass(
+            final MetaClass metaClass,
+            final ConnectionContext connectionContext,
+            final User user,
+            final String methodName,
+            final Map<String, Object> params) {
+        return createForMetaClasses(new MetaClass[] { metaClass }, connectionContext, user, methodName, params);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   metaObjects        DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     * @param   user               DOCUMENT ME!
+     * @param   methodName         DOCUMENT ME!
+     * @param   params             DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ConnectionContextLog createForMetaObjects(
+            final MetaObject[] metaObjects,
+            final ConnectionContext connectionContext,
+            final User user,
+            final String methodName,
+            final Map<String, Object> params) {
+        final ConnectionContextLog contextLog = create(connectionContext, user, methodName, params);
+        if ((contextLog != null) && (metaObjects != null)) {
+            final List<Integer> objectIds = new ArrayList<>(metaObjects.length);
+            final List<String> classNames = new ArrayList<>(metaObjects.length);
+            for (final MetaObject metaObject : metaObjects) {
+                objectIds.add((metaObject != null) ? metaObject.getId() : null);
+                classNames.add((metaObject != null) ? metaObject.getMetaClass().getTableName().toLowerCase() : null);
+            }
+            contextLog.getObjectIds().addAll(objectIds);
+        }
+        return contextLog;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   metaObject         DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     * @param   user               DOCUMENT ME!
+     * @param   methodName         DOCUMENT ME!
+     * @param   params             DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ConnectionContextLog createForMetaObject(
+            final MetaObject metaObject,
+            final ConnectionContext connectionContext,
+            final User user,
+            final String methodName,
+            final Map<String, Object> params) {
+        return createForMetaObjects(new MetaObject[] { metaObject }, connectionContext, user, methodName, params);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   connectionContext  DOCUMENT ME!
+     * @param   user               DOCUMENT ME!
+     * @param   methodName         DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ConnectionContextLog create(final ConnectionContext connectionContext,
+            final User user,
+            final String methodName) {
+        return create(connectionContext, user, methodName, null);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   connectionContext  DOCUMENT ME!
+     * @param   user               DOCUMENT ME!
+     * @param   methodName         DOCUMENT ME!
+     * @param   params             DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ConnectionContextLog create(final ConnectionContext connectionContext,
+            final User user,
+            final String methodName,
+            final Map<String, Object> params) {
+        final ConnectionContextLog contextLog = new ConnectionContextLog(new Date(),
+                user,
+                connectionContext,
+                methodName,
+                params);
+        return contextLog;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   formatString  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String toString(String formatString) {
+        if (formatString == null) {
+            formatString = DEFAULT_FORMAT_STRING;
+        }
+
+        final String time = (getTimestamp() != null) ? DateFormat.getDateTimeInstance().format(getTimestamp()) : null;
+        final String userName = (getUser() != null) ? getUser().getName() : null;
+        final String userDomain = (getUser() != null) ? getUser().getDomain() : null;
+        final String category = (getCategory() != null) ? getCategory().name() : null;
+        final String contextName = getContextName();
+        final String clientIp = getOriginIp();
+        final String methodName = getMethodName();
+
+        final String methodParams;
+        if (getMethodParams() != null) {
+            final String separator = ",";
+            final String keyValueSeparator = ":";
+
+            final StringBuffer buffer = new StringBuffer();
+
+            final Iterator<Map.Entry<String, Object>> entryIterator = getMethodParams().entrySet().iterator();
+
+            while (entryIterator.hasNext()) {
+                final Map.Entry<String, Object> entry = entryIterator.next();
+
+                buffer.append(entry.getKey()).append(keyValueSeparator).append(entry.getValue());
+
+                if (entryIterator.hasNext()) {
+                    buffer.append(separator);
+                }
+            }
+            methodParams = buffer.toString();
+        } else {
+            methodParams = "";
+        }
+
+        return formatString.replaceAll(Pattern.quote("${TIME}"), time)
+                    .replaceAll(Pattern.quote("${USER_NAME}"), userName)
+                    .replaceAll(Pattern.quote("${USER_DOMAIN}"), userDomain)
+                    .replaceAll(Pattern.quote("${CATEGORY}"), category)
+                    .replaceAll(Pattern.quote("${CONTEXT_NAME}"), contextName)
+                    .replaceAll(Pattern.quote("${CLIENT_IP}"), clientIp)
+                    .replaceAll(Pattern.quote("${METHOD_NAME}"), methodName)
+                    .replaceAll(Pattern.quote("${METHOD_PARAMS}"), methodParams);
+    }
+
     @Override
     public String toString() {
-        if (originIp == null) {
-            return String.format(
-                    LOG_SERVER_FORMAT,
-                    DateFormat.getDateTimeInstance().format(timestamp),
-                    (user != null) ? user.getName() : null,
-                    (user != null) ? user.getDomain() : null,
-                    (category != null) ? category.name() : null,
-                    (contextName != null) ? contextName : null,
-                    methodName,
-                    (methodParams != null) ? Arrays.toString(methodParams) : null);
-        } else {
-            return String.format(
-                    LOG_CLIENT_FORMAT,
-                    DateFormat.getDateTimeInstance().format(timestamp),
-                    (user != null) ? user.getName() : null,
-                    (user != null) ? user.getDomain() : null,
-                    (category != null) ? category.name() : null,
-                    (contextName != null) ? contextName : null,
-                    originIp,
-                    methodName,
-                    (methodParams != null) ? Arrays.toString(methodParams) : null);
-        }
+        return toString(DEFAULT_FORMAT_STRING);
     }
 }

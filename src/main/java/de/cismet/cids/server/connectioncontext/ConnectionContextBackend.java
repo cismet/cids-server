@@ -12,10 +12,8 @@
  */
 package de.cismet.cids.server.connectioncontext;
 
-import Sirius.server.localserver.history.HistoryServer;
 import Sirius.server.newuser.User;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.log4j.Logger;
@@ -26,13 +24,10 @@ import java.io.File;
 import java.io.IOException;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -139,21 +134,9 @@ public class ConnectionContextBackend {
     /**
      * DOCUMENT ME!
      *
-     * @param  connectionContext  DOCUMENT ME!
-     * @param  user               DOCUMENT ME!
-     * @param  methodName         DOCUMENT ME!
-     * @param  params             DOCUMENT ME!
+     * @param  contextLog  DOCUMENT ME!
      */
-    public void log(final ConnectionContext connectionContext,
-            final User user,
-            final String methodName,
-            final Object... params) {
-        final ConnectionContextLog contextLog = new ConnectionContextLog(new Date(),
-                user,
-                connectionContext,
-                methodName,
-                params);
-
+    public void log(final ConnectionContextLog contextLog) {
         executor.execute(new LogRunner(contextLog));
     }
 
@@ -198,7 +181,11 @@ public class ConnectionContextBackend {
         final ConnectionContext connectionContext = ConnectionContext.create(Category.RENDERER, "test");
         connectionContext.getInfoFields().put(AbstractMetaObjectConnectionContext.FIELD__CLASS_NAME, "treppe");
         connectionContext.getInfoFields().put(AbstractMetaObjectConnectionContext.FIELD__OBJECT_ID, 527);
-        backend.log(connectionContext, null, "test");
+        final ConnectionContextLog contextLog = ConnectionContextLog.create(
+                connectionContext,
+                new User(0, "testUser", "testDomain"),
+                "main");
+        backend.log(contextLog);
     }
 
     //~ Inner Classes ----------------------------------------------------------

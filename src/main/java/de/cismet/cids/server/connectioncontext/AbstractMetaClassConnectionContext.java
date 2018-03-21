@@ -44,7 +44,7 @@ public abstract class AbstractMetaClassConnectionContext extends ConnectionConte
      */
     public AbstractMetaClassConnectionContext(final Category category, final String context, final MetaClass mc) {
         super(category, context);
-        getInfoFields().put(FIELD__CLASS_NAME, (mc == null) ? null : mc.getTableName());
+        getInfoFields().put(FIELD__CLASS_NAME, (mc == null) ? null : mc.getTableName().toLowerCase());
     }
 
     /**
@@ -63,7 +63,7 @@ public abstract class AbstractMetaClassConnectionContext extends ConnectionConte
         if (mcs != null) {
             classes = new HashSet<>();
             for (final MetaClass mc : mcs) {
-                classes.add((mc != null) ? mc.getTableName() : null);
+                classes.add((mc != null) ? mc.getTableName().toLowerCase() : null);
             }
         } else {
             classes = null;

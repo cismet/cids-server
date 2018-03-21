@@ -12,12 +12,6 @@
  */
 package de.cismet.cids.server.connectioncontext.loggers;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.log4j.Logger;
 
 import org.openide.util.lookup.ServiceProvider;
@@ -30,9 +24,6 @@ import java.util.Map;
 import de.cismet.cids.server.connectioncontext.ConnectionContextFilterRuleSet;
 import de.cismet.cids.server.connectioncontext.ConnectionContextLog;
 import de.cismet.cids.server.connectioncontext.ConnectionContextLogger;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 /**
  * DOCUMENT ME!
@@ -62,19 +53,18 @@ public class FileWriterConnectionContextLogger extends AbstractConnectionContext
         if (config instanceof Map) {
             final Map map = (Map)config;
             if (map.containsKey(PROPERTY__LOG_FILE)) {
-            
-            final String filePathName = (String)map.get(PROPERTY__LOG_FILE);
-            FileWriter fileWriter = null;
-            try {
-                fileWriter = new FileWriter(filePathName, true);
-            } catch (final IOException ex) {
-                LOG.error(ex, ex);
-            }
-            this.fileWriter = fileWriter;
-            
-            if (map.containsKey(PROPERTY__LOG_FORMAT)) {
-                this.logFormat = (String) map.get(PROPERTY__LOG_FORMAT);
-            }
+                final String filePathName = (String)map.get(PROPERTY__LOG_FILE);
+                FileWriter fileWriter = null;
+                try {
+                    fileWriter = new FileWriter(filePathName, true);
+                } catch (final IOException ex) {
+                    LOG.error(ex, ex);
+                }
+                this.fileWriter = fileWriter;
+
+                if (map.containsKey(PROPERTY__LOG_FORMAT)) {
+                    this.logFormat = (String)map.get(PROPERTY__LOG_FORMAT);
+                }
             }
         }
     }
@@ -83,28 +73,22 @@ public class FileWriterConnectionContextLogger extends AbstractConnectionContext
     public String getName() {
         return NAME;
     }
-    
-    private static String createFormattedLogString(final ConnectionContextLog connectionContextLog, final String logFormat) {        
-        if (logFormat != null) {
-            return "formatted " + connectionContextLog.toString();
-        } else {
-            return connectionContextLog.toString();
-        }
-    }
 
     @Override
-    public void log(final ConnectionContextLog connectionContextLog) {
+    public void log(final ConnectionContextLog contextLog) {
         if (this.fileWriter != null) {
-            for (final ConnectionContextFilterRuleSet filterRuleSet : getSatisfiedFilterRuleSets(connectionContextLog)) {
+            for (final ConnectionContextFilterRuleSet filterRuleSet : getSatisfiedFilterRuleSets(contextLog)) {
                 final Map<String, Object> params = filterRuleSet.getLoggerParams();
 
-                try {
-                    this.fileWriter.write(createFormattedLogString(connectionContextLog, this.logFormat) + "\n");
-                    this.fileWriter.flush();
-                } catch (final IOException ex) {
-                    LOG.error("Error while writing connection context log", ex);
+                if (contextLog != null) {
+                    try {
+                        this.fileWriter.write(contextLog.toString(this.logFormat) + "\n");
+                        this.fileWriter.flush();
+                    } catch (final IOException ex) {
+                        LOG.error("Error while writing connection context log", ex);
+                    }
                 }
             }
         }
-    }       
+    }
 }
