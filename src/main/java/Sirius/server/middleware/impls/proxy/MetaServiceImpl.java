@@ -33,10 +33,13 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContextLogger;
+import de.cismet.cids.server.connectioncontext.ConnectionContextBackend;
+import de.cismet.cids.server.connectioncontext.ConnectionContextLog;
 
 import de.cismet.connectioncontext.ConnectionContext;
 
@@ -286,7 +289,7 @@ public class MetaServiceImpl implements MetaService {
      */
     @Override
     public String[] getDomains(final ConnectionContext context) throws RemoteException {
-        ConnectionContextLogger.getInstance().logConnectionContext((ConnectionContext)context, null, "getDomains");
+        ConnectionContextBackend.getInstance().log(ConnectionContextLog.create(context, null, "getDomains", null));
 
         if (logger != null) {
             if (logger.isDebugEnabled()) {
@@ -330,14 +333,18 @@ public class MetaServiceImpl implements MetaService {
             final String lsName,
             final ConnectionContext context) throws RemoteException {
         // usr wird nicht beachtet fuer spaetere anpassungen
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)context,
-                    user,
-                    "getMetaObjectNode",
-                    "nodeID:"
-                    + nodeID,
-                    "lsName:"
-                    + lsName);
+        ConnectionContextBackend.getInstance()
+                .log(ConnectionContextLog.create(
+                        context,
+                        user,
+                        "getMetaObjectNode",
+                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+
+                                {
+                                    put("nodeID:", nodeID);
+                                    put("lsName:", lsName);
+                                }
+                            })));
 
         if (logger != null) {
             if (logger.isDebugEnabled()) {

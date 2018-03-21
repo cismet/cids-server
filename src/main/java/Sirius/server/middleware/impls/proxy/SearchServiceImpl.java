@@ -19,9 +19,11 @@ import Sirius.server.newuser.User;
 import java.rmi.RemoteException;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 
-import de.cismet.cids.server.connectioncontext.ConnectionContextLogger;
+import de.cismet.cids.server.connectioncontext.ConnectionContextBackend;
+import de.cismet.cids.server.connectioncontext.ConnectionContextLog;
 import de.cismet.cids.server.search.CidsServerSearch;
 
 import de.cismet.connectioncontext.ConnectionContext;
@@ -91,12 +93,17 @@ public class SearchServiceImpl implements SearchService {
     public Collection customServerSearch(final User user,
             final CidsServerSearch serverSearch,
             final ConnectionContext connectionContext) throws RemoteException {
-        ConnectionContextLogger.getInstance()
-                .logConnectionContext((ConnectionContext)connectionContext,
-                    user,
-                    "customServerSearch",
-                    "serverSearch:"
-                    + serverSearch);
+        ConnectionContextBackend.getInstance()
+                .log(ConnectionContextLog.create(
+                        connectionContext,
+                        user,
+                        "customServerSearch",
+                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+
+                                {
+                                    put("serverSearch:", serverSearch);
+                                }
+                            })));
         serverSearch.setUser(user);
         serverSearch.setActiveLocalServers(new HashMap(activeLocalServers));
         if (serverSearch instanceof ConnectionContextStore) {
