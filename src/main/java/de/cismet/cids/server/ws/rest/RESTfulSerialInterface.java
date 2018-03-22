@@ -43,9 +43,9 @@ import javax.ws.rs.core.UriInfo;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerActionParameter;
-import de.cismet.cids.server.connectioncontext.ConnectionContextBackend;
 import de.cismet.cids.server.search.CidsServerSearch;
 
+import de.cismet.connectioncontext.AbstractConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
 
 import de.cismet.tools.Converter;
@@ -280,16 +280,15 @@ public final class RESTfulSerialInterface {
 
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String domain = Converter.deserialiseFromString(
                     domainNameBytes,
                     String.class,
                     isCompressionEnabled());
             nameTheThread(hsr, "/getRootsByDomain", user.toString(), "domain=" + domain);
-
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
 
             return createResponse(getCallserver().getRoots(user, domain, connectionContext));
         } catch (final Exception ex) {
@@ -320,16 +319,13 @@ public final class RESTfulSerialInterface {
 
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
-            nameTheThread(hsr, "/getRoots", user.toString());
-
             final ConnectionContext connectionContext = Converter.deserialiseFromString(
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
+            nameTheThread(hsr, "/getRoots", user.toString());
 
-            return createResponse(getCallserver().getRoots(
-                        user,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+            return createResponse(getCallserver().getRoots(user, addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get roots"; // NOI18N
             throw createRemoteException(ex, message);
@@ -359,19 +355,18 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getChildren", "[bytes]", "node=[bytes]");
 
         try {
-            final Node node = Converter.deserialiseFromString(nodeBytes, Node.class, isCompressionEnabled());
-            final User user = Converter.deserialiseFromString(usrBytes, User.class, isCompressionEnabled());
-            nameTheThread(hsr, "/getChildren", user.toString(), "node=" + ((node != null) ? node.toString() : "null"));
-
             final ConnectionContext connectionContext = Converter.deserialiseFromString(
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
+            final Node node = Converter.deserialiseFromString(nodeBytes, Node.class, isCompressionEnabled());
+            final User user = Converter.deserialiseFromString(usrBytes, User.class, isCompressionEnabled());
+            nameTheThread(hsr, "/getChildren", user.toString(), "node=" + ((node != null) ? node.toString() : "null"));
 
             return createResponse(getCallserver().getChildren(
                         node,
                         user,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get children"; // NOI18N
             throw createRemoteException(ex, message);
@@ -402,21 +397,20 @@ public final class RESTfulSerialInterface {
             @FormParam(PARAM_CONNECTIONCONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/addNode", "[bytes]", "node=[bytes]");
         try {
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final Node node = Converter.deserialiseFromString(nodeBytes, Node.class, isCompressionEnabled());
             final Link parent = Converter.deserialiseFromString(parentBytes, Link.class, isCompressionEnabled());
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
             nameTheThread(hsr, "/addNode", user.toString(), "node=" + ((node != null) ? node.toString() : "null"));
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().addNode(
                         node,
                         parent,
                         user,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not add node"; // NOI18N
             throw createRemoteException(ex, message);
@@ -448,17 +442,16 @@ public final class RESTfulSerialInterface {
         try {
             final Node node = Converter.deserialiseFromString(nodeBytes, Node.class, isCompressionEnabled());
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
-            nameTheThread(hsr, "/deleteNode", user.toString(), "node=" + ((node != null) ? node.toString() : "null"));
-
             final ConnectionContext connectionContext = Converter.deserialiseFromString(
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
+            nameTheThread(hsr, "/deleteNode", user.toString(), "node=" + ((node != null) ? node.toString() : "null"));
 
             return createResponse(getCallserver().deleteNode(
                         node,
                         user,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not delete node"; // NOI18N
             throw createRemoteException(ex, message);
@@ -491,6 +484,10 @@ public final class RESTfulSerialInterface {
 
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final Node from = Converter.deserialiseFromString(fromBytes, Node.class, isCompressionEnabled());
             final Node to = Converter.deserialiseFromString(toBytes, Node.class, isCompressionEnabled());
             nameTheThread(
@@ -502,16 +499,11 @@ public final class RESTfulSerialInterface {
                         + "-->"
                         + ((to != null) ? to.toString() : "null"));
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().addLink(
                         from,
                         to,
                         user,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not add link"; // NOI18N
             throw createRemoteException(ex, message);
@@ -544,6 +536,10 @@ public final class RESTfulSerialInterface {
 
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final Node from = Converter.deserialiseFromString(fromBytes, Node.class, isCompressionEnabled());
             final Node to = Converter.deserialiseFromString(toBytes, Node.class, isCompressionEnabled());
             nameTheThread(
@@ -555,16 +551,11 @@ public final class RESTfulSerialInterface {
                         + "-->"
                         + ((to != null) ? to.toString() : "null"));
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().deleteLink(
                         from,
                         to,
                         user,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not delete link"; // NOI18N
             throw createRemoteException(ex, message);
@@ -592,8 +583,7 @@ public final class RESTfulSerialInterface {
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
-            return createResponse(getCallserver().getDomains(
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+            return createResponse(getCallserver().getDomains(addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get domains"; // NOI18N
             throw createRemoteException(ex, message);
@@ -625,20 +615,19 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getMetaObjectNodeByID", "[bytes]", "domain=[bytes]", "nodeId=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
-            final int nodeID = Converter.deserialiseFromString(nodeIDBytes, int.class, isCompressionEnabled());
-            final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
-            nameTheThread(hsr, "/getMetaObjectNodeByID", user.toString(), "domain=" + domain, ",nodeId=" + nodeID);
-
             final ConnectionContext connectionContext = Converter.deserialiseFromString(
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
+            final int nodeID = Converter.deserialiseFromString(nodeIDBytes, int.class, isCompressionEnabled());
+            final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
+            nameTheThread(hsr, "/getMetaObjectNodeByID", user.toString(), "domain=" + domain, ",nodeId=" + nodeID);
 
             return createResponse(getCallserver().getMetaObjectNode(
                         user,
                         nodeID,
                         domain,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get metaobject node"; // NOI18N
             throw createRemoteException(ex, message);
@@ -668,18 +657,17 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getMetaObjectNodeByString", "[bytes]", "query=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(usrBytes, User.class, isCompressionEnabled());
-            final String query = Converter.deserialiseFromString(queryBytes, String.class, isCompressionEnabled());
-            nameTheThread(hsr, "/getMetaObjectNodeByString", user.toString(), "query=" + query);
-
             final ConnectionContext connectionContext = Converter.deserialiseFromString(
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
+            final String query = Converter.deserialiseFromString(queryBytes, String.class, isCompressionEnabled());
+            nameTheThread(hsr, "/getMetaObjectNodeByString", user.toString(), "query=" + query);
 
             return createResponse(getCallserver().getMetaObjectNode(
                         user,
                         query,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get metaobject node"; // NOI18N
             throw createRemoteException(ex, message);
@@ -709,18 +697,17 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getMetaObjectByString", "[bytes]", "query=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(usrBytes, User.class, isCompressionEnabled());
-            final String query = Converter.deserialiseFromString(queryBytes, String.class, isCompressionEnabled());
-            nameTheThread(hsr, "/getMetaObjectByString", user.toString(), "query=" + query);
-
             final ConnectionContext connectionContext = Converter.deserialiseFromString(
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
+            final String query = Converter.deserialiseFromString(queryBytes, String.class, isCompressionEnabled());
+            nameTheThread(hsr, "/getMetaObjectByString", user.toString(), "query=" + query);
 
             return createResponse(getCallserver().getMetaObject(
                         user,
                         query,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get metaobject"; // NOI18N
             throw createRemoteException(ex, message);
@@ -752,6 +739,10 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getMetaObjectByStringAndDomain", "[bytes]", "domain=[bytes]", " query=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(usrBytes, User.class, isCompressionEnabled());
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String query = Converter.deserialiseFromString(queryBytes, String.class, isCompressionEnabled());
             final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
             nameTheThread(
@@ -763,16 +754,11 @@ public final class RESTfulSerialInterface {
                 "query="
                         + query);
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().getMetaObject(
                         user,
                         query,
                         domain,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get metaobject"; // NOI18N
             throw createRemoteException(ex, message);
@@ -807,6 +793,10 @@ public final class RESTfulSerialInterface {
 
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final int objectID = Converter.deserialiseFromString(objectIDBytes, int.class, isCompressionEnabled());
             final int classID = Converter.deserialiseFromString(classIDBytes, int.class, isCompressionEnabled());
             final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
@@ -821,17 +811,12 @@ public final class RESTfulSerialInterface {
                 "objectId="
                         + objectID);
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().getMetaObject(
                         user,
                         objectID,
                         classID,
                         domain,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get metaobject"; // NOI18N
             throw createRemoteException(ex, message);
@@ -863,6 +848,10 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/insertMetaObject", "[bytes]", "domain=[bytes]", "object=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final MetaObject metaObject = Converter.deserialiseFromString(
                     metaObjectBytes,
                     MetaObject.class,
@@ -879,16 +868,11 @@ public final class RESTfulSerialInterface {
                         + "@"
                         + metaObject.getMetaClass().getTableName());
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().insertMetaObject(
                         user,
                         metaObject,
                         domain,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not insert metaobject"; // NOI18N
             throw createRemoteException(ex, message);
@@ -920,6 +904,10 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/updateMetaObject", "[bytes]", "domain=[bytes]", "object=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final MetaObject metaObject = Converter.deserialiseFromString(
                     metaObjectBytes,
                     MetaObject.class,
@@ -936,16 +924,11 @@ public final class RESTfulSerialInterface {
                         + "@"
                         + metaObject.getMetaClass().getTableName());
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().updateMetaObject(
                         user,
                         metaObject,
                         domain,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not update metaobject"; // NOI18N
             throw createRemoteException(ex, message);
@@ -977,6 +960,10 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/deleteMetaObject", "[bytes]", "domain=[bytes]", "object=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final MetaObject metaObject = Converter.deserialiseFromString(
                     metaObjectBytes,
                     MetaObject.class,
@@ -993,16 +980,11 @@ public final class RESTfulSerialInterface {
                         + "@"
                         + metaObject.getMetaClass().getTableName());
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().deleteMetaObject(
                         user,
                         metaObject,
                         domain,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not delete metaobject"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1032,21 +1014,20 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getInstance", "[bytes]", "class=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final MetaClass metaClass = Converter.deserialiseFromString(
                     metaClassBytes,
                     MetaClass.class,
                     isCompressionEnabled());
             nameTheThread(hsr, "/getInstance", user.toString(), "class=" + metaClass.toString());
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().getInstance(
                         user,
                         metaClass,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get instance"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1078,6 +1059,10 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getClassByTableName", "[bytes]", "domain=[bytes]", "tableName=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String tableName = Converter.deserialiseFromString(
                     tableNameBytes,
                     String.class,
@@ -1085,16 +1070,11 @@ public final class RESTfulSerialInterface {
             final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
             nameTheThread(hsr, "/getClassByTableName", user.toString(), "domain=" + domain, "tableName=" + tableName);
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().getClassByTableName(
                         user,
                         tableName,
                         domain,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get metaclass"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1126,20 +1106,19 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getClassByID", "[bytes]", "domain=[bytes]", "classId=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
-            final int classId = Converter.deserialiseFromString(classIdBytes, int.class, isCompressionEnabled());
-            final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
-            nameTheThread(hsr, "/getClassByID", user.toString(), "domain=" + domain, "classId=" + classId);
-
             final ConnectionContext connectionContext = Converter.deserialiseFromString(
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
+            final int classId = Converter.deserialiseFromString(classIdBytes, int.class, isCompressionEnabled());
+            final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
+            nameTheThread(hsr, "/getClassByID", user.toString(), "domain=" + domain, "classId=" + classId);
 
             return createResponse(getCallserver().getClass(
                         user,
                         classId,
                         domain,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get metaclass"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1169,18 +1148,16 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getClasses", "[bytes]", "domain=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
-            final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
-            nameTheThread(hsr, "/getClasses", user.toString(), "domain=" + domain);
-
             final ConnectionContext connectionContext = Converter.deserialiseFromString(
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
-
+            final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
+            nameTheThread(hsr, "/getClasses", user.toString(), "domain=" + domain);
             return createResponse(getCallserver().getClasses(
                         user,
                         domain,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get metaclasses"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1208,16 +1185,15 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getClassTreeNodesByUser", "[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
-            nameTheThread(hsr, "/getClassTreeNodesByUser", user.toString());
-
             final ConnectionContext connectionContext = Converter.deserialiseFromString(
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
+            nameTheThread(hsr, "/getClassTreeNodesByUser", user.toString());
 
             return createResponse(getCallserver().getClassTreeNodes(
                         user,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get classtree nodes"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1247,18 +1223,17 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getClassTreeNodesByDomain", "[bytes]", "domain=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
-            final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
-            nameTheThread(hsr, "/getClassTreeNodesByDomain", user.toString(), "domain=" + domain);
-
             final ConnectionContext connectionContext = Converter.deserialiseFromString(
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
+            final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
+            nameTheThread(hsr, "/getClassTreeNodesByDomain", user.toString(), "domain=" + domain);
 
             return createResponse(getCallserver().getClassTreeNodes(
                         user,
                         domain,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get classtree nodes"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1286,16 +1261,15 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getMethodsByUser", "[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
-            nameTheThread(hsr, "/getMethodsByUser", user.toString());
-
             final ConnectionContext connectionContext = Converter.deserialiseFromString(
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
+            nameTheThread(hsr, "/getMethodsByUser", user.toString());
 
             return createResponse(getCallserver().getMethods(
                         user,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get methods"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1325,21 +1299,20 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getMethodsByDomain", "[bytes]", "domain=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String localServerName = Converter.deserialiseFromString(
                     localServerNameBytes,
                     String.class,
                     isCompressionEnabled());
             nameTheThread(hsr, "/getMethodsByDomain", user.toString(), "domain=" + localServerName);
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().getMethods(
                         user,
                         localServerName,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get methods"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1374,6 +1347,10 @@ public final class RESTfulSerialInterface {
         try {
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class, isCompressionEnabled());
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String[] representationFields = Converter.deserialiseFromString(
                     representationFieldsBytes,
                     String[].class,
@@ -1390,17 +1367,12 @@ public final class RESTfulSerialInterface {
                         + classId,
                 "...");
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().getAllLightweightMetaObjectsForClass(
                         classId,
                         user,
                         representationFields,
                         representationPattern,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get LightweightMetaObjects for class"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1432,6 +1404,10 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getAllLightweightMetaObjectsForClass", "[bytes]", "classId=[bytes]", "...");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class, isCompressionEnabled());
             final String[] representationFields = Converter.deserialiseFromString(
                     representationFieldsBytes,
@@ -1439,16 +1415,11 @@ public final class RESTfulSerialInterface {
                     isCompressionEnabled());
             nameTheThread(hsr, "/getAllLightweightMetaObjectsForClass", user.toString(), "classId=" + classId, "...");
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().getAllLightweightMetaObjectsForClass(
                         classId,
                         user,
                         representationFields,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get LightweightMetaObjects for class"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1485,6 +1456,10 @@ public final class RESTfulSerialInterface {
         try {
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class, isCompressionEnabled());
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String query = Converter.deserialiseFromString(queryBytes, String.class, isCompressionEnabled());
             final String[] representationFields = Converter.deserialiseFromString(
                     representationFieldsBytes,
@@ -1502,18 +1477,13 @@ public final class RESTfulSerialInterface {
                         + classId,
                 "...");
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().getLightweightMetaObjectsByQuery(
                         classId,
                         user,
                         query,
                         representationFields,
                         representationPattern,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get LightWeightMetaObjects"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1548,6 +1518,10 @@ public final class RESTfulSerialInterface {
         try {
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class, isCompressionEnabled());
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String query = Converter.deserialiseFromString(queryBytes, String.class, isCompressionEnabled());
             final String[] representationFields = Converter.deserialiseFromString(
                     representationFieldsBytes,
@@ -1555,18 +1529,12 @@ public final class RESTfulSerialInterface {
                     isCompressionEnabled());
 
             nameTheThread(hsr, "/getLightweightMetaObjectsByQuery", user.toString(), "classId=" + classId, "...");
-
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().getLightweightMetaObjectsByQuery(
                         classId,
                         user,
                         query,
                         representationFields,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get LightweightMetaObjects"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1593,15 +1561,14 @@ public final class RESTfulSerialInterface {
             @FormParam(PARAM_CONNECTIONCONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getDefaultIconsByLSName", "anonymous", "domain=[bytes]");
         try {
-            final String lsName = Converter.deserialiseFromString(lsNameBytes, String.class, isCompressionEnabled());
-            nameTheThread(hsr, "/getDefaultIconsByLSName", "anonymous", "domain=" + lsName);
-
             final ConnectionContext connectionContext = Converter.deserialiseFromString(
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
+            final String lsName = Converter.deserialiseFromString(lsNameBytes, String.class, isCompressionEnabled());
+            nameTheThread(hsr, "/getDefaultIconsByLSName", "anonymous", "domain=" + lsName);
 
-            return createResponse(getCallserver().getDefaultIcons(lsName, connectionContext));
+            return createResponse(getCallserver().getDefaultIcons(lsName));
         } catch (final Exception ex) {
             final String message = "could not get icons"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1629,8 +1596,7 @@ public final class RESTfulSerialInterface {
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
-
-            return createResponse(getCallserver().getDefaultIcons(connectionContext));
+            return createResponse(getCallserver().getDefaultIcons());
         } catch (final Exception ex) {
             final String message = "could not get default icons"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1663,6 +1629,10 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/changePassword", "[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String oldPassword = Converter.deserialiseFromString(
                     oldPasswordBytes,
                     String.class,
@@ -1673,16 +1643,11 @@ public final class RESTfulSerialInterface {
                     isCompressionEnabled());
             nameTheThread(hsr, "/changePassword", user.toString());
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().changePassword(
                         user,
                         oldPassword,
                         newPassword,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final UserException ex) {
             throw ex;
         } catch (final Exception ex) {
@@ -1721,6 +1686,10 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getUser", "[bytes]");
 
         try {
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String ugLsName = Converter.deserialiseFromString(
                     ugLsNameBytes,
                     String.class,
@@ -1734,18 +1703,13 @@ public final class RESTfulSerialInterface {
                     isCompressionEnabled());
             nameTheThread(hsr, "/getUser", uname);
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().getUser(
                         ugLsName,
                         ugName,
                         uLsName,
                         uname,
                         password,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final UserException ex) {
             throw ex;
         } catch (final Exception ex) {
@@ -1775,7 +1739,6 @@ public final class RESTfulSerialInterface {
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
-
             return createResponse(getCallserver().getUserGroupNames(connectionContext));
         } catch (final Exception ex) {
             final String message = "could not get usergroup names"; // NOI18N
@@ -1805,19 +1768,18 @@ public final class RESTfulSerialInterface {
             @FormParam(PARAM_CONNECTIONCONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getUserGroupNamesByUser", "[bytes]", "userdomain=[bytes]");
         try {
-            final String uname = Converter.deserialiseFromString(unameBytes, String.class, isCompressionEnabled());
-            final String lsHome = Converter.deserialiseFromString(lsHomeBytes, String.class, isCompressionEnabled());
-            nameTheThread(hsr, "/getUserGroupNamesByUser", uname, "userdomain=" + lsHome);
-
             final ConnectionContext connectionContext = Converter.deserialiseFromString(
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
+            final String uname = Converter.deserialiseFromString(unameBytes, String.class, isCompressionEnabled());
+            final String lsHome = Converter.deserialiseFromString(lsHomeBytes, String.class, isCompressionEnabled());
+            nameTheThread(hsr, "/getUserGroupNamesByUser", uname, "userdomain=" + lsHome);
 
             return createResponse(getCallserver().getUserGroupNames(
                         uname,
                         lsHome,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get usergroup names"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1847,18 +1809,17 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/getConfigAttr", "[bytes]", "key=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
-            final String key = Converter.deserialiseFromString(keyBytes, String.class, isCompressionEnabled());
-            nameTheThread(hsr, "/getConfigAttr", user.toString(), "key=" + key);
-
             final ConnectionContext connectionContext = Converter.deserialiseFromString(
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
+            final String key = Converter.deserialiseFromString(keyBytes, String.class, isCompressionEnabled());
+            nameTheThread(hsr, "/getConfigAttr", user.toString(), "key=" + key);
 
             return createResponse(getCallserver().getConfigAttr(
                         user,
                         key,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get config attr"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1888,18 +1849,17 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/hasConfigAttr", "[bytes]", "key=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
-            final String key = Converter.deserialiseFromString(keyBytes, String.class, isCompressionEnabled());
-            nameTheThread(hsr, "/hasConfigAttr", user.toString(), "key=" + key);
-
             final ConnectionContext connectionContext = Converter.deserialiseFromString(
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
+            final String key = Converter.deserialiseFromString(keyBytes, String.class, isCompressionEnabled());
+            nameTheThread(hsr, "/hasConfigAttr", user.toString(), "key=" + key);
 
             return createResponse(getCallserver().hasConfigAttr(
                         user,
                         key,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not determine config attr"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1929,6 +1889,10 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/customServerSearch", "[bytes]", "serverSearch=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final CidsServerSearch serverSearch = Converter.deserialiseFromString(
                     customServerSearchBytes,
                     CidsServerSearch.class,
@@ -1940,15 +1904,10 @@ public final class RESTfulSerialInterface {
                 "serverSearch="
                         + serverSearch.getClass().getCanonicalName());
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().customServerSearch(
                         user,
                         serverSearch,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not execute custom search"; // NOI18N
             throw createRemoteException(ex, message);
@@ -1983,6 +1942,10 @@ public final class RESTfulSerialInterface {
             @FormParam(PARAM_CONNECTIONCONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getHistory", "[bytes]");
         try {
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final int classId = Converter.deserialiseFromString(classIdBytes, int.class, isCompressionEnabled());
             final int objectId = Converter.deserialiseFromString(objectIdBytes, int.class, isCompressionEnabled());
             final String domain = Converter.deserialiseFromString(domainBytes, String.class, isCompressionEnabled());
@@ -1990,18 +1953,13 @@ public final class RESTfulSerialInterface {
             final int elements = Converter.deserialiseFromString(elementsBytes, int.class, isCompressionEnabled());
             nameTheThread(hsr, "/getHistory", user.toString());
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().getHistory(
                         classId,
                         objectId,
                         domain,
                         user,
                         elements,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
+                        addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get history"; // NOI18N
             throw createRemoteException(ex, message);
@@ -2037,6 +1995,10 @@ public final class RESTfulSerialInterface {
         nameTheThread(hsr, "/executeTask", "[bytes]", "domain=[bytes]", "taskname=[bytes]");
         try {
             final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
+            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+                    contextBytes,
+                    ConnectionContext.class,
+                    isCompressionEnabled());
             final String taskdomain = Converter.deserialiseFromString(
                     taskdomainBytes,
                     String.class,
@@ -2052,17 +2014,12 @@ public final class RESTfulSerialInterface {
                     isCompressionEnabled());
             nameTheThread(hsr, "/executeTask", user.toString(), "domain=" + taskdomain, "taskname=" + taskname);
 
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
             return createResponse(getCallserver().executeTask(
                         user,
                         taskname,
                         taskdomain,
                         body,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext),
+                        addOriginToConnectionContext(hsr, connectionContext),
                         params),
                     null);
         } catch (final Exception ex) {
@@ -2119,9 +2076,8 @@ public final class RESTfulSerialInterface {
                     ConnectionContext.class,
                     isCompressionEnabled());
 
-            final User u = getCidsUserFromBasicAuth(
-                    authString,
-                    ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext));
+            final User u = getCidsUserFromBasicAuth(authString, addOriginToConnectionContext(hsr, connectionContext));
+            System.out.println(taskname + "@" + taskdomain);
             nameTheThread(
                 hsr,
                 "/executeTask/{taskname}@{taskdomain}",
@@ -2136,7 +2092,7 @@ public final class RESTfulSerialInterface {
                     taskname,
                     taskdomain,
                     body,
-                    ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext),
+                    addOriginToConnectionContext(hsr, connectionContext),
                     ServerActionParameter.fromMVMap(uriInfo.getQueryParameters()));
 
             return Response.ok(resp).build();
@@ -2196,6 +2152,23 @@ public final class RESTfulSerialInterface {
         final String uname = loginParts[0];
 
         return getCallserver().getUser(ugLsName, ugName, uLsName, uname, password, connectionContext);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   hsr                DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private static ConnectionContext addOriginToConnectionContext(final HttpServletRequest hsr,
+            final ConnectionContext connectionContext) {
+        if (connectionContext != null) {
+            connectionContext.getAdditionalFields()
+                    .put(AbstractConnectionContext.ADDITIONAL_FIELD__CLIENT_IP, hsr.getLocalAddr());
+        }
+        return connectionContext;
     }
 
     /**
