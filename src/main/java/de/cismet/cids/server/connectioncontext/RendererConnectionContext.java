@@ -12,10 +12,9 @@
  */
 package de.cismet.cids.server.connectioncontext;
 
-import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 
-import java.util.Collection;
+import de.cismet.connectioncontext.ConnectionContext;
 
 /**
  * DOCUMENT ME!
@@ -23,31 +22,29 @@ import java.util.Collection;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class RendererConnectionContext extends AbstractMetaObjectConnectionContext {
+public class RendererConnectionContext extends ConnectionContext {
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new RendererConnectionContext object.
      *
-     * @param  rendererClass  DOCUMENT ME!
-     * @param  mo             DOCUMENT ME!
+     * @param  mo  DOCUMENT ME!
      */
-    public RendererConnectionContext(final Class rendererClass, final MetaObject mo) {
-        super(Category.RENDERER, rendererClass.getCanonicalName(), mo);
+    public RendererConnectionContext(final MetaObject mo) {
+        super(Category.RENDERER, constructContext(mo));
     }
 
+    //~ Methods ----------------------------------------------------------------
+
     /**
-     * Creates a new RendererConnectionContext object.
+     * DOCUMENT ME!
      *
-     * @param  rendererClass  DOCUMENT ME!
-     * @param  mos            DOCUMENT ME!
+     * @param   mo  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      */
-    public RendererConnectionContext(final Class rendererClass, final Collection<MetaObject> mos) {
-        super(
-            Category.RENDERER,
-            rendererClass.getCanonicalName(),
-            ((mos != null) && !mos.isEmpty()) ? mos.iterator().next().getMetaClass() : null,
-            mos);
+    private static String constructContext(final MetaObject mo) {
+        return "Renderer: " + mo.getId() + "@" + mo.getMetaClass().getName() + "(" + mo.getMetaClass().getId() + ")";
     }
 }

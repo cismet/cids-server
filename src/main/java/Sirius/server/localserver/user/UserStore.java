@@ -292,8 +292,8 @@ public final class UserStore extends Shutdown {
             if (keyIdSet.next()) {
                 keyId = keyIdSet.getInt(1);
             } else {
-                if (LOG.isInfoEnabled()) {
-                    LOG.info("key not present: " + key); // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("key not present: " + key); // NOI18N
                 }
 
                 return null;
