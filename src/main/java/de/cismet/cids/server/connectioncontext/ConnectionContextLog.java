@@ -47,7 +47,7 @@ public class ConnectionContextLog {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final String DEFAULT_FORMAT_STRING =
-        "[${TIME} ${_USER_NAME}@${USER_DOMAIN}] ${CATEGORY}(${CONTEXT_NAME}) =(${CLIENT_IP})> ${METHOD_NAME}(${METHOD_PARAMS})";
+        "[${TIME} ${USER_NAME}@${USER_DOMAIN}] ${CATEGORY}(${CONTEXT_NAME}) =(${CLIENT_IP})> ${METHOD_NAME}(${METHOD_PARAMS})";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -295,7 +295,16 @@ public class ConnectionContextLog {
             while (entryIterator.hasNext()) {
                 final Map.Entry<String, Object> entry = entryIterator.next();
 
-                buffer.append(entry.getKey()).append(keyValueSeparator).append(entry.getValue());
+                final String key = entry.getKey();
+                final Object value = entry.getValue();
+                final String valueString = (
+                        value instanceof String ||
+                        value instanceof Double || 
+                        value instanceof Integer || 
+                        value instanceof Float || 
+                        value instanceof Boolean
+                )  ? value.toString() : Integer.toHexString(System.identityHashCode(value));
+                buffer.append(key).append(keyValueSeparator).append(valueString);
 
                 if (entryIterator.hasNext()) {
                     buffer.append(separator);
