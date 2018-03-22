@@ -54,8 +54,6 @@ public class ConnectionContextBackend {
 
     //~ Instance fields --------------------------------------------------------
 
-    private final LogExecutor executor = new LogExecutor();
-
     private final Map<String, ConnectionContextLogger> contextLoggers = new HashMap<>();
 
     //~ Constructors -----------------------------------------------------------
@@ -137,7 +135,7 @@ public class ConnectionContextBackend {
      * @param  contextLog  DOCUMENT ME!
      */
     public void log(final ConnectionContextLog contextLog) {
-        executor.execute(new LogRunner(contextLog));
+        new Thread(new LogRunner(contextLog)).start();
     }
 
     /**
@@ -207,28 +205,6 @@ public class ConnectionContextBackend {
          * Creates a new LazyInitialiser object.
          */
         private LazyInitialiser() {
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @version  $Revision$, $Date$
-     */
-    private static final class LogExecutor extends ThreadPoolExecutor {
-
-        //~ Constructors -------------------------------------------------------
-
-        /**
-         * Creates a new HistoryExecutor object.
-         */
-        public LogExecutor() {
-            super(
-                1,
-                Integer.MAX_VALUE,
-                0L,
-                TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>());
         }
     }
 
