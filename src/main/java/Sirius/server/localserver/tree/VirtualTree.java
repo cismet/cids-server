@@ -1084,7 +1084,7 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
                         }
                     } catch (final Exception t) {
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("could not set permissions for node::" + id, t);                   // NOI18N
+                            LOG.debug("could not set permissions for node::" + id, t);                  // NOI18N
                         }
                     }
                 }
