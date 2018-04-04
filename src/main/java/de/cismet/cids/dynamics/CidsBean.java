@@ -295,7 +295,7 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
      */
     @Deprecated
     public CidsBean persist(final MetaService metaService, final User user, final String domain) throws Exception {
-        return persist(metaService, user, domain, ConnectionContext.createDeprecated());
+        return persist(metaService, user, domain, null);
     }
 
     /**

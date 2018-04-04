@@ -155,8 +155,8 @@ public class DefaultObject implements Object {
             if (anyAttribute.getID() == null) {
                 anyAttribute.setId(Integer.toString(System.identityHashCode(anyAttribute)));
             }
-            if ((LOG != null) && LOG.isInfoEnabled()) {
-                LOG.info(
+            if ((LOG != null) && LOG.isDebugEnabled()) {
+                LOG.debug(
                     "optional set to false for attribute : " // NOI18N
                             + anyAttribute
                             + " because it belongs to a arrayLink (dummy)"); // NOI18N

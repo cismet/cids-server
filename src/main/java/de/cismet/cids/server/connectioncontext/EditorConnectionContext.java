@@ -16,23 +16,37 @@ import Sirius.server.middleware.types.MetaObject;
 
 import de.cismet.connectioncontext.AbstractConnectionContext.Category;
 
+import de.cismet.connectioncontext.ConnectionContext;
+
 /**
  * DOCUMENT ME!
  *
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class EditorConnectionContext extends AbstractMetaObjectConnectionContext {
+public class EditorConnectionContext extends ConnectionContext {
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new RendererConnectionContext object.
      *
-     * @param  rendererClass  DOCUMENT ME!
-     * @param  mo             DOCUMENT ME!
+     * @param  mo  DOCUMENT ME!
      */
-    public EditorConnectionContext(final Class rendererClass, final MetaObject mo) {
-        super(Category.RENDERER, rendererClass.getCanonicalName(), mo);
+    public EditorConnectionContext(final MetaObject mo) {
+        super(Category.RENDERER, constructContext(mo));
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   mo  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private static String constructContext(final MetaObject mo) {
+        return "Renderer: " + mo.getId() + "@" + mo.getMetaClass().getName() + "(" + mo.getMetaClass().getId() + ")";
     }
 }
