@@ -17,6 +17,7 @@ import Sirius.server.localserver.DBServer;
 import Sirius.server.localserver.history.HistoryException;
 import Sirius.server.localserver.history.HistoryServer;
 import Sirius.server.localserver.method.MethodMap;
+import Sirius.server.localserver.object.CustomDeletionProvider;
 import Sirius.server.localserver.query.querystore.Store;
 import Sirius.server.localserver.tree.NodeReferenceList;
 import Sirius.server.localserver.user.UserStore;
@@ -871,6 +872,40 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                     + metaObject);
 
         try {
+            final Collection<CustomDeletionProvider> matchingCustomDeletionProviders = new ArrayList<>();
+            for (final CustomDeletionProvider customDeletionProvider
+                        : (Collection<CustomDeletionProvider>)Lookup.getDefault().lookupAll(
+                            CustomDeletionProvider.class)) {
+                try {
+                    if (customDeletionProvider != null) {
+                        if (customDeletionProvider instanceof ConnectionContextStore) {
+                            ((ConnectionContextStore)customDeletionProvider).initWithConnectionContext(
+                                connectionContext);
+                        }
+                        if (customDeletionProvider instanceof MetaServiceStore) {
+                            ((MetaServiceStore)customDeletionProvider).setMetaService(this);
+                        }
+                        if (customDeletionProvider.isMatching(user, metaObject)) {
+                            matchingCustomDeletionProviders.add(customDeletionProvider);
+                        }
+                    }
+                } catch (final Exception ex) {
+                    logger.error("error while initializing customDeletionProvider", ex);
+                }
+            }
+            if (!matchingCustomDeletionProviders.isEmpty()) {
+                if (matchingCustomDeletionProviders.size() > 1) {
+                    logger.warn("Multiple customDeletionProviders are matching. Executing them all now.");
+                }
+                for (final CustomDeletionProvider customDeletionProvider : matchingCustomDeletionProviders) {
+                    try {
+                        customDeletionProvider.customDeleteMetaObject(user, metaObject);
+                    } catch (final Exception ex) {
+                        throw new RemoteException("Error while custom-deletion", ex);
+                    }
+                }
+                return 0;
+            }
             return dbServer.getObjectPersitenceManager().deleteMetaObject(user, metaObject);
         } catch (Throwable e) {
             if (logger != null) {

@@ -13,9 +13,6 @@ package de.cismet.cids.utils;
 
 import de.cismet.cids.dynamics.CidsBean;
 
-import de.cismet.connectioncontext.ConnectionContext;
-import de.cismet.connectioncontext.ConnectionContextProvider;
-
 /**
  * DOCUMENT ME!
  *
