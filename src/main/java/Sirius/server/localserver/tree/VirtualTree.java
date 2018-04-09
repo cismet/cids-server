@@ -1050,8 +1050,8 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
                     }
                 } else {
                     try {
-                        final Object permId = nodeTable.getObject("perm_id");           // NOI18N
-                        final String permKey = nodeTable.getString("perm_key");         // NOI18N
+                        final Object permId = nodeTable.getObject("perm_id");            // NOI18N
+                        final String permKey = nodeTable.getString("perm_key");          // NOI18N
 
                         if ((permId != null) && (permKey != null)) {
                             final Permission pp = new Permission(nodeTable.getInt("perm_id"), permKey); // NOI18N
