@@ -743,6 +743,10 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                     try {
                         final Connection connection = getLongtermConnection();
                         insertIndex(connection, cidsBean.getMetaObject());
+                        final CidsBeanInfo info = new CidsBeanInfo();
+                        info.setClassId(cidsBean.getMetaObject().getMetaClass().getID());
+                        info.setObjectId(cidsBean.getMetaObject().getID());
+                        beansToUpdate.add(info);
                     } catch (SQLException sQLException) {
                         log.error("Error during insertIndex " + cidsBean.getMOString(), sQLException);
                         severeIncidence.error("Error during insertIndex " + cidsBean.getMOString(), sQLException);
@@ -754,6 +758,10 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void afterCommittedUpdate(final CidsBean cidsBean, final User user) {
+        final CidsBeanInfo info = new CidsBeanInfo();
+        info.setClassId(cidsBean.getMetaObject().getMetaClass().getID());
+        info.setObjectId(cidsBean.getMetaObject().getID());
+        beansToUpdate.add(info);
         de.cismet.tools.CismetThreadPool.executeSequentially(new Runnable() {
 
                 @Override
@@ -798,6 +806,11 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                                     connection,
                                     bean.getMetaObject());
                             addAll(beansToUpdateTmp, beanInfo);
+
+                            final CidsBeanInfo info = new CidsBeanInfo();
+                            info.setClassId(bean.getMetaObject().getClassID());
+                            info.setObjectId(bean.getMetaObject().getId());
+                            beansToUpdateTmp.add(info);
                         }
 
                         for (final CidsBeanInfo beanInfo : beansToUpdateTmp) {
