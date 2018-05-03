@@ -37,9 +37,7 @@ public class ConnectionContextLog {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String LOG_UNKNOWN_FORMAT = "[%s %s@%s] %s(%s) =UNKNOWN=> %s %s";
-    private static final String LOG_SERVER_FORMAT = "[%s %s@%s] %s(%s) =SERVER=> %s %s";
-    private static final String LOG_CLIENT_FORMAT = "[%s %s@%s] %s(%s) =CLIENT(%s)=> %s %s";
+    private static final String LOG_FORMAT = "[%s %s@%s] %s(%s) =(%s)=> %s %s";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -76,40 +74,17 @@ public class ConnectionContextLog {
 
     @Override
     public String toString() {
-        if ((ConnectionContext.Origin.UNKNOWN == connectionContext.getOrigin())
-                    || (null == connectionContext.getOrigin())) {
-            return String.format(
-                    LOG_UNKNOWN_FORMAT,
-                    DateFormat.getDateTimeInstance().format(timestamp),
-                    (user != null) ? user.getName() : null,
-                    (user != null) ? user.getDomain() : null,
-                    (connectionContext != null) ? connectionContext.getCategory().name() : null,
-                    (connectionContext != null) ? connectionContext.getContent() : null,
-                    methodName,
-                    (methodParams != null) ? Arrays.toString(methodParams) : null);
-        } else if (ConnectionContext.Origin.SERVER == connectionContext.getOrigin()) {
-            return String.format(
-                    LOG_SERVER_FORMAT,
-                    DateFormat.getDateTimeInstance().format(timestamp),
-                    (user != null) ? user.getName() : null,
-                    (user != null) ? user.getDomain() : null,
-                    (connectionContext != null) ? connectionContext.getCategory().name() : null,
-                    (connectionContext != null) ? connectionContext.getContent() : null,
-                    methodName,
-                    (methodParams != null) ? Arrays.toString(methodParams) : null);
-        } else {
-            return String.format(
-                    LOG_CLIENT_FORMAT,
-                    DateFormat.getDateTimeInstance().format(timestamp),
-                    (user != null) ? user.getName() : null,
-                    (user != null) ? user.getDomain() : null,
-                    (connectionContext != null) ? connectionContext.getCategory().name() : null,
-                    (connectionContext != null) ? connectionContext.getContent() : null,
-                    (connectionContext != null)
-                        ? connectionContext.getAdditionalFields().get(
-                            AbstractConnectionContext.ADDITIONAL_FIELD__CLIENT_IP) : null,
-                    methodName,
-                    (methodParams != null) ? Arrays.toString(methodParams) : null);
-        }
+        return String.format(
+                LOG_FORMAT,
+                DateFormat.getDateTimeInstance().format(timestamp),
+                (user != null) ? user.getName() : null,
+                (user != null) ? user.getDomain() : null,
+                (connectionContext != null) ? connectionContext.getCategory().name() : null,
+                (connectionContext != null)
+                    ? connectionContext.getInfoFields().get(AbstractConnectionContext.FIELD__CONTEXT_NAME) : null,
+                (connectionContext != null)
+                    ? connectionContext.getInfoFields().get(AbstractConnectionContext.FIELD__CLIENT_IP) : null,
+                methodName,
+                (methodParams != null) ? Arrays.toString(methodParams) : null);
     }
 }

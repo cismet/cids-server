@@ -13,7 +13,7 @@
 
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server</artifactId>
-    <version>6.2.2</version>
+    <version>6.2.3</version>
     <packaging>jar</packaging>
  
     <properties>
@@ -27,7 +27,7 @@
         <connection>https://github.com/cismet/cids-server.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cids-server.git</developerConnection>
         <url>https://github.com/cismet/cids-server</url>
-        <tag>v6.2.2</tag>
+        <tag>v6.2.3</tag>
     </scm>
     
     <ciManagement>
@@ -55,13 +55,13 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>6.1</version>
+                <version>6.2.1</version>
                 <type>jar</type>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>6.1</version>
+                <version>6.2.1</version>
                 <type>test-jar</type>
             </dependency>
             <dependency>
