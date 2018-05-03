@@ -2165,8 +2165,7 @@ public final class RESTfulSerialInterface {
     private static ConnectionContext addOriginToConnectionContext(final HttpServletRequest hsr,
             final ConnectionContext connectionContext) {
         if (connectionContext != null) {
-            connectionContext.getAdditionalFields()
-                    .put(AbstractConnectionContext.ADDITIONAL_FIELD__CLIENT_IP, hsr.getLocalAddr());
+            connectionContext.getInfoFields().put(AbstractConnectionContext.FIELD__CLIENT_IP, hsr.getLocalAddr());
         }
         return connectionContext;
     }
