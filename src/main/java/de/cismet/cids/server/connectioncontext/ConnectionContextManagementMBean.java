@@ -12,43 +12,32 @@
  */
 package de.cismet.cids.server.connectioncontext;
 
-import java.util.List;
-
 /**
  * DOCUMENT ME!
  *
- * @author   jruiz
+ * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public interface ConnectionContextLogger {
+public interface ConnectionContextManagementMBean {
 
     //~ Methods ----------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      *
-     * @param  config  DOCUMENT ME!
-     */
-    void configure(final Object config);
-
-    /**
-     * DOCUMENT ME!
-     *
      * @return  DOCUMENT ME!
      */
-    String getName();
+    boolean isConnectionContextBackendEnabled();
 
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @param  connectionContextBackendEnabled  DOCUMENT ME!
      */
-    List<ConnectionContextFilterRuleSet> getFilterRuleSets();
+    void setConnectionContextBackendEnabled(final boolean connectionContextBackendEnabled);
 
     /**
      * DOCUMENT ME!
-     *
-     * @param  connectionContextLog  DOCUMENT ME!
      */
-    void log(ConnectionContextLog connectionContextLog);
+    void reloadConnectionContextConfig();
 }
