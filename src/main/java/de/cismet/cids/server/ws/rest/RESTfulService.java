@@ -30,6 +30,9 @@ import java.util.Map;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import de.cismet.cids.server.connectioncontext.ConnectionContextBackend;
+import de.cismet.cids.server.connectioncontext.ConnectionContextManagement;
+
 /**
  * DOCUMENT ME!
  *
@@ -88,6 +91,7 @@ public final class RESTfulService {
             final ObjectName name = new ObjectName("de.cismet.cids.rest.broker:type=RestMBean");
             final RESTManagement restMB = new RESTManagement();
             mbs.registerMBean(restMB, name);
+            ConnectionContextBackend.getInstance().registerMBean();
 
             server.start();
         } catch (final Exception ex) {

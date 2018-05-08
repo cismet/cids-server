@@ -289,7 +289,9 @@ public class MetaServiceImpl implements MetaService {
      */
     @Override
     public String[] getDomains(final ConnectionContext context) throws RemoteException {
-        ConnectionContextBackend.getInstance().log(ConnectionContextLog.create(context, null, "getDomains", null));
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance().log(ConnectionContextLog.create(context, null, "getDomains", null));
+        }
 
         if (logger != null) {
             if (logger.isDebugEnabled()) {
@@ -333,18 +335,20 @@ public class MetaServiceImpl implements MetaService {
             final String lsName,
             final ConnectionContext context) throws RemoteException {
         // usr wird nicht beachtet fuer spaetere anpassungen
-        ConnectionContextBackend.getInstance()
-                .log(ConnectionContextLog.create(
-                        context,
-                        user,
-                        "getMetaObjectNode",
-                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.create(
+                            context,
+                            user,
+                            "getMetaObjectNode",
+                            Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                {
-                                    put("nodeID:", nodeID);
-                                    put("lsName:", lsName);
-                                }
-                            })));
+                                    {
+                                        put("nodeID:", nodeID);
+                                        put("lsName:", lsName);
+                                    }
+                                })));
+        }
 
         if (logger != null) {
             if (logger.isDebugEnabled()) {

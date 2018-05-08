@@ -12,6 +12,7 @@
  */
 package de.cismet.cids.server.connectioncontext;
 
+import Sirius.server.ServerExitError;
 import Sirius.server.newuser.User;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,13 +24,15 @@ import org.openide.util.Lookup;
 import java.io.File;
 import java.io.IOException;
 
+import java.lang.management.ManagementFactory;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+
+import javax.management.ObjectName;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -56,17 +59,14 @@ public class ConnectionContextBackend {
 
     private final Map<String, ConnectionContextLogger> contextLoggers = new HashMap<>();
 
+    private boolean enabled = true;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new ConnectionContextLogger object.
      */
     private ConnectionContextBackend() {
-        for (final ConnectionContextLogger connectionContextLogger
-                    : (Collection<ConnectionContextLogger>)Lookup.getDefault().lookupAll(ConnectionContextLogger.class)) {
-            final String name = connectionContextLogger.getName();
-            contextLoggers.put(name, connectionContextLogger);
-        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -74,9 +74,53 @@ public class ConnectionContextBackend {
     /**
      * DOCUMENT ME!
      *
+     * @throws  ServerExitError  DOCUMENT ME!
+     */
+    public void registerMBean() {
+        try {
+            ManagementFactory.getPlatformMBeanServer()
+                    .registerMBean(
+                        new ConnectionContextManagement(),
+                        new ObjectName("de.cismet.cids.server.connectioncontext:type=ConnectionContextMBean"));
+        } catch (final Exception ex) {
+            final String message = "could not register connection context MBean"; // NOI18N
+            LOG.error(message, ex);
+            throw new ServerExitError(message, ex);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  enabled  DOCUMENT ME!
+     */
+    public void setEnabled(final boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param  configFilePath  DOCUMENT ME!
      */
     public void loadConfig(final String configFilePath) {
+        contextLoggers.clear();
+        for (final ConnectionContextLogger connectionContextLogger
+                    : (Collection<ConnectionContextLogger>)Lookup.getDefault().lookupAll(
+                        ConnectionContextLogger.class)) {
+            final String name = connectionContextLogger.getName();
+            contextLoggers.put(name, connectionContextLogger);
+        }
+
         if (configFilePath != null) {
             final File json = new File(configFilePath);
 
@@ -156,7 +200,16 @@ public class ConnectionContextBackend {
             notNullConnectionContext = connectionContext;
         }
 
-        notNullConnectionContext.getInfoFields().put(AbstractConnectionContext.FIELD__CLIENT_IP, hsr.getLocalAddr());
+        if (isEnabled()) {
+            Collection<String> ips = (Collection)notNullConnectionContext.getInfoFields()
+                        .get(AbstractConnectionContext.FIELD__CLIENT_IP);
+            if (ips == null) {
+                ips = new ArrayList<>();
+            }
+            ips.add(hsr.getLocalAddr());
+
+            notNullConnectionContext.getInfoFields().put(AbstractConnectionContext.FIELD__CLIENT_IP, ips);
+        }
         return notNullConnectionContext;
     }
 

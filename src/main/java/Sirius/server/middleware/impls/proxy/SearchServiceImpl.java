@@ -93,17 +93,19 @@ public class SearchServiceImpl implements SearchService {
     public Collection customServerSearch(final User user,
             final CidsServerSearch serverSearch,
             final ConnectionContext connectionContext) throws RemoteException {
-        ConnectionContextBackend.getInstance()
-                .log(ConnectionContextLog.create(
-                        connectionContext,
-                        user,
-                        "customServerSearch",
-                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.create(
+                            connectionContext,
+                            user,
+                            "customServerSearch",
+                            Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                {
-                                    put("serverSearch:", serverSearch);
-                                }
-                            })));
+                                    {
+                                        put("serverSearch:", serverSearch);
+                                    }
+                                })));
+        }
         serverSearch.setUser(user);
         serverSearch.setActiveLocalServers(new HashMap(activeLocalServers));
         if (serverSearch instanceof ConnectionContextStore) {

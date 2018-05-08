@@ -22,6 +22,7 @@ import lombok.Setter;
 import java.text.DateFormat;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -97,7 +98,12 @@ public class ConnectionContextLog {
 
         // ip
         if (infoFields.containsKey(AbstractMetaObjectConnectionContext.FIELD__CLIENT_IP)) {
-            this.originIp = (String)infoFields.get(AbstractConnectionContext.FIELD__CLIENT_IP);
+            final Collection<String> ips = (Collection)infoFields.get(AbstractConnectionContext.FIELD__CLIENT_IP);
+            if ((ips != null) && !ips.isEmpty()) {
+                this.originIp = ips.iterator().next();
+            } else {
+                this.originIp = null;
+            }
         } else {
             this.originIp = null;
         }

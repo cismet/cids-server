@@ -184,12 +184,14 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                     ex);
             }
 
-            try {
-                ConnectionContextBackend.getInstance().loadConfig(properties.getConnectionContextConfig());
-            } catch (final Exception ex) {
-                logger.warn(
-                    "RuleSets for ConnectionContext loggers couldn't be loaded. ConnectionContextBackend will not work as expected !",
-                    ex);
+            if (ConnectionContextBackend.getInstance().isEnabled()) {
+                try {
+                    ConnectionContextBackend.getInstance().loadConfig(properties.getConnectionContextConfig());
+                } catch (final Exception ex) {
+                    logger.warn(
+                        "RuleSets for ConnectionContext loggers couldn't be loaded. ConnectionContextBackend will not work as expected !",
+                        ex);
+                }
             }
 
             final Collection<? extends ServerAction> serverActions = Lookup.getDefault().lookupAll(ServerAction.class);
@@ -275,17 +277,19 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public NodeReferenceList getChildren(final Node node, final User user, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextBackend.getInstance()
-                .log(ConnectionContextLog.create(
-                        connectionContext,
-                        user,
-                        "getChildren",
-                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.create(
+                            connectionContext,
+                            user,
+                            "getChildren",
+                            Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                {
-                                    put("node", node);
-                                }
-                            })));
+                                    {
+                                        put("node", node);
+                                    }
+                                })));
+        }
         try {
             if (userstore.validateUser(user)) {
                 return dbServer.getChildren(node, user);
@@ -311,7 +315,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public NodeReferenceList getRoots(final User user, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextBackend.getInstance().log(ConnectionContextLog.create(connectionContext, user, "getRoots"));
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.create(connectionContext, user, "getRoots"));
+        }
         try {
             if (userstore.validateUser(user)) {
                 return dbServer.getTops(user);
@@ -347,18 +354,20 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public Node addNode(final Node node, final Link parent, final User user, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextBackend.getInstance()
-                .log(ConnectionContextLog.create(
-                        connectionContext,
-                        user,
-                        "addNode",
-                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.create(
+                            connectionContext,
+                            user,
+                            "addNode",
+                            Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                {
-                                    put("node", node);
-                                    put("parent", parent);
-                                }
-                            })));
+                                    {
+                                        put("node", node);
+                                        put("parent", parent);
+                                    }
+                                })));
+        }
         try {
             return dbServer.getTree().addNode(node, parent, user);
         } catch (Throwable e) {
@@ -376,17 +385,19 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public boolean deleteNode(final Node node, final User user, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextBackend.getInstance()
-                .log(ConnectionContextLog.create(
-                        connectionContext,
-                        user,
-                        "deleteNode",
-                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.create(
+                            connectionContext,
+                            user,
+                            "deleteNode",
+                            Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                {
-                                    put("node", node);
-                                }
-                            })));
+                                    {
+                                        put("node", node);
+                                    }
+                                })));
+        }
         try {
             return dbServer.getTree().deleteNode(node, user);
         } catch (Throwable e) {
@@ -406,18 +417,20 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public boolean addLink(final Node from, final Node to, final User user, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextBackend.getInstance()
-                .log(ConnectionContextLog.create(
-                        connectionContext,
-                        user,
-                        "addLink",
-                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.create(
+                            connectionContext,
+                            user,
+                            "addLink",
+                            Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                {
-                                    put("from", from);
-                                    put("to", to);
-                                }
-                            })));
+                                    {
+                                        put("from", from);
+                                        put("to", to);
+                                    }
+                                })));
+        }
         try {
             return dbServer.getTree().addLink(from, to, user);
         } catch (Throwable e) {
@@ -439,18 +452,20 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final Node to,
             final User user,
             final ConnectionContext connectionContext) throws RemoteException {
-        ConnectionContextBackend.getInstance()
-                .log(ConnectionContextLog.create(
-                        connectionContext,
-                        user,
-                        "deleteLink",
-                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.create(
+                            connectionContext,
+                            user,
+                            "deleteLink",
+                            Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                {
-                                    put("from", from);
-                                    put("to", to);
-                                }
-                            })));
+                                    {
+                                        put("from", from);
+                                        put("to", to);
+                                    }
+                                })));
+        }
         try {
             return dbServer.getTree().deleteLink(from, to, user);
         } catch (Throwable e) {
@@ -470,17 +485,19 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public Node[] getNodes(final User user, final int[] ids, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextBackend.getInstance()
-                .log(ConnectionContextLog.create(
-                        connectionContext,
-                        user,
-                        "getNodes",
-                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.create(
+                            connectionContext,
+                            user,
+                            "getNodes",
+                            Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                {
-                                    put("ids", ids);
-                                }
-                            })));
+                                    {
+                                        put("ids", ids);
+                                    }
+                                })));
+        }
         try {
             return dbServer.getNodes(ids, user);
         } catch (Throwable e) {
@@ -500,8 +517,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public NodeReferenceList getClassTreeNodes(final User user, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextBackend.getInstance()
-                .log(ConnectionContextLog.create(connectionContext, user, "getClassTreeNodes"));
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.create(connectionContext, user, "getClassTreeNodes"));
+        }
         try {
             if (userstore.validateUser(user)) {
                 return dbServer.getClassTreeNodes(user);
@@ -526,13 +545,15 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public MetaClass[] getClasses(final User user, final ConnectionContext connectionContext) throws RemoteException {
         try { // if(userstore.validateUser(user))
             final MetaClass[] metaClasses = dbServer.getClasses(user);
-            ConnectionContextBackend.getInstance()
-                    .log(ConnectionContextLog.createForMetaClasses(
-                            metaClasses,
-                            connectionContext,
-                            user,
-                            "getClasses",
-                            null));
+            if (ConnectionContextBackend.getInstance().isEnabled()) {
+                ConnectionContextBackend.getInstance()
+                        .log(ConnectionContextLog.createForMetaClasses(
+                                metaClasses,
+                                connectionContext,
+                                user,
+                                "getClasses",
+                                null));
+            }
             return metaClasses;
 
             // return new MetaClass[0];
@@ -555,18 +576,20 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             throws RemoteException {
         try { // if(userstore.validateUser(user))
             final MetaClass metaClass = dbServer.getClass(user, classID);
-            ConnectionContextBackend.getInstance()
-                    .log(ConnectionContextLog.createForMetaClass(
-                            metaClass,
-                            connectionContext,
-                            user,
-                            "getClass",
-                            Collections.unmodifiableMap(new HashMap<String, Object>() {
+            if (ConnectionContextBackend.getInstance().isEnabled()) {
+                ConnectionContextBackend.getInstance()
+                        .log(ConnectionContextLog.createForMetaClass(
+                                metaClass,
+                                connectionContext,
+                                user,
+                                "getClass",
+                                Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                    {
-                                        put("classID", classID);
-                                    }
-                                })));
+                                        {
+                                            put("classID", classID);
+                                        }
+                                    })));
+            }
             return metaClass;
 
             // return null;
@@ -590,18 +613,20 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final ConnectionContext connectionContext) throws RemoteException {
         try { // if(userstore.validateUser(user))
             final MetaClass metaClass = dbServer.getClassByTableName(user, tableName);
-            ConnectionContextBackend.getInstance()
-                    .log(ConnectionContextLog.createForMetaClass(
-                            metaClass,
-                            connectionContext,
-                            user,
-                            "getClassByTableName",
-                            Collections.unmodifiableMap(new HashMap<String, Object>() {
+            if (ConnectionContextBackend.getInstance().isEnabled()) {
+                ConnectionContextBackend.getInstance()
+                        .log(ConnectionContextLog.createForMetaClass(
+                                metaClass,
+                                connectionContext,
+                                user,
+                                "getClassByTableName",
+                                Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                    {
-                                        put("tableName", tableName);
-                                    }
-                                })));
+                                        {
+                                            put("tableName", tableName);
+                                        }
+                                    })));
+            }
             return metaClass;
                 // return null;
         } catch (Throwable e) {
@@ -647,18 +672,20 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                     ((ConnectionContextStore)mo).initWithConnectionContext(connectionContext);
                 }
             }
-            ConnectionContextBackend.getInstance()
-                    .log(ConnectionContextLog.createForMetaObjects(
-                            mos,
-                            connectionContext,
-                            user,
-                            "getObjects",
-                            Collections.unmodifiableMap(new HashMap<String, Object>() {
+            if (ConnectionContextBackend.getInstance().isEnabled()) {
+                ConnectionContextBackend.getInstance()
+                        .log(ConnectionContextLog.createForMetaObjects(
+                                mos,
+                                connectionContext,
+                                user,
+                                "getObjects",
+                                Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                    {
-                                        put("objectIDs", objectIDs);
-                                    }
-                                })));
+                                        {
+                                            put("objectIDs", objectIDs);
+                                        }
+                                    })));
+            }
             return mos;
         } catch (Throwable e) {
             if (logger != null) {
@@ -724,18 +751,20 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                     }
                 }
             }
-            ConnectionContextBackend.getInstance()
-                    .log(ConnectionContextLog.createForMetaObject(
-                            mo,
-                            connectionContext,
-                            user,
-                            "getObject",
-                            Collections.unmodifiableMap(new HashMap<String, Object>() {
+            if (ConnectionContextBackend.getInstance().isEnabled()) {
+                ConnectionContextBackend.getInstance()
+                        .log(ConnectionContextLog.createForMetaObject(
+                                mo,
+                                connectionContext,
+                                user,
+                                "getObject",
+                                Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                    {
-                                        put("objectID", objectID);
-                                    }
-                                })));
+                                        {
+                                            put("objectID", objectID);
+                                        }
+                                    })));
+            }
             return mo;
         } catch (final Throwable e) {
             if (logger != null) {
@@ -842,18 +871,20 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             mos[i] = getMetaObject(user, n.getObjectId(), n.getClassId(), connectionContext);
             i++;
         }
-        ConnectionContextBackend.getInstance()
-                .log(ConnectionContextLog.createForMetaObjects(
-                        mos,
-                        connectionContext,
-                        user,
-                        "getMetaObject",
-                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.createForMetaObjects(
+                            mos,
+                            connectionContext,
+                            user,
+                            "getMetaObject",
+                            Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                {
-                                    put("query", query);
-                                }
-                            })));
+                                    {
+                                        put("query", query);
+                                    }
+                                })));
+        }
         return mos;
 //        final MetaObject[] o = getMetaObject(
 //                usr,
@@ -884,18 +915,20 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                             + "</html>");
             }
         }
-        ConnectionContextBackend.getInstance()
-                .log(ConnectionContextLog.createForMetaObject(
-                        metaObject,
-                        connectionContext,
-                        user,
-                        "insertMetaObject",
-                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.createForMetaObject(
+                            metaObject,
+                            connectionContext,
+                            user,
+                            "insertMetaObject",
+                            Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                {
-                                    put("metaObject", metaObject);
-                                }
-                            })));
+                                    {
+                                        put("metaObject", metaObject);
+                                    }
+                                })));
+        }
         try {
             final int key = dbServer.getObjectPersitenceManager().insertMetaObject(user, metaObject);
 
@@ -921,19 +954,20 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             logger.debug("<html><body>update called for :+: <p>" + metaObject.getDebugString() + "</p></body></html>"); // NOI18N
         }
 
-        ConnectionContextBackend.getInstance()
-                .log(ConnectionContextLog.createForMetaObject(
-                        metaObject,
-                        connectionContext,
-                        user,
-                        "updateMetaObject",
-                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.createForMetaObject(
+                            metaObject,
+                            connectionContext,
+                            user,
+                            "updateMetaObject",
+                            Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                {
-                                    put("metaObject", metaObject);
-                                }
-                            })));
-
+                                    {
+                                        put("metaObject", metaObject);
+                                    }
+                                })));
+        }
         try {
             dbServer.getObjectPersitenceManager().updateMetaObject(user, metaObject);
 
@@ -959,18 +993,20 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             logger.debug("delete called for" + metaObject); // NOI18N
         }
 
-        ConnectionContextBackend.getInstance()
-                .log(ConnectionContextLog.createForMetaObject(
-                        metaObject,
-                        connectionContext,
-                        user,
-                        "deleteMetaObject",
-                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.createForMetaObject(
+                            metaObject,
+                            connectionContext,
+                            user,
+                            "deleteMetaObject",
+                            Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                {
-                                    put("metaObject", metaObject);
-                                }
-                            })));
+                                    {
+                                        put("metaObject", metaObject);
+                                    }
+                                })));
+        }
 
         try {
             final Collection<CustomDeletionProvider> matchingCustomDeletionProviders = new ArrayList<>();
@@ -1036,18 +1072,20 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 final DefaultMetaObject mo = new DefaultMetaObject(o, metaClass.getDomain());
                 mo.initWithConnectionContext(connectionContext);
                 mo.setAllStatus(MetaObject.TEMPLATE);
-                ConnectionContextBackend.getInstance()
-                        .log(ConnectionContextLog.createForMetaObject(
-                                mo,
-                                connectionContext,
-                                user,
-                                "getInstance",
-                                Collections.unmodifiableMap(new HashMap<String, Object>() {
+                if (ConnectionContextBackend.getInstance().isEnabled()) {
+                    ConnectionContextBackend.getInstance()
+                            .log(ConnectionContextLog.createForMetaObject(
+                                    mo,
+                                    connectionContext,
+                                    user,
+                                    "getInstance",
+                                    Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                        {
-                                            put("metaClass", metaClass);
-                                        }
-                                    })));
+                                            {
+                                                put("metaClass", metaClass);
+                                            }
+                                        })));
+                }
                 return mo;
             } else {
                 return null;
@@ -1069,9 +1107,12 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public MethodMap getMethods(final User user, final ConnectionContext connectionContext) throws RemoteException {
         // if(userstore.validateUser(user))
-        ConnectionContextBackend.getInstance().log(ConnectionContextLog.create(connectionContext,
-                user,
-                "getMethods"));
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.create(connectionContext,
+                            user,
+                            "getMethods"));
+        }
 
         return dbServer.getMethods(); // dbServer.getMethods(user.getuserGroup()); // instead
 
@@ -1107,20 +1148,22 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             for (final LightweightMetaObject lwmo : lwmos) {
                 lwmo.initWithConnectionContext(connectionContext);
             }
-            ConnectionContextBackend.getInstance()
-                    .log(ConnectionContextLog.createForMetaObjects(
-                            lwmos,
-                            connectionContext,
-                            user,
-                            "getAllLightweightMetaObjectsForClass",
-                            Collections.unmodifiableMap(new HashMap<String, Object>() {
+            if (ConnectionContextBackend.getInstance().isEnabled()) {
+                ConnectionContextBackend.getInstance()
+                        .log(ConnectionContextLog.createForMetaObjects(
+                                lwmos,
+                                connectionContext,
+                                user,
+                                "getAllLightweightMetaObjectsForClass",
+                                Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                    {
-                                        put("classId", classId);
-                                        put("representationFields", representationFields);
-                                        put("representationPattern", representationPattern);
-                                    }
-                                })));
+                                        {
+                                            put("classId", classId);
+                                            put("representationFields", representationFields);
+                                            put("representationPattern", representationPattern);
+                                        }
+                                    })));
+            }
             return lwmos;
         } catch (Throwable ex) {
             throw new RemoteException("Error on getAllLightweightMetaObjectsForClass(...)", ex); // NOI18N
@@ -1152,19 +1195,21 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             for (final LightweightMetaObject lwmo : lwmos) {
                 lwmo.initWithConnectionContext(connectionContext);
             }
-            ConnectionContextBackend.getInstance()
-                    .log(ConnectionContextLog.createForMetaObjects(
-                            lwmos,
-                            connectionContext,
-                            user,
-                            "getAllLightweightMetaObjectsForClass",
-                            Collections.unmodifiableMap(new HashMap<String, Object>() {
+            if (ConnectionContextBackend.getInstance().isEnabled()) {
+                ConnectionContextBackend.getInstance()
+                        .log(ConnectionContextLog.createForMetaObjects(
+                                lwmos,
+                                connectionContext,
+                                user,
+                                "getAllLightweightMetaObjectsForClass",
+                                Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                    {
-                                        put("classId", classId);
-                                        put("representationFields", representationFields);
-                                    }
-                                })));
+                                        {
+                                            put("classId", classId);
+                                            put("representationFields", representationFields);
+                                        }
+                                    })));
+            }
             return lwmos;
         } catch (Throwable ex) {
             throw new RemoteException("Error on getAllLightweightMetaObjectsForClass(...)", ex); // NOI18N
@@ -1204,21 +1249,23 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             for (final LightweightMetaObject lwmo : lwmos) {
                 lwmo.initWithConnectionContext(connectionContext);
             }
-            ConnectionContextBackend.getInstance()
-                    .log(ConnectionContextLog.createForMetaObjects(
-                            lwmos,
-                            connectionContext,
-                            user,
-                            "getLightweightMetaObjectsByQuery",
-                            Collections.unmodifiableMap(new HashMap<String, Object>() {
+            if (ConnectionContextBackend.getInstance().isEnabled()) {
+                ConnectionContextBackend.getInstance()
+                        .log(ConnectionContextLog.createForMetaObjects(
+                                lwmos,
+                                connectionContext,
+                                user,
+                                "getLightweightMetaObjectsByQuery",
+                                Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                    {
-                                        put("classId", classId);
-                                        put("query", query);
-                                        put("representationFields", representationFields);
-                                        put("representationPattern", representationPattern);
-                                    }
-                                })));
+                                        {
+                                            put("classId", classId);
+                                            put("query", query);
+                                            put("representationFields", representationFields);
+                                            put("representationPattern", representationPattern);
+                                        }
+                                    })));
+            }
             return lwmos;
         } catch (Throwable ex) {
             throw new RemoteException("Error on getLightweightMetaObjectsByQuery(...)", ex); // NOI18N
@@ -1254,20 +1301,22 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             for (final LightweightMetaObject lwmo : lwmos) {
                 lwmo.initWithConnectionContext(connectionContext);
             }
-            ConnectionContextBackend.getInstance()
-                    .log(ConnectionContextLog.createForMetaObjects(
-                            lwmos,
-                            connectionContext,
-                            user,
-                            "getLightweightMetaObjectsByQuery",
-                            Collections.unmodifiableMap(new HashMap<String, Object>() {
+            if (ConnectionContextBackend.getInstance().isEnabled()) {
+                ConnectionContextBackend.getInstance()
+                        .log(ConnectionContextLog.createForMetaObjects(
+                                lwmos,
+                                connectionContext,
+                                user,
+                                "getLightweightMetaObjectsByQuery",
+                                Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                    {
-                                        put("classId", classId);
-                                        put("query", query);
-                                        put("representationFields", representationFields);
-                                    }
-                                })));
+                                        {
+                                            put("classId", classId);
+                                            put("query", query);
+                                            put("representationFields", representationFields);
+                                        }
+                                    })));
+            }
             return lwmos;
         } catch (Throwable ex) {
             throw new RemoteException("Error on getLightweightMetaObjectsByQuery(...)", ex); // NOI18N
@@ -1291,18 +1340,20 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String oldPassword,
             final String newPassword,
             final ConnectionContext connectionContext) throws RemoteException {
-        ConnectionContextBackend.getInstance()
-                .log(ConnectionContextLog.create(
-                        connectionContext,
-                        user,
-                        "changePassword",
-                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.create(
+                            connectionContext,
+                            user,
+                            "changePassword",
+                            Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                {
-                                    put("oldPassword", "***censored***");
-                                    put("newPassword", "***censored***");
-                                }
-                            })));
+                                    {
+                                        put("oldPassword", "***censored***");
+                                        put("newPassword", "***censored***");
+                                    }
+                                })));
+        }
         try {
             return userstore.changePassword(user, oldPassword, newPassword);
         } catch (Throwable e) {
@@ -1320,18 +1371,19 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public boolean validateUser(final User user, final String password, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextBackend.getInstance()
-                .log(ConnectionContextLog.create(
-                        connectionContext,
-                        user,
-                        "validateUser",
-                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.create(
+                            connectionContext,
+                            user,
+                            "validateUser",
+                            Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                {
-                                    put("password", "***censored***");
-                                }
-                            })));
-
+                                    {
+                                        put("password", "***censored***");
+                                    }
+                                })));
+        }
         try {
             return userstore.validateUserPassword(user, password);
         } catch (Throwable e) {
@@ -1440,18 +1492,20 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public ArrayList<ArrayList> performCustomSearch(final PreparableStatement ps,
             final QueryPostProcessor qpp,
             final ConnectionContext connectionContext) throws RemoteException {
-        ConnectionContextBackend.getInstance()
-                .log(ConnectionContextLog.create(
-                        connectionContext,
-                        null,
-                        "performCustomSearch",
-                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.create(
+                            connectionContext,
+                            null,
+                            "performCustomSearch",
+                            Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                {
-                                    put("ps", ps);
-                                    put("qpp", qpp);
-                                }
-                            })));
+                                    {
+                                        put("ps", ps);
+                                        put("qpp", qpp);
+                                    }
+                                })));
+        }
         try {
             final PreparedStatement stmt = ps.parameterise(getConnectionPool().getDBConnection().getConnection());
             final ResultSet rs = stmt.executeQuery();
@@ -1766,17 +1820,19 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     public String getConfigAttr(final User user, final String key, final ConnectionContext connectionContext)
             throws RemoteException {
-        ConnectionContextBackend.getInstance()
-                .log(ConnectionContextLog.create(
-                        connectionContext,
-                        user,
-                        "getConfigAttr",
-                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.create(
+                            connectionContext,
+                            user,
+                            "getConfigAttr",
+                            Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                {
-                                    put("key", key);
-                                }
-                            })));
+                                    {
+                                        put("key", key);
+                                    }
+                                })));
+        }
         try {
             return userstore.getConfigAttr(user, key);
         } catch (final SQLException ex) {
@@ -1812,19 +1868,21 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final int elements,
             final ConnectionContext connectionContext) throws RemoteException {
         try {
-            ConnectionContextBackend.getInstance()
-                    .log(ConnectionContextLog.create(
-                            connectionContext,
-                            user,
-                            "getHistory",
-                            Collections.unmodifiableMap(new HashMap<String, Object>() {
+            if (ConnectionContextBackend.getInstance().isEnabled()) {
+                ConnectionContextBackend.getInstance()
+                        .log(ConnectionContextLog.create(
+                                connectionContext,
+                                user,
+                                "getHistory",
+                                Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                    {
-                                        put("classId", classId);
-                                        put("objectId", objectId);
-                                        put("elements", elements);
-                                    }
-                                })));
+                                        {
+                                            put("classId", classId);
+                                            put("objectId", objectId);
+                                            put("elements", elements);
+                                        }
+                                    })));
+            }
 
             return historyServer.getHistory(classId, objectId, user, elements);
         } catch (final HistoryException e) {
@@ -1850,19 +1908,21 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final Object body,
             final ConnectionContext connectionContext,
             final ServerActionParameter... params) throws RemoteException {
-        ConnectionContextBackend.getInstance()
-                .log(ConnectionContextLog.create(
-                        connectionContext,
-                        user,
-                        "executeTask",
-                        Collections.unmodifiableMap(new HashMap<String, Object>() {
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.create(
+                            connectionContext,
+                            user,
+                            "executeTask",
+                            Collections.unmodifiableMap(new HashMap<String, Object>() {
 
-                                {
-                                    put("taskname", taskname);
-                                    put("body", body);
-                                    put("params", Arrays.toString(params));
-                                }
-                            })));
+                                    {
+                                        put("taskname", taskname);
+                                        put("body", body);
+                                        put("params", Arrays.toString(params));
+                                    }
+                                })));
+        }
         if (hasConfigAttr(user, SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX + taskname, connectionContext)) {
             final ServerAction serverAction = serverActionMap.get(taskname);
             if (serverAction instanceof ConnectionContextStore) {
