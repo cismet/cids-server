@@ -31,11 +31,35 @@ public abstract class AbstractConnectionContextLogger implements ConnectionConte
     //~ Instance fields --------------------------------------------------------
 
     private final List<ConnectionContextFilterRuleSet> filterRuleSets = new ArrayList<>();
+    private final String name;
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new AbstractConnectionContextLogger object.
+     */
+    protected AbstractConnectionContextLogger() {
+        this.name = null;
+    }
+
+    /**
+     * Creates a new AbstractConnectionContextLogger object.
+     *
+     * @param  name  DOCUMENT ME!
+     */
+    protected AbstractConnectionContextLogger(final String name) {
+        this.name = name;
+    }
 
     //~ Methods ----------------------------------------------------------------
 
-    @Override
-    public void configure(final Object config) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getName() {
+        return name;
     }
 
     @Override

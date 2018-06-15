@@ -1822,9 +1822,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             throws RemoteException {
         if (ConnectionContextBackend.getInstance().isEnabled()) {
             ConnectionContextBackend.getInstance()
-                    .log(ConnectionContextLog.create(
+                    .log(ConnectionContextLog.createForConfigAttr(
                             connectionContext,
                             user,
+                            key,
                             "getConfigAttr",
                             Collections.unmodifiableMap(new HashMap<String, Object>() {
 
@@ -1910,9 +1911,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final ServerActionParameter... params) throws RemoteException {
         if (ConnectionContextBackend.getInstance().isEnabled()) {
             ConnectionContextBackend.getInstance()
-                    .log(ConnectionContextLog.create(
+                    .log(ConnectionContextLog.createForTask(
                             connectionContext,
                             user,
+                            taskname,
                             "executeTask",
                             Collections.unmodifiableMap(new HashMap<String, Object>() {
 

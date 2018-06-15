@@ -60,6 +60,10 @@ public class ConnectionContextFilterRule {
     private static final String PROPERTY__OBJECT_ID = "objectId";
     private static final String PROPERTY__MODE = "mode";
     private static final String PROPERTY__CATEGORY = "category";
+    private static final String PROPERTY__METHOD_NAME = "methodName";
+    private static final String PROPERTY__SEARCH = "search";
+    private static final String PROPERTY__TASK = "task";
+    private static final String PROPERTY__CONF_ATTR = "confAttr";
     private static final String PROPERTY__CONTEXT_NAME = "contextName";
     private static final String PROPERTY__ORIGIN_IP = "originIp";
 
@@ -93,6 +97,14 @@ public class ConnectionContextFilterRule {
     private Mode mode;
     @JsonProperty(PROPERTY__CATEGORY)
     private String category;
+    @JsonProperty(PROPERTY__METHOD_NAME)
+    private String methodName;
+    @JsonProperty(PROPERTY__SEARCH)
+    private String search;
+    @JsonProperty(PROPERTY__TASK)
+    private String task;
+    @JsonProperty(PROPERTY__CONF_ATTR)
+    private String confAttr;
     @JsonProperty(PROPERTY__CONTEXT_NAME)
     private String contextName;
     @JsonProperty(PROPERTY__ORIGIN_IP)
@@ -117,6 +129,10 @@ public class ConnectionContextFilterRule {
                     && isObjectIdSatisfied(contextLog, exclude)
                     && isModeSatisfied(contextLog, exclude)
                     && isCategorySatisfied(contextLog, exclude)
+                    && isConfAttrSatisfied(contextLog, exclude)
+                    && isTaskSatisfied(contextLog, exclude)
+                    && isSearchSatisfied(contextLog, exclude)
+                    && isMethodNameSatisfied(contextLog, exclude)
                     && isContextNameSatisfied(contextLog, exclude)
                     && isOriginIpSatisfied(contextLog, exclude);
     }
@@ -226,6 +242,66 @@ public class ConnectionContextFilterRule {
      *
      * @return  DOCUMENT ME!
      */
+    private boolean isConfAttrSatisfied(final ConnectionContextLog contextLog, final boolean exclude) {
+        if (getConfAttr() == null) {
+            return true;
+        }
+        return isSatisfied(contextLog.getConfigAttr(), getConfAttr(), exclude);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   contextLog  DOCUMENT ME!
+     * @param   exclude     DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private boolean isTaskSatisfied(final ConnectionContextLog contextLog, final boolean exclude) {
+        if (getTask() == null) {
+            return true;
+        }
+        return isSatisfied(contextLog.getTask(), getTask(), exclude);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   contextLog  DOCUMENT ME!
+     * @param   exclude     DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private boolean isSearchSatisfied(final ConnectionContextLog contextLog, final boolean exclude) {
+        if (getSearch() == null) {
+            return true;
+        }
+        return isSatisfied(contextLog.getSearch(), getSearch(), exclude);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   contextLog  DOCUMENT ME!
+     * @param   exclude     DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private boolean isMethodNameSatisfied(final ConnectionContextLog contextLog, final boolean exclude) {
+        if (getSearch() == null) {
+            return true;
+        }
+        return isSatisfied(contextLog.getMethodName(), getMethodName(), exclude);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   contextLog  DOCUMENT ME!
+     * @param   exclude     DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     private boolean isContextNameSatisfied(final ConnectionContextLog contextLog, final boolean exclude) {
         if (getContextName() == null) {
             return true;
@@ -277,7 +353,7 @@ public class ConnectionContextFilterRule {
     private static boolean isMatching(final Object object, final String filter) {
         if (object == null) {
             // nothing to filter out
-            return true;
+            return false;
         }
         if (object instanceof String) {
             return isMatching((String)object, filter);

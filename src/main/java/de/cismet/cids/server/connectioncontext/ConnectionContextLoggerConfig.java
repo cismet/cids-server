@@ -42,12 +42,15 @@ public class ConnectionContextLoggerConfig {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final String PROPERTY__NAME = "name";
+    private static final String PROPERTY__TYPE = "type";
     private static final String PROPERTY__CONFIG = "config";
 
     //~ Instance fields --------------------------------------------------------
 
     @JsonProperty(PROPERTY__NAME)
     private final String name;
+    @JsonProperty(PROPERTY__TYPE)
+    private final String type;
     @JsonProperty(PROPERTY__CONFIG)
     private final Object config;
 
@@ -57,12 +60,15 @@ public class ConnectionContextLoggerConfig {
      * Creates a new ConnectionContextFilterRuleSet object.
      *
      * @param  name    DOCUMENT ME!
+     * @param  type    DOCUMENT ME!
      * @param  config  loggerName DOCUMENT ME!
      */
     @JsonCreator
     public ConnectionContextLoggerConfig(@JsonProperty(PROPERTY__NAME) final String name,
+            @JsonProperty(PROPERTY__TYPE) final String type,
             @JsonProperty(PROPERTY__CONFIG) final Object config) {
         this.name = name;
+        this.type = type;
         this.config = config;
     }
 }

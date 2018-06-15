@@ -31,13 +31,35 @@ public class ConsoleConnectionContextLogger extends AbstractConnectionContextLog
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient Logger LOG = Logger.getLogger(ConsoleConnectionContextLogger.class);
-    public static final String NAME = "console";
+    public static final String TYPE = "console";
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new ConsoleConnectionContextLogger object.
+     */
+    public ConsoleConnectionContextLogger() {
+    }
+
+    /**
+     * Creates a new ConsoleConnectionContextLogger object.
+     *
+     * @param  name  DOCUMENT ME!
+     */
+    public ConsoleConnectionContextLogger(final String name) {
+        super(name);
+    }
 
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public String getName() {
-        return NAME;
+    public ConnectionContextLogger createNewLogger(final String name, final Object config) {
+        return new ConsoleConnectionContextLogger(name);
+    }
+
+    @Override
+    public String getType() {
+        return TYPE;
     }
 
     @Override
