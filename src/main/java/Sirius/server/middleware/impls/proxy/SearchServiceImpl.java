@@ -95,9 +95,10 @@ public class SearchServiceImpl implements SearchService {
             final ConnectionContext connectionContext) throws RemoteException {
         if (ConnectionContextBackend.getInstance().isEnabled()) {
             ConnectionContextBackend.getInstance()
-                    .log(ConnectionContextLog.create(
+                    .log(ConnectionContextLog.createForSearch(
                             connectionContext,
                             user,
+                            (serverSearch != null) ? serverSearch.getClass().getCanonicalName() : null,
                             "customServerSearch",
                             Collections.unmodifiableMap(new HashMap<String, Object>() {
 

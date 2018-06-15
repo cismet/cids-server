@@ -39,17 +39,29 @@ public class FileWriterConnectionContextLogger extends AbstractConnectionContext
     private static final transient Logger LOG = Logger.getLogger(FileWriterConnectionContextLogger.class);
     private static final String PROPERTY__LOG_FILE = "logFile";
     private static final String PROPERTY__LOG_FORMAT = "logFormat";
-    private static final String NAME = "FileWriter";
+    private static final String TYPE = "FileWriter";
 
     //~ Instance fields --------------------------------------------------------
 
     private FileWriter fileWriter;
     private String logFormat;
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
-    @Override
-    public void configure(final Object config) {
+    /**
+     * Creates a new FileWriterConnectionContextLogger object.
+     */
+    public FileWriterConnectionContextLogger() {
+    }
+
+    /**
+     * Creates a new FileWriterConnectionContextLogger object.
+     *
+     * @param  name    DOCUMENT ME!
+     * @param  config  DOCUMENT ME!
+     */
+    public FileWriterConnectionContextLogger(final String name, final Object config) {
+        super(name);
         if (config instanceof Map) {
             final Map map = (Map)config;
             if (map.containsKey(PROPERTY__LOG_FILE)) {
@@ -69,9 +81,16 @@ public class FileWriterConnectionContextLogger extends AbstractConnectionContext
         }
     }
 
+    //~ Methods ----------------------------------------------------------------
+
     @Override
-    public String getName() {
-        return NAME;
+    public ConnectionContextLogger createNewLogger(final String name, final Object config) {
+        return new FileWriterConnectionContextLogger(name, config);
+    }
+
+    @Override
+    public String getType() {
+        return TYPE;
     }
 
     @Override
