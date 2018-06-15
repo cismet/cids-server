@@ -16,6 +16,7 @@ import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -42,13 +43,13 @@ import de.cismet.connectioncontext.ConnectionContext;
  * @version  $Revision$, $Date$
  */
 @Getter
-@Setter
+@Setter(AccessLevel.PRIVATE)
 public class ConnectionContextLog {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final String DEFAULT_FORMAT_STRING =
-        "[${TIME} ${_USER_NAME}@${USER_DOMAIN}] ${CATEGORY}(${CONTEXT_NAME}) =(${CLIENT_IP})> ${METHOD_NAME}(${METHOD_PARAMS})";
+        "[${TIME} ${USER_NAME}@${USER_DOMAIN}] ${CATEGORY}(${CONTEXT_NAME}) =(${CLIENT_IP})> ${METHOD_NAME}(${METHOD_PARAMS})";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -60,6 +61,9 @@ public class ConnectionContextLog {
     private final Map<String, Object> methodParams;
     private final HashSet<Integer> objectIds = new HashSet<>();
     private final HashSet<String> classNames = new HashSet<>();
+    private String configAttr;
+    private String task;
+    private String search;
     private final Exception stacktraceException;
     private final String originIp;
 
@@ -252,6 +256,81 @@ public class ConnectionContextLog {
      *
      * @param   connectionContext  DOCUMENT ME!
      * @param   user               DOCUMENT ME!
+     * @param   configAttr         DOCUMENT ME!
+     * @param   methodName         DOCUMENT ME!
+     * @param   params             DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ConnectionContextLog createForConfigAttr(final ConnectionContext connectionContext,
+            final User user,
+            final String configAttr,
+            final String methodName,
+            final Map<String, Object> params) {
+        final ConnectionContextLog contextLog = new ConnectionContextLog(new Date(),
+                user,
+                connectionContext,
+                methodName,
+                params);
+        contextLog.setConfigAttr(configAttr);
+        return contextLog;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   connectionContext  DOCUMENT ME!
+     * @param   user               DOCUMENT ME!
+     * @param   search             DOCUMENT ME!
+     * @param   methodName         DOCUMENT ME!
+     * @param   params             DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ConnectionContextLog createForSearch(final ConnectionContext connectionContext,
+            final User user,
+            final String search,
+            final String methodName,
+            final Map<String, Object> params) {
+        final ConnectionContextLog contextLog = new ConnectionContextLog(new Date(),
+                user,
+                connectionContext,
+                methodName,
+                params);
+        contextLog.setSearch(search);
+        return contextLog;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   connectionContext  DOCUMENT ME!
+     * @param   user               DOCUMENT ME!
+     * @param   task               DOCUMENT ME!
+     * @param   methodName         DOCUMENT ME!
+     * @param   params             DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static ConnectionContextLog createForTask(final ConnectionContext connectionContext,
+            final User user,
+            final String task,
+            final String methodName,
+            final Map<String, Object> params) {
+        final ConnectionContextLog contextLog = new ConnectionContextLog(new Date(),
+                user,
+                connectionContext,
+                methodName,
+                params);
+        contextLog.setTask(task);
+        return contextLog;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   connectionContext  DOCUMENT ME!
+     * @param   user               DOCUMENT ME!
      * @param   methodName         DOCUMENT ME!
      * @param   params             DOCUMENT ME!
      *
@@ -303,14 +382,7 @@ public class ConnectionContextLog {
 
                 final String key = entry.getKey();
                 final Object value = entry.getValue();
-                final String valueString =
-                    ((value instanceof String)
-                                || (value instanceof Double)
-                                || (value instanceof Integer)
-                                || (value instanceof Float)
-                                || (value instanceof Boolean)) ? value.toString()
-                                                               : Integer.toHexString(System.identityHashCode(value));
-                buffer.append(key).append(keyValueSeparator).append(valueString);
+                buffer.append(key).append(keyValueSeparator).append(value);
 
                 if (entryIterator.hasNext()) {
                     buffer.append(separator);

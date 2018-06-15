@@ -57,6 +57,7 @@ public class ConnectionContextBackend {
 
     //~ Instance fields --------------------------------------------------------
 
+    private final Map<String, ConnectionContextLogger> contextLoggerDummies = new HashMap<>();
     private final Map<String, ConnectionContextLogger> contextLoggers = new HashMap<>();
 
     private boolean enabled = true;
@@ -113,21 +114,18 @@ public class ConnectionContextBackend {
      * @param  configFilePath  DOCUMENT ME!
      */
     public void loadConfig(final String configFilePath) {
-        contextLoggers.clear();
+        contextLoggerDummies.clear();
         for (final ConnectionContextLogger connectionContextLogger
                     : (Collection<ConnectionContextLogger>)Lookup.getDefault().lookupAll(
                         ConnectionContextLogger.class)) {
-            final String name = connectionContextLogger.getName();
-            contextLoggers.put(name, connectionContextLogger);
+            final String type = connectionContextLogger.getType();
+            contextLoggerDummies.put(type, connectionContextLogger);
         }
 
         if (configFilePath != null) {
             final File json = new File(configFilePath);
 
-            for (final ConnectionContextLogger connectionContextLogger : contextLoggers.values()) {
-                connectionContextLogger.getFilterRuleSets().clear();
-            }
-
+            contextLoggers.clear();
             try {
                 final ConnectionContextConfig config = OBJECT_MAPPER.readValue(json, ConnectionContextConfig.class);
                 final Collection<ConnectionContextLoggerConfig> loggerConfigs = config.getLoggers();
@@ -135,9 +133,13 @@ public class ConnectionContextBackend {
                     if (loggerConfig != null) {
                         final String loggerName = loggerConfig.getName();
                         if (loggerName != null) {
-                            final ConnectionContextLogger connectionContextLogger = contextLoggers.get(loggerName);
-                            if (connectionContextLogger != null) {
-                                connectionContextLogger.configure(loggerConfig.getConfig());
+                            final String loggerType = loggerConfig.getType();
+                            if (contextLoggerDummies.containsKey(loggerType)) {
+                                final ConnectionContextLogger loggerDummy = contextLoggerDummies.get(loggerType);
+                                final ConnectionContextLogger logger = loggerDummy.createNewLogger(
+                                        loggerName,
+                                        loggerConfig.getConfig());
+                                contextLoggers.put(loggerName, logger);
                             }
                         }
                     }
@@ -291,11 +293,11 @@ public class ConnectionContextBackend {
                 if (contextLogger != null) {
                     try {
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("giving connection context log to logger: " + contextLogger.getName());
+                            LOG.debug("giving connection context log to logger: " + contextLogger.getType());
                         }
                         contextLogger.log(contextLog);
                     } catch (final Exception ex) {
-                        LOG.warn("exception while logging context with logger " + contextLogger.getName(), ex);
+                        LOG.warn("exception while logging context with logger " + contextLogger.getType(), ex);
                     }
                 }
             }

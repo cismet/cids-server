@@ -34,13 +34,35 @@ public class Log4JConnectionContextLogger extends AbstractConnectionContextLogge
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient Logger LOG = Logger.getLogger(Log4JConnectionContextLogger.class);
-    public static final String NAME = "LOG4J";
+    public static final String TYPE = "LOG4J";
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new Log4JConnectionContextLogger object.
+     */
+    public Log4JConnectionContextLogger() {
+    }
+
+    /**
+     * Creates a new Log4JConnectionContextLogger object.
+     *
+     * @param  name  DOCUMENT ME!
+     */
+    public Log4JConnectionContextLogger(final String name) {
+        super(name);
+    }
 
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public String getName() {
-        return NAME;
+    public ConnectionContextLogger createNewLogger(final String name, final Object config) {
+        return new Log4JConnectionContextLogger(name);
+    }
+
+    @Override
+    public String getType() {
+        return TYPE;
     }
 
     @Override

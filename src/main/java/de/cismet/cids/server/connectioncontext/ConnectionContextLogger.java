@@ -27,16 +27,19 @@ public interface ConnectionContextLogger {
     /**
      * DOCUMENT ME!
      *
-     * @param  config  DOCUMENT ME!
+     * @param   name    DOCUMENT ME!
+     * @param   config  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      */
-    void configure(final Object config);
+    ConnectionContextLogger createNewLogger(final String name, final Object config);
 
     /**
      * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    String getName();
+    String getType();
 
     /**
      * DOCUMENT ME!
