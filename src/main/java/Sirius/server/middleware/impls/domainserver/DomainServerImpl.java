@@ -39,6 +39,7 @@ import Sirius.server.registry.Registry;
 import Sirius.server.sql.DBConnectionPool;
 import Sirius.server.sql.PreparableStatement;
 
+import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 import org.openide.util.Lookup;
@@ -83,9 +84,10 @@ import de.cismet.cids.server.ws.rest.RESTfulService;
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
+import de.cismet.cidsx.server.actions.RestApiCidsServerAction;
+
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
-
 /**
  * DOCUMENT ME!
  *
@@ -194,9 +196,23 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 }
             }
 
+            final Collection<? extends RestApiCidsServerAction> restServerActions = Lookup.getDefault()
+                        .lookupAll(RestApiCidsServerAction.class);
             final Collection<? extends ServerAction> serverActions = Lookup.getDefault().lookupAll(ServerAction.class);
+
+            for (final ServerAction restServerAction : restServerActions) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Adding REST API Server Action '" + restServerAction.getTaskName() + "'");
+                }
+                serverActionMap.put(restServerAction.getTaskName(), restServerAction);
+            }
+
             for (final ServerAction serverAction : serverActions) {
-                serverActionMap.put(serverAction.getTaskName(), serverAction);
+                if (!serverActionMap.containsKey(serverAction.getTaskName())) {
+                    logger.warn("Adding LEGACY Server Action '" + serverAction.getTaskName()
+                                + "' -> Change to RestApiCidsServerAction");
+                    serverActionMap.put(serverAction.getTaskName(), serverAction);
+                }
             }
 
             MetaClassCache.getInstance().setAllClasses(dbServer.getClasses(), properties.getServerName());
@@ -1901,6 +1917,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final Object body,
             final ConnectionContext connectionContext,
             final ServerActionParameter... params) throws RemoteException {
+        logger.info("executing task '" + taskname + "' with " + params.length
+                    + " server action parameters and body object: " + (body != null));
         if (ConnectionContextBackend.getInstance().isEnabled()) {
             ConnectionContextBackend.getInstance()
                     .log(ConnectionContextLog.createForTask(
@@ -1919,24 +1937,24 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         }
         if (hasConfigAttr(user, SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX + taskname, connectionContext)) {
             final ServerAction serverAction = serverActionMap.get(taskname);
-            if (serverAction instanceof ConnectionContextStore) {
-                ((ConnectionContextStore)serverAction).initWithConnectionContext(connectionContext);
-            }
-
-            if (serverAction instanceof MetaServiceStore) {
-                ((MetaServiceStore)serverAction).setMetaService(this);
-            }
-            if (serverAction instanceof CatalogueServiceStore) {
-                ((CatalogueServiceStore)serverAction).setCatalogueService(this);
-            }
-            if (serverAction instanceof UserServiceStore) {
-                ((UserServiceStore)serverAction).setUserService(this);
-            }
-            if (serverAction instanceof Sirius.server.middleware.interfaces.domainserver.UserStore) {
-                ((Sirius.server.middleware.interfaces.domainserver.UserStore)serverAction).setUser(user);
-            }
-
             if (serverAction != null) {
+                if (serverAction instanceof ConnectionContextStore) {
+                    ((ConnectionContextStore)serverAction).initWithConnectionContext(connectionContext);
+                }
+
+                if (serverAction instanceof MetaServiceStore) {
+                    ((MetaServiceStore)serverAction).setMetaService(this);
+                }
+                if (serverAction instanceof CatalogueServiceStore) {
+                    ((CatalogueServiceStore)serverAction).setCatalogueService(this);
+                }
+                if (serverAction instanceof UserServiceStore) {
+                    ((UserServiceStore)serverAction).setUserService(this);
+                }
+                if (serverAction instanceof Sirius.server.middleware.interfaces.domainserver.UserStore) {
+                    ((Sirius.server.middleware.interfaces.domainserver.UserStore)serverAction).setUser(user);
+                }
+
                 if (serverAction instanceof ScheduledServerAction) {
                     if (ScheduledServerActionManager.isScheduledServerActionFeatureSupported(
                                     dbServer.getActiveDBConnection())) {
@@ -1957,15 +1975,24 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                             "this server instance does not support scheduled server action feature"); // NOI18N
                     }
                 } else {
-                    return serverAction.execute(body, params);
+                    final long start = System.currentTimeMillis();
+                    final Object result = serverAction.execute(body, params);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Server Action '" + taskname + "' successfully executed in "
+                                    + (System.currentTimeMillis() - start) + "ms.");
+                    }
+                    return result;
                 }
             } else {
+                logger.warn("Server Action '" + taskname + "' not found! Returning null.");
                 return null;
             }
         } else {
-            throw new RemoteException("The user " + user
+            final String message = "The user " + user
                         + "has no permission to execute this task. (Should have an action attribute like this: "
-                        + SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX + taskname);
+                        + SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX + taskname;
+            logger.error(message);
+            throw new RemoteException(message);
         }
     }
 }

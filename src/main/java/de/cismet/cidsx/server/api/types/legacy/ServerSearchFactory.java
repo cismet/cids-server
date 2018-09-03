@@ -39,7 +39,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -110,7 +109,7 @@ public class ServerSearchFactory {
     }
 
     /**
-     * Inspects a CidsServerSearch Instance and tries to automatically serive a proper SearchInfo object.
+     * Inspects a CidsServerSearch Instance and tries to automatically derive a proper SearchInfo object.
      *
      * @param   cidsServerSearch  server search to be inspected
      *
@@ -346,7 +345,7 @@ public class ServerSearchFactory {
 
         for (final SearchParameter searchParameter : searchParameters) {
             final String paramKey = searchParameter.getKey();
-            final SearchParameterInfo searchParameterInfo = searchInfo.getSearchParameterInfo(paramKey);
+            final SearchParameterInfo searchParameterInfo = searchInfo.getParameterInfo(paramKey);
             if (searchParameterInfo == null) {
                 final String message = "could not create instance of cids server search '"
                             + searchInfo.getKey() + "': server search parameter '"
@@ -363,7 +362,7 @@ public class ServerSearchFactory {
                         || (searchParameterInfo.getType() == Type.ENTITY_INFO)
                         || (searchParameterInfo.getType() == Type.NODE)) {
                 // FIXME: if required, handle MetaObject, MetaClass and MetaNode
-                // in custom serializer / deserilaitzer implementation of
+                // in custom serializer / deserializer implementation of
                 // SearchParameter.class
                 final String message = "The Search Parameter '" + searchParameterInfo.getKey()
                             + "' (" + searchParameterInfo.getType().name() + ") of the cids server search '"
@@ -926,7 +925,7 @@ public class ServerSearchFactory {
      *
      * @throws  IOException  DOCUMENT ME!
      */
-    private static String toBase64String(final Object object) throws IOException {
+    public static final String toBase64String(final Object object) throws IOException {
         if (object.getClass().isAssignableFrom(Serializable.class)) {
             final Serializable serializable = (Serializable)object;
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -953,7 +952,7 @@ public class ServerSearchFactory {
      * @throws  IOException             DOCUMENT ME!
      * @throws  ClassNotFoundException  DOCUMENT ME!
      */
-    private static Object fromBase64String(final String s) throws IOException, ClassNotFoundException {
+    public static final Object fromBase64String(final String s) throws IOException, ClassNotFoundException {
         final byte[] data = Base64.decode(s);
         final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
         final Object o = ois.readObject();

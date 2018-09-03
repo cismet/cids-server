@@ -1781,7 +1781,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
                         + domain + "' with " + params.length + " Server Action Parameters: "
                         + webResource.toString());
         }
-
+        // FIXME: Fails if the action does nor return APPLICATION_JSON
         builder.type(MediaType.MULTIPART_FORM_DATA_TYPE).accept(MediaType.APPLICATION_JSON_TYPE);
 
         FormDataMultiPart multiPartData = new FormDataMultiPart();
@@ -1809,7 +1809,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         if (body != null) {
             try {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("creating Multi Part Form Data '" + MediaType.APPLICATION_OCTET_STREAM_TYPE + "'");
+                    LOG.debug("creating Multi Part Form Data '" + MediaType.APPLICATION_OCTET_STREAM + "'");
                 }
                 final ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 final ObjectOutputStream oos = new ObjectOutputStream(bos);
@@ -1850,7 +1850,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
                         + taskResult.getContentType() + "'");
         }
 
-        return taskResult.getRes();
+        return taskResult;
     }
 
     // </editor-fold>

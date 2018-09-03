@@ -63,6 +63,11 @@ public class ActionServiceImpl implements ActionService {
             final String taskdomain,
             final Object body,
             final ServerActionParameter... params) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("executing task '" + taskname + "' with " + params.length
+                        + " server action parameters and body object: " + (body != null)
+                        + " for user '" + user.getName() + "'");
+        }
         return executeTask(user, taskname, taskdomain, body, ConnectionContext.createDeprecated(), params);
     }
 
@@ -73,6 +78,12 @@ public class ActionServiceImpl implements ActionService {
             final Object body,
             final ConnectionContext context,
             final ServerActionParameter... params) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("executing task '" + taskname + "' with " + params.length
+                        + " server action parameters and body object: " + (body != null)
+                        + " for user '" + user.getName() + "' and connection context category '"
+                        + context.getCategory().toString() + "'");
+        }
         return ((Sirius.server.middleware.interfaces.domainserver.ActionService)activeLocalServers.get(taskdomain))
                     .executeTask(user, taskname, body, context, params);
     }
