@@ -13,7 +13,10 @@
 
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server</artifactId>
-    <version>6.4-SNAPSHOT</version>
+    <!--
+        FIXME: replace with release version when action api enhancements have been merged!
+    -->
+    <version>6.4-UBA-SNAPSHOT</version>
     <packaging>jar</packaging>
  
     <properties>
@@ -75,7 +78,7 @@
                 <!--
                     FIXME: replace with release version when action api enhancements have been merged!
                 -->
-                <version>6.1-SNAPSHOT</version>
+                <version>6.1-UBA-SNAPSHOT</version>
             </dependency>
             <!-- END: managed cids-dependencies -->
         </dependencies>
@@ -204,10 +207,6 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util-lookup</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
         </dependency>
         <!-- END: managed dependencies -->
         
