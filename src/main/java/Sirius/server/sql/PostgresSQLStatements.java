@@ -9,6 +9,8 @@ package Sirius.server.sql;
 
 import org.openide.util.lookup.ServiceProvider;
 
+import java.sql.Types;
+
 /**
  * DOCUMENT ME!
  *
@@ -453,25 +455,37 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                     + "AND    i.attr_object_id=s.object_id "                                                    // NOI18N
                     + "AND    s.string_val "
                     + (caseSensitive ? "" : "i")
-                    + "like '%"
-                    + searchText
-                    + "%' "                                                                                     // NOI18N
+                    + "like ? "                                                                                 // NOI18N
                     + "AND i.class_id IN "
                     + classesIn;
 
-        final Object[] objs = new Object[0];
+        Object[] objs = new Object[1];
+
         final PreparableStatement ps;
         if (geoSql == null) {
-            ps = new PreparableStatement(sql, new int[0]);
+            ps = new PreparableStatement(sql, new int[] { Types.VARCHAR });
         } else {
+            final int parameterCount = geoSql.getObjects().length;
+            final int[] types = new int[parameterCount
+                            + 1];
+
+            objs = new Object[parameterCount
+                            + 1];
+            System.arraycopy(geoSql.getObjects(), 0, objs, 1, parameterCount);
+            types[0] = Types.VARCHAR;
+            System.arraycopy(geoSql.getTypes(), 0, types, 1, parameterCount);
+
             ps = new PreparableStatement("SELECT TXT_RESULTS.* FROM (\n"
                             + sql
                             + "\n) as TXT_RESULTS \n"
                             + "JOIN (" + geoSql.getStatement() + ") AS GEO_RESULTS \n"
                             + "ON (TXT_RESULTS.ocid=GEO_RESULTS.ocid and TXT_RESULTS.oid=GEO_RESULTS.oid)",
-                    new int[0]);
+                    types);
         }
 
+        objs[0] = "%"
+                    + searchText
+                    + "%";
         ps.setObjects(objs);
 
         return ps;
@@ -479,6 +493,10 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
 
     @Override
     public PreparableStatement getDefaultGeoSearchStmt(final String wkt, final String srid, final String classesIn) {
+        final String geometryText = "SRID="
+                    + srid
+                    + ";"
+                    + wkt;
         final PreparableStatement ps = new PreparableStatement(
                 "SELECT DISTINCT i.class_id ocid, i.object_id as oid, c.stringrep, c.geometry, c.lightweight_json " // NOI18N
                         + "FROM            geom g, "                                                                // NOI18N
@@ -496,19 +514,14 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                         + "AND             i.attr_object_id = g.id "                                                // NOI18N
                         + "AND i.class_id IN "
                         + classesIn                                                                                 // NOI18N
-                        + "AND geo_field && st_GeometryFromText('SRID="
-                        + srid
-                        + ";"
-                        + wkt
-                        + "') "                                                                                     // NOI18N
-                        + "AND st_intersects(geo_field,st_GeometryFromText('SRID="
-                        + srid
-                        + ";"
-                        + wkt
-                        + "')) "                                                                                    // NOI18N
+                        + "AND geo_field && st_GeometryFromText(?) "                                                // NOI18N
+                        + "AND st_intersects(geo_field,st_GeometryFromText(?)) "                                    // NOI18N
                         + "ORDER BY        1,2,3",
-                new int[0]);
-        ps.setObjects(new Object[0]);
+                new int[] { Types.VARCHAR, Types.VARCHAR });
+        final Object[] objs = new Object[2];
+        objs[0] = geometryText;
+        objs[1] = geometryText;
+        ps.setObjects(objs);
 
         return ps;
     }

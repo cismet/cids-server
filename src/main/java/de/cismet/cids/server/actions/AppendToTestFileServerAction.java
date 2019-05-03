@@ -47,7 +47,8 @@ public class AppendToTestFileServerAction implements ServerAction {
     public Object execute(final Object body, final ServerActionParameter... params) {
         try {
             final Date now = new Date();
-            final String text = DATE_FORMAT.format(now) + " | " + (body instanceof byte[] ? new String((byte[])body) : body) + "\n";
+            final String text = DATE_FORMAT.format(now) + " | "
+                        + ((body instanceof byte[]) ? new String((byte[])body) : body) + "\n";
             final File appendToTestFile = new File(FILE_NAME);
             FileUtils.writeStringToFile(appendToTestFile, text, CHARSET, true);
             return text;
