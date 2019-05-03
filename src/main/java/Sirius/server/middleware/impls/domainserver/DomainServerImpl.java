@@ -41,6 +41,7 @@ import Sirius.server.sql.PreparableStatement;
 
 import org.apache.log4j.PropertyConfigurator;
 
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import java.io.File;
@@ -54,6 +55,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 
 import java.sql.Clob;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -65,7 +67,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.MissingResourceException;
-import java.util.Properties;
 
 import de.cismet.cids.objectextension.ObjectExtensionFactory;
 
@@ -1415,10 +1416,19 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public ArrayList<ArrayList> performCustomSearch(final String query,
             final QueryPostProcessor qpp,
             final ConnectionContext connectionContext) throws RemoteException {
+        final Connection con = getConnectionPool().getDBConnection(true).getConnection();
+
         try {
-            final Statement s = getConnectionPool().getDBConnection().getConnection().createStatement();
-            final ResultSet rs = s.executeQuery(query);
+            con.setAutoCommit(false);
+            final PreparedStatement s = con.prepareStatement("select execute_query(?)");
+            s.setString(1, query);
+            final ResultSet cursorSet = s.executeQuery();
+            cursorSet.next();
+            final ResultSet rs = (ResultSet)cursorSet.getObject(1);
             final ArrayList<ArrayList> result = collectResults(rs);
+
+            rs.close();
+
             if (qpp != null) {
                 return qpp.postProcess(result);
             } else {
@@ -1428,6 +1438,13 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String msg = "Error during sql statement: " + query;
             logger.error(msg, e);
             throw new RemoteException(msg, e);
+        } finally {
+            try {
+                con.setAutoCommit(true);
+                getConnectionPool().releaseDbConnection(con);
+            } catch (SQLException ex) {
+                logger.error("cannot set auto commit to true", ex);
+            }
         }
     }
 
