@@ -16,7 +16,6 @@ import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
 
-
 import java.io.IOException;
 
 import java.rmi.RemoteException;
@@ -81,6 +80,8 @@ public final class ServerExceptionMapper {
      * @param   compressionEnabled  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
      */
     public static <T extends Throwable> T fromResponse(final ClientResponse response,
             final Class<T> type,

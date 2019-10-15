@@ -734,7 +734,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             throw createRemoteException(ex);
         }
     }
-    
+
     /**
      * DOCUMENT ME!
      *
@@ -755,12 +755,12 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final ClientResponse response = ex.getResponse();
             if (response == null) {
                 return new RemoteException("response is null", ex);
-            } else {                    
+            } else {
                 try {
                     return ServerExceptionMapper.fromResponse(
-                        response,
-                        RemoteException.class,
-                        compressionEnabled);
+                            response,
+                            RemoteException.class,
+                            compressionEnabled);
                 } catch (final Exception e) {
                     final String message = "exception during communication with server";
                     LOG.error(message, e);
@@ -1674,12 +1674,12 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final ClientResponse response = ex.getResponse();
             if (response == null) {
                 throw new RemoteException("response is null", ex);
-            } else if (HttpStatus.SC_UNAUTHORIZED == response.getStatus()) {   
+            } else if (HttpStatus.SC_UNAUTHORIZED == response.getStatus()) {
                 try {
                     throw ServerExceptionMapper.fromResponse(
-                            response,
-                            UserException.class,
-                            compressionEnabled);
+                        response,
+                        UserException.class,
+                        compressionEnabled);
                 } catch (final Exception e) {
                     final String message = "exception during communication with server";
                     LOG.error(message, e);
