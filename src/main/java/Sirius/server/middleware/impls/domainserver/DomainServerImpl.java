@@ -197,6 +197,12 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
             final Collection<? extends ServerAction> serverActions = Lookup.getDefault().lookupAll(ServerAction.class);
             for (final ServerAction serverAction : serverActions) {
+                if (serverAction instanceof ConnectionContextStore) {
+                    final ConnectionContext connectionContext = ConnectionContext.create(
+                            ConnectionContext.Category.ACTION,
+                            serverAction.getClass().getSimpleName());
+                    ((ConnectionContextStore)serverAction).initWithConnectionContext(connectionContext);
+                }
                 serverActionMap.put(serverAction.getTaskName(), serverAction);
             }
 

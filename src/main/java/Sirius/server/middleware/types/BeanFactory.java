@@ -409,7 +409,7 @@ public class BeanFactory {
         final ProtectionDomain pd = this.getClass().getProtectionDomain();
         final Class ret = ctClass.toClass(getClass().getClassLoader(), pd);
         if (LOG.isInfoEnabled()) {
-            LOG.info("Class " + ret + " was successfully created", new CurrentStackTrace()); // NOI18N
+            LOG.info("Class " + ret + " was successfully created"); // NOI18N
         }
 
         return ret;

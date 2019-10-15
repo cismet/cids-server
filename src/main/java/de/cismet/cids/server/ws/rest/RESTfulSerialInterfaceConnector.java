@@ -734,7 +734,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             throw createRemoteException(ex);
         }
     }
-
+    
     /**
      * DOCUMENT ME!
      *
@@ -753,28 +753,32 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             }
 
             final ClientResponse response = ex.getResponse();
-
-            final RemoteException remEx = ServerExceptionMapper.fromResponse(
-                    response,
-                    RemoteException.class,
-                    compressionEnabled);
-            if (remEx == null) {
-                throw ex;
-            } else {
-                return remEx;
+            if (response == null) {
+                return new RemoteException("response is null", ex);
+            } else {                    
+                try {
+                    return ServerExceptionMapper.fromResponse(
+                        response,
+                        RemoteException.class,
+                        compressionEnabled);
+                } catch (final Exception e) {
+                    final String message = "exception during communication with server";
+                    LOG.error(message, e);
+                    return new RemoteException(message, ex);
+                }
             }
         } catch (final IOException ex) {
             final String message = "could not convert params"; // NOI18N
             LOG.error(message, ex);
             return new RemoteException(message, ex);
-        } catch (final ClassNotFoundException e) {
+        } catch (final ClassNotFoundException ex) {
             final String message = "could not create class";   // NOI18N
-            LOG.error(message, e);
-            return new RemoteException(message, e);
-        } catch (final Exception e) {
+            LOG.error(message, ex);
+            return new RemoteException(message, ex);
+        } catch (final Exception ex) {
             final String message = "exception during communication with server";
-            LOG.fatal(message, e);
-            return new RemoteException(message, e);
+            LOG.error(message, ex);
+            return new RemoteException(message, ex);
         }
     }
 
@@ -1668,15 +1672,18 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             }
 
             final ClientResponse response = ex.getResponse();
-            if (HttpStatus.SC_UNAUTHORIZED == response.getStatus()) {
-                final UserException userEx = ServerExceptionMapper.fromResponse(
-                        response,
-                        UserException.class,
-                        compressionEnabled);
-                if (userEx == null) {
-                    throw ex;
-                } else {
-                    throw userEx;
+            if (response == null) {
+                throw new RemoteException("response is null", ex);
+            } else if (HttpStatus.SC_UNAUTHORIZED == response.getStatus()) {   
+                try {
+                    throw ServerExceptionMapper.fromResponse(
+                            response,
+                            UserException.class,
+                            compressionEnabled);
+                } catch (final Exception e) {
+                    final String message = "exception during communication with server";
+                    LOG.error(message, e);
+                    throw new RemoteException(message, e);
                 }
             } else {
                 throw createRemoteException(ex);
@@ -1745,15 +1752,18 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             }
 
             final ClientResponse response = ex.getResponse();
-            if (HttpStatus.SC_UNAUTHORIZED == response.getStatus()) {
-                final UserException userEx = ServerExceptionMapper.fromResponse(
+            if (response == null) {
+                throw new RemoteException("response is null", ex);
+            } else if (HttpStatus.SC_UNAUTHORIZED == response.getStatus()) {
+                try {
+                    throw ServerExceptionMapper.fromResponse(
                         response,
                         UserException.class,
                         compressionEnabled);
-                if (userEx == null) {
-                    throw ex;
-                } else {
-                    throw userEx;
+                } catch (final Exception e) {
+                    final String message = "exception during communication with server";
+                    LOG.error(message, e);
+                    throw new RemoteException(message, ex);
                 }
             } else {
                 throw createRemoteException(ex);
