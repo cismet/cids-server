@@ -16,8 +16,6 @@ import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
 
-import org.openide.util.Lookup;
-
 import java.io.IOException;
 
 import java.rmi.RemoteException;
@@ -25,8 +23,6 @@ import java.rmi.RemoteException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
-
-import de.cismet.cids.server.CallServerServiceProvider;
 
 import de.cismet.tools.Converter;
 
@@ -84,18 +80,15 @@ public final class ServerExceptionMapper {
      * @param   compressionEnabled  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
      */
     public static <T extends Throwable> T fromResponse(final ClientResponse response,
             final Class<T> type,
-            final boolean compressionEnabled) {
+            final boolean compressionEnabled) throws Exception {
         if (response != null) {
-            try {
-                return Converter.deserialiseFromString(response.getEntity(String.class), type, compressionEnabled);
-            } catch (final Exception e) {
-                LOG.warn("could not deserialise throwable", e); // NOI18N
-            }
+            return Converter.deserialiseFromString(response.getEntity(String.class), type, compressionEnabled);
         }
-
         return null;
     }
 
