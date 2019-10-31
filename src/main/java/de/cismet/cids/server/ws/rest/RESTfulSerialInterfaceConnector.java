@@ -1755,16 +1755,18 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             if (response == null) {
                 throw new RemoteException("response is null", ex);
             } else if (HttpStatus.SC_UNAUTHORIZED == response.getStatus()) {
+                final UserException userEx;
                 try {
-                    throw ServerExceptionMapper.fromResponse(
-                        response,
-                        UserException.class,
-                        compressionEnabled);
+                    userEx = ServerExceptionMapper.fromResponse(
+                            response,
+                            UserException.class,
+                            compressionEnabled);
                 } catch (final Exception e) {
                     final String message = "exception during communication with server";
                     LOG.error(message, e);
                     throw new RemoteException(message, ex);
                 }
+                throw userEx;
             } else {
                 throw createRemoteException(ex);
             }
