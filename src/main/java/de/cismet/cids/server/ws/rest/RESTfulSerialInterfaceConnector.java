@@ -1760,6 +1760,8 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         response,
                         UserException.class,
                         compressionEnabled);
+                } catch (final UserException e) {
+                    throw e;
                 } catch (final Exception e) {
                     final String message = "exception during communication with server";
                     LOG.error(message, e);
