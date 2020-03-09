@@ -206,10 +206,8 @@ public class ConnectionContextLog {
         final ConnectionContextLog contextLog = create(connectionContext, user, methodName, params);
         if ((contextLog != null) && (metaObjects != null)) {
             final List<Integer> objectIds = new ArrayList<>(metaObjects.length);
-            final List<String> classNames = new ArrayList<>(metaObjects.length);
             for (final MetaObject metaObject : metaObjects) {
                 objectIds.add((metaObject != null) ? metaObject.getId() : null);
-                classNames.add((metaObject != null) ? metaObject.getMetaClass().getTableName().toLowerCase() : null);
             }
             contextLog.getObjectIds().addAll(objectIds);
         }
