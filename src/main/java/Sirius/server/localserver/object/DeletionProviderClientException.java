@@ -13,7 +13,7 @@
 package Sirius.server.localserver.object;
 
 /**
- * This Exception should be used to throw Exception within the CustomDeletionProvider that should be shown to the user
+ * This Exception should be used within the CustomDeletionProvider and will show its message to the user.
  *
  * @author   therter
  * @version  $Revision$, $Date$
