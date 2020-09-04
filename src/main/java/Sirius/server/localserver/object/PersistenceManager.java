@@ -854,7 +854,7 @@ public final class PersistenceManager extends Shutdown {
                             String backlinkMasterProperty = null;
                             for (final ObjectAttribute oaBacklink : metaObject.getAttribs()) {
                                 if (oaBacklink.getMai().getForeignKeyClassId() == masterClassId) {
-                                    backlinkMasterProperty = oaBacklink.getName();
+                                    backlinkMasterProperty = oaBacklink.getMai().getFieldName();
                                     break;
                                 }
                             }
