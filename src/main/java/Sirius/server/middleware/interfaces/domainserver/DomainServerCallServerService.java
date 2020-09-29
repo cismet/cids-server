@@ -10,7 +10,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Sirius.server.middleware.interfaces.proxy;
+package Sirius.server.middleware.interfaces.domainserver;
 
 import Sirius.server.localserver.method.MethodMap;
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
@@ -55,13 +55,23 @@ public class DomainServerCallServerService implements CallServerService {
 
     //~ Methods ----------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   domain  DOCUMENT ME!
+     *
+     * @throws  RuntimeException  DOCUMENT ME!
+     */
     private void checkDomain(final String domain) {
         final String serverDomain = serverProperties.getServerName();
-        if (domain == null || !domain.equals(serverDomain)) {
-            throw new RuntimeException(String.format("given domain %s is not allowed for domainserver %s", domain, serverDomain));
+        if ((domain == null) || !domain.equals(serverDomain)) {
+            throw new RuntimeException(String.format(
+                    "given domain %s is not allowed for domainserver %s",
+                    domain,
+                    serverDomain));
         }
     }
-    
+
     /**
      * DOCUMENT ME!
      *
@@ -367,14 +377,14 @@ public class DomainServerCallServerService implements CallServerService {
 
     @Override
     public String[] getDomains() throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");    // To change body of generated methods, choose
-                                                                          // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+                                                                       // Tools | Templates.
     }
 
     @Override
     public String[] getDomains(final ConnectionContext context) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");    // To change body of generated methods, choose
-                                                                          // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+                                                                       // Tools | Templates.
     }
 
     @Override
@@ -383,8 +393,8 @@ public class DomainServerCallServerService implements CallServerService {
             final String userLsName,
             final String userName,
             final String password) throws RemoteException, UserException {
-        throw new UnsupportedOperationException("Not supported yet.");    // To change body of generated methods, choose
-                                                                          // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+                                                                       // Tools | Templates.
     }
 
     @Override
@@ -394,47 +404,47 @@ public class DomainServerCallServerService implements CallServerService {
             final String userName,
             final String password,
             final ConnectionContext context) throws RemoteException, UserException {
-        throw new UnsupportedOperationException("Not supported yet.");    // To change body of generated methods, choose
-                                                                          // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+                                                                       // Tools | Templates.
     }
 
     @Override
     public Vector getUserGroupNames() throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");    // To change body of generated methods, choose
-                                                                          // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+                                                                       // Tools | Templates.
     }
 
     @Override
     public Vector getUserGroupNames(final ConnectionContext context) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");    // To change body of generated methods, choose
-                                                                          // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+                                                                       // Tools | Templates.
     }
 
     @Override
     public Vector getUserGroupNames(final String userName, final String lsHome) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");    // To change body of generated methods, choose
-                                                                          // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+                                                                       // Tools | Templates.
     }
 
     @Override
     public Vector getUserGroupNames(final String userName, final String lsHome, final ConnectionContext context)
             throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");    // To change body of generated methods, choose
-                                                                          // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+                                                                       // Tools | Templates.
     }
 
     @Override
     public Collection customServerSearch(final User user, final CidsServerSearch serverSearch) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");    // To change body of generated methods, choose
-                                                                          // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+                                                                       // Tools | Templates.
     }
 
     @Override
     public Collection customServerSearch(final User user,
             final CidsServerSearch serverSearch,
             final ConnectionContext context) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");    // To change body of generated methods, choose
-                                                                          // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+                                                                       // Tools | Templates.
     }
 
     @Override
