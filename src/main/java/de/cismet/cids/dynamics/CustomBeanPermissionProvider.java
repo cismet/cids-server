@@ -25,6 +25,8 @@ package de.cismet.cids.dynamics;
 
 import Sirius.server.newuser.User;
 
+import de.cismet.connectioncontext.ConnectionContext;
+
 /**
  * DOCUMENT ME!
  *
@@ -42,7 +44,18 @@ public interface CustomBeanPermissionProvider extends CidsBeanStore {
      *
      * @return  DOCUMENT ME!
      */
+    @Deprecated
     boolean getCustomWritePermissionDecisionforUser(final User u);
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   u                  DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    boolean getCustomWritePermissionDecisionforUser(final User u, final ConnectionContext connectionContext);
     /**
      * DOCUMENT ME!
      *
@@ -50,5 +63,16 @@ public interface CustomBeanPermissionProvider extends CidsBeanStore {
      *
      * @return  DOCUMENT ME!
      */
+    @Deprecated
     boolean getCustomReadPermissionDecisionforUser(final User u);
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   u                  DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    boolean getCustomReadPermissionDecisionforUser(final User u, final ConnectionContext connectionContext);
 }
