@@ -191,6 +191,15 @@ public interface MetaObject extends Sirius.server.localserver.object.Object,
     /**
      * DOCUMENT ME!
      *
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    boolean hasObjectReadPermission(final User user);
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   tester  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
