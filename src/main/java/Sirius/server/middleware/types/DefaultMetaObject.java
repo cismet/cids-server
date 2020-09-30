@@ -61,6 +61,9 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     private transient HashMap classes;
     private transient CidsBean bean = null;
     private transient ConnectionContext connectionContext = ConnectionContext.createDummy();
+    private final Class customPermissionProviderClass;
+    private transient Boolean permissionProviderLoadedSuccessfully = null;
+    private transient CustomBeanPermissionProvider customPermissionProvider;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -103,6 +106,10 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
 
         super.setDummy(o.isDummy());
         this.initAttributes(domain, user);
+
+        customPermissionProviderClass = ClassloadingHelper.getDynamicClass(
+                getMetaClass(),
+                ClassloadingHelper.CLASS_TYPE.PERMISSION_PROVIDER);
     }
 
     // --------------------------------------------------------------
@@ -632,38 +639,59 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private synchronized CustomBeanPermissionProvider loadCustomPermissionProvider() {
+        if (permissionProviderLoadedSuccessfully == null) {
+            try {
+                customPermissionProvider = (CustomBeanPermissionProvider)customPermissionProviderClass
+                            .getConstructor().newInstance();
+                permissionProviderLoadedSuccessfully = Boolean.TRUE;
+            } catch (Exception ex) {
+                LOG.warn("error during creation of custom permission provider", ex);
+                permissionProviderLoadedSuccessfully = Boolean.FALSE;
+                return null;
+            }
+        }
+        return customPermissionProvider;
+    }
+
+    @Override
+    public boolean hasObjectReadPermission(final User user) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("hasObjectReadPermission for user: " + user); // NOI18N
+        }
+        if (customPermissionProviderClass == null) {
+            return true;
+        } else {
+            final CustomBeanPermissionProvider cpp = loadCustomPermissionProvider();
+            if (cpp == null) {
+                return false;
+            } else {
+                cpp.setCidsBean(getBean());
+                return cpp.getCustomReadPermissionDecisionforUser(user, getConnectionContext());
+            }
+        }
+    }
+
     @Override
     public boolean hasObjectWritePermission(final User user) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("hasObjectWritePermission for user: " + user); // NOI18N
         }
-        CustomBeanPermissionProvider customPermissionProvider = null;
-
-        try {
-            final Class cpp = ClassloadingHelper.getDynamicClass(this.getMetaClass(),
-                    ClassloadingHelper.CLASS_TYPE.PERMISSION_PROVIDER);
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("custom write permission provider retrieval result: " + cpp); // NOI18N
-            }
-
-            if (cpp == null) {
-                return true;
-            }
-
-            customPermissionProvider = (CustomBeanPermissionProvider)cpp.getConstructor().newInstance();
-            customPermissionProvider.setCidsBean(this.getBean());
-        } catch (final Exception ex) {
-            // FIXME: probably this behaviour is error prone since we allow write permission if there is a problem
-            // with the loading of the custom permission provider, which probably would say "NO" if it was loaded
-            // correctly
-            LOG.warn("error during creation of custom permission provider", ex); // NOI18N
-        }
-
-        if (customPermissionProvider != null) {
-            return customPermissionProvider.getCustomWritePermissionDecisionforUser(user);
-        } else {
+        if (customPermissionProviderClass == null) {
             return true;
+        } else {
+            final CustomBeanPermissionProvider cpp = loadCustomPermissionProvider();
+            if (cpp == null) {
+                return false;
+            } else {
+                cpp.setCidsBean(getBean());
+                return cpp.getCustomWritePermissionDecisionforUser(user, getConnectionContext());
+            }
         }
     }
 

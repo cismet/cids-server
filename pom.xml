@@ -13,7 +13,7 @@
 
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server</artifactId>
-    <version>6.3.10</version>
+    <version>6.4</version>
     <packaging>jar</packaging>
  
     <properties>
@@ -27,7 +27,7 @@
         <connection>https://github.com/cismet/cids-server.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cids-server.git</developerConnection>
         <url>https://github.com/cismet/cids-server</url>
-        <tag>v6.3.10</tag>
+        <tag>v6.4</tag>
     </scm>
     
     <ciManagement>
@@ -191,7 +191,7 @@
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
-            <version>1.9.0</version>
+            <version>1.9.4</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -202,12 +202,12 @@
         <dependency>
             <groupId>com.mchange</groupId>
             <artifactId>c3p0</artifactId>
-            <version>0.9.5</version>
+            <version>0.9.5.5</version>
         </dependency>
         <dependency>
             <groupId>org.quartz-scheduler</groupId>
             <artifactId>quartz</artifactId>
-            <version>2.2.1</version>
+            <version>2.3.2</version>
             <!--
                 Dependency mess: com.mchange:c3p0 vs. c3p0:c3p0!
             -->

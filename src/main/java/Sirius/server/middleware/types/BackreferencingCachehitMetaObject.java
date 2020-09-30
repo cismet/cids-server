@@ -161,6 +161,11 @@ public class BackreferencingCachehitMetaObject implements MetaObject {
     }
 
     @Override
+    public boolean hasObjectReadPermission(final User user) {
+        return metaObject.hasObjectReadPermission(user);
+    }
+
+    @Override
     public boolean hasObjectWritePermission(final User user) {
         return metaObject.hasObjectWritePermission(user);
     }

@@ -171,6 +171,12 @@ public class NullMetaObject implements MetaObject {
     }
 
     @Override
+    public boolean hasObjectReadPermission(final User user) {
+        throw new UnsupportedOperationException(EXCEPTION_MESSAGE); // To change body of generated methods, choose
+                                                                    // Tools | Templates.
+    }
+
+    @Override
     public boolean hasObjectWritePermission(final User user) {
         throw new UnsupportedOperationException(EXCEPTION_MESSAGE); // To change body of generated methods, choose
                                                                     // Tools | Templates.
