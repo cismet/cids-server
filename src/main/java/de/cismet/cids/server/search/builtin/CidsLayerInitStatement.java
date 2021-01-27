@@ -106,14 +106,14 @@ public class CidsLayerInitStatement extends AbstractCidsServerSearch implements 
             final String tables = layerInfo.getSelectString().substring(layerInfo.getSelectString().indexOf("from "));
             String query;
 
-            if (queryString == null) {
+            if ((queryString == null) || queryString.equals("")) {
                 query = String.format(envelopeQuery, layerInfo.getSqlGeoField(), tables);
             } else {
                 query = String.format(envelopeQuery, layerInfo.getSqlGeoField(), tables);
                 if (query.toLowerCase().contains("where")) {
-                    query = query + " and (" + envelopeQuery + ")";
+                    query = query + " and (" + queryString + ")";
                 } else {
-                    query = query + " WHERE (" + envelopeQuery + ")";
+                    query = query + " WHERE (" + queryString + ")";
                 }
             }
             final ArrayList<ArrayList> envelope = ms.performCustomSearch(query, getConnectionContext());
