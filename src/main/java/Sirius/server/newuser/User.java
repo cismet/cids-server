@@ -38,6 +38,8 @@ public class User implements java.io.Serializable, Mapable {
 
     protected boolean isAdmin = false;
 
+    protected String jwsToken = null;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -207,5 +209,23 @@ public class User implements java.io.Serializable, Mapable {
      */
     public int getId() {
         return id;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getJwsToken() {
+        return jwsToken;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  jwsToken  DOCUMENT ME!
+     */
+    public void setJwsToken(final String jwsToken) {
+        this.jwsToken = jwsToken;
     }
 }

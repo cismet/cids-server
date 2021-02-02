@@ -319,6 +319,7 @@ public class ClassCache extends Shutdown {
 
         for (int i = 0; i < all.size(); i++) {
             final Class c = (Class)all.get(i);
+            
             if (c.getPermissions().hasReadPermission(u)) {
                 cs.add(c);
             }
