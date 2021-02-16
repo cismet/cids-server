@@ -8,6 +8,7 @@
 package de.cismet.cids.server.ws.rest;
 
 import Sirius.server.ServerExitError;
+import Sirius.server.middleware.impls.proxy.UserServiceImpl;
 import Sirius.server.property.ServerProperties;
 
 import com.sun.jersey.spi.container.servlet.ServletContainer;
@@ -92,6 +93,11 @@ public final class RESTfulService {
             final RESTManagement restMB = new RESTManagement();
             mbs.registerMBean(restMB, name);
             ConnectionContextBackend.getInstance().registerMBean();
+
+//            name = new ObjectName("Sirius.server.middleware.impls.proxy:type=UserServiceManagementMBean");
+//            restMB = new RESTManagement();
+//            mbs.registerMBean(restMB, name);
+            UserServiceImpl.registerMBean();
 
             server.start();
         } catch (final Exception ex) {
