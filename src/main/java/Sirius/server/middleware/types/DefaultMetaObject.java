@@ -15,6 +15,8 @@ import org.apache.log4j.Logger;
 
 import org.openide.util.Lookup;
 
+import java.io.IOException;
+
 import java.util.*;
 
 import de.cismet.cids.dynamics.CidsBean;
@@ -61,7 +63,7 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     private transient HashMap classes;
     private transient CidsBean bean = null;
     private transient ConnectionContext connectionContext = ConnectionContext.createDummy();
-    private final Class customPermissionProviderClass;
+    private transient Class customPermissionProviderClass;
     private transient Boolean permissionProviderLoadedSuccessfully = null;
     private transient CustomBeanPermissionProvider customPermissionProvider;
 
@@ -115,6 +117,23 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     // --------------------------------------------------------------
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * This method will be invoked, to deserialise the object. 
+     * See https://docs.oracle.com/javase/7/docs/api/java/io/Serializable.html
+     *
+     * @param   in  DOCUMENT ME!
+     *
+     * @throws  IOException             DOCUMENT ME!
+     * @throws  ClassNotFoundException  DOCUMENT ME!
+     */
+    private void readObject(final java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+
+        customPermissionProviderClass = ClassloadingHelper.getDynamicClass(
+                getMetaClass(),
+                ClassloadingHelper.CLASS_TYPE.PERMISSION_PROVIDER);
+    }
 
     /**
      * DOCUMENT ME!
