@@ -72,7 +72,7 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest-types</artifactId>
-                <version>6.1-SNAPSHOT</version>
+                <version>6.1</version>
             </dependency>
             <!-- END: managed cids-dependencies -->
         </dependencies>
