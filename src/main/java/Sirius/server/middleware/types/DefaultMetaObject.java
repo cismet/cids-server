@@ -119,8 +119,8 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * This method will be invoked, to deserialise the object. 
-     * See https://docs.oracle.com/javase/7/docs/api/java/io/Serializable.html
+     * This method will be invoked, to deserialise the object. See
+     * https://docs.oracle.com/javase/7/docs/api/java/io/Serializable.html
      *
      * @param   in  DOCUMENT ME!
      *
