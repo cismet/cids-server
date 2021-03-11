@@ -1,0 +1,146 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Java",
+            "type": "java",
+            "request": "launch",
+            "stopOnEntry": true,
+            "jdkPath": "${env:JAVA_HOME}/bin",
+            "cwd": "${fileDirname}",
+            "startupClass": "${fileBasenameNoExtension}",
+            "classpath": [
+                ".",
+                "${fileDirname}"
+            ]
+        },
+        {
+            "name": "Java Console App",
+            "type": "java",
+            "request": "launch",
+            "stopOnEntry": true,
+            "jdkPath": "${env:JAVA_HOME}/bin",
+            "cwd": "${fileDirname}",
+            "startupClass": "${fileBasenameNoExtension}",
+            "classpath": [
+                ".",
+                "${fileDirname}"
+            ],
+            "externalConsole": true
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch) - Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-TimedLoginRestriction<cids-server>",
+            "request": "launch",
+            "mainClass": "Sirius.server.localserver.user.TimedLoginRestriction",
+            "projectName": "cids-server"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-DomainServerImpl<cids-server>",
+            "request": "launch",
+            "mainClass": "Sirius.server.middleware.impls.domainserver.DomainServerImpl",
+            "projectName": "cids-server"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-RemoteTester<cids-server>",
+            "request": "launch",
+            "mainClass": "Sirius.server.middleware.impls.proxy.RemoteTester",
+            "projectName": "cids-server"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-StartProxy<cids-server>",
+            "request": "launch",
+            "mainClass": "Sirius.server.middleware.impls.proxy.StartProxy",
+            "projectName": "cids-server"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-UserServiceImpl<cids-server>",
+            "request": "launch",
+            "mainClass": "Sirius.server.middleware.impls.proxy.UserServiceImpl",
+            "projectName": "cids-server"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-Registry<cids-server>",
+            "request": "launch",
+            "mainClass": "Sirius.server.registry.Registry",
+            "projectName": "cids-server"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-RegistryMonitor<cids-server>",
+            "request": "launch",
+            "mainClass": "Sirius.server.registry.monitor.RegistryMonitor",
+            "projectName": "cids-server"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-DOMVersionChecker<cids-server>",
+            "request": "launch",
+            "mainClass": "Sirius.util.DBVersionChecker.DOMVersionChecker",
+            "projectName": "cids-server"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-NamingServerMonitor<cids-server>",
+            "request": "launch",
+            "mainClass": "Sirius.util.NamingServerMonitor.NamingServerMonitor",
+            "projectName": "cids-server"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-PortScan<cids-server>",
+            "request": "launch",
+            "mainClass": "Sirius.util.NamingServerMonitor.PortScan",
+            "projectName": "cids-server"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-NodeComparator<cids-server>",
+            "request": "launch",
+            "mainClass": "Sirius.util.NodeComparator",
+            "projectName": "cids-server"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-PreferencesTool<cids-server>",
+            "request": "launch",
+            "mainClass": "Sirius.util.PreferencesTool",
+            "projectName": "cids-server"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-ImageAnnotator<cids-server>",
+            "request": "launch",
+            "mainClass": "Sirius.util.image.ImageAnnotator",
+            "projectName": "cids-server"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-ConnectionContextBackend<cids-server>",
+            "request": "launch",
+            "mainClass": "de.cismet.cids.server.connectioncontext.ConnectionContextBackend",
+            "projectName": "cids-server"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-CidsBeanDeepPropertyListener<cids-server>",
+            "request": "launch",
+            "mainClass": "de.cismet.cids.utils.CidsBeanDeepPropertyListener",
+            "projectName": "cids-server"
+        }
+    ]
+}

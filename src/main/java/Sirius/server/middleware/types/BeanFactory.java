@@ -182,8 +182,10 @@ public class BeanFactory {
                                             cdBean.setBacklinkInformation(field, bean);
                                             observableArrayElements.add(cdBean);
                                         } else {
-                                            LOG.warn(
-                                                "getBean() delivered null -> could be a possible problem with rights/policy?"); // NOI18N
+                                            LOG.warn(String.format(
+                                                    "getBean() delivered null -> could be a possible problem with rights/policy? ClassId: %d, ObjectId: %d",
+                                                    arrayElementMO.getClassID(),
+                                                    arrayElementMO.getId()));
                                         }
                                     }
                                     value = observableArrayElements;
@@ -207,8 +209,10 @@ public class BeanFactory {
                                                     cdBean.setBacklinkInformation(field, bean);
                                                     observableArrayElements.add(cdBean);
                                                 } else {
-                                                    LOG.warn(
-                                                        "getBean() delivered null -> could be a possible problem with rights/policy?"); // NOI18N
+                                                    LOG.warn(String.format(
+                                                            "getBean() delivered null -> could be a possible problem with rights/policy? ClassId: %d, ObjectId: %d",
+                                                            targetMO.getClassID(),
+                                                            targetMO.getId()));
                                                 }
                                                 break;
                                             }
@@ -253,7 +257,9 @@ public class BeanFactory {
                     e);
             }
         } else {
-            LOG.warn("getMetaClass() delivered null -> please check policy/permissions!"); // NOI18N
+            LOG.warn(String.format(
+                    "getMetaClass() delivered null -> please check policy/permissions of the class with the id %d !",
+                    metaObject.getClassID()));                       // NOI18N
             return null;
         }
     }

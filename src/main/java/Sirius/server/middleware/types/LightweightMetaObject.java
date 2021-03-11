@@ -1159,6 +1159,16 @@ public final class LightweightMetaObject implements MetaObject,
     }
 
     @Override
+    public boolean hasObjectReadPermission(final User user) {
+        final MetaObject mo = getRealMetaObject();
+        if (mo != null) {
+            return mo.hasObjectReadPermission(user);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
     public boolean hasObjectWritePermission(final User user) {
         final MetaObject mo = getRealMetaObject();
         if (mo != null) {

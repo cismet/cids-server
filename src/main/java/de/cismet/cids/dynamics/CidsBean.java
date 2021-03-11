@@ -48,7 +48,6 @@ import java.util.Map.Entry;
 import de.cismet.cids.json.IntraObjectCacheJsonParams;
 
 import de.cismet.cids.utils.CidsBeanPersistService;
-import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.MetaClassCacheService;
 
 import de.cismet.connectioncontext.ConnectionContext;
@@ -108,9 +107,8 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
     protected boolean artificialChange;
     protected transient IntraObjectCacheJsonParams jsonSerializerParams;
     String pkFieldName = null;
-    HashMap<String, CidsBean> intraObjectCache = new HashMap<String, CidsBean>();
+    HashMap<String, CidsBean> intraObjectCache = new HashMap<>();
 
-    private CustomBeanPermissionProvider customPermissionProvider;
     private final ConnectionContext dummyConnectionContext = ConnectionContext.createDummy();
 
     //~ Methods ----------------------------------------------------------------
@@ -177,37 +175,11 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
      * @return  DOCUMENT ME!
      */
     public boolean hasObjectReadPermission(final User user) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("hasObjectReadPermission for user: " + user); // NOI18N
-        }
-
-        if (customPermissionProvider == null) {
-            try {
-                final Class cpp = ClassloadingHelper.getDynamicClass(getMetaObject().getMetaClass(),
-                        ClassloadingHelper.CLASS_TYPE.PERMISSION_PROVIDER);
-
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("custom read permission provider retrieval result: " + cpp); // NOI18N
-                }
-
-                if (cpp == null) {
-                    return true;
-                }
-
-                customPermissionProvider = (CustomBeanPermissionProvider)cpp.getConstructor().newInstance();
-                customPermissionProvider.setCidsBean(this);
-            } catch (Exception ex) {
-                // FIXME: probably this behaviour is error prone since we allow write permission if there is a problem
-                // with the loading of the custom permission provider, which probably would say "NO" if it was loaded
-                // correctly
-                LOG.warn("error during creation of custom permission provider", ex); // NOI18N
-            }
-        }
-
-        if (customPermissionProvider != null) {
-            return customPermissionProvider.getCustomReadPermissionDecisionforUser(user);
+        if (metaObject != null) {
+            return metaObject.hasObjectReadPermission(user);
         } else {
-            return true;
+            LOG.error("meta object is null. The read permission cannot be determined.");
+            return false;
         }
     }
 
