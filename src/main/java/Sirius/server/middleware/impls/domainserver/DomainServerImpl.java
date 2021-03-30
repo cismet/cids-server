@@ -1041,14 +1041,19 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 if (matchingCustomDeletionProviders.size() > 1) {
                     logger.warn("Multiple customDeletionProviders are matching. Executing them all now.");
                 }
+                boolean internalDelete = false;
                 for (final CustomDeletionProvider customDeletionProvider : matchingCustomDeletionProviders) {
                     try {
-                        customDeletionProvider.customDeleteMetaObject(user, metaObject);
+                        if (customDeletionProvider.customDeleteMetaObject(user, metaObject)) {
+                            internalDelete = true;
+                        }
                     } catch (final Exception ex) {
                         throw new RemoteException("Error while custom-deletion", ex);
                     }
                 }
-                return 0;
+                if (internalDelete) {
+                    return 0;
+                }
             }
             return dbServer.getObjectPersitenceManager().deleteMetaObject(user, metaObject);
         } catch (Throwable e) {

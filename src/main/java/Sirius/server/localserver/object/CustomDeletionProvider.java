@@ -40,8 +40,9 @@ public interface CustomDeletionProvider {
      *
      * @param   user  DOCUMENT ME!
      * @param   mo    DOCUMENT ME!
+     * @return 
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    void customDeleteMetaObject(User user, MetaObject mo) throws Exception;
+    boolean customDeleteMetaObject(User user, MetaObject mo) throws Exception;
 }
