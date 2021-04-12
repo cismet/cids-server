@@ -83,6 +83,10 @@ public final class DBConnection implements DBBackend {
     public static final String DESC_GET_ALL_METHOD_PERMS = "get_all_method_permissions";                     // NOI18N
     public static final String DESC_GET_ATTRIBUTE_INFO = "get_attribute_info";                               // NOI18N
     public static final String DESC_SUPPORTS_SCHEDULED_SERVER_ACTIONS = "supports_scheduled_server_actions"; // NOI18N
+    public static final String UPDATE_CS_CHANGED_OBJECT_ENTRY = "update_cs_changed_object_entry";            // NOI18N
+    public static final String UPDATE_CS_CHANGED_CLASS_ENTRY = "update_cs_changed_class_entry";              // NOI18N
+    public static final String INSERT_CS_CHANGED_OBJECT_ENTRY = "insert_cs_changed_object_entry";            // NOI18N
+    public static final String INSERT_CS_CHANGED_CLASS_ENTRY = "insert_cs_changed_class_entry";              // NOI18N
 
     //~ Instance fields --------------------------------------------------------
 
