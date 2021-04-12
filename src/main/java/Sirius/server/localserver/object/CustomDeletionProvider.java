@@ -40,7 +40,8 @@ public interface CustomDeletionProvider {
      *
      * @param   user  DOCUMENT ME!
      * @param   mo    DOCUMENT ME!
-     * @return 
+     *
+     * @return  DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
      */
