@@ -26,7 +26,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-
 import de.cismet.connectioncontext.ConnectionContext;
 
 /**
