@@ -10,6 +10,7 @@ package de.cismet.cids.server.actions;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
+import Sirius.server.middleware.types.MetaObjectNode;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -48,7 +49,7 @@ public class CsvExportServerAction extends DefaultServerAction {
         //~ Enum constants -----------------------------------------------------
 
         COLUMN_NAMES, FIELDS, WHERE, DISTINCT_ON, BOOLEAN_YES, BOOLEAN_NO, DATE_FORMAT, ROW_SEPARATOR, COLUMN_SEPARATOR,
-        CHARSET
+        CHARSET, MONS
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -72,6 +73,7 @@ public class CsvExportServerAction extends DefaultServerAction {
         String charset = DEFAULT_CHARSET;
         String columnSeparator = DEFAULT_COLUMN_SEPARATOR;
         String rowSeparator = DEFAULT_ROW_SEPARATOR;
+        List<MetaObjectNode> mons = null;
 
         if (params != null) {
             for (final ServerActionParameter sap : params) {
@@ -95,6 +97,8 @@ public class CsvExportServerAction extends DefaultServerAction {
                     columnNames = (List<String>)sap.getValue();
                 } else if (sap.getKey().equals(ParameterType.FIELDS.toString())) {
                     fields = (List<String>)sap.getValue();
+                } else if (sap.getKey().equals(ParameterType.MONS.toString())) {
+                    mons = (List<MetaObjectNode>)sap.getValue();
                 }
             }
         }
@@ -113,6 +117,22 @@ public class CsvExportServerAction extends DefaultServerAction {
                 throw new Exception(String.format("%s not allowed", metaClassName)); // NOI18N
             }
 
+            final List<String> wheres = new ArrayList<>();
+            if (whereCause != null) {
+                wheres.add(whereCause);
+            }
+            final List<String> wheresMon = new ArrayList<>();
+            if (mons != null) {
+                for (final MetaObjectNode mon : mons) {
+                    if ((mon != null) && (mon.getClassId() == metaClass.getId())) {
+                        wheresMon.add(String.format("%s = %d", metaClass.getPrimaryKey(), mon.getObjectId()));
+                    }
+                }
+            }
+            if (!wheresMon.isEmpty()) {
+                wheres.add(String.format("(%s)", String.join(" OR ", wheresMon)));
+            }
+
             final List<String> rows = new ArrayList<>();
             if (columnNames != null) {
                 rows.add(String.join(columnSeparator, columnNames));
@@ -120,7 +140,7 @@ public class CsvExportServerAction extends DefaultServerAction {
             rows.addAll(createRows(
                     metaClass,
                     fields,
-                    whereCause,
+                    wheres,
                     distinctOn,
                     booleanYes,
                     booleanNo,
@@ -138,7 +158,7 @@ public class CsvExportServerAction extends DefaultServerAction {
      *
      * @param   metaClass        DOCUMENT ME!
      * @param   fields           DOCUMENT ME!
-     * @param   whereCause       DOCUMENT ME!
+     * @param   wheres           DOCUMENT ME!
      * @param   distinctOn       DOCUMENT ME!
      * @param   booleanYes       DOCUMENT ME!
      * @param   booleanNo        DOCUMENT ME!
@@ -151,7 +171,7 @@ public class CsvExportServerAction extends DefaultServerAction {
      */
     private List<String> createRows(final MetaClass metaClass,
             final List<String> fields,
-            final String whereCause,
+            final List<String> wheres,
             final String distinctOn,
             final String booleanYes,
             final String booleanNo,
@@ -190,7 +210,7 @@ public class CsvExportServerAction extends DefaultServerAction {
                 "SELECT %s FROM %s WHERE %s",
                 queryFields,
                 metaClass.getTableName(),
-                (whereCause != null) ? whereCause : "TRUE");
+                ((wheres != null) && !wheres.isEmpty()) ? String.join(" AND ", wheres) : "TRUE");
 
         final ArrayList<ArrayList> results = getMetaService().performCustomSearch(sql, getConnectionContext());
 
