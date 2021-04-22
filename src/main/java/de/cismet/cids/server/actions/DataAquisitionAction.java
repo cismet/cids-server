@@ -45,6 +45,7 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
             ConnectionContext.Category.ACTION,
             "DataAquisition");
     private static final String QUOTE_IDENTIFIER = "select quote_ident(?)";
+    private static final String CONF_ATTR_PREFIX = "daq";
 
     //~ Enums ------------------------------------------------------------------
 
@@ -57,7 +58,7 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
 
         //~ Enum constants -----------------------------------------------------
 
-        daqView, cachingHint
+        daqKey, cachingHint
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -89,47 +90,51 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
 
     @Override
     public String getTaskName() {
-        return "DataAquisition";
+        return "dataAquisition";
     }
 
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
-        String daqView = null;
+        String daqKey = null;
         String cachingHint = null;
 
         for (final ServerActionParameter sap : params) {
-            if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.daqView.toString())) {
-                daqView = (String)sap.getValue();
+            if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.daqKey.toString())) {
+                daqKey = (String)sap.getValue();
             } else if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.cachingHint.toString())) {
                 cachingHint = (String)sap.getValue();
             }
         }
 
         try {
-            if (daqView == null) {
+            if (daqKey == null) {
                 return "{exception: 'No view specified'}";
             }
 
             final DomainServerImpl domainServer = (DomainServerImpl)ms;
+            String view = domainServer.getConfigAttr(user, CONF_ATTR_PREFIX + upperFirstLetter(daqKey), cc);
 
-            final String allowedViews = domainServer.getConfigAttr(user, "allowedViewsForDataAquisition", cc);
+            if ((view == null) || view.equals("")) {
+                final String allowedViews = domainServer.getConfigAttr(user, "allowedViewsForDataAquisition", cc);
+                view = daqKey;
 
-            final StringTokenizer st = new StringTokenizer(allowedViews, "\n");
-            boolean isAllowed = false;
+                final StringTokenizer st = new StringTokenizer(allowedViews, "\n");
+                boolean isAllowed = false;
 
-            while (st.hasMoreTokens()) {
-                if (st.nextToken().equals(daqView)) {
-                    isAllowed = true;
+                while (st.hasMoreTokens()) {
+                    if (st.nextToken().equals(view)) {
+                        isAllowed = true;
+                    }
+                }
+
+                if (!isAllowed) {
+                    return "{exception: 'Not allowed'}";
                 }
             }
 
-            if (!isAllowed) {
-                return "{exception: 'Not allowed'}";
-            }
-
             final Connection con = domainServer.getConnectionPool().getConnection();
-            daqView = quoteIdentifier(con, daqView);
-            final ArrayList<ArrayList> result = ms.performCustomSearch(QUERY + daqView, cc);
+            view = quoteIdentifier(con, view);
+            final ArrayList<ArrayList> result = ms.performCustomSearch(QUERY + view, cc);
 
             if ((result != null) && (result.size() > 0)) {
                 if ((result.get(0) != null) && (result.get(0).size() > 0)) {
@@ -142,6 +147,21 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
         }
 
         return "{exception: 'No data'}";
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   word  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String upperFirstLetter(final String word) {
+        if (Character.isLowerCase(word.charAt(0))) {
+            return Character.toUpperCase(word.charAt(0)) + word.substring(1);
+        } else {
+            return word;
+        }
     }
 
     /**
