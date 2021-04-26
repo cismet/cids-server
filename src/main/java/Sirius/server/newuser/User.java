@@ -81,6 +81,34 @@ public class User implements java.io.Serializable, Mapable {
         this.userGroup = userGroup;
     }
 
+    /**
+     * Creates a new User object.
+     *
+     * @param  id        DOCUMENT ME!
+     * @param  name      DOCUMENT ME!
+     * @param  domain    DOCUMENT ME!
+     * @param  jwsToken  DOCUMENT ME!
+     */
+    public User(final int id, final String name, final String domain, final String jwsToken) {
+        this(id, name, domain);
+        this.jwsToken = jwsToken;
+    }
+
+    /**
+     * Creates a new User object.
+     *
+     * @param  id        DOCUMENT ME!
+     * @param  name      DOCUMENT ME!
+     * @param  domain    DOCUMENT ME!
+     * @param  isAdmin   DOCUMENT ME!
+     * @param  jwsToken  DOCUMENT ME!
+     */
+    public User(final int id, final String name, final String domain, final boolean isAdmin, final String jwsToken) {
+        this(id, name, domain);
+        this.isAdmin = isAdmin;
+        this.jwsToken = jwsToken;
+    }
+
     //~ Methods ----------------------------------------------------------------
 
     @Override
