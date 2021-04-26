@@ -12,6 +12,8 @@
  */
 package Sirius.server.middleware.impls.proxy;
 
+import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
+
 /**
  * DOCUMENT ME!
  *
@@ -38,6 +40,6 @@ public class UserServiceManagement implements UserServiceManagementMBean {
 
     @Override
     public void regenerateSecret() {
-        UserServiceImpl.recreateRandomKey();
+        DomainServerImpl.recreateRandomKey();
     }
 }
