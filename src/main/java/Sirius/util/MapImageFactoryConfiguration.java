@@ -43,4 +43,6 @@ public class MapImageFactoryConfiguration {
     private Double bbY2;
     private Integer height;
     private Integer width;
+    private String mapUrl;
+    private Integer mapDpi;
 }
