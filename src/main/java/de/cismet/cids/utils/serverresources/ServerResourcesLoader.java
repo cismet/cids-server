@@ -30,7 +30,7 @@ import java.util.Properties;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class ServerResourcesLoader {
+public class ServerResourcesLoader extends AbstractServerResourcesLoader {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -78,6 +78,20 @@ public class ServerResourcesLoader {
         if (!(serverResource instanceof JasperReportServerResource)) {
             throw new Exception("wrong ServerResource type");
         }
+        return loadJasperReport((JasperReportServerResource)serverResource);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   serverResource  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    @Override
+    public JasperReport loadJasperReport(final JasperReportServerResource serverResource) throws Exception {
         return (JasperReport)load(serverResource);
     }
 
@@ -94,6 +108,20 @@ public class ServerResourcesLoader {
         if (!(serverResource instanceof TextServerResource)) {
             throw new Exception("wrong ServerResource type");
         }
+        return loadText((TextServerResource)serverResource);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   serverResource  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    @Override
+    public String loadText(final TextServerResource serverResource) throws Exception {
         return (String)load(serverResource);
     }
 
@@ -110,6 +138,20 @@ public class ServerResourcesLoader {
         if (!(serverResource instanceof BinaryServerResource)) {
             throw new Exception("wrong ServerResource type");
         }
+        return loadBinary((BinaryServerResource)serverResource);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   serverResource  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    @Override
+    public byte[] loadBinary(final BinaryServerResource serverResource) throws Exception {
         return (byte[])load(serverResource);
     }
 
@@ -122,6 +164,7 @@ public class ServerResourcesLoader {
      *
      * @throws  Exception  DOCUMENT ME!
      */
+    @Override
     public Object load(final ServerResource serverResource) throws Exception {
         final ServerResource.Type type = serverResource.getType();
         final String serverResourcePath = serverResource.getPath();
@@ -202,11 +245,25 @@ public class ServerResourcesLoader {
      *
      * @throws  Exception  DOCUMENT ME!
      */
+    @Override
+    public Properties loadProperties(final PropertiesServerResource serverResource) throws Exception {
+        return loadProperties((ServerResource)serverResource);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   serverResource  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
     public StringReader loadStringReader(final ServerResource serverResource) throws Exception {
         if (!(serverResource instanceof TextServerResource)) {
             throw new Exception("wrong ServerResource type");
         }
-        return new StringReader(loadText(serverResource));
+        return loadStringReader((TextServerResource)serverResource);
     }
 
     /**

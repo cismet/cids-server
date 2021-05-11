@@ -39,9 +39,16 @@ import Sirius.server.registry.Registry;
 import Sirius.server.sql.DBConnectionPool;
 import Sirius.server.sql.PreparableStatement;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Encoders;
+import io.jsonwebtoken.security.Keys;
+
 import org.apache.log4j.PropertyConfigurator;
 
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import java.io.File;
@@ -54,19 +61,24 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 
+import java.security.Key;
+
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.MissingResourceException;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import de.cismet.cids.objectextension.ObjectExtensionFactory;
 
@@ -105,6 +117,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public static final String SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX = "csa://";
     // this servers configuration
     protected static ServerProperties properties;
+
+    private static byte[] decodedKey = Base64.getDecoder().decode(createRandomKey());
 
     //~ Instance fields --------------------------------------------------------
 
@@ -1041,14 +1055,19 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 if (matchingCustomDeletionProviders.size() > 1) {
                     logger.warn("Multiple customDeletionProviders are matching. Executing them all now.");
                 }
+                boolean internalDelete = false;
                 for (final CustomDeletionProvider customDeletionProvider : matchingCustomDeletionProviders) {
                     try {
-                        customDeletionProvider.customDeleteMetaObject(user, metaObject);
+                        if (customDeletionProvider.customDeleteMetaObject(user, metaObject)) {
+                            internalDelete = true;
+                        }
                     } catch (final Exception ex) {
                         throw new RemoteException("Error while custom-deletion", ex);
                     }
                 }
-                return 0;
+                if (internalDelete) {
+                    return 0;
+                }
             }
             return dbServer.getObjectPersitenceManager().deleteMetaObject(user, metaObject);
         } catch (Throwable e) {
@@ -1369,14 +1388,77 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         }
     }
 
-    @Override
-    @Deprecated
-    public boolean validateUser(final User user, final String password) throws RemoteException {
-        return validateUser(user, password, ConnectionContext.createDeprecated());
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private static String createRandomKey() {
+        final SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+
+        return Encoders.BASE64.encode(key.getEncoded());
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    public static void recreateRandomKey() {
+        decodedKey = Base64.getDecoder().decode(createRandomKey());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private Key getServerKey() {
+        return new SecretKeySpec(decodedKey, SignatureAlgorithm.HS256.getJcaName());
     }
 
     @Override
-    public boolean validateUser(final User user, final String password, final ConnectionContext connectionContext)
+    public User validateUser(final String jwt, final ConnectionContext connectionContext) throws RemoteException {
+        if (ConnectionContextBackend.getInstance().isEnabled()) {
+            ConnectionContextBackend.getInstance()
+                    .log(ConnectionContextLog.create(
+                            connectionContext,
+                            null,
+                            "validateUser",
+                            Collections.unmodifiableMap(new HashMap<String, Object>() {
+
+                                    {
+                                        put("jwt", "***censored***");
+                                    }
+                                })));
+        }
+        try {
+            final Claims claims = Jwts.parserBuilder()
+                        .setSigningKey(getServerKey())
+                        .build()
+                        .parseClaimsJws(jwt)
+                        .getBody();
+            final User user = userServer.getUser(
+                    claims.get("usergroupDomain", String.class),
+                    claims.get("usergroup", String.class),
+                    claims.get("domain", String.class),
+                    claims.getSubject(),
+                    "jwtCreatedUser");
+            if (user == null) {
+                return null;
+            }
+            user.setJwsToken(jwt);
+            user.setValid();
+            return user;
+        } catch (final MalformedJwtException ex) {
+            logger.info(ex, ex);
+            return null;
+        } catch (final Throwable ex) {
+            logger.error(ex, ex);
+            throw new RemoteException("Exception validateUser at remotedbserverimpl", ex); // NOI18N
+        }
+    }
+
+    @Override
+    public User validateUser(final User user, final String password, final ConnectionContext connectionContext)
             throws RemoteException {
         if (ConnectionContextBackend.getInstance().isEnabled()) {
             ConnectionContextBackend.getInstance()
@@ -1392,8 +1474,22 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                                 })));
         }
         try {
-            return userstore.validateUserPassword(user, password);
-        } catch (Throwable e) {
+            if (userstore.validateUserPassword(user, password)) {
+                final JwtBuilder builder = Jwts.builder().setId(user.getId() + "").setSubject(user.getName());
+                builder.claim("domain", user.getDomain());
+                if ((user.getUserGroup() != null)) {
+                    builder.claim("usergroup", user.getUserGroup().getName());
+                    builder.claim("usergroupDomain", user.getUserGroup().getDomain());
+                }
+
+                final String jwt = builder.signWith(getServerKey()).compact();
+                user.setJwsToken(jwt);
+                user.setValid();
+                return user;
+            } else {
+                return null;
+            }
+        } catch (final Throwable e) {
             logger.error(e, e);
             throw new RemoteException("Exception validateUser at remotedbserverimpl", e); // NOI18N
         }

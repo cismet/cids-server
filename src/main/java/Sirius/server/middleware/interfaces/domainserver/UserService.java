@@ -58,28 +58,28 @@ public interface UserService extends Remote {
     /**
      * DOCUMENT ME!
      *
-     * @param   user      DOCUMENT ME!
-     * @param   password  DOCUMENT ME!
+     * @param   user               DOCUMENT ME!
+     * @param   password           DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    @Deprecated
-    boolean validateUser(final User user, final String password) throws RemoteException;
+    User validateUser(final User user, String password, final ConnectionContext connectionContext)
+            throws RemoteException;
 
     /**
      * DOCUMENT ME!
      *
-     * @param   user      DOCUMENT ME!
-     * @param   password  DOCUMENT ME!
-     * @param   context   DOCUMENT ME!
+     * @param   jwt                DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    boolean validateUser(final User user, String password, final ConnectionContext context) throws RemoteException;
+    User validateUser(final String jwt, final ConnectionContext connectionContext) throws RemoteException;
 
     /**
      * DOCUMENT ME!
