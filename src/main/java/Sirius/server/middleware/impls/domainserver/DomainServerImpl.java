@@ -1757,14 +1757,14 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             }
             Naming.unbind(serverInfo.getBindString());
 
-            if (properties.getStartMode().equalsIgnoreCase("simple")) { // NOI18N
+            if (ServerProperties.START_MODE__SIMPLE.equalsIgnoreCase(properties.getStartMode())) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("shutting down restful interface");    // NOI18N
+                    logger.debug("shutting down restful interface"); // NOI18N
                 }
                 RESTfulService.down();
                 try {
                     if (logger.isDebugEnabled()) {
-                        logger.debug("shutting down startproxy");       // NOI18N
+                        logger.debug("shutting down startproxy");    // NOI18N
                     }
                     StartProxy.getInstance().shutdown();
                 } catch (final ServerExit serverExit) {
@@ -1772,7 +1772,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 }
                 try {
                     if (logger.isDebugEnabled()) {
-                        logger.debug("shutting down registry");         // NOI18N
+                        logger.debug("shutting down registry");      // NOI18N
                     }
                     Registry.getServerInstance(Integer.valueOf(properties.getRMIRegistryPort())).shutdown();
                 } catch (final ServerExit serverExit) {
@@ -1884,7 +1884,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 LocateRegistry.getRegistry(rmiPort);
             }
 
-            if (properties.getStartMode().equalsIgnoreCase("simple")) { // NOI18N
+            if (ServerProperties.START_MODE__SIMPLE.equalsIgnoreCase(properties.getStartMode())) {
                 Sirius.server.registry.Registry.getServerInstance(rmiPort);
                 StartProxy.getInstance(args[0]);
             }

@@ -89,7 +89,7 @@ public final class StartProxy {
             }
         }
 
-        if ("proxy".equalsIgnoreCase(serverProperties.getStartMode())) {
+        if (ServerProperties.START_MODE__PROXY.equalsIgnoreCase(serverProperties.getStartMode())) {
             if (LOG.isInfoEnabled()) {
                 LOG.info("<CS> INFO: starting RESTful pass-through proxy");
             }
