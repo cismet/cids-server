@@ -194,4 +194,38 @@
             <activatedProfile>netbeans-fastbuild</activatedProfile>
         </activatedProfiles>
     </action>
+<action>
+        <actionName>CUSTOM-registry</actionName>
+        <displayName>cids-registry</displayName>
+        <goals>
+            <goal>process-classes</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:exec</goal>
+        </goals>
+        <activatedProfiles>
+            <activatedProfile>netbeans-fastbuild</activatedProfile>
+        </activatedProfiles>
+        <properties>
+            <exec.classpathScope>runtime</exec.classpathScope>
+            <exec.workingdir>${de.cismet.cids.server.workingDir.registry}</exec.workingdir>
+            <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8996,suspend=n -Xmx1024m -classpath %classpath Sirius.server.registry.Registry runtime.properties</exec.args>
+            <exec.executable>java</exec.executable>
+        </properties>
+    </action>
+    <action>
+        <actionName>CUSTOM-broker</actionName>
+        <displayName>cids-broker</displayName>
+        <goals>
+            <goal>process-classes</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:exec</goal>
+        </goals>
+        <activatedProfiles>
+            <activatedProfile>netbeans-fastbuild</activatedProfile>
+        </activatedProfiles>
+        <properties>
+            <exec.classpathScope>runtime</exec.classpathScope>
+            <exec.workingdir>${de.cismet.cids.server.workingDir.broker}</exec.workingdir>
+            <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8997,suspend=n -Xmx1024m -classpath %classpath Sirius.server.middleware.impls.proxy.StartProxy runtime.properties</exec.args>
+            <exec.executable>java</exec.executable>
+        </properties>
+    </action>    
 </actions>
