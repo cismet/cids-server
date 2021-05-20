@@ -152,14 +152,14 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
             final Connection con = domainServer.getConnectionPool().getConnection();
 
             if (md5 != null) {
-                //use the cached view
+                // use the cached view
                 view = quoteIdentifier(con, view + "_cached");
             } else {
                 view = quoteIdentifier(con, view);
             }
 
             if ((md5 != null) && !md5.equals("cached")) {
-                //check for md5
+                // check for md5
                 final String query = String.format(QUERY_WITH_MD5, view);
                 final PreparableStatement ps = new PreparableStatement(query, new int[] { Types.VARCHAR });
                 ps.setObjects(md5);
@@ -193,7 +193,7 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
             }
         } catch (Exception e) {
             LOG.error("Error while extracting the data sources", e);
-            response.setStatus(501);
+            response.setStatus(500);
         }
 
         if (response.getStatus() == null) {
