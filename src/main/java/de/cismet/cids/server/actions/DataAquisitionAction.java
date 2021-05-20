@@ -120,7 +120,12 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
             if (daqKey == null) {
                 response.setStatus(404);
                 LOG.error("Error in DataQuisitionAction: No view specified");
-                return response;
+                try {
+                    return new ObjectMapper().writeValueAsString(response);
+                } catch (JsonProcessingException e) {
+                    LOG.error("Error while processing json", e);
+                    return response;
+                }
             }
 
             final DomainServerImpl domainServer = (DomainServerImpl)ms;
@@ -147,12 +152,14 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
             final Connection con = domainServer.getConnectionPool().getConnection();
 
             if (md5 != null) {
+                //use the cached view
                 view = quoteIdentifier(con, view + "_cached");
             } else {
                 view = quoteIdentifier(con, view);
             }
 
             if ((md5 != null) && !md5.equals("cached")) {
+                //check for md5
                 final String query = String.format(QUERY_WITH_MD5, view);
                 final PreparableStatement ps = new PreparableStatement(query, new int[] { Types.VARCHAR });
                 ps.setObjects(md5);
