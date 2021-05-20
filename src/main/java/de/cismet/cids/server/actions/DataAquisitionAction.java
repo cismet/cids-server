@@ -16,12 +16,17 @@ import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
 import Sirius.server.newuser.User;
+import Sirius.server.sql.PreparableStatement;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Types;
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;
@@ -39,7 +44,8 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String QUERY = "SELECT * FROM daq.";
+    private static final String QUERY = "SELECT json, md5(json), now(), null FROM daq.";
+    private static final String QUERY_WITH_MD5 = "SELECT json, md5, time, version FROM daq.%1s where md5 <> ?";
     private static final transient Logger LOG = Logger.getLogger(DataAquisitionAction.class);
     private static final ConnectionContext cc = ConnectionContext.create(
             ConnectionContext.Category.ACTION,
@@ -58,7 +64,7 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
 
         //~ Enum constants -----------------------------------------------------
 
-        daqKey, cachingHint
+        daqKey, cachingHint, md5
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -97,18 +103,29 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
     public Object execute(final Object body, final ServerActionParameter... params) {
         String daqKey = null;
         String cachingHint = null;
+        String md5 = null;
+        final DataAquisitionResponse response = new DataAquisitionResponse();
 
         for (final ServerActionParameter sap : params) {
             if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.daqKey.toString())) {
                 daqKey = (String)sap.getValue();
             } else if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.cachingHint.toString())) {
                 cachingHint = (String)sap.getValue();
+            } else if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.md5.toString())) {
+                md5 = (String)sap.getValue();
             }
         }
 
         try {
             if (daqKey == null) {
-                return "{exception: 'No view specified'}";
+                response.setStatus(404);
+                LOG.error("Error in DataQuisitionAction: No view specified");
+                try {
+                    return new ObjectMapper().writeValueAsString(response);
+                } catch (JsonProcessingException e) {
+                    LOG.error("Error while processing json", e);
+                    return response;
+                }
             }
 
             final DomainServerImpl domainServer = (DomainServerImpl)ms;
@@ -133,20 +150,62 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
             }
 
             final Connection con = domainServer.getConnectionPool().getConnection();
-            view = quoteIdentifier(con, view);
-            final ArrayList<ArrayList> result = ms.performCustomSearch(QUERY + view, cc);
 
-            if ((result != null) && (result.size() > 0)) {
-                if ((result.get(0) != null) && (result.get(0).size() > 0)) {
-                    return result.get(0).get(0);
+            if (md5 != null) {
+                // use the cached view
+                view = quoteIdentifier(con, view + "_cached");
+            } else {
+                view = quoteIdentifier(con, view);
+            }
+
+            if ((md5 != null) && !md5.equals("cached")) {
+                // check for md5
+                final String query = String.format(QUERY_WITH_MD5, view);
+                final PreparableStatement ps = new PreparableStatement(query, new int[] { Types.VARCHAR });
+                ps.setObjects(md5);
+
+                final ArrayList<ArrayList> result = ms.performCustomSearch(ps, cc);
+
+                if ((result != null) && (result.size() > 0)) {
+                    if ((result.get(0) != null) && (result.get(0).size() > 0)) {
+                        response.setContent(String.valueOf(result.get(0).get(0)));
+                        response.setMd5(String.valueOf(result.get(0).get(1)));
+                        response.setTime(String.valueOf(result.get(0).get(2)));
+                        response.setVersion(String.valueOf(result.get(0).get(3)));
+                        response.setStatus(200);
+                    }
+                }
+
+                if (response.getStatus() == null) {
+                    response.setStatus(304);
+                }
+            } else {
+                final ArrayList<ArrayList> result = ms.performCustomSearch(QUERY + view, cc);
+                if ((result != null) && (result.size() > 0)) {
+                    if ((result.get(0) != null) && (result.get(0).size() > 0)) {
+                        response.setContent(String.valueOf(result.get(0).get(0)));
+                        response.setMd5(String.valueOf(result.get(0).get(1)));
+                        response.setTime(String.valueOf(result.get(0).get(2)));
+                        response.setVersion(String.valueOf(result.get(0).get(3)));
+                        response.setStatus(200);
+                    }
                 }
             }
         } catch (Exception e) {
             LOG.error("Error while extracting the data sources", e);
-            return "{exception: '" + e.getMessage() + " '}";
+            response.setStatus(500);
         }
 
-        return "{exception: 'No data'}";
+        if (response.getStatus() == null) {
+            response.setStatus(404);
+        }
+
+        try {
+            return new ObjectMapper().writeValueAsString(response);
+        } catch (JsonProcessingException e) {
+            LOG.error("Error while processing json", e);
+            return response;
+        }
     }
 
     /**
