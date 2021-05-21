@@ -13,7 +13,7 @@
 
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server</artifactId>
-    <version>7.4-SNAPSHOT</version>
+    <version>7.5-SNAPSHOT</version>
     <packaging>jar</packaging>
  
     <properties>
@@ -92,6 +92,11 @@
             <groupId>de.cismet.custom</groupId>
             <artifactId>beansbinding</artifactId>
         </dependency>
+        <dependency>
+            <groupId>de.cismet.custom</groupId>
+            <artifactId>cismet-deegree2.3</artifactId>
+        </dependency>
+        
         <!-- END: cids-dependencies -->
         
         <!-- BEGIN: managed dependencies -->
@@ -213,17 +218,6 @@
             <version>1.60</version>
             <scope>runtime</scope>
         </dependency>
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
