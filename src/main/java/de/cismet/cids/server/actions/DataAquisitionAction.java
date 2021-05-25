@@ -103,6 +103,8 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
     public Object execute(final Object body, final ServerActionParameter... params) {
         String daqKey = null;
         String cachingHint = null;
+        // The cache will be used when md5 is set. The caller can set md5 to "cached" for example, if the cache
+        // should be used, but the checksum should not influence the result
         String md5 = null;
         final DataAquisitionResponse response = new DataAquisitionResponse();
 
@@ -158,7 +160,7 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
                 view = quoteIdentifier(con, view);
             }
 
-            if ((md5 != null) && !md5.equals("cached")) {
+            if (md5 != null) {
                 // check for md5
                 final String query = String.format(QUERY_WITH_MD5, view);
                 final PreparableStatement ps = new PreparableStatement(query, new int[] { Types.VARCHAR });
@@ -168,10 +170,10 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
 
                 if ((result != null) && (result.size() > 0)) {
                     if ((result.get(0) != null) && (result.get(0).size() > 0)) {
-                        response.setContent(String.valueOf(result.get(0).get(0)));
-                        response.setMd5(String.valueOf(result.get(0).get(1)));
-                        response.setTime(String.valueOf(result.get(0).get(2)));
-                        response.setVersion(String.valueOf(result.get(0).get(3)));
+                        response.setContent(getValueAsString(result.get(0).get(0)));
+                        response.setMd5(getValueAsString(result.get(0).get(1)));
+                        response.setTime(getValueAsString(result.get(0).get(2)));
+                        response.setVersion(getValueAsString(result.get(0).get(3)));
                         response.setStatus(200);
                     }
                 }
@@ -183,10 +185,10 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
                 final ArrayList<ArrayList> result = ms.performCustomSearch(QUERY + view, cc);
                 if ((result != null) && (result.size() > 0)) {
                     if ((result.get(0) != null) && (result.get(0).size() > 0)) {
-                        response.setContent(String.valueOf(result.get(0).get(0)));
-                        response.setMd5(String.valueOf(result.get(0).get(1)));
-                        response.setTime(String.valueOf(result.get(0).get(2)));
-                        response.setVersion(String.valueOf(result.get(0).get(3)));
+                        response.setContent(getValueAsString(result.get(0).get(0)));
+                        response.setMd5(getValueAsString(result.get(0).get(1)));
+                        response.setTime(getValueAsString(result.get(0).get(2)));
+                        response.setVersion(getValueAsString(result.get(0).get(3)));
                         response.setStatus(200);
                     }
                 }
@@ -205,6 +207,21 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
         } catch (JsonProcessingException e) {
             LOG.error("Error while processing json", e);
             return response;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   value  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String getValueAsString(final Object value) {
+        if (value == null) {
+            return null;
+        } else {
+            return String.valueOf(value);
         }
     }
 

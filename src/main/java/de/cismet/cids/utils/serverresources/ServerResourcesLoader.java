@@ -12,6 +12,10 @@
  */
 package de.cismet.cids.utils.serverresources;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.util.JRLoader;
 
@@ -22,6 +26,9 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -234,6 +241,46 @@ public class ServerResourcesLoader extends AbstractServerResourcesLoader {
         final Properties properties = new Properties();
         properties.load(loadStringReader(serverResource));
         return properties;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   <T>             DOCUMENT ME!
+     * @param   serverResource  DOCUMENT ME!
+     * @param   clazz           DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public <T extends Object> T loadJson(final ServerResource serverResource, final Class<T> clazz) throws Exception {
+        if (!(serverResource instanceof TextServerResource)) {
+            throw new Exception("wrong ServerResource type");
+        }
+
+        final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+
+        return mapper.readValue(loadStringReader(serverResource), clazz);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   serverResource  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public Iterator<Map.Entry<String, JsonNode>> loadJson(final ServerResource serverResource) throws Exception {
+        if (!(serverResource instanceof TextServerResource)) {
+            throw new Exception("wrong ServerResource type");
+        }
+
+        final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+
+        return mapper.readTree(loadStringReader(serverResource)).fields();
     }
 
     /**
