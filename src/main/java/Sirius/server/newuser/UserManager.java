@@ -16,8 +16,11 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -36,8 +39,11 @@ public class UserManager implements UserServer {
 
     protected Hashtable users;
 
-    protected Hashtable ugs;
+//    protected Hashtable ugs;
 
+    protected HashMap<String,HashMap<Object,UserGroup>> usergroupsOfUserDomains=new HashMap(10);
+    
+    
     protected MultiMap memberships;
 
     //~ Constructors -----------------------------------------------------------
@@ -47,7 +53,7 @@ public class UserManager implements UserServer {
      */
     public UserManager() {
         this.users = new Hashtable();
-        this.ugs = new Hashtable();
+//        this.ugs = new Hashtable();
         this.memberships = new MultiMap();
     }
 
@@ -59,7 +65,7 @@ public class UserManager implements UserServer {
             final String userDomain,
             final String user,
             final String password) throws java.rmi.RemoteException, UserException {
-        final User u = (User)users.get(constructKey(user, userDomain));
+        final User u = (User)users.get(constructKey(user, userDomain)); 
         if (LOG.isDebugEnabled()) {
             LOG.debug("user found :: " + u + " for " + user + "@" + userDomain + " :: users available " + users); // NOI18N
         }
@@ -119,13 +125,17 @@ public class UserManager implements UserServer {
                             false);
                     }
                 }
-                final UserGroup ug = (UserGroup)ugs.get(constructKey(userGroup, userGroupDomain));
+                //userDomain;
+                 final UserGroup ug =usergroupsOfUserDomains.get(userDomain).get(constructKey(userGroup, userGroupDomain));
+                //final UserGroup ug = (UserGroup)ugs.get(constructKey(userGroup, userGroupDomain));
                 u.setUserGroup(ug);
             } else {
                 final Vector<String[]> ugInfos = getUserGroupNames(u);
                 final List<UserGroup> ugList = new ArrayList<UserGroup>(ugInfos.size());
                 for (final String[] ugInfo : ugInfos) {
-                    final UserGroup ug = (UserGroup)ugs.get(constructKey(ugInfo[0], ugInfo[1]));
+                    
+                    final UserGroup ug =usergroupsOfUserDomains.get(userDomain).get(constructKey(ugInfo[0], ugInfo[1]));
+                    //final UserGroup ug = (UserGroup)ugs.get(constructKey(ugInfo[0], ugInfo[1]));
                     if (ug != null) {
                         ugList.add(ug);
                     }
@@ -209,7 +219,25 @@ public class UserManager implements UserServer {
 
     @Override
     public Vector getUserGroups() throws RemoteException {
-        return new Vector(ugs.values());
+         
+         ArrayList<UserGroup> homeGroups=new ArrayList<>();
+         HashMap<Object, UserGroup> allGroups=new HashMap<Object, UserGroup>();
+         
+         for (String homeDomain:usergroupsOfUserDomains.keySet() ){
+             for (UserGroup ug:usergroupsOfUserDomains.get(homeDomain).values()) {
+                 allGroups.put(ug.constructKey(ug),ug);
+                 if (ug.domain==homeDomain){
+                     homeGroups.add(ug);
+                 }
+             }
+         }
+         
+         for(UserGroup ug:homeGroups){
+             allGroups.put(ug.constructKey(ug),ug);
+         }
+         
+        
+        return new Vector(allGroups.values());
     }
 
     @Override
@@ -226,17 +254,20 @@ public class UserManager implements UserServer {
     }
 
     @Override
-    public void registerUserGroup(final UserGroup userGroup) throws RemoteException {
+    public void registerUserGroup(final String localServerName, final UserGroup userGroup) throws RemoteException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("register userGroup " + userGroup); // NOI18N
         }
-        ugs.put(userGroup.getKey(), userGroup);
+        System.out.println("4"+localServerName+" "+ userGroup.getKey()+"->"+userGroup.id);
+        usergroupsOfUserDomains.get(localServerName).put(userGroup.getKey(), userGroup);
+//        ugs.put(userGroup.getKey(), userGroup);
     }
 
     @Override
-    public void registerUserGroups(final Vector userGroups) throws RemoteException {
+    public void registerUserGroups(final String localServerName, final Vector userGroups) throws RemoteException {
+        usergroupsOfUserDomains.put(localServerName,new HashMap<Object, UserGroup>(userGroups.capacity()));
         for (int i = 0; i < userGroups.size(); i++) {
-            registerUserGroup((UserGroup)userGroups.get(i));
+            registerUserGroup(localServerName,(UserGroup)userGroups.get(i));
         }
     }
 
@@ -271,15 +302,17 @@ public class UserManager implements UserServer {
     }
 
     @Override
-    public void unregisterUserGroup(final UserGroup userGroup) throws RemoteException {
-        this.ugs.remove(userGroup.getKey());
+    public void unregisterUserGroup(final String localServerName,final UserGroup userGroup) throws RemoteException {
+        usergroupsOfUserDomains.get(localServerName).remove(userGroup.getKey());
+        
+//        this.ugs.remove(userGroup.getKey());
         // memberships
     }
 
     @Override
-    public void unregisterUserGroups(final Vector userGroups) throws RemoteException {
+    public void unregisterUserGroups(final String localServerName,final Vector userGroups) throws RemoteException {
         for (int i = 0; i < userGroups.size(); i++) {
-            unregisterUserGroup((UserGroup)userGroups.get(i));
+            unregisterUserGroup(localServerName,(UserGroup)userGroups.get(i));
         }
     }
 
