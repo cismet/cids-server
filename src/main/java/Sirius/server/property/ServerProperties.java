@@ -158,6 +158,12 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
 
     private static final transient Logger LOG = Logger.getLogger(ServerProperties.class);
 
+    public static final String DEPLOY_ENV__PRODUCTION = "production";
+    public static final String DEPLOY_ENV__DEVELOPMENT = "development";
+    public static final String DEPLOY_ENV__TESTING = "testing";
+    public static final String START_MODE__SIMPLE = "simple";
+    public static final String START_MODE__PROXY = "proxy";
+
     //~ Instance fields --------------------------------------------------------
 
     private String internalDialect;
@@ -624,6 +630,20 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public String getStartMode() {
         return this.getString("startMode"); // NOI18N
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getDeployEnv() {
+        try {
+            return this.getString("deployEnv");
+        } catch (final MissingResourceException e) {
+            LOG.info(String.format("deployEnv missing, setting to %s", DEPLOY_ENV__DEVELOPMENT), e);
+            return DEPLOY_ENV__DEVELOPMENT;
+        }
     }
 
     /**
