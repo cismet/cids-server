@@ -91,7 +91,8 @@ public interface UserServer extends Remote {
     /**
      * DOCUMENT ME!
      *
-     * @param   userGroup  DOCUMENT ME!
+     * @param   localServerName  DOCUMENT ME!
+     * @param   userGroup        DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
@@ -100,29 +101,32 @@ public interface UserServer extends Remote {
     /**
      * DOCUMENT ME!
      *
-     * @param   userGroups  DOCUMENT ME!
+     * @param   localServerName  DOCUMENT ME!
+     * @param   userGroups       DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    void registerUserGroups(String localServerName,Vector userGroups) throws RemoteException;
+    void registerUserGroups(String localServerName, Vector userGroups) throws RemoteException;
 
     /**
      * DOCUMENT ME!
      *
-     * @param   userGroups  DOCUMENT ME!
+     * @param   localServerName  DOCUMENT ME!
+     * @param   userGroups       DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    void unregisterUserGroups(String localServerName,Vector userGroups) throws RemoteException;
+    void unregisterUserGroups(String localServerName, Vector userGroups) throws RemoteException;
 
     /**
      * DOCUMENT ME!
      *
-     * @param   userGroups  DOCUMENT ME!
+     * @param   localServerName  DOCUMENT ME!
+     * @param   userGroups       DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    void unregisterUserGroup( String localServerName,UserGroup userGroups) throws RemoteException;
+    void unregisterUserGroup(String localServerName, UserGroup userGroups) throws RemoteException;
 
     /**
      * DOCUMENT ME!

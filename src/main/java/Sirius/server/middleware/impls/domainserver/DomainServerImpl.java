@@ -1655,7 +1655,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String ip = serverInfo.getIP();
             final String[] registryIPs = properties.getRegistryIps();
             final String rmiPort = serverInfo.getRMIPort();
-     
+
             for (int i = 0; i < registryIPs.length; i++) {
                 try {
                     nameServer = (NameServer)Naming.lookup("rmi://" + registryIPs[i] + ":" + rmiPort + "/nameServer");
@@ -1738,7 +1738,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
                 // User und UserGroups bei Registry abmelden
                 userServer.unregisterUsers(userstore.getUsers());
-                userServer.unregisterUserGroups(lsName,userstore.getUserGroups());
+                userServer.unregisterUserGroups(lsName, userstore.getUserGroups());
 
                 // LocalServer bei Registry abmelden
                 nameServer.unregisterServer(ServerType.LOCALSERVER, lsName, ip, rmiPort);

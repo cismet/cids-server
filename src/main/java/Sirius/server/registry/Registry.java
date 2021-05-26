@@ -677,18 +677,19 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
     /**
      * DOCUMENT ME!
      *
-     * @param   userGroup  DOCUMENT ME!
+     * @param   localServerName  DOCUMENT ME!
+     * @param   userGroup        DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public void registerUserGroup(final String localServerName,final UserGroup userGroup) throws RemoteException {
+    public void registerUserGroup(final String localServerName, final UserGroup userGroup) throws RemoteException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("registerUserGroup called :: userGroup = " + userGroup); // NOI18N
         }
 
         try {
-            um.registerUserGroup(localServerName,userGroup);
+            um.registerUserGroup(localServerName, userGroup);
             status.addMessage(
                 NbBundle.getMessage(Registry.class, "Registry.registerUserGroup(UserGroup).title") // NOI18N
                 ,
@@ -707,18 +708,19 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
     /**
      * DOCUMENT ME!
      *
-     * @param   userGroup  DOCUMENT ME!
+     * @param   localServerName  DOCUMENT ME!
+     * @param   userGroup        DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public void unregisterUserGroup(final String localServerName,final UserGroup userGroup) throws RemoteException {
+    public void unregisterUserGroup(final String localServerName, final UserGroup userGroup) throws RemoteException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("unregisterUserGroup called :: userGroup = " + userGroup); // NOI18N
         }
 
         try {
-            um.unregisterUserGroup(localServerName,userGroup);
+            um.unregisterUserGroup(localServerName, userGroup);
             status.addMessage(
                 NbBundle.getMessage(Registry.class, "Registry.unregisterUserGroup(UserGroup).title") // NOI18N
                 ,
@@ -737,7 +739,8 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
     /**
      * DOCUMENT ME!
      *
-     * @param   userGroups  DOCUMENT ME!
+     * @param   localServerName  DOCUMENT ME!
+     * @param   userGroups       DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
@@ -748,7 +751,7 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
         }
 
         try {
-            um.registerUserGroups(localServerName,userGroups);
+            um.registerUserGroups(localServerName, userGroups);
             status.addMessage(
                 NbBundle.getMessage(Registry.class, "Registry.registerUserGroups(Vector).title") // NOI18N
                 ,
@@ -767,18 +770,19 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
     /**
      * DOCUMENT ME!
      *
-     * @param   userGroups  DOCUMENT ME!
+     * @param   localServerName  DOCUMENT ME!
+     * @param   userGroups       DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
     @Override
-    public void unregisterUserGroups(final String localServerName,final Vector userGroups) throws RemoteException {
+    public void unregisterUserGroups(final String localServerName, final Vector userGroups) throws RemoteException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("unregisterUserGroups called :: usergroups = " + userGroups); // NOI18N
         }
 
         try {
-            um.unregisterUserGroups(localServerName,userGroups);
+            um.unregisterUserGroups(localServerName, userGroups);
             status.addMessage(
                 NbBundle.getMessage(Registry.class, "Registry.unregisterUserGroups(Vector).title") // NOI18N
                 ,
