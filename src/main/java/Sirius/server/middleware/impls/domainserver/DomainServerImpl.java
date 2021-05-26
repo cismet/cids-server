@@ -1675,7 +1675,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                     final UserStore userStore = dbServer.getUserStore();
 
                     userServer.registerUsers(userStore.getUsers());
-                    userServer.registerUserGroups(userStore.getUserGroups());
+                    userServer.registerUserGroups(lsName, userStore.getUserGroups());
                     userServer.registerUserMemberships(userStore.getMemberships());
 
                     registered++;
@@ -1738,7 +1738,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
                 // User und UserGroups bei Registry abmelden
                 userServer.unregisterUsers(userstore.getUsers());
-                userServer.unregisterUserGroups(userstore.getUserGroups());
+                userServer.unregisterUserGroups(lsName, userstore.getUserGroups());
 
                 // LocalServer bei Registry abmelden
                 nameServer.unregisterServer(ServerType.LOCALSERVER, lsName, ip, rmiPort);
