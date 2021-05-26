@@ -1655,18 +1655,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String ip = serverInfo.getIP();
             final String[] registryIPs = properties.getRegistryIps();
             final String rmiPort = serverInfo.getRMIPort();
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-
+     
             for (int i = 0; i < registryIPs.length; i++) {
                 try {
                     nameServer = (NameServer)Naming.lookup("rmi://" + registryIPs[i] + ":" + rmiPort + "/nameServer");
