@@ -72,6 +72,7 @@ public class Class implements java.io.Serializable, Mapable {
     protected String getInstanceStmnt;
     /** statement welches ein template eines meta objektes dieser Klasser erzeugt. */
     protected String getDefaultInstanceStmnt;
+    protected String getEmptyResultStmnt;
     /** definiert die java Klasse welche als Editor f\u00FCr diese Art von Objekten benutzt werden soll. */
     protected String editor;
     /** DOCUMENT ME! */
@@ -179,6 +180,9 @@ public class Class implements java.io.Serializable, Mapable {
 
         this.getDefaultInstanceStmnt = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
                             .getDialect()).getClassGetDefaultInstanceStmnt(tableName, primaryKey);
+
+        this.getEmptyResultStmnt = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
+                        .getDialect()).getClassGetEmptyResultStmnt(tableName);
 
         this.indexed = indexed;
     }
@@ -470,6 +474,15 @@ public class Class implements java.io.Serializable, Mapable {
      */
     public String getGetDefaultInstanceStmnt() {
         return getDefaultInstanceStmnt;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getGetEmptyResultStmnt() {
+        return getEmptyResultStmnt;
     }
 
     /**

@@ -282,6 +282,11 @@ public final class OracleSQLStatements implements ServerSQLStatements {
     }
 
     @Override
+    public String getClassGetEmptyResultStmnt(final String tableName) {
+        return String.format("SELECT * FROM %s LIMIT 0", tableName);
+    }
+
+    @Override
     public String getObjectHierarchyFatherStmt(final int father,
             final String pk,
             final String tableName,

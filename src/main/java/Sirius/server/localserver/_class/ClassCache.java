@@ -377,190 +377,143 @@ public class ClassCache extends Shutdown {
     private void addMemberInfos(final DBConnectionPool conPool) {
         final DBConnection con = conPool.getDBConnection();
 
-        final HashMap<Integer, HashMap<String, String>> classfieldtypes =
-            new HashMap<Integer, HashMap<String, String>>();
-
-        final List<Sirius.server.localserver._class.Class> vc = getAllClasses();
+        final HashMap<Integer, HashMap<String, String>> classfieldtypes = new HashMap<>();
 
         try {
-            for (final Sirius.server.localserver._class.Class c : vc) {
-                HashMap<String, String> fieldtypes = classfieldtypes.get(c.getID());
+            final List<Sirius.server.localserver._class.Class> allClasses = getAllClasses();
+            for (final Sirius.server.localserver._class.Class _class : allClasses) {
+                HashMap<String, String> fieldtypes = classfieldtypes.get(_class.getID());
                 if (fieldtypes == null) {
-                    fieldtypes = new HashMap<String, String>();
-                    classfieldtypes.put(c.getID(), fieldtypes);
+                    fieldtypes = new HashMap<>();
+                    classfieldtypes.put(_class.getID(), fieldtypes);
                 }
-                final Statement s = con.getConnection().createStatement();
-                final String sql = c.getGetDefaultInstanceStmnt();
-                sql.replaceAll("\\?", "1=2"); // NOI18N
-                final ResultSet resultset = s.executeQuery(sql);
-                final ResultSetMetaData rsmd = resultset.getMetaData();
+                try(final Statement statement = con.getConnection().createStatement();
+                            // final ResultSet resultset = statement.executeQuery(_class.getGetEmptyResultStmnt())
+                            final ResultSet resultset = statement.executeQuery(_class.getGetDefaultInstanceStmnt())) {
+                    final ResultSetMetaData rsmd = resultset.getMetaData();
 
-                for (int i = 1; i <= rsmd.getColumnCount(); ++i) {
-                    final String fieldname = rsmd.getColumnName(i);
-                    final String javaclassname = rsmd.getColumnClassName(i);
-                    if (SQLTools.getGeometryFactory(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                                .isGeometryColumn(
-                                    rsmd.getColumnTypeName(i))) {
-                        // we use the jts geometry class for geometry fields, however, the ObjectFactory has to do
-                        // similar conversion
-                        fieldtypes.put(fieldname.toLowerCase(), com.vividsolutions.jts.geom.Geometry.class.getName());
-                    } else if (Types.CLOB == rsmd.getColumnType(i)) {
-                        // since clobs are not serialisable we "use" String with all it's limitations
-                        // this has to be done similarly in ObjectFactory
-                        fieldtypes.put(fieldname.toLowerCase(), String.class.getName());
-                    } else {
-                        fieldtypes.put(fieldname.toLowerCase(), javaclassname);
+                    for (int i = 1; i <= rsmd.getColumnCount(); ++i) {
+                        final String fieldname = rsmd.getColumnName(i);
+                        final String javaclassname = rsmd.getColumnClassName(i);
+                        if (SQLTools.getGeometryFactory(
+                                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
+                                    .isGeometryColumn(
+                                        rsmd.getColumnTypeName(i))) {
+                            // we use the jts geometry class for geometry fields, however, the ObjectFactory has to do
+                            // similar conversion
+                            fieldtypes.put(fieldname.toLowerCase(),
+                                com.vividsolutions.jts.geom.Geometry.class.getName());
+                        } else if (Types.CLOB == rsmd.getColumnType(i)) {
+                            // since clobs are not serialisable we "use" String with all it's limitations
+                            // this has to be done similarly in ObjectFactory
+                            fieldtypes.put(fieldname.toLowerCase(), String.class.getName());
+                        } else {
+                            fieldtypes.put(fieldname.toLowerCase(), javaclassname);
+                        }
                     }
                 }
-                resultset.close();
-                s.close();
             }
 
-            final ResultSet rs = con.submitInternalQuery(DBConnection.DESC_GET_ATTRIBUTE_INFO, new Object[0]);
+            try(final ResultSet rs = con.submitInternalQuery(DBConnection.DESC_GET_ATTRIBUTE_INFO, new Object[0])) {
+                while (rs.next()) {
+                    final int id = rs.getInt("id");            // NOI18N
+                    final String name = rs.getString("name");  // NOI18N
+                    final int classId = rs.getInt("class_id"); // NOI18N
+                    final int typeId = rs.getInt("type_id");   // NOI18N
+                    final int position = rs.getInt("pos");     // NOI18N
 
-            MemberAttributeInfo mai = null;
+                    String fieldName = rs.getString("field_name"); // NOI18N
+                    if (fieldName != null) {
+                        fieldName = fieldName.trim();
+                    }
 
-            // konstruktor paramters
-            int id;
-            int classId;
-            int typeId;
+                    String arrayKey = rs.getString("array_key"); // NOI18N
+                    if (arrayKey != null) {
+                        arrayKey = arrayKey.trim();
+                    }
 
-            boolean foreignKey;
-            boolean substitute;
-            int foreignKeyClassId;
+                    String toString = rs.getString("toStringString"); // NOI18N
+                    if (toString != null) {
+                        toString = toString.trim();
+                    }
 
-            boolean visible = true;
-            // boolean permission;
-            boolean indexed = false;
+                    String editor = rs.getString("editor_class"); // NOI18N
+                    if (editor != null) {
+                        editor = editor.trim();
+                    }
 
-            boolean array = false;
+                    String complexEditor = rs.getString("complexeditorclass"); // NOI18N
+                    if (complexEditor != null) {
+                        complexEditor = complexEditor.trim();
+                    }
 
-            boolean optional = false;
+                    String fromString = rs.getString("from_string_class"); // NOI18N
+                    if (fromString != null) {
+                        fromString = fromString.trim();
+                    }
 
-            int position = 0;
+                    final boolean foreignKey = rs.getBoolean("foreign_key");              // NOI18N
+                    final boolean substitute = rs.getBoolean("substitute");               // NOI18N
+                    final boolean visible = rs.getBoolean("visible");                     // NOI18N
+                    final boolean optional = rs.getBoolean("optional");                   // NOI18N
+                    final boolean indexed = rs.getBoolean("indexed");                     // NOI18N
+                    final int foreignKeyClassId = rs.getInt("foreign_key_references_to"); // NOI18N
+                    final boolean array = rs.getBoolean("isarray");                       // NOI18N
 
-            while (rs.next()) {
-                final String name;
-                String fieldName;
-                String arrayKey;
-                String editor;
-                String toString; // toString
-                String defaultValue;
-                String fromString;
-                // String renderer;
+                    boolean extensionAttribute = false;
+                    try {
+                        extensionAttribute = rs.getBoolean("extension_attr"); // NOI18N
+                    } catch (Exception skip) {
+                    }
 
-                // Hell
-                String complexEditor;
-                boolean extensionAttribute = false;
+                    // xxx array stuff to be added
+                    final MemberAttributeInfo mai = new MemberAttributeInfo(
+                            id,
+                            classId,
+                            typeId,
+                            name,
+                            fieldName,
+                            foreignKey,
+                            substitute,
+                            foreignKeyClassId,
+                            visible,
+                            indexed,
+                            array,
+                            arrayKey,
+                            fromString,
+                            toString,
+                            position);
 
-                id = rs.getInt("id");            // NOI18N
-                name = rs.getString("name");     // NOI18N
-                classId = rs.getInt("class_id"); // NOI18N
-                typeId = rs.getInt("type_id");   // NOI18N
-                position = rs.getInt("pos");     // NOI18N
+                    mai.setOptional(optional);
 
-                fieldName = rs.getString("field_name"); // NOI18N
-                if (fieldName != null) {
-                    fieldName = fieldName.trim();
-                }
+                    mai.setEditor(editor);
+                    mai.setComplexEditor(complexEditor);
 
-                arrayKey = rs.getString("array_key"); // NOI18N
-                if (arrayKey != null) {
-                    arrayKey = arrayKey.trim();
-                }
+                    mai.setJavaclassname(classfieldtypes.get(classId).get(
+                            (fieldName != null) ? fieldName.toLowerCase() : null));
+                    mai.setExtensionAttribute(extensionAttribute);
+                    if (mai.isExtensionAttribute()) {
+                        mai.setJavaclassname(java.lang.Object.class.getCanonicalName());
+                        mai.setVirtual(true);
+                    }
 
-                toString = rs.getString("toStringString"); // NOI18N
-                if (toString != null) {
-                    toString = toString.trim();
-                }
+                    if (foreignKeyClassId < 0) {
+                        mai.setVirtual(true);
+                        mai.setJavaclassname(java.lang.Object.class.getCanonicalName());
+                    }
 
-                editor = rs.getString("editor_class"); // NOI18N
-                if (editor != null) {
-                    editor = editor.trim();
-                }
+                    final Sirius.server.localserver._class.Class c = classes.getClass(classId);
 
-                complexEditor = rs.getString("complexeditorclass"); // NOI18N
-                if (complexEditor != null) {
-                    complexEditor = complexEditor.trim();
-                }
-
-                defaultValue = rs.getString("default_value"); // NOI18N
-                if (defaultValue != null) {
-                    defaultValue = defaultValue.trim();
-                }
-
-                fromString = rs.getString("from_string_class"); // NOI18N
-                if (fromString != null) {
-                    fromString = fromString.trim();
-                }
-
-                foreignKey = rs.getBoolean("foreign_key"); // NOI18N
-
-                substitute = rs.getBoolean("substitute"); // NOI18N
-
-                visible = rs.getBoolean("visible"); // NOI18N
-
-                optional = rs.getBoolean("optional"); // NOI18N
-
-                indexed = rs.getBoolean("indexed"); // NOI18N
-
-                foreignKeyClassId = rs.getInt("foreign_key_references_to"); // NOI18N
-
-                array = rs.getBoolean("isarray"); // NOI18N
-
-                try {
-                    extensionAttribute = rs.getBoolean("extension_attr"); // NOI18N
-                } catch (Exception skip) {
-                }
-
-                // xxx array stuff to be added
-                mai = new MemberAttributeInfo(
-                        id,
-                        classId,
-                        typeId,
-                        name,
-                        fieldName,
-                        foreignKey,
-                        substitute,
-                        foreignKeyClassId,
-                        visible,
-                        indexed,
-                        array,
-                        arrayKey,
-                        fromString,
-                        toString,
-                        position);
-
-                mai.setOptional(optional);
-
-                mai.setEditor(editor);
-                mai.setComplexEditor(complexEditor);
-
-                mai.setJavaclassname(classfieldtypes.get(classId).get(fieldName.toLowerCase()));
-                mai.setExtensionAttribute(extensionAttribute);
-                if (mai.isExtensionAttribute()) {
-                    mai.setJavaclassname(java.lang.Object.class.getCanonicalName());
-                    mai.setVirtual(true);
-                }
-
-                if (foreignKeyClassId < 0) {
-                    mai.setVirtual(true);
-                    mai.setJavaclassname(java.lang.Object.class.getCanonicalName());
-                }
-
-                final Sirius.server.localserver._class.Class c = classes.getClass(classId);
-
-                if (c != null) {
-                    c.addMemberAttributeInfo(mai);
-                } else {
-                    LOG.warn("Wrong addMemberInfos entry for class::" + classId); // NOI18N
+                    if (c != null) {
+                        c.addMemberAttributeInfo(mai);
+                    } else {
+                        LOG.warn("Wrong addMemberInfos entry for class::" + classId); // NOI18N
+                    }
                 }
             }
-
-            rs.close();
         } catch (final Exception e) {
             ExceptionHandler.handle(e);
-            LOG.error("<LS> ERROR :: addMemberinfos", e); // NOI18N
+            LOG.error("<LS> ERROR :: addMemberinfos", e);                             // NOI18N
         }
     }
 
