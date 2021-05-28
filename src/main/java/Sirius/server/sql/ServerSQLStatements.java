@@ -210,6 +210,15 @@ public interface ServerSQLStatements extends DialectProvider {
     /**
      * DOCUMENT ME!
      *
+     * @param   tableName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    String getClassGetEmptyResultStmnt(String tableName);
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   father     DOCUMENT ME!
      * @param   pk         DOCUMENT ME!
      * @param   tableName  DOCUMENT ME!
