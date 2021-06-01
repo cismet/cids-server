@@ -186,7 +186,9 @@ public class CsvExportServerAction extends DefaultServerAction {
                 final String javaClassName = moDummy.getAttributeByFieldName(field).getMai().getJavaclassname();
                 final Class javaClass = Class.forName(javaClassName);
 
-                if (Date.class.isAssignableFrom(javaClass)) {
+                if (String.class.isAssignableFrom(javaClass)) {
+                    formattedField = String.format("\"%s\"", field);
+                } else if (Date.class.isAssignableFrom(javaClass)) {
                     formattedField = String.format("to_char(%s, '%s')", field, dateFormat);
                 } else if (Boolean.class.isAssignableFrom(javaClass)) {
                     formattedField = String.format(
