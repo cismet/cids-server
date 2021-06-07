@@ -14,6 +14,7 @@ import Sirius.server.middleware.types.MetaObjectNode;
 
 import com.vividsolutions.jts.geom.Geometry;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -49,7 +50,7 @@ public class CsvExportServerAction extends DefaultServerAction {
         //~ Enum constants -----------------------------------------------------
 
         COLUMN_NAMES, FIELDS, WHERE, DISTINCT_ON, BOOLEAN_YES, BOOLEAN_NO, DATE_FORMAT, ROW_SEPARATOR, COLUMN_SEPARATOR,
-        CHARSET, MONS
+        CHARSET, MONS, ESCAPE_STRINGS
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -74,6 +75,7 @@ public class CsvExportServerAction extends DefaultServerAction {
         String columnSeparator = DEFAULT_COLUMN_SEPARATOR;
         String rowSeparator = DEFAULT_ROW_SEPARATOR;
         List<MetaObjectNode> mons = null;
+        boolean escapeStrings = true;
 
         if (params != null) {
             for (final ServerActionParameter sap : params) {
@@ -83,7 +85,7 @@ public class CsvExportServerAction extends DefaultServerAction {
                     whereCause = (String)sap.getValue();
                 } else if (sap.getKey().equals(ParameterType.BOOLEAN_YES.toString())) {
                     booleanYes = (String)sap.getValue();
-                } else if (sap.getKey().equals(ParameterType.BOOLEAN_YES.toString())) {
+                } else if (sap.getKey().equals(ParameterType.BOOLEAN_NO.toString())) {
                     booleanNo = (String)sap.getValue();
                 } else if (sap.getKey().equals(ParameterType.DATE_FORMAT.toString())) {
                     dateFormat = (String)sap.getValue();
@@ -99,6 +101,8 @@ public class CsvExportServerAction extends DefaultServerAction {
                     fields = (List<String>)sap.getValue();
                 } else if (sap.getKey().equals(ParameterType.MONS.toString())) {
                     mons = (List<MetaObjectNode>)sap.getValue();
+                } else if (sap.getKey().equals(ParameterType.ESCAPE_STRINGS.toString())) {
+                    escapeStrings = (Boolean)sap.getValue();
                 }
             }
         }
@@ -145,7 +149,8 @@ public class CsvExportServerAction extends DefaultServerAction {
                     booleanYes,
                     booleanNo,
                     dateFormat,
-                    columnSeparator));
+                    columnSeparator,
+                    escapeStrings));
             return String.join(rowSeparator, rows).getBytes(charset);
         } catch (final Exception e) {
             LOG.error("problem during CsvExportServerAction", e); // NOI18N
@@ -164,6 +169,7 @@ public class CsvExportServerAction extends DefaultServerAction {
      * @param   booleanNo        DOCUMENT ME!
      * @param   dateFormat       DOCUMENT ME!
      * @param   columnSeparator  DOCUMENT ME!
+     * @param   escapeStrings    DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -176,7 +182,8 @@ public class CsvExportServerAction extends DefaultServerAction {
             final String booleanYes,
             final String booleanNo,
             final String dateFormat,
-            final String columnSeparator) throws Exception {
+            final String columnSeparator,
+            final boolean escapeStrings) throws Exception {
         final MetaObject moDummy = metaClass.getEmptyInstance(getConnectionContext());
 
         final List<String> formattedFields = new ArrayList<>(fields.size());
@@ -186,11 +193,9 @@ public class CsvExportServerAction extends DefaultServerAction {
                 final String javaClassName = moDummy.getAttributeByFieldName(field).getMai().getJavaclassname();
                 final Class javaClass = Class.forName(javaClassName);
 
-                if (String.class.isAssignableFrom(javaClass)) {
-                    formattedField = String.format("\"%s\"", field);
-                } else if (Date.class.isAssignableFrom(javaClass)) {
+                if ((dateFormat != null) && Date.class.isAssignableFrom(javaClass)) {
                     formattedField = String.format("to_char(%s, '%s')", field, dateFormat);
-                } else if (Boolean.class.isAssignableFrom(javaClass)) {
+                } else if ((booleanYes != null) && (booleanNo != null) && Boolean.class.isAssignableFrom(javaClass)) {
                     formattedField = String.format(
                             "CASE WHEN %s IS TRUE THEN '%s' ELSE '%s' END",
                             field,
@@ -220,7 +225,26 @@ public class CsvExportServerAction extends DefaultServerAction {
         for (final ArrayList result : results) {
             final List<String> columns = new ArrayList<>(result.size());
             for (final Object object : result) {
-                columns.add((object == null) ? "" : String.format("\"%s\"", object.toString()));
+                final String formattedResult;
+                if (object == null) {
+                    formattedResult = "";
+                } else if ((object.getClass() == Double.class)
+                            || (object.getClass() == Float.class)
+                            || (object.getClass() == Long.class)
+                            || (object.getClass() == Integer.class)
+                            || (object.getClass() == Character.class)
+                            || (object.getClass() == Boolean.class)) { // dont escape primitives
+                    formattedResult = String.valueOf(object);
+                } else if (escapeStrings) {                            // escape strings (and all complex
+                                                                       // strings-representations)
+                    final String potentiallyMissingQuotes = StringEscapeUtils.escapeCsv(object.toString());
+                    formattedResult =
+                        (!potentiallyMissingQuotes.startsWith("\"") && !object.toString().startsWith("\""))
+                        ? String.format("\"%s\"", potentiallyMissingQuotes) : potentiallyMissingQuotes;
+                } else {
+                    formattedResult = object.toString();
+                }
+                columns.add(formattedResult);
             }
             rows.add(String.join(columnSeparator, columns));
         }
