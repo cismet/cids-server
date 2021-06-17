@@ -24,7 +24,8 @@ public enum GeneralServerResources {
 
     //~ Enum constants ---------------------------------------------------------
 
-    CACHE_REFRESH_JSON(new TextServerResource("/daq_cache/refresh.json"));
+    CACHE_REFRESH_JSON(new TextServerResource("/daq_cache/refresh.json")),
+    ACTION_EXECUTION_JSON(new TextServerResource("/action_execution/configuration.json"));
 
     //~ Instance fields --------------------------------------------------------
 

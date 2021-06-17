@@ -14,6 +14,8 @@ import Sirius.server.newuser.UserGroup;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+import java.security.Key;
+
 import java.util.Vector;
 
 import de.cismet.connectioncontext.ConnectionContext;
@@ -102,6 +104,17 @@ public interface UserService extends Remote {
             final String userName,
             final String password,
             final ConnectionContext context) throws RemoteException, UserException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   domain  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    Key getPublicJwtKey(String domain) throws RemoteException;
 
     /**
      * DOCUMENT ME!
