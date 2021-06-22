@@ -44,7 +44,7 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String QUERY = "SELECT json, md5(json), now(), null, status FROM daq.";
+    private static final String QUERY = "SELECT json, md5(json), now(), null FROM daq.";
     private static final String QUERY_WITH_MD5 =
         "SELECT case when md5 <> ? then json else null::text end, md5, time, version, status FROM daq.%1s";
     private static final transient Logger LOG = Logger.getLogger(DataAquisitionAction.class);
