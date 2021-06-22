@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 
+import de.cismet.cids.server.actions.DataAquisitionAction;
+
 import de.cismet.cids.utils.serverresources.GeneralServerResources;
 import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
@@ -231,7 +233,7 @@ public class DaqCacheRefreshService implements Runnable, DomainServerStartupHook
     //~ Inner Classes ----------------------------------------------------------
 
     /**
-     * DOCUMENT ME!
+     * Refreshs the given View.
      *
      * @version  $Revision$, $Date$
      */
@@ -268,7 +270,20 @@ public class DaqCacheRefreshService implements Runnable, DomainServerStartupHook
                 stat.setString(1, viewName);
                 stat.execute();
             } catch (SQLException e) {
-                LOG.error("Error while refreshig cached table.", e);
+                LOG.error("Error while refreshig cached table. Set status field.", e);
+
+                try {
+                    if (con == null) {
+                        con = metaService.getConnectionPool().getConnection(true);
+                    }
+                    final String checkedViewName = DataAquisitionAction.quoteIdentifier(con, viewName);
+                    final PreparedStatement stat = con.prepareStatement("update daq." + checkedViewName
+                                    + "_cached set status= ?");
+                    stat.setString(1, "500, " + e.getMessage());
+                    stat.execute();
+                } catch (Exception ex) {
+                    LOG.error("Error while set status field to error.", ex);
+                }
             } finally {
                 if (con != null) {
                     metaService.getConnectionPool().releaseDbConnection(con);
