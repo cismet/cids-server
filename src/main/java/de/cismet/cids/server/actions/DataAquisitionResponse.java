@@ -31,5 +31,17 @@ public class DataAquisitionResponse {
     String content;
     String version;
     String time;
+    /**
+     * Possible response codes.
+     *
+     * <ul>
+     *   <li>200 OK</li>
+     *   <li>206 The view cannot refresh the cached table. So the given result is possibly out of date</li>
+     *   <li>304 there are no changes. The given md5 is still up to date</li>
+     *   <li>401 The user has no permission to request the given view</li>
+     *   <li>404 View not found</li>
+     *   <li>500 any server error</li>
+     * </ul>
+     */
     Integer status;
 }
