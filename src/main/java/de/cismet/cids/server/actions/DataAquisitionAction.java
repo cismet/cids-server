@@ -44,8 +44,9 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String QUERY = "SELECT json, md5(json), now(), null FROM daq.";
-    private static final String QUERY_WITH_MD5 = "SELECT json, md5, time, version FROM daq.%1s where md5 <> ?";
+    private static final String QUERY = "SELECT json, md5(json), now(), null, status FROM daq.";
+    private static final String QUERY_WITH_MD5 =
+        "SELECT case when md5 <> ? then json else null::text end, md5, time, version, status FROM daq.%1s";
     private static final transient Logger LOG = Logger.getLogger(DataAquisitionAction.class);
     private static final ConnectionContext cc = ConnectionContext.create(
             ConnectionContext.Category.ACTION,
@@ -130,24 +131,28 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
                 }
             }
 
+            // Determine table/view to use and check permissions
             final DomainServerImpl domainServer = (DomainServerImpl)ms;
             String view = domainServer.getConfigAttr(user, CONF_ATTR_PREFIX + upperFirstLetter(daqKey), cc);
 
             if ((view == null) || view.equals("")) {
+                boolean isAllowed = false;
                 final String allowedViews = domainServer.getConfigAttr(user, "allowedViewsForDataAquisition", cc);
                 view = daqKey;
 
-                final StringTokenizer st = new StringTokenizer(allowedViews, "\n");
-                boolean isAllowed = false;
+                if (allowedViews != null) {
+                    final StringTokenizer st = new StringTokenizer(allowedViews, "\n");
 
-                while (st.hasMoreTokens()) {
-                    if (st.nextToken().equals(view)) {
-                        isAllowed = true;
+                    while (st.hasMoreTokens()) {
+                        if (st.nextToken().equals(view)) {
+                            isAllowed = true;
+                        }
                     }
                 }
 
                 if (!isAllowed) {
-                    return "{exception: 'Not allowed'}";
+                    response.setStatus(401);
+                    return new ObjectMapper().writeValueAsString(response);
                 }
             }
 
@@ -170,16 +175,29 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
 
                 if ((result != null) && (result.size() > 0)) {
                     if ((result.get(0) != null) && (result.get(0).size() > 0)) {
-                        response.setContent(getValueAsString(result.get(0).get(0)));
-                        response.setMd5(getValueAsString(result.get(0).get(1)));
-                        response.setTime(getValueAsString(result.get(0).get(2)));
-                        response.setVersion(getValueAsString(result.get(0).get(3)));
-                        response.setStatus(200);
-                    }
-                }
+                        if ((getValueAsString(result.get(0).get(1)) != null)
+                                    && getValueAsString(result.get(0).get(1)).equals(md5)) {
+                            response.setTime(getValueAsString(result.get(0).get(2)));
+                            if ((result.get(0).get(4) != null)
+                                        && getValueAsString(result.get(0).get(4)).equals("200")) {
+                                response.setStatus(304);
+                            } else {
+                                response.setStatus(206);
+                            }
+                        } else {
+                            response.setContent(getValueAsString(result.get(0).get(0)));
+                            response.setMd5(getValueAsString(result.get(0).get(1)));
+                            response.setTime(getValueAsString(result.get(0).get(2)));
+                            response.setVersion(getValueAsString(result.get(0).get(3)));
 
-                if (response.getStatus() == null) {
-                    response.setStatus(304);
+                            if ((result.get(0).get(4) != null)
+                                        && getValueAsString(result.get(0).get(4)).equals("200")) {
+                                response.setStatus(200);
+                            } else {
+                                response.setStatus(206);
+                            }
+                        }
+                    }
                 }
             } else {
                 final ArrayList<ArrayList> result = ms.performCustomSearch(QUERY + view, cc);
