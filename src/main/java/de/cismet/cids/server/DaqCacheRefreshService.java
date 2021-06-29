@@ -35,7 +35,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 
-
 import de.cismet.cids.server.actions.DataAquisitionAction;
 
 import de.cismet.cids.utils.serverresources.GeneralServerResources;
@@ -303,7 +302,7 @@ public class DaqCacheRefreshService implements Runnable, DomainServerStartupHook
 
                 if (recreationSuccessful) {
                     // a new dataset was created from the view
-                    
+
                     // check created json
                     final PreparedStatement queryStat = con.prepareStatement("select json, md5, time, version from daq."
                                     + checkedViewName
@@ -342,7 +341,7 @@ public class DaqCacheRefreshService implements Runnable, DomainServerStartupHook
         }
 
         /**
-         * Change the status of the ds with the status null to the given value
+         * Change the status of the ds with the status null to the given value.
          *
          * @param   con              the db connection
          * @param   checkedViewName  the name of the view
@@ -359,14 +358,15 @@ public class DaqCacheRefreshService implements Runnable, DomainServerStartupHook
         }
 
         /**
-         * Delete all data sets within the given cached table except one per status
+         * Delete all data sets within the given cached table except one per status.
          *
          * @param   con              the db connection
          * @param   checkedViewName  the name of the view
          *
          * @throws  SQLException  DOCUMENT ME!
          */
-        private void deleteAllExceptOnePerStatus(final Connection con, final String checkedViewName) throws SQLException {
+        private void deleteAllExceptOnePerStatus(final Connection con, final String checkedViewName)
+                throws SQLException {
             final PreparedStatement queryStat = con.prepareStatement("delete from daq." + checkedViewName
                             + "_cached where time not in (select max(time) from daq." + checkedViewName
                             + "_cached group by substring(rpad(coalesce(status, ''), 3, 'x') for 3))");

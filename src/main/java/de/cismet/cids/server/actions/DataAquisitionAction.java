@@ -47,7 +47,7 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
     private static final String QUERY = "SELECT json, md5(json), now(), null FROM daq.";
     private static final String QUERY_WITH_MD5 =
         "SELECT case when md5 <> ? then json else null::text end, md5, time, version, status FROM daq.%1s where status is "
-            + "not null and (status = '200' or substring(status for 3 ) = '500') order by time desc limit 1";
+                + "not null and (status = '200' or substring(status for 3 ) = '500') order by time desc limit 1";
     private static final transient Logger LOG = Logger.getLogger(DataAquisitionAction.class);
     private static final ConnectionContext cc = ConnectionContext.create(
             ConnectionContext.Category.ACTION,
@@ -253,7 +253,8 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
      */
     private String upperFirstLetter(final String word) {
         if (Character.isLowerCase(word.charAt(0))) {
-            return Character.toUpperCase(word.charAt(0)) + word.substring(1);
+            return Character.toUpperCase(word.charAt(0))
+                        + word.substring(1);
         } else {
             return word;
         }
