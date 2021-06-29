@@ -15,12 +15,17 @@ package de.cismet.cids.server;
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.DomainServerStartupHook;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.log4j.Logger;
 
 import org.openide.util.Exceptions;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import java.util.Date;
@@ -29,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
+
 
 import de.cismet.cids.server.actions.DataAquisitionAction;
 
@@ -53,6 +59,9 @@ public class DaqCacheRefreshService implements Runnable, DomainServerStartupHook
     private static final int MILLIS_PER_SECOND = 1000;
     private static final int EXECUTION_TOLERANCE = 100;
     private static final double FACTOR_TO_INCREASE_INTERVAL = 1.1;
+    private static final Integer INVALID_JSON_STATUS = 502;
+    private static final Integer ERROR_WHILE_FILLING_STATUS = 500;
+    private static final Integer OK_STATUS = 200;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -263,27 +272,64 @@ public class DaqCacheRefreshService implements Runnable, DomainServerStartupHook
         public void run() {
             final long startRun = System.currentTimeMillis();
             Connection con = null;
+            boolean recreationSuccessful = false;
 
             try {
-                con = metaService.getConnectionPool().getConnection(true);
-                final PreparedStatement stat = con.prepareStatement("select cs_recreateCachedDaqView(?)");
-                stat.setString(1, viewName);
-                stat.execute();
-            } catch (SQLException e) {
-                LOG.error("Error while refreshig cached table. Set status field.", e);
-
                 try {
-                    if (con == null) {
-                        con = metaService.getConnectionPool().getConnection(true);
-                    }
-                    final String checkedViewName = DataAquisitionAction.quoteIdentifier(con, viewName);
-                    final PreparedStatement stat = con.prepareStatement("update daq." + checkedViewName
-                                    + "_cached set status= ?");
-                    stat.setString(1, "500, " + e.getMessage());
+                    con = metaService.getConnectionPool().getConnection(true);
+                    final PreparedStatement stat = con.prepareStatement("select cs_recreateCachedDaqView(?)");
+                    stat.setString(1, viewName);
                     stat.execute();
-                } catch (Exception ex) {
-                    LOG.error("Error while set status field to error.", ex);
+                    recreationSuccessful = true;
+                } catch (Exception e) {
+                    LOG.error("Error while refreshing cached table. Set status field.", e);
+
+                    try {
+                        if (con == null) {
+                            con = metaService.getConnectionPool().getConnection(true);
+                        }
+                        final String checkedViewName = DataAquisitionAction.quoteIdentifier(con, viewName);
+                        final PreparedStatement stat = con.prepareStatement("insert into daq." + checkedViewName
+                                        + "_cached (md5, json, time, version, status) (select md5, json, now(), version, ? from daq."
+                                        + checkedViewName + "_cached where status = '200')");
+                        stat.setString(1, ERROR_WHILE_FILLING_STATUS + ", " + e.getMessage());
+                        stat.execute();
+                    } catch (Exception ex) {
+                        LOG.error("Error while set status field to error.", ex);
+                    }
                 }
+
+                final String checkedViewName = DataAquisitionAction.quoteIdentifier(con, viewName);
+
+                if (recreationSuccessful) {
+                    // a new dataset was created from the view
+                    
+                    // check created json
+                    final PreparedStatement queryStat = con.prepareStatement("select json, md5, time, version from daq."
+                                    + checkedViewName
+                                    + "_cached where status is null");
+                    final ResultSet rs = queryStat.executeQuery();
+
+                    while (rs.next()) {
+                        final String json = rs.getString(1);
+                        final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+
+                        try {
+                            // test, if json is invalid
+                            final JsonNode node = mapper.readTree(json);
+
+                            // json can be parsed so set status to 200
+                            setStatus(con, checkedViewName, OK_STATUS.toString());
+                        } catch (Exception e) {
+                            // Cannot parse json. So set status to INVALID_JSON_STATUS
+                            setStatus(con, checkedViewName, INVALID_JSON_STATUS.toString());
+                        }
+                    }
+                }
+
+                deleteAllExceptOnePerStatus(con, checkedViewName);
+            } catch (Exception e) {
+                LOG.error("Error while refreshing cached table.", e);
             } finally {
                 if (con != null) {
                     metaService.getConnectionPool().releaseDbConnection(con);
@@ -293,6 +339,38 @@ public class DaqCacheRefreshService implements Runnable, DomainServerStartupHook
             final long timeToRun = System.currentTimeMillis() - startRun;
             lastRefreshTimes.put(viewName, timeToRun);
             currentlyRunningRefreshs.remove(viewName);
+        }
+
+        /**
+         * Change the status of the ds with the status null to the given value
+         *
+         * @param   con              the db connection
+         * @param   checkedViewName  the name of the view
+         * @param   status           the new status
+         *
+         * @throws  SQLException  DOCUMENT ME!
+         */
+        private void setStatus(final Connection con, final String checkedViewName, final String status)
+                throws SQLException {
+            final PreparedStatement queryStat = con.prepareStatement("update daq." + checkedViewName
+                            + "_cached set status = ? where status is null");
+            queryStat.setString(1, status);
+            queryStat.execute();
+        }
+
+        /**
+         * Delete all data sets within the given cached table except one per status
+         *
+         * @param   con              the db connection
+         * @param   checkedViewName  the name of the view
+         *
+         * @throws  SQLException  DOCUMENT ME!
+         */
+        private void deleteAllExceptOnePerStatus(final Connection con, final String checkedViewName) throws SQLException {
+            final PreparedStatement queryStat = con.prepareStatement("delete from daq." + checkedViewName
+                            + "_cached where time not in (select max(time) from daq." + checkedViewName
+                            + "_cached group by substring(rpad(coalesce(status, ''), 3, 'x') for 3))");
+            queryStat.execute();
         }
     }
 }
