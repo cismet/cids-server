@@ -54,8 +54,8 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
             "DataAquisition");
     private static final String QUOTE_IDENTIFIER = "select quote_ident(?)";
     private static final String CONF_ATTR_PREFIX = "daq";
-    private static final Integer OLD_DATA_CAUSED_BY_ERROR = 298;
-    private static final Integer OLD_DATA_CAUSED_BY_INVALID_JSON = 299;
+    private static final Integer OLD_DATA_CAUSED_BY_ERROR = 299;
+    private static final Integer OLD_DATA_CAUSED_BY_INVALID_JSON = 298;
 
     //~ Enums ------------------------------------------------------------------
 
