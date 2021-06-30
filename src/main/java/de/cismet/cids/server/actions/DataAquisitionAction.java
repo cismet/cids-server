@@ -47,7 +47,7 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
     private static final String QUERY = "SELECT json, md5(json), now(), null FROM daq.";
     private static final String QUERY_WITH_MD5 =
         "SELECT case when md5 <> ? then json else null::text end, md5, time, version, status FROM daq.%1s where status is "
-                + "not null and (status = '200' or substring(status for 3 ) = '500') order by time desc limit 2";
+                + "not null order by time desc limit 2";
     private static final transient Logger LOG = Logger.getLogger(DataAquisitionAction.class);
     private static final ConnectionContext cc = ConnectionContext.create(
             ConnectionContext.Category.ACTION,
@@ -204,7 +204,14 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
                             } else if ((result.get(0).get(4) != null)
                                         && getValueAsString(result.get(0).get(4)).equals("502")) {
                                 response.setContent(getValueAsString(result.get(1).get(0)));
-                                response.setMd5(getValueAsString(result.get(1).get(1)));
+
+                                if ((result.get(1).get(1) != null) && result.get(1).get(1).equals(md5)) {
+                                    // the last md5 is equal to the given md5, so do not send the md5
+                                    response.setMd5(null);
+                                } else {
+                                    response.setMd5(getValueAsString(result.get(1).get(1)));
+                                }
+
                                 response.setTime(getValueAsString(result.get(1).get(2)));
                                 response.setVersion(getValueAsString(result.get(1).get(3)));
                                 response.setStatus(OLD_DATA_CAUSED_BY_INVALID_JSON);
