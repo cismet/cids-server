@@ -13,7 +13,7 @@
 
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server</artifactId>
-    <version>7.5.6</version>
+    <version>7.5.7</version>
     <packaging>jar</packaging>
  
     <properties>
@@ -27,7 +27,7 @@
         <connection>https://github.com/cismet/cids-server.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cids-server.git</developerConnection>
         <url>https://github.com/cismet/cids-server</url>
-        <tag>v7.5.6</tag>
+        <tag>v7.5.7</tag>
     </scm>
     
     <ciManagement>
@@ -218,6 +218,22 @@
             <version>1.60</version>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>com.graphql-java</groupId>
+            <artifactId>graphql-java</artifactId>
+            <version>16.2</version>
+        </dependency>
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>

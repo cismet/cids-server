@@ -39,6 +39,11 @@ import Sirius.server.registry.Registry;
 import Sirius.server.sql.DBConnectionPool;
 import Sirius.server.sql.PreparableStatement;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
@@ -62,6 +67,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 
 import java.security.Key;
+import java.security.KeyPair;
 
 import java.sql.Clob;
 import java.sql.Connection;
@@ -75,6 +81,9 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
 
 import javax.crypto.SecretKey;
@@ -118,7 +127,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     // this servers configuration
     protected static ServerProperties properties;
 
-    private static byte[] decodedKey = Base64.getDecoder().decode(createRandomKey());
+//    private static byte[] decodedKey = Base64.getDecoder().decode(createRandomKey());
+    private static KeyPair jwtKeyPair = createRandomKey();
 
     //~ Instance fields --------------------------------------------------------
 
@@ -1393,17 +1403,15 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
      *
      * @return  DOCUMENT ME!
      */
-    private static String createRandomKey() {
-        final SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-
-        return Encoders.BASE64.encode(key.getEncoded());
+    private static KeyPair createRandomKey() {
+        return Keys.keyPairFor(SignatureAlgorithm.RS256);
     }
 
     /**
      * DOCUMENT ME!
      */
     public static void recreateRandomKey() {
-        decodedKey = Base64.getDecoder().decode(createRandomKey());
+        jwtKeyPair = createRandomKey();
     }
 
     /**
@@ -1412,7 +1420,16 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
      * @return  DOCUMENT ME!
      */
     private Key getServerKey() {
-        return new SecretKeySpec(decodedKey, SignatureAlgorithm.HS256.getJcaName());
+        return jwtKeyPair.getPrivate();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private Key getPublicKey() {
+        return jwtKeyPair.getPublic();
     }
 
     @Override
@@ -1432,7 +1449,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         }
         try {
             final Claims claims = Jwts.parserBuilder()
-                        .setSigningKey(getServerKey())
+                        .setSigningKey(getPublicKey())
                         .build()
                         .parseClaimsJws(jwt)
                         .getBody();
@@ -1482,9 +1499,19 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                     builder.claim("usergroupDomain", user.getUserGroup().getDomain());
                 }
 
+                user.setValid();
+                final String configAttr = getConfigAttr(user, "jwt.claim", connectionContext);
+
+                if (configAttr != null) {
+                    final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+                    final JsonNode node = mapper.readTree(configAttr);
+
+                    addClaimsFromConfAttrObject(node, builder);
+                }
+
                 final String jwt = builder.signWith(getServerKey()).compact();
                 user.setJwsToken(jwt);
-                user.setValid();
+
                 return user;
             } else {
                 return null;
@@ -1492,6 +1519,55 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         } catch (final Throwable e) {
             logger.error(e, e);
             throw new RemoteException("Exception validateUser at remotedbserverimpl", e); // NOI18N
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   node     user DOCUMENT ME!
+     * @param   builder  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    private void addClaimsFromConfAttrObject(final JsonNode node,
+            final JwtBuilder builder) throws Exception {
+        final Iterator<String> fieldIt = node.fieldNames();
+
+        while (fieldIt.hasNext()) {
+            final String fieldName = fieldIt.next();
+            final JsonNode field = node.get(fieldName);
+
+            if (field.isTextual()) {
+                builder.claim(fieldName, field.asText());
+            } else if (field.isObject()) {
+                final Map<String, Object> hasuraClaims = new HashMap<String, Object>();
+                final Iterator<String> it = field.fieldNames();
+
+                while (it.hasNext()) {
+                    final String currentName = it.next();
+                    final JsonNode current = field.get(currentName);
+
+                    if (current.isTextual()) {
+                        hasuraClaims.put(currentName, current.asText());
+                    } else if (current.isArray()) {
+                        final Iterator<JsonNode> textIt = current.elements();
+                        final List<String> strings = new ArrayList<String>();
+
+                        while (textIt.hasNext()) {
+                            final JsonNode arrayElement = textIt.next();
+
+                            if (arrayElement.isTextual()) {
+                                strings.add(arrayElement.asText());
+                            }
+                        }
+
+                        hasuraClaims.put(currentName, strings.toArray(new String[0]));
+                    }
+                }
+
+                builder.claim(fieldName, hasuraClaims);
+            }
         }
     }
 
@@ -2086,5 +2162,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                         + "has no permission to execute this task. (Should have an action attribute like this: "
                         + SERVER_ACTION_PERMISSION_ATTRIBUTE_PREFIX + taskname);
         }
+    }
+
+    @Override
+    public Key getPublicJwtKey() throws RemoteException {
+        return getPublicKey();
     }
 }

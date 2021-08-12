@@ -30,6 +30,8 @@ import org.openide.util.Lookup;
 
 import java.rmi.RemoteException;
 
+import java.security.Key;
+
 import java.util.Collection;
 import java.util.Vector;
 
@@ -684,6 +686,11 @@ public class DomainServerCallServerService implements CallServerService {
     public boolean changePassword(final User user, final String oldPassword, final String newPassword)
             throws RemoteException, UserException {
         return getDomainServer().changePassword(user, oldPassword, newPassword);
+    }
+
+    @Override
+    public Key getPublicJwtKey(final String domain) throws RemoteException {
+        return getDomainServer().getPublicJwtKey();
     }
 
     //~ Inner Classes ----------------------------------------------------------
