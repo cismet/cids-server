@@ -22,9 +22,15 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import java.util.Arrays;
+import java.util.Properties;
+
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.actions.UserAwareServerAction;
+
+import de.cismet.cids.utils.serverresources.GeneralServerResources;
+import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
 import de.cismet.connectioncontext.ConnectionContext;
 
@@ -105,34 +111,25 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
 
     //~ Instance fields --------------------------------------------------------
 
+    private Properties config = null;
     private MetaService ms;
     private User user;
 
-    private final String request = "{"
-                + "    \"query\": \"query  {"
-                + "  abzweigdose {"
-                + "    id"
-                + "    dokumenteArray {"
-                + "      dms_url {"
-                + "        name"
-                + "        url {"
-                + "          object_name"
-                + "          url_base {"
-                + "            path"
-                + "            prot_prefix"
-                + "            server"
-                + "          }"
-                + "        }"
-                + "      }"
-                + "    }"
-                + "    geom {"
-                + "      geo_field"
-                + "    }"
-                + "  }"
-                + "}\",\n"
-                + "    \"variables\": null\n"
-                + "}";
-    private final String queryTemplate = "{\"query\": \"%1s\", \"variables\": {\"%2s}";
+    private final String queryTemplate = "{\"query\": \"%1s\", \"variables\": %2s}";
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new GraphqlAction object.
+     */
+    public GraphqlAction() {
+        try {
+            config = ServerResourcesLoader.getInstance()
+                        .loadProperties(GeneralServerResources.GRAPHQL_PROPERTIES.getValue());
+        } catch (Exception e) {
+            LOG.error("Error while loading graphQl resources", e);
+        }
+    }
 
     //~ Methods ----------------------------------------------------------------
 
@@ -154,34 +151,40 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
         String query = null;
-        String variables = "null";
+        String variables = "";
+        final String hasuraSecret = config.getProperty("hasura.secret", null);
 
         for (final ServerActionParameter sap : params) {
-//            System.out.println(sap);
-
             if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.QUERY.toString())) {
                 query = (String)sap.getValue();
             } else if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.VARIABLES.toString())) {
                 variables = (String)sap.getValue();
             }
         }
-//        final GraphQlTestCases testCases = new GraphQlTestCases(ms, user, cc);
-//        testCases.startTests();
 
         final GraphQlPermissionEvaluator evaluator = new GraphQlPermissionEvaluator(ms, user, cc);
+        final String tablesWithoutCheck = config.getProperty("tables.without.permission.check", null);
+
+        if (tablesWithoutCheck != null) {
+            evaluator.setTablesWithoutPermissionCheck(Arrays.asList(tablesWithoutCheck.split(",")));
+        }
         query = evaluator.evaluate(query);
-//        System.out.println("query: " + query);
 
         try {
             // prepare request
-            final URL url = new URL("http://localhost:8090/v1/graphql");
+            final URL url = new URL(config.getProperty("graphql.url"));
             final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
             connection.setRequestMethod("POST");
             connection.setDoOutput(true);
             connection.setRequestProperty("Content-Type", "application/json; utf-8");
 
+            if (hasuraSecret != null) {
+                connection.setRequestProperty("x-hasura-admin-secret", hasuraSecret);
+            }
+
             final OutputStream os = connection.getOutputStream();
-            final byte[] inputAsBytes = String.format(queryTemplate, query, variables).getBytes("utf-8");
+            final byte[] inputAsBytes = String.format(queryTemplate, query, ((variables == null) ? "{}" : variables))
+                        .getBytes("utf-8");
             os.write(inputAsBytes, 0, inputAsBytes.length);
 
             // receive response
