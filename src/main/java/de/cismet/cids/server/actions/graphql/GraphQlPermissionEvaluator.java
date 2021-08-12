@@ -434,7 +434,7 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
         if (mc == null) {
             throw new TableNotFoundException(table.getName());
         }
-        
+
         for (final Object attribute : mc.getMemberAttributeInfos().values()) {
             if (attribute instanceof MemberAttributeInfo) {
                 final MemberAttributeInfo mai = (MemberAttributeInfo)attribute;
@@ -453,7 +453,7 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
                         }
                     }
                 }
-                
+
                 if (fieldFound) {
                     if (mc.getPermissions().hasWritePermission(user)) {
                         // todo the write permission for the field should be checked too
