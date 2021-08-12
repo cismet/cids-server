@@ -1,0 +1,12 @@
+{
+    "cases": [
+        {
+            "query": "query MyQuery {  abzweigdose(where: {is_deleted: {_is_null: true}, geom: {geo_field: {_is_null: false}}}, order_by: {id: asc}) {    id    geom {      geo_field    }    is_deleted  }}",
+            "expectedResult": "query MyQuery {\n  abzweigdose(where: {is_deleted : {}, geom : {}}, order_by: {}) {\n    id\n    geom {\n      geo_field\n    }\n    is_deleted\n  }\n}\n"
+        },
+        {
+            "query": "mutation MyMutation {  update_abzweigdose(where: {id: {_eq: 2000}}, _set: {is_deleted: true}) {    affected_rows  }}",
+            "expectedResult": "mutation MyMutation {\n  update_abzweigdose(where: {}, _set: {}) {}\n}\n"
+        }
+    ]
+}

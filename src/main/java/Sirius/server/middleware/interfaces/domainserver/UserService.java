@@ -11,6 +11,8 @@ import Sirius.server.newuser.*;
 
 import java.rmi.*;
 
+import java.security.Key;
+
 import de.cismet.connectioncontext.ConnectionContext;
 
 /**
@@ -132,4 +134,13 @@ public interface UserService extends Remote {
      * @throws  RemoteException  DOCUMENT ME!
      */
     boolean hasConfigAttr(final User user, final String key, final ConnectionContext context) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    Key getPublicJwtKey() throws RemoteException;
 }

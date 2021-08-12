@@ -2175,6 +2175,33 @@ public final class RESTfulSerialInterface {
     /**
      * DOCUMENT ME!
      *
+     * @param   hsr     DOCUMENT ME!
+     * @param   domain  userBytes DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    @POST
+    @Path("/getPublicJwtKey")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response getPublicJwtKey(@Context final HttpServletRequest hsr,
+            @FormParam(PARAM_DOMAIN) final String domain) throws RemoteException {
+        nameTheThread(hsr, "/getPublicJwtKey", "[bytes]");
+        try {
+            nameTheThread(hsr, "/getPublicJwtKey", domain);
+
+            return createResponse(getCallserver().getPublicJwtKey(domain));
+        } catch (final Exception ex) {
+            final String message = "could not determine config attr"; // NOI18N
+            throw createRemoteException(ex, message);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   authString         DOCUMENT ME!
      * @param   connectionContext  DOCUMENT ME!
      *

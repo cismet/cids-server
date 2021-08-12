@@ -301,4 +301,20 @@ public class UserServiceImpl {
             return null;
         }
     }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   domain  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    public Key getPublicJwtKey(final String domain) throws RemoteException {
+        final Sirius.server.middleware.interfaces.domainserver.UserService us =
+            (Sirius.server.middleware.interfaces.domainserver.UserService)activeLocalServers.get(domain);
+
+        return us.getPublicJwtKey();
+    }
 }

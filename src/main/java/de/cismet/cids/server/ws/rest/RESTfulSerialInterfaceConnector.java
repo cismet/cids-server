@@ -36,6 +36,7 @@ import java.io.IOException;
 
 import java.rmi.RemoteException;
 
+import java.security.Key;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -1967,6 +1968,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         .append(PARAM_PARAMELIPSE, Converter.serialiseToString(params, isCompressionEnabled()));
 
             return getResponsePOST("executeTask", queryParams, Object.class); // NOI18N
+        } catch (final Exception ex) {
+            throw createRemoteException(ex);
+        }
+    }
+
+    @Override
+    public Key getPublicJwtKey(final String domain) throws RemoteException {
+        try {
+            final AppendableMultivaluedMapImpl queryParams =
+                new AppendableMultivaluedMapImpl().append(
+                    PARAM_DOMAIN,
+                    domain);
+
+            return getResponsePOST("getPublicJwtKey", queryParams, Key.class); // NOI18N
         } catch (final Exception ex) {
             throw createRemoteException(ex);
         }

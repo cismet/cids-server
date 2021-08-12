@@ -10,9 +10,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.cismet.cids.utils.serverresources;
-
-import lombok.Getter;
+package de.cismet.cids.server.actions.graphql;
 
 /**
  * DOCUMENT ME!
@@ -20,26 +18,40 @@ import lombok.Getter;
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public enum GeneralServerResources {
-
-    //~ Enum constants ---------------------------------------------------------
-
-    CACHE_REFRESH_JSON(new TextServerResource("/daq_cache/refresh.json")),
-    OFFLINE_ACTION_JSON(new TextServerResource("/action_execution/configuration.json")),
-    GRAPHQL_PROPERTIES(new TextServerResource("/graphQl/configuration.properties"));
+public class CidsDataSource {
 
     //~ Instance fields --------------------------------------------------------
 
-    @Getter private final ServerResource value;
+    private String name;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Creates a new Props object.
+     * Creates a new CidsDataSource object.
      *
-     * @param  value  DOCUMENT ME!
+     * @param  name  DOCUMENT ME!
      */
-    private GeneralServerResources(final ServerResource value) {
-        this.value = value;
+    public CidsDataSource(final String name) {
+        this.name = name;
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  name  the name to set
+     */
+    public void setName(final String name) {
+        this.name = name;
     }
 }

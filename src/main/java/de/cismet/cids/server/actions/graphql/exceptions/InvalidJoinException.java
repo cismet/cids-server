@@ -10,9 +10,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.cismet.cids.utils.serverresources;
-
-import lombok.Getter;
+package de.cismet.cids.server.actions.graphql.exceptions;
 
 /**
  * DOCUMENT ME!
@@ -20,26 +18,31 @@ import lombok.Getter;
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public enum GeneralServerResources {
-
-    //~ Enum constants ---------------------------------------------------------
-
-    CACHE_REFRESH_JSON(new TextServerResource("/daq_cache/refresh.json")),
-    OFFLINE_ACTION_JSON(new TextServerResource("/action_execution/configuration.json")),
-    GRAPHQL_PROPERTIES(new TextServerResource("/graphQl/configuration.properties"));
+public class InvalidJoinException extends Exception {
 
     //~ Instance fields --------------------------------------------------------
 
-    @Getter private final ServerResource value;
+    private String joinField = null;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Creates a new Props object.
+     * Creates a new InvalidJoinException object.
      *
-     * @param  value  DOCUMENT ME!
+     * @param  joinField  DOCUMENT ME!
      */
-    private GeneralServerResources(final ServerResource value) {
-        this.value = value;
+    public InvalidJoinException(final String joinField) {
+        this.joinField = joinField;
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the joinField
+     */
+    public String getJoinField() {
+        return joinField;
     }
 }

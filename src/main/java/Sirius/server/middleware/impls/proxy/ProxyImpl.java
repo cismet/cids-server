@@ -39,6 +39,8 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+import java.security.Key;
+
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -802,6 +804,11 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
                 userName,
                 password,
                 context);
+    }
+
+    @Override
+    public Key getPublicJwtKey(final String domain) throws RemoteException {
+        return userService.getPublicJwtKey(domain);
     }
 
     @Override

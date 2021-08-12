@@ -49,6 +49,7 @@ import java.io.ObjectOutputStream;
 
 import java.rmi.RemoteException;
 
+import java.security.Key;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -1651,6 +1652,26 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Override
     public String getConfigAttr(final User user, final String key) throws RemoteException {
         return getConfigAttr(user, key, ConnectionContext.createDeprecated());
+    }
+
+    @Override
+    public Key getPublicJwtKey(final String domain) throws RemoteException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("performing getPublicJwtKey for domain'" + domain + "'");
+        }
+
+        final WebResource webResource = this.createWebResource("jwk/" + domain);
+        final WebResource.Builder builder = this.createMediaTypeHeaders(webResource);
+
+        try {
+            final Key restUser = builder.get(Key.class);
+            return restUser;
+        } catch (UniformInterfaceException ue) {
+            ue.printStackTrace();
+            System.out.println("Error");
+
+            return null;
+        }
     }
 
     // </editor-fold>
