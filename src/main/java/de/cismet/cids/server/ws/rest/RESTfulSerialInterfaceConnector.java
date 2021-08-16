@@ -205,11 +205,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             this.rootResource = rootResource + "/"; // NOI18N
         }
 
-        if (proxy == null) {
-            this.proxy = new Proxy();
-        } else {
-            this.proxy = proxy;
-        }
+        this.proxy = proxy;
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("using proxy: " + proxy); // NOI18N
@@ -356,32 +352,31 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         // create new client and webresource from the given resource
         if (!clientCache.containsKey(path)) {
             final DefaultApacheHttpClientConfig clientConfig = new DefaultApacheHttpClientConfig();
-            if (proxy.isEnabled()) {
-                if ((proxy.getHost() != null) && (proxy.getPort() > 0)) {
-                    clientConfig.getProperties()
-                            .put(
-                                ApacheHttpClientConfig.PROPERTY_PROXY_URI,
-                                "http://"
-                                + proxy.getHost()
-                                + ":"
-                                + proxy.getPort());
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("proxy set: " + proxy);
-                    }
+            if (((proxy != null) && (proxy.getHost() != null)) && (proxy.getPort() > 0) && proxy.isEnabled()
+                        && proxy.isEnabledFor(resource)) {
+                clientConfig.getProperties()
+                        .put(
+                            ApacheHttpClientConfig.PROPERTY_PROXY_URI,
+                            "http://"
+                            + proxy.getHost()
+                            + ":"
+                            + proxy.getPort());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("proxy set: " + proxy);
+                }
 
-                    if ((proxy.getUsername() != null) && (proxy.getPassword() != null)) {
-                        clientConfig.getState()
-                                .setProxyCredentials(
-                                    null,
-                                    proxy.getHost(),
-                                    proxy.getPort(),
-                                    proxy.getUsername(),
-                                    proxy.getPassword(),
-                                    proxy.getDomain(),
-                                    "");
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("proxy credentials set: " + proxy);
-                        }
+                if ((proxy.getUsername() != null) && (proxy.getPassword() != null)) {
+                    clientConfig.getState()
+                            .setProxyCredentials(
+                                null,
+                                proxy.getHost(),
+                                proxy.getPort(),
+                                proxy.getUsername(),
+                                proxy.getPassword(),
+                                proxy.getDomain(),
+                                "");
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("proxy credentials set: " + proxy);
                     }
                 }
             }
