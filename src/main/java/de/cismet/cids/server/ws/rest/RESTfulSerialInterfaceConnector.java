@@ -352,8 +352,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         // create new client and webresource from the given resource
         if (!clientCache.containsKey(path)) {
             final DefaultApacheHttpClientConfig clientConfig = new DefaultApacheHttpClientConfig();
-            if (((proxy != null) && (proxy.getHost() != null)) && (proxy.getPort() > 0) && proxy.isEnabled()
-                        && proxy.isEnabledFor(resource)) {
+            if ((proxy != null) && proxy.isEnabledFor(resource)) {
                 clientConfig.getProperties()
                         .put(
                             ApacheHttpClientConfig.PROPERTY_PROXY_URI,

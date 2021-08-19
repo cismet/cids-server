@@ -308,7 +308,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         if (!clientCache.containsKey(path)) {
             LOG.info("adding new client for path '" + path + "' and resource '" + resource + "' to cache");
             final DefaultApacheHttpClientConfig clientConfig = new DefaultApacheHttpClientConfig();
-            if (proxy.isEnabled()) {
+            if (proxy.isValid()) {
                 if ((proxy.getHost() != null) && (proxy.getPort() > 0)) {
                     clientConfig.getProperties()
                             .put(
