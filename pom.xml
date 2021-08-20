@@ -55,7 +55,7 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>7.1.1-proxyfix-prerelease-3</version>
+                <version>7.1.1-proxyfix-prerelease-5</version>
                 <type>jar</type>
             </dependency>
             <dependency>
