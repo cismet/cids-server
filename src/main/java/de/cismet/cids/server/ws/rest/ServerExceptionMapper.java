@@ -87,7 +87,12 @@ public final class ServerExceptionMapper {
             final Class<T> type,
             final boolean compressionEnabled) throws Exception {
         if (response != null) {
-            return Converter.deserialiseFromString(response.getEntity(String.class), type, compressionEnabled);
+            final String responseMessage = response.getEntity(String.class);
+            try {
+                return Converter.deserialiseFromString(response.getEntity(String.class), type, compressionEnabled);
+            } catch (final Exception ex) {
+                throw new Exception(responseMessage, ex);
+            }
         }
         return null;
     }
