@@ -13,7 +13,7 @@
 
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server</artifactId>
-    <version>7.6-SNAPSHOT</version>
+    <version>7.7-SNAPSHOT</version>
     <packaging>jar</packaging>
  
     <properties>
@@ -55,13 +55,13 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>7.0</version>
+                <version>7.2</version>
                 <type>jar</type>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>7.0</version>
+                <version>7.2</version>
                 <type>test-jar</type>
             </dependency>
             <dependency>
