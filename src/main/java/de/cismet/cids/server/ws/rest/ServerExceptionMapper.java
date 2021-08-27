@@ -89,9 +89,12 @@ public final class ServerExceptionMapper {
         if (response != null) {
             final String responseMessage = response.getEntity(String.class);
             try {
-                return Converter.deserialiseFromString(response.getEntity(String.class), type, compressionEnabled);
+                return Converter.deserialiseFromString(responseMessage, type, compressionEnabled);
             } catch (final Exception ex) {
-                throw new Exception(responseMessage, ex);
+                LOG.warn(compressionEnabled ? "expected compressed message bur received uncompressed one"
+                                            : "uncompressed compressed message bur received expected one",
+                    ex);
+                return Converter.deserialiseFromString(responseMessage, type, !compressionEnabled);
             }
         }
         return null;
