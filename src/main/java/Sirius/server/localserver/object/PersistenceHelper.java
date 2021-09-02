@@ -85,7 +85,7 @@ public class PersistenceHelper {
                                 || (value instanceof java.util.Date)
                                 || ((value instanceof String)
                                     && !((String)value).toLowerCase().startsWith("ST_GeometryFromText".toLowerCase()) // NOI18N
-                                    && !((String)value).startsWith("GeometryFromText") // deprecated !
+                                    && !((String)value).startsWith("GeometryFromText")                                // deprecated !
                                 )
                                 || (value instanceof Boolean)
                                 || (value instanceof Character)));
