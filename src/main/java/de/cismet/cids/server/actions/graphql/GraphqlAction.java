@@ -11,6 +11,8 @@ import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
 import Sirius.server.newuser.User;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -46,52 +48,7 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient Logger LOG = Logger.getLogger(GraphqlAction.class);
-    private static final String jsonResult = "{\n"
-                + "  \"data\": {\n"
-                + "    \"abzweigdose\": [\n"
-                + "      {\n"
-                + "        \"id\": 2,\n"
-                + "        \"dokumenteArray\": [],\n"
-                + "        \"geom\": {\n"
-                + "          \"geo_field\": {\n"
-                + "            \"type\": \"Point\",\n"
-                + "            \"crs\": {\n"
-                + "              \"type\": \"name\",\n"
-                + "              \"properties\": {\n"
-                + "                \"name\": \"urn:ogc:def:crs:EPSG::25832\"\n"
-                + "              }\n"
-                + "            },\n"
-                + "            \"coordinates\": [\n"
-                + "              370391.833132958,\n"
-                + "              5677158.32765719\n"
-                + "            ]\n"
-                + "          }\n"
-                + "        }\n"
-                + "      },\n"
-                + "      {\n"
-                + "        \"id\": 3,\n"
-                + "        \"dokumenteArray\": [],\n"
-                + "        \"geom\": {\n"
-                + "          \"geo_field\": {\n"
-                + "            \"type\": \"Point\",\n"
-                + "            \"crs\": {\n"
-                + "              \"type\": \"name\",\n"
-                + "              \"properties\": {\n"
-                + "                \"name\": \"urn:ogc:def:crs:EPSG::25832\"\n"
-                + "              }\n"
-                + "            },\n"
-                + "            \"coordinates\": [\n"
-                + "              370391.842388162,\n"
-                + "              5677150.77888103\n"
-                + "            ]\n"
-                + "          }\n"
-                + "        }\n"
-                + "      }\n"
-                + "    ]\n"
-                + "  }\n"
-                + "}";
-
-    private static final ConnectionContext cc = ConnectionContext.create(
+    private static final ConnectionContext CC = ConnectionContext.create(
             ConnectionContext.Category.ACTION,
             "GraphQlAction");
 
@@ -114,8 +71,6 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
     private Properties config = null;
     private MetaService ms;
     private User user;
-
-    private final String queryTemplate = "{\"query\": \"%1s\", \"variables\": %2s}";
 
     //~ Constructors -----------------------------------------------------------
 
@@ -162,7 +117,7 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
             }
         }
 
-        final GraphQlPermissionEvaluator evaluator = new GraphQlPermissionEvaluator(ms, user, cc);
+        final GraphQlPermissionEvaluator evaluator = new GraphQlPermissionEvaluator(ms, user, CC);
         final String tablesWithoutCheck = config.getProperty("tables.without.permission.check", null);
 
         if (tablesWithoutCheck != null) {
@@ -183,8 +138,14 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
             }
 
             final OutputStream os = connection.getOutputStream();
-            final byte[] inputAsBytes = String.format(queryTemplate, query, ((variables == null) ? "{}" : variables))
-                        .getBytes("utf-8");
+
+            // use the ObjectMapper to ensure that valid json is created
+            final GraphQlQuery graphQlQuery = new GraphQlQuery();
+            graphQlQuery.setQuery(query);
+            graphQlQuery.setVariables(((variables == null) ? null : new ObjectMapper().readTree(variables)));
+
+            final byte[] inputAsBytes = new ObjectMapper().writeValueAsString(graphQlQuery).getBytes("utf-8");
+
             os.write(inputAsBytes, 0, inputAsBytes.length);
 
             // receive response
