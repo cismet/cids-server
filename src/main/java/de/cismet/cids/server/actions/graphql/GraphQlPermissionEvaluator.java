@@ -115,7 +115,7 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
             final CidsVisitor visitor = new CidsVisitor();
             final Document newDoc = (Document)transformer.transform(doc, visitor);
 
-            return AstPrinter.printAst(newDoc);
+            return AstPrinter.printAstCompact(newDoc);
         } catch (InvalidSyntaxException e) {
             LOG.error("Error while evaluating graphql query", e);
         }
