@@ -42,6 +42,7 @@ public class HttpTunnelAction implements UserAwareServerAction {
     private static final transient org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
             HttpTunnelAction.class);
 
+    public static final String TASK_NAME = "httpTunnelAction";
     public static String CREDENTIALS_USERNAME_KEY = "username";
     public static String CREDENTIALS_PASSWORD_KEY = "password";
 
@@ -59,7 +60,7 @@ public class HttpTunnelAction implements UserAwareServerAction {
 
         //~ Enum constants -----------------------------------------------------
 
-        URL, REQUEST, METHOD, OPTIONS, CREDENTIALS
+        URL, REQUEST, METHOD, OPTIONS, CREDENTIALS, WITH_CONTENT_TYPE
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -86,6 +87,7 @@ public class HttpTunnelAction implements UserAwareServerAction {
             AccessHandler.ACCESS_METHODS method = AccessHandler.ACCESS_METHODS.GET_REQUEST_NO_TUNNEL;
             HashMap<String, String> options = new HashMap<String, String>();
             HashMap<String, String> credentials = new HashMap<String, String>();
+            boolean withContentType = false;
 
             for (final ServerActionParameter sap : params) {
                 if (sap != null) {
@@ -99,6 +101,8 @@ public class HttpTunnelAction implements UserAwareServerAction {
                         options = (HashMap<String, String>)sap.getValue();
                     } else if (sap.getKey().equals(PARAMETER_TYPE.CREDENTIALS.toString()) && (sap.getValue() != null)) {
                         credentials = (HashMap<String, String>)sap.getValue();
+                    } else if (sap.getKey().equals(PARAMETER_TYPE.WITH_CONTENT_TYPE.toString())) {
+                        withContentType = (Boolean)sap.getValue();
                     }
                 }
             }
@@ -134,21 +138,43 @@ public class HttpTunnelAction implements UserAwareServerAction {
             }
 
             final SimpleHttpAccessHandler handler = new SimpleHttpAccessHandler();
-            final InputStream is = handler.doRequest(
-                    url,
-                    new StringReader(request),
-                    notunnelmethod,
-                    options,
-                    creds);
-            final byte[] result = IOUtils.toByteArray(is);
-            if (((result != null) && (result.length > BIG_SIZE_LOG_THRESHOLD))) {
-                final double size = ((double)result.length) / ((double)MB);
-                final String message = "BIG REQUEST: " + (Math.round(size * 100) / 100.0) + " MB from " + user + "\n"
-                            + url + request;
-                LOG.info(message);
-            }
+            if (withContentType) {
+                final InputStream is = handler.doRequest(
+                        url,
+                        new StringReader(request),
+                        "text/xml",
+                        notunnelmethod,
+                        options,
+                        creds,
+                        true);
+                final byte[] result = IOUtils.toByteArray(is);
+                if (((result != null) && (result.length > BIG_SIZE_LOG_THRESHOLD))) {
+                    final double size = ((double)result.length) / ((double)MB);
+                    final String message = "BIG REQUEST: " + (Math.round(size * 100) / 100.0) + " MB from " + user
+                                + "\n"
+                                + url + request;
+                    LOG.info(message);
+                }
 
-            return result;
+                return result;
+            } else {
+                final InputStream is = handler.doRequest(
+                        url,
+                        new StringReader(request),
+                        notunnelmethod,
+                        options,
+                        creds);
+                final byte[] result = IOUtils.toByteArray(is);
+                if (((result != null) && (result.length > BIG_SIZE_LOG_THRESHOLD))) {
+                    final double size = ((double)result.length) / ((double)MB);
+                    final String message = "BIG REQUEST: " + (Math.round(size * 100) / 100.0) + " MB from " + user
+                                + "\n"
+                                + url + request;
+                    LOG.info(message);
+                }
+
+                return result;
+            }
         } catch (final BadHttpStatusCodeException badStatusCodeEx) {
             final String errorinfo = ("Problem during HttpTunnelAction(" + url + "=, request=" + request + ")");
             if (LOG.isDebugEnabled()) {
@@ -183,6 +209,6 @@ public class HttpTunnelAction implements UserAwareServerAction {
      */
     @Override
     public String getTaskName() {
-        return "httpTunnelAction";
+        return TASK_NAME;
     }
 }
