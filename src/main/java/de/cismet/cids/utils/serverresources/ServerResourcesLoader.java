@@ -26,7 +26,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -254,14 +253,26 @@ public class ServerResourcesLoader extends AbstractServerResourcesLoader {
      *
      * @throws  Exception  DOCUMENT ME!
      */
+    @Override
+    @Deprecated
     public <T extends Object> T loadJson(final ServerResource serverResource, final Class<T> clazz) throws Exception {
         if (!(serverResource instanceof TextServerResource)) {
             throw new Exception("wrong ServerResource type");
         }
+        return new ObjectMapper(new JsonFactory()).readValue(loadStringReader(serverResource), clazz);
+    }
 
-        final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+    @Override
+    public <T extends Object> T loadJson(final JsonServerResource serverResource, final Class<T> clazz)
+            throws Exception {
+        return loadJson(serverResource, new JsonFactory(), clazz);
+    }
 
-        return mapper.readValue(loadStringReader(serverResource), clazz);
+    @Override
+    public <T extends Object> T loadJson(final JsonServerResource serverResource,
+            final JsonFactory jsonFactory,
+            final Class<T> clazz) throws Exception {
+        return new ObjectMapper(jsonFactory).readValue(loadStringReader(serverResource), clazz);
     }
 
     /**
