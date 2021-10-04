@@ -12,6 +12,8 @@
  */
 package de.cismet.cids.utils.serverresources;
 
+import com.fasterxml.jackson.core.JsonFactory;
+
 import net.sf.jasperreports.engine.JasperReport;
 
 import java.io.StringReader;
@@ -31,6 +33,7 @@ public abstract class AbstractServerResourcesLoader {
     //~ Instance fields --------------------------------------------------------
 
     private final Map<PropertiesServerResource, ServerResourcePropertiesHandler> propertiesMap = new HashMap<>();
+    private final Map<JsonServerResource, ServerResourceJsonHandler> jsonMap = new HashMap<>();
     private final Map<BinaryServerResource, byte[]> binariesMap = new HashMap<>();
     private final Map<JasperReportServerResource, JasperReport> reportsMap = new HashMap<>();
     private final Map<TextServerResource, String> textsMap = new HashMap<>();
@@ -48,6 +51,19 @@ public abstract class AbstractServerResourcesLoader {
      * @throws  Exception  DOCUMENT ME!
      */
     public ServerResourcePropertiesHandler get(final PropertiesServerResource serverResource) throws Exception {
+        return get(serverResource, true);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   serverResource  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public ServerResourceJsonHandler get(final JsonServerResource serverResource) throws Exception {
         return get(serverResource, true);
     }
 
@@ -181,6 +197,28 @@ public abstract class AbstractServerResourcesLoader {
      *
      * @throws  Exception  DOCUMENT ME!
      */
+    public ServerResourceJsonHandler get(final JsonServerResource serverResource, final boolean useCache)
+            throws Exception {
+        if (useCache) {
+            synchronized (jsonMap) {
+                if (jsonMap.containsKey(serverResource)) {
+                    return jsonMap.get(serverResource);
+                }
+            }
+        }
+        return createJsonHandler(serverResource);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   serverResource  DOCUMENT ME!
+     * @param   useCache        DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
     public String get(final TextServerResource serverResource, final boolean useCache) throws Exception {
         if (useCache) {
             synchronized (textsMap) {
@@ -277,7 +315,71 @@ public abstract class AbstractServerResourcesLoader {
      *
      * @throws  Exception  DOCUMENT ME!
      */
+    protected ServerResourceJsonHandler createJsonHandler(final JsonServerResource serverResource) throws Exception {
+        ServerResourceJsonHandler jsonHandlerCreator = (ServerResourceJsonHandler)serverResource
+                    .getJsonHandlerClass().newInstance();
+        if (jsonHandlerCreator == null) {
+            jsonHandlerCreator = new DefaultServerResourceJsonHandler();
+        }
+        final ServerResourceJsonHandler jsonHandler = loadJson(serverResource, jsonHandlerCreator.getClass());
+        put(serverResource, jsonHandler);
+        return jsonHandler;
+    }
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   serverResource  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
     public abstract Properties loadProperties(final PropertiesServerResource serverResource) throws Exception;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   <T>             DOCUMENT ME!
+     * @param   serverResource  DOCUMENT ME!
+     * @param   clazz           DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    @Deprecated
+    public abstract <T extends Object> T loadJson(final ServerResource serverResource, final Class<T> clazz)
+            throws Exception;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   <T>             DOCUMENT ME!
+     * @param   serverResource  DOCUMENT ME!
+     * @param   clazz           DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public abstract <T extends Object> T loadJson(final JsonServerResource serverResource, final Class<T> clazz)
+            throws Exception;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   <T>             DOCUMENT ME!
+     * @param   serverResource  DOCUMENT ME!
+     * @param   jsonFactory     DOCUMENT ME!
+     * @param   clazz           DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public abstract <T extends Object> T loadJson(final JsonServerResource serverResource,
+            final JsonFactory jsonFactory,
+            final Class<T> clazz) throws Exception;
 
     /**
      * DOCUMENT ME!
