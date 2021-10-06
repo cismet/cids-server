@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 
 import de.cismet.connectioncontext.AbstractConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
+import java.util.regex.Matcher;
 
 /**
  * DOCUMENT ME!
@@ -391,14 +392,14 @@ public class ConnectionContextLog {
             methodParams = "";
         }
 
-        return formatString.replaceAll(Pattern.quote("${TIME}"), time)
-                    .replaceAll(Pattern.quote("${USER_NAME}"), userName)
-                    .replaceAll(Pattern.quote("${USER_DOMAIN}"), userDomain)
-                    .replaceAll(Pattern.quote("${CATEGORY}"), category)
-                    .replaceAll(Pattern.quote("${CONTEXT_NAME}"), contextName)
-                    .replaceAll(Pattern.quote("${CLIENT_IP}"), clientIp)
-                    .replaceAll(Pattern.quote("${METHOD_NAME}"), methodName)
-                    .replaceAll(Pattern.quote("${METHOD_PARAMS}"), methodParams);
+        return formatString.replaceAll(Pattern.quote("${TIME}"), Matcher.quoteReplacement(time))
+                    .replaceAll(Pattern.quote("${USER_NAME}"), Matcher.quoteReplacement(userName))
+                    .replaceAll(Pattern.quote("${USER_DOMAIN}"), Matcher.quoteReplacement(userDomain))
+                    .replaceAll(Pattern.quote("${CATEGORY}"), Matcher.quoteReplacement(category))
+                    .replaceAll(Pattern.quote("${CONTEXT_NAME}"), Matcher.quoteReplacement(contextName))
+                    .replaceAll(Pattern.quote("${CLIENT_IP}"), Matcher.quoteReplacement(clientIp))
+                    .replaceAll(Pattern.quote("${METHOD_NAME}"), Matcher.quoteReplacement(methodName))
+                    .replaceAll(Pattern.quote("${METHOD_PARAMS}"), Matcher.quoteReplacement(methodParams));
     }
 
     @Override
