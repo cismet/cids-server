@@ -46,4 +46,11 @@ public interface CustomDeletionProvider {
      * @throws  Exception  DOCUMENT ME!
      */
     boolean customDeleteMetaObject(User user, MetaObject mo) throws Exception;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    boolean getDomain();
 }
