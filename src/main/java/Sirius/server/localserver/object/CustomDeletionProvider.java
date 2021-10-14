@@ -52,5 +52,5 @@ public interface CustomDeletionProvider {
      *
      * @return  DOCUMENT ME!
      */
-    boolean getDomain();
+    String getDomain();
 }
