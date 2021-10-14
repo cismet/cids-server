@@ -1045,7 +1045,9 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                         : (Collection<CustomDeletionProvider>)Lookup.getDefault().lookupAll(
                             CustomDeletionProvider.class)) {
                 try {
-                    if (customDeletionProvider != null) {
+                    if ((customDeletionProvider != null)
+                                && DomainServerImpl.getServerProperties().getServerName().equals(
+                                    customDeletionProvider.getDomain())) {
                         if (customDeletionProvider instanceof ConnectionContextStore) {
                             ((ConnectionContextStore)customDeletionProvider).initWithConnectionContext(
                                 connectionContext);
