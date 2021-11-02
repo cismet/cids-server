@@ -21,6 +21,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import org.deegree.datatypes.QualifiedName;
@@ -121,6 +122,8 @@ public abstract class AbstractPostgresToShapefileServerAction implements Connect
                 return new SimplePropertyType(name, org.deegree.datatypes.Types.VARCHAR, 0, 1);
             } else if (propertyClass.isAssignableFrom(Boolean.class)) {
                 return new SimplePropertyType(name, org.deegree.datatypes.Types.INTEGER, 0, 1);
+            } else if (propertyClass.isAssignableFrom(Date.class)) {
+                return new SimplePropertyType(name, org.deegree.datatypes.Types.DATE, 0, 1);
             } else {
                 LOG.error("unknown type: " + propertyClass.getClass().getName());
                 return null;
@@ -214,6 +217,15 @@ public abstract class AbstractPostgresToShapefileServerAction implements Connect
      *
      * @return  DOCUMENT ME!
      */
+    public String getWrtProjection() {
+        return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public abstract File getTmpDir();
 
     /**
@@ -293,12 +305,17 @@ public abstract class AbstractPostgresToShapefileServerAction implements Connect
             final File shpFile = new File(getTmpDir(), String.format("%s.shp", name));
             final File shxFile = new File(getTmpDir(), String.format("%s.shx", name));
             final File dbfFile = new File(getTmpDir(), String.format("%s.dbf", name));
+            final File prjFile = new File(getTmpDir(), String.format("%s.prj", name));
             final File zipFile = new File(getTmpDir(), String.format("%s.zip", name));
             writeToShp(fieldTypeMap, rowsMap, shpFile);
             try(final ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(zipFile))) {
                 writeToZip(shpFile.getName(), new FileInputStream(shpFile), zipOut);
                 writeToZip(shxFile.getName(), new FileInputStream(shxFile), zipOut);
                 writeToZip(dbfFile.getName(), new FileInputStream(dbfFile), zipOut);
+                final String wrtProjection = getWrtProjection();
+                if (wrtProjection != null) {
+                    writeToZip(prjFile.getName(), IOUtils.toInputStream(wrtProjection, "UTF-8"), zipOut);
+                }
                 zipOut.close();
             }
             try {
