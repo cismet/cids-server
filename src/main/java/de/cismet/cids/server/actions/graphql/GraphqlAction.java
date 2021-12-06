@@ -82,7 +82,7 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
             config = ServerResourcesLoader.getInstance()
                         .loadProperties(GeneralServerResources.GRAPHQL_PROPERTIES.getValue());
         } catch (Exception e) {
-            LOG.error("Error while loading graphQl resources", e);
+            LOG.info("Cannot load graphQl resources. The graphQl action cannot be used.");
         }
     }
 
@@ -105,6 +105,11 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
 
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
+        if (config == null) {
+            LOG.error("The graphQl action cannot be used, because the resources could not be loaded.");
+
+            return null;
+        }
         String query = null;
         String variables = "";
         final String hasuraSecret = config.getProperty("hasura.secret", null);
