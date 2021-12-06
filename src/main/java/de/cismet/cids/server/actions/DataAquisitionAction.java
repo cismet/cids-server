@@ -56,6 +56,13 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
     private static final String CONF_ATTR_PREFIX = "daq";
     private static final Integer OLD_DATA_CAUSED_BY_ERROR = 299;
     private static final Integer OLD_DATA_CAUSED_BY_INVALID_JSON = 298;
+    private static final Integer STATUS_OK = 200;
+    private static final Integer MD5_MATCH = 304;
+    private static final int CONTENT_FIELD = 0;
+    private static final int MD5_FIELD = 1;
+    private static final int TIME_FIELD = 2;
+    private static final int VERSION_FIELD = 3;
+    private static final int STATUS_FIELD = 4;
 
     //~ Enums ------------------------------------------------------------------
 
@@ -178,44 +185,41 @@ public class DataAquisitionAction implements ServerAction, MetaServiceStore, Use
 
                 if ((result != null) && (result.size() > 0)) {
                     if ((result.get(0) != null) && (result.get(0).size() > 0)) {
-                        if ((getValueAsString(result.get(0).get(1)) != null)
-                                    && getValueAsString(result.get(0).get(1)).equals(md5)) {
-                            response.setTime(getValueAsString(result.get(0).get(2)));
-
-                            if ((result.get(0).get(4) != null)
-                                        && getValueAsString(result.get(0).get(4)).equals("200")) {
-                                response.setStatus(304);
-                            } else if ((result.get(0).get(4) != null)
-                                        && getValueAsString(result.get(0).get(4)).equals("502")) {
-                                response.setTime(getValueAsString(result.get(1).get(2)));
-                                response.setStatus(OLD_DATA_CAUSED_BY_INVALID_JSON);
+                        if (getValueAsString(result.get(0).get(STATUS_FIELD)).equals("200")) {
+                            if ((getValueAsString(result.get(0).get(MD5_FIELD)) != null)
+                                        && getValueAsString(result.get(0).get(MD5_FIELD)).equals(md5)) {
+                                response.setTime(getValueAsString(result.get(0).get(TIME_FIELD)));
+                                response.setStatus(MD5_MATCH);
                             } else {
-                                response.setStatus(OLD_DATA_CAUSED_BY_ERROR);
+                                response.setContent(getValueAsString(result.get(0).get(CONTENT_FIELD)));
+                                response.setMd5(getValueAsString(result.get(0).get(MD5_FIELD)));
+                                response.setTime(getValueAsString(result.get(0).get(TIME_FIELD)));
+                                response.setVersion(getValueAsString(result.get(0).get(VERSION_FIELD)));
+                                response.setStatus(STATUS_OK);
+                            }
+                        } else if (getValueAsString(result.get(0).get(STATUS_FIELD)).equals("502")) {
+                            if ((getValueAsString(result.get(1).get(MD5_FIELD)) != null)
+                                        && getValueAsString(result.get(1).get(MD5_FIELD)).equals(md5)) {
+                                response.setTime(getValueAsString(result.get(1).get(TIME_FIELD)));
+                                response.setStatus(MD5_MATCH);
+                            } else {
+                                response.setMd5(getValueAsString(result.get(1).get(MD5_FIELD)));
+                                response.setContent(getValueAsString(result.get(1).get(CONTENT_FIELD)));
+                                response.setTime(getValueAsString(result.get(1).get(TIME_FIELD)));
+                                response.setVersion(getValueAsString(result.get(1).get(VERSION_FIELD)));
+                                response.setStatus(OLD_DATA_CAUSED_BY_INVALID_JSON);
                             }
                         } else {
-                            response.setContent(getValueAsString(result.get(0).get(0)));
-                            response.setMd5(getValueAsString(result.get(0).get(1)));
-                            response.setTime(getValueAsString(result.get(0).get(2)));
-                            response.setVersion(getValueAsString(result.get(0).get(3)));
-
-                            if ((result.get(0).get(4) != null)
-                                        && getValueAsString(result.get(0).get(4)).equals("200")) {
-                                response.setStatus(200);
-                            } else if ((result.get(0).get(4) != null)
-                                        && getValueAsString(result.get(0).get(4)).equals("502")) {
-                                response.setContent(getValueAsString(result.get(1).get(0)));
-
-                                if ((result.get(1).get(1) != null) && result.get(1).get(1).equals(md5)) {
-                                    // the last md5 is equal to the given md5, so do not send the md5
-                                    response.setMd5(null);
-                                } else {
-                                    response.setMd5(getValueAsString(result.get(1).get(1)));
-                                }
-
-                                response.setTime(getValueAsString(result.get(1).get(2)));
-                                response.setVersion(getValueAsString(result.get(1).get(3)));
-                                response.setStatus(OLD_DATA_CAUSED_BY_INVALID_JSON);
+                            // status = 500
+                            if ((getValueAsString(result.get(0).get(MD5_FIELD)) != null)
+                                        && getValueAsString(result.get(0).get(MD5_FIELD)).equals(md5)) {
+                                response.setTime(getValueAsString(result.get(0).get(TIME_FIELD)));
+                                response.setStatus(MD5_MATCH);
                             } else {
+                                response.setContent(getValueAsString(result.get(0).get(CONTENT_FIELD)));
+                                response.setMd5(getValueAsString(result.get(0).get(MD5_FIELD)));
+                                response.setTime(getValueAsString(result.get(0).get(TIME_FIELD)));
+                                response.setVersion(getValueAsString(result.get(0).get(VERSION_FIELD)));
                                 response.setStatus(OLD_DATA_CAUSED_BY_ERROR);
                             }
                         }

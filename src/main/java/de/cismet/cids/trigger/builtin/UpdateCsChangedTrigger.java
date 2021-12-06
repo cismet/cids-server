@@ -13,9 +13,6 @@ import Sirius.server.sql.DBConnection;
 
 import org.openide.util.lookup.ServiceProvider;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.trigger.AbstractDBAwareCidsTrigger;
@@ -300,18 +297,15 @@ public class UpdateCsChangedTrigger extends AbstractDBAwareCidsTrigger {
     @Override
     public void afterCommittedInsert(final CidsBean cidsBean,
             final User user) {
-        System.out.println("insert");
     }
 
     @Override
     public void afterCommittedUpdate(final CidsBean cidsBean,
             final User user) {
-        System.out.println("update");
     }
 
     @Override
     public void afterCommittedDelete(final CidsBean cidsBean,
             final User user) {
-        System.out.println("delete");
     }
 }
