@@ -106,8 +106,25 @@ public interface UserService extends Remote {
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
+     *
+     * @@deprecateduseListgetConfigAttrs(final User user, final String key, final ConnectionContext context) instead
      */
+
+    @Deprecated
     String getConfigAttr(final User user, final String key, final ConnectionContext context) throws RemoteException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user     DOCUMENT ME!
+     * @param   key      DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    String[] getConfigAttrs(final User user, final String key, final ConnectionContext context) throws RemoteException;
 
     /**
      * DOCUMENT ME!

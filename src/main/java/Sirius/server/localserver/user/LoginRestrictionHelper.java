@@ -13,7 +13,6 @@
 package Sirius.server.localserver.user;
 
 import Sirius.server.newuser.LoginRestrictionUserException;
-import Sirius.server.newuser.UserException;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -65,10 +64,9 @@ public class LoginRestrictionHelper {
      *
      * @param   loginRestrictionValue  DOCUMENT ME!
      *
-     * @throws  UserException                  DOCUMENT ME!
      * @throws  LoginRestrictionUserException  DOCUMENT ME!
      */
-    public void checkLoginRestriction(final String loginRestrictionValue) throws UserException {
+    public void checkLoginRestriction(final String loginRestrictionValue) throws LoginRestrictionUserException {
         final Restriction r = getRestriction(loginRestrictionValue);
         final LoginRestriction restriction = loginRestrictions.get(r.getKey());
         if (restriction != null) {
@@ -88,9 +86,9 @@ public class LoginRestrictionHelper {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  UserException  DOCUMENT ME!
+     * @throws  LoginRestrictionUserException  UserException DOCUMENT ME!
      */
-    Restriction getRestriction(final String loginRestrictionValue) throws UserException {
+    Restriction getRestriction(final String loginRestrictionValue) throws LoginRestrictionUserException {
         try {
             final String lrv = loginRestrictionValue.trim();
 
