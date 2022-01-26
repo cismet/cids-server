@@ -40,7 +40,6 @@ import Sirius.server.sql.DBConnectionPool;
 import Sirius.server.sql.PreparableStatement;
 
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -49,7 +48,6 @@ import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Encoders;
 import io.jsonwebtoken.security.Keys;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -77,7 +75,6 @@ import java.sql.SQLException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -85,9 +82,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 import de.cismet.cids.objectextension.ObjectExtensionFactory;
 
@@ -2007,7 +2001,21 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     }
 
     @Override
+    @Deprecated
     public String getConfigAttr(final User user, final String key, final ConnectionContext connectionContext)
+            throws RemoteException {
+        final String[] configAttrs = getConfigAttrs(user, key, connectionContext);
+        if ((configAttrs != null) && (configAttrs.length > 1)) {
+            logger.warn(String.format(
+                    "more than 1 configAttr is matching for key '%s' and user '%s'",
+                    key,
+                    (user != null) ? user.getName() : "<null>"));
+        }
+        return ((configAttrs == null) || (configAttrs.length == 0)) ? null : configAttrs[0];
+    }
+
+    @Override
+    public String[] getConfigAttrs(final User user, final String key, final ConnectionContext connectionContext)
             throws RemoteException {
         if (ConnectionContextBackend.getInstance().isEnabled()) {
             ConnectionContextBackend.getInstance()
@@ -2024,7 +2032,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                                 })));
         }
         try {
-            return userstore.getConfigAttr(user, key);
+            return userstore.getConfigAttrs(user, key);
         } catch (final SQLException ex) {
             final String message = "could not retrieve config attr: user: " + user + " || key: " + key;
             logger.error(message, ex);

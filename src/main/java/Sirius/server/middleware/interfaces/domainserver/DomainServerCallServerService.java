@@ -348,9 +348,16 @@ public class DomainServerCallServerService implements CallServerService {
     }
 
     @Override
+    @Deprecated
     public String getConfigAttr(final User user, final String key, final ConnectionContext context)
             throws RemoteException {
         return getDomainServer().getConfigAttr(user, key, context);
+    }
+
+    @Override
+    public String[] getConfigAttrs(final User user, final String key, final ConnectionContext context)
+            throws RemoteException {
+        return getDomainServer().getConfigAttrs(user, key, context);
     }
 
     @Override

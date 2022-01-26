@@ -1672,6 +1672,18 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
     }
 
+    @Deprecated
+    @Override
+    public String getConfigAttr(final User user, final String key, final ConnectionContext connectionContext)
+            throws RemoteException {
+        // TODO: Implement ConfigAttributes API.
+        final String message = "The method '"
+                    + Thread.currentThread().getStackTrace()[1].getMethodName()
+                    + "' is not yet supported by the ConfigAttributes REST API!";
+        LOG.error(message);
+        throw new UnsupportedOperationException(message);
+    }
+
     // </editor-fold>
     // <editor-fold desc="CONFIGATTRIBUTES API" defaultstate="collapsed">
     /**
@@ -1691,7 +1703,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @throws  UnsupportedOperationException  Implement ConfigAttributes API
      */
     @Override
-    public String getConfigAttr(final User user, final String key, final ConnectionContext connectionContext)
+    public String[] getConfigAttrs(final User user, final String key, final ConnectionContext connectionContext)
             throws RemoteException {
         // TODO: Implement ConfigAttributes API.
         final String message = "The method '"

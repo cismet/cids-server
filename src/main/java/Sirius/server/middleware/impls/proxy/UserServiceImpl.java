@@ -16,6 +16,7 @@ package Sirius.server.middleware.impls.proxy;
 import Sirius.server.ServerExitError;
 import Sirius.server.localserver.user.LoginRestrictionHelper;
 import Sirius.server.middleware.interfaces.domainserver.UserService;
+import Sirius.server.newuser.LoginRestrictionUserException;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 import Sirius.server.newuser.UserGroup;
@@ -34,8 +35,10 @@ import java.rmi.RemoteException;
 
 import java.security.Key;
 
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
@@ -181,12 +184,26 @@ public class UserServiceImpl {
             }
         }
         if (validatedUser != null) {
-            final String loginRestrictionValue = getConfigAttr(
+            final String[] loginRestrictionValues = getConfigAttrs(
                     validatedUser,
                     "login.restriction",
                     connectionContext);
-            if (loginRestrictionValue != null) {
-                LoginRestrictionHelper.getInstance().checkLoginRestriction(loginRestrictionValue);
+            if (loginRestrictionValues != null) {
+                LoginRestrictionUserException restrictionException = null;
+                for (final String loginRestrictionValue : new HashSet<>(Arrays.asList(loginRestrictionValues))) {
+                    if (loginRestrictionValue != null) {
+                        try {
+                            LoginRestrictionHelper.getInstance().checkLoginRestriction(loginRestrictionValue);
+                            // first existing one without exception => login allowed
+                            return validatedUser;
+                        } catch (final LoginRestrictionUserException ex) {
+                            restrictionException = ex;
+                        }
+                    }
+                }
+                if (restrictionException != null) {
+                    throw restrictionException;
+                }
             }
             return validatedUser;
         }
@@ -282,7 +299,7 @@ public class UserServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public String getConfigAttr(final User user, final String key, final ConnectionContext context)
+    public String[] getConfigAttrs(final User user, final String key, final ConnectionContext context)
             throws RemoteException {
         final String domain;
         final String realKey;
@@ -296,7 +313,7 @@ public class UserServiceImpl {
         }
         final UserService userService = (UserService)activeLocalServers.get(domain);
         if (userService != null) {
-            return userService.getConfigAttr(user, realKey, context);
+            return userService.getConfigAttrs(user, realKey, context);
         } else {
             return null;
         }
