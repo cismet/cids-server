@@ -40,6 +40,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import de.cismet.cids.utils.ErrorUtils;
+
 /**
  * DOCUMENT ME!
  *
@@ -513,7 +515,9 @@ public class ClassCache extends Shutdown {
             }
         } catch (final Exception e) {
             ExceptionHandler.handle(e);
-            LOG.error("<LS> ERROR :: addMemberinfos", e);                             // NOI18N
+            LOG.fatal("<LS> ERROR :: addMemberinfos", e);                             // NOI18N
+
+            ErrorUtils.createRUDFileAndExit(1, null, e);
         }
     }
 

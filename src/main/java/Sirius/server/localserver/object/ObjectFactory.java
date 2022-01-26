@@ -32,6 +32,7 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -42,6 +43,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+
+import de.cismet.cids.utils.ErrorUtils;
 
 import de.cismet.tools.CurrentStackTrace;
 
@@ -391,7 +394,8 @@ public final class ObjectFactory extends Shutdown {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  SQLException  DOCUMENT ME!
+     * @throws  SQLException            DOCUMENT ME!
+     * @throws  FieldNotFoundException  DOCUMENT ME!
      */
     private Sirius.server.localserver.object.Object createObject(final int objectId,
             final ResultSet rs,
@@ -433,139 +437,169 @@ public final class ObjectFactory extends Shutdown {
                 fieldName = mai.getFieldName();
 
                 // LOG.debug("versuche attr "+fieldName+"hinzuzuf\u00FCgen");
-
-                if (!mai.isVirtual()) {
-                    if (!(mai.isForeignKey())) // simple attribute can be directly retrieved from the resultset
-                    {
-                        attrValue = rs.getObject(fieldName);
-
-                        try {
-                            if (attrValue != null) {
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.debug(
-                                        "Class of attribute "
-                                                + mai.getName()
-                                                + " (within conversion request)" // NOI18N
-                                                + attrValue.getClass());
-                                }
-                            } else {
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.debug("Class of attribute " + mai.getName() + " = null"); // NOI18N
-                                }
-                            }
-                            if (attrValue instanceof Clob) {
-                                // we convert the clob to a string, otherwise the value is not serialisable out of the
-                                // box due to the direct connection to the database
-                                // TODO: handle overflows, i.e. clob too big
-                                final Clob clob = (Clob)attrValue;
-                                if (clob.length() <= Integer.valueOf(Integer.MAX_VALUE).longValue()) {
-                                    attrValue = clob.getSubString(1, Long.valueOf(clob.length()).intValue());
-                                } else {
-                                    throw new IllegalStateException(
-                                        "cannot handle clobs larger than Integer.MAX_VALUE: [class="
-                                                + c.getName()
-                                                + "|field="
-                                                + fieldName
-                                                + "]");
-                                }
-                            }
-                            if (SQLTools.getGeometryFactory(dialect).isGeometryObject(attrValue)) {
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.debug(
-                                        "Converting in JTS: "
-                                                + mai.getName()
-                                                + " ("
-                                                + attrValue.getClass()
-                                                + ")  = " // NOI18N
-                                                + attrValue);
-                                }
-                                attrValue = SQLTools.getGeometryFactory(dialect).createGeometry(attrValue);
-                            }
-                            if (attrValue != null) {
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.debug(
-                                        "Class of attribute "
-                                                + mai.getName()
-                                                + " (within conversion request)" // NOI18N
-                                                + attrValue.getClass());
-                                }
-                            } else {
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.debug("Class of attribute " + mai.getName() + " = null"); // NOI18N
-                                }
-                            }
-                        } catch (Exception ex) {
-                            LOG.error(
-                                "Error while converting to serialisable GeoObject. Setting attr to NULL, value was:" // NOI18N
-                                        + attrValue,
-                                ex);
-                            attrValue = null;
-                        }
-                    } else                                // isForeignKey therfore retrieve DefaultObject (recursion)
-                    {
-                        if (mai.isArray())                // isForeignKey && isArray
+                try {
+                    if (!mai.isVirtual()) {
+                        if (!(mai.isForeignKey())) // simple attribute can be directly retrieved from the resultset
                         {
-                            final String referenceKey = rs.getString(fieldName);
+                            attrValue = rs.getObject(fieldName);
 
-                            if (referenceKey != null) {
-                                attrValue = getMetaObjectArray(referenceKey, mai, objectId, ohm);
-                            } else {
-                                attrValue = null;
-                            }
-                        } else {
-                            if ((backlinkClassToExclude != null)
-                                        && (backlinkClassToExclude.getID() == mai.getForeignKeyClassId())) {
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.debug("skip " + mai.getFieldName()
-                                                + " because it's the backlink of a one to many relationship");
-                                }
-                            } else {
-                                // isForeignkey DefaultObject can be retrieved as usual
-                                // retrieve foreign key
-
-                                if (rs.getObject(fieldName) == null) // wenn null dann
-                                // unterbrechen der rekursion
-                                {
-                                    attrValue = null;
+                            try {
+                                if (attrValue != null) {
                                     if (LOG.isDebugEnabled()) {
                                         LOG.debug(
-                                            "getObject for "
-                                                    + fieldName
-                                                    + "produced null, setting attrValue to null"); // NOI18N
+                                            "Class of attribute "
+                                                    + mai.getName()
+                                                    + " (within conversion request)" // NOI18N
+                                                    + attrValue.getClass());
                                     }
                                 } else {
-                                    final int o_id = rs.getInt(fieldName);
-                                    // LOG.debug("attribute is object");
-                                    try {
-                                        final Sirius.server.localserver._class.Class maiClass = classCache.getClass(
-                                                mai.getForeignKeyClassId());
-                                        final boolean cacheHintSet = maiClass.getClassAttribute("CACHEHINT") != null;
-                                        if (allowLightweightObjects && cacheHintSet) {
-                                            attrValue = new LightweightObject(o_id, mai.getForeignKeyClassId());
-                                        } else {
-                                            attrValue = getObject(
-                                                    o_id,
-                                                    mai.getForeignKeyClassId(),
-                                                    true,
-                                                    ohm,
-                                                    byPassCacheCounter);
-                                        }
-                                    } catch (Exception e) {
-                                        LOG.error("getObject recursion interrupted for oid" + o_id + "  MAI " + mai, e); // NOI18N
+                                    if (LOG.isDebugEnabled()) {
+                                        LOG.debug("Class of attribute " + mai.getName() + " = null"); // NOI18N
+                                    }
+                                }
+                                if (attrValue instanceof Clob) {
+                                    // we convert the clob to a string, otherwise the value is not serialisable out of
+                                    // the box due to the direct connection to the database TODO: handle overflows, i.e.
+                                    // clob too big
+                                    final Clob clob = (Clob)attrValue;
+                                    if (clob.length() <= Integer.valueOf(Integer.MAX_VALUE).longValue()) {
+                                        attrValue = clob.getSubString(1, Long.valueOf(clob.length()).intValue());
+                                    } else {
+                                        throw new IllegalStateException(
+                                            "cannot handle clobs larger than Integer.MAX_VALUE: [class="
+                                                    + c.getName()
+                                                    + "|field="
+                                                    + fieldName
+                                                    + "]");
+                                    }
+                                }
+                                if (SQLTools.getGeometryFactory(dialect).isGeometryObject(attrValue)) {
+                                    if (LOG.isDebugEnabled()) {
+                                        LOG.debug(
+                                            "Converting in JTS: "
+                                                    + mai.getName()
+                                                    + " ("
+                                                    + attrValue.getClass()
+                                                    + ")  = " // NOI18N
+                                                    + attrValue);
+                                    }
+                                    attrValue = SQLTools.getGeometryFactory(dialect).createGeometry(attrValue);
+                                }
+                                if (attrValue != null) {
+                                    if (LOG.isDebugEnabled()) {
+                                        LOG.debug(
+                                            "Class of attribute "
+                                                    + mai.getName()
+                                                    + " (within conversion request)" // NOI18N
+                                                    + attrValue.getClass());
+                                    }
+                                } else {
+                                    if (LOG.isDebugEnabled()) {
+                                        LOG.debug("Class of attribute " + mai.getName() + " = null"); // NOI18N
+                                    }
+                                }
+                            } catch (Exception ex) {
+                                LOG.error(
+                                    "Error while converting to serialisable GeoObject. Setting attr to NULL, value was:" // NOI18N
+                                            + attrValue,
+                                    ex);
+                                attrValue = null;
+                            }
+                        } else                                // isForeignKey therfore retrieve DefaultObject
+                                                              // (recursion)
+                        {
+                            if (mai.isArray())                // isForeignKey && isArray
+                            {
+                                final String referenceKey = rs.getString(fieldName);
+
+                                if (referenceKey != null) {
+                                    attrValue = getMetaObjectArray(referenceKey, mai, objectId, ohm);
+                                } else {
+                                    attrValue = null;
+                                }
+                            } else {
+                                if ((backlinkClassToExclude != null)
+                                            && (backlinkClassToExclude.getID() == mai.getForeignKeyClassId())) {
+                                    if (LOG.isDebugEnabled()) {
+                                        LOG.debug("skip " + mai.getFieldName()
+                                                    + " because it's the backlink of a one to many relationship");
+                                    }
+                                } else {
+                                    // isForeignkey DefaultObject can be retrieved as usual
+                                    // retrieve foreign key
+
+                                    if (rs.getObject(fieldName) == null) // wenn null dann
+                                    // unterbrechen der rekursion
+                                    {
                                         attrValue = null;
+                                        if (LOG.isDebugEnabled()) {
+                                            LOG.debug(
+                                                "getObject for "
+                                                        + fieldName
+                                                        + "produced null, setting attrValue to null"); // NOI18N
+                                        }
+                                    } else {
+                                        final int o_id = rs.getInt(fieldName);
+                                        // LOG.debug("attribute is object");
+                                        try {
+                                            final Sirius.server.localserver._class.Class maiClass = classCache.getClass(
+                                                    mai.getForeignKeyClassId());
+                                            final boolean cacheHintSet = maiClass.getClassAttribute("CACHEHINT")
+                                                        != null;
+                                            if (allowLightweightObjects && cacheHintSet) {
+                                                attrValue = new LightweightObject(o_id, mai.getForeignKeyClassId());
+                                            } else {
+                                                attrValue = getObject(
+                                                        o_id,
+                                                        mai.getForeignKeyClassId(),
+                                                        true,
+                                                        ohm,
+                                                        byPassCacheCounter);
+                                            }
+                                        } catch (Exception e) {
+                                            LOG.error("getObject recursion interrupted for oid" + o_id + "  MAI " + mai,
+                                                e); // NOI18N
+                                            attrValue = null;
+
+                                            if (e instanceof FieldNotFoundException) {
+                                                throw e;
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                } else {
-                    if (mai.isExtensionAttribute()) {
-                        attrValue = null;
-                    } else if (mai.getForeignKeyClassId() < 0) {
-                        // 1:n Beziehung
+                    } else {
+                        if (mai.isExtensionAttribute()) {
+                            attrValue = null;
+                        } else if (mai.getForeignKeyClassId() < 0) {
+                            // 1:n Beziehung
 
-                        attrValue = getMetaObjectArrayForOneToMany(fieldName, mai, objectId);
+                            attrValue = getMetaObjectArrayForOneToMany(fieldName, mai, objectId);
+                        }
                     }
+                } catch (SQLException e) {
+                    LOG.error("Error in ObjectFactory: ", e);
+                    final ResultSetMetaData rsMeta = rs.getMetaData();
+                    boolean fieldFound = false;
+
+                    if (!mai.isVirtual()) {
+                        for (int i = 1; i <= rsMeta.getColumnCount(); ++i) {
+                            if (rsMeta.getColumnName(i).equalsIgnoreCase(fieldName)) {
+                                fieldFound = true;
+                                break;
+                            }
+                        }
+
+                        if (!fieldFound) {
+                            ErrorUtils.createRUDFile("The field " + fieldName + " does not exist in table "
+                                        + c.getTableName(),
+                                e);
+                            throw new FieldNotFoundException(fieldName, c.getTableName());
+                        }
+                    }
+
+                    throw e;
                 }
 
                 final ObjectAttribute oAttr = new ObjectAttribute(mai, objectId, attrValue, c.getAttributePolicy());
