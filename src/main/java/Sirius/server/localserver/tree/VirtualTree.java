@@ -841,11 +841,12 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
             }
             boolean additionaltreepermissiontag;
             try {
-                additionaltreepermissiontag = DomainServerImpl.getServerInstance()
+                additionaltreepermissiontag = (additionaltreepermissiontagString != null)
+                    ? DomainServerImpl.getServerInstance()
                             .hasConfigAttr(
                                     user,
                                     additionaltreepermissiontagString,
-                                    getConnectionContext());
+                                    getConnectionContext()) : false;
             } catch (RemoteException ex) {
                 additionaltreepermissiontag = false;
                 LOG.error(ex.getMessage(), ex);

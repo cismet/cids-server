@@ -1840,7 +1840,6 @@ public final class RESTfulSerialInterface {
     @Path("/getConfigAttr")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    @Deprecated
     public Response getConfigAttr(@Context final HttpServletRequest hsr,
             @FormParam(PARAM_USER) final String userBytes,
             @FormParam(PARAM_KEY) final String keyBytes,
@@ -1862,47 +1861,6 @@ public final class RESTfulSerialInterface {
                         ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {
             final String message = "could not get config attr"; // NOI18N
-            throw createRemoteException(ex, message);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   hsr           DOCUMENT ME!
-     * @param   userBytes     DOCUMENT ME!
-     * @param   keyBytes      DOCUMENT ME!
-     * @param   contextBytes  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @POST
-    @Path("/getConfigAttrs")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getConfigAttrs(@Context final HttpServletRequest hsr,
-            @FormParam(PARAM_USER) final String userBytes,
-            @FormParam(PARAM_KEY) final String keyBytes,
-            @FormParam(PARAM_CONNECTIONCONTEXT) final String contextBytes) throws RemoteException {
-        nameTheThread(hsr, "/getConfigAttr", "[bytes]", "key=[bytes]");
-        try {
-            final User user = Converter.deserialiseFromString(userBytes, User.class, isCompressionEnabled());
-            final String key = Converter.deserialiseFromString(keyBytes, String.class, isCompressionEnabled());
-            nameTheThread(hsr, "/getConfigAttrs", user.toString(), "key=" + key);
-
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
-                    contextBytes,
-                    ConnectionContext.class,
-                    isCompressionEnabled());
-
-            return createResponse(getCallserver().getConfigAttrs(
-                        user,
-                        key,
-                        ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
-        } catch (final Exception ex) {
-            final String message = "could not get config attrs"; // NOI18N
             throw createRemoteException(ex, message);
         }
     }

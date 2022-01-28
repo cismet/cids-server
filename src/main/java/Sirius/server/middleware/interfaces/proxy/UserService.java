@@ -178,20 +178,6 @@ public interface UserService extends Remote {
     String getConfigAttr(final User user, final String key) throws RemoteException;
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param   user     DOCUMENT ME!
-     * @param   key      DOCUMENT ME!
-     * @param   context  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  RemoteException  DOCUMENT ME!
-     */
-    @Deprecated
-    String getConfigAttr(final User user, final String key, final ConnectionContext context) throws RemoteException;
-
-    /**
      * Retrieves the value for the given key for the given {@link User}. That means if a user requests a value for a key
      * the value is delivered with the following strategy:
      *
@@ -217,7 +203,7 @@ public interface UserService extends Remote {
      *
      * @throws  RemoteException  if an internal error occurs
      */
-    String[] getConfigAttrs(final User user, final String key, final ConnectionContext context) throws RemoteException;
+    String getConfigAttr(final User user, final String key, final ConnectionContext context) throws RemoteException;
 
     /**
      * DOCUMENT ME!

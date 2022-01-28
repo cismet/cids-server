@@ -1839,7 +1839,6 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     }
 
     @Override
-    @Deprecated
     public String getConfigAttr(final User user, final String key, final ConnectionContext context)
             throws RemoteException {
         try {
@@ -1850,22 +1849,6 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getConfigAttr", queryParams, String.class);
-        } catch (final Exception ex) {
-            throw createRemoteException(ex);
-        }
-    }
-
-    @Override
-    public String[] getConfigAttrs(final User user, final String key, final ConnectionContext context)
-            throws RemoteException {
-        try {
-            final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
-                        PARAM_USER,
-                        Converter.serialiseToString(user, isCompressionEnabled()))
-                        .append(PARAM_KEY, Converter.serialiseToString(key, isCompressionEnabled()))
-                        .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
-
-            return getResponsePOST("getConfigAttrs", queryParams, String[].class);
         } catch (final Exception ex) {
             throw createRemoteException(ex);
         }

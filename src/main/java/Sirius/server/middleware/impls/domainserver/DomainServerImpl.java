@@ -14,6 +14,9 @@ import Sirius.server.ServerExitError;
 import Sirius.server.ServerType;
 import Sirius.server.Shutdown;
 import Sirius.server.localserver.DBServer;
+import Sirius.server.localserver.configattr.ConfigAttrsAggregator;
+import Sirius.server.localserver.configattr.DefaultConfigAttrsAggregator;
+import Sirius.server.localserver.configattr.FirstonlyConfigAttrsAggregator;
 import Sirius.server.localserver.history.HistoryException;
 import Sirius.server.localserver.history.HistoryServer;
 import Sirius.server.localserver.method.MethodMap;
@@ -82,6 +85,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import de.cismet.cids.objectextension.ObjectExtensionFactory;
 
@@ -97,6 +102,7 @@ import de.cismet.cids.server.search.QueryPostProcessor;
 import de.cismet.cids.server.ws.rest.RESTfulService;
 
 import de.cismet.cids.utils.ClassloadingHelper;
+import de.cismet.cids.utils.serverresources.GeneralServerResources;
 import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
 import de.cismet.connectioncontext.ConnectionContext;
@@ -143,6 +149,12 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     private HashMap<String, ServerAction> serverActionMap = new HashMap<>();
     private final transient org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(this.getClass());
     private final ScheduledServerActionManager scheduledManager;
+
+    private Map<String, ConfigAttrsAggregator> configAttrsAggregators = new HashMap<>();
+    private final Pattern configAttrAggPattern = Pattern.compile("agg(|:(\\w*))://(.*)");
+
+    private final Map<String, String> configAttrMapping = ServerResourcesLoader.getInstance()
+                .loadJson(GeneralServerResources.CONFIF_ATTR_REDIRECTING_JSON.getValue(), Map.class);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -224,6 +236,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 serverActionMap.put(serverAction.getTaskName(), serverAction);
             }
 
+            initConfAttrAggLookup();
+
             MetaClassCache.getInstance().setAllClasses(dbServer.getClasses(), properties.getServerName());
 
             if (ScheduledServerActionManager.isScheduledServerActionFeatureSupported(
@@ -256,6 +270,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                     }
                 }
             }
+
             // initFrame();
         } catch (Throwable e) {
             logger.error(e, e);
@@ -2000,22 +2015,29 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         return getConfigAttr(user, key, ConnectionContext.createDeprecated());
     }
 
-    @Override
-    @Deprecated
-    public String getConfigAttr(final User user, final String key, final ConnectionContext connectionContext)
-            throws RemoteException {
-        final String[] configAttrs = getConfigAttrs(user, key, connectionContext);
-        if ((configAttrs != null) && (configAttrs.length > 1)) {
-            logger.warn(String.format(
-                    "more than 1 configAttr is matching for key '%s' and user '%s'",
-                    key,
-                    (user != null) ? user.getName() : "<null>"));
+    /**
+     * DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    private void initConfAttrAggLookup() throws Exception {
+        for (final ConfigAttrsAggregator configAttrsAggregator
+                    : Lookup.getDefault().lookupAll(ConfigAttrsAggregator.class)) {
+            if (configAttrsAggregator != null) {
+                final String key = configAttrsAggregator.getKey();
+                if (configAttrsAggregators.containsKey(key)) {
+                    throw new Exception(String.format(
+                            "key '%s' is already used by '%s'",
+                            key,
+                            configAttrsAggregators.get(key).getClass().getCanonicalName()));
+                }
+                configAttrsAggregators.put(key, configAttrsAggregator);
+            }
         }
-        return ((configAttrs == null) || (configAttrs.length == 0)) ? null : configAttrs[0];
     }
 
     @Override
-    public String[] getConfigAttrs(final User user, final String key, final ConnectionContext connectionContext)
+    public String getConfigAttr(final User user, final String key, final ConnectionContext connectionContext)
             throws RemoteException {
         if (ConnectionContextBackend.getInstance().isEnabled()) {
             ConnectionContextBackend.getInstance()
@@ -2031,8 +2053,54 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                                     }
                                 })));
         }
+        if (key == null) {
+            throw new RemoteException("can't getConfigAttr of null");
+        }
         try {
-            return userstore.getConfigAttrs(user, key);
+            final Matcher aggMatcherBeforeRedirect = configAttrAggPattern.matcher(key);
+
+            final String effectiveKey;
+            if (!aggMatcherBeforeRedirect.matches()
+                        && (configAttrMapping != null) && configAttrMapping.containsKey(key)) {
+                effectiveKey = configAttrMapping.get(key);
+                if (effectiveKey == null) {
+                    throw new RemoteException(String.format(
+                            "redirecting configAttr '%s' failed, redirectiontarget is null",
+                            key));
+                } else {
+                    logger.info(String.format("redirecting configAttr '%s' to '%s'", key, effectiveKey));
+                }
+            } else {
+                effectiveKey = key;
+            }
+
+            final Matcher aggMatcherAfterRedirect = configAttrAggPattern.matcher(effectiveKey);
+            final boolean aggMatch = aggMatcherAfterRedirect.matches();
+            final String aggKey = aggMatch ? aggMatcherAfterRedirect.group(2) : null;
+            final String confKey = aggMatch ? aggMatcherAfterRedirect.group(3) : effectiveKey;
+
+            final String[] configAttrs = userstore.getConfigAttrs(user, confKey);
+            if ((configAttrs == null) || (configAttrs.length == 0)) {
+                return null;
+            } else if (aggMatch) {
+                final ConfigAttrsAggregator configAttrsAggregator = configAttrsAggregators.get(aggKey);
+                if (configAttrsAggregator != null) {
+                    return configAttrsAggregator.aggregate(configAttrs);
+                } else {
+                    logger.info(String.format(
+                            "ConfigAttrsAggregator found for key '%s'. Using default aggregation method (concatenation with newlines).",
+                            aggKey));
+                    return configAttrsAggregators.get(DefaultConfigAttrsAggregator.KEY).aggregate(configAttrs);
+                }
+            } else {
+                if (configAttrs.length > 1) {
+                    logger.warn(String.format(
+                            "more than 1 configAttr is matching for key '%s' and user '%s'",
+                            effectiveKey,
+                            (user != null) ? user.getName() : "<null>"));
+                }
+                return configAttrsAggregators.get(FirstonlyConfigAttrsAggregator.KEY).aggregate(configAttrs);
+            }
         } catch (final SQLException ex) {
             final String message = "could not retrieve config attr: user: " + user + " || key: " + key;
             logger.error(message, ex);
