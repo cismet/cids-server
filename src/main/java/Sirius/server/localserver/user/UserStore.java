@@ -23,6 +23,8 @@ import org.apache.log4j.Logger;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.Vector;
 
 /**
@@ -276,7 +278,7 @@ public final class UserStore extends Shutdown {
      *
      * @throws  SQLException  DOCUMENT ME!
      */
-    public synchronized String getConfigAttr(final User user, final String key) throws SQLException {
+    public synchronized String[] getConfigAttrs(final User user, final String key) throws SQLException {
         if ((user == null) || (key == null)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("user and/or key is null, returning null: user: " + user + " || key: " + key);
@@ -306,7 +308,8 @@ public final class UserStore extends Shutdown {
 
         final UserGroup userGroup = user.getUserGroup();
         if (userGroup != null) {
-            return getConfigAttrForUserGroup(keyId, user, userGroup);
+            final String configAttr = getConfigAttrForUserGroup(keyId, user, userGroup);
+            return (configAttr != null) ? new String[] { configAttr } : null;
         } else {
             final ResultSet exemptGroupValueSet = conPool.submitInternalQuery(
                     DBConnection.DESC_FETCH_CONFIG_ATTR_EXEMPT_VALUE,
@@ -319,17 +322,18 @@ public final class UserStore extends Shutdown {
                 groupId = -1;
             }
 
+            final Set<String> configAttrs = new LinkedHashSet<>();
             for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
                 final String configAttr = getConfigAttrForUserGroup(keyId, user, potentialUserGroup);
                 if (groupId < 0) {
                     if (configAttr != null) {
-                        return configAttr;
+                        configAttrs.add(configAttr);
                     }
                 } else if (potentialUserGroup.getId() == groupId) {
-                    return configAttr;
+                    configAttrs.add(configAttr);
                 }
             }
-            return null;
+            return configAttrs.isEmpty() ? null : configAttrs.toArray(new String[0]);
         }
     }
 
