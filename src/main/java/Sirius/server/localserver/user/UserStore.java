@@ -23,8 +23,8 @@ import org.apache.log4j.Logger;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.Vector;
 
 /**
@@ -322,7 +322,7 @@ public final class UserStore extends Shutdown {
                 groupId = -1;
             }
 
-            final List<String> configAttrs = new ArrayList<>();
+            final Set<String> configAttrs = new LinkedHashSet<>();
             for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
                 final String configAttr = getConfigAttrForUserGroup(keyId, user, potentialUserGroup);
                 if (groupId < 0) {

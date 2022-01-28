@@ -1155,18 +1155,10 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
         return getConfigAttr(user, key, ConnectionContext.createDeprecated());
     }
 
-    @Deprecated
     @Override
     public String getConfigAttr(final User user, final String key, final ConnectionContext context)
             throws RemoteException {
-        final String[] configAttrs = getConfigAttrs(user, key, context);
-        return ((configAttrs == null) || (configAttrs.length == 0)) ? null : configAttrs[0];
-    }
-
-    @Override
-    public String[] getConfigAttrs(final User user, final String key, final ConnectionContext context)
-            throws RemoteException {
-        return userService.getConfigAttrs(user, key, context);
+        return userService.getConfigAttr(user, key, context);
     }
 
     @Deprecated
@@ -1178,7 +1170,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     public boolean hasConfigAttr(final User user, final String key, final ConnectionContext context)
             throws RemoteException {
-        return getConfigAttr(user, key, context) != null;
+        return userService.hasConfigAttr(user, key, context);
     }
 
     @Override

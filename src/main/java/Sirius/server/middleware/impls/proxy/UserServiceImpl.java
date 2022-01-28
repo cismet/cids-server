@@ -184,26 +184,12 @@ public class UserServiceImpl {
             }
         }
         if (validatedUser != null) {
-            final String[] loginRestrictionValues = getConfigAttrs(
+            final String loginRestrictionValue = getConfigAttr(
                     validatedUser,
                     "login.restriction",
                     connectionContext);
-            if (loginRestrictionValues != null) {
-                LoginRestrictionUserException restrictionException = null;
-                for (final String loginRestrictionValue : new HashSet<>(Arrays.asList(loginRestrictionValues))) {
-                    if (loginRestrictionValue != null) {
-                        try {
-                            LoginRestrictionHelper.getInstance().checkLoginRestriction(loginRestrictionValue);
-                            // first existing one without exception => login allowed
-                            return validatedUser;
-                        } catch (final LoginRestrictionUserException ex) {
-                            restrictionException = ex;
-                        }
-                    }
-                }
-                if (restrictionException != null) {
-                    throw restrictionException;
-                }
+            if (loginRestrictionValue != null) {
+                LoginRestrictionHelper.getInstance().checkLoginRestriction(loginRestrictionValue.trim().split("\n"));
             }
             return validatedUser;
         }
@@ -299,7 +285,7 @@ public class UserServiceImpl {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public String[] getConfigAttrs(final User user, final String key, final ConnectionContext context)
+    public boolean hasConfigAttr(final User user, final String key, final ConnectionContext context)
             throws RemoteException {
         final String domain;
         final String realKey;
@@ -313,7 +299,38 @@ public class UserServiceImpl {
         }
         final UserService userService = (UserService)activeLocalServers.get(domain);
         if (userService != null) {
-            return userService.getConfigAttrs(user, realKey, context);
+            return userService.hasConfigAttr(user, realKey, context);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user     DOCUMENT ME!
+     * @param   key      DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    public String getConfigAttr(final User user, final String key, final ConnectionContext context)
+            throws RemoteException {
+        final String domain;
+        final String realKey;
+        if (key.contains(DOMAINSPLITTER)) {
+            final String[] split = key.split(DOMAINSPLITTER);
+            domain = split[1];
+            realKey = split[0];
+        } else {
+            domain = user.getDomain();
+            realKey = key;
+        }
+        final UserService userService = (UserService)activeLocalServers.get(domain);
+        if (userService != null) {
+            return userService.getConfigAttr(user, realKey, context);
         } else {
             return null;
         }

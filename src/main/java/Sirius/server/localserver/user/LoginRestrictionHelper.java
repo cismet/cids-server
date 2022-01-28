@@ -20,8 +20,10 @@ import lombok.NoArgsConstructor;
 
 import org.openide.util.Lookup;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * DOCUMENT ME!
@@ -57,6 +59,33 @@ public class LoginRestrictionHelper {
      */
     public static LoginRestrictionHelper getInstance() {
         return LazyInitialiser.INSTANCE;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   loginRestrictionValues  DOCUMENT ME!
+     *
+     * @throws  LoginRestrictionUserException  DOCUMENT ME!
+     */
+    public void checkLoginRestriction(final String[] loginRestrictionValues) throws LoginRestrictionUserException {
+        if (loginRestrictionValues != null) {
+            LoginRestrictionUserException restrictionException = null;
+            for (final String loginRestrictionValue : new HashSet<>(Arrays.asList(loginRestrictionValues))) {
+                if (loginRestrictionValue != null) {
+                    try {
+                        LoginRestrictionHelper.getInstance().checkLoginRestriction(loginRestrictionValue);
+                        // first existing one without exception => login allowed
+                        return;
+                    } catch (final LoginRestrictionUserException ex) {
+                        restrictionException = ex;
+                    }
+                }
+            }
+            if (restrictionException != null) {
+                throw restrictionException;
+            }
+        }
     }
 
     /**

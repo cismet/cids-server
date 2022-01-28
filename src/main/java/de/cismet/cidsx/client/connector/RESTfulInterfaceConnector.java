@@ -1672,38 +1672,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
     }
 
-    @Deprecated
     @Override
     public String getConfigAttr(final User user, final String key, final ConnectionContext connectionContext)
-            throws RemoteException {
-        // TODO: Implement ConfigAttributes API.
-        final String message = "The method '"
-                    + Thread.currentThread().getStackTrace()[1].getMethodName()
-                    + "' is not yet supported by the ConfigAttributes REST API!";
-        LOG.error(message);
-        throw new UnsupportedOperationException(message);
-    }
-
-    // </editor-fold>
-    // <editor-fold desc="CONFIGATTRIBUTES API" defaultstate="collapsed">
-    /**
-     * TODO: Implement ConfigAttributes API. See <a href="https://github.com/cismet/cids-server/issues/118">
-     * https://github.com/cismet/cids-server/issues/118</a>
-     *
-     * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
-     * Exception!</p>
-     *
-     * @param   user               TODO
-     * @param   key                TODO
-     * @param   connectionContext  DOCUMENT ME!
-     *
-     * @return  UnsupportedOperationException
-     *
-     * @throws  RemoteException                if any remote error occurs
-     * @throws  UnsupportedOperationException  Implement ConfigAttributes API
-     */
-    @Override
-    public String[] getConfigAttrs(final User user, final String key, final ConnectionContext connectionContext)
             throws RemoteException {
         // TODO: Implement ConfigAttributes API.
         final String message = "The method '"
