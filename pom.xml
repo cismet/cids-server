@@ -193,7 +193,6 @@
         </dependency>
         <!-- END: managed dependencies -->
         
-        
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -224,16 +223,6 @@
             <version>16.2</version>
         </dependency>
 
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
