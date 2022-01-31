@@ -199,7 +199,7 @@ public interface UserService extends Remote {
      * @param   key      the key for the value to be retrieved
      * @param   context  DOCUMENT ME!
      *
-     * @return  the associated value or <code>null</code>
+     * @return  the associated values or <code>null</code>
      *
      * @throws  RemoteException  if an internal error occurs
      */

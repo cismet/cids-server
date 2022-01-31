@@ -254,7 +254,6 @@ public class ServerResourcesLoader extends AbstractServerResourcesLoader {
      * @throws  Exception  DOCUMENT ME!
      */
     @Override
-    @Deprecated
     public <T extends Object> T loadJson(final ServerResource serverResource, final Class<T> clazz) throws Exception {
         if (!(serverResource instanceof TextServerResource)) {
             throw new Exception("wrong ServerResource type");

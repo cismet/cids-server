@@ -1672,24 +1672,6 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
     }
 
-    // </editor-fold>
-    // <editor-fold desc="CONFIGATTRIBUTES API" defaultstate="collapsed">
-    /**
-     * TODO: Implement ConfigAttributes API. See <a href="https://github.com/cismet/cids-server/issues/118">
-     * https://github.com/cismet/cids-server/issues/118</a>
-     *
-     * <p>This operation is currently not implemented in the cids REST API, it throws an Unsupported Operation
-     * Exception!</p>
-     *
-     * @param   user               TODO
-     * @param   key                TODO
-     * @param   connectionContext  DOCUMENT ME!
-     *
-     * @return  UnsupportedOperationException
-     *
-     * @throws  RemoteException                if any remote error occurs
-     * @throws  UnsupportedOperationException  Implement ConfigAttributes API
-     */
     @Override
     public String getConfigAttr(final User user, final String key, final ConnectionContext connectionContext)
             throws RemoteException {

@@ -26,7 +26,8 @@ public enum GeneralServerResources {
 
     CACHE_REFRESH_JSON(new TextServerResource("/daq_cache/refresh.json")),
     OFFLINE_ACTION_JSON(new TextServerResource("/action_execution/configuration.json")),
-    GRAPHQL_PROPERTIES(new TextServerResource("/graphQl/configuration.properties"));
+    GRAPHQL_PROPERTIES(new TextServerResource("/graphQl/configuration.properties")),
+    CONFIF_ATTR_REDIRECTING_JSON(new JsonServerResource("/configAttr/redirecting.json"));
 
     //~ Instance fields --------------------------------------------------------
 

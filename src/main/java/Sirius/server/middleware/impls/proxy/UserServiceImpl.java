@@ -16,6 +16,7 @@ package Sirius.server.middleware.impls.proxy;
 import Sirius.server.ServerExitError;
 import Sirius.server.localserver.user.LoginRestrictionHelper;
 import Sirius.server.middleware.interfaces.domainserver.UserService;
+import Sirius.server.newuser.LoginRestrictionUserException;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 import Sirius.server.newuser.UserGroup;
@@ -34,8 +35,10 @@ import java.rmi.RemoteException;
 
 import java.security.Key;
 
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
@@ -186,7 +189,7 @@ public class UserServiceImpl {
                     "login.restriction",
                     connectionContext);
             if (loginRestrictionValue != null) {
-                LoginRestrictionHelper.getInstance().checkLoginRestriction(loginRestrictionValue);
+                LoginRestrictionHelper.getInstance().checkLoginRestriction(loginRestrictionValue.trim().split("\n"));
             }
             return validatedUser;
         }
@@ -269,6 +272,37 @@ public class UserServiceImpl {
         }
         return ((Sirius.server.middleware.interfaces.domainserver.UserService)activeLocalServers.get(user.getDomain()))
                     .changePassword(user, oldPassword, newPassword, context);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user     DOCUMENT ME!
+     * @param   key      DOCUMENT ME!
+     * @param   context  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  RemoteException  DOCUMENT ME!
+     */
+    public boolean hasConfigAttr(final User user, final String key, final ConnectionContext context)
+            throws RemoteException {
+        final String domain;
+        final String realKey;
+        if (key.contains(DOMAINSPLITTER)) {
+            final String[] split = key.split(DOMAINSPLITTER);
+            domain = split[1];
+            realKey = split[0];
+        } else {
+            domain = user.getDomain();
+            realKey = key;
+        }
+        final UserService userService = (UserService)activeLocalServers.get(domain);
+        if (userService != null) {
+            return userService.hasConfigAttr(user, realKey, context);
+        } else {
+            return false;
+        }
     }
 
     /**

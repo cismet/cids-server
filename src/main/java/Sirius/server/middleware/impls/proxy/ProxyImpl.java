@@ -1170,7 +1170,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
     @Override
     public boolean hasConfigAttr(final User user, final String key, final ConnectionContext context)
             throws RemoteException {
-        return getConfigAttr(user, key, context) != null;
+        return userService.hasConfigAttr(user, key, context);
     }
 
     @Override
