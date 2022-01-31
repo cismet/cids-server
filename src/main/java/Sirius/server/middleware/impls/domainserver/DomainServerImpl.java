@@ -153,8 +153,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     private Map<String, ConfigAttrsAggregator> configAttrsAggregators = new HashMap<>();
     private final Pattern configAttrAggPattern = Pattern.compile("agg(|:(\\w*))://(.*)");
 
-    private final Map<String, String> configAttrMapping = ServerResourcesLoader.getInstance()
-                .loadJson(GeneralServerResources.CONFIF_ATTR_REDIRECTING_JSON.getValue(), Map.class);
+    private final Map<String, String> configAttrMapping = new HashMap<>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -212,6 +211,16 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             } catch (final Exception ex) {
                 logger.warn(
                     "ServerResourcePath could not be determined. CachedServerResourcesLoader will not work as expected !",
+                    ex);
+            }
+
+            try {
+                configAttrMapping.putAll(ServerResourcesLoader.getInstance().loadJson(
+                        GeneralServerResources.CONFIF_ATTR_REDIRECTING_JSON.getValue(),
+                        Map.class));
+            } catch (final Exception ex) {
+                logger.warn(
+                    "Could not load GeneralServerResources.CONFIF_ATTR_REDIRECTING_JSON. configAttr redirection will not work !",
                     ex);
             }
 
