@@ -169,8 +169,9 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
 
             // receive response
             final InputStream response = connection.getInputStream();
+            final String contentType = connection.getHeaderField("Content-Encoding");
 
-            if (zipped) {
+            if (zipped && (contentType != null) && contentType.contains("gzip")) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("received graphql result in gzip format");
                 }
