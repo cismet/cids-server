@@ -331,9 +331,9 @@ public class CidsServerMessageManagerImpl implements CidsServerMessageManager {
             final ConnectionContext connectionContext) {
         final List<CidsServerMessage> messages = new ArrayList<>();
 
-        final LinkedList<CidsServerMessage> categoryMessages = (LinkedList<CidsServerMessage>)
-            messagesPerCategoryMap.get(
-                category);
+        final LinkedList<CidsServerMessage> categoryMessages = new LinkedList((LinkedList<CidsServerMessage>)
+                messagesPerCategoryMap.get(
+                    category));
         final Iterator<CidsServerMessage> itBackwards = categoryMessages.descendingIterator();
 
         while (itBackwards.hasNext() && ((numOfMessages < 0) || (messages.size() < numOfMessages))) {
