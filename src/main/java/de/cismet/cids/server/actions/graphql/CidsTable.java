@@ -30,4 +30,11 @@ public class CidsTable extends CidsDataSource {
     public CidsTable(final String name) {
         super(name);
     }
+
+    //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }
