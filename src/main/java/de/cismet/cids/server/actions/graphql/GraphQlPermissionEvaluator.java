@@ -528,6 +528,14 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
             mc = ms.getClassByTableName(user, name.toLowerCase(), cc);
         }
 
+        if ((mc == null) && name.endsWith("Object")) {
+            mc = ms.getClassByTableName(user, name.substring(0, name.indexOf("Object")), cc);
+        }
+
+        if ((mc == null) && name.endsWith("Array")) {
+            mc = ms.getClassByTableName(user, name.substring(0, name.indexOf("Array")), cc);
+        }
+
         return mc;
     }
 
@@ -592,8 +600,7 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
             String fieldName = node.getName();
             final Argument argument = getArgument(context.getParentNodes());
             final String argumentName = ((argument != null) ? argument.getName() : null);
-            final Field parentField = getParentField(context.getParentNodes());
-            String parentFieldName = ((parentField != null) ? parentField.getName() : null);
+            String parentFieldName = getParentTableName(context.getParentNodes());
 
             if (operation.equals(OperationDefinition.Operation.MUTATION)) {
                 if (isSpecialMutationField(fieldName)) {
@@ -602,35 +609,19 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
                 fieldName = mutationFieldNameToFieldName(fieldName);
                 parentFieldName = mutationFieldNameToFieldName(parentFieldName);
             }
-            CidsTable table = new CidsTable(parentFieldName);
+            final CidsTable table = ((parentFieldName != null) ? new CidsTable(parentFieldName) : null);
 
             if (isFieldArgument(node, argumentName.equalsIgnoreCase("where"))) {
-                if (!operators.contains(fieldName)) {
+                if (!operators.contains(fieldName)) { 
                     try {
-                        if (isMutationArgument(argumentName)) {
+                        if (isMutationArgument(argumentName) && (table != null)) {
                             if (!GraphQlPermissionEvaluator.this.hasWritePermission(table, fieldName)) {
                                 return TreeTransformerUtil.deleteNode(context);
                             }
                         }
-                        if ((argument.getValue() != null) && (argument.getValue().getNamedChildren() != null)
-                                    && (argument.getValue().getNamedChildren().getChildren() != null)) {
-                            if ((argument.getValue().getNamedChildren().getChildren("objectFields") != null)
-                                        && (argument.getValue().getNamedChildren().getChildren("objectFields").size()
-                                            > 0)) {
-                                final Node parent = argument.getValue()
-                                            .getNamedChildren()
-                                            .getChildren("objectFields")
-                                            .get(argument.getValue().getNamedChildren().getChildren("objectFields")
-                                                .size() - 1);
-                                if (parent instanceof ObjectField) {
-                                    final String tableName = getParent((ObjectField)parent, fieldName);
-                                    if (tableName != null) {
-                                        table = new CidsTable(tableName);
-                                    }
-                                }
-                            }
+                        if (table != null) {
+                            checkReadPermission(table, fieldName);
                         }
-                        checkReadPermission(table, fieldName);
                     } catch (FieldNotFoundException e) {
                         return TreeTransformerUtil.deleteNode(context);
                     } catch (TableNotFoundException e) {
@@ -674,7 +665,7 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
             final Field parentField = getParentField(context.getParentNodes());
             String parentFieldName = ((parentField != null) ? parentField.getName() : null);
 
-            if (operation.equals(OperationDefinition.Operation.MUTATION)) {
+            if ((operation != null) && operation.equals(OperationDefinition.Operation.MUTATION)) {
                 if (isSpecialMutationField(fieldName)) {
                     return TraversalControl.CONTINUE;
                 }
@@ -684,7 +675,7 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
 
             if ((lastTable == null) || (parentFieldName == null)) {
                 lastTable = new CidsTable(fieldName);
-                if (operation.equals(OperationDefinition.Operation.MUTATION)) {
+                if ((operation != null) && operation.equals(OperationDefinition.Operation.MUTATION)) {
                     try {
                         if (!hasWritePermission(lastTable)) {
                             fieldsWithoutPermission.add(lastTable);
@@ -753,6 +744,37 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
         /**
          * DOCUMENT ME!
          *
+         * @param   parents  DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        private String getParentTableName(final List<Node> parents) {
+            if (parents != null) {
+                for (final Node parent : parents) {
+                    String name = null;
+
+                    if (parent instanceof Field) {
+                        name = ((Field)parent).getName();
+                    } else if (parent instanceof ObjectField) {
+                        name = ((ObjectField)parent).getName();
+                    }
+
+                    if ((name != null) && !operators.contains(name)) {
+                        if (name.endsWith("Array") || name.endsWith("Object")) {
+                            return null;
+                        } else {
+                            return name;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
          * @param   fields  DOCUMENT ME!
          * @param   field   DOCUMENT ME!
          *
@@ -768,7 +790,6 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
 
             if (!operators.contains(fields.getName())) {
                 lastName = fields.getName();
-                ;
             }
 
             while (currentField.getValue() != null) {
