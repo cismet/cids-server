@@ -133,9 +133,10 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
         if (tablesWithoutCheck != null) {
             evaluator.setTablesWithoutPermissionCheck(Arrays.asList(tablesWithoutCheck.split(",")));
         }
-        query = evaluator.evaluate(query);
 
         try {
+            query = evaluator.evaluate(query);
+
             // prepare request
             final URL url = new URL(config.getProperty("graphql.url"));
             final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
@@ -163,8 +164,8 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
 
             os.write(inputAsBytes, 0, inputAsBytes.length);
 
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("send graphql request (expect gzip: %s): %s", zipped, requestAsString));
+            if (LOG.isInfoEnabled()) {
+                LOG.info(String.format("send graphql request (expect gzip: %s): %s", zipped, requestAsString));
             }
 
             // receive response
