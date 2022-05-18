@@ -180,12 +180,12 @@ public final class HistoryServer extends Shutdown {
             try {
                 final int expectedElements;
                 if (elements < 1) {
-                    set = conPool.submitInternalQuery(DBConnection.DESC_FETCH_HISTORY, classId, objectId);
+                    set = conPool.submitInternalQuery(DBConnection.DESC_FETCH_HISTORY, clazz.getTableName(), objectId);
                     expectedElements = 15;
                 } else {
                     set = conPool.submitInternalQuery(
                             DBConnection.DESC_FETCH_HISTORY_LIMIT,
-                            classId,
+                            clazz.getTableName(),
                             objectId,
                             elements);
                     expectedElements = elements;
@@ -204,7 +204,7 @@ public final class HistoryServer extends Shutdown {
 
                     // add the initial object
                     DBConnection.closeResultSets(set);
-                    set = conPool.submitInternalQuery(DBConnection.DESC_FETCH_HISTORY_LIMIT, classId, objectId, 1);
+                    set = conPool.submitInternalQuery(DBConnection.DESC_FETCH_HISTORY_LIMIT, clazz.getTableName(), objectId, 1);
                     set.next();
                     final String jsonData = set.getString(1);
                     final Date timestamp = new Date(set.getTimestamp(2).getTime());
@@ -246,11 +246,11 @@ public final class HistoryServer extends Shutdown {
             throw new HistoryException(message);
         }
 
-        final int classId = mo.getClassID();
+        final String classKey = mo.getMetaClass().getTableName();
         final int objectId = mo.getID();
         ResultSet set = null;
         try {
-            set = server.getConnectionPool().submitInternalQuery(DBConnection.DESC_HAS_HISTORY, classId, objectId);
+            set = server.getConnectionPool().submitInternalQuery(DBConnection.DESC_HAS_HISTORY, classKey, objectId);
             // only one result - the count
             set.next();
 
@@ -450,25 +450,25 @@ public final class HistoryServer extends Shutdown {
                     LOG.debug("creating history: " + this); // NOI18N
                 }
 
-                final int classId = mo.getClassID();
+                final String classKey = mo.getMetaClass().getTableName();
                 final int objectId = mo.getId();
-                final Integer usrId = (user == null) ? null : user.getId();
+                final String usrKey = (user == null) ? null : user.getName();
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("check for all userGroups");
                 }
                 // TODO check for all userGroups
                 final UserGroup userGroup = user.getUserGroup();
-                final Integer ugId = (userGroup == null) ? null : userGroup.getId();
+                final String ugKey = (userGroup == null) ? null : userGroup.getName();
                 final Timestamp valid_from = new Timestamp(timestamp.getTime());
                 final String jsonData = mo.isPersistent() ? mo.getBean().toJSONString(true) : JSON_DELETED;
 
                 final int result = server.getConnectionPool()
                             .submitInternalUpdate(
                                 DBConnection.DESC_INSERT_HISTORY_ENTRY,
-                                classId,
+                                classKey,
                                 objectId,
-                                usrId,
-                                ugId,
+                                usrKey,
+                                ugKey,
                                 valid_from,
                                 jsonData);
 
