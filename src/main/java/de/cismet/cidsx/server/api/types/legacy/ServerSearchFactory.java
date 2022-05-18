@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 
 import org.openide.util.Lookup;
 
-import org.postgresql.util.Base64;
+import java.util.Base64;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -39,7 +39,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -936,7 +935,7 @@ public class ServerSearchFactory {
 
             oos.close();
 
-            return Base64.encodeBytes(baos.toByteArray());
+            return Base64.getEncoder().encodeToString(baos.toByteArray());
         } else {
             LOG.warn("object of type '" + object.getClass() + "' is not serializable, returning null!");
             return null;
@@ -954,7 +953,7 @@ public class ServerSearchFactory {
      * @throws  ClassNotFoundException  DOCUMENT ME!
      */
     private static Object fromBase64String(final String s) throws IOException, ClassNotFoundException {
-        final byte[] data = Base64.decode(s);
+        final byte[] data = Base64.getDecoder().decode(s);
         final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
         final Object o = ois.readObject();
         ois.close();
