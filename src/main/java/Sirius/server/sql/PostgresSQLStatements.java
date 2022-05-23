@@ -300,7 +300,7 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
 
     @Override
     public String getClassGetEmptyResultStmnt(final String tableName) {
-        return String.format("SELECT * FROM %s LIMIT 0", tableName);
+        return String.format("SELECT * FROM %s WHERE false", tableName);
     }
 
     @Override
