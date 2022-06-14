@@ -261,7 +261,7 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
             }
         }
 
-        throw new TableNotFoundException(foreignKeyDestinaton);
+        return null;
     }
 
     /**
@@ -568,11 +568,11 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
 
         //~ Instance fields ----------------------------------------------------
 
-        private final List<String> readArguments = new ArrayList<String>();
-        private final List<String> operators = new ArrayList<String>();
-        private final List<CidsDataSource> fieldsWithoutPermission = new ArrayList<CidsDataSource>();
+        private final List<String> readArguments = new ArrayList<>();
+        private final List<String> operators = new ArrayList<>();
+        private final List<CidsDataSource> fieldsWithoutPermission = new ArrayList<>();
         private CidsTable lastTable = null;
-        private Map<String, CidsTable> fieldToTable = new HashMap<String, CidsTable>();
+        private Map<String, CidsTable> fieldToTable = new HashMap<>();
         private OperationDefinition.Operation operation = null;
 
         //~ Constructors -------------------------------------------------------
@@ -612,7 +612,7 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
             final CidsTable table = ((parentFieldName != null) ? new CidsTable(parentFieldName) : null);
 
             if (isFieldArgument(node, argumentName.equalsIgnoreCase("where"))) {
-                if (!operators.contains(fieldName)) { 
+                if (!operators.contains(fieldName)) {
                     try {
                         if (isMutationArgument(argumentName) && (table != null)) {
                             if (!GraphQlPermissionEvaluator.this.hasWritePermission(table, fieldName)) {
@@ -634,7 +634,7 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
             } else if (isTable(node, argumentName.equalsIgnoreCase("where"))) {
                 try {
                     final CidsField foreignField = determineForeignKeyField(table, fieldName);
-                    if (isMutationArgument(argumentName)) {
+                    if (isMutationArgument(argumentName) && (foreignField != null)) {
                         if (!GraphQlPermissionEvaluator.this.hasWritePermission(table, fieldName)) {
                             return TreeTransformerUtil.deleteNode(context);
                         }
@@ -660,7 +660,6 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
 
         @Override
         public TraversalControl visitField(final Field node, final TraverserContext<Node> context) {
-//            System.out.println("fieldVisit: " + node.getName());
             String fieldName = node.getName();
             final Field parentField = getParentField(context.getParentNodes());
             String parentFieldName = ((parentField != null) ? parentField.getName() : null);
@@ -695,6 +694,23 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
 
                     if (table == null) {
                         table = new CidsTable(parentFieldName);
+                        try {
+                            checkReadPermission(table, fieldName);
+                        } catch (Exception e) {
+                            final Field gp = getGrandParentField(context.getParentNodes());
+
+                            if (gp != null) {
+                                try {
+//                                    CidsField f = determineForeignKeyField(gp.getName(), gp.getAlias());
+                                    final String tName = determineTableForForeignKeyField(new CidsTable(gp.getName()),
+                                            parentField.getAlias());
+
+                                    table = new CidsTable(tName);
+                                } catch (Exception ex) {
+                                    // nothing to do
+                                }
+                            }
+                        }
                     }
                     try {
                         checkReadPermission(table, fieldName);
@@ -721,9 +737,10 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
                             final CidsField foreignField = determineForeignKeyField(
                                     table,
                                     fieldName);
-
-                            lastTable = new CidsTable(determineTableForForeignKeyField(table, fieldName));
-                            fieldToTable.put(fieldName, lastTable);
+                            if (foreignField != null) {
+                                lastTable = new CidsTable(determineTableForForeignKeyField(table, fieldName));
+                                fieldToTable.put(fieldName, lastTable);
+                            }
                         } catch (FieldNotFoundException e) {
                             fieldsWithoutPermission.add(new CidsField(table, fieldName));
                             return TreeTransformerUtil.deleteNode(context);
@@ -877,6 +894,31 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
                 for (final Node parent : parents) {
                     if (parent instanceof Field) {
                         return (Field)parent;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * Determine the parent field.
+         *
+         * @param   parents  DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        private Field getGrandParentField(final List<Node> parents) {
+            boolean found = false;
+
+            if (parents != null) {
+                for (final Node parent : parents) {
+                    if (parent instanceof Field) {
+                        if (!found) {
+                            found = true;
+                        } else {
+                            return (Field)parent;
+                        }
                     }
                 }
             }

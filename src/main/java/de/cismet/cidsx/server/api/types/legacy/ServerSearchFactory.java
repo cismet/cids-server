@@ -21,8 +21,6 @@ import org.apache.log4j.Logger;
 
 import org.openide.util.Lookup;
 
-import java.util.Base64;
-
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -39,6 +37,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 
+import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;

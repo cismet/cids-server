@@ -390,7 +390,7 @@ public class ClassCache extends Shutdown {
                     classfieldtypes.put(_class.getID(), fieldtypes);
                 }
                 try(final Statement statement = con.getConnection().createStatement();
-                    final ResultSet resultset = statement.executeQuery(_class.getGetEmptyResultStmnt())) {
+                            final ResultSet resultset = statement.executeQuery(_class.getGetEmptyResultStmnt())) {
                     final ResultSetMetaData rsmd = resultset.getMetaData();
 
                     for (int i = 1; i <= rsmd.getColumnCount(); ++i) {
