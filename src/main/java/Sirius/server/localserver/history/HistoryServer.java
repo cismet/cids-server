@@ -204,7 +204,11 @@ public final class HistoryServer extends Shutdown {
 
                     // add the initial object
                     DBConnection.closeResultSets(set);
-                    set = conPool.submitInternalQuery(DBConnection.DESC_FETCH_HISTORY_LIMIT, clazz.getTableName(), objectId, 1);
+                    set = conPool.submitInternalQuery(
+                            DBConnection.DESC_FETCH_HISTORY_LIMIT,
+                            clazz.getTableName(),
+                            objectId,
+                            1);
                     set.next();
                     final String jsonData = set.getString(1);
                     final Date timestamp = new Date(set.getTimestamp(2).getTime());
