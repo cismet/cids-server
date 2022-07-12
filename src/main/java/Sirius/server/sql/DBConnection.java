@@ -54,8 +54,8 @@ public final class DBConnection implements DBBackend {
     // the query specific information
     public static final String DESC_VERIFY_USER_PW = "verify_user_password";                                   // NOI18N
     public static final String DESC_FETCH_DOMAIN_ID_FROM_DOMAIN_STRING = "fetch_domain_id_from_domain_string"; // NOI18N
+    public static final String DESC_FETCH_CONFIG_ATTR_KEY_ID = "fetch_config_attr_key_id";                     // NOI18N
     public static final String DESC_FETCH_CONFIG_ATTR_USER_VALUE = "fetch_config_attr_user_value";             // NOI18N
-    public static final String DESC_FETCH_CONFIG_ATTR_USER_AND_GROUP_VALUE = "fetch_config_attr_user_and_group_value"; // NOI18N
     public static final String DESC_FETCH_CONFIG_ATTR_UG_VALUE = "fetch_config_attr_ug_value";                 // NOI18N
     public static final String DESC_FETCH_CONFIG_ATTR_DOMAIN_VALUE = "fetch_config_attr_domain_value";         // NOI18N
     public static final String DESC_FETCH_CONFIG_ATTR_EXEMPT_VALUE = "fetch_config_attr_exempt_value";         // NOI18N
