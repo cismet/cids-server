@@ -68,97 +68,83 @@ public final class UserStore extends Shutdown {
         memberships = new Vector(100, 100);
         // membershipHash = new Hashtable(101);
 
-        try {
+        try (
+            final ResultSet userTable = conPool.submitInternalQuery(DBConnection.DESC_GET_ALL_USERS, new Object[0]);
+            final ResultSet userGroupTable = conPool.submitInternalQuery(DBConnection.DESC_GET_ALL_USERGROUPS, new Object[0]);
+            final ResultSet memberTable = conPool.submitInternalQuery(DBConnection.DESC_GET_ALL_MEMBERSHIPS, new Object[0]);
+        ) {
 
             // --------------------load users--------------------------------------------------
             
-            ResultSet userTable = null;
-            try {
-                userTable = conPool.submitInternalQuery(DBConnection.DESC_GET_ALL_USERS, new Object[0]);
-                while (userTable.next()) {
-                    try {
-                        final User tmp = new User(
-                                userTable.getInt("id"),                   // NOI18N
-                                userTable.getString("login_name").trim(), // NOI18N
-                                properties.getServerName(),
-                                userTable.getBoolean("administrator"));   // NOI18N
+            while (userTable.next()) {
+                try {
+                    final User tmp = new User(
+                            userTable.getInt("id"),                   // NOI18N
+                            userTable.getString("login_name").trim(), // NOI18N
+                            properties.getServerName(),
+                            userTable.getBoolean("administrator"));   // NOI18N
 
-                        users.addElement(tmp);
-                    } catch (Exception e) {
-                        LOG.error(e);
+                    users.addElement(tmp);
+                } catch (Exception e) {
+                    LOG.error(e);
 
-                        if (e instanceof java.sql.SQLException) {
-                            throw e;
-                        }
+                    if (e instanceof java.sql.SQLException) {
+                        throw e;
                     }
                 }
-            } finally {
-                DBConnection.closeResultSets(userTable);
             }
 
             // --------------------load userGroups--------------------------------------------------
-            
-            ResultSet userGroupTable = null;
-            try {
-                userGroupTable = conPool.submitInternalQuery(DBConnection.DESC_GET_ALL_USERGROUPS, new Object[0]);
-                while (userGroupTable.next()) {
-                    try {
-                        String domain = userGroupTable.getString("domain_name"); // NOI18N
-                        if ("LOCAL".equals(domain)) {                            // NOI18N
-                            domain = properties.getServerName();
-                        }
 
-                        final UserGroup tmp = new UserGroup(
-                                userGroupTable.getInt("id"),             // NOI18N
-                                userGroupTable.getString("name").trim(), // NOI18N
-                                domain,
-                                userGroupTable.getString("descr"),
-                                userGroupTable.getInt("prio"));          // NOI18N
-                        userGroups.addElement(tmp);
-                    } catch (Exception e) {
-                        LOG.error(e);
+            while (userGroupTable.next()) {
+                try {
+                    String domain = userGroupTable.getString("domain_name"); // NOI18N
+                    if ("LOCAL".equals(domain)) {                            // NOI18N
+                        domain = properties.getServerName();
+                    }
 
-                        if (e instanceof java.sql.SQLException) {
-                            throw e;
-                        }
+                    final UserGroup tmp = new UserGroup(
+                            userGroupTable.getInt("id"),             // NOI18N
+                            userGroupTable.getString("name").trim(), // NOI18N
+                            domain,
+                            userGroupTable.getString("descr"),
+                            userGroupTable.getInt("prio"));          // NOI18N
+                    userGroups.addElement(tmp);
+                } catch (Exception e) {
+                    LOG.error(e);
+
+                    if (e instanceof java.sql.SQLException) {
+                        throw e;
                     }
                 }
-            } finally {
-                DBConnection.closeResultSets(userGroupTable);
             }
 
             // --------------------load memberships--------------------------------------------------            
 
-            ResultSet memberTable = null;
-            try {
-                memberTable = conPool.submitInternalQuery(DBConnection.DESC_GET_ALL_MEMBERSHIPS, new Object[0]);
-                while (memberTable.next()) {
-                    try {
-                        final String lsName = properties.getServerName();
+            while (memberTable.next()) {
+                try {
+                    final String lsName = properties.getServerName();
 
-                        final String login = memberTable.getString("login_name");
-                        final String ug = memberTable.getString("ug");
+                    final String login = memberTable.getString("login_name");
+                    final String ug = memberTable.getString("ug");
 
-                        String ugDomain = memberTable.getString("ugDomain"); // NOI18N
+                    String ugDomain = memberTable.getString("ugDomain"); // NOI18N
 
-                        if ((ugDomain == null) || ugDomain.equalsIgnoreCase("local")) { // NOI18N
-                            ugDomain = lsName;
-                        }
+                    if ((ugDomain == null) || ugDomain.equalsIgnoreCase("local")) { // NOI18N
+                        ugDomain = lsName;
+                    }
 
-                        final String usrDomain = lsName;
+                    final String usrDomain = lsName;
 
-                        final Membership tmp = new Membership(login, usrDomain, ug, ugDomain);
-                        memberships.addElement(tmp);
-                    } catch (Exception e) {
-                        LOG.error(e);
+                    final Membership tmp = new Membership(login, usrDomain, ug, ugDomain);
+                    memberships.addElement(tmp);
+                } catch (Exception e) {
+                    LOG.error(e);
 
-                        if (e instanceof java.sql.SQLException) {
-                            throw e;
-                        }
+                    if (e instanceof java.sql.SQLException) {
+                        throw e;
                     }
                 }
-            } finally {
-                DBConnection.closeResultSets(memberTable);
             }
 
             addShutdown(new AbstractShutdownable() {
@@ -258,16 +244,12 @@ public final class UserStore extends Shutdown {
      * @throws  SQLException  DOCUMENT ME!
      */
     public boolean validateUserPassword(final User user, final String password) throws SQLException {
-        ResultSet result = null;
-        try {
-            result = conPool.submitInternalQuery(
+        try (final ResultSet result = conPool.submitInternalQuery(
                     DBConnection.DESC_VERIFY_USER_PW,
                     user.getName(),
-                    password);
+                    password);) {
             // TODO: should username and password be trimmed?
             return result.next() && (result.getInt(1) == 1);
-        } finally {
-            DBConnection.closeResultSets(result);
         }
     }
 
@@ -322,17 +304,13 @@ public final class UserStore extends Shutdown {
             final String userName = user.getName();
             
             int groupId = -1;
-            ResultSet exemptGroupValueSet = null;
-            try {
-                exemptGroupValueSet = conPool.submitInternalQuery(
+            try (final ResultSet exemptGroupValueSet = conPool.submitInternalQuery(
                     DBConnection.DESC_FETCH_CONFIG_ATTR_EXEMPT_VALUE,
                     userName,
-                    key);
+                    key)) {
                 if (exemptGroupValueSet.next()) {
                     groupId = exemptGroupValueSet.getInt(1);
                 }
-            } finally {
-                DBConnection.closeResultSets(exemptGroupValueSet);
             }
 
             final Set<String> configAttrs = new LinkedHashSet<>();
@@ -389,20 +367,14 @@ public final class UserStore extends Shutdown {
             throws SQLException {
         final String userName = user.getName();
 
-        ResultSet userValueSet = null;
-        try {
-            userValueSet = conPool.submitInternalQuery(
+        try (final ResultSet userValueSet = conPool.submitInternalQuery(
                 DBConnection.DESC_FETCH_CONFIG_ATTR_USER_VALUE,
                 userName,
-                key);
-                    
+                key)) {
             if (userValueSet.next()) {
                 return userValueSet.getString(1);
             }
-        } finally {
-            DBConnection.closeResultSets(userValueSet);
         }
-        
         return null;
     }
     
@@ -434,19 +406,15 @@ public final class UserStore extends Shutdown {
     }
     
     private String getConfigAttr(final String key, final String userName, final String userGroupName, final String domain) throws SQLException {         
-        ResultSet userValueSet = null;
-        try {
-            userValueSet = conPool.submitInternalQuery(
+        try (final ResultSet userValueSet = conPool.submitInternalQuery(
                 DBConnection.DESC_FETCH_CONFIG_ATTR_USER_AND_GROUP_VALUE,
                 userName,
                 userGroupName,
                 domain,
-                key);
+                key)) {
             if (userValueSet.next()) {
                 return userValueSet.getString(1);
             }
-        } finally {
-            DBConnection.closeResultSets(userValueSet);
         }
         return null;
     }
@@ -477,18 +445,14 @@ public final class UserStore extends Shutdown {
     }    
     
     private String getConfigAttr(final String key, final String userGroupName, final String domain) throws SQLException {         
-        ResultSet ugValueSet = null;
-        try {
-            ugValueSet = conPool.submitInternalQuery(
+        try (final ResultSet ugValueSet = conPool.submitInternalQuery(
                 DBConnection.DESC_FETCH_CONFIG_ATTR_UG_VALUE,
                 userGroupName,
                 domain,
-                key);
+                key)) {
             if (ugValueSet.next()) {
                 return ugValueSet.getString(1);
             }
-        } finally {
-            DBConnection.closeResultSets(ugValueSet);
         }
         return null;
         
@@ -515,17 +479,13 @@ public final class UserStore extends Shutdown {
     }
 
     private String _getConfigAttr(final String key, final String domain) throws SQLException {                  
-        ResultSet domainValueSet = null;
-        try {
-            domainValueSet = conPool.submitInternalQuery(
+        try (final ResultSet domainValueSet = conPool.submitInternalQuery(
                 DBConnection.DESC_FETCH_CONFIG_ATTR_DOMAIN_VALUE,
                 domain,
-                key);
+                key)) {
             if (domainValueSet.next()) {
                 return domainValueSet.getString(1);
             }
-        } finally {
-            DBConnection.closeResultSets(domainValueSet);
         }
         return null;        
     }
