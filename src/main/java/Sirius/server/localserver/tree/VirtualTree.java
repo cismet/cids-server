@@ -36,6 +36,7 @@ import org.openide.util.Lookup;
 
 import java.rmi.RemoteException;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -206,9 +207,11 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
 
         Statement stmt = null;
         ResultSet rs = null;
+        Connection con = null;
 
         try {
-            stmt = conPool.getConnection().createStatement();
+            con = conPool.getConnection(true);
+            stmt = con.createStatement();
 
             rs = stmt.executeQuery(statement);
 
@@ -231,6 +234,10 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
         } finally {
             DBConnection.closeResultSets(rs);
             DBConnection.closeStatements(stmt);
+
+            if (con != null) {
+                conPool.releaseDbConnection(con);
+            }
         }
     }
 
