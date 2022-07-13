@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.Vector;
@@ -62,6 +63,7 @@ public final class UserStore extends Shutdown {
     public UserStore(final DBConnectionPool conPool, final ServerProperties properties) {
         this.conPool = conPool;
         this.properties = properties;
+        ConfigAttrStore.initialise(conPool, properties);
         users = new Vector(100, 100);
         userGroups = new Vector(10, 10);
         // userGroupHash = new Hashtable(25);
@@ -69,97 +71,94 @@ public final class UserStore extends Shutdown {
         // membershipHash = new Hashtable(101);
 
         try {
+            final ResultSet userTable = conPool.submitInternalQuery(DBConnection.DESC_GET_ALL_USERS, new Object[0]);
 
             // --------------------load users--------------------------------------------------
-            
-            ResultSet userTable = null;
-            try {
-                userTable = conPool.submitInternalQuery(DBConnection.DESC_GET_ALL_USERS, new Object[0]);
-                while (userTable.next()) {
-                    try {
-                        final User tmp = new User(
-                                userTable.getInt("id"),                   // NOI18N
-                                userTable.getString("login_name").trim(), // NOI18N
-                                properties.getServerName(),
-                                userTable.getBoolean("administrator"));   // NOI18N
 
-                        users.addElement(tmp);
-                    } catch (Exception e) {
-                        LOG.error(e);
+            while (userTable.next()) {
+                try {
+                    final User tmp = new User(
+                            userTable.getInt("id"),                   // NOI18N
+                            userTable.getString("login_name").trim(), // NOI18N
+                            properties.getServerName(),
+                            userTable.getBoolean("administrator"));   // NOI18N
 
-                        if (e instanceof java.sql.SQLException) {
-                            throw e;
-                        }
+                    users.addElement(tmp);
+                } catch (Exception e) {
+                    LOG.error(e);
+
+                    if (e instanceof java.sql.SQLException) {
+                        throw e;
                     }
                 }
-            } finally {
-                DBConnection.closeResultSets(userTable);
             }
+
+            userTable.close();
 
             // --------------------load userGroups--------------------------------------------------
-            
-            ResultSet userGroupTable = null;
-            try {
-                userGroupTable = conPool.submitInternalQuery(DBConnection.DESC_GET_ALL_USERGROUPS, new Object[0]);
-                while (userGroupTable.next()) {
-                    try {
-                        String domain = userGroupTable.getString("domain_name"); // NOI18N
-                        if ("LOCAL".equals(domain)) {                            // NOI18N
-                            domain = properties.getServerName();
-                        }
 
-                        final UserGroup tmp = new UserGroup(
-                                userGroupTable.getInt("id"),             // NOI18N
-                                userGroupTable.getString("name").trim(), // NOI18N
-                                domain,
-                                userGroupTable.getString("descr"),
-                                userGroupTable.getInt("prio"));          // NOI18N
-                        userGroups.addElement(tmp);
-                    } catch (Exception e) {
-                        LOG.error(e);
+            final ResultSet userGroupTable = conPool.submitInternalQuery(
+                    DBConnection.DESC_GET_ALL_USERGROUPS,
+                    new Object[0]);
 
-                        if (e instanceof java.sql.SQLException) {
-                            throw e;
-                        }
+            while (userGroupTable.next()) {
+                try {
+                    String domain = userGroupTable.getString("domain_name"); // NOI18N
+                    if ("LOCAL".equals(domain)) {                            // NOI18N
+                        domain = properties.getServerName();
+                    }
+
+                    final UserGroup tmp = new UserGroup(
+                            userGroupTable.getInt("id"),             // NOI18N
+                            userGroupTable.getString("name").trim(), // NOI18N
+                            domain,
+                            userGroupTable.getString("descr"),
+                            userGroupTable.getInt("prio"));          // NOI18N
+                    userGroups.addElement(tmp);
+                } catch (Exception e) {
+                    LOG.error(e);
+
+                    if (e instanceof java.sql.SQLException) {
+                        throw e;
                     }
                 }
-            } finally {
-                DBConnection.closeResultSets(userGroupTable);
             }
 
-            // --------------------load memberships--------------------------------------------------            
+            userGroupTable.close();
 
-            ResultSet memberTable = null;
-            try {
-                memberTable = conPool.submitInternalQuery(DBConnection.DESC_GET_ALL_MEMBERSHIPS, new Object[0]);
-                while (memberTable.next()) {
-                    try {
-                        final String lsName = properties.getServerName();
+            // --------------------load memberships--------------------------------------------------
 
-                        final String login = memberTable.getString("login_name");
-                        final String ug = memberTable.getString("ug");
+            final ResultSet memberTable = conPool.submitInternalQuery(
+                    DBConnection.DESC_GET_ALL_MEMBERSHIPS,
+                    new Object[0]);
 
-                        String ugDomain = memberTable.getString("ugDomain"); // NOI18N
+            while (memberTable.next()) {
+                try {
+                    final String lsName = properties.getServerName();
 
-                        if ((ugDomain == null) || ugDomain.equalsIgnoreCase("local")) { // NOI18N
-                            ugDomain = lsName;
-                        }
+                    final String login = memberTable.getString("login_name");
+                    final String ug = memberTable.getString("ug");
 
-                        final String usrDomain = lsName;
+                    String ugDomain = memberTable.getString("ugDomain"); // NOI18N
 
-                        final Membership tmp = new Membership(login, usrDomain, ug, ugDomain);
-                        memberships.addElement(tmp);
-                    } catch (Exception e) {
-                        LOG.error(e);
+                    if ((ugDomain == null) || ugDomain.equalsIgnoreCase("local")) { // NOI18N
+                        ugDomain = lsName;
+                    }
 
-                        if (e instanceof java.sql.SQLException) {
-                            throw e;
-                        }
+                    final String usrDomain = lsName;
+
+                    final Membership tmp = new Membership(login, usrDomain, ug, ugDomain);
+                    memberships.addElement(tmp);
+                } catch (Exception e) {
+                    LOG.error(e);
+
+                    if (e instanceof java.sql.SQLException) {
+                        throw e;
                     }
                 }
-            } finally {
-                DBConnection.closeResultSets(memberTable);
             }
+
+            memberTable.close();
 
             addShutdown(new AbstractShutdownable() {
 
@@ -260,11 +259,11 @@ public final class UserStore extends Shutdown {
     public boolean validateUserPassword(final User user, final String password) throws SQLException {
         ResultSet result = null;
         try {
+            // TODO: should username and password be trimmed?
             result = conPool.submitInternalQuery(
                     DBConnection.DESC_VERIFY_USER_PW,
                     user.getName(),
                     password);
-            // TODO: should username and password be trimmed?
             return result.next() && (result.getInt(1) == 1);
         } finally {
             DBConnection.closeResultSets(result);
@@ -281,7 +280,127 @@ public final class UserStore extends Shutdown {
      *
      * @throws  SQLException  DOCUMENT ME!
      */
-    public synchronized String[] getConfigAttrs(final User user, final String key) throws SQLException {
+// public String[] getConfigAttrs(final User user, final String key) throws SQLException {
+// final String[] newResult = getConfigAttrsNew(user, key);
+// final String[] oldResult = getConfigAttrsOld(user, key);
+//
+// if (((newResult == null) && (oldResult != null)) || ((newResult != null) && (oldResult == null))
+// || ((newResult != null) && (oldResult != null) && !Arrays.equals(newResult, oldResult))) {
+// LOG.fatal("different results: user: " + user.getName() + " key: " + key);
+// }
+//
+// return newResult;
+// }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     * @param   key   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    public String[] getConfigAttrs(final User user, final String key) throws SQLException {
+        synchronized (ConfigAttrStore.getInstance()) {
+            if ((user == null) || (key == null)) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("user and/or key is null, returning null: user: " + user + " || key: " + key);
+                }
+
+                return null;
+            }
+
+            if (user.getUserGroup() != null) {
+                final UserGroup userGroup = user.getUserGroup();
+
+                // ASSIGNED DIRECTLY TO THE USER
+                final String configAttrUser = ConfigAttrStore.getInstance().getConfigAttr(key, user);
+                if (configAttrUser != null) {
+                    return new String[] { configAttrUser };
+                }
+
+                // ASSIGNED TO THE USER@GROUP@DOMAIN
+                final String configAttrUserGroup = ConfigAttrStore.getInstance().getConfigAttr(key, user, userGroup);
+                if (configAttrUserGroup != null) {
+                    return new String[] { configAttrUserGroup };
+                }
+
+                // ASSIGNED TO THE GROUP@DOMAIN
+                final String configAttrGroup = ConfigAttrStore.getInstance().getConfigAttr(key, userGroup);
+                if (configAttrGroup != null) {
+                    return new String[] { configAttrGroup };
+                }
+
+                // ASSIGNED TO THE DOMAIN
+                final String configAttrDomain = ConfigAttrStore.getInstance().getConfigAttr(key, userGroup.getDomain());
+                if (configAttrDomain != null) {
+                    return new String[] { configAttrDomain };
+                }
+
+                return null;
+            } else {
+                final String userName = user.getName();
+
+                String exemptGroup = null;
+
+                exemptGroup = ConfigAttrStore.getInstance().getExempt(user, key);
+                final Set<String> configAttrs = new LinkedHashSet<>();
+
+                // ASSIGNED DIRECTLY TO THE USER
+                final String configAttrUser = ConfigAttrStore.getInstance().getConfigAttr(key, user);
+                if (configAttrUser != null) {
+                    configAttrs.add(configAttrUser);
+                }
+
+                final Set<String> domains = new LinkedHashSet<>();
+                for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
+                    if (potentialUserGroup != null) {
+                        if ((exemptGroup == null) || (potentialUserGroup.getName().equals(exemptGroup))) {
+                            // ASSIGNED TO THE USER@GROUP@DOMAIN
+                            final String configAttrUserGroup = ConfigAttrStore.getInstance()
+                                        .getConfigAttr(key, user, potentialUserGroup);
+                            if (configAttrUserGroup != null) {
+                                configAttrs.add(configAttrUserGroup);
+                            }
+
+                            // ASSIGNED TO THE GROUP@DOMAIN
+                            final String configAttrGroup = ConfigAttrStore.getInstance()
+                                        .getConfigAttr(key, potentialUserGroup);
+                            if (configAttrGroup != null) {
+                                configAttrs.add(configAttrGroup);
+                            }
+
+                            // adding domains for later check for domain assignements
+                            if (potentialUserGroup.getDomain() != null) {
+                                domains.add(potentialUserGroup.getDomain());
+                            }
+                        }
+                    }
+                }
+                for (final String domain : domains) {
+                    final String configAttrDomain = ConfigAttrStore.getInstance().getConfigAttr(key, domain);
+                    if (configAttrDomain != null) {
+                        configAttrs.add(configAttrDomain);
+                    }
+                }
+                return configAttrs.isEmpty() ? null : configAttrs.toArray(new String[0]);
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     * @param   key   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    public synchronized String[] getConfigAttrsOld(final User user, final String key) throws SQLException {
         if ((user == null) || (key == null)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("user and/or key is null, returning null: user: " + user + " || key: " + key);
@@ -290,87 +409,50 @@ public final class UserStore extends Shutdown {
             return null;
         }
 
-        if (user.getUserGroup() != null) {
-            final UserGroup userGroup = user.getUserGroup();
-           
-            // ASSIGNED DIRECTLY TO THE USER
-            final String configAttrUser = getConfigAttr(key, user);
-            if (configAttrUser != null) {
-                return new String[] { configAttrUser };
-            }
-
-            // ASSIGNED TO THE USER@GROUP@DOMAIN
-            final String configAttrUserGroup = getConfigAttr(key, user, userGroup);
-            if (configAttrUserGroup != null) {
-                return new String[] { configAttrUserGroup };
-            }
-
-            // ASSIGNED TO THE GROUP@DOMAIN
-            final String configAttrGroup = getConfigAttr(key, userGroup);
-            if (configAttrGroup != null) {
-                return new String[] { configAttrGroup };
-            }
-
-            // ASSIGNED TO THE DOMAIN
-            final String configAttrDomain = getConfigAttr(key, userGroup.getDomain());
-            if (configAttrDomain != null) {
-                return new String[] { configAttrDomain };
-            }
-            
-            return null;
-        } else {
-            final String userName = user.getName();
-            
-            int groupId = -1;
-            ResultSet exemptGroupValueSet = null;
-            try {
-                exemptGroupValueSet = conPool.submitInternalQuery(
-                    DBConnection.DESC_FETCH_CONFIG_ATTR_EXEMPT_VALUE,
-                    userName,
-                    key);
-                if (exemptGroupValueSet.next()) {
-                    groupId = exemptGroupValueSet.getInt(1);
+        ResultSet keyIdSet = null;
+        int keyId = -1;
+        try {
+            keyIdSet = conPool.submitInternalQuery(DBConnection.DESC_FETCH_CONFIG_ATTR_KEY_ID, key);
+            if (keyIdSet.next()) {
+                keyId = keyIdSet.getInt(1);
+            } else {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("key not present: " + key); // NOI18N
                 }
-            } finally {
-                DBConnection.closeResultSets(exemptGroupValueSet);
+
+                return null;
+            }
+        } finally {
+            DBConnection.closeResultSets(keyIdSet);
+        }
+
+        assert keyId > 0 : "invalid key id"; // NOI18N
+
+        final UserGroup userGroup = user.getUserGroup();
+        if (userGroup != null) {
+            final String configAttr = getConfigAttrForUserGroup(keyId, user, userGroup);
+            return (configAttr != null) ? new String[] { configAttr } : null;
+        } else {
+            final ResultSet exemptGroupValueSet = conPool.submitInternalQuery(
+                    DBConnection.DESC_FETCH_CONFIG_ATTR_EXEMPT_VALUE,
+                    user.getId(),
+                    keyId);
+            final int groupId;
+            if (exemptGroupValueSet.next()) {
+                groupId = exemptGroupValueSet.getInt(1);
+            } else {
+                groupId = -1;
             }
 
             final Set<String> configAttrs = new LinkedHashSet<>();
-
-            // ASSIGNED DIRECTLY TO THE USER
-            final String configAttrUser = getConfigAttr(key, user);
-            if (configAttrUser != null) {
-                configAttrs.add(configAttrUser);                
-            }
-            
-            final Set<String> domains = new LinkedHashSet<>();
             for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
-                if (potentialUserGroup != null) {
-                    if (groupId < 0 || potentialUserGroup.getId() == groupId) {
-                        
-                        // ASSIGNED TO THE USER@GROUP@DOMAIN
-                        final String configAttrUserGroup = getConfigAttr(key, user, potentialUserGroup);
-                        if (configAttrUserGroup != null) {
-                            configAttrs.add(configAttrUserGroup);
-                        }
-                        
-                        // ASSIGNED TO THE GROUP@DOMAIN
-                        final String configAttrGroup = getConfigAttr(key, potentialUserGroup);
-                        if (configAttrGroup != null) {
-                            configAttrs.add(configAttrGroup);
-                        }
-
-                        // adding domains for later check for domain assignements
-                        if (potentialUserGroup.getDomain() != null)  {
-                            domains.add(potentialUserGroup.getDomain());
-                        }
+                final String configAttr = getConfigAttrForUserGroup(keyId, user, potentialUserGroup);
+                if (groupId < 0) {
+                    if (configAttr != null) {
+                        configAttrs.add(configAttr);
                     }
-                }
-            }
-            for (final String domain : domains) {
-                final String configAttrDomain = getConfigAttr(key, domain);
-                if (configAttrDomain != null) {
-                    configAttrs.add(configAttrDomain);
+                } else if (potentialUserGroup.getId() == groupId) {
+                    configAttrs.add(configAttr);
                 }
             }
             return configAttrs.isEmpty() ? null : configAttrs.toArray(new String[0]);
@@ -378,156 +460,65 @@ public final class UserStore extends Shutdown {
     }
 
     /**
-     * ASSIGNED DIRECTLY TO THE USER
-     * 
-     * @param key
-     * @param user
-     * @return
-     * @throws SQLException 
+     * DOCUMENT ME!
+     *
+     * @param   keyId      DOCUMENT ME!
+     * @param   user       DOCUMENT ME!
+     * @param   userGroup  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
      */
-    private String getConfigAttr(final String key, final User user)
+    private String getConfigAttrForUserGroup(final int keyId, final User user, final UserGroup userGroup)
             throws SQLException {
-        final String userName = user.getName();
-
         ResultSet userValueSet = null;
-        try {
-            userValueSet = conPool.submitInternalQuery(
-                DBConnection.DESC_FETCH_CONFIG_ATTR_USER_VALUE,
-                userName,
-                key);
-                    
-            if (userValueSet.next()) {
-                return userValueSet.getString(1);
-            }
-        } finally {
-            DBConnection.closeResultSets(userValueSet);
-        }
-        
-        return null;
-    }
-    
-    
-    /**
-     * ASSIGNED TO THE USER@GROUP@DOMAIN
-     * 
-     * @param key
-     * @param user
-     * @param userGroup
-     * @return
-     * @throws SQLException 
-     */
-    private String getConfigAttr(final String key, final User user, final UserGroup userGroup) throws SQLException {         
-        if (user != null && userGroup != null) {
-            final String userName = user.getName();
-            final String userGroupName = userGroup.getName();                                
-            final String domain = userGroup.getDomain();
-            
-            if (properties.getServerName().equals(domain)) { // CHECKING NOW FOR BOTH ASSIGNEMENTS: LOCAL AND <SERVER_NAME>                                   
-                final String configAttr = getConfigAttr(key, userName, userGroupName, "LOCAL");
-                if (configAttr != null) return configAttr;            
-            }
-            
-            final String configAttr = getConfigAttr(key, userName, userGroupName, domain);
-            if (configAttr != null) return configAttr;            
-        }
-        return null;
-    }
-    
-    private String getConfigAttr(final String key, final String userName, final String userGroupName, final String domain) throws SQLException {         
-        ResultSet userValueSet = null;
-        try {
-            userValueSet = conPool.submitInternalQuery(
-                DBConnection.DESC_FETCH_CONFIG_ATTR_USER_AND_GROUP_VALUE,
-                userName,
-                userGroupName,
-                domain,
-                key);
-            if (userValueSet.next()) {
-                return userValueSet.getString(1);
-            }
-        } finally {
-            DBConnection.closeResultSets(userValueSet);
-        }
-        return null;
-    }
-    
-    /**
-     * ASSIGNED TO THE GROUP@DOMAIN
-     * 
-     * @param key
-     * @param userGroup
-     * @return
-     * @throws SQLException 
-     */
-    private String getConfigAttr(final String key, final UserGroup userGroup) throws SQLException {         
-        if (userGroup != null) {
-            final String userGroupName = userGroup.getName();                        
-            final String userGroupDomain = userGroup.getDomain();
-
-            if (properties.getServerName().equals(userGroup.getDomain())) { // CHECKING NOW FOR BOTH ASSIGNEMENTS: LOCAL AND <SERVER_NAME>
-                final String configAttr = getConfigAttr(key, userGroupName, "LOCAL");
-                if (configAttr != null) return configAttr;
-            }
-
-            final String configAttr = getConfigAttr(key, userGroupName, userGroupDomain);
-            if (configAttr != null) return configAttr;
-        }
-
-        return null;
-    }    
-    
-    private String getConfigAttr(final String key, final String userGroupName, final String domain) throws SQLException {         
         ResultSet ugValueSet = null;
-        try {
-            ugValueSet = conPool.submitInternalQuery(
-                DBConnection.DESC_FETCH_CONFIG_ATTR_UG_VALUE,
-                userGroupName,
-                domain,
-                key);
-            if (ugValueSet.next()) {
-                return ugValueSet.getString(1);
-            }
-        } finally {
-            DBConnection.closeResultSets(ugValueSet);
-        }
-        return null;
-        
-    }
-    
-    /**
-     * ASSIGNED TO THE DOMAIN
-     * 
-     * @param key
-     * @param domain
-     * @return
-     * @throws SQLException 
-     */
-    private String getConfigAttr(final String key, final String domain) throws SQLException {                  
-        if (properties.getServerName().equals(domain)) { // CHECKING NOW FOR BOTH ASSIGNEMENTS: LOCAL AND <SERVER_NAME>
-            final String configAttr = _getConfigAttr(key, "LOCAL");
-            if (configAttr != null) return configAttr;
-        }
-        
-        final String configAttr = _getConfigAttr(key, domain);
-        if (configAttr != null) return configAttr;
-
-        return null;
-    }
-
-    private String _getConfigAttr(final String key, final String domain) throws SQLException {                  
         ResultSet domainValueSet = null;
+
         try {
-            domainValueSet = conPool.submitInternalQuery(
-                DBConnection.DESC_FETCH_CONFIG_ATTR_DOMAIN_VALUE,
-                domain,
-                key);
-            if (domainValueSet.next()) {
-                return domainValueSet.getString(1);
+            final String userName = user.getName();
+            final String userGroupName = userGroup.getName();
+            final String domain;
+            if (properties.getServerName().equals(userGroup.getDomain())) {
+                domain = "LOCAL"; // NOI18N
+            } else {
+                domain = userGroup.getDomain();
             }
+
+            final String value;
+            userValueSet = conPool.submitInternalQuery(
+                    DBConnection.DESC_FETCH_CONFIG_ATTR_USER_VALUE,
+                    userName,
+                    userGroupName,
+                    domain,
+                    keyId);
+            if (userValueSet.next()) {
+                value = userValueSet.getString(1);
+            } else {
+                ugValueSet = conPool.submitInternalQuery(
+                        DBConnection.DESC_FETCH_CONFIG_ATTR_UG_VALUE,
+                        userGroupName,
+                        domain,
+                        keyId);
+                if (ugValueSet.next()) {
+                    value = ugValueSet.getString(1);
+                } else {
+                    domainValueSet = conPool.submitInternalQuery(
+                            DBConnection.DESC_FETCH_CONFIG_ATTR_DOMAIN_VALUE,
+                            domain,
+                            keyId);
+                    if (domainValueSet.next()) {
+                        value = domainValueSet.getString(1);
+                    } else {
+                        value = null;
+                    }
+                }
+            }
+
+            return value;
         } finally {
-            DBConnection.closeResultSets(domainValueSet);
+            DBConnection.closeResultSets(userValueSet, ugValueSet, domainValueSet);
         }
-        return null;        
     }
-    
 }

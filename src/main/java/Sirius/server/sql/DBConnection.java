@@ -23,14 +23,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.StringTokenizer;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import de.cismet.tools.Sorter;
 
 /**
  * :-) DOCUMENT ME!
@@ -54,8 +51,8 @@ public final class DBConnection implements DBBackend {
     // the query specific information
     public static final String DESC_VERIFY_USER_PW = "verify_user_password";                                   // NOI18N
     public static final String DESC_FETCH_DOMAIN_ID_FROM_DOMAIN_STRING = "fetch_domain_id_from_domain_string"; // NOI18N
+    public static final String DESC_FETCH_CONFIG_ATTR_KEY_ID = "fetch_config_attr_key_id";                     // NOI18N
     public static final String DESC_FETCH_CONFIG_ATTR_USER_VALUE = "fetch_config_attr_user_value";             // NOI18N
-    public static final String DESC_FETCH_CONFIG_ATTR_USER_AND_GROUP_VALUE = "fetch_config_attr_user_and_group_value"; // NOI18N
     public static final String DESC_FETCH_CONFIG_ATTR_UG_VALUE = "fetch_config_attr_ug_value";                 // NOI18N
     public static final String DESC_FETCH_CONFIG_ATTR_DOMAIN_VALUE = "fetch_config_attr_domain_value";         // NOI18N
     public static final String DESC_FETCH_CONFIG_ATTR_EXEMPT_VALUE = "fetch_config_attr_exempt_value";         // NOI18N
@@ -87,6 +84,8 @@ public final class DBConnection implements DBBackend {
     public static final String UPDATE_CS_CHANGED_CLASS_ENTRY = "update_cs_changed_class_entry";              // NOI18N
     public static final String INSERT_CS_CHANGED_OBJECT_ENTRY = "insert_cs_changed_object_entry";            // NOI18N
     public static final String INSERT_CS_CHANGED_CLASS_ENTRY = "insert_cs_changed_class_entry";              // NOI18N
+    public static final String GET_ALL_CS_CONFIG_ATTR = "get_all_cs_cs_config_attr";                         // NOI18N
+    public static final String GET_ALL_CS_CONFIG_ATTR_EXEMPT = "cs_config_attr_exempt";                      // NOI18N
 
     //~ Instance fields --------------------------------------------------------
 
@@ -100,18 +99,23 @@ public final class DBConnection implements DBBackend {
     private final Connection con;
     private final StatementCache cache;
     private final Map<String, PreparedStatement> internalQueries;
+    private DBConnectionPool.CheckConnection connectionChecker;
+    private long poolLeftTime = 0;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new DBConnection object.
      *
-     * @param   dbc  DOCUMENT ME!
+     * @param   dbc                DOCUMENT ME!
+     * @param   connectionChecker  DOCUMENT ME!
      *
      * @throws  ServerExitError  DOCUMENT ME!
      */
-    protected DBConnection(final DBClassifier dbc) throws ServerExitError {
+    protected DBConnection(final DBClassifier dbc, final DBConnectionPool.CheckConnection connectionChecker)
+            throws ServerExitError {
         this.dbc = dbc;
+        this.connectionChecker = connectionChecker;
         internalQueries = new HashMap<String, PreparedStatement>(10, 0.8f);
 
         try {
@@ -152,6 +156,42 @@ public final class DBConnection implements DBBackend {
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the poolLeftTime
+     */
+    public long getPoolLeftTime() {
+        return poolLeftTime;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  poolLeftTime  the poolLeftTime to set
+     */
+    public void setPoolLeftTime(final long poolLeftTime) {
+        this.poolLeftTime = poolLeftTime;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  connectionChecker  the connectionChecker to set
+     */
+    public void setConnectionChecker(final DBConnectionPool.CheckConnection connectionChecker) {
+        this.connectionChecker = connectionChecker;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the connectionChecker
+     */
+    public DBConnectionPool.CheckConnection getConnectionChecker() {
+        return connectionChecker;
+    }
 
     /**
      * DOCUMENT ME!
@@ -661,6 +701,23 @@ public final class DBConnection implements DBBackend {
             rwLock.readLock().lock();
 
             return isClosed;
+        } finally {
+            rwLock.readLock().unlock();
+        }
+    }
+
+    /**
+     * Returns the current closed state of the connection.
+     *
+     * @return  true if the connection is closed, false otherwise
+     */
+    public boolean isValid() {
+        try {
+            rwLock.readLock().lock();
+
+            return con.isValid(1);
+        } catch (SQLException e) {
+            return false;
         } finally {
             rwLock.readLock().unlock();
         }

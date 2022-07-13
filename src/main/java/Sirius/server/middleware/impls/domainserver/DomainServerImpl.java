@@ -1721,8 +1721,11 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                                     }
                                 })));
         }
+        Connection connection = null;
+
         try {
-            final PreparedStatement stmt = ps.parameterise(getConnectionPool().getDBConnection().getConnection());
+            connection = getConnectionPool().getDBConnection(true).getConnection();
+            final PreparedStatement stmt = ps.parameterise(connection);
             final ResultSet rs = stmt.executeQuery();
             final ArrayList<ArrayList> result = collectResults(rs);
             if (qpp != null) {
@@ -1734,6 +1737,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             final String msg = "Error during sql statement: " + ps;
             logger.error(msg, e);
             throw new RemoteException(msg, e);
+        } finally {
+            if (connection != null) {
+                getConnectionPool().releaseDbConnection(connection);
+            }
         }
     }
 
