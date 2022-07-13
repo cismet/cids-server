@@ -7,6 +7,8 @@
 ****************************************************/
 package de.cismet.cids.server.actions;
 
+import org.apache.log4j.Logger;
+
 /**
  * DOCUMENT ME!
  *
@@ -17,6 +19,8 @@ package de.cismet.cids.server.actions;
 public class EchoAction implements ServerAction {
 
     //~ Static fields/initializers ---------------------------------------------
+
+    private static final transient Logger LOG = Logger.getLogger(EchoAction.class);
 
     public static final String TASK_NAME = "echo";
 
@@ -34,16 +38,16 @@ public class EchoAction implements ServerAction {
 
         for (final ServerActionParameter sap : params) {
             if (!firstParam) {
-                paramsString.append(",");
+                paramsString.append(", ");
             } else {
                 firstParam = false;
             }
             paramsString.append("\"")
                     .append(sap.getKey())
                     .append("\": ")
-                    .append("\"")
+                    .append((sap.getValue() instanceof String) ? "\"" : "")
                     .append(sap.getValue())
-                    .append("\"");
+                    .append((sap.getValue() instanceof String) ? "\"" : "");
         }
 
         paramsString.append("}");
