@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.Vector;
@@ -62,6 +63,7 @@ public final class UserStore extends Shutdown {
     public UserStore(final DBConnectionPool conPool, final ServerProperties properties) {
         this.conPool = conPool;
         this.properties = properties;
+        ConfigAttrStore.initialise(conPool, properties);
         users = new Vector(100, 100);
         userGroups = new Vector(10, 10);
         // userGroupHash = new Hashtable(25);
@@ -278,7 +280,127 @@ public final class UserStore extends Shutdown {
      *
      * @throws  SQLException  DOCUMENT ME!
      */
-    public synchronized String[] getConfigAttrs(final User user, final String key) throws SQLException {
+// public String[] getConfigAttrs(final User user, final String key) throws SQLException {
+// final String[] newResult = getConfigAttrsNew(user, key);
+// final String[] oldResult = getConfigAttrsOld(user, key);
+//
+// if (((newResult == null) && (oldResult != null)) || ((newResult != null) && (oldResult == null))
+// || ((newResult != null) && (oldResult != null) && !Arrays.equals(newResult, oldResult))) {
+// LOG.fatal("different results: user: " + user.getName() + " key: " + key);
+// }
+//
+// return newResult;
+// }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     * @param   key   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    public String[] getConfigAttrs(final User user, final String key) throws SQLException {
+        synchronized (ConfigAttrStore.getInstance()) {
+            if ((user == null) || (key == null)) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("user and/or key is null, returning null: user: " + user + " || key: " + key);
+                }
+
+                return null;
+            }
+
+            if (user.getUserGroup() != null) {
+                final UserGroup userGroup = user.getUserGroup();
+
+                // ASSIGNED DIRECTLY TO THE USER
+                final String configAttrUser = ConfigAttrStore.getInstance().getConfigAttr(key, user);
+                if (configAttrUser != null) {
+                    return new String[] { configAttrUser };
+                }
+
+                // ASSIGNED TO THE USER@GROUP@DOMAIN
+                final String configAttrUserGroup = ConfigAttrStore.getInstance().getConfigAttr(key, user, userGroup);
+                if (configAttrUserGroup != null) {
+                    return new String[] { configAttrUserGroup };
+                }
+
+                // ASSIGNED TO THE GROUP@DOMAIN
+                final String configAttrGroup = ConfigAttrStore.getInstance().getConfigAttr(key, userGroup);
+                if (configAttrGroup != null) {
+                    return new String[] { configAttrGroup };
+                }
+
+                // ASSIGNED TO THE DOMAIN
+                final String configAttrDomain = ConfigAttrStore.getInstance().getConfigAttr(key, userGroup.getDomain());
+                if (configAttrDomain != null) {
+                    return new String[] { configAttrDomain };
+                }
+
+                return null;
+            } else {
+                final String userName = user.getName();
+
+                String exemptGroup = null;
+
+                exemptGroup = ConfigAttrStore.getInstance().getExempt(user, key);
+                final Set<String> configAttrs = new LinkedHashSet<>();
+
+                // ASSIGNED DIRECTLY TO THE USER
+                final String configAttrUser = ConfigAttrStore.getInstance().getConfigAttr(key, user);
+                if (configAttrUser != null) {
+                    configAttrs.add(configAttrUser);
+                }
+
+                final Set<String> domains = new LinkedHashSet<>();
+                for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
+                    if (potentialUserGroup != null) {
+                        if ((exemptGroup == null) || (potentialUserGroup.getName().equals(exemptGroup))) {
+                            // ASSIGNED TO THE USER@GROUP@DOMAIN
+                            final String configAttrUserGroup = ConfigAttrStore.getInstance()
+                                        .getConfigAttr(key, user, potentialUserGroup);
+                            if (configAttrUserGroup != null) {
+                                configAttrs.add(configAttrUserGroup);
+                            }
+
+                            // ASSIGNED TO THE GROUP@DOMAIN
+                            final String configAttrGroup = ConfigAttrStore.getInstance()
+                                        .getConfigAttr(key, potentialUserGroup);
+                            if (configAttrGroup != null) {
+                                configAttrs.add(configAttrGroup);
+                            }
+
+                            // adding domains for later check for domain assignements
+                            if (potentialUserGroup.getDomain() != null) {
+                                domains.add(potentialUserGroup.getDomain());
+                            }
+                        }
+                    }
+                }
+                for (final String domain : domains) {
+                    final String configAttrDomain = ConfigAttrStore.getInstance().getConfigAttr(key, domain);
+                    if (configAttrDomain != null) {
+                        configAttrs.add(configAttrDomain);
+                    }
+                }
+                return configAttrs.isEmpty() ? null : configAttrs.toArray(new String[0]);
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     * @param   key   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    public synchronized String[] getConfigAttrsOld(final User user, final String key) throws SQLException {
         if ((user == null) || (key == null)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("user and/or key is null, returning null: user: " + user + " || key: " + key);
