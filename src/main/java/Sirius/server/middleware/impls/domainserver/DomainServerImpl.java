@@ -92,10 +92,12 @@ import de.cismet.cids.objectextension.ObjectExtensionFactory;
 
 import de.cismet.cids.server.DefaultServerExceptionHandler;
 import de.cismet.cids.server.ServerSecurityManager;
+import de.cismet.cids.server.actions.CalibrateTimeServerAction;
 import de.cismet.cids.server.actions.ScheduledServerAction;
 import de.cismet.cids.server.actions.ScheduledServerActionManager;
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.actions.TraceRouteServerAction;
 import de.cismet.cids.server.connectioncontext.ConnectionContextBackend;
 import de.cismet.cids.server.connectioncontext.ConnectionContextLog;
 import de.cismet.cids.server.search.QueryPostProcessor;
@@ -2239,7 +2241,13 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                             "this server instance does not support scheduled server action feature"); // NOI18N
                     }
                 } else {
-                    return serverAction.execute(body, params);
+                    final ServerActionParameter[] effectiveParams = TraceRouteServerAction.extendParams(
+                            properties.getServerName(),
+                            taskname,
+                            properties.getServerName(),
+                            params);
+                    final Object result = serverAction.execute(body, effectiveParams);
+                    return CalibrateTimeServerAction.calibrate(taskname, properties.getServerName(), result);
                 }
             } else {
                 return null;
