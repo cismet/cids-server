@@ -59,7 +59,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import de.cismet.cids.server.CallServerService;
+import de.cismet.cids.server.actions.CalibrateTimeServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.actions.TraceRouteServerAction;
 import de.cismet.cids.server.search.CidsServerSearch;
 import de.cismet.cids.server.ws.SSLConfig;
 
@@ -96,6 +98,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
     private final transient Proxy proxy;
     private final boolean compressionEnabled;
+    private final String serverName;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -106,7 +109,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     @Deprecated
     public RESTfulSerialInterfaceConnector(final String rootResource) {
-        this(rootResource, null, null, false);
+        this(rootResource, null, null, null, false);
     }
 
     /**
@@ -116,7 +119,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @param  compressionEnabled  DOCUMENT ME!
      */
     public RESTfulSerialInterfaceConnector(final String rootResource, final boolean compressionEnabled) {
-        this(rootResource, null, null, compressionEnabled);
+        this(rootResource, null, null, null, compressionEnabled);
     }
 
     /**
@@ -127,7 +130,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     @Deprecated
     public RESTfulSerialInterfaceConnector(final String rootResource, final Proxy proxy) {
-        this(rootResource, proxy, null, false);
+        this(rootResource, proxy, null, null, false);
     }
 
     /**
@@ -138,7 +141,20 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     @Deprecated
     public RESTfulSerialInterfaceConnector(final String rootResource, final SSLConfig sslConfig) {
-        this(rootResource, null, sslConfig, false);
+        this(rootResource, null, sslConfig, null, false);
+    }
+
+    /**
+     * Creates a new RESTfulSerialInterfaceConnector object.
+     *
+     * @param  rootResource        DOCUMENT ME!
+     * @param  serverName          DOCUMENT ME!
+     * @param  compressionEnabled  DOCUMENT ME!
+     */
+    public RESTfulSerialInterfaceConnector(final String rootResource,
+            final String serverName,
+            final boolean compressionEnabled) {
+        this(rootResource, null, null, serverName, compressionEnabled);
     }
 
     /**
@@ -151,7 +167,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     public RESTfulSerialInterfaceConnector(final String rootResource,
             final Proxy proxy,
             final boolean compressionEnabled) {
-        this(rootResource, proxy, null, compressionEnabled);
+        this(rootResource, proxy, null, null, compressionEnabled);
     }
 
     /**
@@ -164,7 +180,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     public RESTfulSerialInterfaceConnector(final String rootResource,
             final SSLConfig sslConfig,
             final boolean compressionEnabled) {
-        this(rootResource, null, sslConfig, compressionEnabled);
+        this(rootResource, null, sslConfig, null, compressionEnabled);
     }
 
     /**
@@ -178,19 +194,67 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     public RESTfulSerialInterfaceConnector(final String rootResource,
             final Proxy proxy,
             final SSLConfig sslConfig) {
-        this(rootResource, proxy, sslConfig, false);
+        this(rootResource, proxy, sslConfig, null, false);
     }
+
     /**
      * Creates a new RESTfulSerialInterfaceConnector object.
      *
      * @param  rootResource        DOCUMENT ME!
-     * @param  proxy               proxyConfig proxyURL DOCUMENT ME!
+     * @param  proxy               DOCUMENT ME!
+     * @param  serverName          DOCUMENT ME!
+     * @param  compressionEnabled  DOCUMENT ME!
+     */
+    public RESTfulSerialInterfaceConnector(final String rootResource,
+            final Proxy proxy,
+            final String serverName,
+            final boolean compressionEnabled) {
+        this(rootResource, proxy, null, serverName, compressionEnabled);
+    }
+
+    /**
+     * Creates a new RESTfulSerialInterfaceConnector object.
+     *
+     * @param  rootResource        DOCUMENT ME!
+     * @param  sslConfig           DOCUMENT ME!
+     * @param  serverName          DOCUMENT ME!
+     * @param  compressionEnabled  DOCUMENT ME!
+     */
+    public RESTfulSerialInterfaceConnector(final String rootResource,
+            final SSLConfig sslConfig,
+            final String serverName,
+            final boolean compressionEnabled) {
+        this(rootResource, null, sslConfig, serverName, compressionEnabled);
+    }
+
+    /**
+     * Creates a new RESTfulSerialInterfaceConnector object.
+     *
+     * @param  rootResource        DOCUMENT ME!
+     * @param  proxy               DOCUMENT ME!
      * @param  sslConfig           DOCUMENT ME!
      * @param  compressionEnabled  DOCUMENT ME!
      */
     public RESTfulSerialInterfaceConnector(final String rootResource,
             final Proxy proxy,
             final SSLConfig sslConfig,
+            final boolean compressionEnabled) {
+        this(rootResource, proxy, sslConfig, null, compressionEnabled);
+    }
+
+    /**
+     * Creates a new RESTfulSerialInterfaceConnector object.
+     *
+     * @param  rootResource        DOCUMENT ME!
+     * @param  proxy               proxyConfig proxyURL DOCUMENT ME!
+     * @param  sslConfig           DOCUMENT ME!
+     * @param  serverName          DOCUMENT ME!
+     * @param  compressionEnabled  DOCUMENT ME!
+     */
+    public RESTfulSerialInterfaceConnector(final String rootResource,
+            final Proxy proxy,
+            final SSLConfig sslConfig,
+            final String serverName,
             final boolean compressionEnabled) {
         if (sslConfig == null) {
             LOG.warn("cannot initialise ssl because sslConfig is null"); // NOI18N
@@ -213,6 +277,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
         clientCache = new HashMap<String, Client>();
         this.compressionEnabled = compressionEnabled;
+        this.serverName = serverName;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -1952,6 +2017,11 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             final ConnectionContext context,
             final ServerActionParameter... params) throws RemoteException {
         try {
+            final ServerActionParameter[] effectiveParams = TraceRouteServerAction.extendParams(
+                    serverName,
+                    taskname,
+                    taskdomain,
+                    params);
             final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
                         PARAM_USER,
                         Converter.serialiseToString(user, isCompressionEnabled()))
@@ -1959,9 +2029,11 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         .append(PARAM_DOMAIN, Converter.serialiseToString(taskdomain, isCompressionEnabled()))
                         .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()))
                         .append(PARAM_BODY, Converter.serialiseToString(body, isCompressionEnabled()))
-                        .append(PARAM_PARAMELIPSE, Converter.serialiseToString(params, isCompressionEnabled()));
-
-            return getResponsePOST("executeTask", queryParams, Object.class); // NOI18N
+                        .append(
+                            PARAM_PARAMELIPSE,
+                            Converter.serialiseToString(effectiveParams, isCompressionEnabled()));
+            final Object result = getResponsePOST("executeTask", queryParams, Object.class);
+            return CalibrateTimeServerAction.calibrate(taskname, taskdomain, result);
         } catch (final Exception ex) {
             throw createRemoteException(ex);
         }

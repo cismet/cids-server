@@ -106,7 +106,14 @@ public final class StartProxy {
                 LOG.info("<CS> INFO: pass-through url: " + serverProperties.getServerProxyURL());
             }
 
+            String serverName = "Proxy";
+            try {
+                serverName = serverProperties.getServerName();
+            } catch (final Exception ex) {
+                LOG.warn("missing serverName in serverProperties", ex);
+            }
             callServer = new RESTfulSerialInterfaceConnector(serverProperties.getServerProxyURL(),
+                    serverName,
                     serverProperties.isCompressionEnabled());
             RESTfulService.up(serverProperties);
         } else {
