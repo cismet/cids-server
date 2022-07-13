@@ -20,7 +20,9 @@ import java.rmi.RemoteException;
 
 import java.util.Map;
 
+import de.cismet.cids.server.actions.CalibrateTimeServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.actions.TraceRouteServerAction;
 
 import de.cismet.connectioncontext.ConnectionContext;
 
@@ -39,6 +41,7 @@ public class ActionServiceImpl implements ActionService {
     //~ Instance fields --------------------------------------------------------
 
     private final Map activeLocalServers;
+    private final String serverName;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -47,11 +50,14 @@ public class ActionServiceImpl implements ActionService {
      *
      * @param   activeLocalServers  DOCUMENT ME!
      * @param   nameServer          DOCUMENT ME!
+     * @param   serverName          DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    public ActionServiceImpl(final Map activeLocalServers, final NameServer nameServer) throws RemoteException {
+    public ActionServiceImpl(final Map activeLocalServers, final NameServer nameServer, final String serverName)
+            throws RemoteException {
         this.activeLocalServers = activeLocalServers;
+        this.serverName = serverName;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -73,7 +79,14 @@ public class ActionServiceImpl implements ActionService {
             final Object body,
             final ConnectionContext context,
             final ServerActionParameter... params) throws RemoteException {
-        return ((Sirius.server.middleware.interfaces.domainserver.ActionService)activeLocalServers.get(taskdomain))
-                    .executeTask(user, taskname, body, context, params);
+        final ServerActionParameter[] effectiveParams = TraceRouteServerAction.extendParams(
+                serverName,
+                taskname,
+                taskdomain,
+                params);
+        final Object result =
+            ((Sirius.server.middleware.interfaces.domainserver.ActionService)activeLocalServers.get(taskdomain))
+                    .executeTask(user, taskname, body, context, effectiveParams);
+        return CalibrateTimeServerAction.calibrate(taskname, taskdomain, result);
     }
 }
