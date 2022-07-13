@@ -124,6 +124,7 @@ public final class UserStore extends Shutdown {
                 }
             }
 
+            
             userGroupTable.close();
 
             // --------------------load memberships--------------------------------------------------
