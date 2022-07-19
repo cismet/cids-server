@@ -27,7 +27,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import de.cismet.commons.concurrency.CismetConcurrency;
 import de.cismet.commons.concurrency.CismetExecutors;
@@ -59,9 +61,7 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
     private final transient LinkedBlockingQueue<DBConnection> usedCons;
     private final transient DBClassifier dbClassifier;
 //    private final ReleaseConnectionThread rct;
-    private Executor executor = CismetExecutors.newFixedThreadPool(
-            10,
-            CismetConcurrency.getInstance("connectionPool").createThreadFactory("ConnectionPool"));
+    private Executor executor = null;
 
     private List<DBConnection> longTermConnectionList = new ArrayList<DBConnection>();
     private int numberOfConnections = 0;
@@ -84,6 +84,9 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
 
         this.dbClassifier = dbc;
         this.numberOfConnections = dbc.noOfConnections;
+        this.executor = CismetExecutors.newFixedThreadPool(
+                dbc.noOfConnections,
+                CismetConcurrency.getInstance("connectionPool").createThreadFactory("ConnectionPool"));
         cons = new LinkedBlockingQueue<DBConnection>(dbc.noOfConnections);
         usedCons = new LinkedBlockingQueue<DBConnection>(dbc.noOfConnections);
 
@@ -129,6 +132,10 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
                     }
                 }
             });
+
+        final Thread checkThread = new Thread(new Checker(), "Check thread");
+        checkThread.setDaemon(true);
+        checkThread.start();
     }
     /**
      * Creates a new DBConnectionPool object.
@@ -227,13 +234,14 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
             }
         } while (c == null);
 
-        if (longTerm) {
+        if (longTerm && (longTermConnectionList.size() < (numberOfConnections / 3 * 2))) {
+            LOG.warn("no long term connection left: " + longTermConnectionList.size() + " " + cons.size());
             longTermConnectionList.add(c);
         } else {
             usedCons.add(c);
 
-            if (cleanup) {
-                executor.execute(c.getConnectionChecker());
+            if (cleanup || longTerm) {
+                startConnectionChecker(c);
             }
         }
 
@@ -258,8 +266,9 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
         }
 
         if (dbConnection != null) {
-            longTermConnectionList.remove(dbConnection);
-            cons.add(dbConnection);
+            if (longTermConnectionList.remove(dbConnection)) {
+                cons.add(dbConnection);
+            }
         }
     }
 
@@ -291,6 +300,37 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
     /**
      * DOCUMENT ME!
      *
+     * @param       longTerm  true, iff a long term connectionn should be returned. Caution: Long term connections must
+     *                        be released after use.
+     *
+     * @return      DOCUMENT ME!
+     *
+     * @throws      SQLException  DOCUMENT ME!
+     *
+     * @deprecated  Use either getConnection() or getLongTermConnection()
+     */
+    public Connection getConnection(final boolean longTerm) throws SQLException {
+        if (longTerm) {
+            return getLongTermConnection();
+        } else {
+            return getConnection();
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SQLException  DOCUMENT ME!
+     */
+    public Connection getLongTermConnection() throws SQLException {
+        return getConnectionInternal(true);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   longTerm  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -298,29 +338,31 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
      * @throws  SQLException     DOCUMENT ME!
      * @throws  ServerExitError  DOCUMENT ME!
      */
-    public Connection getConnection(final boolean longTerm) throws SQLException {
+    private Connection getConnectionInternal(final boolean longTerm) throws SQLException {
         Connection con = null;
         final int retryCount = 0;
         DBConnection dbcon = null;
 
-        while (con == null) {
-            dbcon = getDBConnection(longTerm, false);
-            final Connection candidate = dbcon.getConnection();
-            if (candidate.isClosed()) {
-                dbcon.close();
-            } else {
-                con = candidate;
+        try {
+            while (con == null) {
+                dbcon = getDBConnection(longTerm, false);
+                final Connection candidate = dbcon.getConnection();
+                if (candidate.isClosed()) {
+                    dbcon.close();
+                } else {
+                    con = candidate;
+                }
             }
-        }
 
-        if (con == null) {
-            final String message = "cannot create connections to database anymore"; // NOI18N
-            LOG.fatal(message);
-            throw new ServerExitError(message);
-        }
-
-        if ((dbcon != null) && !longTerm) {
-            executor.execute(dbcon.getConnectionChecker());
+            if (con == null) {
+                final String message = "cannot create connections to database anymore"; // NOI18N
+                LOG.fatal(message);
+                throw new ServerExitError(message);
+            }
+        } finally {
+            if ((dbcon != null) && !longTerm) {
+                startConnectionChecker(dbcon);
+            }
         }
 
         return con;
@@ -328,7 +370,7 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
 
     @Override
     public Connection getConnection() throws SQLException {
-        return getConnection(false);
+        return getConnectionInternal(false);
     }
 
     /**
@@ -364,8 +406,9 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
         // TODO: refactor for easier understanding
         // retriesOnError can be 0, we want to execute at least once, so we check for '<='
         for (int i = 0; i <= retriesOnError; ++i) {
-            final DBConnection con = getDBConnection(false, false);
+            DBConnection con = null;
             try {
+                con = getDBConnection(false, false);
                 return con.submitInternalQuery(descriptor, parameters);
             } catch (final SQLException e) {
                 // the connection is probably invalid, so it is closed
@@ -381,7 +424,9 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
                     throw e;
                 }
             } finally {
-                executor.execute(con.getConnectionChecker());
+                if (con != null) {
+                    startConnectionChecker(con);
+                }
             }
         }
 
@@ -401,8 +446,9 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
         // TODO: refactor for easier understanding
         // retriesOnError can be 0, we want to execute at least once, so we check for '<='
         for (int i = 0; i <= retriesOnError; ++i) {
-            final DBConnection con = getDBConnection(false, false);
+            DBConnection con = null;
             try {
+                con = getDBConnection(false, false);
                 return con.submitInternalUpdate(descriptor, parameters);
             } catch (final SQLException e) {
                 // the connection is probably invalid, so it is closed
@@ -418,7 +464,9 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
                     throw e;
                 }
             } finally {
-                executor.execute(con.getConnectionChecker());
+                if (con != null) {
+                    startConnectionChecker(con);
+                }
             }
         }
 
@@ -427,43 +475,73 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
         return -1;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  con  DOCUMENT ME!
+     */
+    private void startConnectionChecker(final DBConnection con) {
+        if (con.getConnectionChecker() == null) {
+            LOG.warn("DBConnection without CheckConnection instance found. Add one.");
+            final CheckConnection check = new CheckConnection();
+            check.setDbCon(con);
+            con.setConnectionChecker(check);
+        }
+
+        executor.execute(con.getConnectionChecker());
+    }
+
     @Override
     public ResultSet submitQuery(final String descriptor, final Object... parameters) throws SQLException {
-        final DBConnection con = getDBConnection();
+        DBConnection con = null;
+
         try {
+            con = getDBConnection(false, false);
             return con.submitQuery(descriptor, parameters);
         } finally {
-            executor.execute(con.getConnectionChecker());
+            if (con != null) {
+                startConnectionChecker(con);
+            }
         }
     }
 
     @Override
     public ResultSet submitQuery(final int sqlID, final Object... parameters) throws SQLException {
-        final DBConnection con = getDBConnection();
+        DBConnection con = null;
+
         try {
+            con = getDBConnection(false, false);
             return con.submitQuery(sqlID, parameters);
         } finally {
-            executor.execute(con.getConnectionChecker());
+            if (con != null) {
+                startConnectionChecker(con);
+            }
         }
     }
 
     @Override
     public int submitUpdate(final String descriptor, final Object... parameters) throws SQLException {
-        final DBConnection con = getDBConnection();
+        DBConnection con = null;
         try {
+            con = getDBConnection(false, false);
             return con.submitUpdate(descriptor, parameters);
         } finally {
-            executor.execute(con.getConnectionChecker());
+            if (con != null) {
+                startConnectionChecker(con);
+            }
         }
     }
 
     @Override
     public int submitUpdate(final int sqlID, final Object... parameters) throws SQLException {
-        final DBConnection con = getDBConnection();
+        DBConnection con = null;
         try {
+            con = getDBConnection();
             return con.submitUpdate(sqlID, parameters);
         } finally {
-            executor.execute(con.getConnectionChecker());
+            if (con != null) {
+                startConnectionChecker(con);
+            }
         }
     }
 
@@ -488,6 +566,48 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    private class Checker implements Runnable {
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void run() {
+            do {
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ex) {
+                    // nothing to do
+                }
+
+                if ((cons.size() == 0) && (usedCons.size() > 0)) {
+                    try {
+                        final DBConnection con = cons.poll(2000, TimeUnit.MILLISECONDS);
+
+                        if (con == null) {
+                            if (usedCons.size() > 0) {
+                                for (final DBConnection usedCon : new ArrayList<DBConnection>(usedCons)) {
+                                    if ((System.currentTimeMillis() - usedCon.getPoolLeftTime()) > 5000) {
+                                        startConnectionChecker(usedCon);
+                                        LOG.warn("release connection");
+                                    }
+                                }
+                            }
+                        } else {
+                            cons.add(con);
+                        }
+                    } catch (InterruptedException ex) {
+                        // nothing to do
+                    }
+                }
+            } while (true);
+        }
+    }
 
     /**
      * DOCUMENT ME!
@@ -530,38 +650,57 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
 
         @Override
         public void run() {
-            boolean done = false;
-            Thread.yield();
-            final PgConnection con = ((PgConnection)dbCon.getConnection());
+            try {
+                boolean done = false;
+                Thread.yield();
+                final PgConnection con = ((PgConnection)dbCon.getConnection());
+                int attempts = 0;
 
-            do {
-                try {
-                    final TransactionState state = con.getQueryExecutor().getTransactionState();
-                    if (state.equals(TransactionState.IDLE)) {
-                        usedCons.remove(dbCon);
-                        cons.put(dbCon);
-                    } else if (state.equals(TransactionState.FAILED)) {
-                        LOG.error("Remove db connection with transactionState failed");
-                        try {
-                            con.close();
-                            dbCon.setConnectionChecker(null);
-                        } catch (SQLException ex) {
-                            Exceptions.printStackTrace(ex);
+                do {
+                    try {
+                        final TransactionState state = con.getQueryExecutor().getTransactionState();
+                        if (state.equals(TransactionState.IDLE)) {
+                            usedCons.remove(dbCon);
+                            // cons.put(dbCon);
+                            done = true;
+                        } else if (state.equals(TransactionState.FAILED)) {
+                            LOG.error("Remove db connection with transactionState failed");
+                            try {
+                                con.close();
+                                dbCon.setConnectionChecker(null);
+                            } catch (SQLException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                            usedCons.remove(dbCon);
+                            final CheckConnection checker = new CheckConnection();
+                            final DBConnection c = new DBConnection(dbClassifier, checker);
+                            checker.setDbCon(c);
+                            dbCon = c;
+                            // cons.put(c);
+                            done = true;
+                        } else if (state.equals(TransactionState.OPEN)) {
+                            Thread.sleep(5);
+                            ++attempts;
                         }
-                        usedCons.remove(dbCon);
-                        // todo add new one
-                        cons.put(dbCon);
-                    } else if (state.equals(TransactionState.OPEN)) {
-                        Thread.sleep(5);
+                    } catch (InterruptedException e) {
+                        // nothing to do
+                    } catch (Throwable th) {
+                        LOG.error("DB error", th);
                     }
+                } while (!done && (attempts < 100));
+            } finally {
+                boolean done;
 
-                    done = true;
-                } catch (InterruptedException e) {
-                    cons.remove(dbCon);
-                } catch (Throwable th) {
-                    LOG.error("DB error", th);
-                }
-            } while (!done);
+                do {
+                    done = false;
+                    try {
+                        cons.put(dbCon);
+                        done = true;
+                    } catch (InterruptedException e) {
+                        // nothing to do
+                    }
+                } while (!done);
+            }
         }
     }
 }
