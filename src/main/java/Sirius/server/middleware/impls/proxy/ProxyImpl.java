@@ -149,7 +149,7 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
             userService = new UserServiceImpl(activeLocalServers, userServer);
             queryStore = new QueryStoreImpl(activeLocalServers, nameServer);
             searchService = new SearchServiceImpl(activeLocalServers, nameServer);
-            actionService = new ActionServiceImpl(activeLocalServers, nameServer);
+            actionService = new ActionServiceImpl(activeLocalServers, nameServer, properties.getServerName());
         } catch (final RemoteException e) {
             final String message = "error during proxy startup"; // NOI18N
             LOG.error(message, e);
