@@ -118,8 +118,6 @@ public abstract class AbstractPostgresToShapefileServerAction implements Connect
                 return new SimplePropertyType(name, org.deegree.datatypes.Types.SURFACE, 0, 1);
             } else if (propertyClass.isAssignableFrom(Point.class)) {
                 return new SimplePropertyType(name, org.deegree.datatypes.Types.POINT, 0, 1);
-            } else if (propertyClass.isAssignableFrom(Date.class)) {
-                return new SimplePropertyType(name, org.deegree.datatypes.Types.VARCHAR, 0, 1);
             } else if (propertyClass.isAssignableFrom(Boolean.class)) {
                 return new SimplePropertyType(name, org.deegree.datatypes.Types.INTEGER, 0, 1);
             } else if (propertyClass.isAssignableFrom(Date.class)) {
@@ -543,9 +541,8 @@ public abstract class AbstractPostgresToShapefileServerAction implements Connect
             } catch (final Exception ex) {
                 if (value instanceof Boolean) {
                     return (Boolean)value ? 1 : 0;
-                } else if (value instanceof Date) {
-                    return "";
                 }
+
                 return value;
             }
         }
