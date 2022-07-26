@@ -7,7 +7,11 @@
 ****************************************************/
 package de.cismet.cids.server.actions;
 
+import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.impls.proxy.TimeCalibrationHandler;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * DOCUMENT ME!
@@ -31,21 +35,31 @@ public class CalibrateTimeServerAction implements ServerAction {
 
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
-        return System.currentTimeMillis();
+        final Map<String, Long> map = new LinkedHashMap<>();
+        map.put(DomainServerImpl.getServerProperties().getServerName(), System.currentTimeMillis());
+        return map;
     }
 
     /**
      * DOCUMENT ME!
      *
+     * @param   serverName  DOCUMENT ME!
      * @param   taskName    DOCUMENT ME!
      * @param   taskDomain  DOCUMENT ME!
      * @param   result      DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public static Object calibrate(final String taskName, final String taskDomain, final Object result) {
-        if (CalibrateTimeServerAction.TASK_NAME.equals(taskName) && (result instanceof Long)) {
-            return TimeCalibrationHandler.getInstance().calibrate(taskDomain, (Long)result);
+    public static Object calibrate(final String serverName,
+            final String taskName,
+            final String taskDomain,
+            final Object result) {
+        if (CalibrateTimeServerAction.TASK_NAME.equals(taskName) && (result instanceof Map)) {
+            final Map<String, Long> map = (Map)result;
+            final String firstKey = (String)map.keySet().iterator().next();
+            final Long calibratedTime = map.get(firstKey);
+            map.put(serverName, TimeCalibrationHandler.getInstance().calibrate(taskDomain, calibratedTime));
+            return map;
         } else {
             return result;
         }

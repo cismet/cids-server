@@ -87,6 +87,6 @@ public class ActionServiceImpl implements ActionService {
         final Object result =
             ((Sirius.server.middleware.interfaces.domainserver.ActionService)activeLocalServers.get(taskdomain))
                     .executeTask(user, taskname, body, context, effectiveParams);
-        return CalibrateTimeServerAction.calibrate(taskname, taskdomain, result);
+        return CalibrateTimeServerAction.calibrate(serverName, taskname, taskdomain, result);
     }
 }

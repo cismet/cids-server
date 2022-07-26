@@ -66,9 +66,8 @@ public class TraceRouteServerAction extends EchoAction {
         if (TraceRouteServerAction.TASK_NAME.equals(taskName) && (params != null)) {
             final List<ServerActionParameter> extendedParams = new ArrayList<>(Arrays.asList(params));
 
-            extendedParams.add(new ServerActionParameter<>(
-                    serverName,
-                    TimeCalibrationHandler.getInstance().getCalibratedTime(domainName)));
+            final Long calibrateTime = TimeCalibrationHandler.getInstance().getCalibratedTime(domainName);
+            extendedParams.add(new ServerActionParameter<>(serverName, calibrateTime));
             return extendedParams.toArray(new ServerActionParameter[0]);
         } else {
             return params;

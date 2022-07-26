@@ -2254,7 +2254,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                             properties.getServerName(),
                             params);
                     final Object result = serverAction.execute(body, effectiveParams);
-                    return CalibrateTimeServerAction.calibrate(taskname, properties.getServerName(), result);
+                    return CalibrateTimeServerAction.calibrate(properties.getServerName(),
+                            taskname,
+                            properties.getServerName(),
+                            result);
                 }
             } else {
                 return null;
