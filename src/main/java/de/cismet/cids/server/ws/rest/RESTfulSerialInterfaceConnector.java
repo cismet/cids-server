@@ -2033,7 +2033,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                             PARAM_PARAMELIPSE,
                             Converter.serialiseToString(effectiveParams, isCompressionEnabled()));
             final Object result = getResponsePOST("executeTask", queryParams, Object.class);
-            return CalibrateTimeServerAction.calibrate(taskname, taskdomain, result);
+            return CalibrateTimeServerAction.calibrate(serverName, taskname, taskdomain, result);
         } catch (final Exception ex) {
             throw createRemoteException(ex);
         }
