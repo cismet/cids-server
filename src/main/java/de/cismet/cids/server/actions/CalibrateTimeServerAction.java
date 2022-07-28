@@ -56,9 +56,8 @@ public class CalibrateTimeServerAction implements ServerAction {
             final Object result) {
         if (CalibrateTimeServerAction.TASK_NAME.equals(taskName) && (result instanceof Map)) {
             final Map<String, Long> map = (Map)result;
-            final String firstKey = (String)map.keySet().iterator().next();
-            final Long calibratedTime = map.get(firstKey);
-            map.put(serverName, TimeCalibrationHandler.getInstance().calibrate(taskDomain, calibratedTime));
+            final Long domainTime = map.get(taskDomain);
+            map.put(serverName, TimeCalibrationHandler.getInstance().calibrate(taskDomain, domainTime));
             return map;
         } else {
             return result;
