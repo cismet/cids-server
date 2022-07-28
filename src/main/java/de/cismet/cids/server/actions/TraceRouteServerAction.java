@@ -9,9 +9,18 @@ package de.cismet.cids.server.actions;
 
 import Sirius.server.middleware.impls.proxy.TimeCalibrationHandler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DOCUMENT ME!
@@ -20,7 +29,7 @@ import java.util.List;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = ServerAction.class)
-public class TraceRouteServerAction extends EchoAction {
+public class TraceRouteServerAction implements ServerAction {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -35,18 +44,35 @@ public class TraceRouteServerAction extends EchoAction {
 
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
-        final long currentTimeMs = System.currentTimeMillis();
+        final long timestamp = System.currentTimeMillis();
 
-        final List<ServerActionParameter> diffParams = new ArrayList<>(params.length);
-        Long lastValue = currentTimeMs;
+        final Map<String, Long> absoluteDelays = new LinkedHashMap<>();
+        long lastValue = 0;
         for (int i = params.length - 1; i >= 0; i--) {
             final ServerActionParameter param = params[i];
             final Long value = (param.getValue() instanceof Long) ? (Long)param.getValue() : null;
-            final Long diff = ((value != null) && (lastValue != null)) ? (lastValue - value) : null;
-            diffParams.add(new ServerActionParameter(param.getKey(), diff));
-            lastValue = value;
+            if (value != null) {
+                final long delay = value - timestamp;
+                absoluteDelays.put(param.getKey(), delay);
+//                lastValue = value;
+            }
         }
-        return super.execute(body, diffParams.toArray(new ServerActionParameter[0]));
+
+        final Map<String, Long> relativeDelays = new LinkedHashMap<>();
+        for (final String key : absoluteDelays.keySet()) {
+            final Long value = absoluteDelays.get(key);
+            if (value != null) {
+                final long delay = lastValue - value;
+                relativeDelays.put(key, delay);
+                lastValue = value;
+            }
+        }
+
+        try {
+            return new ObjectMapper().writeValueAsString(new TraceRouteInfo(timestamp, relativeDelays));
+        } catch (final JsonProcessingException ex) {
+            return null;
+        }
     }
 
     /**
@@ -72,5 +98,23 @@ public class TraceRouteServerAction extends EchoAction {
         } else {
             return params;
         }
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    public static class TraceRouteInfo {
+
+        //~ Instance fields ----------------------------------------------------
+
+        private Long timestamp;
+        private Map<String, Long> delays = new LinkedHashMap<>();
     }
 }
