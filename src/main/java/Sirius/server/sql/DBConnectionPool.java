@@ -235,9 +235,11 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
         } while (c == null);
 
         if (longTerm && (longTermConnectionList.size() < (numberOfConnections / 3 * 2))) {
-            LOG.warn("no long term connection left: " + longTermConnectionList.size() + " " + cons.size());
             longTermConnectionList.add(c);
         } else {
+            if (!(longTermConnectionList.size() < (numberOfConnections / 3 * 2))) {
+                LOG.warn("too few long term connections left: " + longTermConnectionList.size() + " " + cons.size());
+            }
             usedCons.add(c);
 
             if (cleanup || longTerm) {
