@@ -261,7 +261,10 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
         DBConnection dbConnection = null;
 
         for (final DBConnection tmp : longTermConnectionList) {
-            if (tmp.getConnection().equals(connection)) {
+            if ((tmp == null) || (tmp.getConnection() == null)) {
+                LOG.warn("tmp == null || tmp.getConnection() == null: " + String.valueOf(tmp));
+            }
+            if ((tmp != null) && (tmp.getConnection() != null) && tmp.getConnection().equals(connection)) {
                 dbConnection = tmp;
                 break;
             }
