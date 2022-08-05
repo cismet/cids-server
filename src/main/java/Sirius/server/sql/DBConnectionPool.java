@@ -133,9 +133,9 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
                 }
             });
 
-        final Thread checkThread = new Thread(new Checker(), "Check thread");
-        checkThread.setDaemon(true);
-        checkThread.start();
+//        final Thread checkThread = new Thread(new Checker(), "Check thread");
+//        checkThread.setDaemon(true);
+//        checkThread.start();
     }
     /**
      * Creates a new DBConnectionPool object.
@@ -235,9 +235,11 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
         } while (c == null);
 
         if (longTerm && (longTermConnectionList.size() < (numberOfConnections / 3 * 2))) {
-            LOG.warn("no long term connection left: " + longTermConnectionList.size() + " " + cons.size());
             longTermConnectionList.add(c);
         } else {
+            if (!(longTermConnectionList.size() < (numberOfConnections / 3 * 2))) {
+                LOG.warn("too few long term connections left: " + longTermConnectionList.size() + " " + cons.size());
+            }
             usedCons.add(c);
 
             if (cleanup || longTerm) {
@@ -259,7 +261,10 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
         DBConnection dbConnection = null;
 
         for (final DBConnection tmp : longTermConnectionList) {
-            if (tmp.getConnection().equals(connection)) {
+            if ((tmp == null) || (tmp.getConnection() == null)) {
+                LOG.warn("tmp == null || tmp.getConnection() == null: " + String.valueOf(tmp), new Exception());
+            }
+            if ((tmp != null) && (tmp.getConnection() != null) && tmp.getConnection().equals(connection)) {
                 dbConnection = tmp;
                 break;
             }
