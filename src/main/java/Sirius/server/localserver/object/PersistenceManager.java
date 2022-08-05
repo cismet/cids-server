@@ -1149,7 +1149,7 @@ public final class PersistenceManager extends Shutdown {
                 {
                     if (value == null) {
                         // use defaultvalue
-                        values.add(persistenceHelper.getDefaultValue(mai, value));
+                        values.add(persistenceHelper.getDefaultValue(mai));
                     } else {
                         before = startPerformanceMeasurement();
                         if (PersistenceHelper.GEOMETRY.isAssignableFrom(value.getClass())) {
