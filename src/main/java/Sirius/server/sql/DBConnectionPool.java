@@ -14,7 +14,6 @@ import Sirius.server.property.ServerProperties;
 
 import org.apache.log4j.Logger;
 
-import org.openide.util.Exceptions;
 
 import org.postgresql.core.TransactionState;
 import org.postgresql.jdbc.PgConnection;
@@ -27,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -206,7 +204,8 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
                 }
                 final DBConnection old = cons.take();
                 // throw the connection away if it is closed and create a new one instead
-                if (old.isClosed()) {
+                if (old.isClosed() || !old.isValid()) {
+                    LOG.warn("Connection is closed or invalid. Try to reconnect to the db");
                     old.setConnectionChecker(null);
                     final CheckConnection checker = new CheckConnection();
                     c = new DBConnection(dbClassifier, checker);
@@ -674,7 +673,7 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
                                 con.close();
                                 dbCon.setConnectionChecker(null);
                             } catch (SQLException ex) {
-                                Exceptions.printStackTrace(ex);
+                                LOG.error("Error while closing connection with a failed transaction state", ex);
                             }
                             usedCons.remove(dbCon);
                             final CheckConnection checker = new CheckConnection();
