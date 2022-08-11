@@ -682,15 +682,6 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
         return this.getString("attributePolicy"); // NOI18N
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public final int[] getQuotedTypes() {
-        return this.getInts("quotedTypes"); // NOI18N
-    }
-
     /*  MetaJDBC-Treiber */
     /**
      * DOCUMENT ME!

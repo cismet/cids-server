@@ -95,49 +95,6 @@ public class PersistenceHelper {
     /**
      * DOCUMENT ME!
      *
-     * @param   mai  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  MissingResourceException  DOCUMENT ME!
-     */
-    boolean toBeQuoted(final MemberAttributeInfo mai) throws MissingResourceException {
-        final int type = mai.getTypeId();
-
-        final int[] quotedTypes = dbServer.getProperties().getQuotedTypes();
-
-        for (int i = 0; i < quotedTypes.length; i++) {
-            if (quotedTypes[i] == type) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   mai    DOCUMENT ME!
-     * @param   value  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  MissingResourceException  DOCUMENT ME!
-     */
-    boolean toBeQuoted(final MemberAttributeInfo mai, final java.lang.Object value) throws MissingResourceException {
-        boolean q = false;
-
-        q &= toBeQuoted(mai);
-
-        q |= toBeQuoted(value);
-
-        return q;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @param   tableName  DOCUMENT ME!
      * @param   key        DOCUMENT ME!
      *
@@ -177,26 +134,15 @@ public class PersistenceHelper {
      *
      * @return  DOCUMENT ME!
      */
-    String getDefaultValue(final MemberAttributeInfo mai, final java.lang.Object value) {
+    String getDefaultValue(final MemberAttributeInfo mai) {
         String defaultVal = mai.getDefaultValue();
-
         if (defaultVal == null) {
             defaultVal = "NULL";                                                                                 // NOI18N
         }
-        try {
-            if (toBeQuoted(mai, value)) {
-                defaultVal = "'" + defaultVal + "'";                                                             // NOI18N
-            }
-        } catch (final MissingResourceException e) {
-            LOG.error(
-                "Exception when trying to retrieve list of quoted types. Insert unsafe. "                        // NOI18N
-                        + "Therefore default will be set to null (unquoted). This may lead to an SQL-Exception", // NOI18N
-                e);
-        }
+       
         if (LOG.isDebugEnabled()) {
             LOG.debug("defaultValue :: " + defaultVal);                                                          // NOI18N
         }
-
         return defaultVal;
     }
 
