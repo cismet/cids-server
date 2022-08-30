@@ -14,7 +14,6 @@ import Sirius.server.property.ServerProperties;
 
 import org.apache.log4j.Logger;
 
-
 import org.postgresql.core.TransactionState;
 import org.postgresql.jdbc.PgConnection;
 
