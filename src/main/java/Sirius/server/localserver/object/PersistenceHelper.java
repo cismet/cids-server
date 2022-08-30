@@ -129,19 +129,18 @@ public class PersistenceHelper {
      * Liefert Key zum Abfragen der MemberAttributInfo aus Hashmap das \u00FCber Fkt MetaClass.getMemberAttributeInfos()
      * geliefert wird.
      *
-     * @param   mai    DOCUMENT ME!
-     * @param   value  DOCUMENT ME!
+     * @param   mai  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
     String getDefaultValue(final MemberAttributeInfo mai) {
         String defaultVal = mai.getDefaultValue();
         if (defaultVal == null) {
-            defaultVal = "NULL";                                                                                 // NOI18N
+            defaultVal = "NULL"; // NOI18N
         }
-       
+
         if (LOG.isDebugEnabled()) {
-            LOG.debug("defaultValue :: " + defaultVal);                                                          // NOI18N
+            LOG.debug("defaultValue :: " + defaultVal); // NOI18N
         }
         return defaultVal;
     }
