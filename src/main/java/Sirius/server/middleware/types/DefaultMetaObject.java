@@ -172,14 +172,6 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
                 final Sirius.server.localserver.object.Object theObject = (Sirius.server.localserver.object.Object)
                     objectAttribute.getValue();
 
-                if (MetaObject.class.isAssignableFrom(theObject.getClass())
-                            || LightweightMetaObject.class.isAssignableFrom(theObject.getClass())) {
-                    LOG.error("object attribute '" + objectAttribute.getName() + "' of MetaObject '"
-                                + this.getName() + "' (" + this.getID() + "@" + this.getClassKey()
-                                + ") already converted to MetaObject!",
-                        new CurrentStackTrace());
-                }
-
                 if (theObject instanceof LightweightObject) {
                     final LightweightMetaObject lwmo = new LightweightMetaObject(
                             theObject.getClassID(),
