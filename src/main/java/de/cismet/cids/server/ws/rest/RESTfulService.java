@@ -15,13 +15,16 @@ import com.sun.jersey.spi.container.servlet.ServletContainer;
 
 import org.apache.log4j.Logger;
 
-import org.mortbay.jetty.Connector;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.bio.SocketConnector;
-import org.mortbay.jetty.security.SslSocketConnector;
-import org.mortbay.jetty.servlet.Context;
-import org.mortbay.jetty.servlet.ServletHolder;
-import org.mortbay.thread.BoundedThreadPool;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 import java.lang.management.ManagementFactory;
 
@@ -73,19 +76,18 @@ public final class RESTfulService {
         servlet.setInitParameters(initParams);
 
         this.port = properties.getRestPort();
-        server = new Server();
-        final BoundedThreadPool btp = new BoundedThreadPool();
+        final QueuedThreadPool btp = new QueuedThreadPool();
         System.out.println("<CS> INFO: min Jetty Threads set to:" + properties.getRestServerMinThreads());
         System.out.println("<CS> INFO: max Jetty Threads set to:" + properties.getRestServerMaxThreads());
 
         btp.setMinThreads(properties.getRestServerMinThreads());
         btp.setMaxThreads(properties.getRestServerMaxThreads());
-        server.setThreadPool(btp);
+        server = new Server(btp);
         threadNamingEnabled = properties.isRestThreadNamingEnabled();
         server.addConnector(getConnector(properties));
 
-        final Context context = new Context(server, "/", Context.SESSIONS); // NOI18N
-        context.addServlet(servlet, "/*");                                  // NOI18N
+        final ServletContextHandler context = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS); // NOI18N
+        context.addServlet(servlet, "/*");                                                                            // NOI18N
 
         try {
             final MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
@@ -119,31 +121,32 @@ public final class RESTfulService {
      * @throws  ServerExitError  DOCUMENT ME!
      */
     private Connector getConnector(final ServerProperties properties) throws ServerExitError {
-        final Connector connector;
+        final ServerConnector connector;
         if (properties.isRestDebug()) {
             LOG.warn("server REST interface is in debug mode, no security applied!"); // NOI18N
-            connector = new SocketConnector();
+            connector = new ServerConnector(server);
         } else {
             if (LOG.isInfoEnabled()) {
                 LOG.info("server REST interface uses SSL connector");                 // NOI18N
             }
 
             try {
-                final SslSocketConnector ssl = new SslSocketConnector();
-                ssl.setMaxIdleTime(30000);
-                ssl.setKeystore(properties.getRestServerKeystore());
-                ssl.setPassword(properties.getRestServerKeystorePW());
-                ssl.setKeyPassword(properties.getRestServerKeystoreKeyPW());
+                final SslContextFactory.Server ssl = new SslContextFactory.Server();
+//                ssl.setMaxIdleTime(30000);
+
+                ssl.setKeyStorePath(properties.getRestServerKeystore());
+                ssl.setKeyStorePassword(properties.getRestServerKeystorePW());
+                ssl.setKeyManagerPassword(properties.getRestServerKeystoreKeyPW());
 
                 final boolean clientAuth = properties.isRestClientAuth();
                 if (clientAuth) {
-                    ssl.setTruststore(properties.getRestClientKeystore());
-                    ssl.setTrustPassword(properties.getRestClientKeystorePW());
+                    ssl.setTrustStorePath(properties.getRestClientKeystore());
+                    ssl.setTrustStorePassword(properties.getRestClientKeystorePW());
                 }
                 ssl.setWantClientAuth(clientAuth);
                 ssl.setNeedClientAuth(clientAuth);
 
-                connector = ssl;
+                connector = new ServerConnector(server, ssl);
             } catch (final Exception e) {
                 final String message = "cannot initialise SSL connector"; // NOI18N
                 LOG.error(message, e);
@@ -151,7 +154,7 @@ public final class RESTfulService {
             }
         }
         connector.setPort(port);
-        connector.setHeaderBufferSize(HEADER_BUFFER_SIZE);
+        connector.setAcceptedReceiveBufferSize(HEADER_BUFFER_SIZE);
 
         return connector;
     }
@@ -237,8 +240,8 @@ public final class RESTfulService {
      * @param  max  DOCUMENT ME!
      */
     public static void setMaxThreads(final int max) {
-        if (instance.server.getThreadPool() instanceof BoundedThreadPool) {
-            ((BoundedThreadPool)instance.server.getThreadPool()).setMaxThreads(max);
+        if (instance.server.getThreadPool() instanceof QueuedThreadPool) {
+            ((QueuedThreadPool)instance.server.getThreadPool()).setMaxThreads(max);
         }
     }
 
@@ -248,8 +251,8 @@ public final class RESTfulService {
      * @return  DOCUMENT ME!
      */
     public static int getMaxThreads() {
-        if (instance.server.getThreadPool() instanceof BoundedThreadPool) {
-            return ((BoundedThreadPool)instance.server.getThreadPool()).getMaxThreads();
+        if (instance.server.getThreadPool() instanceof QueuedThreadPool) {
+            return ((QueuedThreadPool)instance.server.getThreadPool()).getMaxThreads();
         } else {
             return -1;
         }
@@ -261,8 +264,8 @@ public final class RESTfulService {
      * @param  min  DOCUMENT ME!
      */
     public static void setMinThreads(final int min) {
-        if (instance.server.getThreadPool() instanceof BoundedThreadPool) {
-            ((BoundedThreadPool)instance.server.getThreadPool()).setMinThreads(min);
+        if (instance.server.getThreadPool() instanceof QueuedThreadPool) {
+            ((QueuedThreadPool)instance.server.getThreadPool()).setMinThreads(min);
         }
     }
 
@@ -272,8 +275,8 @@ public final class RESTfulService {
      * @return  DOCUMENT ME!
      */
     public static int getMinThreads() {
-        if (instance.server.getThreadPool() instanceof BoundedThreadPool) {
-            return ((BoundedThreadPool)instance.server.getThreadPool()).getMinThreads();
+        if (instance.server.getThreadPool() instanceof QueuedThreadPool) {
+            return ((QueuedThreadPool)instance.server.getThreadPool()).getMinThreads();
         } else {
             return -1;
         }
@@ -288,9 +291,9 @@ public final class RESTfulService {
         final int threadCount = instance.server.getThreadPool().getThreads();
         final int idleTC = instance.server.getThreadPool().getIdleThreads();
         final HashMap<String, String> vals = new HashMap<String, String>();
-        if (instance.server.getThreadPool() instanceof BoundedThreadPool) {
-            vals.put("MaxThreads", ((BoundedThreadPool)instance.server.getThreadPool()).getMaxThreads() + "");
-            vals.put("MinThreads", ((BoundedThreadPool)instance.server.getThreadPool()).getMinThreads() + "");
+        if (instance.server.getThreadPool() instanceof QueuedThreadPool) {
+            vals.put("MaxThreads", ((QueuedThreadPool)instance.server.getThreadPool()).getMaxThreads() + "");
+            vals.put("MinThreads", ((QueuedThreadPool)instance.server.getThreadPool()).getMinThreads() + "");
         }
         final boolean isLowOnThreads = instance.server.getThreadPool().isLowOnThreads();
         return idleTC + " of " + threadCount + " Threads are idle. AlertOnLowThreads:" + isLowOnThreads

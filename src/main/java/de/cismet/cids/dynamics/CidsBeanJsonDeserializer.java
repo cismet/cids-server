@@ -25,6 +25,7 @@ import java.io.IOException;
 
 import java.math.BigDecimal;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 
 import java.text.DateFormat;
@@ -236,6 +237,10 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                                 } else if (numberClass.equals(java.sql.Timestamp.class)) {
                                     final Timestamp ts = new Timestamp(jp.getLongValue());
                                     propValueMap.put(fieldName, ts);
+                                } else if (numberClass.equals(java.sql.Date.class)) {
+                                    // this if was required after the jackson update
+                                    final Date ts = new Date(jp.getLongValue());
+                                    propValueMap.put(fieldName, ts);
                                 } else if (numberClass.equals(BigDecimal.class)) {
                                     final BigDecimal bd = new BigDecimal(jp.getText());
                                     propValueMap.put(fieldName, bd);
@@ -243,6 +248,7 @@ public class CidsBeanJsonDeserializer extends StdDeserializer<CidsBean> {
                                     throw new RuntimeException("no handler available for " + numberClass);
                                 }
                             } catch (final Exception ex) {
+                                ex.printStackTrace();
                                 throw new RuntimeException("problem during processing of " + fieldName + ". value:"
                                             + jp.getText(),
                                     ex);
