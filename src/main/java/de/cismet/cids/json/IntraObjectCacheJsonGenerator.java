@@ -140,6 +140,7 @@ public class IntraObjectCacheJsonGenerator extends JsonGeneratorDelegate {
      * @throws  JsonGenerationException  DOCUMENT ME!
      * @throws  IllegalStateException    DOCUMENT ME!
      */
+    @Override
     protected void _writeSimpleObject(final Object value) throws IOException, JsonGenerationException {
         /* 31-Dec-2009, tatu: Actually, we could just handle some basic
          *    types even without codec. This can improve interoperability,   and specifically help with TokenBuffer.
@@ -344,6 +345,18 @@ public class IntraObjectCacheJsonGenerator extends JsonGeneratorDelegate {
     public void writeStartObject() throws IOException, JsonGenerationException {
         this.level++;
         super.writeStartObject(); // To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void writeStartObject(final Object forValue) throws IOException {
+        this.level++;
+        super.writeStartObject(forValue);
+    }
+
+    @Override
+    public void writeStartObject(final Object forValue, final int size) throws IOException {
+        this.level++;
+        super.writeStartObject(forValue, size);
     }
 
     @Override
