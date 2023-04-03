@@ -16,6 +16,8 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -89,6 +91,7 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
         final SimpleModule regularModule = new SimpleModule("NOIOC", new Version(1, 0, 0, null, null, null));
         regularModule.addSerializer(new CidsBeanJsonSerializer());
         regularModule.addDeserializer(CidsBean.class, new CidsBeanJsonDeserializer());
+        regularModule.addSerializer(new DateJsonSerializer());
         mapper.registerModule(regularModule);
 
         intraObjectCacheMapper.enable(SerializationFeature.INDENT_OUTPUT);
