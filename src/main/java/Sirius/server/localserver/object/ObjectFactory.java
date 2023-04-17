@@ -254,7 +254,7 @@ public final class ObjectFactory extends Shutdown {
                             createObject(objectId, rs, c, allowLightweightObjects, ohm, byPassCacheCounter));
                     }
                 } else {
-                    LOG.error("<LS> ERROR kein match f\u00FCr " + getObjectStmnt); // NOI18N
+                    LOG.warn("<LS> kein match f\u00FCr " + getObjectStmnt); // NOI18N
                     if (ohm == null) {
                         return null;
                     } else {
