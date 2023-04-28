@@ -206,8 +206,6 @@ public class DaqCacheRefreshService implements Runnable, DomainServerStartupHook
                         .loadJson(GeneralServerResources.CACHE_REFRESH_JSON.getValue(),
                                 DaqCacheRefreshServiceConfiguration.class);
         } catch (Exception e) {
-            LOG.error("Error while loading CacheRefreshService", e);
-
             return null;
         }
 
