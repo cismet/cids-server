@@ -465,7 +465,7 @@ public final class StartProxy {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("unbind callserver");                                                     // NOI18N
                     }
-                    Naming.unbind("//" + siriusRegistryIP + ":" + serverInfo.getRMIPort() + "/callServer"); // NOI18N
+                    Naming.unbind(serverInfo.getBindString());                                   // NOI18N
                 } catch (final NotBoundException e) {
                     LOG.warn("callserver not available (anymore), probably already unbound", e);            // NOI18N
                 }
