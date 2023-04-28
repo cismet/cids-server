@@ -103,10 +103,8 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
                 throw new IllegalStateException("no registry IPs found");
             }
 
-            final String rmiPort = properties.getRMIRegistryPort();
-
-            nameServer = (NameServer)Naming.lookup("rmi://" + registryIps[0] + ":" + rmiPort + "/nameServer"); // NOI18N
-            final UserServer userServer = (UserServer)nameServer;                                              // Naming.lookup("rmi://"+registryIps[0]+"/userServer");
+            nameServer = (NameServer)Naming.lookup("rmi://" + registryIps[0] + "/nameServer"); // NOI18N
+            final UserServer userServer = (UserServer)nameServer;                              // Naming.lookup("rmi://"+registryIps[0]+"/userServer");
             activeLocalServers = new java.util.Hashtable(5);
 
             final Server[] localServers = nameServer.getServers(ServerType.LOCALSERVER);
@@ -114,25 +112,24 @@ public final class ProxyImpl extends UnicastRemoteObject implements CallServerSe
                 LOG.debug("<CS> " + localServers.length + " LocalServer received from SiriusRegistry"); // NOI18N
             }
 
-            for (int i = 0; i < localServers.length; i++) {
-                final String name = localServers[i].getName();
-                final String lookupString = localServers[i].getRMIAddress();
+            for (final Server localServer : localServers) {
+                final String name = localServer.getName();
+                final String lookupString = localServer.getRMIAddress();
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("<CS> lookup: " + lookupString); // NOI18N
                 }
-
-                final Remote localServer = Naming.lookup(lookupString);
-                activeLocalServers.put(name, localServer);
-                if (localServer instanceof InfoService) {
-                    final InfoService is = (InfoService)localServer;
-                    MetaClassCache.getInstance().setAllClasses(is.getAllClassInformation(), localServers[i].getName());
-                    System.out.println(localServers[i].getName()
+                final Remote remote = Naming.lookup(lookupString);
+                activeLocalServers.put(name, remote);
+                if (remote instanceof InfoService) {
+                    final InfoService is = (InfoService)remote;
+                    MetaClassCache.getInstance().setAllClasses(is.getAllClassInformation(), localServer.getName());
+                    System.out.println(localServer.getName()
                                 + " added to the MetaClassCache [by already existing servers]");
                 }
             }
 
             register();
-            registerAsObserver(registryIps[0] + ":" + rmiPort);
+            registerAsObserver(registryIps[0]);
 
             try {
                 ServerResourcesLoader.getInstance().setResourcesBasePath(properties.getServerResourcesBasePath());

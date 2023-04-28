@@ -1763,7 +1763,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
             for (int i = 0; i < registryIPs.length; i++) {
                 try {
-                    nameServer = (NameServer)Naming.lookup("rmi://" + registryIPs[i] + ":" + rmiPort + "/nameServer");
+                    nameServer = (NameServer)Naming.lookup("rmi://" + registryIPs[i] + "/nameServer");
                     userServer = (UserServer)nameServer; // (UserServer)
                     // Naming.lookup("rmi://"+registryIPs[i]+"/userServer");
 
@@ -1836,9 +1836,9 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         final String[] registryIPs = properties.getRegistryIps();
         final String rmiPort = serverInfo.getRMIPort();
 
-        for (int i = 0; i < registryIPs.length; i++) {
+        for (final String registryIP : registryIPs) {
             try {
-                nameServer = (NameServer)Naming.lookup("rmi://" + registryIPs[i] + ":" + rmiPort + "/nameServer");
+                nameServer = (NameServer)Naming.lookup("rmi://" + registryIP + "/nameServer");
                 userServer = (UserServer)nameServer;
 
                 // User und UserGroups bei Registry abmelden
@@ -1848,9 +1848,9 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 // LocalServer bei Registry abmelden
                 nameServer.unregisterServer(ServerType.LOCALSERVER, lsName, ip, rmiPort);
             } catch (NotBoundException nbe) {
-                logger.error("<LS> No SiriusRegistry bound on RMIRegistry at " + registryIPs[i], nbe); // NOI18N
+                logger.error("<LS> No SiriusRegistry bound on RMIRegistry at " + registryIP, nbe); // NOI18N
             } catch (RemoteException re) {
-                logger.error("<LS> RMIRegistry on " + registryIPs[i] + "could not be contacted", re);  // NOI18N
+                logger.error("<LS> RMIRegistry on " + registryIP + "could not be contacted", re);  // NOI18N
             } catch (Throwable e) {
                 logger.error(e, e);
             }
@@ -1966,7 +1966,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         try {
             try {
                 properties = new ServerProperties(args[0]);
-                rmiPort = new Integer(properties.getRMIRegistryPort()).intValue();
+                rmiPort = new Integer(properties.getRMIRegistryPort());
             } catch (MissingResourceException mre) {
                 System.err.println("Info :: <LS> Key  rmiRegistryPort  in ConfigFile +" + args[0] + " is Missing!"); // NOI18N
                 System.err.println("Info :: <LS> Set Default to 1099");                                              // NOI18N
@@ -2020,7 +2020,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
      */
     private static void initLog4J(final ServerProperties properties) {
         final File log4jPropFile = new File(properties.getLog4jPropertyFile());
-        if ((log4jPropFile == null) || !log4jPropFile.isFile() || !log4jPropFile.canRead()) {
+        if (!log4jPropFile.isFile() || !log4jPropFile.canRead()) {
             throw new IllegalArgumentException("serverproperties provided invalid log4j config file: " + log4jPropFile); // NOI18N
         } else {
             PropertyConfigurator.configureAndWatch(log4jPropFile.getAbsolutePath(), 10000);
