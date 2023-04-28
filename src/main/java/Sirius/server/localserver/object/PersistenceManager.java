@@ -14,6 +14,7 @@ import Sirius.server.localserver.DBServer;
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
+import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
@@ -94,14 +95,18 @@ public final class PersistenceManager extends Shutdown {
         allTriggers = result.allInstances();
         for (final CidsTrigger t : allTriggers) {
             if (t instanceof DBAwareCidsTrigger) {
-                ((DBAwareCidsTrigger)t).setDbServer(dbServer);
+                if (CidsTriggerKey.ALL.toLowerCase().equals(t.getTriggerKey().getDomain())
+                            || DomainServerImpl.getServerProperties().getServerName().toLowerCase().equals(
+                                t.getTriggerKey().getDomain())) {
+                    ((DBAwareCidsTrigger)t).setDbServer(dbServer);
+                }
             }
             if (triggers.containsKey(t.getTriggerKey())) {
                 final Collection<CidsTrigger> c = triggers.get(t.getTriggerKey());
                 assert (c != null);
                 c.add(t);
             } else {
-                final Collection<CidsTrigger> c = new ArrayList<CidsTrigger>();
+                final Collection<CidsTrigger> c = new ArrayList<>();
                 c.add(t);
                 triggers.put(t.getTriggerKey(), c);
             }
