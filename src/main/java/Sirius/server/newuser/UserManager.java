@@ -256,7 +256,7 @@ public class UserManager implements UserServer {
         if (LOG.isDebugEnabled()) {
             LOG.debug("register userGroup " + userGroup); // NOI18N
         }
-        System.out.println("4" + localServerName + " " + userGroup.getKey() + "->" + userGroup.id);
+        System.out.println(localServerName + " " + userGroup.getKey() + "->" + userGroup.id);
         usergroupsOfUserDomains.get(localServerName).put(userGroup.getKey(), userGroup);
 //        ugs.put(userGroup.getKey(), userGroup);
     }

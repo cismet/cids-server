@@ -69,7 +69,7 @@ public class ServerListHash extends Hashtable {
         final int[] types = ServerType.getAllServerTypes();
 
         for (int i = 0; i < types.length; i++) {
-            put(new Integer(types[i]), new Vector(5, 5));
+            put(types[i], new Vector(5, 5));
         }
     }
 
@@ -84,33 +84,21 @@ public class ServerListHash extends Hashtable {
      * @return  DOCUMENT ME!
      */
     public boolean addServer(final int serverTyp, final String name, final String ip, final String port) {
-        Server s = findServer(serverTyp, name /*,ip,port*/);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("server there? " + name + " not null?" + s); // NOI18N
+            LOG.debug("server there? " + name + " not null?"); // NOI18N
         }
 
-        if (s == null) // not found
-        {
-            s = new Server(serverTyp, name, ip, port, port);
-
-            if (containsKey(new Integer(serverTyp))) {
-                getServerList(serverTyp).add(s);
-                return true;
-            }
+        if (findServer(serverTyp, name) != null) {
+            LOG.warn("adding server " + name + " " + ip + " " + port + " but it's already there. gonna replace it");
         }
-
-        LOG.error(
-            "tried to add server "                                                    // NOI18N
-                    + name
-                    + " "                                                             // NOI18N
-                    + ip
-                    + " "                                                             // NOI18N
-                    + port
-                    + " but it's already there - or servertype is not defined type::" // NOI18N
-                    + serverTyp
-                    + " "                                                             // NOI18N
-                    + s);
-        return false;
+        if (containsKey(serverTyp)) {
+            getServerList(serverTyp).add(new Server(serverTyp, name, ip, port, port));
+            return true;
+        } else {
+            LOG.error("tried to add server " + name + " " + ip + " " + port + " but servertype is not defined type::"
+                        + serverTyp);
+            return false;
+        }
     }
 
     /**
@@ -121,7 +109,7 @@ public class ServerListHash extends Hashtable {
      * @return  DOCUMENT ME!
      */
     public Vector getServerList(final int serverTyp) {
-        return (Vector)get(new Integer(serverTyp));
+        return (Vector)get(serverTyp);
     }
 
     /**
@@ -148,7 +136,7 @@ public class ServerListHash extends Hashtable {
         final Server s = findServer(serverTyp, name);
 
         if (s != null) {
-            if (containsKey(new Integer(serverTyp))) {
+            if (containsKey(serverTyp)) {
                 getServerList(serverTyp).remove(s);
 
                 return true;
@@ -167,7 +155,7 @@ public class ServerListHash extends Hashtable {
      * @return  DOCUMENT ME!
      */
     protected Server findServer(final int serverTyp, final String name) {
-        final Integer key = new Integer(serverTyp);
+        final Integer key = serverTyp;
 
         if (!containsKey(key)) {
             return null;
