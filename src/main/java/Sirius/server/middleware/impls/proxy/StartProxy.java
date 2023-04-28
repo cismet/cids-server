@@ -312,23 +312,21 @@ public final class StartProxy {
                 LOG.debug("<CS> DEBUG: getRMIRegistry on port " + port); // NOI18N
             }
 
-            return LocateRegistry.getRegistry(port);
-        } catch (final RemoteException e) {
-            // no registry present, create new registry on rmiPort
-            final String info = "<CS> INFO: no RMIRegistry on port " + port + " available"; // NOI18N
-            final String message = "<CS> INFO: create RMIRegistry on port " + port;         // NOI18N
-            // TODO: why serr???
-            System.out.println(e.getMessage() + " \n" + info); // NOI18N
+            final String message = "<CS> INFO: create RMIRegistry on port " + port; // NOI18N
             System.out.println(message);
+            LOG.info(message);
+            return LocateRegistry.createRegistry(port);
+        } catch (final RemoteException e) {
+            final String info = "INFO: cannot create registry on port: " + port;    // NOI18N
+            // no registry present, create new registry on rmiPort
+            System.out.println(e.getMessage() + " \n" + info);                                    // NOI18N
             if (LOG.isInfoEnabled()) {
                 LOG.info(info, e);
-                LOG.info(message);
             }
-
             try {
-                return LocateRegistry.createRegistry(port);
+                return LocateRegistry.getRegistry(port);
             } catch (final RemoteException ex) {
-                final String fatal = "SEVERE: cannot create registry on port: " + port; // NOI18N
+                final String fatal = "<CS>SEVERE: no RMIRegistry on port " + port + " available"; // NOI18N
                 LOG.fatal(fatal, ex);
                 throw new ServerExitError(fatal, ex);
             }
