@@ -451,7 +451,7 @@ public final class StartProxy {
 
             if (callServer instanceof ProxyImpl) {
                 final ProxyImpl proxyimpl = (ProxyImpl)callServer;
-                proxyimpl.unregisterAsObserver(siriusRegistryIP + ":" + serverInfo.getServerPort()); // NOI18N
+                proxyimpl.unregisterAsObserver(siriusRegistryIP); // NOI18N
                 proxyimpl.getNameServer()
                         .unregisterServer(
                             serverInfo.getType(),
