@@ -212,12 +212,18 @@ public class ServerSearchFactory {
         for (final RestApiCidsServerSearch lookupableServerSearch : lookupableServerSearches) {
             final SearchInfo searchInfo = lookupableServerSearch.getSearchInfo();
             final Class serverSearchClass = lookupableServerSearch.getClass();
-            final String searchKey = searchInfo.getKey();
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("adding Lookupable Server Search '" + searchKey + "'");
+
+            if (searchInfo != null) {
+                final String searchKey = searchInfo.getKey();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("adding Lookupable Server Search '" + searchKey + "'");
+                }
+                this.serverSearchClassMap.put(searchKey, serverSearchClass);
+                this.serverSearchInfoMap.put(searchKey, searchInfo);
+            } else {
+                LOG.error("the search " + lookupableServerSearch.getClass().toString()
+                            + " cannot be used, because searchInfo is not set. This search will be ignored");
             }
-            this.serverSearchClassMap.put(searchKey, serverSearchClass);
-            this.serverSearchInfoMap.put(searchKey, searchInfo);
         }
 
         for (final CidsServerSearch cidsServerSearch : cidsServerSearches) {
