@@ -9,7 +9,12 @@ package de.cismet.cids.server.actions;
 
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
+import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
 import Sirius.server.property.ServerProperties;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import org.apache.commons.io.IOUtils;
 
 /**
  * DOCUMENT ME!
@@ -18,7 +23,7 @@ import Sirius.server.property.ServerProperties;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = ServerAction.class)
-public class BandwidthTestAction extends DownloadFileAction {
+public class BandwidthTestAction implements ServerAction, MetaServiceStore  {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -42,21 +47,20 @@ public class BandwidthTestAction extends DownloadFileAction {
 
             final ServerProperties serverProps = DomainServerImpl.getServerProperties();
             final String serverRespath = serverProps.getServerResourcesBasePath();
-            final String s = serverProps.getFileSeparator();
+            final String separator = serverProps.getFileSeparator();
+            
             final String filePath = "/bandwidthTest/" + fileSizeInMb.toString() + "MB.zip";
-            final Object ret;
-            if ("/".equals(s)) {
-                ret = super.execute(serverRespath + filePath);
-            } else {
-                ret = super.execute(serverRespath + filePath.replace("/", s));
+            final File file = new File(serverRespath + ("/".equals(separator) ? filePath : filePath.replace("/", separator)));
+            try {
+                return IOUtils.toByteArray(new FileInputStream(file));
+            } catch (final IOException ex) {
+                throw new RuntimeException("Testfile not found.", ex);
             }
-            if (ret == null) {
-                throw new RuntimeException("Testfile not found.");
-            }
-            return ret;
         }
     }
 
+    private MetaService ms;
+        
     @Override
     public MetaService getMetaService() {
         return ms;
