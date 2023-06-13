@@ -11,10 +11,12 @@ import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
 import Sirius.server.property.ServerProperties;
+
+import org.apache.commons.io.IOUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import org.apache.commons.io.IOUtils;
 
 /**
  * DOCUMENT ME!
@@ -23,11 +25,15 @@ import org.apache.commons.io.IOUtils;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = ServerAction.class)
-public class BandwidthTestAction implements ServerAction, MetaServiceStore  {
+public class BandwidthTestAction implements ServerAction, MetaServiceStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
     public static final String TASK_NAME = "bandwidthTest";
+
+    //~ Instance fields --------------------------------------------------------
+
+    private MetaService ms;
 
     //~ Methods ----------------------------------------------------------------
 
@@ -48,9 +54,10 @@ public class BandwidthTestAction implements ServerAction, MetaServiceStore  {
             final ServerProperties serverProps = DomainServerImpl.getServerProperties();
             final String serverRespath = serverProps.getServerResourcesBasePath();
             final String separator = serverProps.getFileSeparator();
-            
+
             final String filePath = "/bandwidthTest/" + fileSizeInMb.toString() + "MB.zip";
-            final File file = new File(serverRespath + ("/".equals(separator) ? filePath : filePath.replace("/", separator)));
+            final File file = new File(serverRespath
+                            + ("/".equals(separator) ? filePath : filePath.replace("/", separator)));
             try {
                 return IOUtils.toByteArray(new FileInputStream(file));
             } catch (final IOException ex) {
@@ -59,8 +66,6 @@ public class BandwidthTestAction implements ServerAction, MetaServiceStore  {
         }
     }
 
-    private MetaService ms;
-        
     @Override
     public MetaService getMetaService() {
         return ms;
