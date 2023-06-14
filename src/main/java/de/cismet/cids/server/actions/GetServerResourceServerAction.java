@@ -36,10 +36,7 @@ public class GetServerResourceServerAction implements ServerAction {
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
         try {
-            final ServerResource serverResource = (ServerResource)body;
-
-            final ServerResourcesLoader loader = ServerResourcesLoader.getInstance();
-            return loader.load(serverResource);
+            return ServerResourcesLoader.getInstance().loadWithoutSubstitution((ServerResource)body);
         } catch (final Exception ex) {
             LOG.info("error while getting ServerResource " + body + ". Returning exception", ex);
             return ex;

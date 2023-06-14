@@ -461,11 +461,11 @@ public final class StartProxy {
 
                 try {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("unbind callserver");                                                     // NOI18N
+                        LOG.debug("unbind callserver");                                          // NOI18N
                     }
                     Naming.unbind(serverInfo.getBindString());                                   // NOI18N
                 } catch (final NotBoundException e) {
-                    LOG.warn("callserver not available (anymore), probably already unbound", e);            // NOI18N
+                    LOG.warn("callserver not available (anymore), probably already unbound", e); // NOI18N
                 }
             } else {
                 RESTfulService.down();
