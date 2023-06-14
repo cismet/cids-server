@@ -23,12 +23,16 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * DOCUMENT ME!
@@ -41,6 +45,9 @@ public class ServerResourcesLoader extends AbstractServerResourcesLoader {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(ServerResourcesLoader.class);
+
+    private static final Pattern SUBSTITUTE_PATTERN = Pattern.compile("\\$\\{([^}]+)}");
+    private static final String SUBSTITUTE_SPLITTER = ":";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -161,17 +168,35 @@ public class ServerResourcesLoader extends AbstractServerResourcesLoader {
         return (byte[])load(serverResource);
     }
 
+    @Override
+    public Object load(final ServerResource serverResource) throws Exception {
+        return load(serverResource, true);
+    }
+
     /**
      * DOCUMENT ME!
      *
-     * @param   serverResource  resourcePath DOCUMENT ME!
+     * @param   serverResource  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    @Override
-    public Object load(final ServerResource serverResource) throws Exception {
+    public Object loadWithoutSubstitution(final ServerResource serverResource) throws Exception {
+        return load(serverResource, false);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   serverResource    resourcePath DOCUMENT ME!
+     * @param   withSusbtitution  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    private Object load(final ServerResource serverResource, final boolean withSusbtitution) throws Exception {
         final ServerResource.Type type = serverResource.getType();
         final String serverResourcePath = serverResource.getPath();
         LOG.info("ResourceLoader loading " + serverResource);
@@ -194,7 +219,8 @@ public class ServerResourcesLoader extends AbstractServerResourcesLoader {
                 try {
                     switch (type) {
                         case TEXT: {
-                            resource = IOUtils.toString(inputStream);
+                            final String text = IOUtils.toString(inputStream);
+                            resource = withSusbtitution ? substitute(text) : text;
                         }
                         break;
                         case JASPER_REPORT: {
@@ -227,6 +253,60 @@ public class ServerResourcesLoader extends AbstractServerResourcesLoader {
     /**
      * DOCUMENT ME!
      *
+     * @param   input  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static String substitute(final String input) {
+        return substitute(input, new HashMap<>());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   input                  DOCUMENT ME!
+     * @param   targetPropertiesFiles  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static String substitute(final String input, final Map<String, Properties> targetPropertiesFiles) {
+        final StringBuffer resultPropertyStringBuffer = new StringBuffer();
+        final Matcher matcher = SUBSTITUTE_PATTERN.matcher(input);
+        while (matcher.find()) {
+            final String value = matcher.group(1);
+            final String targetKey;
+            final Properties targetProperties;
+            if (value.contains(SUBSTITUTE_SPLITTER)) {
+                final String[] parts = value.split(SUBSTITUTE_SPLITTER);
+                final String file = parts[0];
+                targetKey = (parts.length > 1) ? parts[1] : null;
+                if (targetPropertiesFiles.containsKey(file)) {
+                    targetProperties = targetPropertiesFiles.get(file);
+                } else {
+                    targetProperties = new Properties();
+                    try {
+                        targetProperties.load(new FileInputStream(file));
+                        targetPropertiesFiles.put((targetKey == null) ? null : file, targetProperties);
+                    } catch (final IOException ex) {
+                        LOG.warn(String.format("error while loading '%s'", file), ex);
+                    }
+                }
+            } else {
+                targetProperties = targetPropertiesFiles.containsKey(null) ? targetPropertiesFiles.get(null) : null;
+                targetKey = value;
+            }
+            if (targetProperties != null) {
+                final String replacement = (targetKey != null) ? targetProperties.getProperty(targetKey, "") : "";
+                matcher.appendReplacement(resultPropertyStringBuffer, replacement);
+            }
+        }
+        matcher.appendTail(resultPropertyStringBuffer);
+        return resultPropertyStringBuffer.toString();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   serverResource  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -237,7 +317,7 @@ public class ServerResourcesLoader extends AbstractServerResourcesLoader {
         if (!(serverResource instanceof TextServerResource)) {
             throw new Exception("wrong ServerResource type");
         }
-        final Properties properties = new Properties();
+        final Properties properties = new ServerResourcesProperties();
         properties.load(loadStringReader(serverResource));
         return properties;
     }
