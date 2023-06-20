@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * DOCUMENT ME!
@@ -139,7 +140,8 @@ public class CsvExportServerAction extends DefaultServerAction {
 
             final List<String> rows = new ArrayList<>();
             if (columnNames != null) {
-                rows.add(String.join(columnSeparator, columnNames));
+                rows.add(String.join(columnSeparator, columnNames.stream().map(str -> String.format("\"%s\"", str))
+                                .collect(Collectors.toList())));
             }
             rows.addAll(createRows(
                     metaClass,
