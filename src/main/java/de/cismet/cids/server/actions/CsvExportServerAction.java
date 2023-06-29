@@ -17,9 +17,12 @@ import com.vividsolutions.jts.geom.Geometry;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
+import java.text.NumberFormat;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
@@ -51,7 +54,7 @@ public class CsvExportServerAction extends DefaultServerAction {
         //~ Enum constants -----------------------------------------------------
 
         COLUMN_NAMES, FIELDS, WHERE, DISTINCT_ON, BOOLEAN_YES, BOOLEAN_NO, DATE_FORMAT, ROW_SEPARATOR, COLUMN_SEPARATOR,
-        CHARSET, MONS, ESCAPE_STRINGS
+        CHARSET, MONS, ESCAPE_STRINGS, LOCALE
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -75,6 +78,7 @@ public class CsvExportServerAction extends DefaultServerAction {
         String charset = DEFAULT_CHARSET;
         String columnSeparator = DEFAULT_COLUMN_SEPARATOR;
         String rowSeparator = DEFAULT_ROW_SEPARATOR;
+        String localeString = null;
         List<MetaObjectNode> mons = null;
         boolean escapeStrings = true;
 
@@ -104,11 +108,15 @@ public class CsvExportServerAction extends DefaultServerAction {
                     mons = (List<MetaObjectNode>)sap.getValue();
                 } else if (sap.getKey().equals(ParameterType.ESCAPE_STRINGS.toString())) {
                     escapeStrings = (Boolean)sap.getValue();
+                } else if (sap.getKey().equals(ParameterType.LOCALE.toString())) {
+                    localeString = (String)sap.getValue();
                 }
             }
         }
 
         try {
+            final Locale locale = (localeString != null) ? new Locale(localeString) : null;
+
             if (metaClassName == null) {
                 throw new Exception("METACLASS_NAME is empty");
             }
@@ -152,7 +160,8 @@ public class CsvExportServerAction extends DefaultServerAction {
                     booleanNo,
                     dateFormat,
                     columnSeparator,
-                    escapeStrings));
+                    escapeStrings,
+                    locale));
             return String.join(rowSeparator, rows).getBytes(charset);
         } catch (final Exception e) {
             LOG.error("problem during CsvExportServerAction", e); // NOI18N
@@ -172,6 +181,7 @@ public class CsvExportServerAction extends DefaultServerAction {
      * @param   dateFormat       DOCUMENT ME!
      * @param   columnSeparator  DOCUMENT ME!
      * @param   escapeStrings    DOCUMENT ME!
+     * @param   locale           DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -185,7 +195,8 @@ public class CsvExportServerAction extends DefaultServerAction {
             final String booleanNo,
             final String dateFormat,
             final String columnSeparator,
-            final boolean escapeStrings) throws Exception {
+            final boolean escapeStrings,
+            final Locale locale) throws Exception {
         final MetaObject moDummy = metaClass.getEmptyInstance(getConnectionContext());
 
         final List<String> formattedFields = new ArrayList<>(fields.size());
@@ -223,6 +234,8 @@ public class CsvExportServerAction extends DefaultServerAction {
 
         final ArrayList<ArrayList> results = getMetaService().performCustomSearch(sql, getConnectionContext());
 
+        final NumberFormat numberFormat = (locale != null) ? NumberFormat.getInstance(locale) : null;
+
         final ArrayList<String> rows = new ArrayList<>();
         for (final ArrayList result : results) {
             final List<String> columns = new ArrayList<>(result.size());
@@ -236,7 +249,8 @@ public class CsvExportServerAction extends DefaultServerAction {
                             || (object.getClass() == Integer.class)
                             || (object.getClass() == Character.class)
                             || (object.getClass() == Boolean.class)) { // dont escape primitives
-                    formattedResult = String.valueOf(object);
+                    formattedResult = ((object instanceof Number) && (numberFormat != null))
+                        ? numberFormat.format(object) : String.valueOf(object);
                 } else if (escapeStrings) {                            // escape strings (and all complex
                                                                        // strings-representations)
                     final String potentiallyMissingQuotes = StringEscapeUtils.escapeCsv(object.toString());
