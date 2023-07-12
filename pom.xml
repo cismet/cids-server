@@ -13,7 +13,7 @@
 
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server</artifactId>
-    <version>8.2.2</version>
+    <version>8.2.3</version>
     <packaging>jar</packaging>
  
     <properties>
@@ -27,7 +27,7 @@
         <connection>https://github.com/cismet/cids-server.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cids-server.git</developerConnection>
         <url>https://github.com/cismet/cids-server</url>
-        <tag>v8.2.2</tag>
+        <tag>v8.2.3</tag>
     </scm>
     
     <ciManagement>
@@ -285,6 +285,13 @@
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util-lookup</artifactId>
             <version>RELEASE701</version>
+        </dependency>
+        <dependency>
+            <groupId>de.cismet.custom</groupId>
+            <artifactId>cismet-JUMP1.5</artifactId>
+            <version>7.0</version>
+            <scope>compile</scope>
+            <type>jar</type>
         </dependency>
         
         <!-- BEGIN: Runtime dependencies -->
