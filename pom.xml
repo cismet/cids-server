@@ -286,6 +286,13 @@
             <artifactId>org-openide-util-lookup</artifactId>
             <version>RELEASE701</version>
         </dependency>
+        <dependency>
+            <groupId>de.cismet.custom</groupId>
+            <artifactId>cismet-JUMP1.5</artifactId>
+            <version>7.0</version>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
         
         <!-- BEGIN: Runtime dependencies -->
         <!--
