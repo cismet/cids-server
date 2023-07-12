@@ -18,6 +18,7 @@ import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
 import Sirius.server.newuser.User;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
@@ -114,6 +115,8 @@ public abstract class AbstractPostgresToShapefileServerAction implements Connect
                 return new SimplePropertyType(name, org.deegree.datatypes.Types.INTEGER, 0, 1);
             } else if (propertyClass.isAssignableFrom(Double.class)) {
                 return new SimplePropertyType(name, org.deegree.datatypes.Types.DOUBLE, 0, 1);
+            } else if (propertyClass.isAssignableFrom(MultiPolygon.class)) {
+                return new SimplePropertyType(name, org.deegree.datatypes.Types.SURFACE, 0, 1);
             } else if (propertyClass.isAssignableFrom(Polygon.class)) {
                 return new SimplePropertyType(name, org.deegree.datatypes.Types.SURFACE, 0, 1);
             } else if (propertyClass.isAssignableFrom(Point.class)) {
