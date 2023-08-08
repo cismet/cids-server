@@ -417,27 +417,6 @@ public interface ServerSQLStatements extends DialectProvider {
      *
      * @return  DOCUMENT ME!
      */
-    String getIndexTriggerUpdateAttrStringStmt();
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    String getIndexTriggerUpdateAttrObjectStmt();
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    String getIndexTriggerDeleteAttrObjectArrayStmt();
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
     String getIndexTriggerDeleteAttrObjectDerivedStmt();
 
     /**
@@ -450,21 +429,22 @@ public interface ServerSQLStatements extends DialectProvider {
     /**
      * DOCUMENT ME!
      *
-     * @param   classId  DOCUMENT ME!
+     * @param   classKey   DOCUMENT ME!
+     * @param   oneToMany  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    String getIndexTriggerSelectClassIdForeignKeyStmt(int classId);
+    String getIndexTriggerSelectClassIdForeignKeyStmt(String classKey, boolean oneToMany);
 
     /**
      * DOCUMENT ME!
      *
-     * @param   classId     DOCUMENT ME!
-     * @param   refClassId  DOCUMENT ME!
+     * @param   classKey     DOCUMENT ME!
+     * @param   refClassKey  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    String getIndexTriggerSelectFieldStmt(int classId, int refClassId);
+    String getIndexTriggerSelectFieldStmt(String classKey, String refClassKey);
 
     /**
      * DOCUMENT ME!
@@ -510,12 +490,12 @@ public interface ServerSQLStatements extends DialectProvider {
     /**
      * DOCUMENT ME!
      *
-     * @param   classId   DOCUMENT ME!
+     * @param   classKey  DOCUMENT ME!
      * @param   objectId  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    String getIndexTriggerSelectReindexPureStmt(int classId, int objectId);
+    String getIndexTriggerSelectReindexPureStmt(String classKey, int objectId);
 
     /**
      * Creates the statement for selecting n-m and 1-n array elements.

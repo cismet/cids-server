@@ -14,6 +14,7 @@ import Sirius.server.newuser.User;
 import Sirius.server.sql.DBConnection;
 import Sirius.server.sql.DialectProvider;
 import Sirius.server.sql.SQLTools;
+import Sirius.server.sql.ServerSQLStatements;
 
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -25,6 +26,7 @@ import java.sql.SQLException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import de.cismet.cids.dynamics.CidsBean;
 
@@ -179,7 +181,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
      * @throws  IllegalArgumentException  DOCUMENT ME!
      */
     private List<CidsBeanInfo> getDependentBeans(final Connection connection, final MetaObject mo) throws SQLException {
-        final List<CidsBeanInfo> dependentBeans = new ArrayList<CidsBeanInfo>();
+        final List<CidsBeanInfo> dependentBeans = new ArrayList<>();
 
         if (mo == null) {
             throw new IllegalArgumentException("MetaObject must not be null"); // NOI18N
@@ -191,40 +193,47 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
             return dependentBeans;
         }
 
-        final String query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                    .getIndexTriggerSelectClassIdForeignKeyStmt((-1) * mo.getClassID());
-        final ResultSet masterClasses = connection.createStatement().executeQuery(query);
+        final ServerSQLStatements statements = getSQLStatements();
+        try(final ResultSet masterClasses = connection.createStatement().executeQuery(
+                            statements.getIndexTriggerSelectClassIdForeignKeyStmt(
+                                mo.getMetaClass().getTableName(),
+                                true))) {
+            while (masterClasses.next()) {
+                final String classKey = masterClasses.getString(1);
 
-        while (masterClasses.next()) {
-            final int classId = masterClasses.getInt(1);
-
-            final String fieldQuery = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
-                                .getDialect())
-                        .getIndexTriggerSelectFieldStmt(mo.getClassID(), classId);
-            final ResultSet field = connection.createStatement().executeQuery(fieldQuery);
-
-            if (field.next()) {
-                final String fieldName = field.getString(1);
-                final String idQuery = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
-                                    .getDialect())
-                            .getIndexTriggerSelectObjFieldStmt(fieldName, mo.getMetaClass().getTableName(), mo.getID());
-                final ResultSet oid = connection.createStatement().executeQuery(idQuery);
-
-                if (oid.next()) {
-                    final int id = oid.getInt(1);
-                    final CidsBeanInfo beanInfo = new CidsBeanInfo();
-                    beanInfo.setObjectId(id);
-                    beanInfo.setClassId(classId);
-                    dependentBeans.add(beanInfo);
+                try(final ResultSet field = connection.createStatement().executeQuery(
+                                    statements.getIndexTriggerSelectFieldStmt(
+                                        mo.getMetaClass().getTableName(),
+                                        classKey))) {
+                    if (field.next()) {
+                        final String fieldName = field.getString(1);
+                        try(final ResultSet oid = connection.createStatement().executeQuery(
+                                            statements.getIndexTriggerSelectObjFieldStmt(
+                                                fieldName,
+                                                mo.getMetaClass().getTableName(),
+                                                mo.getID()))) {
+                            if (oid.next()) {
+                                final int id = oid.getInt(1);
+                                final CidsBeanInfo beanInfo = new CidsBeanInfo();
+                                beanInfo.setObjectId(id);
+                                beanInfo.setClassKey(classKey);
+                                dependentBeans.add(beanInfo);
+                            }
+                        }
+                    }
                 }
-
-                oid.close();
             }
-
-            field.close();
         }
-        masterClasses.close();
         return dependentBeans;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private ServerSQLStatements getSQLStatements() {
+        return SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class).getDialect());
     }
 
     /**
@@ -260,111 +269,86 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
         PreparedStatement psAttrString = null;
         PreparedStatement psAttrMap = null;
         try {
+            final ServerSQLStatements statements = getSQLStatements();
+            final int metaObjectId = mo.getID();
+            final String metaClassKey = mo.getMetaClass().getTableName();
+
             for (final ObjectAttribute attr : mo.getAttribs()) {
                 final MemberAttributeInfo mai = attr.getMai();
                 if (mai.isIndexed()) {
                     // set the appropriate param values according to the field
                     // value
                     if (mai.isForeignKey()) {
-                        if (mai.getForeignKeyClassId() < 0) {
-                            final String backreferenceQuery = SQLTools.getStatements(Lookup.getDefault().lookup(
-                                            DialectProvider.class).getDialect())
-                                        .getIndexTriggerSelectBackReferenceStmt(Math.abs(mai.getForeignKeyClassId()),
-                                            mai.getClassId());
-                            final ResultSet backreferenceRs = connection.createStatement()
-                                        .executeQuery(backreferenceQuery);
-
-                            if (backreferenceRs.next()) {
-                                final String backreferenceField = backreferenceRs.getString(1);
-                                backreferenceRs.close();
-                                String query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
-                                                    .getDialect())
-                                            .getIndexTriggerSelectTableNameByClassIdStmt(Math.abs(
-                                                    attr.getMai().getForeignKeyClassId()));
-                                final ResultSet rs = connection.createStatement().executeQuery(query);
-
-                                if (rs.next()) {
-                                    final String foreignTableName = rs.getString(1);
-                                    query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
-                                                        .getDialect())
-                                                .getIndexTriggerSelectFKIdStmt(
-                                                        foreignTableName,
-                                                        backreferenceField,
-                                                        mo.getID());
-
-                                    final ResultSet arrayList = connection.createStatement().executeQuery(query);
-
-                                    while (arrayList.next()) {
-                                        // lazily prepare the statement
-                                        if (psAttrMap == null) {
-                                            psAttrMap = connection.prepareStatement(SQLTools.getStatements(
-                                                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                                                            .getIndexTriggerInsertAttrObjectStmt());
-                                        }
-                                        psAttrMap.setInt(1, mo.getClassID());
-                                        psAttrMap.setInt(2, mo.getID());
-                                        psAttrMap.setInt(3, Math.abs(mai.getForeignKeyClassId()));
-                                        psAttrMap.setInt(4, arrayList.getInt(1));
-                                        psAttrMap.addBatch();
-                                    }
-
-                                    arrayList.close();
-                                }
-                                rs.close();
-                            } else {
-                                LOG.error("Cannot fill index table properly, because the backreference was not found.");
-                            }
-                        } else if (mai.isArray()) {
-                            attr.getTypeId();
-                            String query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
-                                                .getDialect())
-                                        .getIndexTriggerSelectTableNameByClassIdStmt(attr.getMai()
-                                            .getForeignKeyClassId());
-                            final ResultSet rs = connection.createStatement().executeQuery(query);
-
+                        final int foreignClassId = Math.abs(mai.getForeignKeyClassId());
+                        try(final ResultSet rs = connection.createStatement().executeQuery(
+                                            statements.getIndexTriggerSelectTableNameByClassIdStmt(foreignClassId))) {
                             if (rs.next()) {
                                 final String foreignTableName = rs.getString(1);
-                                query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
-                                                    .getDialect())
-                                            .getIndexTriggerSelectFKIdStmt(
-                                                    foreignTableName,
-                                                    mai.getArrayKeyFieldName(),
-                                                    mo.getID());
 
-                                final ResultSet arrayList = connection.createStatement().executeQuery(query);
+                                if (mai.getForeignKeyClassId() < 0) {
+                                    try(final ResultSet backreferenceRs = connection.createStatement().executeQuery(
+                                                        statements.getIndexTriggerSelectBackReferenceStmt(
+                                                            foreignClassId,
+                                                            mai.getClassId()))) {
+                                        if (backreferenceRs.next()) {
+                                            final String backreferenceField = backreferenceRs.getString(1);
+                                            try(final ResultSet arrayList = connection.createStatement().executeQuery(
+                                                                statements.getIndexTriggerSelectFKIdStmt(
+                                                                    foreignTableName,
+                                                                    backreferenceField,
+                                                                    metaObjectId))) {
+                                                while (arrayList.next()) {
+                                                    // lazily prepare the statement
+                                                    if (psAttrMap == null) {
+                                                        psAttrMap = connection.prepareStatement(
+                                                                statements.getIndexTriggerInsertAttrObjectStmt());
+                                                    }
+                                                    final int attrObjectId = arrayList.getInt(1);
 
-                                while (arrayList.next()) {
+                                                    psAttrMap.setString(1, metaClassKey);
+                                                    psAttrMap.setInt(2, metaObjectId);
+                                                    psAttrMap.setString(3, foreignTableName);
+                                                    psAttrMap.setInt(4, attrObjectId);
+                                                    psAttrMap.addBatch();
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else if (mai.isArray()) {
+                                    try(final ResultSet arrayList = connection.createStatement().executeQuery(
+                                                        statements.getIndexTriggerSelectFKIdStmt(
+                                                            foreignTableName,
+                                                            mai.getArrayKeyFieldName(),
+                                                            metaObjectId))) {
+                                        while (arrayList.next()) {
+                                            // lazily prepare the statement
+                                            if (psAttrMap == null) {
+                                                psAttrMap = connection.prepareStatement(
+                                                        statements.getIndexTriggerInsertAttrObjectStmt());
+                                            }
+                                            psAttrMap.setString(1, metaClassKey);
+                                            psAttrMap.setInt(2, metaObjectId);
+                                            psAttrMap.setString(3, foreignTableName);
+                                            psAttrMap.setInt(4, arrayList.getInt(1));
+                                            psAttrMap.addBatch();
+                                        }
+                                    }
+                                } else {
                                     // lazily prepare the statement
                                     if (psAttrMap == null) {
-                                        psAttrMap = connection.prepareStatement(SQLTools.getStatements(
-                                                    Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                                                        .getIndexTriggerInsertAttrObjectStmt());
+                                        psAttrMap = connection.prepareStatement(
+                                                statements.getIndexTriggerInsertAttrObjectStmt());
                                     }
-                                    psAttrMap.setInt(1, mo.getClassID());
-                                    psAttrMap.setInt(2, mo.getID());
-                                    psAttrMap.setInt(3, mai.getForeignKeyClassId());
-                                    psAttrMap.setInt(4, arrayList.getInt(1));
+                                    psAttrMap.setString(1, metaClassKey);
+                                    psAttrMap.setInt(2, metaObjectId);
+                                    psAttrMap.setString(3, foreignTableName);
+                                    // if field represents a foreign key the attribute value
+                                    // is assumed to be a MetaObject
+                                    final MetaObject value = (MetaObject)attr.getValue();
+                                    psAttrMap.setInt(4, (value == null) ? -1 : value.getID());
                                     psAttrMap.addBatch();
                                 }
-
-                                arrayList.close();
                             }
-                            rs.close();
-                        } else {
-                            // lazily prepare the statement
-                            if (psAttrMap == null) {
-                                psAttrMap = connection.prepareStatement(SQLTools.getStatements(
-                                            Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                                                .getIndexTriggerInsertAttrObjectStmt());
-                            }
-                            psAttrMap.setInt(1, mo.getClassID());
-                            psAttrMap.setInt(2, mo.getID());
-                            psAttrMap.setInt(3, mai.getForeignKeyClassId());
-                            // if field represents a foreign key the attribute value
-                            // is assumed to be a MetaObject
-                            final MetaObject value = (MetaObject)attr.getValue();
-                            psAttrMap.setInt(4, (value == null) ? -1 : value.getID());
-                            psAttrMap.addBatch();
                         }
                     } else {
                         // lazily prepare the statement
@@ -373,8 +357,8 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                                         Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                                             .getIndexTriggerInsertAttrStringStmt());
                         }
-                        psAttrString.setInt(1, mo.getClassID());
-                        psAttrString.setInt(2, mo.getID());
+                        psAttrString.setString(1, metaClassKey);
+                        psAttrString.setInt(2, metaObjectId);
                         psAttrString.setInt(3, mai.getId());
                         // interpret the fields value as a string
                         psAttrString.setString(4, (attr.getValue() == null) ? NULL : String.valueOf(attr.getValue()));
@@ -422,206 +406,6 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     }
 
     /**
-     * mscholl: Updates the index of cs_attr_string and cs_attr_object for the given metaobject. Update for a certain
-     * attribute will only be done if the attribute is changed.
-     *
-     * @param       connection  DOCUMENT ME!
-     * @param       mo          the metaobject which will be updated
-     *
-     * @throws      SQLException              if an error occurs during index update
-     * @throws      IllegalArgumentException  NullPointerException DOCUMENT ME!
-     *
-     * @deprecated  This method does not work properly. If you have a class with multiple subclasses of the same type
-     *              which are in the search index, the update command will modify all cs_attr_object entries of the same
-     *              type with the same update command, so that all entries have the value that was set by the last
-     *              update command.
-     */
-    private void updateIndex(final Connection connection, final MetaObject mo) throws SQLException {
-        if (mo == null) {
-            throw new IllegalArgumentException("MetaObject must not be null"); // NOI18N
-        } else if (mo.isDummy()) {
-            // don't do anything with a dummy object
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("update index for dummy won't be done"); // NOI18N
-            }
-            return;
-        } else if (LOG.isInfoEnabled()) {
-            LOG.info("update index for MetaObject: " + mo);        // NOI18N
-        }
-        PreparedStatement psAttrString = null;
-        PreparedStatement psAttrMap = null;
-        PreparedStatement psAttrMapArray = null;
-
-        try {
-            for (final ObjectAttribute attr : mo.getAttribs()) {
-                final MemberAttributeInfo mai = attr.getMai();
-                if (mai.isIndexed() && attr.isChanged()) {
-                    // set the appropriate param values according to the field
-                    // value
-                    if (mai.isForeignKey()) {
-                        if (mai.isArray()) {
-                            attr.getTypeId();
-                            String query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
-                                                .getDialect())
-                                        .getIndexTriggerSelectTableNameByClassIdStmt(attr.getMai()
-                                            .getForeignKeyClassId());
-                            final ResultSet rs = connection.createStatement().executeQuery(query);
-
-                            if (rs.next()) {
-                                final String foreignTableName = rs.getString(1);
-                                query = SQLTools.getStatements(Lookup.getDefault().lookup(DialectProvider.class)
-                                                    .getDialect())
-                                            .getIndexTriggerSelectFKIdStmt(
-                                                    foreignTableName,
-                                                    mai.getArrayKeyFieldName(),
-                                                    mo.getID());
-
-                                final ResultSet arrayList = connection.createStatement().executeQuery(query);
-                                final PreparedStatement psAttrMapDelArray = connection.prepareStatement(
-                                        SQLTools.getStatements(
-                                            Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                                                    .getIndexTriggerDeleteAttrObjectArrayStmt());
-
-                                psAttrMapDelArray.setInt(1, mo.getClassID());
-                                psAttrMapDelArray.setInt(2, mo.getID());
-                                psAttrMapDelArray.setInt(3, mai.getForeignKeyClassId());
-
-                                psAttrMapDelArray.executeUpdate();
-
-                                while (arrayList.next()) {
-                                    // lazily prepare the statement
-                                    if (psAttrMapArray == null) {
-                                        psAttrMapArray = connection.prepareStatement(SQLTools.getStatements(
-                                                    Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                                                        .getIndexTriggerInsertAttrObjectStmt());
-                                    }
-                                    psAttrMapArray.setInt(1, mo.getClassID());
-                                    psAttrMapArray.setInt(2, mo.getID());
-                                    psAttrMapArray.setInt(3, mai.getForeignKeyClassId());
-                                    psAttrMapArray.setInt(4, arrayList.getInt(1));
-                                    psAttrMapArray.addBatch();
-                                }
-
-                                arrayList.close();
-                            }
-                            rs.close();
-                        } else {
-                            // lazily prepare the statement
-                            if (psAttrMap == null) {
-                                psAttrMap = connection.prepareStatement(SQLTools.getStatements(
-                                            Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                                                .getIndexTriggerUpdateAttrObjectStmt());
-                            }
-                            // if field represents a foreign key the attribute value
-                            // is assumed to be a MetaObject
-                            final MetaObject value = (MetaObject)attr.getValue();
-                            psAttrMap.setInt(1, (value == null) ? -1 : value.getID());
-                            psAttrMap.setInt(2, mo.getClassID());
-                            psAttrMap.setInt(3, mo.getID());
-                            psAttrMap.setInt(4, mai.getForeignKeyClassId());
-                            psAttrMap.addBatch();
-
-                            if (LOG.isDebugEnabled()) {
-                                final StringBuilder logMessage = new StringBuilder(
-                                        "Parameterized SQL added to batch: ");
-                                logMessage.append(SQLTools.getStatements(
-                                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                                            .getIndexTriggerUpdateAttrObjectStmt());
-                                logMessage.append('\n');
-                                logMessage.append("attr_obj_id: ");
-                                logMessage.append(String.valueOf((value == null) ? -1 : value.getID()));
-                                logMessage.append("class_id: ");
-                                logMessage.append(String.valueOf(mo.getClassID()));
-                                logMessage.append("object_id: ");
-                                logMessage.append(String.valueOf(mo.getID()));
-                                logMessage.append("attr_class_id: ");
-                                logMessage.append(String.valueOf(mai.getForeignKeyClassId()));
-                                LOG.debug(logMessage.toString());
-                            }
-                        }
-                    } else {
-                        // lazily prepare the statement
-                        if (psAttrString == null) {
-                            psAttrString = connection.prepareStatement(SQLTools.getStatements(
-                                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                                            .getIndexTriggerUpdateAttrStringStmt());
-                        }
-                        // interpret the fields value as a string
-                        psAttrString.setString(1, (attr.getValue() == null) ? NULL : String.valueOf(attr.getValue()));
-                        psAttrString.setInt(2, mo.getClassID());
-                        psAttrString.setInt(3, mo.getID());
-                        psAttrString.setInt(4, mai.getId());
-                        psAttrString.addBatch();
-                        if (LOG.isDebugEnabled()) {
-                            final StringBuilder logMessage = new StringBuilder("Parameterized SQL added to batch: ");
-                            logMessage.append(SQLTools.getStatements(
-                                    Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                                        .getIndexTriggerUpdateAttrStringStmt());
-                            logMessage.append('\n');
-                            logMessage.append("attr_obj_id: ");
-                            logMessage.append(String.valueOf(attr.getValue()));
-                            logMessage.append("class_id: ");
-                            logMessage.append(String.valueOf(mo.getClassID()));
-                            logMessage.append("object_id: ");
-                            logMessage.append(String.valueOf(mo.getID()));
-                            logMessage.append("attr_class_id: ");
-                            logMessage.append(String.valueOf(mai.getId()));
-                            LOG.debug(logMessage.toString());
-                        }
-                    }
-                }
-            }
-
-            // execute the batches if there are indexed fields
-            if (psAttrString != null) {
-                final int[] strRows = psAttrString.executeBatch();
-                if (LOG.isDebugEnabled()) {
-                    int updateCount = 0;
-                    for (final int row : strRows) {
-                        updateCount += row;
-                    }
-                    LOG.debug("cs_attr_string: updated " + updateCount + " rows");                  // NOI18N
-                }
-            }
-            if (psAttrMap != null) {
-                final int[] mapRows = psAttrMap.executeBatch();
-                if (LOG.isDebugEnabled()) {
-                    int updateCount = 0;
-                    for (final int row : mapRows) {
-                        updateCount += row;
-                    }
-                    LOG.debug("cs_attr_object(complex objects): updated " + updateCount + " rows"); // NOI18N
-                }
-            }
-            if (psAttrMapArray != null) {
-                final int[] mapRows = psAttrMapArray.executeBatch();
-                if (LOG.isDebugEnabled()) {
-                    int updateCount = 0;
-                    for (final int row : mapRows) {
-                        updateCount += row;
-                    }
-                    LOG.debug("cs_attr_object(Array-Entries): updated " + updateCount + " rows");   // NOI18N
-                }
-            }
-            if (mo.getMetaClass().isIndexed()) {
-                updateDerivedIndex(connection, mo);
-            }
-        } catch (final SQLException e) {
-            LOG.error(
-                "could not insert index for object '"                                               // NOI18N
-                        + mo.getID()
-                        + "' of class '"                                                            // NOI18N
-                        + mo.getClass()
-                        + "'",                                                                      // NOI18N
-                e);
-            // TODO: consider to wrap exception
-            throw e;
-        } finally {
-            DBConnection.closeStatements(psAttrString, psAttrMap);
-        }
-    }
-
-    /**
      * Updates the table cs_attr_object_derived.
      *
      * @param   connection  the connection to the database
@@ -630,34 +414,33 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
      * @throws  SQLException  DOCUMENT ME!
      */
     private void updateDerivedIndex(final Connection connection, final MetaObject mo) throws SQLException {
-        updateDerivedIndex(connection, mo.getClassID(), mo.getID());
+        updateDerivedIndex(connection, mo.getMetaClass().getTableName(), mo.getID());
     }
 
     /**
      * Updates the table cs_attr_object_derived.
      *
      * @param   connection  the connection to the database
-     * @param   classId     the class id of the oject that should be updated
+     * @param   classKey    the class id of the oject that should be updated
      * @param   objectId    the object id of the oject that should be updated
      *
      * @throws  SQLException  DOCUMENT ME!
      */
-    private void updateDerivedIndex(final Connection connection, final int classId, final int objectId)
+    private void updateDerivedIndex(final Connection connection, final String classKey, final int objectId)
             throws SQLException {
-        final PreparedStatement psDeleteAttrMapDerive = connection.prepareStatement(SQLTools.getStatements(
-                    Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                        .getIndexTriggerDeleteAttrObjectDerivedStmt());
-        final PreparedStatement psInsertAttrMapDerive = connection.prepareStatement(SQLTools.getStatements(
-                    Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                        .getIndexTriggerInsertAttrObjectDerivedStmt());
+        final ServerSQLStatements statements = getSQLStatements();
+        final PreparedStatement psDeleteAttrMapDerive = connection.prepareStatement(
+                statements.getIndexTriggerDeleteAttrObjectDerivedStmt());
+        final PreparedStatement psInsertAttrMapDerive = connection.prepareStatement(
+                statements.getIndexTriggerInsertAttrObjectDerivedStmt());
 
-        psDeleteAttrMapDerive.setInt(1, classId);
+        psDeleteAttrMapDerive.setString(1, classKey);
         psDeleteAttrMapDerive.setInt(2, objectId);
-        psInsertAttrMapDerive.setInt(1, classId);
+        psInsertAttrMapDerive.setString(1, classKey);
         psInsertAttrMapDerive.setInt(2, objectId);
-        psInsertAttrMapDerive.setInt(3, classId);
+        psInsertAttrMapDerive.setString(3, classKey);
         psInsertAttrMapDerive.setInt(4, objectId);
-        psInsertAttrMapDerive.setInt(5, classId);
+        psInsertAttrMapDerive.setString(5, classKey);
         psInsertAttrMapDerive.setInt(6, objectId);
         final int del = psDeleteAttrMapDerive.executeUpdate();
         final int ins = psInsertAttrMapDerive.executeUpdate();
@@ -688,27 +471,23 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
         } else if (LOG.isInfoEnabled()) {
             LOG.info("delete index for MetaObject: " + mo);        // NOI18N
         }
-        PreparedStatement psAttrString = null;
-        PreparedStatement psAttrMap = null;
-        PreparedStatement psAttrDerive = null;
-        try {
-            // prepare the update statements
-            psAttrString = connection.prepareStatement(SQLTools.getStatements(
-                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                            .getIndexTriggerDeleteAttrStringObjectStmt());
-            psAttrMap = connection.prepareStatement(SQLTools.getStatements(
-                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                            .getIndexTriggerDeleteAttrObjectObjectStmt());
-            psAttrDerive = connection.prepareStatement(SQLTools.getStatements(
-                        Lookup.getDefault().lookup(DialectProvider.class).getDialect())
-                            .getIndexTriggerDeleteAttrObjectDerivedStmt());
+        final Integer metaObjectId = mo.getID();
+        final String metaClassKey = mo.getMetaClass().getTableName();
+        final ServerSQLStatements statements = getSQLStatements();
+        try(final PreparedStatement psAttrString = connection.prepareStatement(
+                            statements.getIndexTriggerDeleteAttrStringObjectStmt());
+                    final PreparedStatement psAttrMap = connection.prepareStatement(
+                            statements.getIndexTriggerDeleteAttrObjectObjectStmt());
+                    final PreparedStatement psAttrDerive = connection.prepareStatement(
+                            statements.getIndexTriggerDeleteAttrObjectDerivedStmt());
+            ) {
             // set the appropriate param values
-            psAttrString.setInt(1, mo.getClassID());
-            psAttrString.setInt(2, mo.getID());
-            psAttrMap.setInt(1, mo.getClassID());
-            psAttrMap.setInt(2, mo.getID());
-            psAttrDerive.setInt(1, mo.getClassID());
-            psAttrDerive.setInt(2, mo.getID());
+            psAttrString.setString(1, metaClassKey);
+            psAttrString.setInt(2, metaObjectId);
+            psAttrMap.setString(1, metaClassKey);
+            psAttrMap.setInt(2, metaObjectId);
+            psAttrDerive.setString(1, metaClassKey);
+            psAttrDerive.setInt(2, metaObjectId);
 
             // execute the deletion
             final int strRows = psAttrString.executeUpdate();
@@ -722,15 +501,13 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
         } catch (final SQLException e) {
             LOG.error(
                 "could not delete index for object '"                                    // NOI18N
-                        + mo.getID()
+                        + metaObjectId
                         + "' of class '"                                                 // NOI18N
-                        + mo.getClass()
+                        + metaClassKey
                         + "'",                                                           // NOI18N
                 e);
             // TODO: consider to wrap exception
             throw e;
-        } finally {
-            DBConnection.closeStatements(psAttrString, psAttrMap);
         }
     }
 
@@ -744,7 +521,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                         final Connection connection = getLongtermConnection();
                         insertIndex(connection, cidsBean.getMetaObject());
                         final CidsBeanInfo info = new CidsBeanInfo();
-                        info.setClassId(cidsBean.getMetaObject().getMetaClass().getID());
+                        info.setClassKey(cidsBean.getMetaObject().getMetaClass().getTableName());
                         info.setObjectId(cidsBean.getMetaObject().getID());
                         beansToUpdate.add(info);
                     } catch (SQLException sQLException) {
@@ -759,7 +536,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
     @Override
     public void afterCommittedUpdate(final CidsBean cidsBean, final User user) {
         final CidsBeanInfo info = new CidsBeanInfo();
-        info.setClassId(cidsBean.getMetaObject().getMetaClass().getID());
+        info.setClassKey(cidsBean.getMetaObject().getMetaClass().getTableName());
         info.setObjectId(cidsBean.getMetaObject().getID());
         beansToUpdate.add(info);
         de.cismet.tools.CismetThreadPool.executeSequentially(new Runnable() {
@@ -790,8 +567,8 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
      * Updates the index of the master objects (master in an one to many relation).
      */
     private void updateAllDependentBeans() {
-        final List<CidsBeanInfo> beansToUpdateTmp = new ArrayList<CidsBeanInfo>(beansToUpdate);
-        final List<CidsBean> beansToCheckTmp = new ArrayList<CidsBean>(beansToCheck);
+        final List<CidsBeanInfo> beansToUpdateTmp = new ArrayList<>(beansToUpdate);
+        final List<CidsBean> beansToCheckTmp = new ArrayList<>(beansToCheck);
         beansToUpdate.clear();
         beansToCheck.clear();
 
@@ -808,7 +585,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                             addAll(beansToUpdateTmp, beanInfo);
 
                             final CidsBeanInfo info = new CidsBeanInfo();
-                            info.setClassId(bean.getMetaObject().getClassID());
+                            info.setClassKey(bean.getMetaObject().getMetaClass().getTableName());
                             info.setObjectId(bean.getMetaObject().getId());
                             beansToUpdateTmp.add(info);
                         }
@@ -819,9 +596,9 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
                                         SQLTools.getStatements(
                                             Lookup.getDefault().lookup(DialectProvider.class).getDialect())
                                             .getIndexTriggerSelectReindexPureStmt(
-                                                beanInfo.getClassId(),
+                                                beanInfo.getClassKey(),
                                                 beanInfo.getObjectId()));
-                            updateDerivedIndex(connection, beanInfo.getClassId(), beanInfo.getObjectId());
+                            updateDerivedIndex(connection, beanInfo.getClassKey(), beanInfo.getObjectId());
                         }
                     } catch (SQLException sQLException) {
                         log.error("Error during updateAllDependentBeans ", sQLException);
@@ -912,7 +689,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
         //~ Instance fields ----------------------------------------------------
 
         private int objectId;
-        private int classId;
+        private String classKey;
 
         //~ Methods ------------------------------------------------------------
 
@@ -937,25 +714,26 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
         /**
          * DOCUMENT ME!
          *
-         * @return  the classId
+         * @return  the classKey
          */
-        public int getClassId() {
-            return classId;
+        public String getClassKey() {
+            return classKey;
         }
 
         /**
          * DOCUMENT ME!
          *
-         * @param  classId  the classId to set
+         * @param  classKey  the classKey to set
          */
-        public void setClassId(final int classId) {
-            this.classId = classId;
+        public void setClassKey(final String classKey) {
+            this.classKey = classKey;
         }
 
         @Override
         public boolean equals(final Object obj) {
             if (obj instanceof CidsBeanInfo) {
-                return (((CidsBeanInfo)obj).classId == this.classId) && (((CidsBeanInfo)obj).objectId == this.objectId);
+                return (((CidsBeanInfo)obj).classKey == this.classKey)
+                            && (((CidsBeanInfo)obj).objectId == this.objectId);
             } else {
                 return false;
             }
@@ -965,7 +743,7 @@ public class IndexTrigger extends AbstractDBAwareCidsTrigger {
         public int hashCode() {
             int hash = 7;
             hash = (37 * hash) + this.objectId;
-            hash = (37 * hash) + this.classId;
+            hash = (37 * hash) + Objects.hashCode(this.classKey);
             return hash;
         }
     }

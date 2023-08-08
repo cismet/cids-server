@@ -448,25 +448,28 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
             final PreparableStatement geoSql,
             final boolean caseSensitive) {
         final String sql = "SELECT DISTINCT "
-                + "  cs_class.id, "
-                + "  cs_attr_object_derived.object_id, "
-                + "  cs_cache.stringrep, "
-                + "  cs_cache.geometry, "
-                + "  cs_cache.lightweight_json "
-                + "FROM "
-                + "  cs_class, "
-                + "  cs_attr_string, "
-                + "  cs_attr_object_derived "
-                + "  LEFT OUTER JOIN cs_cache ON ( "
-                + "    cs_cache.class_key = cs_attr_object_derived.class_key "
-                + "    AND cs_cache.object_id = cs_attr_object_derived.object_id "
-                + "  ) "
-                + "WHERE "
-                + "  cs_class.table_name = cs_attr_string.class_key "
-                + "  cs_attr_object_derived.attr_class_key = cs_attr_string.class_key "
-                + "  AND cs_attr_object_derived.attr_object_id = cs_attr_string.object_id "
-                + "  AND cs_attr_string.string_val " + (caseSensitive ? "like" : "ilike") + " ? "
-                + "  AND cs_class.id IN " + classesIn;
+                    + "  cs_class.id, "
+                    + "  cs_attr_object_derived.object_id, "
+                    + "  cs_cache.stringrep, "
+                    + "  cs_cache.geometry, "
+                    + "  cs_cache.lightweight_json "
+                    + "FROM "
+                    + "  cs_class, "
+                    + "  cs_attr_string, "
+                    + "  cs_attr_object_derived "
+                    + "  LEFT OUTER JOIN cs_cache ON ( "
+                    + "    cs_cache.class_key = cs_attr_object_derived.class_key "
+                    + "    AND cs_cache.object_id = cs_attr_object_derived.object_id "
+                    + "  ) "
+                    + "WHERE "
+                    + "  cs_class.table_name = cs_attr_string.class_key "
+                    + "  cs_attr_object_derived.attr_class_key = cs_attr_string.class_key "
+                    + "  AND cs_attr_object_derived.attr_object_id = cs_attr_string.object_id "
+                    + "  AND cs_attr_string.string_val "
+                    + (caseSensitive ? "like" : "ilike")
+                    + " ? "
+                    + "  AND cs_class.id IN "
+                    + classesIn;
 
         Object[] objs = new Object[1];
 
@@ -475,24 +478,29 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
             ps = new PreparableStatement(sql, new int[] { Types.VARCHAR });
         } else {
             final int parameterCount = geoSql.getObjects().length;
-            final int[] types = new int[parameterCount + 1];
+            final int[] types = new int[parameterCount
+                            + 1];
 
-            objs = new Object[parameterCount + 1];
+            objs = new Object[parameterCount
+                            + 1];
             System.arraycopy(geoSql.getObjects(), 0, objs, 1, parameterCount);
             types[0] = Types.VARCHAR;
             System.arraycopy(geoSql.getTypes(), 0, types, 1, parameterCount);
 
             ps = new PreparableStatement(
-                "SELECT TXT_RESULTS.* FROM (\n"
-                    + sql
-                    + "\n) as TXT_RESULTS \n"
-                    + "JOIN (" + geoSql.getStatement() + ") AS GEO_RESULTS \n"
-                    + "ON (TXT_RESULTS.ocid=GEO_RESULTS.ocid and TXT_RESULTS.oid=GEO_RESULTS.oid)"
-                , types
-            );
+                    "SELECT TXT_RESULTS.* FROM (\n"
+                            + sql
+                            + "\n) as TXT_RESULTS \n"
+                            + "JOIN ("
+                            + geoSql.getStatement()
+                            + ") AS GEO_RESULTS \n"
+                            + "ON (TXT_RESULTS.ocid=GEO_RESULTS.ocid and TXT_RESULTS.oid=GEO_RESULTS.oid)",
+                    types);
         }
 
-        objs[0] = "%" + searchText + "%";
+        objs[0] = "%"
+                    + searchText
+                    + "%";
         ps.setObjects(objs);
 
         return ps;
@@ -500,30 +508,35 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
 
     @Override
     public PreparableStatement getDefaultGeoSearchStmt(final String wkt, final String srid, final String classesIn) {
-        final String geometryText = "SRID=" + srid + ";" + wkt;
+        final String geometryText = "SRID="
+                    + srid
+                    + ";"
+                    + wkt;
         final PreparableStatement ps = new PreparableStatement(
                 "SELECT DISTINCT "
-                    + "  cs_class.id, "
-                    + "  cs_attr_object_derived.object_id, "
-                    + "  cs_cache.stringrep, "
-                    + "  cs_cache.geometry, "
-                    + "  cs_cache.lightweight_json "
-                    + "FROM "
-                    + "  geom, "
-                    + "  cs_class, "
-                    + "  cs_attr_object_derived "
-                    + "  LEFT OUTER JOIN cs_cache ON ("
-                    + "    cs_cache.class_key = cs_attr_object_derived.class_key "
-                    + "    AND cs_cache.object_id = cs_attr_object_derived.object_id"
-                    + "  ) "
-                    + "WHERE "
-                    + "  cs_class.table_name = cs_attr_object_derived.class_key"
-                    + "  cs_attr_object_derived.attr_class_key::text ILIKE 'GEOM'::text "
-                    + "  AND cs_attr_object_derived.attr_object_id = geom.id "
-                    + "  AND cs_class.id IN " + classesIn + ""
-                    + "  AND geom.geo_field && st_GeometryFromText(?) "
-                    + "  AND st_intersects(geom.geo_field, st_GeometryFromText(?)) "
-                    + "ORDER BY 1, 2, 3",
+                        + "  cs_class.id, "
+                        + "  cs_attr_object_derived.object_id, "
+                        + "  cs_cache.stringrep, "
+                        + "  cs_cache.geometry, "
+                        + "  cs_cache.lightweight_json "
+                        + "FROM "
+                        + "  geom, "
+                        + "  cs_class, "
+                        + "  cs_attr_object_derived "
+                        + "  LEFT OUTER JOIN cs_cache ON ("
+                        + "    cs_cache.class_key = cs_attr_object_derived.class_key "
+                        + "    AND cs_cache.object_id = cs_attr_object_derived.object_id"
+                        + "  ) "
+                        + "WHERE "
+                        + "  cs_class.table_name = cs_attr_object_derived.class_key"
+                        + "  cs_attr_object_derived.attr_class_key::text ILIKE 'GEOM'::text "
+                        + "  AND cs_attr_object_derived.attr_object_id = geom.id "
+                        + "  AND cs_class.id IN "
+                        + classesIn
+                        + ""
+                        + "  AND geom.geo_field && st_GeometryFromText(?) "
+                        + "  AND st_intersects(geom.geo_field, st_GeometryFromText(?)) "
+                        + "ORDER BY 1, 2, 3",
                 new int[] { Types.VARCHAR, Types.VARCHAR });
         ps.setObjects(geometryText, geometryText);
         return ps;
@@ -543,21 +556,28 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
     @Override
     public String getQueryEditorSearchStmt(final String tableName, final int classId, final String whereClause) {
         return "SELECT "
-            + "  " + classId + " AS classid, "
-            + "  tbl.id AS objectid, "
-            + "  cs_cache.stringrep, "
-            + "  cs_cache.geometry, "
-            + "  cs_cache.lightweight_json "
-            + "FROM "
-            + "  " + tableName + " tbl, "
-            + "  cs_class"
-            + "  LEFT OUTER JOIN cs_cache ON ( "
-            + "    cs_cache.class_key = cs_class.table_name "
-            + "    AND cs_cache.object_id = tbl.id "
-            + ")"
-            + "WHERE "
-            + "  cs_class.id = " + classId + " " 
-            + "  AND" + whereClause;
+                    + "  "
+                    + classId
+                    + " AS classid, "
+                    + "  tbl.id AS objectid, "
+                    + "  cs_cache.stringrep, "
+                    + "  cs_cache.geometry, "
+                    + "  cs_cache.lightweight_json "
+                    + "FROM "
+                    + "  "
+                    + tableName
+                    + " tbl, "
+                    + "  cs_class"
+                    + "  LEFT OUTER JOIN cs_cache ON ( "
+                    + "    cs_cache.class_key = cs_class.table_name "
+                    + "    AND cs_cache.object_id = tbl.id "
+                    + ")"
+                    + "WHERE "
+                    + "  cs_class.id = "
+                    + classId
+                    + " "
+                    + "  AND"
+                    + whereClause;
     }
 
     @Override
@@ -567,157 +587,153 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
             final int limit,
             final int offset) {
         return "SELECT * FROM ("
-                + "  SELECT "
-                + "    " + classId + ", "
-                + "    tbl.id, "
-                + "    cs_cache.stringrep, "
-                + "    cs_cache.geometry, "
-                + "    cs_cache.lightweight_json "
-                + "  FROM "
-                + "    " + tableName + " tbl, "
-                + "    cs_class"
-                + "    LEFT OUTER JOIN cs_cache ON (  "
-                + "      cs_cache.class_key = cs_class.table_name "
-                + "      AND cs_cache.object_id = tbl.id "
-                + "    ) "
-                + "  WHERE "
-                + "    cs_class.id = " + classId + " "
-                + "    AND " + whereClause
-                + ") sub "
-                + "LIMIT " + limit + " "
-                + "OFFSET " + offset;
+                    + "  SELECT "
+                    + "    "
+                    + classId
+                    + ", "
+                    + "    tbl.id, "
+                    + "    cs_cache.stringrep, "
+                    + "    cs_cache.geometry, "
+                    + "    cs_cache.lightweight_json "
+                    + "  FROM "
+                    + "    "
+                    + tableName
+                    + " tbl, "
+                    + "    cs_class"
+                    + "    LEFT OUTER JOIN cs_cache ON (  "
+                    + "      cs_cache.class_key = cs_class.table_name "
+                    + "      AND cs_cache.object_id = tbl.id "
+                    + "    ) "
+                    + "  WHERE "
+                    + "    cs_class.id = "
+                    + classId
+                    + " "
+                    + "    AND "
+                    + whereClause
+                    + ") sub "
+                    + "LIMIT "
+                    + limit
+                    + " "
+                    + "OFFSET "
+                    + offset;
     }
 
     @Override
     public String getIndexTriggerDeleteAttrStringObjectStmt() {
         return "DELETE FROM cs_attr_string "
-            + "WHERE "
-            + "  class_key = (SELECT table_name FROM cs_class WHERE id = ? LIMIT 1) "
-            + "  AND object_id = ?"; // NOI18N
+                    + "WHERE "
+                    + "  class_key = ? "
+                    + "  AND object_id = ?"; // NOI18N
     }
 
     @Override
     public String getIndexTriggerDeleteAttrObjectObjectStmt() {
         return "DELETE FROM cs_attr_object "
-            + "WHERE "
-            + "  class_key = (SELECT table_name FROM cs_class WHERE id = ? LIMIT 1) "
-            + "  AND object_id = ?"; // NOI18N
+                    + "WHERE "
+                    + "  class_key = ? "
+                    + "  AND object_id = ?"; // NOI18N
     }
 
     @Override
     public String getIndexTriggerInsertAttrStringStmt() {
-        return "INSERT INTO cs_attr_string (class_key, object_id, attr_id, string_val) VALUES ((SELECT table_name FROM cs_class WHERE id = ? LIMIT 1), ?, ?, ?)"; // NOI18N
+        return "INSERT INTO cs_attr_string (class_key, object_id, attr_id, string_val) VALUES (?, ?, ?, ?)"; // NOI18N
     }
 
     @Override
     public String getIndexTriggerInsertAttrObjectStmt() {
-        return "INSERT INTO cs_attr_object (class_key, object_id, attr_class_key, attr_object_id) VALUES ((SELECT table_name FROM cs_class WHERE id = ? LIMIT 1), ?, (SELECT table_name FROM cs_class WHERE id = ? LIMIT 1), ?)"; // NOI18N
-    }
-
-    @Override
-    public String getIndexTriggerUpdateAttrStringStmt() {
-        return "UPDATE cs_attr_string "
-            + "SET string_val = ? "
-            + "WHERE "
-            + "  class_key = (SELECT table_name FROM cs_class WHERE id = ? LIMIT 1) "
-            + "  AND object_id = ? "
-            + "  AND attr_key = ("
-            + "    SELECT table_name "
-            + "    FROM cs_class "
-            + "    WHERE id = ? LIMIT 1"
-            + "  )";
-    }
-
-    @Override
-    public String getIndexTriggerUpdateAttrObjectStmt() {
-        return "UPDATE cs_attr_object "                                             // NOI18N
-                    + "SET attr_object_id = ? "                                     // NOI18N
-                    + "WHERE class_key = (SELECT table_name FROM cs_class WHERE id = ? LIMIT 1) AND object_id = ? AND attr_class_key = (SELECT table_name FROM cs_class WHERE id = ? LIMIT 1)"; // NOI18N
-    }
-
-    @Override
-    public String getIndexTriggerDeleteAttrObjectArrayStmt() {
-        return "DELETE from cs_attr_object "                                        // NOI18N
-                    + "WHERE class_key = (SELECT table_name FROM cs_class WHERE id = ? LIMIT 1) AND object_id = ? AND attr_class_key = (SELECT table_name FROM cs_class WHERE id = ? LIMIT 1)"; // NOI18N
+        return
+            "INSERT INTO cs_attr_object (class_key, object_id, attr_class_key, attr_object_id) VALUES (? , ?, ?, ?)"; // NOI18N
     }
 
     @Override
     public String getIndexTriggerDeleteAttrObjectDerivedStmt() {
         return "DELETE FROM cs_attr_object_derived "
-            + "WHERE "
-            + "  class_key = (SELECT id FROM cs_class WHERE table_name = ? LIMIT 1) "
-            + "  AND object_id = ?";
+                    + "WHERE "
+                    + "  class_key = ? "
+                    + "  AND object_id = ?";
     }
 
     @Override
     public String getIndexTriggerInsertAttrObjectDerivedStmt() {
-        // instead of the union, the last condition (NOT (xocid = acid AND xoid = aid)) can be removed,
+        // instead of the union, the last condition (NOT (xockey = ackey AND xoid = aid)) can be removed,
         // to get the same result. But the postgres statement must have the same arguments as the oracle statement
         return "INSERT INTO cs_attr_object_derived ("
-            + "  ("
-            + "    WITH recursive derived_index(xocid, xoid, ocid, oid, acid, aid, depth) AS ( "
-            + "      SELECT "
-            + "        cs_class.id, "
-            + "        cs_attr_object.object_id, "
-            + "        cs_class.id, "
-            + "        cs_attr_object.object_id, "
-            + "        cs_class.id, "
-            + "        cs_attr_object.object_id, "
-            + "        0 "
-            + "      FROM "
-            + "        cs_attr_object, "
-            + "        cs_class "
-            + "      WHERE "
-            + "        cs_attr_object.class_key = cs_class.table_name "
-            + "        AND cs_class.id = ? "
-            + "        AND cs_attr_object.object_id = ? "
-            + "      UNION ALL "
-            + "      SELECT "
-            + "        derived_index.xocid, "
-            + "        derived_index.xoid, "
-            + "        class.id, "
-            + "        cs_attr_object.object_id, "
-            + "        attr_class.id, "
-            + "        cs_attr_object.attr_object_id, "
-            + "        derived_index.depth + 1 "
-            + "      FROM"
-            + "        cs_attr_object, "
-            + "        cs_class AS class, "
-            + "        cs_class AS attr_class, "
-            + "        derived_index "
-            + "      WHERE"
-            + "        cs_attr_object.class_key = class.table_name "
-            + "        AND cs_attr_object.class_key = attr_class.table_name "
-            + "        AND class.id = derived_index.acid "
-            + "        AND cs_attr_object.object_id = derived_index.aid "
-            + "    ) "
-            + "    SELECT DISTINCT "
-            + "      xocid, "
-            + "      xoid, "
-            + "      acid, "
-            + "      aid "
-            + "    FROM  "
-            + "      derived_index "
-            + "    WHERE NOT (xocid = acid AND xoid = aid)"
-            + "    ORDER BY 1, 2, 3, 4 LIMIT 1000000000"
-            + "  )"
-            + "  UNION "
-            + "  SELECT ?, ?, ?, ?"
-            + ")";
+                    + "  ("
+                    + "    WITH recursive derived_index(xockey, xoid, ockey, oid, ackey, aid, depth) AS ( "
+                    + "      SELECT "
+                    + "        cs_attr_object.class_key, "
+                    + "        cs_attr_object.object_id, "
+                    + "        cs_attr_object.class_key, "
+                    + "        cs_attr_object.object_id, "
+                    + "        cs_attr_object.class_key, "
+                    + "        cs_attr_object.object_id, "
+                    + "        0 "
+                    + "      FROM "
+                    + "        cs_attr_object "
+                    + "      WHERE "
+                    + "        cs_attr_object.class_key = ? "
+                    + "        AND cs_attr_object.object_id = ? "
+                    + "      UNION ALL "
+                    + "      SELECT "
+                    + "        derived_index.xockey, "
+                    + "        derived_index.xoid, "
+                    + "        cs_attr_object.class_key, "
+                    + "        cs_attr_object.object_id, "
+                    + "        cs_attr_object.class_key, "
+                    + "        cs_attr_object.attr_object_id, "
+                    + "        derived_index.depth + 1 "
+                    + "      FROM"
+                    + "        cs_attr_object, "
+                    + "        derived_index "
+                    + "      WHERE"
+                    + "        cs_attr_object.class_key = derived_index.ackey "
+                    + "        AND cs_attr_object.object_id = derived_index.aid "
+                    + "    ) "
+                    + "    SELECT DISTINCT "
+                    + "      xockey, "
+                    + "      xoid, "
+                    + "      ackey, "
+                    + "      aid "
+                    + "    FROM  "
+                    + "      derived_index "
+                    + "    WHERE NOT (xockey = ackey AND xoid = aid)"
+                    + "    ORDER BY 1, 2, 3, 4 LIMIT 1000000000"
+                    + "  )"
+                    + "  UNION "
+                    + "  SELECT ?, ?, ?, ?"
+                    + ")";
     }
 
     @Override
-    public String getIndexTriggerSelectClassIdForeignKeyStmt(final int classId) {
-        return "SELECT class_id FROM cs_attr WHERE foreign_key_references_to = "
-                    + classId;
+    public String getIndexTriggerSelectClassIdForeignKeyStmt(final String classKey, final boolean oneToMany) {
+        return "SELECT "
+                    + "  cs_class.table_name "
+                    + "FROM "
+                    + "  cs_attr, "
+                    + "  cs_class, "
+                    + "  cs_class AS foreign_class "
+                    + "WHERE "
+                    + "  cs_class.id = cs_attr.class_id "
+                    + "  AND foreign_class.id = "
+                    + (oneToMany ? "cs_attr.foreign_key_references_to * -1" : "cs_attr.foreign_key_references_to")
+                    + " "
+                    + "  AND foreign_class.table_name = '"
+                    + classKey
+                    + "'";
     }
 
     @Override
-    public String getIndexTriggerSelectFieldStmt(final int classId, final int refClassId) {
-        return "select field_name from cs_attr where class_id = "
-                    + classId
-                    + " and foreign_key_references_to = "
-                    + refClassId;
+    public String getIndexTriggerSelectFieldStmt(final String classKey, final String refClassKey) {
+        return "SELECT "
+                    + "  field_name "
+                    + "FROM cs_attr "
+                    + "WHERE "
+                    + "  class_id = (SELECT id FROM cs_class WHERE table_name = '"
+                    + classKey
+                    + "') "
+                    + "  AND foreign_key_references_to = (SELECT id FROM cs_class WHERE table_name = '"
+                    + refClassKey
+                    + "')";
     }
 
     @Override
@@ -756,9 +772,9 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
     }
 
     @Override
-    public String getIndexTriggerSelectReindexPureStmt(final int classId, final int objectId) {
+    public String getIndexTriggerSelectReindexPureStmt(final String classKey, final int objectId) {
         return "select reindexpure("
-                    + classId
+                    + classKey
                     + ","
                     + objectId
                     + ")";

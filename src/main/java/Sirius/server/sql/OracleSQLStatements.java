@@ -600,78 +600,85 @@ public final class OracleSQLStatements implements ServerSQLStatements {
 
     @Override
     public String getIndexTriggerDeleteAttrStringObjectStmt() {
-        return "DELETE FROM cs_attr_string WHERE class_id = ? AND object_id = ?"; // NOI18N
+        return "DELETE FROM cs_attr_string "
+                    + "WHERE "
+                    + "  class_key = ? "
+                    + "  AND object_id = ?"; // NOI18N
     }
 
     @Override
     public String getIndexTriggerDeleteAttrObjectObjectStmt() {
-        return "DELETE FROM cs_attr_object WHERE class_id = ? AND object_id = ?"; // NOI18N
+        return "DELETE FROM cs_attr_object "
+                    + "WHERE "
+                    + "  class_key = ? "
+                    + "  AND object_id = ?"; // NOI18N
     }
 
     @Override
     public String getIndexTriggerInsertAttrStringStmt() {
-        return "INSERT INTO cs_attr_string (class_id, object_id, attr_id, string_val) VALUES (?, ?, ?, ?)"; // NOI18N
+        return "INSERT INTO cs_attr_string (class_key, object_id, attr_id, string_val) VALUES (?, ?, ?, ?)"; // NOI18N
     }
 
     @Override
     public String getIndexTriggerInsertAttrObjectStmt() {
         return
-            "INSERT INTO cs_attr_object (class_id, object_id, attr_class_id, attr_object_id) VALUES (?, ?, ?, ?)"; // NOI18N
-    }
-
-    @Override
-    public String getIndexTriggerUpdateAttrStringStmt() {
-        return "UPDATE cs_attr_string "                                       // NOI18N
-                    + "SET string_val = ? "                                   // NOI18N
-                    + "WHERE class_id = ? AND object_id = ? AND attr_id = ?"; // NOI18N
-    }
-
-    @Override
-    public String getIndexTriggerUpdateAttrObjectStmt() {
-        return "UPDATE cs_attr_object "                                             // NOI18N
-                    + "SET attr_object_id = ? "                                     // NOI18N
-                    + "WHERE class_id = ? AND object_id = ? AND attr_class_id = ?"; // NOI18N
-    }
-
-    @Override
-    public String getIndexTriggerDeleteAttrObjectArrayStmt() {
-        return "DELETE from cs_attr_object "                                        // NOI18N
-                    + "WHERE class_id = ? AND object_id = ? AND attr_class_id = ?"; // NOI18N
+            "INSERT INTO cs_attr_object (class_key, object_id, attr_class_key, attr_object_id) VALUES (? , ?, ?, ?)"; // NOI18N
     }
 
     @Override
     public String getIndexTriggerDeleteAttrObjectDerivedStmt() {
-        return "delete from cs_attr_object_derived where class_id=? and object_id =?";
+        return "DELETE FROM cs_attr_object_derived "
+                    + "WHERE "
+                    + "  class_key = ? "
+                    + "  AND object_id = ?";
     }
 
     @Override
     public String getIndexTriggerInsertAttrObjectDerivedStmt() {
         return "insert into cs_attr_object_derived "
                     + "((SELECT "
-                    + " CONNECT_BY_ROOT class_id xcid,"
-                    + " CONNECT_BY_ROOT object_id xoid,"
+                    + " CONNECT_BY_ROOT class_key,"
+                    + " CONNECT_BY_ROOT object_id,"
                     + " attr_class_id acid,"
                     + " attr_object_id aoid"
                     + "    FROM cs_attr_object"
-                    + "    START WITH class_id = ? and object_id = ?"
-                    + "    CONNECT BY (PRIOR attr_class_id = class_id AND PRIOR attr_object_id = object_id AND level < 1000)"
+                    + "    START WITH class_key = ? and object_id = ?"
+                    + "    CONNECT BY (PRIOR attr_class_key = class_key AND PRIOR attr_object_id = object_id AND level < 1000)"
                     + "    ORDER BY 1, 2, 3, 4)"
                     + " union"
                     + "  select ?, ?, ?, ?)";
     }
 
     @Override
-    public String getIndexTriggerSelectClassIdForeignKeyStmt(final int classId) {
-        return "SELECT class_id FROM cs_attr WHERE foreign_key_references_to = "
-                    + classId;
+    public String getIndexTriggerSelectClassIdForeignKeyStmt(final String classKey, final boolean oneToMany) {
+        return "SELECT "
+                    + "  cs_class.table_name "
+                    + "FROM "
+                    + "  cs_attr, "
+                    + "  cs_class, "
+                    + "  cs_class AS foreign_class "
+                    + "WHERE "
+                    + "  cs_class.id = cs_attr.class_id "
+                    + "  AND foreign_class.id = "
+                    + (oneToMany ? "cs_attr.foreign_key_references_to * -1" : "cs_attr.foreign_key_references_to")
+                    + " "
+                    + "  AND foreign_class.table_name = '"
+                    + classKey
+                    + "'";
     }
 
     @Override
-    public String getIndexTriggerSelectFieldStmt(final int classId, final int refClassId) {
-        return "select field_name from cs_attr where class_id = "
-                    + classId
-                    + " and foreign_key_references_to = "
-                    + refClassId;
+    public String getIndexTriggerSelectFieldStmt(final String classKey, final String refClassKey) {
+        return "SELECT "
+                    + "  field_name "
+                    + "FROM cs_attr "
+                    + "WHERE "
+                    + "  class_id = (SELECT id FROM cs_class WHERE table_name = '"
+                    + classKey
+                    + "') "
+                    + "  AND foreign_key_references_to = (SELECT id FROM cs_class WHERE table_name = '"
+                    + refClassKey
+                    + "')";
     }
 
     @Override
@@ -710,9 +717,9 @@ public final class OracleSQLStatements implements ServerSQLStatements {
     }
 
     @Override
-    public String getIndexTriggerSelectReindexPureStmt(final int classId, final int objectId) {
+    public String getIndexTriggerSelectReindexPureStmt(final String classKey, final int objectId) {
         return "call reindexpure_obj("
-                    + classId
+                    + classKey
                     + ","
                     + objectId
                     + ")";
