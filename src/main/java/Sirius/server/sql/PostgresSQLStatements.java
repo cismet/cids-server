@@ -304,50 +304,6 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
     }
 
     @Override
-    public String getObjectHierarchyFatherStmt(final int father,
-            final String pk,
-            final String tableName,
-            final String fieldName) {
-        return "Select "
-                    + father
-                    + " class_id , "
-                    + pk
-                    + " object_id"
-                    + " from "
-                    + tableName
-                    + " where "
-                    + fieldName
-                    + " = ";
-    }
-
-    @Override
-    public String getObjectHierarchyFatherArrayStmt(final int father,
-            final String fatherPk,
-            final String fatherTable,
-            final String attribute,
-            final String arrayKey,
-            final String childTable,
-            final String childPk) {
-        return "Select "
-                    + father
-                    + " class_id ,"
-                    + fatherPk
-                    + " object_id"
-                    + " from " // NOI18N
-                    + fatherTable
-                    + " where "
-                    + attribute
-                    + " in "
-                    + " (select "
-                    + arrayKey
-                    + " from "
-                    + childTable
-                    + " where  "
-                    + childPk
-                    + " = ";
-    }
-
-    @Override
     public String getPersistenceHelperNextvalStmt(final String tableName) {
         return "SELECT NEXTVAL('"
                     + tableName

@@ -219,39 +219,6 @@ public interface ServerSQLStatements extends DialectProvider {
     /**
      * DOCUMENT ME!
      *
-     * @param   father     DOCUMENT ME!
-     * @param   pk         DOCUMENT ME!
-     * @param   tableName  DOCUMENT ME!
-     * @param   fieldName  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    String getObjectHierarchyFatherStmt(int father, String pk, String tableName, String fieldName);
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   father       DOCUMENT ME!
-     * @param   fatherPk     DOCUMENT ME!
-     * @param   fatherTable  DOCUMENT ME!
-     * @param   attribute    DOCUMENT ME!
-     * @param   arrayKey     DOCUMENT ME!
-     * @param   childTable   DOCUMENT ME!
-     * @param   childPk      DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    String getObjectHierarchyFatherArrayStmt(int father,
-            String fatherPk,
-            String fatherTable,
-            String attribute,
-            String arrayKey,
-            String childTable,
-            String childPk);
-
-    /**
-     * DOCUMENT ME!
-     *
      * @param   tableName  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
