@@ -48,7 +48,7 @@ public class UpdateCacheTrigger extends AbstractDBAwareCidsTrigger {
                         return getDbServer().getActiveDBConnection()
                                     .submitInternalUpdate(
                                         DBConnection.DESC_DELETE_CACHEENTRY,
-                                        cidsBean.getMetaObject().getClassID(),
+                                        cidsBean.getMetaObject().getMetaClass().getTableName(),
                                         cidsBean.getMetaObject().getID());
                     }
 
@@ -74,7 +74,7 @@ public class UpdateCacheTrigger extends AbstractDBAwareCidsTrigger {
                         return getDbServer().getActiveDBConnection()
                                     .submitInternalQuery(
                                         DBConnection.DESC_INSERT_CACHEENTRY,
-                                        cidsBean.getMetaObject().getClassID(),
+                                        cidsBean.getMetaObject().getMetaClass().getTableName(),
                                         cidsBean.getMetaObject().getID());
                     }
 
@@ -101,18 +101,18 @@ public class UpdateCacheTrigger extends AbstractDBAwareCidsTrigger {
                             return getDbServer().getActiveDBConnection()
                                         .submitInternalQuery(
                                             DBConnection.DESC_UPDATE_CACHEENTRY,
-                                            cidsBean.getMetaObject().getClassID(),
+                                            cidsBean.getMetaObject().getMetaClass().getTableName(),
                                             cidsBean.getMetaObject().getID());
                         } catch (SQLException e) {
                             getDbServer().getActiveDBConnection()
                                     .submitInternalUpdate(
                                         DBConnection.DESC_DELETE_CACHEENTRY,
-                                        cidsBean.getMetaObject().getClassID(),
+                                        cidsBean.getMetaObject().getMetaClass().getTableName(),
                                         cidsBean.getMetaObject().getID());
                             return getDbServer().getActiveDBConnection()
                                         .submitInternalQuery(
                                             DBConnection.DESC_INSERT_CACHEENTRY,
-                                            cidsBean.getMetaObject().getClassID(),
+                                            cidsBean.getMetaObject().getMetaClass().getTableName(),
                                             cidsBean.getMetaObject().getID());
                         }
                     }
