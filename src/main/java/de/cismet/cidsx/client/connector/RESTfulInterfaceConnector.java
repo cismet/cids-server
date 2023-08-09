@@ -643,7 +643,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * <br>
      * <strong>Example REST Call (with dynamic children):</strong><br>
      * <code>curl --user username@SWITCHON:password -H "Content-Type: application/json" -X POST -d "SELECT -1 AS id,
-     * taggroup.name, cs_class.id AS class_id, NULL AS object_id, 'N' AS node_type, NULL AS url, csdc.tags(taggroup.id)
+     * taggroup.name, cs_class.table_name AS class_key, NULL AS object_id, 'N' AS node_type, NULL AS url, csdc.tags(taggroup.id)
      * AS dynamic_children, FALSE AS sql_sort FROM taggroup, cs_class WHERE cs_class.name = 'taggroup' ORDER BY
      * taggroup.name;" http://localhost:8890/nodes/SWITCHON/children?limit=100&offset=0&role=all</code>
      *
