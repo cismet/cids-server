@@ -25,18 +25,18 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
     @Override
     public String getVirtualTreeAddNodeStatement(final int nodeId,
             final String nodeName,
-            final int classId,
+            final String classKey,
             final int objectId,
             final char nodeType,
             final boolean root,
             final String policy) {
         return
-            "insert into cs_cat_node (id, name, descr, class_id, object_id, node_type, is_root, org,dynamic_children,sql_sort,policy) values ( " // NOI18N
+            "insert into cs_cat_node (id, name, descr, class_key, object_id, node_type, is_root, org,dynamic_children,sql_sort,policy) values ( " // NOI18N
                     + nodeId
                     + ",'"                                                                                                                       // NOI18N
                     + nodeName
                     + "',1,"                                                                                                                     // NOI18N
-                    + classId
+                    + "'"+classKey+"'"
                     + ","                                                                                                                        // NOI18N
                     + objectId
                     + ",'"                                                                                                                       // NOI18N
@@ -56,10 +56,10 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
     @Override
     public String getVirtualTreeClassTreeNodesStatement(final String implodedUserGroupIds) {
         return "select "                                                                                                                                                                                        // NOI18N
-                    + "y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
+                    + "y.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
                     + "("                                                                                                                                                                                       // NOI18N
                     + "select "                                                                                                                                                                                 // NOI18N
-                    + "n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  "                // NOI18N
+                    + "n.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  "                // NOI18N
                     + "from "                                                                                                                                                                                   // NOI18N
                     + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                               // NOI18N
                     + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                              // NOI18N
@@ -75,11 +75,11 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
     public String getVirtualTreeTopNodesStatement(final boolean artificialIdSupported,
             final String implodedUserGroupIds) {
         return "select "                                                                                                                                                                                 // NOI18N
-                    + "y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class" // NOI18N
+                    + "y.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class" // NOI18N
                     + ((artificialIdSupported) ? ",artificial_id" : "")
                     + " from ("                                                                                                                                                                          // NOI18N
                     + "select "                                                                                                                                                                          // NOI18N
-                    + "n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  "         // NOI18N
+                    + "n.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  "         // NOI18N
                     + ((artificialIdSupported) ? ",artificial_id" : "")
                     + " from "                                                                                                                                                                           // NOI18N
                     + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                        // NOI18N
@@ -101,7 +101,7 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                 "SELECT "                                                                                    // NOI18N
                     + "y.id id, "                                                                         // NOI18N
                     + "name, "                                                                               // NOI18N
-                    + "class_id, "                                                                           // NOI18N
+                    + "class_key, "                                                                           // NOI18N
                     + "object_id, "                                                                          // NOI18N
                     + "node_type, "                                                                          // NOI18N
                     + "dynamic_children, "                                                                   // NOI18N
@@ -120,7 +120,7 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                     + "SELECT "                                                                              // NOI18N
                         + "n.id id, "                                                                     // NOI18N
                         + "name, "                                                                           // NOI18N
-                        + "class_id, "                                                                       // NOI18N
+                        + "class_key, "                                                                       // NOI18N
                         + "object_id, "                                                                      // NOI18N
                         + "node_type, "                                                                      // NOI18N
                         + "dynamic_children, "                                                               // NOI18N
@@ -218,19 +218,19 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
     }
 
     @Override
-    public String getVirtualTreeHasNodesStmt(final String classId, final String objId) {
+    public String getVirtualTreeHasNodesStmt(final String classKey, final String objId) {
         return "select count(id) from cs_cat_node where object_id = " // NOI18N
                     + objId
-                    + " and class_id = "                              // NOI18N
-                    + classId;
+                    + " and class_key = "                              // NOI18N
+                    + classKey;
     }
 
     @Override
     public String getVirtualTreeGetNodeStmt(final int nodeId, final String implodedUserGroupIds) {
         return
-            "select  y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url , p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  "                                                                 // NOI18N
+            "select  y.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort, url , p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  "                                                                 // NOI18N
                     + "from"                                                                                                                                                                                                                                            // NOI18N
-                    + " (select n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  from cs_cat_node n left outer join url  on ( n.descr=url.id ) " // NOI18N
+                    + " (select n.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  from cs_cat_node n left outer join url  on ( n.descr=url.id ) " // NOI18N
                     + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                                                                                      // NOI18N
                     + "where n.id="                                                                                                                                                                                                                                     // NOI18N
                     + nodeId

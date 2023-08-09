@@ -22,7 +22,7 @@ public interface ServerSQLStatements extends DialectProvider {
      *
      * @param   nodeId    DOCUMENT ME!
      * @param   nodeName  DOCUMENT ME!
-     * @param   classId   DOCUMENT ME!
+     * @param   classKey   DOCUMENT ME!
      * @param   objectId  DOCUMENT ME!
      * @param   nodeType  DOCUMENT ME!
      * @param   root      DOCUMENT ME!
@@ -32,7 +32,7 @@ public interface ServerSQLStatements extends DialectProvider {
      */
     String getVirtualTreeAddNodeStatement(int nodeId,
             String nodeName,
-            int classId,
+            String classKey,
             int objectId,
             char nodeType,
             boolean root,

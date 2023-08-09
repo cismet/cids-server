@@ -259,18 +259,18 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
             LOG.debug("addNode called :: " + node); // NOI18N
         }
 
-        Integer classId = null;
+        String classKey = null;
         Integer objectId = null;
         char nodeType = 'N';
 
         if (node instanceof MetaObjectNode) {
             final MetaObjectNode oNode = (MetaObjectNode)node;
-            objectId = new Integer(oNode.getObjectId());
-            classId = new Integer(oNode.getClassId());
+            objectId = oNode.getObjectId();
+            classKey = classCache.getClass(oNode.getClassId()).getTableName();
             nodeType = 'O';
         } else if (node instanceof MetaClassNode) {
             final MetaClassNode cNode = (MetaClassNode)node;
-            classId = new Integer(cNode.getClassId());
+            classKey = classCache.getClass(cNode.getClassId()).getTableName();
             nodeType = 'C';
         }
 
@@ -290,7 +290,7 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
                     .getVirtualTreeAddNodeStatement(
                         nodeId,
                         node.getName(),
-                        classId,
+                        classKey,
                         objectId,
                         nodeType,
                         isRoot,

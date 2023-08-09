@@ -25,7 +25,7 @@ public final class OracleSQLStatements implements ServerSQLStatements {
     @Override
     public String getVirtualTreeAddNodeStatement(final int nodeId,
             final String nodeName,
-            final int classId,
+            final String classKey,
             final int objectId,
             final char nodeType,
             final boolean root,
@@ -36,7 +36,7 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                     + ",'"                                                                                                                       // NOI18N
                     + nodeName
                     + "',1,"                                                                                                                     // NOI18N
-                    + classId
+                    + "'" + classKey + "'"
                     + ","                                                                                                                        // NOI18N
                     + objectId
                     + ",'"                                                                                                                       // NOI18N
@@ -218,11 +218,10 @@ public final class OracleSQLStatements implements ServerSQLStatements {
     }
 
     @Override
-    public String getVirtualTreeHasNodesStmt(final String classId, final String objId) {
+    public String getVirtualTreeHasNodesStmt(final String classKey, final String objId) {
         return "select count(id) from cs_cat_node where object_id = " // NOI18N
                     + objId
-                    + " and class_id = "                              // NOI18N
-                    + classId;
+                    + " and class_key ILIKE '" + classKey + "'";
     }
 
     @Override
@@ -230,7 +229,7 @@ public final class OracleSQLStatements implements ServerSQLStatements {
         return
             "select  y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url , p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  "                                                                 // NOI18N
                     + "from"                                                                                                                                                                                                                                            // NOI18N
-                    + " (select n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  from cs_cat_node n left outer join url  on ( n.descr=url.id ) " // NOI18N
+                    + " (select n.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  from cs_cat_node n left outer join url  on ( n.descr=url.id ) " // NOI18N
                     + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                                                                                      // NOI18N
                     + "where n.id="                                                                                                                                                                                                                                     // NOI18N
                     + nodeId
