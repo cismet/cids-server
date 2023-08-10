@@ -22,7 +22,7 @@ public interface ServerSQLStatements extends DialectProvider {
      *
      * @param   nodeId    DOCUMENT ME!
      * @param   nodeName  DOCUMENT ME!
-     * @param   classKey   DOCUMENT ME!
+     * @param   classKey  DOCUMENT ME!
      * @param   objectId  DOCUMENT ME!
      * @param   nodeType  DOCUMENT ME!
      * @param   root      DOCUMENT ME!

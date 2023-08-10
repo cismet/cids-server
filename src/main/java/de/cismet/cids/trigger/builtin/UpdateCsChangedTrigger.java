@@ -61,13 +61,13 @@ public class UpdateCsChangedTrigger extends AbstractDBAwareCidsTrigger {
                         int count = getDbServer().getActiveDBConnection()
                                     .submitInternalUpdate(
                                         DBConnection.UPDATE_CS_CHANGED_CLASS_ENTRY,
-                                        cidsBean.getMetaObject().getClassID());
+                                        cidsBean.getMetaObject().getMetaClass().getTableName());
 
                         if (count < 1) {
                             count = getDbServer().getActiveDBConnection()
                                         .submitInternalUpdate(
                                                 DBConnection.INSERT_CS_CHANGED_CLASS_ENTRY,
-                                                cidsBean.getMetaObject().getClassID());
+                                                cidsBean.getMetaObject().getMetaClass().getTableName());
                         }
                         return count;
                     }
@@ -127,13 +127,13 @@ public class UpdateCsChangedTrigger extends AbstractDBAwareCidsTrigger {
                         int count = getDbServer().getActiveDBConnection()
                                     .submitInternalUpdate(
                                         DBConnection.UPDATE_CS_CHANGED_CLASS_ENTRY,
-                                        cidsBean.getMetaObject().getClassID());
+                                        cidsBean.getMetaObject().getMetaClass().getTableName());
 
                         if (count < 1) {
                             count = getDbServer().getActiveDBConnection()
                                         .submitInternalUpdate(
                                                 DBConnection.INSERT_CS_CHANGED_CLASS_ENTRY,
-                                                cidsBean.getMetaObject().getClassID());
+                                                cidsBean.getMetaObject().getMetaClass().getTableName());
                         }
                         return count;
                     }
@@ -183,13 +183,13 @@ public class UpdateCsChangedTrigger extends AbstractDBAwareCidsTrigger {
                         int count = getDbServer().getActiveDBConnection()
                                     .submitInternalUpdate(
                                         DBConnection.UPDATE_CS_CHANGED_CLASS_ENTRY,
-                                        cidsBean.getMetaObject().getClassID());
+                                        cidsBean.getMetaObject().getMetaClass().getTableName());
 
                         if (count < 1) {
                             count = getDbServer().getActiveDBConnection()
                                         .submitInternalUpdate(
                                                 DBConnection.INSERT_CS_CHANGED_CLASS_ENTRY,
-                                                cidsBean.getMetaObject().getClassID());
+                                                cidsBean.getMetaObject().getMetaClass().getTableName());
                         }
 
                         return count;
@@ -212,14 +212,14 @@ public class UpdateCsChangedTrigger extends AbstractDBAwareCidsTrigger {
                         int count = getDbServer().getActiveDBConnection()
                                     .submitInternalUpdate(
                                         DBConnection.UPDATE_CS_CHANGED_OBJECT_ENTRY,
-                                        cidsBean.getMetaObject().getClassID(),
+                                        cidsBean.getMetaObject().getMetaClass().getTableName(),
                                         cidsBean.getMetaObject().getID());
 
                         if (count < 1) {
                             count = getDbServer().getActiveDBConnection()
                                         .submitInternalUpdate(
                                                 DBConnection.INSERT_CS_CHANGED_OBJECT_ENTRY,
-                                                cidsBean.getMetaObject().getClassID(),
+                                                cidsBean.getMetaObject().getMetaClass().getTableName(),
                                                 cidsBean.getMetaObject().getID());
                         }
 

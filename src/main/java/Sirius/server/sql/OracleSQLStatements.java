@@ -31,19 +31,21 @@ public final class OracleSQLStatements implements ServerSQLStatements {
             final boolean root,
             final String policy) {
         return
-            "insert into cs_cat_node (id, name, descr, class_id, object_id, node_type, is_root, org,dynamic_children,sql_sort,policy) values ( " // NOI18N
+            "insert into cs_cat_node (id, name, descr, class_key, object_id, node_type, is_root, org,dynamic_children,sql_sort,policy) values ( " // NOI18N
                     + nodeId
-                    + ",'"                                                                                                                       // NOI18N
+                    + ",'"                                                                                                                        // NOI18N
                     + nodeName
-                    + "',1,"                                                                                                                     // NOI18N
-                    + "'" + classKey + "'"
-                    + ","                                                                                                                        // NOI18N
+                    + "',1,"                                                                                                                      // NOI18N
+                    + "'"
+                    + classKey
+                    + "'"
+                    + ","                                                                                                                         // NOI18N
                     + objectId
-                    + ",'"                                                                                                                       // NOI18N
+                    + ",'"                                                                                                                        // NOI18N
                     + nodeType
-                    + "','"                                                                                                                      // NOI18N
+                    + "','"                                                                                                                       // NOI18N
                     + (root ? "1" : "0")
-                    + "', NULL,NULL,false,"                                                                                                      // NOI18N
+                    + "', NULL,NULL,false,"                                                                                                       // NOI18N
                     + policy
                     + " )";
     }
@@ -55,18 +57,18 @@ public final class OracleSQLStatements implements ServerSQLStatements {
 
     @Override
     public String getVirtualTreeClassTreeNodesStatement(final String implodedUserGroupIds) {
-        return "select "                                                                                                                                                                                        // NOI18N
-                    + "y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
-                    + "("                                                                                                                                                                                       // NOI18N
-                    + "select "                                                                                                                                                                                 // NOI18N
-                    + "n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  "                // NOI18N
-                    + "from "                                                                                                                                                                                   // NOI18N
-                    + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                               // NOI18N
-                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                              // NOI18N
-                    + "where "                                                                                                                                                                                  // NOI18N
-                    + "is_root='1' and node_type='C' "                                                                                                                                                          // NOI18N
-                    + ") y "                                                                                                                                                                                    // NOI18N
-                    + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and nvl(ug_id, '-1') IN ("                                                                                                   // NOI18N
+        return "select "                                                                                                                                                                                         // NOI18N
+                    + "y.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
+                    + "("                                                                                                                                                                                        // NOI18N
+                    + "select "                                                                                                                                                                                  // NOI18N
+                    + "n.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  "                // NOI18N
+                    + "from "                                                                                                                                                                                    // NOI18N
+                    + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                                // NOI18N
+                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                               // NOI18N
+                    + "where "                                                                                                                                                                                   // NOI18N
+                    + "is_root='1' and node_type='C' "                                                                                                                                                           // NOI18N
+                    + ") y "                                                                                                                                                                                     // NOI18N
+                    + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and nvl(ug_id, '-1') IN ("                                                                                                    // NOI18N
                     + implodedUserGroupIds
                     + ") left outer join cs_permission pp on p.permission=pp.id ";
     }
@@ -74,19 +76,19 @@ public final class OracleSQLStatements implements ServerSQLStatements {
     @Override
     public String getVirtualTreeTopNodesStatement(final boolean artificialIdSupported,
             final String implodedUserGroupIds) {
-        return "select "                                                                                                                                                                                 // NOI18N
-                    + "y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class" // NOI18N
+        return "select "                                                                                                                                                                                  // NOI18N
+                    + "y.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class" // NOI18N
                     + ((artificialIdSupported) ? ",artificial_id" : "")
-                    + " from ("                                                                                                                                                                          // NOI18N
-                    + "select "                                                                                                                                                                          // NOI18N
-                    + "n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  "         // NOI18N
+                    + " from ("                                                                                                                                                                           // NOI18N
+                    + "select "                                                                                                                                                                           // NOI18N
+                    + "n.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  "         // NOI18N
                     + ((artificialIdSupported) ? ",artificial_id" : "")
-                    + " from "                                                                                                                                                                           // NOI18N
-                    + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                        // NOI18N
-                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                       // NOI18N
-                    + "where "                                                                                                                                                                           // NOI18N
-                    + "is_root='1' and node_type<>'C' "                                                                                                                                                  // NOI18N
-                    + ") y "                                                                                                                                                                             // NOI18N
+                    + " from "                                                                                                                                                                            // NOI18N
+                    + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                         // NOI18N
+                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                        // NOI18N
+                    + "where "                                                                                                                                                                            // NOI18N
+                    + "is_root='1' and node_type<>'C' "                                                                                                                                                   // NOI18N
+                    + ") y "                                                                                                                                                                              // NOI18N
                     + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and nvl(ug_id, '-1') IN ("
                     + implodedUserGroupIds
                     + ") left outer join cs_permission pp on p.permission=pp.id ";
@@ -101,7 +103,7 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                 "SELECT "                                                                                    // NOI18N
                     + "y.id id, "                                                                         // NOI18N
                     + "name, "                                                                               // NOI18N
-                    + "class_id, "                                                                           // NOI18N
+                    + "class_key, "                                                                           // NOI18N
                     + "object_id, "                                                                          // NOI18N
                     + "node_type, "                                                                          // NOI18N
                     + "dynamic_children, "                                                                   // NOI18N
@@ -120,7 +122,7 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                     + "SELECT "                                                                              // NOI18N
                         + "n.id id, "                                                                     // NOI18N
                         + "name, "                                                                           // NOI18N
-                        + "class_id, "                                                                       // NOI18N
+                        + "class_key, "                                                                       // NOI18N
                         + "object_id, "                                                                      // NOI18N
                         + "node_type, "                                                                      // NOI18N
                         + "dynamic_children, "                                                               // NOI18N
@@ -221,22 +223,24 @@ public final class OracleSQLStatements implements ServerSQLStatements {
     public String getVirtualTreeHasNodesStmt(final String classKey, final String objId) {
         return "select count(id) from cs_cat_node where object_id = " // NOI18N
                     + objId
-                    + " and class_key ILIKE '" + classKey + "'";
+                    + " and class_key ILIKE '"
+                    + classKey
+                    + "'";
     }
 
     @Override
     public String getVirtualTreeGetNodeStmt(final int nodeId, final String implodedUserGroupIds) {
         return
-            "select  y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url , p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  "                                                                 // NOI18N
-                    + "from"                                                                                                                                                                                                                                            // NOI18N
+            "select  y.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort, url , p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  "                                                                 // NOI18N
+                    + "from"                                                                                                                                                                                                                                             // NOI18N
                     + " (select n.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  from cs_cat_node n left outer join url  on ( n.descr=url.id ) " // NOI18N
-                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                                                                                      // NOI18N
-                    + "where n.id="                                                                                                                                                                                                                                     // NOI18N
+                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                                                                                       // NOI18N
+                    + "where n.id="                                                                                                                                                                                                                                      // NOI18N
                     + nodeId
-                    + " ) y "                                                                                                                                                                                                                                           // NOI18N
-                    + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and ug_id IN ("                                                                                                                                                                      // NOI18N
+                    + " ) y "                                                                                                                                                                                                                                            // NOI18N
+                    + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and ug_id IN ("                                                                                                                                                                       // NOI18N
                     + implodedUserGroupIds
-                    + ") "                                                                                                                                                                                                                                              // NOI18N
+                    + ") "                                                                                                                                                                                                                                               // NOI18N
                     + "left outer join cs_permission pp on p.permission=pp.id";
     }
 
@@ -405,27 +409,27 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                     + "  geometry,\n"
                     + "  lightweight_json\n"
                     + "FROM\n"
-                    + "  (SELECT i.class_id ocid,\n"
+                    + "  (SELECT i.class_key ocid,\n"
                     + "    i.object_id oid,\n"
                     + "    c.stringrep,\n"
                     + "    c.geometry,\n"
                     + "    c.lightweight_json,\n"
-                    + "    row_number() over (partition BY i.class_id, i.object_id order by rownum) rn\n"
-                    + "FROM   cs_attr_string s, "                     // NOI18N
-                    + "       cs_attr_object_derived i "              // NOI18N
-                    + "       LEFT OUTER JOIN cs_cache c "            // NOI18N
-                    + "       ON     ( "                              // NOI18N
-                    + "                     c.class_id =i.class_id "  // NOI18N
-                    + "              AND    c.object_id=i.object_id " // NOI18N
-                    + "              ) "                              // NOI18N
-                    + "WHERE  i.attr_class_id = s.class_id "          // NOI18N
-                    + "AND    i.attr_object_id=s.object_id "          // NOI18N
+                    + "    row_number() over (partition BY i.class_key, i.object_id order by rownum) rn\n"
+                    + "FROM   cs_attr_string s, "                      // NOI18N
+                    + "       cs_attr_object_derived i "               // NOI18N
+                    + "       LEFT OUTER JOIN cs_cache c "             // NOI18N
+                    + "       ON     ( "                               // NOI18N
+                    + "                     c.class_key =i.class_key " // NOI18N
+                    + "              AND    c.object_id=i.object_id "  // NOI18N
+                    + "              ) "                               // NOI18N
+                    + "WHERE  i.attr_class_key = s.class_key "         // NOI18N
+                    + "AND    i.attr_object_id=s.object_id "           // NOI18N
                     + "AND    "
                     + (caseSensitive ? "" : "lower(")
                     + "s.string_val"
                     + (caseSensitive ? "" : ")")
-                    + " like ? "                                      // NOI18N
-                    + "AND i.class_id IN "
+                    + " like ? "                                       // NOI18N
+                    + "AND i.class_key IN "
                     + classesIn
                     + "  )\n"
                     + "WHERE rn = 1";
@@ -473,22 +477,20 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                         + "  geometry,\n"
                         + "  lightweight_json\n"
                         + "FROM\n"
-                        + "  (SELECT i.class_id ocid,\n"
+                        + "  (SELECT i.class_key ocid,\n"
                         + "    i.object_id oid,\n"
                         + "    c.stringrep,\n"
                         + "    c.geometry,\n"
                         + "    c.lightweight_json,\n"
-                        + "    row_number() over (partition BY i.class_id, i.object_id order by rownum) rn\n"
+                        + "    row_number() over (partition BY i.class_key, i.object_id order by rownum) rn\n"
                         + "  FROM geom g,\n"
                         + "    cs_attr_object_derived i\n"
                         + "  LEFT OUTER JOIN cs_cache c\n"
-                        + "  ON ( c.class_id       =i.class_id\n"
+                        + "  ON ( c.class_ey       =i.class_ey\n"
                         + "  AND c.object_id       =i.object_id )\n"
-                        + "  WHERE i.attr_class_id =\n"
-                        + "    ( SELECT cs_class.id FROM cs_class WHERE cs_class.table_name = 'GEOM'\n"
-                        + "    )\n"
+                        + "  WHERE i.attr_class_ey ilike 'GEOM'\n"
                         + "  AND i.attr_object_id                                                                                                                                                                                                                   = g.id\n"
-                        + "  AND i.class_id IN "
+                        + "  AND i.class_key IN "
                         + classesIn
                         + " \n"
                         + "  AND sdo_relate(geo_field,sdo_geometry(?, "
@@ -516,16 +518,27 @@ public final class OracleSQLStatements implements ServerSQLStatements {
     @Override
     public String getQueryEditorSearchStmt(final String tableName, final int classId, final String whereClause) {
         return "SELECT "
+                    + "  "
                     + classId
-                    + " classid, tbl.id objectid, c.stringrep,c.geometry,c.lightweight_json FROM "
+                    + " AS classid, "
+                    + "  tbl.id AS objectid, "
+                    + "  cs_cache.stringrep, "
+                    + "  cs_cache.geometry, "
+                    + "  cs_cache.lightweight_json "
+                    + "FROM "
+                    + "  "
                     + tableName
-                    + " tbl "
-                    + "LEFT OUTER JOIN cs_cache c "              // NOI18N
-                    + "       ON     ( "                         // NOI18N
-                    + "                     c.class_id = "
-                    + classId                                    // NOI18N
-                    + "              AND    c.object_id=tbl.id " // NOI18N
-                    + "              ) WHERE "
+                    + " tbl, "
+                    + "  cs_class"
+                    + "  LEFT OUTER JOIN cs_cache ON ( "
+                    + "    cs_cache.class_key ILIKE cs_class.table_name "
+                    + "    AND cs_cache.object_id = tbl.id "
+                    + ")"
+                    + "WHERE "
+                    + "  cs_class.id = "
+                    + classId
+                    + " "
+                    + "  AND"
                     + whereClause;
     }
 
@@ -535,22 +548,36 @@ public final class OracleSQLStatements implements ServerSQLStatements {
             final String whereClause,
             final int limit,
             final int offset) {
-        return "SELECT * FROM (SELECT "
+        return "SELECT * FROM ("
+                    + "  SELECT "
+                    + "    "
                     + classId
-                    + " classid, tbl.id objectid, c.stringrep,c.geometry,c.lightweight_json FROM "
+                    + ", "
+                    + "    tbl.id, "
+                    + "    cs_cache.stringrep, "
+                    + "    cs_cache.geometry, "
+                    + "    cs_cache.lightweight_json "
+                    + "  FROM "
+                    + "    "
                     + tableName
-                    + " tbl "
-                    + "LEFT OUTER JOIN cs_cache c "              // NOI18N
-                    + "       ON     ( "                         // NOI18N
-                    + "                     c.class_id = "
-                    + classId                                    // NOI18N
-                    + "              AND    c.object_id=tbl.id " // NOI18N
-                    + "              ) WHERE "
+                    + " tbl, "
+                    + "    cs_class"
+                    + "    LEFT OUTER JOIN cs_cache ON (  "
+                    + "      cs_cache.class_key ILIKE cs_class.table_name "
+                    + "      AND cs_cache.object_id = tbl.id "
+                    + "    ) "
+                    + "  WHERE "
+                    + "    cs_class.id = "
+                    + classId
+                    + " "
+                    + "    AND "
                     + whereClause
-                    + ") sub WHERE rownum >= "
-                    + offset
-                    + " AND rownum <= "
-                    + (offset + limit);
+                    + ") sub "
+                    + "LIMIT "
+                    + limit
+                    + " "
+                    + "OFFSET "
+                    + offset;
     }
 
     @Override
@@ -594,7 +621,7 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                     + "((SELECT "
                     + " CONNECT_BY_ROOT class_key,"
                     + " CONNECT_BY_ROOT object_id,"
-                    + " attr_class_id acid,"
+                    + " attr_class_key,"
                     + " attr_object_id aoid"
                     + "    FROM cs_attr_object"
                     + "    START WITH class_key = ? and object_id = ?"
@@ -617,7 +644,7 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                     + "  AND foreign_class.id = "
                     + (oneToMany ? "cs_attr.foreign_key_references_to * -1" : "cs_attr.foreign_key_references_to")
                     + " "
-                    + "  AND foreign_class.table_name = '"
+                    + "  AND foreign_class.table_name ILIKE '"
                     + classKey
                     + "'";
     }
@@ -628,10 +655,10 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                     + "  field_name "
                     + "FROM cs_attr "
                     + "WHERE "
-                    + "  class_id = (SELECT id FROM cs_class WHERE table_name = '"
+                    + "  class_key = (SELECT id FROM cs_class WHERE table_name ILIKE '"
                     + classKey
                     + "') "
-                    + "  AND foreign_key_references_to = (SELECT id FROM cs_class WHERE table_name = '"
+                    + "  AND foreign_key_references_to = (SELECT id FROM cs_class WHERE table_name ILIKE '"
                     + refClassKey
                     + "')";
     }
