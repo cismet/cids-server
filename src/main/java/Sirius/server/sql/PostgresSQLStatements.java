@@ -33,17 +33,19 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
         return
             "insert into cs_cat_node (id, name, descr, class_key, object_id, node_type, is_root, org,dynamic_children,sql_sort,policy) values ( " // NOI18N
                     + nodeId
-                    + ",'"                                                                                                                       // NOI18N
+                    + ",'"                                                                                                                        // NOI18N
                     + nodeName
-                    + "',1,"                                                                                                                     // NOI18N
-                    + "'"+classKey+"'"
-                    + ","                                                                                                                        // NOI18N
+                    + "',1,"                                                                                                                      // NOI18N
+                    + "'"
+                    + classKey
+                    + "'"
+                    + ","                                                                                                                         // NOI18N
                     + objectId
-                    + ",'"                                                                                                                       // NOI18N
+                    + ",'"                                                                                                                        // NOI18N
                     + nodeType
-                    + "','"                                                                                                                      // NOI18N
+                    + "','"                                                                                                                       // NOI18N
                     + (root ? "T" : "F")
-                    + "', NULL,NULL,false,"                                                                                                      // NOI18N
+                    + "', NULL,NULL,false,"                                                                                                       // NOI18N
                     + policy
                     + " )";
     }
@@ -55,18 +57,18 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
 
     @Override
     public String getVirtualTreeClassTreeNodesStatement(final String implodedUserGroupIds) {
-        return "select "                                                                                                                                                                                        // NOI18N
+        return "select "                                                                                                                                                                                         // NOI18N
                     + "y.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
-                    + "("                                                                                                                                                                                       // NOI18N
-                    + "select "                                                                                                                                                                                 // NOI18N
+                    + "("                                                                                                                                                                                        // NOI18N
+                    + "select "                                                                                                                                                                                  // NOI18N
                     + "n.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  "                // NOI18N
-                    + "from "                                                                                                                                                                                   // NOI18N
-                    + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                               // NOI18N
-                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                              // NOI18N
-                    + "where "                                                                                                                                                                                  // NOI18N
-                    + "is_root=true and node_type='C' "                                                                                                                                                         // NOI18N
-                    + ") y "                                                                                                                                                                                    // NOI18N
-                    + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and ug_id IN ("                                                                                                              // NOI18N
+                    + "from "                                                                                                                                                                                    // NOI18N
+                    + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                                // NOI18N
+                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                               // NOI18N
+                    + "where "                                                                                                                                                                                   // NOI18N
+                    + "is_root=true and node_type='C' "                                                                                                                                                          // NOI18N
+                    + ") y "                                                                                                                                                                                     // NOI18N
+                    + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and ug_id IN ("                                                                                                               // NOI18N
                     + implodedUserGroupIds
                     + ") left outer join cs_permission pp on p.permission=pp.id ";
     }
@@ -74,19 +76,19 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
     @Override
     public String getVirtualTreeTopNodesStatement(final boolean artificialIdSupported,
             final String implodedUserGroupIds) {
-        return "select "                                                                                                                                                                                 // NOI18N
+        return "select "                                                                                                                                                                                  // NOI18N
                     + "y.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class" // NOI18N
                     + ((artificialIdSupported) ? ",artificial_id" : "")
-                    + " from ("                                                                                                                                                                          // NOI18N
-                    + "select "                                                                                                                                                                          // NOI18N
+                    + " from ("                                                                                                                                                                           // NOI18N
+                    + "select "                                                                                                                                                                           // NOI18N
                     + "n.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  "         // NOI18N
                     + ((artificialIdSupported) ? ",artificial_id" : "")
-                    + " from "                                                                                                                                                                           // NOI18N
-                    + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                        // NOI18N
-                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                       // NOI18N
-                    + "where "                                                                                                                                                                           // NOI18N
-                    + "is_root=true and node_type<>'C' "                                                                                                                                                 // NOI18N
-                    + ") y "                                                                                                                                                                             // NOI18N
+                    + " from "                                                                                                                                                                            // NOI18N
+                    + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                         // NOI18N
+                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                        // NOI18N
+                    + "where "                                                                                                                                                                            // NOI18N
+                    + "is_root=true and node_type<>'C' "                                                                                                                                                  // NOI18N
+                    + ") y "                                                                                                                                                                              // NOI18N
                     + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and ug_id IN ("
                     + implodedUserGroupIds
                     + ") left outer join cs_permission pp on p.permission=pp.id ";
@@ -221,7 +223,7 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
     public String getVirtualTreeHasNodesStmt(final String classKey, final String objId) {
         return "select count(id) from cs_cat_node where object_id = " // NOI18N
                     + objId
-                    + " and class_key = "                              // NOI18N
+                    + " and class_key = "                             // NOI18N
                     + classKey;
     }
 
@@ -229,15 +231,15 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
     public String getVirtualTreeGetNodeStmt(final int nodeId, final String implodedUserGroupIds) {
         return
             "select  y.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort, url , p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  "                                                                 // NOI18N
-                    + "from"                                                                                                                                                                                                                                            // NOI18N
+                    + "from"                                                                                                                                                                                                                                             // NOI18N
                     + " (select n.id id,name,class_key,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  from cs_cat_node n left outer join url  on ( n.descr=url.id ) " // NOI18N
-                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                                                                                      // NOI18N
-                    + "where n.id="                                                                                                                                                                                                                                     // NOI18N
+                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                                                                                       // NOI18N
+                    + "where n.id="                                                                                                                                                                                                                                      // NOI18N
                     + nodeId
-                    + " ) y "                                                                                                                                                                                                                                           // NOI18N
-                    + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and ug_id IN ("                                                                                                                                                                      // NOI18N
+                    + " ) y "                                                                                                                                                                                                                                            // NOI18N
+                    + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and ug_id IN ("                                                                                                                                                                       // NOI18N
                     + implodedUserGroupIds
-                    + ") "                                                                                                                                                                                                                                              // NOI18N
+                    + ") "                                                                                                                                                                                                                                               // NOI18N
                     + "left outer join cs_permission pp on p.permission=pp.id";
     }
 
@@ -418,8 +420,8 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                     + "    AND cs_cache.object_id = cs_attr_object_derived.object_id "
                     + "  ) "
                     + "WHERE "
-                    + "  cs_class.table_name = cs_attr_string.class_key "
-                    + "  cs_attr_object_derived.attr_class_key = cs_attr_string.class_key "
+                    + "  cs_class.table_name ILIKE cs_attr_string.class_key "
+                    + "  cs_attr_object_derived.attr_class_key ILIKE cs_attr_string.class_key "
                     + "  AND cs_attr_object_derived.attr_object_id = cs_attr_string.object_id "
                     + "  AND cs_attr_string.string_val "
                     + (caseSensitive ? "like" : "ilike")
@@ -484,7 +486,7 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                         + "    AND cs_cache.object_id = cs_attr_object_derived.object_id"
                         + "  ) "
                         + "WHERE "
-                        + "  cs_class.table_name = cs_attr_object_derived.class_key"
+                        + "  cs_class.table_name ILIKE cs_attr_object_derived.class_key"
                         + "  cs_attr_object_derived.attr_class_key::text ILIKE 'GEOM'::text "
                         + "  AND cs_attr_object_derived.attr_object_id = geom.id "
                         + "  AND cs_class.id IN "
@@ -525,7 +527,7 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                     + " tbl, "
                     + "  cs_class"
                     + "  LEFT OUTER JOIN cs_cache ON ( "
-                    + "    cs_cache.class_key = cs_class.table_name "
+                    + "    cs_cache.class_key ILIKE cs_class.table_name "
                     + "    AND cs_cache.object_id = tbl.id "
                     + ")"
                     + "WHERE "
@@ -557,7 +559,7 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                     + " tbl, "
                     + "    cs_class"
                     + "    LEFT OUTER JOIN cs_cache ON (  "
-                    + "      cs_cache.class_key = cs_class.table_name "
+                    + "      cs_cache.class_key ILIKE cs_class.table_name "
                     + "      AND cs_cache.object_id = tbl.id "
                     + "    ) "
                     + "  WHERE "
@@ -673,7 +675,7 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                     + "  AND foreign_class.id = "
                     + (oneToMany ? "cs_attr.foreign_key_references_to * -1" : "cs_attr.foreign_key_references_to")
                     + " "
-                    + "  AND foreign_class.table_name = '"
+                    + "  AND foreign_class.table_name ILIKE '"
                     + classKey
                     + "'";
     }
@@ -684,10 +686,10 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                     + "  field_name "
                     + "FROM cs_attr "
                     + "WHERE "
-                    + "  class_id = (SELECT id FROM cs_class WHERE table_name = '"
+                    + "  class_key = (SELECT id FROM cs_class WHERE table_name ILIKE '"
                     + classKey
                     + "') "
-                    + "  AND foreign_key_references_to = (SELECT id FROM cs_class WHERE table_name = '"
+                    + "  AND foreign_key_references_to = (SELECT id FROM cs_class WHERE table_name ILIKE '"
                     + refClassKey
                     + "')";
     }

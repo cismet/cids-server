@@ -812,10 +812,10 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
             String dynamicChildren = null;
             String artifical_id = null;
             String additionaltreepermissiontagString = null;
-            int classId = -1;
+            String classKey = null;
             try {
-                if (nodeTable.getObject("class_id") != null) {                                      // NOI18N
-                    classId = nodeTable.getInt("class_id");                                         // NOI18N
+                if (nodeTable.getObject("class_key") != null) {                                     // NOI18N
+                    classKey = nodeTable.getString("class_key");                                    // NOI18N
                 }
             } catch (Exception skip) {
             }
@@ -941,9 +941,11 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
                     // bekommt die Policy der Klasse
                     if (policy == null) {
                         try {
-                            policy = classCache.getClass(classId).getPolicy();
+                            policy = classCache.getClassByTableName(classKey).getPolicy();
                         } catch (Exception e) {
-                            LOG.warn("Error at: classCache.getClass(nodeTable.getInt(\"class_id\")).getPolicy() ", e); // NOI18N
+                            LOG.warn(
+                                "Error at: classCache.getClassByTableName(nodeTable.getString(\"class_key\")).getPolicy() ",
+                                e); // NOI18N
                         }
                     }
                 } else if ((c == (byte)'C') || (c == (byte)'c')) {
@@ -968,9 +970,17 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
                 }
             }
 
-            final boolean leaf = !nonLeafs.contains(new Integer(id));
+            final boolean leaf = !nonLeafs.contains(id);
 
             Sirius.server.localserver._class.Class metaclass = null;
+
+            try {
+                metaclass = (classKey != null) ? classCache.getClassByTableName(classKey) : null;
+            } catch (Exception e) {
+                // FIXME: doesn't
+                LOG.warn("getClass failed. cannot create objekt/classnode", e); // NOI18N
+            }
+
             // new Node according to node type
             if ((c == (byte)'N') || (c == (byte)'n')) {
                 tmp = new MetaNode(
@@ -983,15 +993,9 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
                         iconFactory,
                         icon,
                         derivePermissionsFromClass,
-                        classId,
+                        (metaclass != null) ? metaclass.getID() : -1,
                         artifical_id);
             } else {
-                try {
-                    metaclass = classCache.getClass(classId);
-                } catch (Exception e) {
-                    // FIXME: doesn't
-                    LOG.warn("getClass failed. cannot create objekt/classnode", e); // NOI18N
-                }
                 if ((metaclass != null) && metaclass.getPermissions().hasReadPermission(user)) {
                     if ((c == (byte)'O') || (c == (byte)'o')) {
                         tmp = new MetaObjectNode(
@@ -999,8 +1003,8 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
                                 name,
                                 descr,
                                 domain,
-                                nodeTable.getInt("object_id"),                      // NOI18N
-                                classId,
+                                nodeTable.getInt("object_id"), // NOI18N
+                                metaclass.getID(),
                                 leaf,
                                 policy,
                                 iconFactory,
@@ -1013,7 +1017,7 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
                         tmp = new MetaClassNode(
                                 id,
                                 domain,
-                                classId,
+                                metaclass.getID(),
                                 name,
                                 descr,
                                 leaf,
@@ -1021,7 +1025,7 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
                                 iconFactory,
                                 icon,
                                 derivePermissionsFromClass,
-                                classId,
+                                metaclass.getID(),
                                 artifical_id);
                     } else {
                         throw new IllegalStateException("Nodetype not known : " + c + " ?"); // NOI18N
@@ -1031,9 +1035,7 @@ public class VirtualTree extends Shutdown implements AbstractTree, ConnectionCon
             if (tmp != null) {
                 tmp.setDynamicChildrenStatement(dynamicChildren);
 
-                if (sqlSort != null) {
-                    tmp.setSqlSort(sqlSort);
-                }
+                tmp.setSqlSort(sqlSort);
                 final String nodeKey = "Node:" // NOI18N
                             + tmp.getId()
                             + "@"              // NOI18N
