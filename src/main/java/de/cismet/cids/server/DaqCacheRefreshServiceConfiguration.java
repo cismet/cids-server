@@ -30,4 +30,6 @@ public class DaqCacheRefreshServiceConfiguration {
     private DaqCacheRefreshServiceViewConfiguration[] viewConfigurations;
     private Integer reconsideringTimer;
     private Integer maxParallelThreads;
+    private String startTime;
+    private String endTime;
 }
