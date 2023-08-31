@@ -33,6 +33,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import java.time.LocalTime;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -127,39 +129,51 @@ public class DaqCacheRefreshService implements Runnable, DomainServerStartupHook
                 sleepTime = config.getReconsideringTimer() * MILLIS_PER_SECOND;
             }
 
-            // recreate views, if necessary
-            for (final DaqCacheRefreshServiceViewConfiguration viewConfig : config.getViewConfigurations()) {
-                final String name = getViewNameWithSchema(viewConfig);
-                final Integer refreshInterval = viewConfig.getTimeInSeconds();
-                final Long lastRefreshTime = lastRefresh.get(name);
-                final long currentTime = new Date().getTime();
+            final LocalTime startTime = ((config.getStartTime() != null) ? LocalTime.parse(config.getStartTime())
+                                                                         : null);
+            final LocalTime endTime = ((config.getEndTime() != null) ? LocalTime.parse(config.getEndTime()) : null);
+            final LocalTime currentLocalTime = LocalTime.now();
 
-                if (lastRefreshTime == null) {
-                    // the view was not refreshed, yet
-                    final boolean refreshInProgress = refreshView(viewConfig, metaService);
+            if ((startTime != null) && (endTime != null) && startTime.isAfter(endTime)) {
+                LOG.error("DaqCacheRefreshService: start time is after end time. So the times will be ignored");
+            }
 
-                    if (refreshInProgress) {
-                        lastRefresh.put(name, currentTime);
-                    }
-                } else {
-                    final long timeForNextRun = lastRefreshTime + (refreshInterval * MILLIS_PER_SECOND);
+            if ((startTime == null) || (endTime == null) || startTime.isAfter(endTime)
+                        || (startTime.isBefore(currentLocalTime) && endTime.isAfter(currentLocalTime))) {
+                // recreate views, if necessary
+                for (final DaqCacheRefreshServiceViewConfiguration viewConfig : config.getViewConfigurations()) {
+                    final String name = getViewNameWithSchema(viewConfig);
+                    final Integer refreshInterval = viewConfig.getTimeInSeconds();
+                    final Long lastRefreshTime = lastRefresh.get(name);
+                    final long currentTime = new Date().getTime();
 
-                    if ((timeForNextRun < currentTime)
-                                || (Math.abs(timeForNextRun - currentTime) < EXECUTION_TOLERANCE)) {
+                    if (lastRefreshTime == null) {
+                        // the view was not refreshed, yet
                         final boolean refreshInProgress = refreshView(viewConfig, metaService);
 
                         if (refreshInProgress) {
                             lastRefresh.put(name, currentTime);
                         }
                     } else {
-                        if ((timeForNextRun - currentTime) < sleepTime) {
-                            sleepTime = timeForNextRun - currentTime;
+                        final long timeForNextRun = lastRefreshTime + (refreshInterval * MILLIS_PER_SECOND);
+
+                        if ((timeForNextRun < currentTime)
+                                    || (Math.abs(timeForNextRun - currentTime) < EXECUTION_TOLERANCE)) {
+                            final boolean refreshInProgress = refreshView(viewConfig, metaService);
+
+                            if (refreshInProgress) {
+                                lastRefresh.put(name, currentTime);
+                            }
+                        } else {
+                            if ((timeForNextRun - currentTime) < sleepTime) {
+                                sleepTime = timeForNextRun - currentTime;
+                            }
                         }
                     }
-                }
 
-                if ((refreshInterval * MILLIS_PER_SECOND) < sleepTime) {
-                    sleepTime = refreshInterval * MILLIS_PER_SECOND;
+                    if ((refreshInterval * MILLIS_PER_SECOND) < sleepTime) {
+                        sleepTime = refreshInterval * MILLIS_PER_SECOND;
+                    }
                 }
             }
 
