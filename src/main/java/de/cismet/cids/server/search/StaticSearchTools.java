@@ -10,6 +10,8 @@ package de.cismet.cids.server.search;
 import Sirius.server.middleware.types.MetaClass;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * DOCUMENT ME!
@@ -38,20 +40,19 @@ public class StaticSearchTools {
      *
      * @throws  IllegalArgumentException  DOCUMENT ME!
      */
-    public static String getMetaClassIdsForInStatement(final Collection<MetaClass> classes)
+    public static Set<String> getMetaClassIdsForInStatement(final Collection<MetaClass> classes)
             throws IllegalArgumentException {
-        String s = "";
+        final Set<String> s = new HashSet<>();
         if ((classes == null) || (classes.isEmpty())) {
             throw new IllegalArgumentException("ArrayList of MetaClasses must neither be null nor empty");
         }
         final String domainCheck = classes.iterator().next().getDomain();
         for (final MetaClass mc : classes) {
-            s += mc.getID() + ",";
+            s.add(mc.getTableName());
             if (!mc.getDomain().equals(domainCheck)) {
                 throw new IllegalArgumentException("ArrayList of MetaClasses must be from the same domain");
             }
         }
-        s = s.trim().substring(0, s.length() - 1);
-        return "(" + s + ")";
+        return s;
     }
 }

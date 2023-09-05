@@ -11,6 +11,9 @@ import org.openide.util.lookup.ServiceProvider;
 
 import java.sql.Types;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
  * DOCUMENT ME!
  *
@@ -402,7 +405,7 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
 
     @Override
     public PreparableStatement getDefaultFullTextSearchStmt(final String searchText,
-            final String classesIn,
+            final Set<String> classesIn,
             final PreparableStatement geoSql,
             final boolean caseSensitive) {
         final String sql = "SELECT DISTINCT "
@@ -426,8 +429,10 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                     + "  AND cs_attr_string.string_val "
                     + (caseSensitive ? "like" : "ilike")
                     + " ? "
-                    + "  AND cs_class.id IN "
-                    + classesIn;
+                    + "  AND cs_class.table_name ILIKE ANY(ARRAY["
+                    + classesIn.stream().map(str -> String.format("'%s'", str)).collect(Collectors.joining(", "))
+                    + "]) "
+                    + "";
 
         Object[] objs = new Object[1];
 
@@ -465,7 +470,9 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
     }
 
     @Override
-    public PreparableStatement getDefaultGeoSearchStmt(final String wkt, final String srid, final String classesIn) {
+    public PreparableStatement getDefaultGeoSearchStmt(final String wkt,
+            final String srid,
+            final Set<String> classesIn) {
         final String geometryText = "SRID="
                     + srid
                     + ";"
@@ -489,8 +496,9 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                         + "  cs_class.table_name ILIKE cs_attr_object_derived.class_key"
                         + "  cs_attr_object_derived.attr_class_key::text ILIKE 'GEOM'::text "
                         + "  AND cs_attr_object_derived.attr_object_id = geom.id "
-                        + "  AND cs_class.id IN "
-                        + classesIn
+                        + "  AND cs_class.table_name ILIKE ANY(ARRAY["
+                        + classesIn.stream().map(str -> String.format("'%s'", str)).collect(Collectors.joining(", "))
+                        + "]) "
                         + ""
                         + "  AND geom.geo_field && st_GeometryFromText(?) "
                         + "  AND st_intersects(geom.geo_field, st_GeometryFromText(?)) "

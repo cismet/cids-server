@@ -7,6 +7,7 @@
 ****************************************************/
 package de.cismet.cids.server.search.builtin;
 
+import Sirius.server.MetaClassCache;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.sql.DialectProvider;
@@ -23,6 +24,7 @@ import org.openide.util.lookup.ServiceProvider;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 
 import de.cismet.cids.nodepermissions.NoNodePermissionProvidedException;
 
@@ -74,7 +76,7 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
     public PreparableStatement getSearchSql(final String domainKey) {
         final String cidsSearchGeometryWKT = geometry.toText();
         final String sridString = Integer.toString(geometry.getSRID());
-        final String classesInStatement = getClassesInSnippetsPerDomain().get(domainKey);
+        final Set<String> classesInStatement = getClassesInSnippetsPerDomain().get(domainKey);
         if ((cidsSearchGeometryWKT == null) || (cidsSearchGeometryWKT.trim().length() == 0)
                     || (sridString == null)
                     || (sridString.trim().length() == 0)) {
@@ -91,7 +93,7 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
             LOG.debug("cidsSearchGeometrySRID=" + sridString);           // NOI18N
         }
 
-        if ((classesInStatement == null) || (classesInStatement.trim().length() == 0)) {
+        if ((classesInStatement == null) || (classesInStatement.isEmpty())) {
             LOG.warn("There are no search classes defined for domain '" + domainKey // NOI18N
                         + "'. This domain will be skipped."); // NOI18N
             return null;
@@ -154,7 +156,7 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
 
                     for (final ArrayList al : result) {
                         // FIXME: yet another hack to circumvent odd type behaviour
-                        final int cid = ((Number)al.get(0)).intValue();
+                        final String cKey = (String)al.get(0);
                         final int oid = ((Number)al.get(1)).intValue();
                         String name = null;
                         try {
@@ -181,7 +183,7 @@ public class DefaultGeoSearch extends AbstractCidsServerSearch implements GeoSea
                             final MetaObjectNode mon = new MetaObjectNode((String)domainKey,
                                     getUser(),
                                     oid,
-                                    cid,
+                                    MetaClassCache.getInstance().getMetaClass((String)domainKey, cKey).getID(),
                                     name,
                                     cashedGeometry,
                                     lightweightJson);

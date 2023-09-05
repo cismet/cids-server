@@ -11,6 +11,9 @@ import org.openide.util.lookup.ServiceProvider;
 
 import java.sql.Types;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
  * DOCUMENT ME!
  *
@@ -399,7 +402,7 @@ public final class OracleSQLStatements implements ServerSQLStatements {
 
     @Override
     public PreparableStatement getDefaultFullTextSearchStmt(final String searchText,
-            final String classesIn,
+            final Set<String> classesIn,
             final PreparableStatement geoSql,
             final boolean caseSensitive) {
         // NOTE: lower of oracle and lower of java may behave differently
@@ -429,8 +432,9 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                     + "s.string_val"
                     + (caseSensitive ? "" : ")")
                     + " like ? "                                       // NOI18N
-                    + "AND i.class_key IN "
-                    + classesIn
+                    + "AND i.class_key ILIKE ANY(ARRAY["
+                    + classesIn.stream().map(str -> String.format("'%s'", str)).collect(Collectors.joining(", "))
+                    + "]) "
                     + "  )\n"
                     + "WHERE rn = 1";
         final PreparableStatement ps;
@@ -466,7 +470,9 @@ public final class OracleSQLStatements implements ServerSQLStatements {
     }
 
     @Override
-    public PreparableStatement getDefaultGeoSearchStmt(final String wkt, final String srid, final String classesIn) {
+    public PreparableStatement getDefaultGeoSearchStmt(final String wkt,
+            final String srid,
+            final Set<String> classesIn) {
         // NOTE: does not narrow down matches using the bbox of the geometry like the postgis version via '&&' thus may
         // be too slow
         final PreparableStatement ps = new PreparableStatement(
@@ -490,8 +496,9 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                         + "  AND c.object_id       =i.object_id )\n"
                         + "  WHERE i.attr_class_ey ilike 'GEOM'\n"
                         + "  AND i.attr_object_id                                                                                                                                                                                                                   = g.id\n"
-                        + "  AND i.class_key IN "
-                        + classesIn
+                        + "  AND i.class_key ILIKE ANY(ARRAY["
+                        + classesIn.stream().map(str -> String.format("'%s'", str)).collect(Collectors.joining(", "))
+                        + "]) "
                         + " \n"
                         + "  AND sdo_relate(geo_field,sdo_geometry(?, "
                         + srid

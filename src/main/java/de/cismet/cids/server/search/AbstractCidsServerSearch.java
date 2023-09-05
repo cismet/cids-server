@@ -7,13 +7,17 @@
 ****************************************************/
 package de.cismet.cids.server.search;
 
+import Sirius.server.MetaClassCache;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.newuser.User;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Abstract class for the handling of {@link CidsServerSearch}es. For compatibility reasons this class extends the
@@ -30,7 +34,7 @@ public abstract class AbstractCidsServerSearch implements CidsServerSearch {
 
     private User user;
     private Map activeLocalServers;
-    private Map<String, String> classesInSnippetsPerDomain;
+    private Map<String, Set<String>> classesInSnippetsPerDomain;
     private Collection<MetaClass> validClasses;
 
     //~ Constructors -----------------------------------------------------------
@@ -39,8 +43,8 @@ public abstract class AbstractCidsServerSearch implements CidsServerSearch {
      * Creates a new AbstractCidsServerSearch object.
      */
     public AbstractCidsServerSearch() {
-        classesPerDomain = new HashMap<String, Collection<MetaClass>>();
-        classesInSnippetsPerDomain = new HashMap<String, String>();
+        classesPerDomain = new HashMap<>();
+        classesInSnippetsPerDomain = new HashMap<>();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -88,15 +92,16 @@ public abstract class AbstractCidsServerSearch implements CidsServerSearch {
             if (classesPerDomain.containsKey(mc.getDomain())) {
                 classesPerDomain.get(mc.getDomain()).add(mc);
             } else {
-                final ArrayList<MetaClass> cA = new ArrayList<MetaClass>();
+                final ArrayList<MetaClass> cA = new ArrayList<>();
                 cA.add(mc);
                 classesPerDomain.put(mc.getDomain(), cA);
             }
         }
         classesInSnippetsPerDomain.clear();
         for (final String domain : classesPerDomain.keySet()) {
-            final String in = StaticSearchTools.getMetaClassIdsForInStatement(classesPerDomain.get(domain));
-            classesInSnippetsPerDomain.put(domain, in);
+            classesInSnippetsPerDomain.put(
+                domain,
+                StaticSearchTools.getMetaClassIdsForInStatement(classesPerDomain.get(domain)));
         }
     }
 
@@ -115,17 +120,14 @@ public abstract class AbstractCidsServerSearch implements CidsServerSearch {
             if ((sa == null) || (sa.length != 2)) {
                 throw new IllegalArgumentException("Strings must be of the form of classid@DOMAINNAME");
             }
-            final String classId = sa[0];
+            final String classKey = sa[0];
             final String domain = sa[1];
-            final String inStr = classesInSnippetsPerDomain.get(domain);
+            final Set<String> inStr = classesInSnippetsPerDomain.get(domain);
             if (inStr != null) {
-                classesInSnippetsPerDomain.put(domain, inStr + "," + classId);
+                inStr.add(classKey);
             } else {
-                classesInSnippetsPerDomain.put(domain, classId);
+                classesInSnippetsPerDomain.put(domain, new HashSet<>(Arrays.asList(classKey)));
             }
-        }
-        for (final String domain : classesInSnippetsPerDomain.keySet()) {
-            classesInSnippetsPerDomain.put(domain, "(" + classesInSnippetsPerDomain.get(domain) + ")");
         }
     }
 
@@ -135,7 +137,7 @@ public abstract class AbstractCidsServerSearch implements CidsServerSearch {
      * @return  DOCUMENT ME!
      */
     @Override
-    public Map<String, String> getClassesInSnippetsPerDomain() {
+    public Map<String, Set<String>> getClassesInSnippetsPerDomain() {
         return classesInSnippetsPerDomain;
     }
 
@@ -155,7 +157,7 @@ public abstract class AbstractCidsServerSearch implements CidsServerSearch {
      * @param  classesInSnippetsPerDomain  DOCUMENT ME!
      */
     @Override
-    public void setClassesInSnippetsPerDomain(final Map<String, String> classesInSnippetsPerDomain) {
+    public void setClassesInSnippetsPerDomain(final Map<String, Set<String>> classesInSnippetsPerDomain) {
         this.classesInSnippetsPerDomain = classesInSnippetsPerDomain;
     }
 

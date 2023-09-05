@@ -14,6 +14,7 @@ import java.io.Serializable;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * DOCUMENT ME!
@@ -37,7 +38,7 @@ public interface CidsServerSearch extends Serializable {
      *
      * @return  DOCUMENT ME!
      */
-    Map<String, String> getClassesInSnippetsPerDomain();
+    Map<String, Set<String>> getClassesInSnippetsPerDomain();
 
     /**
      * DOCUMENT ME!
@@ -83,7 +84,7 @@ public interface CidsServerSearch extends Serializable {
      *
      * @param  classesInSnippetsPerDomain  DOCUMENT ME!
      */
-    void setClassesInSnippetsPerDomain(final Map<String, String> classesInSnippetsPerDomain);
+    void setClassesInSnippetsPerDomain(final Map<String, Set<String>> classesInSnippetsPerDomain);
 
     /**
      * DOCUMENT ME!

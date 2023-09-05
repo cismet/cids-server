@@ -7,6 +7,8 @@
 ****************************************************/
 package Sirius.server.sql;
 
+import java.util.Set;
+
 /**
  * DOCUMENT ME!
  *
@@ -302,7 +304,7 @@ public interface ServerSQLStatements extends DialectProvider {
      * @return  DOCUMENT ME!
      */
     PreparableStatement getDefaultFullTextSearchStmt(String searchText,
-            String classesIn,
+            Set<String> classesIn,
             PreparableStatement geoSql,
             boolean caseSensitive);
 
@@ -315,7 +317,7 @@ public interface ServerSQLStatements extends DialectProvider {
      *
      * @return  DOCUMENT ME!
      */
-    PreparableStatement getDefaultGeoSearchStmt(String wkt, String srid, String classesIn);
+    PreparableStatement getDefaultGeoSearchStmt(String wkt, String srid, Set<String> classesIn);
 
     /**
      * DOCUMENT ME!

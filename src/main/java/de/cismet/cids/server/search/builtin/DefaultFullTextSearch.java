@@ -23,6 +23,7 @@ import org.openide.util.lookup.ServiceProvider;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 
 import de.cismet.cids.nodepermissions.NoNodePermissionProvidedException;
 
@@ -110,8 +111,8 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
             // Deppensuche sequentiell
             final HashSet keyset = new HashSet(getActiveLocalServers().keySet());
 
-            final ArrayList<MetaObjectNode> aln = new ArrayList<MetaObjectNode>();
-            final ArrayList<MetaObjectNode> filtered = new ArrayList<MetaObjectNode>();
+            final ArrayList<MetaObjectNode> aln = new ArrayList<>();
+            final ArrayList<MetaObjectNode> filtered = new ArrayList<>();
 
             if (geometry != null) {
                 geoSearch.setClassesInSnippetsPerDomain(getClassesInSnippetsPerDomain());
@@ -119,7 +120,7 @@ public class DefaultFullTextSearch extends AbstractCidsServerSearch implements F
 
             for (final Object key : keyset) {
                 final MetaService ms = (MetaService)getActiveLocalServers().get(key);
-                final String classesInStatement = getClassesInSnippetsPerDomain().get((String)key);
+                final Set<String> classesInStatement = getClassesInSnippetsPerDomain().get((String)key);
                 if (classesInStatement != null) {
                     PreparableStatement geoSql = null;
                     if (geometry != null) {
