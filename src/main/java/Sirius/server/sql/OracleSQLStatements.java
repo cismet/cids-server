@@ -530,7 +530,7 @@ public final class OracleSQLStatements implements ServerSQLStatements {
                         + "  ON ( c.class_id       =i.class_id\n"
                         + "  AND c.object_id       =i.object_id )\n"
                         + "  WHERE i.attr_class_id =\n"
-                        + "    ( SELECT cs_class.id FROM cs_class WHERE cs_class.table_name = 'GEOM'\n"
+                        + "    ( SELECT cs_class.id FROM cs_class WHERE cs_class.table_name ILIKE 'GEOM'\n"
                         + "    )\n"
                         + "  AND i.attr_object_id                                                                                                                                                                                                                   = g.id\n"
                         + "  AND i.class_id IN "

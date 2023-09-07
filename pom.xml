@@ -13,7 +13,7 @@
 
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server</artifactId>
-    <version>8.3</version>
+    <version>8.3.1</version>
     <packaging>jar</packaging>
  
     <properties>
@@ -27,7 +27,7 @@
         <connection>https://github.com/cismet/cids-server.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cids-server.git</developerConnection>
         <url>https://github.com/cismet/cids-server</url>
-        <tag>v8.3</tag>
+        <tag>v8.3.1</tag>
     </scm>
     
     <ciManagement>
@@ -292,6 +292,11 @@
             <version>7.0</version>
             <scope>compile</scope>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.10</version>
         </dependency>
         
         <!-- BEGIN: Runtime dependencies -->
