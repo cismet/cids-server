@@ -59,7 +59,7 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                     + "y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, CASE WHEN descr_url IS NOT NULL THEN descr_url ELSE url END AS url,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
                     + "("                                                                                                                                                                                                                                                     // NOI18N
                     + "select "                                                                                                                                                                                                                                               // NOI18N
-                    + "n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name AS descr_url,iconfactory,icon,derive_permissions_from_class  "                                                                     // NOI18N
+                    + "n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name AS descr_url,iconfactory,icon,derive_permissions_from_class, n.url"                                                                     // NOI18N
                     + "from "                                                                                                                                                                                                                                                 // NOI18N
                     + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                                                                                             // NOI18N
                     + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                                                                                            // NOI18N
@@ -79,7 +79,7 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                     + ((artificialIdSupported) ? ",artificial_id" : "")
                     + " from ("                                                                                                                                                                                                                                        // NOI18N
                     + "select "                                                                                                                                                                                                                                        // NOI18N
-                    + "n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name AS descr_url,iconfactory,icon,derive_permissions_from_class  "                                                              // NOI18N
+                    + "n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name AS descr_url,iconfactory,icon,derive_permissions_from_class, n.url"                                                              // NOI18N
                     + ((artificialIdSupported) ? ",artificial_id" : "")
                     + " from "                                                                                                                                                                                                                                         // NOI18N
                     + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                                                                                      // NOI18N
@@ -127,6 +127,7 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                         + "sql_sort, "                                                                       // NOI18N
                         + "n.policy, "                                                                       // NOI18N
                         + "prot_prefix || server || path || object_name AS descr_url, "                            // NOI18N
+                        + "n.url"
                         + "iconfactory, "                                                                    // NOI18N
                         + "icon, "                                                                           // NOI18N
                         + "derive_permissions_from_class"                                                    // NOI18N
@@ -230,7 +231,8 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
         return
             "select  y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, CASE WHEN descr_url IS NOT NULL THEN descr_url ELSE url END AS url , p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  "           // NOI18N
                     + "from"                                                                                                                                                                                                                                                     // NOI18N
-                    + " (select n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name AS descr_url,iconfactory,icon,derive_permissions_from_class  from cs_cat_node n left outer join url  on ( n.descr=url.id ) " // NOI18N
+                    + " (select n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name AS descr_url,iconfactory,icon,derive_permissions_from_class, n.url  "
+                + "from cs_cat_node n left outer join url  on ( n.descr=url.id ) " // NOI18N
                     + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                                                                                               // NOI18N
                     + "where n.id="                                                                                                                                                                                                                                              // NOI18N
                     + nodeId
