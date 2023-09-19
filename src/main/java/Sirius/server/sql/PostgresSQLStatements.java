@@ -55,18 +55,18 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
 
     @Override
     public String getVirtualTreeClassTreeNodesStatement(final String implodedUserGroupIds) {
-        return "select "                                                                                                                                                                                        // NOI18N
-                    + "y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
-                    + "("                                                                                                                                                                                       // NOI18N
-                    + "select "                                                                                                                                                                                 // NOI18N
-                    + "n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  "                // NOI18N
-                    + "from "                                                                                                                                                                                   // NOI18N
-                    + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                               // NOI18N
-                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                              // NOI18N
-                    + "where "                                                                                                                                                                                  // NOI18N
-                    + "is_root=true and node_type='C' "                                                                                                                                                         // NOI18N
-                    + ") y "                                                                                                                                                                                    // NOI18N
-                    + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and ug_id IN ("                                                                                                              // NOI18N
+        return "select "                                                                                                                                                                                                                                                      // NOI18N
+                    + "y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, CASE WHEN descr_url IS NOT NULL THEN descr_url ELSE url END AS url,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  from " // NOI18N
+                    + "("                                                                                                                                                                                                                                                     // NOI18N
+                    + "select "                                                                                                                                                                                                                                               // NOI18N
+                    + "n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name AS descr_url,iconfactory,icon,derive_permissions_from_class  "                                                                     // NOI18N
+                    + "from "                                                                                                                                                                                                                                                 // NOI18N
+                    + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                                                                                             // NOI18N
+                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                                                                                            // NOI18N
+                    + "where "                                                                                                                                                                                                                                                // NOI18N
+                    + "is_root=true and node_type='C' "                                                                                                                                                                                                                       // NOI18N
+                    + ") y "                                                                                                                                                                                                                                                  // NOI18N
+                    + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and ug_id IN ("                                                                                                                                                                            // NOI18N
                     + implodedUserGroupIds
                     + ") left outer join cs_permission pp on p.permission=pp.id ";
     }
@@ -74,19 +74,19 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
     @Override
     public String getVirtualTreeTopNodesStatement(final boolean artificialIdSupported,
             final String implodedUserGroupIds) {
-        return "select "                                                                                                                                                                                 // NOI18N
-                    + "y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url ,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class" // NOI18N
+        return "select "                                                                                                                                                                                                                                               // NOI18N
+                    + "y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, CASE WHEN descr_url IS NOT NULL THEN descr_url ELSE url END AS url,  p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class" // NOI18N
                     + ((artificialIdSupported) ? ",artificial_id" : "")
-                    + " from ("                                                                                                                                                                          // NOI18N
-                    + "select "                                                                                                                                                                          // NOI18N
-                    + "n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  "         // NOI18N
+                    + " from ("                                                                                                                                                                                                                                        // NOI18N
+                    + "select "                                                                                                                                                                                                                                        // NOI18N
+                    + "n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name AS descr_url,iconfactory,icon,derive_permissions_from_class  "                                                              // NOI18N
                     + ((artificialIdSupported) ? ",artificial_id" : "")
-                    + " from "                                                                                                                                                                           // NOI18N
-                    + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                        // NOI18N
-                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                       // NOI18N
-                    + "where "                                                                                                                                                                           // NOI18N
-                    + "is_root=true and node_type<>'C' "                                                                                                                                                 // NOI18N
-                    + ") y "                                                                                                                                                                             // NOI18N
+                    + " from "                                                                                                                                                                                                                                         // NOI18N
+                    + "cs_cat_node n left outer join url  on ( n.descr=url.id ) "                                                                                                                                                                                      // NOI18N
+                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                                                                                     // NOI18N
+                    + "where "                                                                                                                                                                                                                                         // NOI18N
+                    + "is_root=true and node_type<>'C' "                                                                                                                                                                                                               // NOI18N
+                    + ") y "                                                                                                                                                                                                                                           // NOI18N
                     + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and ug_id IN ("
                     + implodedUserGroupIds
                     + ") left outer join cs_permission pp on p.permission=pp.id ";
@@ -106,7 +106,7 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                     + "node_type, "                                                                          // NOI18N
                     + "dynamic_children, "                                                                   // NOI18N
                     + "sql_sort, "                                                                           // NOI18N
-                    + "url, "                                                                                // NOI18N
+                    + "CASE WHEN descr_url IS NOT NULL THEN descr_url ELSE url END AS url, "                                                                                // NOI18N
                     + "p.permission perm_id, "                                                            // NOI18N
                     + "p.ug_id, "                                                                            // NOI18N
                     + "pp.key perm_key, "                                                                 // NOI18N
@@ -126,7 +126,7 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                         + "dynamic_children, "                                                               // NOI18N
                         + "sql_sort, "                                                                       // NOI18N
                         + "n.policy, "                                                                       // NOI18N
-                        + "prot_prefix || server || path || object_name url, "                            // NOI18N
+                        + "prot_prefix || server || path || object_name AS descr_url, "                            // NOI18N
                         + "iconfactory, "                                                                    // NOI18N
                         + "icon, "                                                                           // NOI18N
                         + "derive_permissions_from_class"                                                    // NOI18N
@@ -228,16 +228,16 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
     @Override
     public String getVirtualTreeGetNodeStmt(final int nodeId, final String implodedUserGroupIds) {
         return
-            "select  y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, url , p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  "                                                                 // NOI18N
-                    + "from"                                                                                                                                                                                                                                            // NOI18N
-                    + " (select n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name url,iconfactory,icon,derive_permissions_from_class  from cs_cat_node n left outer join url  on ( n.descr=url.id ) " // NOI18N
-                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                                                                                      // NOI18N
-                    + "where n.id="                                                                                                                                                                                                                                     // NOI18N
+            "select  y.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort, CASE WHEN descr_url IS NOT NULL THEN descr_url ELSE url END AS url , p.permission perm_id,p.ug_id,pp.key perm_key,y.policy,iconfactory,icon,derive_permissions_from_class  "           // NOI18N
+                    + "from"                                                                                                                                                                                                                                                     // NOI18N
+                    + " (select n.id id,name,class_id,object_id,node_type,dynamic_children,sql_sort,n.policy,prot_prefix||server||path||object_name AS descr_url,iconfactory,icon,derive_permissions_from_class  from cs_cat_node n left outer join url  on ( n.descr=url.id ) " // NOI18N
+                    + "left outer join url_base ub  on (url.url_base_id=ub.id)   "                                                                                                                                                                                               // NOI18N
+                    + "where n.id="                                                                                                                                                                                                                                              // NOI18N
                     + nodeId
-                    + " ) y "                                                                                                                                                                                                                                           // NOI18N
-                    + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and ug_id IN ("                                                                                                                                                                      // NOI18N
+                    + " ) y "                                                                                                                                                                                                                                                    // NOI18N
+                    + "left outer join cs_ug_cat_node_perm p on p.cat_node_id=y.id and ug_id IN ("                                                                                                                                                                               // NOI18N
                     + implodedUserGroupIds
-                    + ") "                                                                                                                                                                                                                                              // NOI18N
+                    + ") "                                                                                                                                                                                                                                                       // NOI18N
                     + "left outer join cs_permission pp on p.permission=pp.id";
     }
 
