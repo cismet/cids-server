@@ -127,7 +127,7 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                         + "sql_sort, "                                                                       // NOI18N
                         + "n.policy, "                                                                       // NOI18N
                         + "prot_prefix || server || path || object_name AS descr_url, "                            // NOI18N
-                        + "n.url"
+                        + "n.url, "
                         + "iconfactory, "                                                                    // NOI18N
                         + "icon, "                                                                           // NOI18N
                         + "derive_permissions_from_class"                                                    // NOI18N
