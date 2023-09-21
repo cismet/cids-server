@@ -16,6 +16,9 @@ import Sirius.server.newuser.User;
 import Sirius.server.sql.DialectProvider;
 import Sirius.server.sql.SQLTools;
 import Sirius.server.sql.ServerSQLStatements;
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
+import java.rmi.RemoteException;
 
 import org.apache.log4j.Logger;
 
@@ -24,6 +27,7 @@ import org.openide.util.Lookup;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import org.openide.util.Exceptions;
 
 /**
  * DOCUMENT ME!
@@ -31,13 +35,14 @@ import java.sql.Statement;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = ServerAction.class)
-public class PasswordSwitcherAdminAction implements UserAwareServerAction {
+public class PasswordSwitcherAdminAction implements UserAwareServerAction, ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger LOG = Logger.getLogger(PasswordSwitcherAdminAction.class);
 
     public static final String TASK_NAME = "passwordSwitcherAdminAction";
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Enums ------------------------------------------------------------------
 
@@ -60,6 +65,16 @@ public class PasswordSwitcherAdminAction implements UserAwareServerAction {
     //~ Methods ----------------------------------------------------------------
 
     @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
+
+    @Override
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
+    }    
+    
+    @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
         String loginNameToSwitch = null;
         Integer recoveryTimer = null;
@@ -80,9 +95,13 @@ public class PasswordSwitcherAdminAction implements UserAwareServerAction {
         }
 
         try {
-            if (!getUser().isAdmin()) {
-                return new Exception("Only admin Users are allowed to switch passwords !");
+            if (!DomainServerImpl.getServerInstance().hasConfigAttr(getUser(), "csa://passwordSwitcher", getConnectionContext())) {
+                return new Exception("Missing permission. Not allowed to switch passwords !");
             }
+        } catch (final Exception ex) {
+                return new Exception("Error while checking permissings !", ex);
+        }
+        try {
 
             final Statement s = DomainServerImpl.getServerInstance()
                         .getConnectionPool()
