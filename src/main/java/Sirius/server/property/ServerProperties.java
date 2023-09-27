@@ -164,6 +164,51 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
     public static final String START_MODE__SIMPLE = "simple";
     public static final String START_MODE__PROXY = "proxy";
 
+    private static final String PROP__RESOURCES_BASE_PATH = "cids.custom.server.resourcesBasePath";
+    private static final String PROP__SERVER_NAME = "serverName";
+    private static final String PROP__SERVER_PORT = "serverPort";
+    private static final String PROP__SERVER_REST_PORT = "server.rest.port";
+    private static final String PROP__SERVER_REST_ENABLE = "server.rest.enable";
+    private static final String PROP__SERVER_COMPRESSION_ENABLE = "server.compression.enable";
+    private static final String PROP__SERVER_CONNECTIONCONTEXT_CONFIG = "server.connectioncontext.config";
+    private static final String PROP__SERVER_PROXY_URL = "server.proxy.url";
+    private static final String PROP__SERVER_REST_KEYSTORE_SERVER = "server.rest.keystore.server";
+    private static final String PROP__SERVER_REST_THREADNAMING_ENABLE = "server.rest.threadnaming.enable";
+    private static final String PROP__SERVER_REST_THREADS_MAX = "server.rest.threads.max";
+    private static final String PROP__SERVER_REST_THREADS_MIN = "server.rest.threads.min";
+    private static final String PROP__SERVER_REST_KEYSTORE_SERVER_PASSWORD = "server.rest.keystore.server.password";
+    private static final String PROP__SERVER_REST_KEYSTORE_SERVER_KEYPASSWORD =
+        "server.rest.keystore.server.keypassword";
+    private static final String PROP__SERVER_REST_KEYSTORE_CLIENT = "server.rest.keystore.client";
+    private static final String PROP__SERVER_REST_KEYSTORE_CLIENT_AUTH = "server.rest.keystore.client.auth";
+    private static final String PROP__SERVER_REST_KEYSTORE_CLIENT_PASSWORD = "server.rest.keystore.client.password";
+    private static final String PROP__SERVER_REST_DEBUG = "server.rest.debug";
+    private static final String PROP__SERVER_REST_SWAGER_ENABLED = "server.rest.swaggerEnabled";
+    private static final String PROP__DEFAULT_ICON_DIRECTORY = "defaultIconDirectory";
+    private static final String PROP__ICON_DIRECTORY = "iconDirectory";
+    private static final String PROP__QUERY_STORE_DIRECTORY = "queryStoreDirectory";
+    private static final String PROP__CONNECTION_URL = "connection.url";
+    private static final String PROP__CONNECTION_POOL_SIZE = "connection.pool_size";
+    private static final String PROP__CONNECTION_DRIVER_CLASS = "connection.driver_class";
+    private static final String PROP__DIALECT = "dialect";
+    private static final String PROP__CONNECTION_PASSWORD = "connection.password";
+    private static final String PROP__CONNECTION_USERNAME = "connection.username";
+    private static final String PROP__FILE_SEPARATOR = "fileSeparator";
+    private static final String PROP__REGISTRY_IPS = "registryIPs";
+    private static final String PROP__RMI_REGISTRY_PORT = "rmiRegistryPort";
+    private static final String PROP__INTERNAL_DIALECT = "internalDialect";
+    private static final String PROP__START_MODE = "startMode";
+    private static final String PROP__DEPLOY_ENV = "deployEnv";
+    private static final String PROP__SERVER_POLICY = "serverPolicy";
+    private static final String PROP__CLASS_NODE_POLICY = "classNodePolicy";
+    private static final String PROP__PURE_NODE_POLICY = "pureNodePolicy";
+    private static final String PROP__ATTRIBUTE_POLICY = "attributePolicy";
+    private static final String PROP__CACHE_TYPE = "cache_type";
+    private static final String PROP__LOG4J_PROP_FILE = "log4j_prop_file";
+    private static final String PROP__SCHEMA = "schema";
+    private static final String PROP__PASSWORDCHANGE_TRIGGER_SCRIPT_BEFORE = "passwordchangeTriggerScriptBefore";
+    private static final String PROP__PASSWORDCHANGE_TRIGGER_SCRIPT_AFTER = "passwordchangeTriggerScriptAfter";
+
     //~ Instance fields --------------------------------------------------------
 
     private String internalDialect;
@@ -214,7 +259,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getServerResourcesBasePath() {
-        return this.getString("cids.custom.server.resourcesBasePath");
+        return this.getString(PROP__RESOURCES_BASE_PATH);
     }
 
     /**
@@ -223,9 +268,8 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  Servername*
      */
     public final String getServerName() {
-        return this.getString("serverName"); // NOI18N
+        return this.getString(PROP__SERVER_NAME); // NOI18N
     }
-
     /**
      * DOCUMENT ME!
      *
@@ -233,7 +277,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final int getServerPort() {
         try {
-            final String serverPort = getString("serverPort");
+            final String serverPort = getString(PROP__SERVER_PORT);
             if (serverPort == null) {
                 if (LOG.isInfoEnabled()) {
                     LOG.info("server port not set, returning rmi registry port"); // NOI18N
@@ -259,7 +303,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final int getRestPort() {
         try {
-            return Integer.valueOf(getString("server.rest.port"));                    // NOI18N
+            return Integer.valueOf(getString(PROP__SERVER_REST_PORT));                // NOI18N
         } catch (final NumberFormatException e) {
             final String message = "could not parse server.rest.port property value"; // NOI18N
             LOG.warn(message, e);
@@ -284,7 +328,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final boolean isRestEnabled() {
         try {
-            return Boolean.valueOf(getString("server.rest.enable"));      // NOI18N
+            return Boolean.valueOf(getString(PROP__SERVER_REST_ENABLE));  // NOI18N
         } catch (final MissingResourceException e) {
             final String message = "server.rest.enable property not set"; // NOI18N
             if (LOG.isInfoEnabled()) {
@@ -302,7 +346,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final boolean isCompressionEnabled() {
         try {
-            return Boolean.valueOf(getString("server.compression.enable"));      // NOI18N
+            return Boolean.valueOf(getString(PROP__SERVER_COMPRESSION_ENABLE));  // NOI18N
         } catch (final MissingResourceException e) {
             final String message = "server.compression.enable property not set"; // NOI18N
             if (LOG.isInfoEnabled()) {
@@ -320,7 +364,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final String getConnectionContextConfig() {
         try {
-            return getString("server.connectioncontext.config");
+            return getString(PROP__SERVER_CONNECTIONCONTEXT_CONFIG);
         } catch (final MissingResourceException e) {
             final String message = "server.connectioncontext.config property not set"; // NOI18N
             if (LOG.isInfoEnabled()) {
@@ -337,7 +381,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getServerProxyURL() {
-        return getString("server.proxy.url");
+        return getString(PROP__SERVER_PROXY_URL);
     }
 
     /**
@@ -346,7 +390,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getRestServerKeystore() {
-        return getString("server.rest.keystore.server"); // NOI18N
+        return getString(PROP__SERVER_REST_KEYSTORE_SERVER); // NOI18N
     }
 
     /**
@@ -356,7 +400,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final boolean isRestThreadNamingEnabled() {
         try {
-            return Boolean.valueOf(getString("server.rest.threadnaming.enable"));      // NOI18N
+            return Boolean.valueOf(getString(PROP__SERVER_REST_THREADNAMING_ENABLE));  // NOI18N
         } catch (final MissingResourceException e) {
             final String message = "server.rest.threadnaming.enable property not set"; // NOI18N
             if (LOG.isInfoEnabled()) {
@@ -374,7 +418,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final int getRestServerMaxThreads() {
         try {
-            return Integer.valueOf(getString("server.rest.threads.max"));                        // NOI18N
+            return Integer.valueOf(getString(PROP__SERVER_REST_THREADS_MAX));                    // NOI18N
         } catch (final NumberFormatException e) {
             final String message = "could not parse server.rest.threads.max value. default=255"; // NOI18N
             LOG.warn(message, e);
@@ -394,7 +438,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final int getRestServerMinThreads() {
         try {
-            return Integer.valueOf(getString("server.rest.threads.min"));                      // NOI18N
+            return Integer.valueOf(getString(PROP__SERVER_REST_THREADS_MIN));                  // NOI18N
         } catch (final NumberFormatException e) {
             final String message = "could not parse server.rest.threads.min value. default=1"; // NOI18N
             LOG.warn(message, e);
@@ -413,7 +457,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getRestServerKeystorePW() {
-        return getString("server.rest.keystore.server.password"); // NOI18N
+        return getString(PROP__SERVER_REST_KEYSTORE_SERVER_PASSWORD); // NOI18N
     }
 
     /**
@@ -422,7 +466,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getRestServerKeystoreKeyPW() {
-        return getString("server.rest.keystore.server.keypassword"); // NOI18N
+        return getString(PROP__SERVER_REST_KEYSTORE_SERVER_KEYPASSWORD); // NOI18N
     }
 
     /**
@@ -431,7 +475,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getRestClientKeystore() {
-        return getString("server.rest.keystore.client"); // NOI18N
+        return getString(PROP__SERVER_REST_KEYSTORE_CLIENT); // NOI18N
     }
 
     /**
@@ -441,7 +485,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final boolean isRestClientAuth() {
         try {
-            return Boolean.valueOf(getString("server.rest.keystore.client.auth"));      // NOI18N
+            return Boolean.valueOf(getString(PROP__SERVER_REST_KEYSTORE_CLIENT_AUTH));  // NOI18N
         } catch (final MissingResourceException e) {
             final String message = "server.rest.keystore.client.auth property not set"; // NOI18N
             if (LOG.isInfoEnabled()) {
@@ -458,7 +502,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getRestClientKeystorePW() {
-        return getString("server.rest.keystore.client.password"); // NOI18N
+        return getString(PROP__SERVER_REST_KEYSTORE_CLIENT_PASSWORD); // NOI18N
     }
 
     /**
@@ -470,7 +514,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final boolean isRestDebug() {
         try {
-            return Boolean.valueOf(getString("server.rest.debug"));      // NOI18N
+            return Boolean.valueOf(getString(PROP__SERVER_REST_DEBUG));  // NOI18N
         } catch (final MissingResourceException e) {
             final String message = "server.rest.debug property not set"; // NOI18N
             if (LOG.isInfoEnabled()) {
@@ -490,7 +534,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final boolean isSwaggerEnabled() {
         try {
-            return Boolean.valueOf(getString("server.rest.swaggerEnabled"));      // NOI18N
+            return Boolean.valueOf(getString(PROP__SERVER_REST_SWAGER_ENABLED));  // NOI18N
         } catch (final MissingResourceException e) {
             final String message = "server.rest.swaggerEnabled property not set"; // NOI18N
             if (LOG.isInfoEnabled()) {
@@ -507,7 +551,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getDefaultIconDir() {
-        return this.getString("defaultIconDirectory"); // NOI18N
+        return this.getString(PROP__DEFAULT_ICON_DIRECTORY); // NOI18N
     }
 
     /**
@@ -516,7 +560,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getIconDirectory() {
-        return this.getObject("iconDirectory").toString(); // NOI18N
+        return this.getObject(PROP__ICON_DIRECTORY).toString(); // NOI18N
     }
 
     /**
@@ -525,7 +569,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getQueryStoreDirectory() {
-        return this.getObject("queryStoreDirectory").toString(); // NOI18N
+        return this.getObject(PROP__QUERY_STORE_DIRECTORY).toString(); // NOI18N
     }
 
     /**
@@ -534,7 +578,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getDbConnectionString() {
-        return this.getString("connection.url"); // NOI18N
+        return this.getString(PROP__CONNECTION_URL); // NOI18N
     }
 
     /**
@@ -543,7 +587,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final int getPoolSize() {
-        return getInt("connection.pool_size"); // NOI18N
+        return getInt(PROP__CONNECTION_POOL_SIZE); // NOI18N
     }
 
     /**
@@ -552,7 +596,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getJDBCDriver() {
-        return this.getString("connection.driver_class"); // NOI18N
+        return this.getString(PROP__CONNECTION_DRIVER_CLASS); // NOI18N
     }
 
     /**
@@ -561,7 +605,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getSQLDialect() {
-        return this.getString("dialect"); // NOI18N
+        return this.getString(PROP__DIALECT); // NOI18N
     }
 
     /**
@@ -570,7 +614,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getDbPassword() {
-        return PasswordEncrypter.decryptString(this.getString("connection.password")); // NOI18N
+        return PasswordEncrypter.decryptString(this.getString(PROP__CONNECTION_PASSWORD)); // NOI18N
     }
 
     /**
@@ -579,7 +623,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getDbUser() {
-        return this.getString("connection.username"); // NOI18N
+        return this.getString(PROP__CONNECTION_USERNAME); // NOI18N
     }
 
     /**
@@ -588,7 +632,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getFileSeparator() {
-        return this.getString("fileSeparator"); // NOI18N
+        return this.getString(PROP__FILE_SEPARATOR); // NOI18N
     }
 
     /**
@@ -597,7 +641,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String[] getRegistryIps() {
-        return this.getStrings("registryIPs"); // NOI18N
+        return this.getStrings(PROP__REGISTRY_IPS); // NOI18N
     }
 
     /**
@@ -607,7 +651,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final String getRMIRegistryPort() {
         try {
-            final String rmiRegPort = getString("rmiRegistryPort");
+            final String rmiRegPort = getString(PROP__RMI_REGISTRY_PORT);
             if (rmiRegPort == null) {
                 if (LOG.isInfoEnabled()) {
                     LOG.info("rmi registry port not set, returning default value 1099"); // NOI18N
@@ -632,7 +676,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
     public final String getInternalDialect() {
         if (internalDialect == null) {
             try {
-                internalDialect = getString("internalDialect");                       // NOI18N
+                internalDialect = getString(PROP__INTERNAL_DIALECT);                  // NOI18N
             } catch (final MissingResourceException e) {
                 LOG.warn("error reading internalDialect property, using default", e); // NOI18N
 
@@ -649,7 +693,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public String getStartMode() {
-        return this.getString("startMode"); // NOI18N
+        return this.getString(PROP__START_MODE); // NOI18N
     }
 
     /**
@@ -659,7 +703,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public String getDeployEnv() {
         try {
-            return this.getString("deployEnv");
+            return this.getString(PROP__DEPLOY_ENV);
         } catch (final MissingResourceException e) {
             LOG.info(String.format("deployEnv missing, setting to %s", DEPLOY_ENV__DEVELOPMENT), e);
             return DEPLOY_ENV__DEVELOPMENT;
@@ -672,7 +716,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getServerPolicy() {
-        return this.getString("serverPolicy"); // NOI18N
+        return this.getString(PROP__SERVER_POLICY); // NOI18N
     }
 
     /**
@@ -681,7 +725,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getClassNodePolicy() {
-        return this.getString("classNodePolicy"); // NOI18N
+        return this.getString(PROP__CLASS_NODE_POLICY); // NOI18N
     }
 
     /**
@@ -690,7 +734,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getPureNodePolicy() {
-        return this.getString("pureNodePolicy"); // NOI18N
+        return this.getString(PROP__PURE_NODE_POLICY); // NOI18N
     }
 
     /**
@@ -699,7 +743,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getAttributePolicy() {
-        return this.getString("attributePolicy"); // NOI18N
+        return this.getString(PROP__ATTRIBUTE_POLICY); // NOI18N
     }
 
     /*  MetaJDBC-Treiber */
@@ -710,7 +754,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final String getMetaJDBC_CacheType() {
         try {
-            return this.getString("cache_type"); // NOI18N
+            return this.getString(PROP__CACHE_TYPE); // NOI18N
         } catch (Exception e) {
             return null;
         }
@@ -723,7 +767,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final String getLog4jPropertyFile() {
         try {
-            return this.getString("log4j_prop_file"); // NOI18N
+            return this.getString(PROP__LOG4J_PROP_FILE); // NOI18N
         } catch (Exception e) {
             return null;
         }
@@ -736,7 +780,33 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      */
     public final String getMetaJDBC_schema() {
         try {
-            return this.getString("schema"); // NOI18N
+            return this.getString(PROP__SCHEMA); // NOI18N
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getPasswordchangeTriggerScriptBefore() {
+        try {
+            return this.getString(PROP__PASSWORDCHANGE_TRIGGER_SCRIPT_BEFORE);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getPasswordchangeTriggerScriptAfter() {
+        try {
+            return this.getString(PROP__PASSWORDCHANGE_TRIGGER_SCRIPT_AFTER); // NOI18N
         } catch (Exception e) {
             return null;
         }

@@ -20,13 +20,20 @@ import Sirius.server.sql.ExceptionHandler;
 
 import org.apache.log4j.Logger;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 
-import java.util.Arrays;
+import java.text.SimpleDateFormat;
+
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 /**
  * DOCUMENT ME!
@@ -47,9 +54,7 @@ public final class UserStore extends Shutdown {
     protected DBConnectionPool conPool;
     protected Vector users;
     protected Vector userGroups;
-    // protected Hashtable userGroupHash;
     protected Vector memberships;
-    // protected Hashtable membershipHash;// by userIDplusLsName
     protected ServerProperties properties;
 
     //~ Constructors -----------------------------------------------------------
@@ -186,6 +191,15 @@ public final class UserStore extends Shutdown {
      *
      * @return  DOCUMENT ME!
      */
+    private ServerProperties getProperties() {
+        return properties;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public Vector getUsers() {
         return users;
     }
@@ -211,6 +225,28 @@ public final class UserStore extends Shutdown {
     /**
      * DOCUMENT ME!
      *
+     * @param   command  DOCUMENT ME!
+     * @param   name     DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    private void execScript(final String command, final String name) throws Exception {
+        final Process process = new ProcessBuilder(command.split(" ")).start();
+
+        try(final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            final String output = reader.lines().collect(Collectors.joining());
+            LOG.info(String.format("%s:\n%s", name, output));
+        }
+
+        final int exitVal = process.waitFor();
+        if (exitVal != 0) {
+            throw new Exception(String.format("Script '%s' (%s) returned != 0", command, name));
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   user         DOCUMENT ME!
      * @param   oldPassword  DOCUMENT ME!
      * @param   newPassword  DOCUMENT ME!
@@ -221,17 +257,37 @@ public final class UserStore extends Shutdown {
      */
     public boolean changePassword(final User user, final String oldPassword, final String newPassword)
             throws Exception {
-        final java.lang.Object[] params = new java.lang.Object[3];
+        // timestamp erzeugen + csconf + commit
+        // success => change + datum
 
-        params[0] = newPassword;
-        params[1] = user.getName();
-        params[2] = oldPassword;
+        final Timestamp timestamp = new Timestamp(new Date().getTime());
 
-        if (conPool.submitInternalUpdate(DBConnection.DESC_CHANGE_USER_PASSWORD, params) > 0) {
-            return true;
-        } else {
-            return false;
+        final String loginName = user.getName();
+        final String formattedTimestamp = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(timestamp);
+
+        final String beforeScript = getProperties().getPasswordchangeTriggerScriptBefore();
+        if (beforeScript != null) {
+            execScript(beforeScript.replaceAll("\\{user\\}", loginName).replaceAll("\\{password\\}", newPassword)
+                        .replaceAll("\\{oldPassword\\}", oldPassword).replaceAll("\\{time\\}", formattedTimestamp),
+                "passwordchangeTriggerScriptBefore");
         }
+        final boolean success = conPool.submitInternalUpdate(
+                DBConnection.DESC_CHANGE_USER_PASSWORD,
+                newPassword,
+                timestamp,
+                loginName,
+                oldPassword) > 0;
+
+        if (success) {
+            final String afterScript = getProperties().getPasswordchangeTriggerScriptAfter();
+            if (afterScript != null) {
+                execScript(afterScript.replaceAll("\\{user\\}", loginName).replaceAll("\\{password\\}", newPassword)
+                            .replaceAll("\\{oldPassword\\}", oldPassword).replaceAll("\\{time\\}", formattedTimestamp),
+                    "passwordchangeTriggerScriptAfter");
+            }
+        }
+
+        return success;
     }
 
     /**
@@ -480,7 +536,7 @@ public final class UserStore extends Shutdown {
             final String userName = user.getName();
             final String userGroupName = userGroup.getName();
             final String domain;
-            if (properties.getServerName().equals(userGroup.getDomain())) {
+            if (getProperties().getServerName().equals(userGroup.getDomain())) {
                 domain = "LOCAL"; // NOI18N
             } else {
                 domain = userGroup.getDomain();
