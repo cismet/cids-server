@@ -14,6 +14,8 @@ package de.cismet.cids.server;
 
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.DomainServerStartupHook;
+import Sirius.server.property.ServerProperties;
+import Sirius.server.property.ServerPropertiesHandler;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -57,7 +59,7 @@ import de.cismet.commons.concurrency.CismetExecutors;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = DomainServerStartupHook.class)
-public class DaqCacheRefreshService implements Runnable, DomainServerStartupHook {
+public class DaqCacheRefreshService implements Runnable, DomainServerStartupHook, ServerPropertiesHandler {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -78,6 +80,7 @@ public class DaqCacheRefreshService implements Runnable, DomainServerStartupHook
     private final Set<String> currentlyRunningRefreshs = new TreeSet<>();
     private ExecutorService executor;
     private int maxParallelThreads = 10;
+    private ServerProperties properties;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -88,6 +91,11 @@ public class DaqCacheRefreshService implements Runnable, DomainServerStartupHook
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public void setServerProperties(final ServerProperties properties) {
+        this.properties = properties;
+    }
 
     @Override
     public void run() {
@@ -249,7 +257,13 @@ public class DaqCacheRefreshService implements Runnable, DomainServerStartupHook
 
     @Override
     public void domainServerStarted() {
-        new Thread(this).start();
+        if ((properties != null)
+                    && (ServerProperties.DEPLOY_ENV__PRODUCTION.equalsIgnoreCase(properties.getDeployEnv())
+                        || ServerProperties.DEPLOY_ENV__DEVELOPMENT.equalsIgnoreCase(properties.getDeployEnv()))) {
+            new Thread(this).start();
+        } else {
+            LOG.info("No production mode. So the DaqCacheRefreshService will not be started");
+        }
     }
 
     @Override
