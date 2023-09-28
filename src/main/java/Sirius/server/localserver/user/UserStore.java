@@ -260,19 +260,22 @@ public final class UserStore extends Shutdown {
         // timestamp erzeugen + csconf + commit
         // success => change + datum
 
+        final Timestamp timestamp = new Timestamp(new Date().getTime());
+
         final String loginName = user.getName();
-        final String timestamp = String.format("%d", new Date().getTime());
 
         final String beforeScript = getProperties().getPasswordchangeTriggerScriptBefore();
         if (beforeScript != null) {
             execScript(beforeScript.replaceAll("\\{user\\}", loginName).replaceAll("\\{password\\}", newPassword)
-                        .replaceAll("\\{oldPassword\\}", oldPassword).replaceAll("\\{time\\}", timestamp),
+                        .replaceAll("\\{oldPassword\\}", oldPassword).replaceAll(
+                    "\\{time\\}",
+                    String.format("%d", timestamp.getTime())),
                 "passwordchangeTriggerScriptBefore");
         }
         final boolean success = conPool.submitInternalUpdate(
                 DBConnection.DESC_CHANGE_USER_PASSWORD,
                 newPassword,
-                timestamp,
+                new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(timestamp),
                 loginName,
                 oldPassword) > 0;
 
@@ -280,7 +283,9 @@ public final class UserStore extends Shutdown {
             final String afterScript = getProperties().getPasswordchangeTriggerScriptAfter();
             if (afterScript != null) {
                 execScript(afterScript.replaceAll("\\{user\\}", loginName).replaceAll("\\{password\\}", newPassword)
-                            .replaceAll("\\{oldPassword\\}", oldPassword).replaceAll("\\{time\\}", timestamp),
+                            .replaceAll("\\{oldPassword\\}", oldPassword).replaceAll(
+                        "\\{time\\}",
+                        String.format("%d", timestamp.getTime())),
                     "passwordchangeTriggerScriptAfter");
             }
         }
