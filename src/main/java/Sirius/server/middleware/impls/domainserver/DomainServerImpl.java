@@ -38,6 +38,7 @@ import Sirius.server.naming.NameServer;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserServer;
 import Sirius.server.property.ServerProperties;
+import Sirius.server.property.ServerPropertiesHandler;
 import Sirius.server.registry.Registry;
 import Sirius.server.sql.DBConnectionPool;
 import Sirius.server.sql.PreparableStatement;
@@ -276,6 +277,9 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                                     ConnectionContext.Category.STARTUP,
                                     hook.getClass().getSimpleName());
                             ((ConnectionContextStore)hook).initWithConnectionContext(connectionContext);
+                        }
+                        if (hook instanceof ServerPropertiesHandler) {
+                            ((ServerPropertiesHandler)hook).setServerProperties(properties);
                         }
                         hook.domainServerStarted();
                     }
