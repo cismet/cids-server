@@ -23,6 +23,7 @@ import java.sql.SQLException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -60,7 +61,7 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
 //    private final ReleaseConnectionThread rct;
     private Executor executor = null;
 
-    private List<DBConnection> longTermConnectionList = new ArrayList<DBConnection>();
+    private List<DBConnection> longTermConnectionList = Collections.synchronizedList(new ArrayList<DBConnection>());
     private int numberOfConnections = 0;
 
     //~ Constructors -----------------------------------------------------------
