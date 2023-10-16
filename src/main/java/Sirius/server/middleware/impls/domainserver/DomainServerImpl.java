@@ -1620,9 +1620,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public ArrayList<ArrayList> performCustomSearch(final String query,
             final QueryPostProcessor qpp,
             final ConnectionContext connectionContext) throws RemoteException {
-        final Connection con = getConnectionPool().getDBConnection(true).getConnection();
+        Connection con = null;
 
         try {
+            con = getConnectionPool().getLongTermConnection();
             con.setAutoCommit(false);
             final PreparedStatement s = con.prepareStatement("select execute_query(?)");
             s.setString(1, query);
@@ -1644,8 +1645,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             throw new RemoteException(msg, e);
         } finally {
             try {
-                con.setAutoCommit(true);
-                getConnectionPool().releaseDbConnection(con);
+                if (con != null) {
+                    con.setAutoCommit(true);
+                    getConnectionPool().releaseDbConnection(con);
+                }
             } catch (SQLException ex) {
                 logger.error("cannot set auto commit to true", ex);
             }
@@ -1730,7 +1733,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         Connection connection = null;
 
         try {
-            connection = getConnectionPool().getDBConnection(true).getConnection();
+            connection = getConnectionPool().getLongTermConnection();
             final PreparedStatement stmt = ps.parameterise(connection);
             final ResultSet rs = stmt.executeQuery();
             final ArrayList<ArrayList> result = collectResults(rs);
