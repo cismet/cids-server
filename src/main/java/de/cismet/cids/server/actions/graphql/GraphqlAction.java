@@ -113,6 +113,14 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
 
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
+        // reload the configuration
+        try {
+            config = ServerResourcesLoader.getInstance()
+                        .loadProperties(GeneralServerResources.GRAPHQL_PROPERTIES.getValue());
+        } catch (Exception e) {
+            LOG.info("Cannot reload graphQl resources. The graphQl action cannot be used.");
+        }
+
         if (config == null) {
             LOG.error("The graphQl action cannot be used, because the resources could not be loaded.");
 

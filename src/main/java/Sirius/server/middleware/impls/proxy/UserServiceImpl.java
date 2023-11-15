@@ -22,6 +22,7 @@ import Sirius.server.newuser.UserException;
 import Sirius.server.newuser.UserGroup;
 import Sirius.server.newuser.UserServer;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Encoders;
@@ -161,8 +162,19 @@ public class UserServiceImpl {
             LOG.debug((("password:" + password) == null) ? "null" : "*****"); // NOI18N
         }
 
+        String domain = userLsName;
+
+        if (userName.equals("jwt")) {
+            try {
+                final String jwt = password;
+                domain = getDomainFromJwt(jwt, domain);
+            } catch (Exception e) {
+                LOG.error("Cannot extract domain from jwt", e);
+            }
+        }
+
         final Sirius.server.middleware.interfaces.domainserver.UserService us =
-            (Sirius.server.middleware.interfaces.domainserver.UserService)activeLocalServers.get(userLsName);
+            (Sirius.server.middleware.interfaces.domainserver.UserService)activeLocalServers.get(domain);
         if (us == null) {
             throw new UserException(
                 "Login failed, home server of the user is not reachable :: "
@@ -194,6 +206,30 @@ public class UserServiceImpl {
             return validatedUser;
         }
         throw new UserException("Login failed :: " + userName, false, true, false, false); // NOI18N
+    }
+
+    /**
+     * try to extract the login domain from the payload.
+     *
+     * @param   jwt           DOCUMENT ME!
+     * @param   defaultValue  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String getDomainFromJwt(final String jwt, final String defaultValue) {
+        try {
+            final String payload = new String(Base64.getDecoder().decode(
+                        jwt.substring(jwt.indexOf(".") + 1, jwt.lastIndexOf("."))),
+                    "UTF-8");
+            String loginDomain = payload.substring(payload.indexOf("\"domain\":\"") + "\"domain\":\"".length());
+            loginDomain = loginDomain.substring(0, loginDomain.indexOf("\""));
+
+            return loginDomain;
+        } catch (Exception e) {
+            LOG.error("Cannot extract the domain from the jwt", e);
+        }
+
+        return defaultValue;
     }
 
     /**
