@@ -22,15 +22,11 @@ import graphql.language.AstPrinter;
 import graphql.language.AstTransformer;
 import graphql.language.Document;
 import graphql.language.Field;
-import graphql.language.FragmentSpread;
-import graphql.language.InlineFragment;
 import graphql.language.Node;
 import graphql.language.NodeVisitorStub;
 import graphql.language.ObjectField;
 import graphql.language.ObjectValue;
 import graphql.language.OperationDefinition;
-import graphql.language.Selection;
-import graphql.language.SelectionSet;
 
 import graphql.parser.InvalidSyntaxException;
 import graphql.parser.Parser;
@@ -72,7 +68,8 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
     private final MetaService ms;
     private final User user;
     private final ConnectionContext cc;
-    private List<String> tablesWithoutPermissionCheck = new ArrayList<String>();
+    private List<String> tablesWithoutPermissionCheck = new ArrayList<>();
+    private final String[] FIELD_EXTENSIONS = { "Array", "Object", "ArrayRelationShip" };
 
     //~ Constructors -----------------------------------------------------------
 
@@ -103,14 +100,6 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
             fieldsWithoutReadPermission = new ArrayList<CidsField>();
             final Parser p = new Parser();
             final Document doc = p.parseDocument(query);
-//            for (final Definition d : doc.getDefinitions()) {
-//                if (d instanceof OperationDefinition) {
-//                    if (((OperationDefinition)d).getOperation().equals(OperationDefinition.Operation.QUERY)) {
-//                        final SelectionSet selectionSet = ((OperationDefinition)d).getSelectionSet();
-//                        collectUsedTableAndFields(null, selectionSet);
-//                    }
-//                }
-//            }
             final AstTransformer transformer = new AstTransformer();
             final CidsVisitor visitor = new CidsVisitor();
             final Document newDoc = (Document)transformer.transform(doc, visitor);
@@ -121,6 +110,20 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
         }
 
         return null;
+    }
+
+    /**
+     * Only for test purposes.
+     *
+     * @param   query  the query to test
+     *
+     * @return  true, iff the query was changed by the evaluate method
+     */
+    public boolean existEvaluateProblems(final String query) {
+        final Parser p = new Parser();
+        final Document doc = p.parseDocument(query);
+
+        return !AstPrinter.printAstCompact(doc).equals(evaluate(query));
     }
 
     /**
@@ -213,6 +216,7 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
     private CidsField determineForeignKeyField(final CidsTable table, final String foreignKeyDestinaton)
             throws RemoteException, TableNotFoundException, FieldNotFoundException {
         final MetaClass mc = getMetaClassByName(table.getName());
+
         if (mc == null) {
             throw new TableNotFoundException(table.getName());
         }
@@ -225,19 +229,20 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
                     if (mai.getFieldName().equalsIgnoreCase(foreignKeyDestinaton)) {
                         return new CidsField(table, foreignKeyDestinaton);
                     } else {
-                        if (foreignKeyDestinaton.endsWith("Array")) {
-                            if (mai.getFieldName().equalsIgnoreCase(
-                                            foreignKeyDestinaton.substring(0, foreignKeyDestinaton.length() - 5))) {
-                                return new CidsField(
-                                        table,
-                                        foreignKeyDestinaton.substring(0, foreignKeyDestinaton.length() - 5));
-                            }
-                        } else if (foreignKeyDestinaton.endsWith("Object")) {
-                            if (mai.getFieldName().equalsIgnoreCase(
-                                            foreignKeyDestinaton.substring(0, foreignKeyDestinaton.length() - 6))) {
-                                return new CidsField(
-                                        table,
-                                        foreignKeyDestinaton.substring(0, foreignKeyDestinaton.length() - 6));
+                        for (final String extension : FIELD_EXTENSIONS) {
+                            if (foreignKeyDestinaton.endsWith(extension)) {
+                                if (mai.getFieldName().equalsIgnoreCase(
+                                                foreignKeyDestinaton.substring(
+                                                    0,
+                                                    foreignKeyDestinaton.length()
+                                                    - extension.length()))) {
+                                    return new CidsField(
+                                            table,
+                                            foreignKeyDestinaton.substring(
+                                                0,
+                                                foreignKeyDestinaton.length()
+                                                        - extension.length()));
+                                }
                             }
                         }
                     }
@@ -297,15 +302,15 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
                     } else {
                         boolean fieldFound = false;
 
-                        if (foreignKeyDestinaton.endsWith("Array")) {
-                            if (mai.getFieldName().equalsIgnoreCase(
-                                            foreignKeyDestinaton.substring(0, foreignKeyDestinaton.length() - 5))) {
-                                fieldFound = true;
-                            }
-                        } else if (foreignKeyDestinaton.endsWith("Object")) {
-                            if (mai.getFieldName().equalsIgnoreCase(
-                                            foreignKeyDestinaton.substring(0, foreignKeyDestinaton.length() - 6))) {
-                                fieldFound = true;
+                        for (final String extension : FIELD_EXTENSIONS) {
+                            if (foreignKeyDestinaton.endsWith(extension)) {
+                                if (mai.getFieldName().equalsIgnoreCase(
+                                                foreignKeyDestinaton.substring(
+                                                    0,
+                                                    foreignKeyDestinaton.length()
+                                                    - extension.length()))) {
+                                    fieldFound = true;
+                                }
                             }
                         }
 
@@ -371,12 +376,10 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
                 if (mai.getFieldName().equalsIgnoreCase(fieldName)) {
                     return;
                 } else {
-                    if (fieldName.endsWith("Array")) {
-                        if (mai.getFieldName().equalsIgnoreCase(fieldName.substring(0, fieldName.length() - 5))) {
-                            return;
-                        }
-                    } else if (fieldName.endsWith("Object")) {
-                        if (mai.getFieldName().equalsIgnoreCase(fieldName.substring(0, fieldName.length() - 6))) {
+                    for (final String extension : FIELD_EXTENSIONS) {
+                        if ((fieldName.length() > extension.length())
+                                    && mai.getFieldName().equalsIgnoreCase(
+                                        fieldName.substring(0, fieldName.length() - extension.length()))) {
                             return;
                         }
                     }
@@ -384,10 +387,10 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
             }
         }
 
-        if (fieldName.endsWith("Array")) {
-            checkReadPermission(table, fieldName.substring(0, fieldName.length() - 5));
-        } else if (fieldName.endsWith("Object")) {
-            checkReadPermission(table, fieldName.substring(0, fieldName.length() - 6));
+        for (final String extension : FIELD_EXTENSIONS) {
+            if (fieldName.endsWith(extension)) {
+                checkReadPermission(table, fieldName.substring(0, fieldName.length() - extension.length()));
+            }
         }
 
         for (final Object attribute : mc.getMemberAttributeInfos().values()) {
@@ -443,13 +446,12 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
                 if (mai.getFieldName().equalsIgnoreCase(fieldName)) {
                     fieldFound = true;
                 } else {
-                    if (fieldName.endsWith("Array")) {
-                        if (mai.getFieldName().equalsIgnoreCase(fieldName.substring(0, fieldName.length() - 5))) {
-                            fieldFound = true;
-                        }
-                    } else if (fieldName.endsWith("Object")) {
-                        if (mai.getFieldName().equalsIgnoreCase(fieldName.substring(0, fieldName.length() - 6))) {
-                            fieldFound = true;
+                    for (final String extension : FIELD_EXTENSIONS) {
+                        if (fieldName.endsWith(extension)) {
+                            if (mai.getFieldName().equalsIgnoreCase(
+                                            fieldName.substring(0, fieldName.length() - extension.length()))) {
+                                fieldFound = true;
+                            }
                         }
                     }
                 }
@@ -465,10 +467,10 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
             }
         }
 
-        if (fieldName.endsWith("Array")) {
-            hasWritePermission(table, fieldName.substring(0, fieldName.length() - 5));
-        } else if (fieldName.endsWith("Object")) {
-            hasWritePermission(table, fieldName.substring(0, fieldName.length() - 6));
+        for (final String extension : FIELD_EXTENSIONS) {
+            if (fieldName.endsWith(extension)) {
+                hasWritePermission(table, fieldName.substring(0, fieldName.length() - extension.length()));
+            }
         }
 
         for (final Object attribute : mc.getMemberAttributeInfos().values()) {
@@ -528,12 +530,10 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
             mc = ms.getClassByTableName(user, name.toLowerCase(), cc);
         }
 
-        if ((mc == null) && name.endsWith("Object")) {
-            mc = ms.getClassByTableName(user, name.substring(0, name.indexOf("Object")), cc);
-        }
-
-        if ((mc == null) && name.endsWith("Array")) {
-            mc = ms.getClassByTableName(user, name.substring(0, name.indexOf("Array")), cc);
+        for (final String extension : FIELD_EXTENSIONS) {
+            if ((mc == null) && name.endsWith(extension)) {
+                mc = ms.getClassByTableName(user, name.substring(0, name.indexOf(extension)), cc);
+            }
         }
 
         return mc;
@@ -582,6 +582,7 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
          */
         public CidsVisitor() {
             readArguments.add("where");
+            readArguments.add("order_by");
             operators.add("_and");
             operators.add("_not");
             operators.add("_or");
@@ -609,7 +610,8 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
                 fieldName = mutationFieldNameToFieldName(fieldName);
                 parentFieldName = mutationFieldNameToFieldName(parentFieldName);
             }
-            final CidsTable table = ((parentFieldName != null) ? new CidsTable(parentFieldName) : null);
+            final CidsTable table = ((parentFieldName != null)
+                    ? new CidsTable(getTableNameFromParentFieldName(parentFieldName)) : null);
 
             if (isFieldArgument(node, argumentName.equalsIgnoreCase("where"))) {
                 if (!operators.contains(fieldName)) {
@@ -693,7 +695,7 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
                     CidsTable table = fieldToTable.get(parentFieldName);
 
                     if (table == null) {
-                        table = new CidsTable(parentFieldName);
+                        table = new CidsTable(getTableNameFromParentFieldName(parentFieldName));
                         try {
                             checkReadPermission(table, fieldName);
                         } catch (Exception e) {
@@ -731,7 +733,7 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
                         CidsTable table = fieldToTable.get(parentFieldName);
 
                         if (table == null) {
-                            table = new CidsTable(parentFieldName);
+                            table = new CidsTable(getTableNameFromParentFieldName(parentFieldName));
                         }
                         try {
                             final CidsField foreignField = determineForeignKeyField(
@@ -777,11 +779,13 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
                     }
 
                     if ((name != null) && !operators.contains(name)) {
-                        if (name.endsWith("Array") || name.endsWith("Object")) {
-                            return null;
-                        } else {
-                            return name;
+                        for (final String extension : FIELD_EXTENSIONS) {
+                            if (name.endsWith(extension)) {
+                                return null;
+                            }
                         }
+
+                        return name;
                     }
                 }
             }
@@ -833,6 +837,48 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
             }
 
             return null;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param   constraintName  DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        private String getTableNameFromParentFieldName(final String constraintName) {
+            try {
+                MetaClass mc = getMetaClassByName(constraintName);
+
+                if (mc != null) {
+                    return mc.getTableName();
+                } else {
+                    final String[] components = constraintName.split("_");
+
+                    if ((components != null) && (components.length > 1)) {
+                        for (int i = 1; i < components.length; ++i) {
+                            final StringBuffer tmp = new StringBuffer();
+
+                            for (int c = i; c < components.length; ++c) {
+                                if (tmp.length() > 0) {
+                                    tmp.append("_");
+                                }
+                                tmp.append(components[c]);
+                            }
+
+                            mc = getMetaClassByName(tmp.toString());
+
+                            if (mc != null) {
+                                return mc.getName();
+                            }
+                        }
+                    }
+                }
+            } catch (RemoteException e) {
+                LOG.error("RemoteException while determining foreign table", e);
+            }
+
+            return constraintName;
         }
 
         /**
