@@ -848,6 +848,10 @@ public class GraphQlPermissionEvaluator implements ConnectionContextProvider {
          */
         private String getTableNameFromParentFieldName(final String constraintName) {
             try {
+                if ((tablesWithoutPermissionCheck != null) && tablesWithoutPermissionCheck.contains(constraintName)) {
+                    return constraintName;
+                }
+
                 MetaClass mc = getMetaClassByName(constraintName);
 
                 if (mc != null) {
