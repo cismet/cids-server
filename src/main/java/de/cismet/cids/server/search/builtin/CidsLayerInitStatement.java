@@ -46,7 +46,8 @@ public class CidsLayerInitStatement extends AbstractCidsServerSearch implements 
     //~ Instance fields --------------------------------------------------------
 
     private final String envelopeQuery = "select st_asText(st_extent(%s)) %s";
-    private final String geometryTypeQuery = "SELECT distinct st_geometryType(%1$s) %2$s  where %1$s is not null";
+    private final String geometryTypeQuery =
+        "SELECT distinct st_geometryType(%1$s::geometry) %2$s  where %1$s is not null";
     private int classId;
     private String domain;
     private CidsLayerInfo layerInfo;
