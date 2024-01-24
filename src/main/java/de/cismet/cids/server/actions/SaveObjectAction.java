@@ -19,6 +19,7 @@ import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
+import Sirius.server.sql.PreparableStatement;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,6 +38,7 @@ import java.math.BigInteger;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.sql.Types;
 
 import java.text.SimpleDateFormat;
 
@@ -133,20 +135,23 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
         try {
             if ((className == null) || (value == null)) {
                 LOG.error("Error in DataQuisitionAction: No view specified");
-                return "\"Exception\": \"parameters className and data must be set.\"";
+                return "{\"Exception\": \"parameters className and data must be set.\"}";
             }
 
             // Determine table/view to use and check permissions
             final DomainServerImpl domainServer = (DomainServerImpl)ms;
             final MetaClass[] classes = domainServer.getClasses(user, CC);
             final MetaClass clazz = getClassByTableName(classes, className);
-
             final ObjectMapper mapper = new ObjectMapper();
             final JsonNode rootNode = mapper.readTree(value);
 
-            beanToSave = createCidsBeanFromJson(classes, rootNode, className);
+            if (clazz == null) {
+                return "{\"Exception\": \"Class with table name " + className + " not found.\"}";
+            }
+
+            beanToSave = createCidsBeanFromJson(classes, rootNode, className, null);
             // cannot use beanToSave.persist(), because the server does not contain an implementation of
-            // CidsBeanPersistService 
+            // CidsBeanPersistService
             MetaObject metaObject = beanToSave.getMetaObject();
 
             if (metaObject.getStatus() == MetaObject.MODIFIED) {
@@ -161,39 +166,72 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
         } catch (JsonProcessingException e) {
             // todo fehlerbehandlung
             LOG.error("Error while extracting the data sources", e);
-            return "\"Exception\": \"Error while extracting the data.\"";
+            return "{\"Exception\": \"" + e.getMessage() + "\"}";
         } catch (Exception e) {
-            LOG.error("Error while extracting the data sources", e);
-            return "\"Exception\": \"Error while extracting the data.\"";
+            LOG.error("Error while saving object", e);
+            return "{\"Exception\": \"" + e.getMessage() + "\"}";
         }
 
-        return "\"id\": \"" + String.valueOf(beanToSave.getProperty("id")) + "\"";
+        return "{\"id\": \"" + String.valueOf(beanToSave.getProperty("id")) + "\"}";
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   classes    DOCUMENT ME!
-     * @param   rootNode   DOCUMENT ME!
-     * @param   className  DOCUMENT ME!
+     * @param   classes              DOCUMENT ME!
+     * @param   rootNode             DOCUMENT ME!
+     * @param   className            DOCUMENT ME!
+     * @param   possibleObjectsList  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    private CidsBean createCidsBeanFromJson(final MetaClass[] classes, final JsonNode rootNode, final String className)
-            throws Exception {
-        final Integer nodeId = ((rootNode.get("id") != null) ? rootNode.get("id").asInt() : null);
+    private CidsBean createCidsBeanFromJson(final MetaClass[] classes,
+            final JsonNode rootNode,
+            final String className,
+            final List<CidsBean> possibleObjectsList) throws Exception {
+        Integer nodeId = ((rootNode.get("id") != null) ? rootNode.get("id").asInt() : null);
         CidsBean bean = null;
+        final String uuid = ((rootNode.get("uuid") != null) ? rootNode.get("uuid").asText() : null);
 
-        if ((nodeId == null) || (nodeId < 0)) {
-            bean = getClassByTableName(classes, className).getEmptyInstance(CC).getBean();
-        } else {
-            final DomainServerImpl domainServer = (DomainServerImpl)ms;
-            final MetaObject mo = ms.getMetaObject(user, nodeId, getClassByTableName(classes, className).getID(), CC);
+        bean = getBeanFromList(possibleObjectsList, nodeId);
 
-            if (mo != null) {
-                bean = mo.getBean();
+        if (bean == null) {
+            if (((nodeId == null) || (nodeId < 0)) && (uuid == null)) {
+                bean = getClassByTableName(classes, className).getEmptyInstance(CC).getBean();
+            } else {
+                if ((nodeId != null) && (nodeId >= 0)) {
+                    final MetaObject mo = ms.getMetaObject(
+                            user,
+                            nodeId,
+                            getClassByTableName(classes, className).getID(),
+                            CC);
+
+                    if (mo != null) {
+                        bean = mo.getBean();
+                    }
+                } else if (uuid != null) {
+                    final PreparableStatement ps = new PreparableStatement("select id from " + className
+                                    + " where uuid = ?",
+                            new int[] { Types.VARCHAR });
+                    ps.setObjects(uuid);
+                    final ArrayList<ArrayList> list = ms.performCustomSearch(ps, CC);
+
+                    MetaObject mo = null;
+
+                    if ((list != null) && (list.size() > 0) && (list.get(0).size() > 0)
+                                && (list.get(0).get(0) != null)) {
+                        nodeId = (Integer)list.get(0).get(0);
+                        mo = ms.getMetaObject(user, nodeId, getClassByTableName(classes, className).getID(), CC);
+                    }
+
+                    if (mo != null) {
+                        bean = mo.getBean();
+                    } else {
+                        bean = getClassByTableName(classes, className).getEmptyInstance(CC).getBean();
+                    }
+                }
             }
         }
 
@@ -234,7 +272,7 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
 
                     if (colObj instanceof Collection) {
                         final List<CidsBean> objList = (List<CidsBean>)colObj;
-                        objList.clear();
+                        final List<CidsBean> newObjList = new ArrayList<>();
 
                         if (node.isArray()) {
                             final Iterator<JsonNode> it = node.iterator();
@@ -244,8 +282,21 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
                                 final CidsBean b = createCidsBeanFromJson(
                                         classes,
                                         n,
-                                        getClassById(classes, attribute.getForeignKeyClassId()).getTableName());
+                                        getClassById(classes, attribute.getForeignKeyClassId()).getTableName(),
+                                        objList);
 
+                                newObjList.add(b);
+                            }
+                        }
+                        // do not clean the objList list and then add the new beans, because this will lead to an
+                        // error. (The old beans will be deleted)
+                        for (final CidsBean b : new ArrayList<CidsBean>(objList)) {
+                            if (getBeanFromList(newObjList, (Integer)b.getProperty("id")) == null) {
+                                objList.remove(b);
+                            }
+                        }
+                        for (final CidsBean b : new ArrayList<CidsBean>(newObjList)) {
+                            if (getBeanFromList(objList, (Integer)b.getProperty("id")) == null) {
                                 objList.add(b);
                             }
                         }
@@ -255,38 +306,39 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
                         final Object value = createCidsBeanFromJson(
                                 classes,
                                 node,
-                                getClassById(classes, attribute.getForeignKeyClassId()).getTableName());
-                        bean.setProperty(fieldname, value);
+                                getClassById(classes, attribute.getForeignKeyClassId()).getTableName(),
+                                null);
+                        bean.setProperty(attribute.getFieldName(), value);
                     }
                 } else {
                     final String javaClass = attribute.getJavaclassname();
 
                     if (javaClass.endsWith("String")) {
-                        bean.setProperty(fieldname, node.asText());
+                        bean.setProperty(attribute.getFieldName(), node.asText());
                     } else if (javaClass.endsWith("Integer")) {
-                        bean.setProperty(fieldname, node.asInt());
+                        bean.setProperty(attribute.getFieldName(), node.asInt());
                     } else if (javaClass.endsWith("Long")) {
-                        bean.setProperty(fieldname, node.asLong());
+                        bean.setProperty(attribute.getFieldName(), node.asLong());
                     } else if (javaClass.endsWith("Float")) {
-                        bean.setProperty(fieldname, node.floatValue());
+                        bean.setProperty(attribute.getFieldName(), node.floatValue());
                     } else if (javaClass.endsWith("Double")) {
-                        bean.setProperty(fieldname, node.asDouble());
+                        bean.setProperty(attribute.getFieldName(), node.asDouble());
                     } else if (javaClass.endsWith("Timestamp")) {
                         final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'H:m:s");
                         final java.util.Date d = sdf.parse(node.asText());
                         final Timestamp ts = new Timestamp(d.getTime());
-                        bean.setProperty(fieldname, ts);
+                        bean.setProperty(attribute.getFieldName(), ts);
                     } else if (javaClass.endsWith("Date")) {
                         final Date ts = new Date(node.asLong());
-                        bean.setProperty(fieldname, ts);
+                        bean.setProperty(attribute.getFieldName(), ts);
                     } else if (javaClass.endsWith("BigDecimal")) {
                         final BigDecimal bd = new BigDecimal(node.asText());
-                        bean.setProperty(fieldname, bd);
+                        bean.setProperty(attribute.getFieldName(), bd);
                     } else if (javaClass.endsWith("BigInteger")) {
                         final BigInteger bi = new BigInteger(node.asText());
-                        bean.setProperty(fieldname, bi);
+                        bean.setProperty(attribute.getFieldName(), bi);
                     } else if (javaClass.endsWith("Boolean")) {
-                        bean.setProperty(fieldname, node.asBoolean());
+                        bean.setProperty(attribute.getFieldName(), node.asBoolean());
                     } else if (javaClass.endsWith("Geometry")) {
                         final GeoJSONReader r = new GeoJSONReader();
                         final String geometryString = "{\"type\":\"" + node.get("type").asText() + "\",\"coordinates\":"
@@ -313,7 +365,7 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
                             }
                         }
 
-                        bean.setProperty(fieldname, g);
+                        bean.setProperty(attribute.getFieldName(), g);
                     } else {
                         throw new Exception("unhandled datatype " + javaClass);
                     }
@@ -322,6 +374,26 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
         }
 
         return bean;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   possibleObjectsList  DOCUMENT ME!
+     * @param   id                   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private CidsBean getBeanFromList(final List<CidsBean> possibleObjectsList, final Integer id) {
+        if ((id != null) && (possibleObjectsList != null)) {
+            for (final CidsBean bean : possibleObjectsList) {
+                if ((bean.getProperty("id") != null) && bean.getProperty("id").equals(id)) {
+                    return bean;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
