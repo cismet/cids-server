@@ -56,7 +56,7 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
     public transient int retriesOnError;
 
     private final transient LinkedBlockingQueue<DBConnection> cons;
-    private final transient LinkedBlockingQueue<DBConnection> usedCons;
+    private List<DBConnection> usedCons = Collections.synchronizedList(new ArrayList<DBConnection>());
     private final transient DBClassifier dbClassifier;
 //    private final ReleaseConnectionThread rct;
     private Executor executor = null;
@@ -86,7 +86,6 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
                 dbc.noOfConnections,
                 CismetConcurrency.getInstance("connectionPool").createThreadFactory("ConnectionPool"));
         cons = new LinkedBlockingQueue<DBConnection>(dbc.noOfConnections);
-        usedCons = new LinkedBlockingQueue<DBConnection>(dbc.noOfConnections);
 
         for (int i = 0; i < dbc.noOfConnections; i++) {
             final CheckConnection checker = new CheckConnection();
@@ -238,6 +237,9 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
         } else {
             if (!(longTermConnectionList.size() < (numberOfConnections / 3 * 2))) {
                 LOG.warn("too few long term connections left: " + longTermConnectionList.size() + " " + cons.size());
+            }
+            if (usedCons.size() >= dbClassifier.noOfConnections) {
+                LOG.error("Error to many usedConnections " + usedCons.size(), new Exception());
             }
             usedCons.add(c);
 
@@ -683,15 +685,21 @@ public class DBConnectionPool extends Shutdown implements DBBackend {
                             // cons.put(c);
                             done = true;
                         } else if (state.equals(TransactionState.OPEN)) {
-                            Thread.sleep(5);
+                            try {
+                                Thread.sleep(5);
+                            } catch (InterruptedException e) {
+                                LOG.error("CheckConnection interrupted", e);
+                            }
                             ++attempts;
                         }
-                    } catch (InterruptedException e) {
-                        // nothing to do
                     } catch (Throwable th) {
                         LOG.error("DB error", th);
                     }
                 } while (!done && (attempts < 100));
+
+                if (!done) {
+                    usedCons.remove(dbCon);
+                }
             } finally {
                 boolean done;
 
