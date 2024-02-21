@@ -35,7 +35,9 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.middleware.types.Node;
 import Sirius.server.naming.NameServer;
+import Sirius.server.newuser.LoginDeactivatedUserException;
 import Sirius.server.newuser.User;
+import Sirius.server.newuser.UserException;
 import Sirius.server.newuser.UserServer;
 import Sirius.server.property.ServerProperties;
 import Sirius.server.property.ServerPropertiesHandler;
@@ -88,6 +90,8 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.swing.JOptionPane;
 
 import de.cismet.cids.objectextension.ObjectExtensionFactory;
 
@@ -1502,7 +1506,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
     @Override
     public User validateUser(final User user, final String password, final ConnectionContext connectionContext)
-            throws RemoteException {
+            throws RemoteException, UserException {
         if (ConnectionContextBackend.getInstance().isEnabled()) {
             ConnectionContextBackend.getInstance()
                     .log(ConnectionContextLog.create(
@@ -1518,30 +1522,38 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         }
         try {
             if (userstore.validateUserPassword(user, password)) {
-                final JwtBuilder builder = Jwts.builder().setId(user.getId() + "").setSubject(user.getName());
-                builder.claim("domain", user.getDomain());
-                if ((user.getUserGroup() != null)) {
-                    builder.claim("usergroup", user.getUserGroup().getName());
-                    builder.claim("usergroupDomain", user.getUserGroup().getDomain());
+                final String deactivationText = userstore.isUserDeactivated(user);
+
+                if (deactivationText == null) {
+                    final JwtBuilder builder = Jwts.builder().setId(user.getId() + "").setSubject(user.getName());
+                    builder.claim("domain", user.getDomain());
+                    if ((user.getUserGroup() != null)) {
+                        builder.claim("usergroup", user.getUserGroup().getName());
+                        builder.claim("usergroupDomain", user.getUserGroup().getDomain());
+                    }
+
+                    user.setValid();
+                    final String configAttr = getConfigAttr(user, "jwt.claim", connectionContext);
+
+                    if (configAttr != null) {
+                        final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+                        final JsonNode node = mapper.readTree(configAttr);
+
+                        addClaimsFromConfAttrObject(node, builder);
+                    }
+
+                    final String jwt = builder.signWith(getServerKey()).compact();
+                    user.setJwsToken(jwt);
+
+                    return user;
+                } else {
+                    throw new LoginDeactivatedUserException(deactivationText, false, false, false, false);
                 }
-
-                user.setValid();
-                final String configAttr = getConfigAttr(user, "jwt.claim", connectionContext);
-
-                if (configAttr != null) {
-                    final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
-                    final JsonNode node = mapper.readTree(configAttr);
-
-                    addClaimsFromConfAttrObject(node, builder);
-                }
-
-                final String jwt = builder.signWith(getServerKey()).compact();
-                user.setJwsToken(jwt);
-
-                return user;
             } else {
                 return null;
             }
+        } catch (final UserException e) {
+            throw e;
         } catch (final Throwable e) {
             logger.error(e, e);
             throw new RemoteException("Exception validateUser at remotedbserverimpl", e); // NOI18N

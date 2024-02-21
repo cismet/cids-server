@@ -67,9 +67,10 @@ public interface UserService extends Remote {
      * @return  DOCUMENT ME!
      *
      * @throws  RemoteException  DOCUMENT ME!
+     * @throws  UserException    DOCUMENT ME!
      */
     User validateUser(final User user, String password, final ConnectionContext connectionContext)
-            throws RemoteException;
+            throws RemoteException, UserException;
 
     /**
      * DOCUMENT ME!
