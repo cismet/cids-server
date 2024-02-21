@@ -333,23 +333,41 @@ public final class UserStore extends Shutdown {
      * DOCUMENT ME!
      *
      * @param   user  DOCUMENT ME!
-     * @param   key   DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  SQLException  DOCUMENT ME!
      */
-// public String[] getConfigAttrs(final User user, final String key) throws SQLException {
-// final String[] newResult = getConfigAttrsNew(user, key);
-// final String[] oldResult = getConfigAttrsOld(user, key);
-//
-// if (((newResult == null) && (oldResult != null)) || ((newResult != null) && (oldResult == null))
-// || ((newResult != null) && (oldResult != null) && !Arrays.equals(newResult, oldResult))) {
-// LOG.fatal("different results: user: " + user.getName() + " key: " + key);
-// }
-//
-// return newResult;
-// }
+    public String isUserDeactivated(final User user) throws SQLException {
+        ResultSet result = null;
+        try {
+            result = conPool.submitInternalQuery(
+                    DBConnection.IS_USER_DEACTIVATED,
+                    user.getName());
+
+            if (result.next()) {
+                final String res = result.getString(1);
+
+                if ((res == null) || res.equalsIgnoreCase("false")) {
+                    return null;
+                } else if (res.equalsIgnoreCase("true")) {
+                    final String[] text = getConfigAttrs(user, "deactivation_text");
+
+                    if ((text != null) && (text.length > 0)) {
+                        return text[0];
+                    } else {
+                        return "Dieser Nutzer wurde deaktiviert.";
+                    }
+                }
+
+                return res;
+            }
+        } finally {
+            DBConnection.closeResultSets(result);
+        }
+
+        return null;
+    }
 
     /**
      * DOCUMENT ME!

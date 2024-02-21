@@ -50,6 +50,7 @@ public final class DBConnection implements DBBackend {
     // TODO: exchange simple descriptor string with small descriptor class that contains additional metadata regarding
     // the query specific information
     public static final String DESC_VERIFY_USER_PW = "verify_user_password";                                   // NOI18N
+    public static final String IS_USER_DEACTIVATED = "is_user_deactivated";                                    // NOI18N
     public static final String DESC_FETCH_DOMAIN_ID_FROM_DOMAIN_STRING = "fetch_domain_id_from_domain_string"; // NOI18N
     public static final String DESC_FETCH_CONFIG_ATTR_KEY_ID = "fetch_config_attr_key_id";                     // NOI18N
     public static final String DESC_FETCH_CONFIG_ATTR_USER_VALUE = "fetch_config_attr_user_value";             // NOI18N
