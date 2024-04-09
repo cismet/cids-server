@@ -14,12 +14,15 @@ import Sirius.server.sql.SQLTools;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtField;
-import javassist.CtMethod;
-import javassist.CtNewMethod;
-import javassist.LoaderClassPath;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.asm.Advice;
+import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.implementation.FieldAccessor;
+import net.bytebuddy.implementation.FixedValue;
+import net.bytebuddy.implementation.MethodDelegation;
+import net.bytebuddy.implementation.bind.annotation.Origin;
+import net.bytebuddy.implementation.bind.annotation.This;
 
 import org.apache.log4j.Logger;
 
@@ -29,6 +32,8 @@ import org.jdesktop.observablecollections.ObservableListListener;
 
 import org.openide.util.Lookup;
 
+import java.lang.reflect.Method;
+
 import java.math.BigDecimal;
 
 import java.security.ProtectionDomain;
@@ -37,14 +42,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.utils.MetaClassCacheService;
 
 import de.cismet.connectioncontext.ConnectionContext;
-
-import de.cismet.tools.CurrentStackTrace;
 
 /**
  * DOCUMENT ME!
@@ -59,6 +63,7 @@ public class BeanFactory {
     private static final Logger LOG = Logger.getLogger(BeanFactory.class);
     public static final String CIDS_DYNAMICS_SUPERCLASS = "de.cismet.cids.dynamics.CidsBean"; // NOI18N
     private static final BeanFactory instance = new BeanFactory();
+    public static String[] PROP_NAMES = new String[0];
 
     //~ Instance fields --------------------------------------------------------
 
@@ -352,16 +357,8 @@ public class BeanFactory {
     private Class createJavaClass(final MetaClass metaClass) throws Exception {
         final String classname = "de.cismet.cids.dynamics." // NOI18N
                     + createJavaClassnameOutOfTableName(metaClass.getTableName());
-        final ClassPool pool = ClassPool.getDefault();
         final ClassLoader cl = this.getClass().getClassLoader();
-        final LoaderClassPath lcp = new LoaderClassPath(cl);
-        pool.appendClassPath(lcp);
-
-        final CtClass ctClass = pool.makeClass(classname);
-
-        final CtClass superClass = pool.getCtClass(CIDS_DYNAMICS_SUPERCLASS);
-
-        ctClass.setSuperclass(superClass);
+        DynamicType.Builder builder = new ByteBuddy().subclass(CidsBean.class).name(classname);
 
         final List<MemberAttributeInfo> mais = new ArrayList<MemberAttributeInfo>(
                 metaClass.getMemberAttributeInfos().values());
@@ -386,7 +383,7 @@ public class BeanFactory {
             }
 
             try {
-                addPropertyToCtClass(pool, ctClass, Class.forName(attributeJavaClassName), fieldname);
+                builder = addPropertyToClass(builder, Class.forName(attributeJavaClassName), fieldname);
                 if (propertyNames.length() > 0) {
                     propertyNames.append(", ");                            // NOI18N
                 }
@@ -397,23 +394,17 @@ public class BeanFactory {
         }
         // FIXME: immutable collection instead of possible mutable (-> corrputable) array?
         // empty array initialiser causes compile error (new Object[] {})
-        final CtField propertyNamesStaticField;
+
         if (propertyNames.length() == 0) {
-            propertyNamesStaticField = CtField.make(
-                    "private String[] PROPERTY_NAMES = new String[0];", // NOI18N
-                    ctClass);
+            builder = builder.defineField("PROPERTY_NAMES", String[].class, Visibility.PRIVATE);
         } else {
-            propertyNamesStaticField = CtField.make(
-                    "private String[] PROPERTY_NAMES = new String[]{" // NOI18N
-                            + propertyNames
-                            + "};", // NOI18N
-                    ctClass);
+            builder = builder.defineField("PROPERTY_NAMES", String[].class, Visibility.PRIVATE);
         }
-        final CtMethod propertyNamesGetter = CtNewMethod.getter("getPropertyNames", propertyNamesStaticField); // NOI18N
-        ctClass.addField(propertyNamesStaticField);
-        ctClass.addMethod(propertyNamesGetter);
+        builder = builder.defineMethod("getPropertyNames", String[].class, Visibility.PUBLIC)
+                    .intercept(FixedValue.value(StringArrayFromStringBuilder(propertyNames)));
         final ProtectionDomain pd = this.getClass().getProtectionDomain();
-        final Class ret = ctClass.toClass(getClass().getClassLoader(), pd);
+
+        final Class ret = builder.make().load(cl).getLoaded();
         if (LOG.isInfoEnabled()) {
             LOG.info("Class " + ret + " was successfully created"); // NOI18N
         }
@@ -424,21 +415,42 @@ public class BeanFactory {
     /**
      * DOCUMENT ME!
      *
-     * @param   pool          DOCUMENT ME!
-     * @param   ctClass       DOCUMENT ME!
+     * @param   sb  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String[] StringArrayFromStringBuilder(final StringBuilder sb) {
+        final List<String> l = new ArrayList<>();
+        final StringTokenizer st = new StringTokenizer(sb.toString(), ",");
+
+        while (st.hasMoreTokens()) {
+            String tmp = st.nextToken();
+
+            tmp = tmp.trim();
+
+            l.add(tmp.substring(1, tmp.length() - 1));
+        }
+
+        return l.toArray(new String[l.size()]);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   builder       pool DOCUMENT ME!
      * @param   propertyType  DOCUMENT ME!
      * @param   propertyName  DOCUMENT ME!
      *
+     * @return  DOCUMENT ME!
+     *
      * @throws  Exception  DOCUMENT ME!
      */
-    private static void addPropertyToCtClass(final ClassPool pool,
-            final CtClass ctClass,
+    private static DynamicType.Builder addPropertyToClass(DynamicType.Builder builder,
             final Class propertyType,
             final String propertyName) throws Exception {
-        final CtField f = new CtField(pool.get(propertyType.getCanonicalName()), propertyName, ctClass);
-        ctClass.addField(f);
+        builder = builder.defineField(propertyName, propertyType, Visibility.PRIVATE);
 
-        final String fieldname = f.getName();
+        final String fieldname = propertyName;
         String getterPrefix = null;
         final String postfix = fieldname.toUpperCase().substring(0, 1) + fieldname.substring(1);
         if ((propertyType != boolean.class) && (propertyType != Boolean.class)) {
@@ -446,8 +458,9 @@ public class BeanFactory {
         } else {
             // Hier wird ein zusaetzlicher "getter" angelegt
             getterPrefix = "is"; // NOI18N
-            final CtMethod additionalGetter = CtNewMethod.getter(getterPrefix + postfix, f);
-            ctClass.addMethod(additionalGetter);
+
+            builder = builder.defineMethod(getterPrefix + postfix, propertyType, Visibility.PUBLIC)
+                        .intercept(FieldAccessor.ofField(propertyName));
 
             // leider reicht dieser "getter" nicht. beans binding braucht auch bei einem Boolean ein "getter" der mit
             // get anfaengt
@@ -457,18 +470,14 @@ public class BeanFactory {
         final String getterName = getterPrefix + postfix;
         final String setterName = "set" + postfix; // NOI18N
 
-        final CtMethod getter = CtNewMethod.getter(getterName, f);
-        final CtMethod setter = CtNewMethod.setter(setterName, f);
-
-        setter.insertAfter(
-            "propertyChangeSupport.firePropertyChange(\"" // NOI18N
-                    + f.getName()
-                    + "\", null, "                        // NOI18N
-                    + f.getName()
-                    + ");");                              // NOI18N
-
-        ctClass.addMethod(getter);
-        ctClass.addMethod(setter);
+        builder = builder.defineMethod(getterName, propertyType, Visibility.PUBLIC)
+                    .intercept(FieldAccessor.ofField(propertyName));
+        // the method with the 2 underscores is a workaround, bacause it was not possible for me to set the variable
+        // and invoke the firePropertyChanged method
+        builder = builder.defineMethod("__" + setterName, Void.TYPE, Visibility.PUBLIC).withParameter(propertyType)
+                    .intercept(FieldAccessor.ofField(propertyName));
+        builder = builder.defineMethod(setterName, Void.TYPE, Visibility.PUBLIC).withParameter(propertyType)
+                    .intercept(MethodDelegation.to(Interceptor.class));
 
         // Idee falls man oldValue benoetigt: erzeuge den setter wie oben jedoch mit einem anderen Namen (z.b::
         // stealthySetVorname) und setze den modifier auf private oder protected in dieser methode wird NICHT der
@@ -476,5 +485,41 @@ public class BeanFactory {
         // dann auf den noch nicht ver?nderten Wert zugreifen und oldvalue setzen diese Methode ruft dann die Metjode
         // stealthy... auf
 
+        return builder;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public static class Interceptor {
+
+        //~ Methods ------------------------------------------------------------
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param  value     DOCUMENT ME!
+         * @param  method    DOCUMENT ME!
+         * @param  original  DOCUMENT ME!
+         */
+        @Advice.OnMethodEnter
+        public static void intercept(final Object value, @Origin final Method method, @This final CidsBean original) {
+            try {
+                original.getClass()
+                        .getMethod("__" + method.getName(),
+                                new Class[] { Class.forName(method.getGenericParameterTypes()[0].getTypeName()) })
+                        .invoke(original, new Object[] { value });
+
+                final String fieldName = method.getName().substring(3, 4).toLowerCase() + method.getName()
+                            .substring(4);
+                original.firePropertyChanged(fieldName, null, value);
+            } catch (Exception e) {
+                LOG.error("Error before fire property change", e);
+            }
+        }
     }
 }
