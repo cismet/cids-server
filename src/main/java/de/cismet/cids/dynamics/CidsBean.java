@@ -423,6 +423,18 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
     }
 
     /**
+     * This method is used from sub classes to firePropertyChange without the need to access a private or protected
+     * class.
+     *
+     * @param  propertyName  DOCUMENT ME!
+     * @param  oldValue      DOCUMENT ME!
+     * @param  newValue      DOCUMENT ME!
+     */
+    public void firePropertyChanged(final String propertyName, final Object oldValue, final Object newValue) {
+        propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
+    }
+
+    /**
      * This method gets called when a bound property is changed.
      *
      * @param  evt  A PropertyChangeEvent object describing the event source and the property that has changed.
