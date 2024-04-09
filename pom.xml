@@ -120,10 +120,6 @@
             <artifactId>commons-httpclient</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.javassist</groupId>
-            <artifactId>javassist</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.vividsolutions</groupId>
             <artifactId>jts</artifactId>
         </dependency>
@@ -246,6 +242,11 @@
             <artifactId>graphql-java</artifactId>
             <version>16.2</version>
         </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.14.13</version>
+        </dependency>
 
         <dependency>
             <groupId>commons-beanutils</groupId>
@@ -290,7 +291,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.3.3</version>
+            <version>42.3.9</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
