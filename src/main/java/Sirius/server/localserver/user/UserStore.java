@@ -20,6 +20,8 @@ import Sirius.server.sql.ExceptionHandler;
 
 import org.apache.log4j.Logger;
 
+import org.openide.util.NbBundle;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
@@ -260,6 +262,9 @@ public final class UserStore extends Shutdown {
         // timestamp erzeugen + csconf + commit
         // success => change + datum
 
+        // the method newPasswordValid throws an exception, if the new password is not valid
+        newPasswordValid(newPassword);
+
         final Timestamp timestamp = new Timestamp(new Date().getTime());
 
         final String loginName = user.getName();
@@ -291,6 +296,60 @@ public final class UserStore extends Shutdown {
         }
 
         return success;
+    }
+
+    /**
+     * Checks, if the given password is a valid password.
+     *
+     * @param   password  the new password
+     *
+     * @return  true, iff the new password is valid
+     *
+     * @throws  PasswordCheckException  this exception will be thrown, if the new password is not valid
+     */
+    private boolean newPasswordValid(final String password) throws PasswordCheckException {
+        if (password.length() < 8) {
+            throw new PasswordCheckException(NbBundle.getMessage(UserStore.class, "UserStore.checkNewPassword.length"));
+        }
+        boolean digit = false;
+        boolean letter = false;
+        boolean special = false;
+
+        for (int i = 0; i < password.length(); ++i) {
+            final char c = password.charAt(i);
+            if (Character.isDigit(c)) {
+                digit = true;
+            } else if (Character.isAlphabetic(c)) {
+                letter = true;
+            } else {
+                // all characters, which are not a letter or a digit are special characters
+                special = true;
+            }
+        }
+
+        String errors = "";
+
+        if (!digit) {
+            errors += NbBundle.getMessage(UserStore.class, "UserStore.checkNewPassword.digit") + "\n";
+        }
+
+        if (!letter) {
+            errors += NbBundle.getMessage(UserStore.class, "UserStore.checkNewPassword.letter") + "\n";
+        }
+
+        if (!special) {
+            errors += NbBundle.getMessage(UserStore.class, "UserStore.checkNewPassword.special") + "\n";
+        }
+
+        if (!errors.equals("")) {
+            if (errors.endsWith("\n")) {
+                errors = errors.substring(0, errors.length() - 1);
+            }
+
+            throw new PasswordCheckException(errors);
+        }
+
+        return true;
     }
 
     /**

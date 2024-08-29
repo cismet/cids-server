@@ -7,6 +7,7 @@
 ****************************************************/
 package Sirius.server.middleware.interfaces.proxy;
 
+import Sirius.server.localserver.user.PasswordCheckException;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 import Sirius.server.newuser.UserGroup;
@@ -39,11 +40,14 @@ public interface UserService extends Remote {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  RemoteException  DOCUMENT ME!
-     * @throws  UserException    DOCUMENT ME!
+     * @throws  RemoteException         DOCUMENT ME!
+     * @throws  UserException           DOCUMENT ME!
+     * @throws  PasswordCheckException  DOCUMENT ME!
      */
     @Deprecated
-    boolean changePassword(User user, String oldPassword, String newPassword) throws RemoteException, UserException;
+    boolean changePassword(User user, String oldPassword, String newPassword) throws RemoteException,
+        UserException,
+        PasswordCheckException;
 
     // change password
     /**
@@ -56,13 +60,14 @@ public interface UserService extends Remote {
      *
      * @return  password changed successfully
      *
-     * @throws  RemoteException  non user related server error
-     * @throws  UserException    Sirius.server.newuser.UserException server error (eg wrong current password)
+     * @throws  RemoteException         non user related server error
+     * @throws  UserException           Sirius.server.newuser.UserException server error (eg wrong current password)
+     * @throws  PasswordCheckException  DOCUMENT ME!
      */
     boolean changePassword(final User user,
             final String oldPassword,
             final String newPassword,
-            final ConnectionContext context) throws RemoteException, UserException;
+            final ConnectionContext context) throws RemoteException, UserException, PasswordCheckException;
 
     /**
      * DOCUMENT ME!

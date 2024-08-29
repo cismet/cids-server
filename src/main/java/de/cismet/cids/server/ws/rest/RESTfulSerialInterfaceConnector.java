@@ -8,6 +8,7 @@
 package de.cismet.cids.server.ws.rest;
 
 import Sirius.server.localserver.method.MethodMap;
+import Sirius.server.localserver.user.PasswordCheckException;
 import Sirius.server.middleware.types.HistoryObject;
 import Sirius.server.middleware.types.LightweightMetaObject;
 import Sirius.server.middleware.types.Link;
@@ -1695,7 +1696,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     @Override
     @Deprecated
     public boolean changePassword(final User user, final String oldPassword, final String newPassword)
-            throws RemoteException, UserException {
+            throws RemoteException, UserException, PasswordCheckException {
         return changePassword(user, oldPassword, newPassword, ConnectionContext.createDeprecated());
     }
 
@@ -1709,14 +1710,15 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  RemoteException  DOCUMENT ME!
-     * @throws  UserException    DOCUMENT ME!
+     * @throws  RemoteException         DOCUMENT ME!
+     * @throws  UserException           DOCUMENT ME!
+     * @throws  PasswordCheckException  DOCUMENT ME!
      */
     @Override
     public boolean changePassword(final User user,
             final String oldPassword,
             final String newPassword,
-            final ConnectionContext context) throws RemoteException, UserException {
+            final ConnectionContext context) throws RemoteException, UserException, PasswordCheckException {
         try {
             final AppendableMultivaluedMapImpl queryParams = new AppendableMultivaluedMapImpl().append(
                         PARAM_USER,
