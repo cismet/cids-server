@@ -13,6 +13,7 @@
 package Sirius.server.middleware.interfaces.domainserver;
 
 import Sirius.server.localserver.method.MethodMap;
+import Sirius.server.localserver.user.PasswordCheckException;
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.types.HistoryObject;
 import Sirius.server.middleware.types.LightweightMetaObject;
@@ -373,7 +374,7 @@ public class DomainServerCallServerService implements CallServerService {
     public boolean changePassword(final User user,
             final String oldPassword,
             final String newPassword,
-            final ConnectionContext context) throws RemoteException, UserException {
+            final ConnectionContext context) throws RemoteException, UserException, PasswordCheckException {
         return getDomainServer().changePassword(user, oldPassword, newPassword, context);
     }
 
@@ -684,7 +685,7 @@ public class DomainServerCallServerService implements CallServerService {
     @Override
     @Deprecated
     public boolean changePassword(final User user, final String oldPassword, final String newPassword)
-            throws RemoteException, UserException {
+            throws RemoteException, UserException, PasswordCheckException {
         return getDomainServer().changePassword(user, oldPassword, newPassword);
     }
 
