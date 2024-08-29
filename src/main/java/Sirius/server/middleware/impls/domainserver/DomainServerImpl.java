@@ -23,6 +23,7 @@ import Sirius.server.localserver.method.MethodMap;
 import Sirius.server.localserver.object.CustomDeletionProvider;
 import Sirius.server.localserver.query.querystore.Store;
 import Sirius.server.localserver.tree.NodeReferenceList;
+import Sirius.server.localserver.user.PasswordCheckException;
 import Sirius.server.localserver.user.UserStore;
 import Sirius.server.middleware.impls.proxy.StartProxy;
 import Sirius.server.middleware.interfaces.domainserver.*;
@@ -1397,7 +1398,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     @Override
     @Deprecated
     public boolean changePassword(final User user, final String oldPassword, final String newPassword)
-            throws RemoteException {
+            throws RemoteException, UserException, PasswordCheckException {
         return changePassword(user, oldPassword, newPassword, ConnectionContext.createDeprecated());
     }
 
@@ -1405,7 +1406,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
     public boolean changePassword(final User user,
             final String oldPassword,
             final String newPassword,
-            final ConnectionContext connectionContext) throws RemoteException {
+            final ConnectionContext connectionContext) throws RemoteException, UserException, PasswordCheckException {
         if (ConnectionContextBackend.getInstance().isEnabled()) {
             ConnectionContextBackend.getInstance()
                     .log(ConnectionContextLog.create(

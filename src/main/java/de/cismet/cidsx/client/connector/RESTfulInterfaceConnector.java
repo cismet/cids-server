@@ -8,6 +8,7 @@
 package de.cismet.cidsx.client.connector;
 
 import Sirius.server.localserver.method.MethodMap;
+import Sirius.server.localserver.user.PasswordCheckException;
 import Sirius.server.middleware.types.AbstractAttributeRepresentationFormater;
 import Sirius.server.middleware.types.HistoryObject;
 import Sirius.server.middleware.types.LightweightMetaObject;
@@ -1271,7 +1272,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     @Deprecated
     @Override
     public boolean changePassword(final User user, final String oldPassword, final String newPassword)
-            throws RemoteException, UserException {
+            throws RemoteException, UserException, PasswordCheckException {
         return changePassword(user, oldPassword, newPassword, ConnectionContext.createDeprecated());
     }
 
@@ -1491,13 +1492,14 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @throws  RemoteException                TODO
      * @throws  UserException                  TODO
+     * @throws  PasswordCheckException         DOCUMENT ME!
      * @throws  UnsupportedOperationException  DOCUMENT ME!
      */
     @Override
     public boolean changePassword(final User user,
             final String oldPassword,
             final String newPassword,
-            final ConnectionContext connectionContext) throws RemoteException, UserException {
+            final ConnectionContext connectionContext) throws RemoteException, UserException, PasswordCheckException {
         // TODO:  Implement Method in Users API or remove.
         final String message = "The method '"
                     + Thread.currentThread().getStackTrace()[1].getMethodName()

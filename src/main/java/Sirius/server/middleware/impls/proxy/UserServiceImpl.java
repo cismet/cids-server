@@ -15,6 +15,7 @@ package Sirius.server.middleware.impls.proxy;
 
 import Sirius.server.ServerExitError;
 import Sirius.server.localserver.user.LoginRestrictionHelper;
+import Sirius.server.localserver.user.PasswordCheckException;
 import Sirius.server.middleware.interfaces.domainserver.UserService;
 import Sirius.server.newuser.LoginRestrictionUserException;
 import Sirius.server.newuser.User;
@@ -296,13 +297,14 @@ public class UserServiceImpl {
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  RemoteException  DOCUMENT ME!
-     * @throws  UserException    DOCUMENT ME!
+     * @throws  RemoteException         DOCUMENT ME!
+     * @throws  UserException           DOCUMENT ME!
+     * @throws  PasswordCheckException  DOCUMENT ME!
      */
     public boolean changePassword(final User user,
             final String oldPassword,
             final String newPassword,
-            final ConnectionContext context) throws RemoteException, UserException {
+            final ConnectionContext context) throws RemoteException, UserException, PasswordCheckException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("changePassword called for :user:" + user); // NOI18N
         }
