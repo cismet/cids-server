@@ -334,7 +334,7 @@ public abstract class AbstractPostgresToShapefileServerAction implements Connect
             } catch (final Exception ex) {
                 LOG.warn(String.format("could not delete %s", dbfFile.getName()), ex);
             }
-            return Files.readAllBytes(zipFile.toPath());
+            return ServerActionHelper.asyncByteArrayHelper(Files.readAllBytes(zipFile.toPath()), "shape.zip");
         } catch (final Exception ex) {
             LOG.error(ex, ex);
             return ex;
