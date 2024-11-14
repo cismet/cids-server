@@ -28,7 +28,8 @@ public enum GeneralServerResources {
     OFFLINE_ACTION_JSON(new TextServerResource("/action_execution/configuration.json")),
     GRAPHQL_PROPERTIES(new TextServerResource("/graphQl/configuration.properties")),
     CONFIF_ATTR_REDIRECTING_JSON(new JsonServerResource("/configAttr/redirecting.json")),
-    CONFIG_UNCAUGHT_CLIENT_EXCEPTION_JSON(new JsonServerResource("/uce/uncaught_client_exception.json"));
+    CONFIG_UNCAUGHT_CLIENT_EXCEPTION_JSON(new JsonServerResource("/uce/uncaught_client_exception.json")),
+    CONFIG_ACTION_UPLOAD_JSON(new JsonServerResource("/aaupload/upload.json"));
 
     //~ Instance fields --------------------------------------------------------
 
