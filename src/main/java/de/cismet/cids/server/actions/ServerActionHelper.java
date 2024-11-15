@@ -125,9 +125,13 @@ public class ServerActionHelper {
                             webDavClient,
                             null);
 
-                    return new PreparedAsyncByteAction(completeFolder + file, ((byte[])obj).length);
+                    if (res == 201) {
+                        return new PreparedAsyncByteAction(completeFolder + file, ((byte[])obj).length);
+                    } else {
+                        LOG.error("Cannot copy the action result to the http server. HTTP status code = " + res);
+                    }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LOG.error("Error while trying to copxy the action result to the http server", e);
                 }
             }
         }
