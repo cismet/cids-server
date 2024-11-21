@@ -12,11 +12,15 @@
  */
 package de.cismet.cids.server.actions;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.InputStream;
 import java.io.PrintWriter;
 
 import java.text.DateFormat;
@@ -50,6 +54,7 @@ public class ServerActionHelper {
     private static String path = null;
     private static String usr = null;
     private static String pwd = null;
+    private static String tmpFilePath = null;
     private static int threshold = DEFAULT_THRESHOLD;
 
     private static final DateFormat DF = new SimpleDateFormat("yyyyMMdd");
@@ -68,6 +73,7 @@ public class ServerActionHelper {
 
                 path = config.getPath();
                 threshold = convertStringToByteCount(config.getThreshold());
+                tmpFilePath = config.getTmpFilePath();
                 usr = config.getUser();
                 pwd = config.getPassword();
             } catch (final Exception ex) {
@@ -87,8 +93,8 @@ public class ServerActionHelper {
     public static Object asyncByteArrayHelper(final Object obj, final String filename) {
         init();
 
-        if ((obj instanceof byte[]) && (path != null)) {
-            if (((byte[])obj).length >= threshold) {
+        if (((obj instanceof byte[]) || (obj instanceof UploadableInputStream)) && (path != null)) {
+            if ((obj instanceof UploadableInputStream) || (((byte[])obj).length >= threshold)) {
                 // handle it
                 final Date now = new Date();
                 final String dayFolder = DF.format(now);
@@ -107,6 +113,7 @@ public class ServerActionHelper {
 
                 try {
                     // create the folders, if they not already exists
+                    int filesize = -1;
                     int res = WebDavHelper.createFolder(server + dayFolder + "/", webDavClient);
                     res = WebDavHelper.createFolder(server + dayFolder + "/" + randomFolderName + "/",
                             webDavClient);
@@ -118,21 +125,81 @@ public class ServerActionHelper {
                                 + "/";
 
                     // create the file
-                    res = WebDavHelper.uploadFileToWebDAV(
-                            file,
-                            new ByteArrayInputStream((byte[])obj),
-                            completeFolder,
-                            webDavClient,
-                            null);
+                    if (obj instanceof byte[]) {
+                        res = WebDavHelper.uploadFileToWebDAV(
+                                file,
+                                new ByteArrayInputStream((byte[])obj),
+                                completeFolder,
+                                webDavClient,
+                                null);
+                        filesize = ((byte[])obj).length;
+                    } else if (obj instanceof UploadableInputStream) {
+                        FileOutputStream fos = null;
+                        File tmpFile = null;
+
+                        if (tmpFilePath != null) {
+                            final File directory = new File(tmpFilePath);
+
+                            if (directory.exists()) {
+                                tmpFile = File.createTempFile("actionResult", ".out", directory);
+                                fos = new FileOutputStream(tmpFile);
+                            } else {
+                                LOG.error("Directory for temporary files does not exists: " + tmpFilePath);
+                            }
+                        }
+
+                        if (fos == null) {
+                            tmpFile = File.createTempFile("actionResult", "out");
+                            fos = new FileOutputStream(tmpFile);
+                        }
+
+                        InputStream is = ((UploadableInputStream)obj).getInputStream();
+                        final byte[] tmp = new byte[2048];
+                        int count;
+                        filesize = 0;
+
+                        while ((count = is.read(tmp)) != -1) {
+                            fos.write(tmp, 0, count);
+                            filesize += count;
+                        }
+
+                        is.close();
+                        fos.close();
+                        fos = null;
+                        is = null;
+
+                        res = WebDavHelper.uploadFileToWebDAVWithPreemptiveAuth(
+                                file,
+                                tmpFile,
+                                completeFolder,
+                                webDavClient,
+                                null);
+
+                        if (tmpFile != null) {
+                            try {
+                                tmpFile.delete();
+                            } catch (Exception e) {
+                                LOG.error("Cannot delete the temporary file: " + tmpFile.getAbsolutePath());
+                            }
+                        }
+                    }
 
                     if (res == 201) {
-                        return new PreparedAsyncByteAction(completeFolder + file, ((byte[])obj).length);
+                        return new PreparedAsyncByteAction(completeFolder + file, filesize);
                     } else {
                         LOG.error("Cannot copy the action result to the http server. HTTP status code = " + res);
                     }
                 } catch (Exception e) {
                     LOG.error("Error while trying to copxy the action result to the http server", e);
                 }
+            }
+        }
+
+        if (obj instanceof UploadableInputStream) {
+            try {
+                return IOUtils.toByteArray(((UploadableInputStream)obj).getInputStream());
+            } catch (Exception e) {
+                LOG.error("Cannot convert inputStream to byte array", e);
             }
         }
 

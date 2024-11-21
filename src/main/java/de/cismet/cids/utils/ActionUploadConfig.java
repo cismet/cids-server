@@ -22,7 +22,7 @@ import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 /**
  * DOCUMENT ME!
  *
- * @author   jruiz
+ * @author   therter
  * @version  $Revision$, $Date$
  */
 @Getter
@@ -36,6 +36,7 @@ public class ActionUploadConfig {
     private String user;
     private String password;
     private String threshold;
+    private String tmpFilePath;
 
     //~ Constructors -----------------------------------------------------------
 
