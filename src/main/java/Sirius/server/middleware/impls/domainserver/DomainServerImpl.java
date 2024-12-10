@@ -37,6 +37,7 @@ import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.middleware.types.Node;
 import Sirius.server.naming.NameServer;
 import Sirius.server.newuser.LoginDeactivatedUserException;
+import Sirius.server.newuser.Membership;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 import Sirius.server.newuser.UserServer;
@@ -89,6 +90,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1811,6 +1814,8 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                                 + lsName
                                 + "  "
                                 + ip);
+
+                    startPeriodicUserCheck(userStore);
                 } catch (NotBoundException nbe) {
                     System.err.println("<LS> No SiriusRegistry bound on RMIRegistry at " + registryIPs[i]); // NOI18N
                     logger.error("<LS> No SiriusRegistry bound on RMIRegistry at " + registryIPs[i], nbe);  // NOI18N
@@ -1834,6 +1839,78 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         if (registered == 0) {
             throw new ServerExitError("registration failed"); // NOI18N
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  us  DOCUMENT ME!
+     */
+    private void startPeriodicUserCheck(final UserStore us) {
+        final Timer userChecker = new Timer("userCheckerThread", true);
+
+        userChecker.scheduleAtFixedRate(new TimerTask() {
+
+                @Override
+                public void run() {
+                    final UserStore.UsersWithMemberships newUsers = us.checkForNewUsers();
+                    final String[] registryIPs = properties.getRegistryIps();
+                    final String rmiPort = serverInfo.getRMIPort();
+
+                    for (int i = 0; i < registryIPs.length; i++) {
+                        try {
+                            nameServer = (NameServer)Naming.lookup("rmi://" + registryIPs[i] + "/nameServer");
+                            userServer = (UserServer)nameServer; // (UserServer)
+
+                            if ((newUsers != null) && !newUsers.getUsers().isEmpty()) {
+                                for (final User newUser : newUsers.getUsers()) {
+                                    try {
+                                        logger.info("Register new user: " + String.valueOf(newUser.getKey()));
+                                        userServer.registerUser(newUser);
+                                        Registry.getServerInstance().registerUser(newUser);
+                                    } catch (Exception e) {
+                                        logger.error("Error while registering new user", e);
+                                    }
+                                }
+                            }
+
+                            if ((newUsers != null) && !newUsers.getMemberships().isEmpty()) {
+                                for (final Membership newMembership : newUsers.getMemberships()) {
+                                    try {
+                                        userServer.registerUserMembership(newMembership);
+                                        Registry.getServerInstance().registerUserMembership(newMembership);
+                                    } catch (Exception e) {
+                                        logger.error("Error while registering new user", e);
+                                    }
+                                }
+                            }
+                        } catch (NotBoundException nbe) {
+                            System.err.println("<LS> No SiriusRegistry bound on RMIRegistry at " + registryIPs[i]); // NOI18N
+                            logger.error("<LS> No SiriusRegistry bound on RMIRegistry at " + registryIPs[i], nbe);  // NOI18N
+                        } catch (RemoteException re) {
+                            System.err.println(
+                                "<LS> No RMIRegistry on "
+                                        + registryIPs[i]
+                                        + ", therefore SiriusRegistry could not be contacted");
+                            logger.error(
+                                "<LS> No RMIRegistry on "
+                                        + registryIPs[i]
+                                        + ", therefore SiriusRegistry could not be contacted",
+                                re);
+                        } catch (Throwable re) {
+                            System.err.println(
+                                "<LS> No RMIRegistry on "
+                                        + registryIPs[i]
+                                        + ", therefore SiriusRegistry could not be contacted");
+                            logger.error(
+                                "<LS> No RMIRegistry on "
+                                        + registryIPs[i]
+                                        + ", therefore SiriusRegistry could not be contacted",
+                                re);
+                        }
+                    }
+                }
+            }, 60000, 60000);
     }
 
     /**

@@ -134,7 +134,7 @@ public class WebDavTunnelAction implements ServerAction {
                 return webdavclient.getStatusCode(path);
             } else if (isGet) {
                 final InputStream is = webdavclient.getInputStream(path);
-                return IOUtils.toByteArray(is);
+                return ServerActionHelper.asyncByteArrayHelper(IOUtils.toByteArray(is), "webdav.data");
             } else if (isPut) {
                 final InputStream data = new ByteArrayInputStream((byte[])body);
                 webdavclient.put(path, data);

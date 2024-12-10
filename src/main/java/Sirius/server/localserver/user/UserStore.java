@@ -31,8 +31,10 @@ import java.sql.Timestamp;
 
 import java.text.SimpleDateFormat;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import java.util.stream.Collectors;
@@ -187,6 +189,157 @@ public final class UserStore extends Shutdown {
     }                                                                                // end Konstruktor
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public UsersWithMemberships checkForNewUsers() {
+        final List newUsers;
+        final List newUserGroups;
+        final List newMemberships;
+
+        newUsers = new ArrayList(100);
+        newUserGroups = new ArrayList(10);
+        newMemberships = new ArrayList(100);
+
+        try {
+            final ResultSet userTable = conPool.submitInternalQuery(DBConnection.DESC_GET_ALL_USERS, new Object[0]);
+
+            // --------------------load users--------------------------------------------------
+
+            while (userTable.next()) {
+                try {
+                    final User tmp = new User(
+                            userTable.getInt("id"),                   // NOI18N
+                            userTable.getString("login_name").trim(), // NOI18N
+                            properties.getServerName(),
+                            userTable.getBoolean("administrator"));   // NOI18N
+
+                    newUsers.add(tmp);
+                } catch (Exception e) {
+                    LOG.error(e);
+
+                    if (e instanceof java.sql.SQLException) {
+                        throw e;
+                    }
+                }
+            }
+
+            userTable.close();
+
+            // --------------------load userGroups--------------------------------------------------
+
+            final ResultSet userGroupTable = conPool.submitInternalQuery(
+                    DBConnection.DESC_GET_ALL_USERGROUPS,
+                    new Object[0]);
+
+            while (userGroupTable.next()) {
+                try {
+                    String domain = userGroupTable.getString("domain_name"); // NOI18N
+                    if ("LOCAL".equals(domain)) {                            // NOI18N
+                        domain = properties.getServerName();
+                    }
+
+                    final UserGroup tmp = new UserGroup(
+                            userGroupTable.getInt("id"),             // NOI18N
+                            userGroupTable.getString("name").trim(), // NOI18N
+                            domain,
+                            userGroupTable.getString("descr"),
+                            userGroupTable.getInt("prio"));          // NOI18N
+                    newUserGroups.add(tmp);
+                } catch (Exception e) {
+                    LOG.error(e);
+
+                    if (e instanceof java.sql.SQLException) {
+                        throw e;
+                    }
+                }
+            }
+
+            userGroupTable.close();
+
+            // --------------------load memberships--------------------------------------------------
+
+            final ResultSet memberTable = conPool.submitInternalQuery(
+                    DBConnection.DESC_GET_ALL_MEMBERSHIPS,
+                    new Object[0]);
+
+            while (memberTable.next()) {
+                try {
+                    final String lsName = properties.getServerName();
+
+                    final String login = memberTable.getString("login_name");
+                    final String ug = memberTable.getString("ug");
+
+                    String ugDomain = memberTable.getString("ugDomain"); // NOI18N
+
+                    if ((ugDomain == null) || ugDomain.equalsIgnoreCase("local")) { // NOI18N
+                        ugDomain = lsName;
+                    }
+
+                    final String usrDomain = lsName;
+
+                    final Membership tmp = new Membership(login, usrDomain, ug, ugDomain);
+                    newMemberships.add(tmp);
+                } catch (Exception e) {
+                    LOG.error(e);
+
+                    if (e instanceof java.sql.SQLException) {
+                        throw e;
+                    }
+                }
+            }
+
+            memberTable.close();
+
+            if (!users.containsAll(newUsers) && !memberships.containsAll(newMemberships)) {
+                final List<User> allNewUsers = determineNewObjects((List<User>)newUsers, (Vector<User>)users);
+                final List<Membership> allNewMemberships = determineNewObjects((List<Membership>)newMemberships,
+                        (Vector<Membership>)memberships);
+                final UsersWithMemberships newUsersWithMemberships = new UsersWithMemberships(allNewUsers);
+                users.addAll(allNewUsers);
+
+                for (final User user : allNewUsers) {
+                    for (final Membership membership : allNewMemberships) {
+                        if (membership.getUserKey().equals(user.getRegistryKey())) {
+                            newUsersWithMemberships.getMemberships().add(membership);
+                            memberships.add(membership);
+                        }
+                    }
+                }
+
+                return newUsersWithMemberships;
+            }
+        } catch (java.lang.Exception e) {
+            ExceptionHandler.handle(e);
+            LOG.error("<LS> ERROR ::  in membership statement" + e.getMessage(), e); // NOI18N
+        }
+
+        return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   <T>       DOCUMENT ME!
+     * @param   newList  DOCUMENT ME!
+     * @param   oldList  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private <T> List<T> determineNewObjects(final List<T> newList, final Vector<T> oldList) {
+        final List<T> result = new ArrayList<>();
+
+        for (final T tmp : newList) {
+            if (!oldList.contains(tmp)) {
+                result.add(tmp);
+            }
+        }
+
+        return result;
+    }
 
     /**
      * DOCUMENT ME!
@@ -655,6 +808,81 @@ public final class UserStore extends Shutdown {
             return value;
         } finally {
             DBConnection.closeResultSets(userValueSet, ugValueSet, domainValueSet);
+        }
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public static class UsersWithMemberships {
+
+        //~ Instance fields ----------------------------------------------------
+
+        private List<User> users = new ArrayList<>();
+        private List<Membership> memberships = new ArrayList<>();
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new UsersWithMemberships object.
+         *
+         * @param  users  DOCUMENT ME!
+         */
+        public UsersWithMemberships(final List<User> users) {
+            this.users = users;
+        }
+
+        /**
+         * Creates a new UsersWithMemberships object.
+         *
+         * @param  users        DOCUMENT ME!
+         * @param  memberships  DOCUMENT ME!
+         */
+        public UsersWithMemberships(final List<User> users, final List<Membership> memberships) {
+            this.users = users;
+            this.memberships = memberships;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  the users
+         */
+        public List<User> getUsers() {
+            return users;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param  users  the users to set
+         */
+        public void setUsers(final List<User> users) {
+            this.users = users;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  the memberships
+         */
+        public List<Membership> getMemberships() {
+            return memberships;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param  memberships  the memberships to set
+         */
+        public void setMemberships(final List<Membership> memberships) {
+            this.memberships = memberships;
         }
     }
 }
