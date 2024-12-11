@@ -323,7 +323,7 @@ public final class UserStore extends Shutdown {
     /**
      * DOCUMENT ME!
      *
-     * @param   <T>       DOCUMENT ME!
+     * @param   <T>      DOCUMENT ME!
      * @param   newList  DOCUMENT ME!
      * @param   oldList  DOCUMENT ME!
      *

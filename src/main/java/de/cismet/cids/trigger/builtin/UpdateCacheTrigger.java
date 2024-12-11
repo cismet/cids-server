@@ -92,41 +92,7 @@ public class UpdateCacheTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public void afterUpdate(final CidsBean cidsBean, final User user) {
-        if (isCacheEnabled(cidsBean)) {
-            de.cismet.tools.CismetThreadPool.execute(new javax.swing.SwingWorker<ResultSet, Void>() {
-
-                    @Override
-                    protected ResultSet doInBackground() throws Exception {
-                        try {
-                            return getDbServer().getActiveDBConnection()
-                                        .submitInternalQuery(
-                                            DBConnection.DESC_UPDATE_CACHEENTRY,
-                                            cidsBean.getMetaObject().getClassID(),
-                                            cidsBean.getMetaObject().getID());
-                        } catch (SQLException e) {
-                            getDbServer().getActiveDBConnection()
-                                    .submitInternalUpdate(
-                                        DBConnection.DESC_DELETE_CACHEENTRY,
-                                        cidsBean.getMetaObject().getClassID(),
-                                        cidsBean.getMetaObject().getID());
-                            return getDbServer().getActiveDBConnection()
-                                        .submitInternalQuery(
-                                            DBConnection.DESC_INSERT_CACHEENTRY,
-                                            cidsBean.getMetaObject().getClassID(),
-                                            cidsBean.getMetaObject().getID());
-                        }
-                    }
-
-                    @Override
-                    protected void done() {
-                        try {
-                            final ResultSet result = get();
-                        } catch (Exception e) {
-                            log.error("Exception in Background Thread: afterUpdate", e);
-                        }
-                    }
-                });
-        }
+        updateCache(cidsBean, user);
     }
 
     @Override
@@ -178,10 +144,55 @@ public class UpdateCacheTrigger extends AbstractDBAwareCidsTrigger {
     @Override
     public void afterCommittedUpdate(final CidsBean cidsBean,
             final User user) {
+        updateCache(cidsBean, user);
     }
 
     @Override
     public void afterCommittedDelete(final CidsBean cidsBean,
             final User user) {
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  cidsBean  DOCUMENT ME!
+     * @param  user      DOCUMENT ME!
+     */
+    private void updateCache(final CidsBean cidsBean, final User user) {
+        if (isCacheEnabled(cidsBean)) {
+            de.cismet.tools.CismetThreadPool.execute(new javax.swing.SwingWorker<ResultSet, Void>() {
+
+                    @Override
+                    protected ResultSet doInBackground() throws Exception {
+                        try {
+                            return getDbServer().getActiveDBConnection()
+                                        .submitInternalQuery(
+                                            DBConnection.DESC_UPDATE_CACHEENTRY,
+                                            cidsBean.getMetaObject().getClassID(),
+                                            cidsBean.getMetaObject().getID());
+                        } catch (SQLException e) {
+                            getDbServer().getActiveDBConnection()
+                                    .submitInternalUpdate(
+                                        DBConnection.DESC_DELETE_CACHEENTRY,
+                                        cidsBean.getMetaObject().getClassID(),
+                                        cidsBean.getMetaObject().getID());
+                            return getDbServer().getActiveDBConnection()
+                                        .submitInternalQuery(
+                                            DBConnection.DESC_INSERT_CACHEENTRY,
+                                            cidsBean.getMetaObject().getClassID(),
+                                            cidsBean.getMetaObject().getID());
+                        }
+                    }
+
+                    @Override
+                    protected void done() {
+                        try {
+                            final ResultSet result = get();
+                        } catch (Exception e) {
+                            log.error("Exception in Background Thread: afterUpdate", e);
+                        }
+                    }
+                });
+        }
     }
 }

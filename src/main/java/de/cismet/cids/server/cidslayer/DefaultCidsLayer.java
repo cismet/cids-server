@@ -198,6 +198,14 @@ public class DefaultCidsLayer implements CidsLayerInfo, Serializable, Connection
                     } catch (final Exception ex) {
                         LOG.error(ex, ex);
                     }
+                } else if (attr.getJavaclassname().equals("com.vividsolutions.jts.geom.Geometry")) {
+                    sqlGeoField = attr.getFieldName();
+                    geoField = attr.getName();
+                    sb.add("st_asBinary(" + attr.getFieldName() + ") as " + geoField);
+                    columnNamesList.add(attr.getName());
+                    sqlColumnNamesList.add(attr.getFieldName());
+                    columnPropertyNamesList.add(attr.getFieldName());
+                    primitiveColumnTypesList.add("Geometry");
                 } else {
                     final String tmp = sb.remove(sb.size() - 1);
                     sb.add(tmp.substring(0, tmp.length() - 1));

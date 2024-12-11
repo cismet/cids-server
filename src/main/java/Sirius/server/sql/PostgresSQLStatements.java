@@ -505,24 +505,16 @@ public final class PostgresSQLStatements implements ServerSQLStatements {
                     + ";"
                     + wkt;
         final PreparableStatement ps = new PreparableStatement(
-                "SELECT DISTINCT i.class_id ocid, i.object_id as oid, c.stringrep, c.geometry, c.lightweight_json " // NOI18N
-                        + "FROM            geom g, "                                                                // NOI18N
-                        + "                cs_attr_object_derived i "                                               // NOI18N
-                        + "                LEFT OUTER JOIN cs_cache c "                                             // NOI18N
-                        + "                ON              ( "                                                      // NOI18N
-                        + "                                                c.class_id =i.class_id "                 // NOI18N
-                        + "                                AND             c.object_id=i.object_id "                // NOI18N
-                        + "                                ) "                                                      // NOI18N
-                        + "WHERE           i.attr_class_id = "                                                      // NOI18N
-                        + "                ( SELECT cs_class.id "                                                   // NOI18N
-                        + "                FROM    cs_class "                                                       // NOI18N
-                        + "                WHERE   cs_class.table_name::text ILIKE 'GEOM'::text "                   // NOI18N
-                        + "                ) "                                                                      // NOI18N
-                        + "AND             i.attr_object_id = g.id "                                                // NOI18N
-                        + "AND i.class_id IN "
-                        + classesIn                                                                                 // NOI18N
-                        + "AND geo_field && st_GeometryFromText(?) "                                                // NOI18N
-                        + "AND st_intersects(geo_field,st_GeometryFromText(?)) "                                    // NOI18N
+                "SELECT DISTINCT i.class_id ocid, i.object_id as oid, c.stringrep, c.geometry, c.lightweight_json \n"
+                        + "FROM            cs_attr_geom g, \n"
+                        + "                cs_attr_object_derived i \n"
+                        + "                LEFT OUTER JOIN cs_cache c \n"
+                        + "                ON ( c.class_id =i.class_id AND c.object_id=i.object_id ) \n"
+                        + "WHERE           i.attr_class_id = g.class_id\n"
+                        + "AND             i.attr_object_id = g.object_id\n"
+                        + "AND i.class_id IN ?\n"
+                        + "AND geom_val && st_GeometryFromText(?)\n"
+                        + "AND st_intersects(geom_val,st_GeometryFromText(?))\n"
                         + "ORDER BY        1,2,3",
                 new int[] { Types.VARCHAR, Types.VARCHAR });
         final Object[] objs = new Object[2];
