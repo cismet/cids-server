@@ -94,7 +94,7 @@ public abstract class AbstractJumpPostgresToShapefileServerAction implements Con
     private void writeToShp(final Map<String, Class> fieldTypeMap, final List<Map> resultRows, final File fileToSaveTo)
             throws Exception {
         final JumpShapeWriter jsw = new JumpShapeWriter();
-        jsw.writeShpFile(fieldTypeMap, resultRows, fileToSaveTo);
+        jsw.writeShpFile(fieldTypeMap, resultRows, fileToSaveTo, getCharset());
     }
 
     /**
@@ -126,6 +126,15 @@ public abstract class AbstractJumpPostgresToShapefileServerAction implements Con
      * @return  DOCUMENT ME!
      */
     public String getWrtProjection() {
+        return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getCharset() {
         return null;
     }
 
@@ -214,8 +223,12 @@ public abstract class AbstractJumpPostgresToShapefileServerAction implements Con
             final File shxFile = new File(getTmpDir(), String.format("%s.shx", name));
             final File dbfFile = new File(getTmpDir(), String.format("%s.dbf", name));
             final File prjFile = new File(getTmpDir(), String.format("%s.prj", name));
+            final File cpgFile = new File(getTmpDir(), String.format("%s.cpg", name));
             final File zipFile = new File(getTmpDir(), String.format("%s.zip", name));
+            final String charset = getCharset();
+
             writeToShp(fieldTypeMap, rowsMap, shpFile);
+
             try(final ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(zipFile))) {
                 writeToZip(shpFile.getName(), new FileInputStream(shpFile), zipOut);
                 writeToZip(shxFile.getName(), new FileInputStream(shxFile), zipOut);
@@ -223,6 +236,9 @@ public abstract class AbstractJumpPostgresToShapefileServerAction implements Con
                 final String wrtProjection = getWrtProjection();
                 if (wrtProjection != null) {
                     writeToZip(prjFile.getName(), IOUtils.toInputStream(wrtProjection, "UTF-8"), zipOut);
+                }
+                if (charset != null) {
+                    writeToZip(cpgFile.getName(), IOUtils.toInputStream(charset, "UTF-8"), zipOut);
                 }
                 zipOut.close();
             }
