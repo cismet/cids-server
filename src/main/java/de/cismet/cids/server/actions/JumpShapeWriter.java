@@ -182,6 +182,23 @@ public class JumpShapeWriter {
      */
     public void writeShpFile(final Map<String, Class> fieldTypeMap, final List<Map> resultRows,
             final File file) throws Exception {
+        writeShpFile(fieldTypeMap, resultRows, file, DEFAULT_CPG_CONTENT);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   fieldTypeMap  features DOCUMENT ME!
+     * @param   resultRows    aliasAttributeList DOCUMENT ME!
+     * @param   file          DOCUMENT ME!
+     * @param   charset       DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public void writeShpFile(final Map<String, Class> fieldTypeMap,
+            final List<Map> resultRows,
+            final File file,
+            final String charset) throws Exception {
         final ShapefileWriter writer = new ShapefileWriter();
         List<Feature> basicFeatures = cidsFeatures2BasicFeature(fieldTypeMap, resultRows);
         final FeatureSchema schema = basicFeatures.get(0).getSchema();
@@ -192,7 +209,12 @@ public class JumpShapeWriter {
         // charset property can also be defined
         properties.set(ShapefileWriter.FILE_PROPERTY_KEY, file.getAbsolutePath());
         properties.set(ShapefileWriter.SHAPE_TYPE_PROPERTY_KEY, "xy");
-        properties.set("charset", DEFAULT_CPG_CONTENT);
+
+        if (charset == null) {
+            properties.set("charset", DEFAULT_CPG_CONTENT);
+        } else {
+            properties.set("charset", charset);
+        }
 
         writer.write(set, properties);
     }
