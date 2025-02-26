@@ -58,11 +58,17 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
 
 import org.openide.util.Lookup;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import java.net.InetAddress;
 
@@ -94,8 +100,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.swing.JOptionPane;
 
 import de.cismet.cids.objectextension.ObjectExtensionFactory;
 
@@ -184,7 +188,11 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             this.properties = properties;
             final String fileName;
             if (((fileName = properties.getLog4jPropertyFile()) != null) && !fileName.equals("")) { // NOI18N
-                PropertyConfigurator.configureAndWatch(fileName, 10000);
+                try(final InputStream configStream = new FileInputStream(fileName)) {
+                    final ConfigurationSource source = new ConfigurationSource(configStream);
+                    final LoggerContext context = (LoggerContext)LogManager.getContext(false);
+                    context.start(new XmlConfiguration(context, source));                           // Apply new configuration
+                }
             }
 
             serverInfo = new Server(
@@ -2120,7 +2128,15 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
         if (!log4jPropFile.isFile() || !log4jPropFile.canRead()) {
             throw new IllegalArgumentException("serverproperties provided invalid log4j config file: " + log4jPropFile); // NOI18N
         } else {
-            PropertyConfigurator.configureAndWatch(log4jPropFile.getAbsolutePath(), 10000);
+            try {
+                try(final InputStream configStream = new FileInputStream(log4jPropFile)) {
+                    final ConfigurationSource source = new ConfigurationSource(configStream);
+                    final LoggerContext context = (LoggerContext)LogManager.getContext(false);
+                    context.start(new XmlConfiguration(context, source));                                                // Apply new configuration
+                }
+            } catch (IOException e) {
+                System.err.println("Cannot read log4j configuration: " + e.getMessage());
+            }
         }
     }
 

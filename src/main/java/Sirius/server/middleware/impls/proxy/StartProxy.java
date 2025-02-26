@@ -16,12 +16,17 @@ import Sirius.server.Shutdown;
 import Sirius.server.property.ServerProperties;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
 
 import org.openide.util.Lookup;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -83,9 +88,13 @@ public final class StartProxy {
         final String fileName = serverProperties.getLog4jPropertyFile();
         if ((fileName != null) && !fileName.isEmpty()) {
             try {
-                PropertyConfigurator.configureAndWatch(fileName, 10000);
+                try(final InputStream configStream = new FileInputStream(fileName)) {
+                    final ConfigurationSource source = new ConfigurationSource(configStream);
+                    final LoggerContext context = (LoggerContext)LogManager.getContext(false);
+                    context.start(new XmlConfiguration(context, source)); // Apply new configuration
+                }
             } catch (final Exception e) {
-                LOG.warn("could not initialise Log4J", e); // NOI18N
+                LOG.warn("could not initialise Log4J", e);                // NOI18N
             }
         }
 

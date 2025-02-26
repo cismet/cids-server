@@ -8,7 +8,7 @@
     <parent>
         <groupId>de.cismet.cids</groupId>
         <artifactId>cids-parent</artifactId>
-        <version>8.0</version>
+        <version>9.0</version>
     </parent>
 
     <groupId>de.cismet.cids</groupId>
@@ -46,7 +46,7 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>cismet-ext-bom</artifactId>
-                <version>8.0</version>
+                <version>9.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -55,24 +55,24 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>8.0.4</version>
+                <version>9.0</version>
                 <type>jar</type>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>8.0.4</version>
+                <version>9.0</version>
                 <type>test-jar</type>
             </dependency>
             <dependency>
                 <groupId>de.cismet.custom</groupId>
                 <artifactId>beansbinding</artifactId>
-                <version>7.0</version>
+                <version>9.0</version>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest-types</artifactId>
-                <version>7.0.1</version>
+                <version>9.0</version>
             </dependency>
             <!-- END: managed cids-dependencies -->
         </dependencies>
@@ -104,10 +104,18 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
-        </dependency>      
+        </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-1.2-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
         </dependency>
         <!-- this is only a helper library that is needed at compile time -->
         <dependency>
@@ -317,10 +325,9 @@
             all log messages collected by slf4j to log4j!
         -->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <scope>runtime</scope>
-            <optional>true</optional>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+            <scope>test</scope>
         </dependency>
         <!-- END: Runtime dependencies -->
         
@@ -410,15 +417,17 @@
                             </manifest>
                         </archive>
                     </configuration>
-                    <!--
+                    
                     <executions>
                         <execution>
+                            <!-- put it in the phase before to ensure, that the test-jar was built before the sign plugin is running-->
+                            <phase>prepare-package</phase>
                             <goals>
                                 <goal>test-jar</goal>
                             </goals>
                         </execution>
                     </executions>
-                    -->
+                    
                 </plugin>                  
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
