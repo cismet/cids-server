@@ -1,5 +1,7 @@
 package de.cismet.cids.dynamics;
 
+import Sirius.server.localserver.attribute.ClassAttributeTest;
+import static Sirius.server.localserver.attribute.ClassAttributeTest.configureLog4J;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import de.cismet.cids.utils.MetaClassCacheService;
@@ -9,6 +11,13 @@ import java.util.LinkedList;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
+import org.apache.logging.log4j.core.config.builder.api.RootLoggerComponentBuilder;
+import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
+import org.apache.logging.log4j.core.config.builder.impl.DefaultConfigurationBuilder;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -49,13 +58,7 @@ public class CidsBeanTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        final Properties log4jProperties = new Properties();
-        log4jProperties.put("log4j.appender.Remote", "org.apache.log4j.net.SocketAppender");
-        log4jProperties.put("log4j.appender.Remote.remoteHost", "localhost");
-        log4jProperties.put("log4j.appender.Remote.port", "4445");
-        log4jProperties.put("log4j.appender.Remote.locationInfo", "true");
-        log4jProperties.put("log4j.rootLogger", "ALL,Remote");
-        org.apache.log4j.PropertyConfigurator.configure(log4jProperties);
+        ClassAttributeTest.configureLog4J();
 
         try {
             final MetaClassCacheService classCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
