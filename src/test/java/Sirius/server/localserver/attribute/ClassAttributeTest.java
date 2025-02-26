@@ -13,7 +13,16 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.Properties;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
+import org.apache.logging.log4j.core.config.builder.api.RootLoggerComponentBuilder;
+import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
+import org.apache.logging.log4j.core.config.builder.impl.DefaultConfigurationBuilder;
 
 import static org.junit.Assert.*;
 
@@ -42,15 +51,35 @@ public class ClassAttributeTest {
      */
     @BeforeClass
     public static void setUpClass() throws Exception {
-        final Properties p = new Properties();
-        p.put("log4j.appender.Remote", "org.apache.log4j.net.SocketAppender");
-        p.put("log4j.appender.Remote.remoteHost", "localhost");
-        p.put("log4j.appender.Remote.port", "4445");
-        p.put("log4j.appender.Remote.locationInfo", "true");
-        p.put("log4j.rootLogger", "ALL,Remote");
-        org.apache.log4j.PropertyConfigurator.configure(p);
+        configureLog4J();
     }
 
+    public static void configureLog4J() {
+        final ConfigurationBuilder<BuiltConfiguration> builder = new DefaultConfigurationBuilder<>();
+
+        builder.setStatusLevel(Level.DEBUG);
+        builder.setConfigurationName("DynamicConfig");
+
+        // Define appenders
+        final AppenderComponentBuilder socketAppender = builder.newAppender("Remote", "Socket")
+                    .addAttribute("host", "localhost")
+                    .addAttribute("port", 4445);
+        socketAppender.add(builder.newLayout("JsonLayout"));
+        builder.add(socketAppender);
+
+        // Define root logger
+        final RootLoggerComponentBuilder rootLogger = builder.newRootLogger(Level.DEBUG);
+
+        rootLogger.add(builder.newAppenderRef("Remote"));
+
+        builder.add(rootLogger);
+
+        // Build and apply the configuration
+        LoggerContext ctx = (LoggerContext)LogManager.getContext(false);
+        final Configuration conf = builder.build();
+        ctx.start(conf);
+    }
+    
     /**
      * DOCUMENT ME!
      *
