@@ -91,8 +91,14 @@ public final class ServerExceptionMapper {
             try {
                 return Converter.deserialiseFromString(responseMessage, type, compressionEnabled);
             } catch (final Exception ex) {
-                LOG.warn(compressionEnabled ? "expected compressed message bur received uncompressed one"
-                                            : "uncompressed compressed message bur received expected one",
+                String shortResponseMessage = responseMessage;
+                
+                if (shortResponseMessage.length() > 1000) {
+                    shortResponseMessage = shortResponseMessage.substring(0, 1000) + "...";
+                }
+                
+                LOG.warn(compressionEnabled ? "expected compressed message but received uncompressed one:\n" + shortResponseMessage
+                                            : "expected uncompressed message but received compressed one:\n" + shortResponseMessage,
                     ex);
                 return Converter.deserialiseFromString(responseMessage, type, !compressionEnabled);
             }
