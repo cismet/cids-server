@@ -93,6 +93,11 @@ public final class UserStore extends Shutdown {
                             userTable.getBoolean("administrator"));   // NOI18N
 
                     users.addElement(tmp);
+                    if (tmp != null) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("User: " + String.valueOf(tmp.getName()));
+                        }
+                    }
                 } catch (Exception e) {
                     LOG.error(e);
 
@@ -124,6 +129,12 @@ public final class UserStore extends Shutdown {
                             userGroupTable.getString("descr"),
                             userGroupTable.getInt("prio"));          // NOI18N
                     userGroups.addElement(tmp);
+
+                    if (tmp != null) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("group: " + String.valueOf(tmp.getName()));
+                        }
+                    }
                 } catch (Exception e) {
                     LOG.error(e);
 
@@ -158,6 +169,12 @@ public final class UserStore extends Shutdown {
 
                     final Membership tmp = new Membership(login, usrDomain, ug, ugDomain);
                     memberships.addElement(tmp);
+
+                    if (tmp != null) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("membership: " + String.valueOf(tmp.getKey()));
+                        }
+                    }
                 } catch (Exception e) {
                     LOG.error(e);
 
