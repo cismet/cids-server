@@ -46,6 +46,7 @@ import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.connectioncontext.ConnectionContextBackend;
 import de.cismet.cids.server.search.CidsServerSearch;
 
+import de.cismet.connectioncontext.AbstractConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
 
 import de.cismet.tools.Converter;
@@ -588,10 +589,18 @@ public final class RESTfulSerialInterface {
             @FormParam(PARAM_CONNECTIONCONTEXT) final String contextBytes) throws RemoteException {
         nameTheThread(hsr, "/getDomains", "anonymous");
         try {
-            final ConnectionContext connectionContext = Converter.deserialiseFromString(
+            ConnectionContext connectionContext = Converter.deserialiseFromString(
                     contextBytes,
                     ConnectionContext.class,
                     isCompressionEnabled());
+
+            if (connectionContext == null) {
+                // without this, there were too many messages in the logging
+                connectionContext = ConnectionContext.create(
+                        AbstractConnectionContext.Category.OTHER,
+                        "RESTfulSerialInterface-getDomains");
+            }
+
             return createResponse(getCallserver().getDomains(
                         ConnectionContextBackend.getInstance().addOriginToConnectionContext(hsr, connectionContext)));
         } catch (final Exception ex) {

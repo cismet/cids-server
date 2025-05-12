@@ -1511,7 +1511,13 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             logger.info(ex, ex);
             return null;
         } catch (final Throwable ex) {
-            logger.error(ex, ex);
+            if ((ex.getMessage() != null)
+                        && ex.getMessage().contains("JWT signature does not match locally computed signature")) {
+                logger.error(
+                    "JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.");
+            } else {
+                logger.error(ex, ex);
+            }
             throw new RemoteException("Exception validateUser at remotedbserverimpl", ex); // NOI18N
         }
     }
@@ -1816,7 +1822,7 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
                     registered++;
                     logger.info(
-                        "<LS> users registered at SiriusRegistry"
+                        "<LS> users registered at SiriusRegistry "
                                 + registryIPs[i]
                                 + " with "
                                 + lsName
