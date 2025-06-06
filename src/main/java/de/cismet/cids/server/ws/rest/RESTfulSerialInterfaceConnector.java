@@ -26,12 +26,17 @@ import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.client.apache.ApacheHttpClient;
+import com.sun.jersey.client.apache.ApacheHttpClientHandler;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
+import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.log4j.Logger;
+
+import org.openjdk.jol.info.GraphLayout;
 
 import java.io.IOException;
 
@@ -43,7 +48,9 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -66,6 +73,8 @@ import de.cismet.cids.server.actions.TraceRouteServerAction;
 import de.cismet.cids.server.search.CidsServerSearch;
 import de.cismet.cids.server.ws.SSLConfig;
 
+import de.cismet.cids.utils.JerseyClientCache;
+
 import de.cismet.cidsx.server.search.builtin.legacy.LightweightMetaObjectsByQuerySearch;
 
 import de.cismet.connectioncontext.ConnectionContext;
@@ -73,6 +82,8 @@ import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.netutil.Proxy;
 
 import de.cismet.tools.Converter;
+
+import de.cismet.tools.collections.CircularObjectPool;
 
 import static de.cismet.cids.server.ws.rest.RESTfulSerialInterface.*;
 
@@ -90,12 +101,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
     private static final transient Logger LOG = Logger.getLogger(RESTfulSerialInterfaceConnector.class);
     private static final String MULTITHREADEDHTTPCONNECTION_IGNORE_EXCEPTION =
         "Interrupted while waiting in MultiThreadedHttpConnectionManager";
-    private static final int TIMEOUT = 10000;
 
     //~ Instance fields --------------------------------------------------------
 
     private final transient String rootResource;
-    private final transient Map<String, Client> clientCache;
 
     private final transient Proxy proxy;
     private final boolean compressionEnabled;
@@ -276,7 +285,6 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             LOG.debug("using proxy: " + proxy); // NOI18N
         }
 
-        clientCache = new HashMap<String, Client>();
         this.compressionEnabled = compressionEnabled;
         this.serverName = serverName;
     }
@@ -416,41 +424,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
 
         // create new client and webresource from the given resource
-        if (!clientCache.containsKey(path)) {
-            final DefaultApacheHttpClientConfig clientConfig = new DefaultApacheHttpClientConfig();
-            if ((proxy != null) && proxy.isEnabledFor(resource)) {
-                clientConfig.getProperties()
-                        .put(
-                            ApacheHttpClientConfig.PROPERTY_PROXY_URI,
-                            "http://"
-                            + proxy.getHost()
-                            + ":"
-                            + proxy.getPort());
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("proxy set: " + proxy);
-                }
-
-                if ((proxy.getUsername() != null) && (proxy.getPassword() != null)) {
-                    clientConfig.getState()
-                            .setProxyCredentials(
-                                null,
-                                proxy.getHost(),
-                                proxy.getPort(),
-                                proxy.getUsername(),
-                                proxy.getPassword(),
-                                proxy.getDomain(),
-                                "");
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("proxy credentials set: " + proxy);
-                    }
-                }
-            }
-
-            clientConfig.getProperties().put(ClientConfig.PROPERTY_CONNECT_TIMEOUT, TIMEOUT);
-            clientCache.put(path, ApacheHttpClient.create(clientConfig));
-        }
-
-        final Client c = clientCache.get(path);
+        final Client c = JerseyClientCache.getInstance(rootResource, proxy).getJerseyHttpClient(path);
         final UriBuilder uriBuilder = UriBuilder.fromPath(resource);
 
         // add all query params that are present
