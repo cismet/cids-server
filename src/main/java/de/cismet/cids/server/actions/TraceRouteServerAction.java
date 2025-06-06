@@ -33,6 +33,7 @@ public class TraceRouteServerAction implements ServerAction {
 
     //~ Static fields/initializers ---------------------------------------------
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     public static final String TASK_NAME = "traceRoute";
 
     //~ Methods ----------------------------------------------------------------
@@ -69,7 +70,7 @@ public class TraceRouteServerAction implements ServerAction {
         }
 
         try {
-            return new ObjectMapper().writeValueAsString(new TraceRouteInfo(timestamp, relativeDelays));
+            return OBJECT_MAPPER.writeValueAsString(new TraceRouteInfo(timestamp, relativeDelays));
         } catch (final JsonProcessingException ex) {
             return null;
         }
