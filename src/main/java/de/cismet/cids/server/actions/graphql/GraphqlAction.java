@@ -59,6 +59,7 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
     private static final ConnectionContext CC = ConnectionContext.create(
             ConnectionContext.Category.ACTION,
             "GraphQlAction");
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     //~ Enums ------------------------------------------------------------------
 
@@ -174,9 +175,9 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
             // use the ObjectMapper to ensure that valid json is created
             final GraphQlQuery graphQlQuery = new GraphQlQuery();
             graphQlQuery.setQuery(query);
-            graphQlQuery.setVariables(((variables == null) ? null : new ObjectMapper().readTree(variables)));
+            graphQlQuery.setVariables(((variables == null) ? null : OBJECT_MAPPER.readTree(variables)));
 
-            final String requestAsString = new ObjectMapper().writeValueAsString(graphQlQuery);
+            final String requestAsString = OBJECT_MAPPER.writeValueAsString(graphQlQuery);
             final byte[] inputAsBytes = requestAsString.getBytes("utf-8");
 
             os.write(inputAsBytes, 0, inputAsBytes.length);
@@ -221,8 +222,7 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
                 }
             } else {
                 final InputStream response = connection.getInputStream();
-                final ObjectMapper mapper = new ObjectMapper();
-                final JsonNode rootNode = mapper.readTree(response);
+                final JsonNode rootNode = OBJECT_MAPPER.readTree(response);
                 final JsonNode data = rootNode.get("data");
                 boolean canBeParsed = data != null;
 
