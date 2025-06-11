@@ -20,7 +20,6 @@ import org.apache.log4j.Logger;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -30,8 +29,11 @@ import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.zip.GZIPOutputStream;
 
@@ -43,6 +45,8 @@ import de.cismet.cids.utils.serverresources.GeneralServerResources;
 import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
 import de.cismet.connectioncontext.ConnectionContext;
+
+import de.cismet.tools.CachedExecutor;
 
 /**
  * DOCUMENT ME!
@@ -60,6 +64,8 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
             ConnectionContext.Category.ACTION,
             "GraphQlAction");
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final List<String> runningRequests = Collections.synchronizedList(new ArrayList<>());
+    private static final List<String> waitingRequests = Collections.synchronizedList(new ArrayList<>());
 
     //~ Enums ------------------------------------------------------------------
 
@@ -131,7 +137,6 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
         String variables = "";
         boolean zipped = false;
         boolean chunked = false;
-        final String hasuraSecret = config.getProperty("hasura.secret", null);
 
         for (final ServerActionParameter sap : params) {
             if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.QUERY.toString())) {
@@ -154,6 +159,146 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
 
         try {
             query = evaluator.evaluate(query);
+            final String key = "z:" + zipped + "c:" + chunked + "q:" + query;
+
+            final CachedGraphQLExecutor executor = new CachedGraphQLExecutor(query, zipped, chunked, variables);
+
+            return executor.execute(key);
+        } catch (Exception ex) {
+            LOG.error(ex, ex);
+            return null;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   name  DOCUMENT ME!
+     * @param   node  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String arrayToChunks(final String name, final JsonNode node) {
+        if (node.isArray()) {
+            final StringBuilder sb = new StringBuilder("\"" + name + "\": [");
+            boolean firstPacket = true;
+            int packets = 20;
+            final int size = node.size();
+            int chunk = size / packets;
+
+            if (chunk < 200) {
+                chunk = node.size();
+                packets = 1;
+            }
+
+            for (int packet = 0; packet < packets; ++packet) {
+                final StringBuilder inner = new StringBuilder("[");
+                boolean first = true;
+
+                for (int i = 0; i < ((packet == (packets - 1)) ? (node.size() - (packet * chunk)) : chunk); ++i) {
+                    if (!first) {
+                        inner.append(",");
+                    } else {
+                        first = false;
+                    }
+                    final int index = (packet * chunk) + i;
+                    final JsonNode current = node.get(index);
+                    inner.append(current.toString());
+                }
+                inner.append("]");
+
+                if (!firstPacket) {
+                    sb.append(",");
+                } else {
+                    firstPacket = false;
+                }
+                sb.append("\"");
+                sb.append(toCompressedBase64(inner.toString()));
+                sb.append("\"");
+            }
+            sb.append("], \"").append(name).append("_length\": ").append(size);
+
+            return sb.toString();
+        }
+
+        return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   value  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String toCompressedBase64(final String value) {
+        try {
+            final ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+            final Writer out = new OutputStreamWriter(new GZIPOutputStream(byteOut), "UTF-8");
+            out.write(value);
+            out.close();
+            final byte[] compressedBytes = byteOut.toByteArray();
+            final byte[] base64 = Base64.encodeBase64(compressedBytes);
+
+            return new String(base64);
+        } catch (Exception e) {
+            LOG.error("Error during compression", e);
+
+            return value;
+        }
+    }
+
+    @Override
+    public MetaService getMetaService() {
+        return ms;
+    }
+
+    @Override
+    public void setMetaService(final MetaService service) {
+        ms = service;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    private class CachedGraphQLExecutor extends CachedExecutor {
+
+        //~ Instance fields ----------------------------------------------------
+
+        private final String query;
+        private final boolean zipped;
+        private final boolean chunked;
+        private final String variables;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new CachedGraphQLExecutor object.
+         *
+         * @param  query      DOCUMENT ME!
+         * @param  zipped     DOCUMENT ME!
+         * @param  chunked    DOCUMENT ME!
+         * @param  variables  DOCUMENT ME!
+         */
+        public CachedGraphQLExecutor(final String query,
+                final boolean zipped,
+                final boolean chunked,
+                final String variables) {
+            this.query = query;
+            this.zipped = zipped;
+            this.chunked = chunked;
+            this.variables = variables;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public Object run() throws Exception {
+            final String hasuraSecret = config.getProperty("hasura.secret", null);
 
             // prepare request
             final URL url = new URL(config.getProperty("graphql.url"));
@@ -271,97 +416,6 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
                     return rootNode.toString();
                 }
             }
-        } catch (IOException ex) {
-            LOG.error(ex, ex);
-            return null;
         }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   name  DOCUMENT ME!
-     * @param   node  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private String arrayToChunks(final String name, final JsonNode node) {
-        if (node.isArray()) {
-            final StringBuilder sb = new StringBuilder("\"" + name + "\": [");
-            boolean firstPacket = true;
-            int packets = 20;
-            final int size = node.size();
-            int chunk = size / packets;
-
-            if (chunk < 200) {
-                chunk = node.size();
-                packets = 1;
-            }
-
-            for (int packet = 0; packet < packets; ++packet) {
-                final StringBuilder inner = new StringBuilder("[");
-                boolean first = true;
-
-                for (int i = 0; i < ((packet == (packets - 1)) ? (node.size() - (packet * chunk)) : chunk); ++i) {
-                    if (!first) {
-                        inner.append(",");
-                    } else {
-                        first = false;
-                    }
-                    final int index = (packet * chunk) + i;
-                    final JsonNode current = node.get(index);
-                    inner.append(current.toString());
-                }
-                inner.append("]");
-
-                if (!firstPacket) {
-                    sb.append(",");
-                } else {
-                    firstPacket = false;
-                }
-                sb.append("\"");
-                sb.append(toCompressedBase64(inner.toString()));
-                sb.append("\"");
-            }
-            sb.append("], \"").append(name).append("_length\": ").append(size);
-
-            return sb.toString();
-        }
-
-        return null;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   value  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private String toCompressedBase64(final String value) {
-        try {
-            final ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-            final Writer out = new OutputStreamWriter(new GZIPOutputStream(byteOut), "UTF-8");
-            out.write(value);
-            out.close();
-            final byte[] compressedBytes = byteOut.toByteArray();
-            final byte[] base64 = Base64.encodeBase64(compressedBytes);
-
-            return new String(base64);
-        } catch (Exception e) {
-            LOG.error("Error during compression", e);
-
-            return value;
-        }
-    }
-
-    @Override
-    public MetaService getMetaService() {
-        return ms;
-    }
-
-    @Override
-    public void setMetaService(final MetaService service) {
-        ms = service;
     }
 }
