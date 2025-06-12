@@ -159,7 +159,8 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
 
         try {
             query = evaluator.evaluate(query);
-            final String key = "z:" + zipped + "c:" + chunked + "q:" + query;
+            // the key must contain all variables, which have an effect on the result
+            final String key = "z:" + zipped + "c:" + chunked + "q:" + query + "v:" + variables;
 
             final CachedGraphQLExecutor executor = new CachedGraphQLExecutor(query, zipped, chunked, variables);
 
