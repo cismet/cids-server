@@ -27,6 +27,7 @@ public class RestHttpClientConfiguration {
 
     //~ Instance fields --------------------------------------------------------
 
+    Integer defaultPoolSize;
     PathConfiguration[] config;
     String[] rootResources;
 

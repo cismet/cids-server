@@ -117,6 +117,7 @@ import de.cismet.cids.server.search.QueryPostProcessor;
 import de.cismet.cids.server.ws.rest.RESTfulService;
 
 import de.cismet.cids.utils.ClassloadingHelper;
+import de.cismet.cids.utils.JerseyClientCache;
 import de.cismet.cids.utils.serverresources.GeneralServerResources;
 import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
@@ -231,6 +232,10 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
                 logger.warn(
                     "ServerResourcePath could not be determined. CachedServerResourcesLoader will not work as expected !",
                     ex);
+            }
+
+            if (properties.getServerResourcesBasePath() != null) {
+                JerseyClientCache.setServerResources(properties.getServerResourcesBasePath(), null);
             }
 
             try {

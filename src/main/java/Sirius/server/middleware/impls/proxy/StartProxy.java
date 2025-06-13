@@ -45,6 +45,8 @@ import de.cismet.cids.server.ServerSecurityManager;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
 import de.cismet.cids.server.ws.rest.RESTfulService;
 
+import de.cismet.cids.utils.JerseyClientCache;
+
 /**
  * DOCUMENT ME!
  *
@@ -96,6 +98,10 @@ public final class StartProxy {
             } catch (final Exception e) {
                 LOG.warn("could not initialise Log4J", e);                // NOI18N
             }
+        }
+
+        if (serverProperties.getServerResourcesBasePath() != null) {
+            JerseyClientCache.setServerResources(serverProperties.getServerResourcesBasePath(), null);
         }
 
         if (ServerProperties.START_MODE__PROXY.equalsIgnoreCase(serverProperties.getStartMode())) {
