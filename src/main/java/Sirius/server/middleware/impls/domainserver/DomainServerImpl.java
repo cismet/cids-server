@@ -228,14 +228,14 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
 
             try {
                 ServerResourcesLoader.getInstance().setResourcesBasePath(properties.getServerResourcesBasePath());
+
+                if (properties.getServerResourcesBasePath() != null) {
+                    JerseyClientCache.setServerResources(properties.getServerResourcesBasePath(), null);
+                }
             } catch (final Exception ex) {
                 logger.warn(
                     "ServerResourcePath could not be determined. CachedServerResourcesLoader will not work as expected !",
                     ex);
-            }
-
-            if (properties.getServerResourcesBasePath() != null) {
-                JerseyClientCache.setServerResources(properties.getServerResourcesBasePath(), null);
             }
 
             try {
