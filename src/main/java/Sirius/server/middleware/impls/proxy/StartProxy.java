@@ -100,8 +100,14 @@ public final class StartProxy {
             }
         }
 
-        if (serverProperties.getServerResourcesBasePath() != null) {
-            JerseyClientCache.setServerResources(serverProperties.getServerResourcesBasePath(), null);
+        try {
+            if (serverProperties.getServerResourcesBasePath() != null) {
+                JerseyClientCache.setServerResources(serverProperties.getServerResourcesBasePath(), null);
+            }
+        } catch (Exception e) {
+            LOG.warn(
+                "ServerResourcePath could not be determined. CachedServerResourcesLoader will not work as expected !",
+                e);
         }
 
         if (ServerProperties.START_MODE__PROXY.equalsIgnoreCase(serverProperties.getStartMode())) {
