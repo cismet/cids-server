@@ -53,6 +53,7 @@ public class JerseyClientCache {
     private final transient Map<String, CircularObjectPool<Client>> clientCache;
     private final transient Proxy proxy;
     private final String rootResource;
+    private int poolSize = DEFAULT_POOL_SIZE;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -72,6 +73,10 @@ public class JerseyClientCache {
                 final RestHttpClientConfiguration configuration = ServerResourcesLoader.getInstance()
                             .loadJson(GeneralServerResources.CONFIG_REST_HTTP_CLIENT_JSON.getValue(),
                                 RestHttpClientConfiguration.class);
+
+                if ((configuration != null) && (configuration.getDefaultPoolSize() != null)) {
+                    poolSize = configuration.getDefaultPoolSize();
+                }
 
                 if (configuration != null) {
                     for (final RestHttpClientConfiguration.PathConfiguration pathConfig : configuration.getConfig()) {
@@ -204,7 +209,7 @@ public class JerseyClientCache {
      */
     public synchronized Client getJerseyHttpClient(final String path) {
         if (!clientCache.containsKey(path)) {
-            clientCache.put(path, createClientsForPath(path, DEFAULT_POOL_SIZE));
+            clientCache.put(path, createClientsForPath(path, poolSize));
         }
 
         return clientCache.get(path).next();
