@@ -17,11 +17,8 @@ import org.apache.log4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.InputStream;
-import java.io.PrintWriter;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -30,7 +27,6 @@ import java.util.Date;
 import java.util.Random;
 
 import de.cismet.cids.utils.ActionUploadConfig;
-import de.cismet.cids.utils.UncaughtClientExceptionConfig;
 import de.cismet.cids.utils.serverresources.GeneralServerResources;
 import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
@@ -56,6 +52,7 @@ public class ServerActionHelper {
     private static String pwd = null;
     private static String tmpFilePath = null;
     private static int threshold = DEFAULT_THRESHOLD;
+    private static boolean initialised = false;
 
     private static final DateFormat DF = new SimpleDateFormat("yyyyMMdd");
 
@@ -65,7 +62,7 @@ public class ServerActionHelper {
      * DOCUMENT ME!
      */
     private static void init() {
-        if ((path == null)) {
+        if ((path == null) && !initialised) {
             try {
                 final ActionUploadConfig config = ServerResourcesLoader.getInstance()
                             .loadJson(GeneralServerResources.CONFIG_ACTION_UPLOAD_JSON.getValue(),
@@ -78,6 +75,7 @@ public class ServerActionHelper {
                 pwd = config.getPassword();
             } catch (final Exception ex) {
                 LOG.error("Error while reading the action upload.json", ex);
+                initialised = true;
             }
         }
     }

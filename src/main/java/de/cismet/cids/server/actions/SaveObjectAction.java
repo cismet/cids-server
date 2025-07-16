@@ -26,8 +26,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.PrecisionModel;
 
 import org.apache.log4j.Logger;
 
@@ -44,7 +42,6 @@ import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -119,9 +116,6 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
     public Object execute(final Object body, final ServerActionParameter... params) {
         String className = null;
         String value = null;
-        // The cache will be used when md5 is set. The caller can set md5 to "cached" for example, if the cache
-        // should be used, but the checksum should not influence the result
-        final String md5 = null;
         CidsBean beanToSave = null;
 
         for (final ServerActionParameter sap : params) {
