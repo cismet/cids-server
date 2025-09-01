@@ -13,7 +13,7 @@ import Sirius.server.newuser.permission.Policy;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import de.cismet.cids.dynamics.CidsBean;
 
