@@ -12,7 +12,7 @@ import Sirius.server.newuser.permission.Policy;
 
 import Sirius.util.Groupable;
 
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import static de.cismet.tools.Equals.nullEqual;
 
