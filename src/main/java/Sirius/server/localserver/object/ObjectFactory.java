@@ -28,6 +28,8 @@ import org.apache.log4j.Logger;
 
 import org.openide.util.Lookup;
 
+import org.postgresql.util.PGobject;
+
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -472,6 +474,11 @@ public final class ObjectFactory extends Shutdown {
                                                     + fieldName
                                                     + "]");
                                     }
+                                }
+                                if ((attrValue instanceof PGobject)
+                                            && ((PGobject)attrValue).getType().equals("jsonb")) {
+                                    // we handle the jsonb as a string.
+                                    attrValue = ((PGobject)attrValue).getValue();
                                 }
                                 if (SQLTools.getGeometryFactory(dialect).isGeometryObject(attrValue)) {
                                     if (LOG.isDebugEnabled()) {
