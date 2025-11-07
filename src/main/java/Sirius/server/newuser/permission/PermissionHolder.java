@@ -16,8 +16,6 @@ import org.apache.log4j.Logger;
 
 import java.io.Serializable;
 
-import de.cismet.tools.CurrentStackTrace;
-
 import de.cismet.tools.collections.MultiMap;
 
 /**
@@ -200,7 +198,7 @@ public final class PermissionHolder implements Serializable {
                 "No Policy was set. Set PARANOID Policy. "           // NOI18N
                         + "Attention. This could lead to something " // NOI18N
                         + "that you not want.",                      // NOI18N
-                new CurrentStackTrace());
+                new Throwable());
             setPolicy(Policy.createParanoidPolicy());
         }
         if (containsPermission(key, perm)) {
