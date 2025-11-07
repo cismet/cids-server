@@ -39,8 +39,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.Vector;
 
-import de.cismet.cids.server.ServerSecurityManager;
-
 /**
  * Name- und UserServer des gesammten Siriussystems. Jede Art von Server (LocalServer,CallServer,ProtocolServer)
  * registriert sich hier mit Namen und IPAdresse (Port optional) um f\u00FCr andere Server erreichbar zu sein. Ausserdem
@@ -105,8 +103,6 @@ public final class Registry extends UnicastRemoteObject implements NameServer, U
      */
     private void startRMIServer(final int port) throws ServerExitError {
         try {
-            System.setSecurityManager(new ServerSecurityManager());
-
             java.rmi.registry.Registry reg;
             try {
                 reg = LocateRegistry.createRegistry(port);
