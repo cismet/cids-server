@@ -8,7 +8,7 @@
     <parent>
         <groupId>de.cismet.cids</groupId>
         <artifactId>cids-parent</artifactId>
-        <version>9.0</version>
+        <version>10.0</version>
     </parent>
 
     <groupId>de.cismet.cids</groupId>
@@ -18,6 +18,7 @@
  
     <properties>
         <names.cids-server>cids Server</names.cids-server>
+        <prettier.skip>true</prettier.skip>
     </properties>
     
     <name>${names.cids-server} [${project.version}]</name>
@@ -46,7 +47,7 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>cismet-ext-bom</artifactId>
-                <version>9.0</version>
+                <version>10.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -55,24 +56,24 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>9.0.4</version>
+                <version>10.0-prerelease</version>
                 <type>jar</type>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>9.0.4</version>
+                <version>10.0-prerelease</version>
                 <type>test-jar</type>
             </dependency>
             <dependency>
                 <groupId>de.cismet.custom</groupId>
                 <artifactId>beansbinding</artifactId>
-                <version>9.0</version>
+                <version>10.0</version>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest-types</artifactId>
-                <version>9.0</version>
+                <version>10.0-prerelease</version>
             </dependency>
             <!-- END: managed cids-dependencies -->
         </dependencies>
@@ -289,7 +290,6 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util</artifactId>
-            <version>RELEASE701</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -309,7 +309,6 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util-lookup</artifactId>
-            <version>RELEASE701</version>
         </dependency>
         <dependency>
             <groupId>de.cismet.custom</groupId>
@@ -321,7 +320,6 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.10</version>
         </dependency>
         
         <!-- BEGIN: Runtime dependencies -->
@@ -409,6 +407,25 @@
         <!-- END: TEST dependencies -->
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>java-11+</id>
+            <activation>
+                <jdk>[11,)</jdk>
+            </activation>
+            <dependencies>
+                <!--start dependencies which are already contained in Java 1.8, but not in newer versions-->
+                <dependency>
+                    <groupId>org.glassfish.jaxb</groupId>
+                    <artifactId>jaxb-runtime</artifactId>
+                    <version>2.3.2</version>
+                    <scope>test</scope>
+                </dependency>
+                <!--end dependencies which are already contained in Java 1.8, but not in newer versions-->
+            </dependencies>
+        </profile>
+    </profiles>
+    
     <build>
         <pluginManagement>
             <plugins>
