@@ -27,7 +27,7 @@ import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
