@@ -13,8 +13,8 @@ package de.cismet.cids.server.actions;
 
 import Sirius.server.newuser.User;
 
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.io.IOUtils;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
 
 import java.io.InputStream;
 import java.io.StringReader;
@@ -132,7 +132,7 @@ public class HttpTunnelAction implements UserAwareServerAction {
             }
             final UsernamePasswordCredentials creds;
             if ((usermame != null) && (password != null)) {
-                creds = new UsernamePasswordCredentials(usermame, password);
+                creds = new UsernamePasswordCredentials(usermame, password.toCharArray());
             } else {
                 creds = null;
             }

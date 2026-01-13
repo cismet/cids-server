@@ -13,7 +13,7 @@ import Sirius.server.newuser.UserException;
 
 import com.sun.jersey.api.client.ClientResponse;
 
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
