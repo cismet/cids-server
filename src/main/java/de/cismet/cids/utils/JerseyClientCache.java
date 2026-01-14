@@ -14,10 +14,14 @@ package de.cismet.cids.utils;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.client.apache.ApacheHttpClient;
-import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
-import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
+import com.sun.jersey.client.apache4.ApacheHttpClient4;
+import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
+import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
 
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.NTCredentials;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
 import org.apache.log4j.Logger;
 
 import java.util.Arrays;
@@ -160,29 +164,46 @@ public class JerseyClientCache {
 
         LOG.info("create jersey http clients for (resource/path): " + resource);
 
-        final DefaultApacheHttpClientConfig clientConfig = new DefaultApacheHttpClientConfig();
+        final DefaultApacheHttpClient4Config clientConfig = new DefaultApacheHttpClient4Config();
+
         if ((proxy != null) && proxy.isEnabledFor(resource)) {
+            // Proxy URI
             clientConfig.getProperties()
                     .put(
-                        ApacheHttpClientConfig.PROPERTY_PROXY_URI,
+                        ApacheHttpClient4Config.PROPERTY_PROXY_URI,
                         "http://"
                         + proxy.getHost()
                         + ":"
                         + proxy.getPort());
+
             if (LOG.isDebugEnabled()) {
                 LOG.debug("proxy set: " + proxy);
             }
 
+            // Proxy Credentials (HttpClient 4)
             if ((proxy.getUsername() != null) && (proxy.getPassword() != null)) {
-                clientConfig.getState()
-                        .setProxyCredentials(
-                            null,
-                            proxy.getHost(),
-                            proxy.getPort(),
+                final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                final AuthScope authScope = new AuthScope(proxy.getHost(), proxy.getPort());
+
+                if ((proxy.getDomain() != null) && !proxy.getDomain().isEmpty()) {
+                    // NTLM / Domain-Auth
+                    credentialsProvider.setCredentials(
+                        authScope,
+                        new NTCredentials(
                             proxy.getUsername(),
-                            proxy.getPassword(),
-                            proxy.getDomain(),
-                            "");
+                            proxy.getPassword().toCharArray(),
+                            null, // workstation
+                            proxy.getDomain()));
+                } else {
+                    // Basic / Digest
+                    credentialsProvider.setCredentials(
+                        authScope,
+                        new UsernamePasswordCredentials(proxy.getUsername(), proxy.getPassword().toCharArray()));
+                }
+
+                clientConfig.getProperties()
+                        .put(ApacheHttpClient4Config.PROPERTY_CREDENTIALS_PROVIDER, credentialsProvider);
+
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("proxy credentials set: " + proxy);
                 }
@@ -194,7 +215,7 @@ public class JerseyClientCache {
         final Client[] clientArray = new Client[poolsize];
 
         for (int i = 0; i < poolsize; ++i) {
-            clientArray[i] = ApacheHttpClient.create(clientConfig);
+            clientArray[i] = ApacheHttpClient4.create(clientConfig);
         }
 
         return new CircularObjectPool<>(Collections.unmodifiableList(Arrays.asList(clientArray)));
