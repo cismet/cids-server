@@ -35,13 +35,17 @@ import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.client.apache.ApacheHttpClient;
-import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
-import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
+import com.sun.jersey.client.apache4.ApacheHttpClient4;
+import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
+import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
 import com.sun.jersey.core.util.Base64;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import com.sun.jersey.multipart.FormDataMultiPart;
 
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.NTCredentials;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
 import org.apache.log4j.Logger;
 
 import java.io.ByteArrayOutputStream;
@@ -308,29 +312,46 @@ public class RESTfulInterfaceConnector implements CallServerService {
         // create new client and webresource from the given resource
         if (!clientCache.containsKey(path)) {
             LOG.info("adding new client for path '" + path + "' and resource '" + resource + "' to cache");
-            final DefaultApacheHttpClientConfig clientConfig = new DefaultApacheHttpClientConfig();
-            if ((proxy != null) && proxy.isEnabled() && proxy.isValid()) {
+            final DefaultApacheHttpClient4Config clientConfig = new DefaultApacheHttpClient4Config();
+
+            if ((proxy != null) && proxy.isEnabledFor(resource)) {
+                // Proxy URI
                 clientConfig.getProperties()
                         .put(
-                            ApacheHttpClientConfig.PROPERTY_PROXY_URI,
+                            ApacheHttpClient4Config.PROPERTY_PROXY_URI,
                             "http://"
                             + proxy.getHost()
                             + ":"
                             + proxy.getPort());
+
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("proxy set: " + proxy);
                 }
 
+                // Proxy Credentials (HttpClient 4)
                 if ((proxy.getUsername() != null) && (proxy.getPassword() != null)) {
-                    clientConfig.getState()
-                            .setProxyCredentials(
-                                null,
-                                proxy.getHost(),
-                                proxy.getPort(),
+                    final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                    final AuthScope authScope = new AuthScope(proxy.getHost(), proxy.getPort());
+
+                    if ((proxy.getDomain() != null) && !proxy.getDomain().isEmpty()) {
+                        // NTLM / Domain-Auth
+                        credentialsProvider.setCredentials(
+                            authScope,
+                            new NTCredentials(
                                 proxy.getUsername(),
-                                proxy.getPassword(),
-                                proxy.getDomain(),
-                                "");
+                                proxy.getPassword().toCharArray(),
+                                null, // workstation
+                                proxy.getDomain()));
+                    } else {
+                        // Basic / Digest
+                        credentialsProvider.setCredentials(
+                            authScope,
+                            new UsernamePasswordCredentials(proxy.getUsername(), proxy.getPassword().toCharArray()));
+                    }
+
+                    clientConfig.getProperties()
+                            .put(ApacheHttpClient4Config.PROPERTY_CREDENTIALS_PROVIDER, credentialsProvider);
+
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("proxy credentials set: " + proxy);
                     }
@@ -339,13 +360,14 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
             clientConfig.getProperties().put(ClientConfig.PROPERTY_CONNECT_TIMEOUT, TIMEOUT);
             clientConfig.getClasses().add(JacksonJsonProvider.class);
-            clientCache.put(path, ApacheHttpClient.create(clientConfig));
+            clientCache.put(path, ApacheHttpClient4.create(clientConfig));
         }
 
         final Client client = clientCache.get(path);
         final UriBuilder uriBuilder = UriBuilder.fromPath(resource);
 
         final WebResource webResource = client.resource(uriBuilder.build());
+
         return webResource;
     }
 
