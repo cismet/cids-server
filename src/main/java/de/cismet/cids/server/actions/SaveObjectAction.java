@@ -77,10 +77,12 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
 
         //~ Enum constants -----------------------------------------------------
 
-        className, data
+        className, data, complete
     }
 
     //~ Instance fields --------------------------------------------------------
+
+    private int lastNegativeId = -1;
 
     private MetaService ms;
     private User user;
@@ -117,12 +119,19 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
         String className = null;
         String value = null;
         CidsBean beanToSave = null;
+        Boolean complete = true;
 
         for (final ServerActionParameter sap : params) {
             if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.className.toString())) {
                 className = (String)sap.getValue();
+
+                if (className.startsWith("vzk_")) {
+                    complete = false;
+                }
             } else if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.data.toString())) {
                 value = (String)sap.getValue();
+            } else if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.complete.toString())) {
+                complete = (sap.getValue().toString()).equalsIgnoreCase("true");
             }
         }
 
@@ -143,11 +152,11 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
                 return "{\"Exception\": \"Class with table name " + className + " not found.\"}";
             }
 
-            beanToSave = createCidsBeanFromJson(classes, rootNode, className, null);
+            beanToSave = createCidsBeanFromJson(classes, rootNode, className, null, complete);
             // cannot use beanToSave.persist(), because the server does not contain an implementation of
             // CidsBeanPersistService
             MetaObject metaObject = beanToSave.getMetaObject();
-
+            System.out.println(beanToSave.getMetaObject().getDebugString());
             if (metaObject.getStatus() == MetaObject.MODIFIED) {
                 domainServer.updateMetaObject(user, metaObject, CC);
 
@@ -176,24 +185,51 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
      * @param   rootNode             DOCUMENT ME!
      * @param   className            DOCUMENT ME!
      * @param   possibleObjectsList  DOCUMENT ME!
+     * @param   complete             DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
      */
     private CidsBean createCidsBeanFromJson(final MetaClass[] classes,
-            final JsonNode rootNode,
-            final String className,
-            final List<CidsBean> possibleObjectsList) throws Exception {
+            JsonNode rootNode,
+            String className,
+            final List<CidsBean> possibleObjectsList,
+            final boolean complete) throws Exception {
         Integer nodeId = ((rootNode.get("id") != null) ? rootNode.get("id").asInt() : null);
         CidsBean bean = null;
         final String uuid = ((rootNode.get("uuid") != null) ? rootNode.get("uuid").asText() : null);
+
+        if ((nodeId == null) && (uuid == null)) {
+            if (getClassByTableName(classes, className).isArrayElementLink()) {
+                // get reference
+                for (final Object fieldName
+                            : getClassByTableName(classes, className).getMemberAttributeInfos().keySet()) {
+                    final MemberAttributeInfo mai = (MemberAttributeInfo)getClassByTableName(classes, className)
+                                .getMemberAttributeInfos().get(fieldName);
+
+                    if (mai.isForeignKey()) {
+                        final JsonNode subNode = rootNode.get(getClassById(classes, mai.getForeignKeyClassId())
+                                        .getTableName());
+
+                        if (subNode != null) {
+                            nodeId = subNode.get("id").asInt();
+                        }
+
+                        rootNode = subNode;
+                        className = getClassById(classes, mai.getForeignKeyClassId()).getTableName();
+                        break;
+                    }
+                }
+            }
+        }
 
         bean = getBeanFromList(possibleObjectsList, nodeId);
 
         if (bean == null) {
             if (((nodeId == null) || (nodeId < 0)) && (uuid == null)) {
                 bean = getClassByTableName(classes, className).getEmptyInstance(CC).getBean();
+                bean.setProperty("id", --lastNegativeId);
             } else {
                 if ((nodeId != null) && (nodeId >= 0)) {
                     final MetaObject mo = ms.getMetaObject(
@@ -204,6 +240,9 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
 
                     if (mo != null) {
                         bean = mo.getBean();
+                    } else {
+                        bean = getClassByTableName(classes, className).getEmptyInstance(CC).getBean();
+                        bean.setProperty("id", --lastNegativeId);
                     }
                 } else if (uuid != null) {
                     final PreparableStatement ps = new PreparableStatement("select id from " + className
@@ -277,7 +316,8 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
                                         classes,
                                         n,
                                         getClassById(classes, attribute.getForeignKeyClassId()).getTableName(),
-                                        objList);
+                                        objList,
+                                        complete);
 
                                 newObjList.add(b);
                             }
@@ -285,13 +325,45 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
                         // do not clean the objList list and then add the new beans, because this will lead to an
                         // error. (The old beans will be deleted)
                         for (final CidsBean b : new ArrayList<CidsBean>(objList)) {
-                            if (getBeanFromList(newObjList, (Integer)b.getProperty("id")) == null) {
-                                objList.remove(b);
+                            if ((!complete && (getBeanFromList(newObjList, (Integer)b.getProperty("id")) == null))
+                                        || (complete)) {
+                                if (attribute.isArray()) {
+                                    String referenceKey = null;
+
+                                    if (getClassById(classes, attribute.getForeignKeyClassId()).getTableName()
+                                                .equalsIgnoreCase(b.getMetaObject().getMetaClass().getTableName())) {
+                                        referenceKey = getForeignAttributeFromArrayCLass(b.getMetaObject()
+                                                        .getMetaClass());
+                                    }
+                                    if (referenceKey != null) {
+                                        objList.remove((CidsBean)b.getProperty(referenceKey));
+                                    } else {
+                                        objList.remove(b);
+                                    }
+                                } else {
+                                    objList.remove(b);
+                                }
                             }
                         }
                         for (final CidsBean b : new ArrayList<CidsBean>(newObjList)) {
                             if (getBeanFromList(objList, (Integer)b.getProperty("id")) == null) {
-                                objList.add(b);
+                                if (attribute.isArray()) {
+                                    String referenceKey = null;
+
+                                    if (getClassById(classes, attribute.getForeignKeyClassId()).getTableName()
+                                                .equalsIgnoreCase(b.getMetaObject().getMetaClass().getTableName())) {
+                                        referenceKey = getForeignAttributeFromArrayCLass(b.getMetaObject()
+                                                        .getMetaClass());
+                                    }
+
+                                    if (referenceKey != null) {
+                                        objList.add((CidsBean)b.getProperty(referenceKey));
+                                    } else {
+                                        objList.add(b);
+                                    }
+                                } else {
+                                    objList.add(b);
+                                }
                             }
                         }
                     }
@@ -301,22 +373,39 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
                                 classes,
                                 node,
                                 getClassById(classes, attribute.getForeignKeyClassId()).getTableName(),
-                                null);
+                                null,
+                                complete);
                         bean.setProperty(attribute.getFieldName(), value);
                     }
                 } else {
                     final String javaClass = attribute.getJavaclassname();
 
-                    if (javaClass.endsWith("String")) {
+                    if (node.isNull()) {
+                        bean.setProperty(attribute.getFieldName(), null);
+                    } else if (javaClass.endsWith("String")) {
                         bean.setProperty(attribute.getFieldName(), node.asText());
                     } else if (javaClass.endsWith("Integer")) {
-                        bean.setProperty(attribute.getFieldName(), node.asInt());
+                        if (!attribute.getFieldName().equalsIgnoreCase("id") || (node.asInt() > 0)) {
+                            bean.setProperty(attribute.getFieldName(), node.asInt());
+                        }
                     } else if (javaClass.endsWith("Long")) {
-                        bean.setProperty(attribute.getFieldName(), node.asLong());
+                        if (node.isNull()) {
+                            bean.setProperty(attribute.getFieldName(), null);
+                        } else {
+                            bean.setProperty(attribute.getFieldName(), node.asLong());
+                        }
                     } else if (javaClass.endsWith("Float")) {
-                        bean.setProperty(attribute.getFieldName(), node.floatValue());
+                        if (node.isNull()) {
+                            bean.setProperty(attribute.getFieldName(), null);
+                        } else {
+                            bean.setProperty(attribute.getFieldName(), node.floatValue());
+                        }
                     } else if (javaClass.endsWith("Double")) {
-                        bean.setProperty(attribute.getFieldName(), node.asDouble());
+                        if (node.isNull()) {
+                            bean.setProperty(attribute.getFieldName(), null);
+                        } else {
+                            bean.setProperty(attribute.getFieldName(), node.asDouble());
+                        }
                     } else if (javaClass.endsWith("Timestamp")) {
                         final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'H:m:s");
                         final java.util.Date d = sdf.parse(node.asText());
@@ -368,6 +457,27 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
         }
 
         return bean;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   c  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String getForeignAttributeFromArrayCLass(final MetaClass c) {
+        final HashMap attrMap = c.getMemberAttributeInfos();
+
+        for (final Object key : new ArrayList(attrMap.keySet())) {
+            final MemberAttributeInfo attribute = (MemberAttributeInfo)attrMap.get(key);
+
+            if (attribute.isForeignKey()) {
+                return attribute.getFieldName();
+            }
+        }
+
+        return null;
     }
 
     /**
