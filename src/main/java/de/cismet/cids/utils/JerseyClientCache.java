@@ -15,13 +15,21 @@ package de.cismet.cids.utils;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.client.apache4.ApacheHttpClient4;
-import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
+import com.sun.jersey.client.apache4.ApacheHttpClient4Handler;
 import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
 
-import org.apache.hc.client5.http.auth.AuthScope;
-import org.apache.hc.client5.http.auth.NTCredentials;
-import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
-import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.NTCredentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.log4j.Logger;
 
 import java.util.Arrays;
@@ -171,6 +179,24 @@ public class JerseyClientCache {
      * @return  DOCUMENT ME!
      */
     private CircularObjectPool<Client> createClientsForPath(final String path, final int poolsize) {
+        final Client[] clientArray = new Client[poolsize];
+
+        for (int i = 0; i < poolsize; ++i) {
+            final ApacheHttpClient4Handler handler = createApacheHttpClient4Handler(path);
+            clientArray[i] = new ApacheHttpClient4(handler);
+        }
+
+        return new CircularObjectPool<>(Collections.unmodifiableList(Arrays.asList(clientArray)));
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   path  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private ApacheHttpClient4Handler createApacheHttpClient4Handler(final String path) {
         // remove leading '/' if present
         final String resource;
         if (path == null) {
@@ -182,18 +208,16 @@ public class JerseyClientCache {
         }
 
         LOG.info("create jersey http clients for (resource/path): " + resource);
+        final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+        cm.setMaxTotal(50);
+        cm.setDefaultMaxPerRoute(10);
 
-        final DefaultApacheHttpClient4Config clientConfig = new DefaultApacheHttpClient4Config();
+        final HttpClientBuilder builder = HttpClients.custom().setConnectionManager(cm);
 
         if ((proxy != null) && proxy.isEnabledFor(resource)) {
             // Proxy URI
-            clientConfig.getProperties()
-                    .put(
-                        ApacheHttpClient4Config.PROPERTY_PROXY_URI,
-                        "http://"
-                        + proxy.getHost()
-                        + ":"
-                        + proxy.getPort());
+            final HttpHost proxyHost = new HttpHost(proxy.getHost(), proxy.getPort());
+            builder.setProxy(proxyHost);
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("proxy set: " + proxy);
@@ -201,7 +225,7 @@ public class JerseyClientCache {
 
             // Proxy Credentials (HttpClient 4)
             if ((proxy.getUsername() != null) && (proxy.getPassword() != null)) {
-                final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
                 final AuthScope authScope = new AuthScope(proxy.getHost(), proxy.getPort());
 
                 if ((proxy.getDomain() != null) && !proxy.getDomain().isEmpty()) {
@@ -210,18 +234,17 @@ public class JerseyClientCache {
                         authScope,
                         new NTCredentials(
                             proxy.getUsername(),
-                            proxy.getPassword().toCharArray(),
-                            null, // workstation
+                            proxy.getPassword(),
+                            null,
                             proxy.getDomain()));
                 } else {
                     // Basic / Digest
                     credentialsProvider.setCredentials(
                         authScope,
-                        new UsernamePasswordCredentials(proxy.getUsername(), proxy.getPassword().toCharArray()));
+                        new UsernamePasswordCredentials(proxy.getUsername(), proxy.getPassword()));
                 }
 
-                clientConfig.getProperties()
-                        .put(ApacheHttpClient4Config.PROPERTY_CREDENTIALS_PROVIDER, credentialsProvider);
+                builder.setDefaultCredentialsProvider(credentialsProvider);
 
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("proxy credentials set: " + proxy);
@@ -229,15 +252,15 @@ public class JerseyClientCache {
             }
         }
 
-        clientConfig.getProperties().put(ClientConfig.PROPERTY_CONNECT_TIMEOUT, TIMEOUT);
+        final CloseableHttpClient httpClient = builder.build();
+        final ClientConfig config = new DefaultApacheHttpClient4Config();
 
-        final Client[] clientArray = new Client[poolsize];
+        config.getProperties().put(ClientConfig.PROPERTY_CONNECT_TIMEOUT, TIMEOUT);
 
-        for (int i = 0; i < poolsize; ++i) {
-            clientArray[i] = ApacheHttpClient4.create(clientConfig);
-        }
+        final CookieStore cookieStore = new BasicCookieStore();
+        final boolean preemptiveBasicAuth = false;
 
-        return new CircularObjectPool<>(Collections.unmodifiableList(Arrays.asList(clientArray)));
+        return new ApacheHttpClient4Handler(httpClient, cookieStore, preemptiveBasicAuth);
     }
 
     /**
