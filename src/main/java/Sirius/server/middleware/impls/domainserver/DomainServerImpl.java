@@ -104,7 +104,6 @@ import java.util.regex.Pattern;
 import de.cismet.cids.objectextension.ObjectExtensionFactory;
 
 import de.cismet.cids.server.DefaultServerExceptionHandler;
-import de.cismet.cids.server.ServerSecurityManager;
 import de.cismet.cids.server.actions.CalibrateTimeServerAction;
 import de.cismet.cids.server.actions.ScheduledServerAction;
 import de.cismet.cids.server.actions.ScheduledServerActionManager;
@@ -2108,10 +2107,6 @@ public class DomainServerImpl extends UnicastRemoteObject implements CatalogueSe
             if (ServerProperties.START_MODE__SIMPLE.equalsIgnoreCase(properties.getStartMode())) {
                 Sirius.server.registry.Registry.getServerInstance(rmiPort);
                 StartProxy.getInstance(args[0]);
-            }
-
-            if (System.getSecurityManager() == null) {
-                System.setSecurityManager(new ServerSecurityManager());
             }
 
             instance = new DomainServerImpl(new ServerProperties(args[0]));

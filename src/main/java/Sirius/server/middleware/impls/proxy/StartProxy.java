@@ -41,7 +41,6 @@ import java.util.Collection;
 import java.util.MissingResourceException;
 
 import de.cismet.cids.server.CallServerService;
-import de.cismet.cids.server.ServerSecurityManager;
 import de.cismet.cids.server.ws.rest.RESTfulSerialInterfaceConnector;
 import de.cismet.cids.server.ws.rest.RESTfulService;
 
@@ -147,17 +146,6 @@ public final class StartProxy {
             if (LOG.isInfoEnabled()) {
                 LOG.info("<CS> INFO: siriusRegistryIP:: " + siriusRegistryIP);       // NOI18N
                 LOG.info("<CS> INFO: configFile:: " + configFile);                   // NOI18N
-            }
-
-            // create a securitymanager if it is not registered yet
-            try {
-                if (System.getSecurityManager() == null) {
-                    System.setSecurityManager(new ServerSecurityManager());
-                }
-            } catch (final Exception e) {
-                final String message = "could not create security manager"; // NOI18N
-                LOG.fatal(message, e);
-                throw new ServerExitError(message, e);
             }
 
             // init server

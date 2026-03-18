@@ -52,18 +52,6 @@ public class RemoteTester {
     public static void main(final String[] args) throws Throwable {
         final String domain = "WUNDA_BLAU"; // NOI18N
 
-        // security alles unsinn :-)
-        System.setSecurityManager(
-            new RMISecurityManager() {
-
-                @Override
-                public void checkConnect(final String host, final int port) {
-                }
-                @Override
-                public void checkConnect(final String host, final int port, final Object context) {
-                }
-            });
-
         // rmi registry lokaliseren
         final java.rmi.registry.Registry rmiRegistry = LocateRegistry.getRegistry(1099);
 
