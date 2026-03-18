@@ -21,6 +21,7 @@ import Sirius.server.newuser.UserException;
 import Sirius.util.image.Image;
 
 import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
@@ -30,6 +31,8 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+
+import java.net.SocketException;
 
 import java.rmi.RemoteException;
 
@@ -384,7 +387,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      *
      * @see     #createWebResourceBuilder(java.lang.String, java.util.Map)
      */
-    public WebResource.Builder createWebResourceBuilder(final String path) {
+    private WebResource.Builder createWebResourceBuilder(final String path) {
         return createWebResourceBuilder(path, null);
     }
 
@@ -398,7 +401,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      *
      * @return  a <code>WebResource.Builder</code> ready to perform an operation (GET, POST, PUT...)
      */
-    public WebResource.Builder createWebResourceBuilder(final String path, final Map<String, String> queryParams) {
+    private WebResource.Builder createWebResourceBuilder(final String path, final Map<String, String> queryParams) {
         // remove leading '/' if present
         final String resource;
         if (path == null) {
@@ -441,9 +444,16 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     private <T> T getResponsePOST(final String path, final Map queryData, final Class<T> type) throws IOException,
         ClassNotFoundException {
-        final WebResource.Builder builder = createWebResourceBuilder(path);
+        try {
+            final WebResource.Builder builder = createWebResourceBuilder(path);
 
-        return getResponsePOST(builder, type, queryData);
+            return getResponsePOST(builder, type, queryData);
+        } catch (SocketException | ClientHandlerException e) {
+            JerseyClientCache.getInstance(rootResource, proxy).recreatePool();
+            final WebResource.Builder builder = createWebResourceBuilder(path);
+
+            return getResponsePOST(builder, type, queryData);
+        }
     }
 
     /**

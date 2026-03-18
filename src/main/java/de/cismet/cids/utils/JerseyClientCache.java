@@ -15,15 +15,21 @@ package de.cismet.cids.utils;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.client.apache.ApacheHttpClient;
+import com.sun.jersey.client.apache.ApacheHttpClientHandler;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import de.cismet.cids.utils.serverresources.GeneralServerResources;
 import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
@@ -54,6 +60,9 @@ public class JerseyClientCache {
     private final transient Proxy proxy;
     private final String rootResource;
     private int poolSize = DEFAULT_POOL_SIZE;
+    private long lastRecached = 0;
+
+    private ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -96,6 +105,19 @@ public class JerseyClientCache {
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     */
+    public synchronized void recreatePool() {
+        if ((System.currentTimeMillis() - lastRecached) > 10000) {
+            for (final String path : clientCache.keySet()) {
+                clientCache.put(path, createClientsForPath(path, poolSize));
+            }
+
+            lastRecached = System.currentTimeMillis();
+        }
+    }
 
     /**
      * DOCUMENT ME!
