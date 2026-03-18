@@ -238,6 +238,14 @@ public class ServerResourcesLoader extends AbstractServerResourcesLoader {
                 } catch (final Exception ex) {
                     LOG.warn("Exception while loading resource: " + serverResource, ex);
                     resource = ex;
+                } finally {
+                    if (inputStream != null) {
+                        try {
+                            inputStream.close();
+                        } catch (IOException e) {
+                            // nothing to do
+                        }
+                    }
                 }
             } else {
                 resource = null;
