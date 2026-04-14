@@ -429,7 +429,11 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
      * @param  newValue      DOCUMENT ME!
      */
     public void firePropertyChanged(final String propertyName, final Object oldValue, final Object newValue) {
-        propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
+        // without the if condition, some property change listeners will do unnecessary work,
+        // when a polygon is drawn to the map
+        if ((oldValue != null) || (newValue != null)) {
+            propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
+        }
     }
 
     /**
