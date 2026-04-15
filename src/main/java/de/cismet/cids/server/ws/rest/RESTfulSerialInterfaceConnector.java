@@ -446,12 +446,12 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     private <T> T getResponsePOST(final String path, final Map queryData, final Class<T> type) throws IOException,
         ClassNotFoundException {
-        final Invocation.Builder builder = createWebResourceBuilder(path);
-
+        try {
+            final Invocation.Builder builder = createWebResourceBuilder(path);
             return getResponsePOST(builder, type, queryData);
-        } catch (SocketException | ClientHandlerException e) {
+        } catch (SocketException | ProcessingException e) {
             JerseyClientCache.getInstance(rootResource, proxy).recreatePool();
-            final WebResource.Builder builder = createWebResourceBuilder(path);
+            final Invocation.Builder builder = createWebResourceBuilder(path);
 
             return getResponsePOST(builder, type, queryData);
         }
