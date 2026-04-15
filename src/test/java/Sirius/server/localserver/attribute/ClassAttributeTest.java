@@ -16,8 +16,8 @@ import org.junit.Test;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
 import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
 import org.apache.logging.log4j.core.config.builder.api.RootLoggerComponentBuilder;
@@ -61,11 +61,11 @@ public class ClassAttributeTest {
         builder.setConfigurationName("DynamicConfig");
 
         // Define appenders
-        final AppenderComponentBuilder socketAppender = builder.newAppender("Remote", "Socket")
-                    .addAttribute("host", "localhost")
-                    .addAttribute("port", 4445);
-        socketAppender.add(builder.newLayout("JsonLayout"));
-        builder.add(socketAppender);
+        final AppenderComponentBuilder consoleAppender = builder.newAppender("Console", "Console")
+                .addAttribute("target", ConsoleAppender.Target.SYSTEM_OUT);
+        
+        consoleAppender.add(builder.newLayout("JsonLayout"));
+        builder.add(consoleAppender);
 
         // Define root logger
         final RootLoggerComponentBuilder rootLogger = builder.newRootLogger(Level.DEBUG);

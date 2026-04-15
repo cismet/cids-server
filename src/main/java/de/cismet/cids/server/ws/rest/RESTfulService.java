@@ -11,16 +11,12 @@ import Sirius.server.ServerExitError;
 import Sirius.server.middleware.impls.proxy.UserServiceImpl;
 import Sirius.server.property.ServerProperties;
 
-import com.sun.jersey.spi.container.servlet.ServletContainer;
 
 import org.apache.log4j.Logger;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.server.handler.HandlerCollection;
-import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -35,7 +31,7 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import de.cismet.cids.server.connectioncontext.ConnectionContextBackend;
-import de.cismet.cids.server.connectioncontext.ConnectionContextManagement;
+import org.glassfish.jersey.servlet.ServletContainer;
 
 /**
  * DOCUMENT ME!

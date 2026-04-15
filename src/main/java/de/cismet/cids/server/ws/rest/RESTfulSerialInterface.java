@@ -15,8 +15,6 @@ import Sirius.server.middleware.types.Node;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserException;
 
-import com.sun.jersey.core.util.Base64;
-
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -24,22 +22,6 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 
 import java.util.Date;
-
-import javax.servlet.http.HttpServletRequest;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.ServerActionParameter;
@@ -50,6 +32,21 @@ import de.cismet.connectioncontext.AbstractConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
 
 import de.cismet.tools.Converter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.FormParam;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HeaderParam;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
+import java.util.Base64;
+import org.apache.hc.core5.http.HttpHeaders;
 
 /**
  * DOCUMENT ME!
@@ -2221,7 +2218,7 @@ public final class RESTfulSerialInterface {
     private User getCidsUserFromBasicAuth(final String authString, final ConnectionContext connectionContext)
             throws Exception {
         // Decode Base64
-        final String token = new String(Base64.decode(authString.substring(6)));
+        final String token = new String(Base64.getDecoder().decode(authString.substring(6)));
         final String[] parts = token.split(":");
         final String login = parts[0];
         final String password = parts[1];

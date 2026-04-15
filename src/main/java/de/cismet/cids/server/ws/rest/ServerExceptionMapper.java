@@ -11,8 +11,6 @@ import Sirius.server.dataretrieval.DataRetrievalException;
 import Sirius.server.middleware.impls.proxy.StartProxy;
 import Sirius.server.newuser.UserException;
 
-import com.sun.jersey.api.client.ClientResponse;
-
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.log4j.Logger;
 
@@ -20,11 +18,10 @@ import java.io.IOException;
 
 import java.rmi.RemoteException;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
-
 import de.cismet.tools.Converter;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 
 /**
  * DOCUMENT ME!
@@ -83,11 +80,11 @@ public final class ServerExceptionMapper {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public static <T extends Throwable> T fromResponse(final ClientResponse response,
+    public static <T extends Throwable> T fromResponse(final Response response,
             final Class<T> type,
             final boolean compressionEnabled) throws Exception {
         if (response != null) {
-            final String responseMessage = response.getEntity(String.class);
+            final String responseMessage = response.readEntity(String.class);
             try {
                 return Converter.deserialiseFromString(responseMessage, type, compressionEnabled);
             } catch (final Exception ex) {

@@ -30,17 +30,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.management.ObjectName;
-
-import javax.servlet.http.HttpServletRequest;
 
 import de.cismet.connectioncontext.AbstractConnectionContext;
 
 import de.cismet.connectioncontext.AbstractConnectionContext.Category;
 
 import de.cismet.connectioncontext.ConnectionContext;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * DOCUMENT ME!

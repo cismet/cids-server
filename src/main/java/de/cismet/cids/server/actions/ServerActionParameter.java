@@ -7,11 +7,10 @@
 ****************************************************/
 package de.cismet.cids.server.actions;
 
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 
-import javax.ws.rs.core.MultivaluedMap;
-
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * DOCUMENT ME!
@@ -74,10 +73,10 @@ public class ServerActionParameter<T> implements Serializable {
             throw new IllegalArgumentException("Params must be non null.");
         }
         int i = 0;
-        final ServerActionParameter[] ret = new ServerActionParameter[params.size()];
+        final ServerActionParameter<String>[] ret = new ServerActionParameter[params.size()];
         for (final String key : params.keySet()) {
             for (final String value : params.get(key)) {
-                ret[i++] = new ServerActionParameter<String>(key, value);
+                ret[i++] = new ServerActionParameter<>(key, value);
             }
         }
         return ret;

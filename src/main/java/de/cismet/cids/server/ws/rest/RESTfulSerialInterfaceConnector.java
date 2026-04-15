@@ -20,13 +20,6 @@ import Sirius.server.newuser.UserException;
 
 import Sirius.util.image.Image;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.UniformInterfaceException;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
-
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.log4j.Logger;
 
@@ -54,8 +47,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
 
 import de.cismet.cids.server.CallServerService;
 import de.cismet.cids.server.actions.CalibrateTimeServerAction;
@@ -75,6 +66,16 @@ import de.cismet.netutil.Proxy;
 import de.cismet.tools.Converter;
 
 import static de.cismet.cids.server.ws.rest.RESTfulSerialInterface.*;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 /**
  * DOCUMENT ME!
@@ -387,7 +388,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      *
      * @see     #createWebResourceBuilder(java.lang.String, java.util.Map)
      */
-    private WebResource.Builder createWebResourceBuilder(final String path) {
+    public Invocation.Builder createWebResourceBuilder(final String path) {
         return createWebResourceBuilder(path, null);
     }
 
@@ -401,7 +402,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      *
      * @return  a <code>WebResource.Builder</code> ready to perform an operation (GET, POST, PUT...)
      */
-    private WebResource.Builder createWebResourceBuilder(final String path, final Map<String, String> queryParams) {
+    public Invocation.Builder createWebResourceBuilder(final String path, final Map<String, String> queryParams) {
         // remove leading '/' if present
         final String resource;
         if (path == null) {
@@ -423,10 +424,11 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
             }
         }
 
-        final WebResource wr = c.resource(uriBuilder.build());
+        final WebTarget wt = c.target(uriBuilder.build());
 
         // this is the binary interface so we accept the octet stream type only
-        return wr.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).accept(MediaType.APPLICATION_OCTET_STREAM_TYPE);
+        return wt.request().accept(MediaType.APPLICATION_OCTET_STREAM_TYPE);
+//        return wr.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).accept(MediaType.APPLICATION_OCTET_STREAM_TYPE);
     }
 
     /**
@@ -444,8 +446,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     private <T> T getResponsePOST(final String path, final Map queryData, final Class<T> type) throws IOException,
         ClassNotFoundException {
-        try {
-            final WebResource.Builder builder = createWebResourceBuilder(path);
+        final Invocation.Builder builder = createWebResourceBuilder(path);
 
             return getResponsePOST(builder, type, queryData);
         } catch (SocketException | ClientHandlerException e) {
@@ -470,7 +471,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      * @throws  ClassNotFoundException  DOCUMENT ME!
      * @throws  IllegalStateException   DOCUMENT ME!
      */
-    private <T> T getResponsePOST(final WebResource.Builder builder,
+    private <T> T getResponsePOST(final Invocation.Builder builder,
             final Class<T> type,
             final Map queryData) throws IOException, ClassNotFoundException {
         if ((builder == null) || (type == null)) {
@@ -478,8 +479,14 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
         }
 
         try {
-            final byte[] bytes = builder.post(byte[].class, queryData);
-//            System.out.println(bytes.length);
+//            Form form = new Form();
+//            
+//            for (Object key : queryData.keySet()) {
+//                form.param(String.valueOf(key), String.valueOf( queryData.get(key)) );
+//            }
+            
+            final byte[] bytes = builder.post(Entity.entity(queryData, MediaType.APPLICATION_FORM_URLENCODED_TYPE), byte[].class);
+            
             if (isCompressionEnabled()) {
                 return Converter.deserialiseFromGzip(bytes, type);
             } else {
@@ -773,17 +780,18 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  UniformInterfaceException  DOCUMENT ME!
+     * @throws  WebApplicationException  DOCUMENT ME!
      */
-    private RemoteException createRemoteException(final Exception exception) throws UniformInterfaceException {
+    private RemoteException createRemoteException(final Exception exception) throws WebApplicationException {
         try {
             throw exception;
-        } catch (final UniformInterfaceException ex) {
+        } catch (WebApplicationException ex) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("exception during request, remapping", ex);
             }
 
-            final ClientResponse response = ex.getResponse();
+            final Response response = ex.getResponse();
+            
             if (response == null) {
                 return new RemoteException("response is null", ex);
             } else {
@@ -798,6 +806,10 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                     return new RemoteException(message, ex);
                 }
             }
+        } catch (final ProcessingException ex) {
+            final String message = ex.getMessage(); // NOI18N
+            LOG.error(message, ex);
+            return new RemoteException(message, ex);
         } catch (final IOException ex) {
             final String message = "could not convert params"; // NOI18N
             LOG.error(message, ex);
@@ -1218,7 +1230,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      */
     public int update(final User user, final String query, final String domain) throws RemoteException {
         try {
-            final MultivaluedMapImpl queryParams = new MultivaluedMapImpl();
+            final MultivaluedHashMap<String, Object> queryParams = new MultivaluedHashMap<>();
 
             if (user != null) {
                 queryParams.add(PARAM_USER, Converter.serialiseToString(user, isCompressionEnabled()));
@@ -1698,12 +1710,12 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("changePassword", queryParams, Boolean.class); // NOI18N
-        } catch (final UniformInterfaceException ex) {
+        } catch (final WebApplicationException ex) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("exception during request, remapping", ex);
             }
 
-            final ClientResponse response = ex.getResponse();
+            final Response response = ex.getResponse();
             if (response == null) {
                 throw new RemoteException("response is null", ex);
             } else if (HttpStatus.SC_UNAUTHORIZED == response.getStatus()) {
@@ -1778,12 +1790,12 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
                         .append(PARAM_CONNECTIONCONTEXT, Converter.serialiseToString(context, isCompressionEnabled()));
 
             return getResponsePOST("getUser", queryParams, User.class); // NOI18N
-        } catch (final UniformInterfaceException ex) {
+        } catch (final WebApplicationException ex) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("exception during request, remapping", ex);
             }
 
-            final ClientResponse response = ex.getResponse();
+            final Response response = ex.getResponse();
             if (response == null) {
                 throw new RemoteException("response is null", ex);
             } else if (HttpStatus.SC_UNAUTHORIZED == response.getStatus()) {
@@ -2032,7 +2044,7 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
      *
      * @version  $Revision$, $Date$
      */
-    private class AppendableMultivaluedMapImpl extends MultivaluedMapImpl {
+    private class AppendableMultivaluedMapImpl extends MultivaluedHashMap<String, Object> {
 
         //~ Methods ------------------------------------------------------------
 

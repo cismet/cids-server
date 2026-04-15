@@ -1,23 +1,14 @@
 package de.cismet.cids.dynamics;
 
 import Sirius.server.localserver.attribute.ClassAttributeTest;
-import static Sirius.server.localserver.attribute.ClassAttributeTest.configureLog4J;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import de.cismet.cids.utils.MetaClassCacheService;
 import de.cismet.connectioncontext.ConnectionContext;
 import java.awt.EventQueue;
 import java.util.LinkedList;
-import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import org.apache.log4j.Logger;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
-import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
-import org.apache.logging.log4j.core.config.builder.api.RootLoggerComponentBuilder;
-import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
-import org.apache.logging.log4j.core.config.builder.impl.DefaultConfigurationBuilder;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

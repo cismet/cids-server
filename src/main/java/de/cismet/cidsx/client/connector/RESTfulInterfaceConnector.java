@@ -27,25 +27,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse.Status;
-import com.sun.jersey.api.client.GenericType;
-import com.sun.jersey.api.client.UniformInterfaceException;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.client.apache4.ApacheHttpClient4;
-import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
-import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
-import com.sun.jersey.core.util.Base64;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
-import com.sun.jersey.multipart.FormDataMultiPart;
-
-import org.apache.hc.client5.http.auth.AuthScope;
-import org.apache.hc.client5.http.auth.NTCredentials;
-import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
-import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
 import org.apache.log4j.Logger;
 
 import java.io.ByteArrayOutputStream;
@@ -75,10 +57,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriBuilder;
-
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.CallServerService;
@@ -87,6 +65,7 @@ import de.cismet.cids.server.search.CidsServerSearch;
 import de.cismet.cids.server.ws.SSLConfig;
 import de.cismet.cids.server.ws.rest.CidsTrustManager;
 import de.cismet.cids.server.ws.rest.SSLHostnameVerifier;
+import de.cismet.cids.utils.JerseyClientCache;
 
 import de.cismet.cidsx.base.types.Type;
 
@@ -111,6 +90,21 @@ import de.cismet.cidsx.server.search.builtin.legacy.MetaObjectsByQuerySearch;
 import de.cismet.connectioncontext.ConnectionContext;
 
 import de.cismet.netutil.Proxy;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
+import java.util.Base64;
+import java.util.List;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 
 /**
  * This is the common CallServerService implementation for interacting with the cids Pure REST API and for translating
@@ -196,8 +190,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
 
         LOG.info("connecting to root resource '" + this.rootResource + "' using proxy: " + this.proxy); // NOI18N
-        clientCache = new HashMap<String, Client>();
-        credentialsCache = new HashMap<String, String>();
+        clientCache = new HashMap<>();
+        credentialsCache = new HashMap<>();
         classKeyCache = new ClassNameCache();
     }
 
@@ -298,7 +292,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @return  a <code>WebResource</code> ready to perform an operation (GET, POST, PUT...)
      */
-    protected WebResource createWebResource(final String path) {
+    protected WebTarget createWebResource(final String path) {
         // remove leading '/' if present
         final String resource;
         if ((path == null) || path.isEmpty()) {
@@ -312,63 +306,18 @@ public class RESTfulInterfaceConnector implements CallServerService {
         // create new client and webresource from the given resource
         if (!clientCache.containsKey(path)) {
             LOG.info("adding new client for path '" + path + "' and resource '" + resource + "' to cache");
-            final DefaultApacheHttpClient4Config clientConfig = new DefaultApacheHttpClient4Config();
-
-            if ((proxy != null) && proxy.isEnabledFor(resource)) {
-                // Proxy URI
-                clientConfig.getProperties()
-                        .put(
-                            ApacheHttpClient4Config.PROPERTY_PROXY_URI,
-                            "http://"
-                            + proxy.getHost()
-                            + ":"
-                            + proxy.getPort());
-
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("proxy set: " + proxy);
-                }
-
-                // Proxy Credentials (HttpClient 4)
-                if ((proxy.getUsername() != null) && (proxy.getPassword() != null)) {
-                    final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-                    final AuthScope authScope = new AuthScope(proxy.getHost(), proxy.getPort());
-
-                    if ((proxy.getDomain() != null) && !proxy.getDomain().isEmpty()) {
-                        // NTLM / Domain-Auth
-                        credentialsProvider.setCredentials(
-                            authScope,
-                            new NTCredentials(
-                                proxy.getUsername(),
-                                proxy.getPassword().toCharArray(),
-                                null, // workstation
-                                proxy.getDomain()));
-                    } else {
-                        // Basic / Digest
-                        credentialsProvider.setCredentials(
-                            authScope,
-                            new UsernamePasswordCredentials(proxy.getUsername(), proxy.getPassword().toCharArray()));
-                    }
-
-                    clientConfig.getProperties()
-                            .put(ApacheHttpClient4Config.PROPERTY_CREDENTIALS_PROVIDER, credentialsProvider);
-
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("proxy credentials set: " + proxy);
-                    }
-                }
-            }
-
-            clientConfig.getProperties().put(ClientConfig.PROPERTY_CONNECT_TIMEOUT, TIMEOUT);
-            clientConfig.getClasses().add(JacksonJsonProvider.class);
-            clientCache.put(path, ApacheHttpClient4.create(clientConfig));
+            
+            Client client = JerseyClientCache.createJersey3Client(resource, proxy);
+            
+            clientCache.put(path, client);
         }
 
         final Client client = clientCache.get(path);
         final UriBuilder uriBuilder = UriBuilder.fromPath(resource);
 
-        final WebResource webResource = client.resource(uriBuilder.build());
+        final WebTarget wt = client.target(uriBuilder.build());
 
-        return webResource;
+        return wt;
     }
 
     /**
@@ -381,10 +330,10 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @throws  RemoteException  DOCUMENT ME!
      */
-    protected WebResource.Builder createAuthorisationHeader(final WebResource webResource, final User user)
+    protected Invocation.Builder createAuthorisationHeader(final WebTarget webResource, final User user)
             throws RemoteException {
         final String basicAuthString = this.getBasicAuthString(user);
-        final WebResource.Builder builder = webResource.header("Authorization", basicAuthString);
+        final Invocation.Builder builder = webResource.request().header("Authorization", basicAuthString);
         return builder;
     }
 
@@ -395,8 +344,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @return  DOCUMENT ME!
      */
-    protected WebResource.Builder createMediaTypeHeaders(final WebResource.Builder builder) {
-        return builder.type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE);
+    protected Invocation.Builder createMediaTypeHeaders(final Invocation.Builder builder) {
+        return builder.accept(MediaType.APPLICATION_JSON);
     }
 
     /**
@@ -406,8 +355,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
      *
      * @return  DOCUMENT ME!
      */
-    protected WebResource.Builder createMediaTypeHeaders(final WebResource webResource) {
-        return webResource.type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE);
+    protected Invocation.Builder createMediaTypeHeaders(final WebTarget webResource) {
+        return webResource.request(MediaType.APPLICATION_JSON);
     }
 
     /**
@@ -439,7 +388,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @return  query parameters 'domain' and 'role'
      */
     protected MultivaluedMap createUserParameters(final User user) {
-        return this.createUserParameters(new MultivaluedMapImpl(), user);
+        return this.createUserParameters(new MultivaluedHashMap<String, Object>(), user);
     }
 
     /**
@@ -482,7 +431,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
         if ((user != null) && (user.getName() != null) && (user.getDomain() != null) && (password != null)) {
             final String key = user.getName() + "@" + user.getDomain();
             final String basicAuthString = "Basic "
-                        + new String(Base64.encode(key + ":" + password));
+                        + new String(Base64.getEncoder().encode((key + ":" + password).getBytes()));
 
             if (this.credentialsCache.containsKey(key)) {
                 LOG.warn("user '" + user.getName() + "' is already logged-in at domain '" + user.getDomain()
@@ -571,29 +520,31 @@ public class RESTfulInterfaceConnector implements CallServerService {
         // TODO connectionContext implementation
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         queryParameters.add("domain", domainName);
-        final WebResource webResource = this.createWebResource(NODES_API).queryParams(queryParameters);
-        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        WebTarget webTarget = this.createWebResource(NODES_API);
+        
+        webTarget = addParams(webTarget, queryParameters);
+        
+        Invocation.Builder builder = this.createAuthorisationHeader(webTarget, user);
         builder = this.createMediaTypeHeaders(builder);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("getRoots for user '" + user + "': " + webResource.toString());
+            LOG.debug("getRoots for user '" + user + "': " + webTarget.toString());
         }
 
         try {
-            final GenericCollectionResource<CidsNode> restCidsNodes = builder.get(
-                    new GenericType<GenericCollectionResource<CidsNode>>() {
+            final List<CidsNode> restCidsNodes = builder.get(
+                    new GenericType<List<CidsNode>>() {
                     });
 
-            if ((restCidsNodes != null) && (restCidsNodes.get$collection() != null)
-                        && (restCidsNodes.get$collection().size() > 0)) {
+            if ((restCidsNodes != null) && (!restCidsNodes.isEmpty())) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("found " + restCidsNodes.get$collection().size()
+                    LOG.debug("found " + restCidsNodes.size()
                                 + " root nodes for user '" + user.getName()
                                 + "'. performing conversion to cids legacy nodes.");
                 }
 
-                final Node[] legacyNodes = new Node[restCidsNodes.get$collection().size()];
+                final Node[] legacyNodes = new Node[restCidsNodes.size()];
                 int i = 0;
-                for (final CidsNode cidsNode : restCidsNodes.get$collection()) {
+                for (final CidsNode cidsNode : restCidsNodes) {
                     try {
                         final Node legacyNode = CidsNodeFactory.getFactory().legacyCidsNodeFromRestCidsNode(cidsNode);
                         legacyNodes[i] = legacyNode;
@@ -611,15 +562,21 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 LOG.error("could not find any cids nodes for user '" + user.getName() + "'");
                 return null;
             }
-        } catch (UniformInterfaceException ue) {
-            final Status status = ue.getResponse().getClientResponseStatus();
-            final String message = "could get cids nodes for user '" + user.getName() + "': "
+        } catch (WebApplicationException ue) {
+            final Response.StatusType status = ue.getResponse().getStatusInfo();
+            final String message = "could not get cids nodes for user '" + user.getName() + "': "
                         + status.getReasonPhrase();
 
             LOG.error(message, ue);
             if (LOG.isDebugEnabled()) {
-                LOG.debug(ue.getResponse().getEntity(String.class));
+                LOG.debug(ue.getResponse().readEntity(String.class));
             }
+            throw new RemoteException(message, ue);
+        } catch (ProcessingException ue) {
+            final String message = "could not get cids nodes for user '" + user.getName() + "': "
+                        + ue.getMessage();
+
+            LOG.error(message, ue);
             throw new RemoteException(message, ue);
         }
     }
@@ -654,6 +611,16 @@ public class RESTfulInterfaceConnector implements CallServerService {
     public Node[] getChildren(final Node node, final User user) throws RemoteException {
         return getChildren(node, user, ConnectionContext.createDeprecated());
     }
+    
+    private WebTarget addParams(WebTarget webTarget, final MultivaluedMap queryParameters) {
+        for (Object key : queryParameters.keySet()) {
+            if (key != null) {
+                webTarget = webTarget.queryParam(key.toString(), queryParameters.get(key));
+            }
+        }
+        
+        return webTarget;
+    }
 
     /**
      * Gets the children of the specified node for the specified user. The specified node has to contain either a valid
@@ -682,7 +649,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
     public Node[] getChildren(final Node node, final User user, final ConnectionContext connectionContext)
             throws RemoteException {
         final MultivaluedMap queryParameters = this.createUserParameters(user);
-        final GenericCollectionResource<CidsNode> restCidsNodes;
+        final List<CidsNode> restCidsNodes;
         try {
             if (node.getId() == -1) {
                 if ((node.getDynamicChildrenStatement() == null) || node.getDynamicChildrenStatement().isEmpty()) {
@@ -696,44 +663,50 @@ public class RESTfulInterfaceConnector implements CallServerService {
                                 + "' has a dynamic children statement");
                 }
 
-                final WebResource webResource = this.createWebResource(NODES_API)
-                            .path(user.getDomain() + "/children")
-                            .queryParams(queryParameters);
-                WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+                WebTarget webTarget = this.createWebResource(NODES_API)
+                            .path(user.getDomain() + "/children");
+                
+                webTarget = addParams(webTarget, queryParameters);
+                
+                
+                Invocation.Builder builder = this.createAuthorisationHeader(webTarget, user);
+                
                 builder = this.createMediaTypeHeaders(builder);
+                
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("getDynamicChildren of node '" + node.getName()
-                                + "' (" + node.getId() + ") for user '" + user + "': " + webResource.toString());
+                                + "' (" + node.getId() + ") for user '" + user + "': " + webTarget.toString());
                 }
-                restCidsNodes = builder.post(new GenericType<GenericCollectionResource<CidsNode>>() {
-                        },
-                        node.getDynamicChildrenStatement());
+                
+                restCidsNodes = builder.post(Entity.text(node.getDynamicChildrenStatement()), 
+                        new GenericType<List<CidsNode>>() {});
             } else {
-                final WebResource webResource = this.createWebResource(NODES_API)
-                            .path(user.getDomain() + "." + String.valueOf(node.getId()) + "/children")
-                            .queryParams(queryParameters);
-                WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+                WebTarget webTarget = this.createWebResource(NODES_API)
+                            .path(user.getDomain() + "." + String.valueOf(node.getId()) + "/children");
+                
+                webTarget = addParams(webTarget, queryParameters);
+                
+                Invocation.Builder builder = this.createAuthorisationHeader(webTarget, user);
                 builder = this.createMediaTypeHeaders(builder);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("getChildren of node '" + node.getName()
-                                + "' (" + node.getId() + ") for user '" + user + "': " + webResource.toString());
+                                + "' (" + node.getId() + ") for user '" + user + "': " + webTarget.toString());
                 }
-                restCidsNodes = builder.get(new GenericType<GenericCollectionResource<CidsNode>>() {
+                restCidsNodes = builder.get(new GenericType<List<CidsNode>>() {
                         });
             }
 
-            if ((restCidsNodes != null) && (restCidsNodes.get$collection() != null)
-                        && (restCidsNodes.get$collection().size() > 0)) {
+            if ((restCidsNodes != null) && (!restCidsNodes.isEmpty())) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("found " + restCidsNodes.get$collection().size()
+                    LOG.debug("found " + restCidsNodes.size()
                                 + " child nodes of node '" + node.getName()
                                 + "' (" + node.getId() + ") for user '" + user.getName()
                                 + "'. performing conversion to cids legacy nodes.");
                 }
 
-                final Node[] legacyNodes = new Node[restCidsNodes.get$collection().size()];
+                final Node[] legacyNodes = new Node[restCidsNodes.size()];
                 int i = 0;
-                for (final CidsNode cidsNode : restCidsNodes.get$collection()) {
+                for (final CidsNode cidsNode : restCidsNodes) {
                     try {
                         final Node legacyNode = CidsNodeFactory.getFactory().legacyCidsNodeFromRestCidsNode(cidsNode);
                         legacyNodes[i] = legacyNode;
@@ -752,8 +725,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
                             + "' (" + node.getId() + ") for user '" + user.getName() + "'");
                 return null;
             }
-        } catch (UniformInterfaceException ue) {
-            final Status status = ue.getResponse().getClientResponseStatus();
+        } catch (WebApplicationException ue) {
+            final Response.StatusType status = ue.getResponse().getStatusInfo();
             final String message = "could retrieve children of node '" + node.getName()
                         + "' (" + node.getId() + ") for user '" + user.getName()
                         + "' at domain '" + user.getDomain() + "'"
@@ -761,8 +734,16 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
             LOG.error(message, ue);
             if (LOG.isDebugEnabled()) {
-                LOG.debug(ue.getResponse().getEntity(String.class));
+                LOG.debug(ue.getResponse().readEntity(String.class));
             }
+            throw new RemoteException(message, ue);
+        } catch (ProcessingException ue) {
+            final String message = "could retrieve children of node '" + node.getName()
+                        + "' (" + node.getId() + ") for user '" + user.getName()
+                        + "' at domain '" + user.getDomain() + "'"
+                        + ue.getMessage();
+
+            LOG.error(message, ue);
             throw new RemoteException(message, ue);
         }
     }
@@ -923,15 +904,19 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final String domain,
             final ConnectionContext connectionContext) throws RemoteException {
         final MultivaluedMap queryParameters = this.createUserParameters(user);
-        final WebResource webResource = this.createWebResource(NODES_API)
-                    .path(user.getDomain() + "." + String.valueOf(nodeID))
-                    .queryParams(queryParameters);
-        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        WebTarget webTarget = this.createWebResource(NODES_API)
+                    .path(user.getDomain() + "." + String.valueOf(nodeID));
+        
+        webTarget = addParams(webTarget, queryParameters);
+        
+        Invocation.Builder builder = this.createAuthorisationHeader(webTarget, user);
+        
         builder = this.createMediaTypeHeaders(builder);
+        
         if (LOG.isDebugEnabled()) {
             LOG.debug("getMetaObjectNode by id '" + nodeID
                         + "' for user '" + user + "' and domain '"
-                        + user.getDomain() + "': " + webResource.toString());
+                        + user.getDomain() + "': " + webTarget.toString());
         }
 
         try {
@@ -958,8 +943,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
                             + "' at domain '" + user.getDomain() + "'");
                 return null;
             }
-        } catch (UniformInterfaceException ue) {
-            final Status status = ue.getResponse().getClientResponseStatus();
+        } catch (WebApplicationException ue) {
+            final Response.StatusType status = ue.getResponse().getStatusInfo();
             final String message = "could retrieve node with id '" + nodeID
                         + "' for user '" + user.getName()
                         + "' at domain '" + user.getDomain() + "'"
@@ -967,8 +952,16 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
             LOG.error(message, ue);
             if (LOG.isDebugEnabled()) {
-                LOG.debug(ue.getResponse().getEntity(String.class));
+                LOG.debug(ue.getResponse().readEntity(String.class));
             }
+            throw new RemoteException(message, ue);
+        } catch (ProcessingException ue) {
+            final String message = "could retrieve node with id '" + nodeID
+                        + "' for user '" + user.getName()
+                        + "' at domain '" + user.getDomain() + "'"
+                        + ue.getMessage();
+
+            LOG.error(message, ue);
             throw new RemoteException(message, ue);
         }
     }
@@ -996,6 +989,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  should be replaced by custom search
      */
     @Override
+    @Deprecated
     public Node[] getMetaObjectNode(final User user, final String query, final ConnectionContext connectionContext)
             throws RemoteException {
         LOG.warn("delegating getMetaObjectNodes(String query, ...) with query '"
@@ -1038,6 +1032,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  ClassTreeNodes no longer supported
      */
     @Override
+    @Deprecated
     public Node[] getClassTreeNodes(final User user, final ConnectionContext connectionContext) throws RemoteException {
         final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
                     + "' is deprecated and not supported by Nodes REST API!";
@@ -1068,6 +1063,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  ClassTreeNodes no longer supported
      */
     @Override
+    @Deprecated
     public Node[] getClassTreeNodes(final User user, final String domain, final ConnectionContext connectionContext)
             throws RemoteException {
         final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
@@ -1165,14 +1161,18 @@ public class RESTfulInterfaceConnector implements CallServerService {
             final String domain,
             final ConnectionContext connectionContext) throws RemoteException {
         final MultivaluedMap queryParameters = this.createUserParameters(user);
-        final WebResource webResource = this.createWebResource(CLASSES_API)
-                    .path(domain + "." + tableName)
-                    .queryParams(queryParameters);
-        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        WebTarget webTarget = this.createWebResource(CLASSES_API)
+                    .path(domain + "." + tableName);
+        
+        webTarget = addParams(webTarget, queryParameters);
+        
+        Invocation.Builder builder = this.createAuthorisationHeader(webTarget, user);
+        
         builder = this.createMediaTypeHeaders(builder);
+        
         if (LOG.isDebugEnabled()) {
             LOG.debug("getClassByTableName '" + tableName + "@" + domain + "' for user '" + user + "': "
-                        + webResource.toString());
+                        + webTarget.toString());
         }
 
         try {
@@ -1193,16 +1193,23 @@ public class RESTfulInterfaceConnector implements CallServerService {
                             + domain + "' for user '" + user.getName() + "'");
                 return null;
             }
-        } catch (UniformInterfaceException ue) {
-            final Status status = ue.getResponse().getClientResponseStatus();
-            final String message = "could get cids class '" + tableName + "' at domain '"
+        } catch (WebApplicationException ue) {
+            final Response.StatusType status = ue.getResponse().getStatusInfo();
+            final String message = "could not get cids class '" + tableName + "' at domain '"
                         + domain + "' for user '" + user.getName() + "': "
                         + status.getReasonPhrase();
 
             LOG.error(message, ue);
             if (LOG.isDebugEnabled()) {
-                LOG.debug(ue.getResponse().getEntity(String.class));
+                LOG.debug(ue.getResponse().readEntity(String.class));
             }
+            throw new RemoteException(message, ue);
+        } catch (ProcessingException ue) {
+            final String message = "could not get cids class '" + tableName + "' at domain '"
+                        + domain + "' for user '" + user.getName() + "': "
+                        + ue.getMessage();
+
+            LOG.error(message, ue);
             throw new RemoteException(message, ue);
         }
     }
@@ -1233,30 +1240,34 @@ public class RESTfulInterfaceConnector implements CallServerService {
         // TODO connectionContext implementation
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         queryParameters.add("domain", domain);
-        final WebResource webResource = this.createWebResource(CLASSES_API).queryParams(queryParameters);
-        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        WebTarget webTarget = this.createWebResource(CLASSES_API);
+        
+        webTarget = addParams(webTarget, queryParameters);
+        
+        Invocation.Builder builder = this.createAuthorisationHeader(webTarget, user);
+        
         builder = this.createMediaTypeHeaders(builder);
+        
         if (LOG.isDebugEnabled()) {
             LOG.debug("getClasses from domain '" + domain + "' for user '" + user + "': "
-                        + webResource.toString());
+                        + webTarget.toString());
         }
 
         try {
-            final GenericCollectionResource<CidsClass> restCidsClasses = builder.get(
-                    new GenericType<GenericCollectionResource<CidsClass>>() {
+            final List<CidsClass> restCidsClasses = builder.get(
+                    new GenericType<List<CidsClass>>() {
                     });
 
-            if ((restCidsClasses != null) && (restCidsClasses.get$collection() != null)
-                        && (restCidsClasses.get$collection().size() > 0)) {
+            if ((restCidsClasses != null) && (!restCidsClasses.isEmpty())) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("found " + restCidsClasses.get$collection().size()
+                    LOG.debug("found " + restCidsClasses.size()
                                 + " cids classes at domain '" + domain
                                 + "' for user '" + user.getName() + "'. performing conversion to cids legacy class.");
                 }
 
-                final MetaClass[] metaClasses = new MetaClass[restCidsClasses.get$collection().size()];
+                final MetaClass[] metaClasses = new MetaClass[restCidsClasses.size()];
                 int i = 0;
-                for (final CidsClass cidsClass : restCidsClasses.get$collection()) {
+                for (final CidsClass cidsClass : restCidsClasses) {
                     try {
                         final MetaClass metaClass = CidsClassFactory.getFactory()
                                     .legacyCidsClassFromRestCidsClass(cidsClass);
@@ -1277,16 +1288,22 @@ public class RESTfulInterfaceConnector implements CallServerService {
                             + domain + "' for user '" + user.getName() + "'");
                 return null;
             }
-        } catch (UniformInterfaceException ue) {
-            final Status status = ue.getResponse().getClientResponseStatus();
+        } catch (WebApplicationException ue) {
+            final Response.StatusType status = ue.getResponse().getStatusInfo();
             final String message = "could not get cids classes at domain '"
                         + domain + "' for user '" + user.getName() + "': "
                         + status.getReasonPhrase();
 
             LOG.error(message, ue);
             if (LOG.isDebugEnabled()) {
-                LOG.debug(ue.getResponse().getEntity(String.class));
+                LOG.debug(ue.getResponse().readEntity(String.class));
             }
+            throw new RemoteException(message, ue);
+        } catch (ProcessingException ue) {
+            final String message = "could not get classes for user '" + user.getName() + "': "
+                        + ue.getMessage();
+
+            LOG.error(message, ue);
             throw new RemoteException(message, ue);
         }
     }
@@ -1315,6 +1332,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  UnsupportedOperation
      */
     @Override
+    @Deprecated
     public MethodMap getMethods(final User user, final ConnectionContext connectionContext) throws RemoteException {
         final String message = "The method '" + Thread.currentThread().getStackTrace()[1].getMethodName()
                     + "' is deprecated and not supported by the cids REST API!";
@@ -1345,6 +1363,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  UnsupportedOperation
      */
     @Override
+    @Deprecated
     public MethodMap getMethods(final User user,
             final String localServerName,
             final ConnectionContext connectionContext) throws RemoteException {
@@ -1409,6 +1428,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  should not return binary images!
      */
     @Override
+    @Deprecated
     public Image[] getDefaultIcons(final String domain, final ConnectionContext connectionContext)
             throws RemoteException {
         // TODO: Implement method in INFRASTRUCTURE API or remove
@@ -1441,6 +1461,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  should not return binary images!
      */
     @Override
+    @Deprecated
     public Image[] getDefaultIcons(final ConnectionContext connectionContext) throws RemoteException {
         // TODO: Implement method in INFRASTRUCTURE API or remove
         final String message = "The method '"
@@ -1578,27 +1599,30 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
         this.putBasicAuthString(cidsUser, password);
 
-        final WebResource webResource = this.createWebResource(USERS_API);
-        WebResource.Builder builder = this.createAuthorisationHeader(webResource, cidsUser);
+        final WebTarget webResource = this.createWebResource(USERS_API);
+        Invocation.Builder builder = this.createAuthorisationHeader(webResource, cidsUser);
+        
         builder = this.createMediaTypeHeaders(builder);
 
         try {
             final de.cismet.cidsx.server.api.types.User restUser = builder.get(
                     de.cismet.cidsx.server.api.types.User.class);
             return UserFactory.getFactory().cidsUserFromRestUser(restUser);
-        } catch (UniformInterfaceException ue) {
+        } catch (WebApplicationException ue) {
             this.removeBasicAuthString(cidsUser);
 
-            final Status status = ue.getResponse().getClientResponseStatus();
+            final Response.StatusType status = ue.getResponse().getStatusInfo();
             final String message = "login of user '"
                         + userName
                         + "' at domain '"
                         + userLsName
                         + "' failed: "
                         + status.toString();
+            
             LOG.error(message, ue);
+            
             if (LOG.isDebugEnabled()) {
-                LOG.debug(ue.getResponse().getEntity(String.class));
+                LOG.debug(ue.getResponse().readEntity(String.class));
             }
 
             if (status.getStatusCode() < 500) {
@@ -1606,6 +1630,17 @@ public class RESTfulInterfaceConnector implements CallServerService {
             } else {
                 throw new RemoteException(message, ue);
             }
+        } catch (ProcessingException ue) {
+            final String message = "login of user '"
+                        + userName
+                        + "' at domain '"
+                        + userLsName
+                        + "' failed: "
+                        + ue.getMessage();
+            
+            LOG.error(message, ue);
+            
+            throw new RemoteException(message, ue);
         }
     }
 
@@ -1682,13 +1717,13 @@ public class RESTfulInterfaceConnector implements CallServerService {
             LOG.debug("performing getPublicJwtKey for domain'" + domain + "'");
         }
 
-        final WebResource webResource = this.createWebResource("jwk/" + domain);
-        final WebResource.Builder builder = this.createMediaTypeHeaders(webResource);
+        final WebTarget webTarget = this.createWebResource("jwk/" + domain);
+        final Invocation.Builder builder = this.createMediaTypeHeaders(webTarget);
 
         try {
             final Key restUser = builder.get(Key.class);
             return restUser;
-        } catch (UniformInterfaceException ue) {
+        } catch (ProcessingException | WebApplicationException ue) {
             ue.printStackTrace();
             System.out.println("Error");
 
@@ -1795,19 +1830,21 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         queryParameters.add("resultingInstanceType", "result");
-        final WebResource webResource = this.createWebResource(ACTIONS_API)
-                    .path(domain + "." + taskname + ACTIONS_API_TASKS)
-                    .queryParams(queryParameters);
-        final WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        WebTarget webTarget = this.createWebResource(ACTIONS_API)
+                    .path(domain + "." + taskname + ACTIONS_API_TASKS);
+        
+        webTarget = addParams(webTarget, queryParameters);
+        
+        final Invocation.Builder builder = this.createAuthorisationHeader(webTarget, user);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("executeTask '" + taskname
                         + "' for user '" + user + "' and domain '"
                         + domain + "' with " + params.length + " Server Action Parameters: "
-                        + webResource.toString());
+                        + webTarget.toString());
         }
 
-        builder.type(MediaType.MULTIPART_FORM_DATA_TYPE).accept(MediaType.APPLICATION_JSON_TYPE);
+        builder.accept(MediaType.APPLICATION_JSON_TYPE);
 
         FormDataMultiPart multiPartData = new FormDataMultiPart();
         try {
@@ -1866,7 +1903,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
             }
         }
 
-        taskResult = builder.post(GenericResourceWithContentType.class, multiPartData);
+        taskResult = builder.post(Entity.entity(multiPartData, multiPartData.getMediaType()), GenericResourceWithContentType.class);
+        
         if (LOG.isDebugEnabled()) {
             LOG.debug("executeTask '" + taskname
                         + "' for user '" + user + "' and domain '"
@@ -1938,17 +1976,21 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
 
         final String domain = user.getDomain();
-        final GenericCollectionResource<JsonNode> searchResults;
+        final List<JsonNode> searchResults;
         final MultivaluedMap queryParameters = this.createUserParameters(user);
-        final WebResource webResource = this.createWebResource(SEARCH_API)
-                    .path(user.getDomain() + "." + searchKey + SEARCH_API_RESULTS)
-                    .queryParams(queryParameters);
-        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        WebTarget webTarget = this.createWebResource(SEARCH_API)
+                    .path(user.getDomain() + "." + searchKey + SEARCH_API_RESULTS);
+        
+        webTarget = addParams(webTarget, queryParameters);
+        
+        Invocation.Builder builder = this.createAuthorisationHeader(webTarget, user);
+        
         builder = this.createMediaTypeHeaders(builder);
+        
         if (LOG.isDebugEnabled()) {
             LOG.debug("customServerSearch '" + searchKey
                         + "' for user '" + user + "' and domain '"
-                        + domain + "': " + webResource.toString());
+                        + domain + "': " + webTarget.toString());
         }
 
         final SearchParameters searchParameters;
@@ -1964,13 +2006,11 @@ public class RESTfulInterfaceConnector implements CallServerService {
             throw new RemoteException(message, ex);
         }
 
-        searchResults = builder.post(new GenericType<GenericCollectionResource<JsonNode>>() {
-                }, searchParameters);
+        searchResults = builder.post(Entity.xml(searchParameters), new GenericType<List<JsonNode>>() {});
 
-        if ((searchResults != null) && (searchResults.get$collection() != null)
-                    && (searchResults.get$collection().size() > 0)) {
+        if ((searchResults != null) && (!searchResults.isEmpty())) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("found " + searchResults.get$collection().size()
+                LOG.debug("found " + searchResults.size()
                             + " search results. performing conversion to legacy objects of type '"
                             + searchInfo.getResultDescription().getType().name() + "'");
             }
@@ -1983,7 +2023,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
                 final Collection<LightweightMetaObject> resultCollection = new LinkedList<LightweightMetaObject>();
 
-                for (final JsonNode jsonNode : searchResults.get$collection()) {
+                for (final JsonNode jsonNode : searchResults) {
                     try {
                         if (jsonNode.isObject()) {
                             final ObjectNode objectNode = (ObjectNode)jsonNode;
@@ -2016,7 +2056,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
                 try {
                     final Collection resultCollection = ServerSearchFactory.getFactory()
                                 .resultCollectionfromJsonNodes(
-                                    searchResults.get$collection(),
+                                    searchResults,
                                     searchInfo);
                     return resultCollection;
                 } catch (Exception ex) {
@@ -2064,6 +2104,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  should be replaced by custom search
      */
     @Override
+    @Deprecated
     public MetaObject[] getMetaObject(final User user, final String query, final ConnectionContext connectionContext)
             throws RemoteException {
         return this.getMetaObject(user, query, user.getDomain(), connectionContext);
@@ -2094,6 +2135,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  should be replaced by custom search
      */
     @Override
+    @Deprecated
     public MetaObject[] getMetaObject(final User user,
             final String query,
             final String domain,
@@ -2151,14 +2193,18 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         queryParameters.add("deduplicate", "true");
-        final WebResource webResource = this.createWebResource(ENTITIES_API)
-                    .path(domain + "." + className + "/" + objectId)
-                    .queryParams(queryParameters);
-        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        WebTarget webTarget = this.createWebResource(ENTITIES_API)
+                    .path(domain + "." + className + "/" + objectId);
+        
+        webTarget = addParams(webTarget, queryParameters);
+        
+        Invocation.Builder builder = this.createAuthorisationHeader(webTarget, user);
+        
         builder = this.createMediaTypeHeaders(builder);
+        
         if (LOG.isDebugEnabled()) {
             LOG.debug("getMetaObject '" + objectId + "@" + classId + "@" + domain
-                        + "' (" + domain + "." + className + ") for user '" + user + "' :" + webResource.toString());
+                        + "' (" + domain + "." + className + ") for user '" + user + "' :" + webTarget.toString());
         }
 
         try {
@@ -2199,8 +2245,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
                             + "' (" + domain + "." + className + ") for user '" + user + "'");
                 return null;
             }
-        } catch (UniformInterfaceException ue) {
-            final Status status = ue.getResponse().getClientResponseStatus();
+        } catch (WebApplicationException ue) {
+            final Response.StatusType status = ue.getResponse().getStatusInfo();
             final String message = "could not get meta object '"
                         + objectId
                         + "@"
@@ -2218,8 +2264,26 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
             LOG.error(message, ue);
             if (LOG.isDebugEnabled()) {
-                LOG.debug(ue.getResponse().getEntity(String.class));
+                LOG.debug(ue.getResponse().readEntity(String.class));
             }
+            throw new RemoteException(message, ue);
+        } catch (ProcessingException ue) {
+            final String message = "could not get meta object '"
+                        + objectId
+                        + "@"
+                        + classId
+                        + "@"
+                        + domain
+                        + "' ("
+                        + domain
+                        + "."
+                        + className
+                        + ") for user '"
+                        + user
+                        + "': "
+                        + ue.getMessage();
+
+            LOG.error(message, ue);
             throw new RemoteException(message, ue);
         }
     }
@@ -2258,19 +2322,23 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         queryParameters.add("requestResultingInstance", "true");
-        final WebResource webResource = this.createWebResource(ENTITIES_API)
-                    .path(domain + "." + className)
-                    .queryParams(queryParameters);
-        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        WebTarget webTarget = this.createWebResource(ENTITIES_API)
+                    .path(domain + "." + className);
+        
+        webTarget = addParams(webTarget, queryParameters);
+        
+        Invocation.Builder builder = this.createAuthorisationHeader(webTarget, user);
+        
         builder = this.createMediaTypeHeaders(builder);
+        
         if (LOG.isDebugEnabled()) {
             LOG.debug("insertMetaObject for class '" + classId + "@" + domain
-                        + "' (" + domain + "." + className + ") for user '" + user + "' :" + webResource.toString());
+                        + "' (" + domain + "." + className + ") for user '" + user + "' :" + webTarget.toString());
         }
 
         try {
-            final JsonNode objectNode = builder.post(ObjectNode.class,
-                    metaObject.getBean().toJSONString(true));
+            final JsonNode objectNode = builder.post(Entity.json(metaObject.getBean().toJSONString(true)), JsonNode.class);
+            
             if ((objectNode == null) || (objectNode.size() == 0)) {
                 LOG.error("could not insert meta object for class '" + classId + "@" + domain
                             + "' (" + domain + "." + className + ") for user '" + user
@@ -2307,8 +2375,9 @@ public class RESTfulInterfaceConnector implements CallServerService {
                             + "': newly inserted meta object could not be found");
                 return null;
             }
-        } catch (UniformInterfaceException ue) {
-            final Status status = ue.getResponse().getClientResponseStatus();
+        } catch (WebApplicationException ue) {
+            final Response.StatusType status = ue.getResponse().getStatusInfo();
+            
             final String message = "could not insert meta object for class  '"
                         + classId
                         + "@"
@@ -2324,8 +2393,24 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
             LOG.error(message, ue);
             if (LOG.isDebugEnabled()) {
-                LOG.debug(ue.getResponse().getEntity(String.class));
+                LOG.debug(ue.getResponse().readEntity(String.class));
             }
+            throw new RemoteException(message, ue);
+        } catch (ProcessingException ue) {
+            final String message = "could not insert meta object for class  '"
+                        + classId
+                        + "@"
+                        + domain
+                        + "' ("
+                        + domain
+                        + "."
+                        + className
+                        + ") for user '"
+                        + user
+                        + "': "
+                        + ue.getMessage();
+
+            LOG.error(message, ue);
             throw new RemoteException(message, ue);
         }
     }
@@ -2364,21 +2449,23 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
         final MultivaluedMap queryParameters = this.createUserParameters(user);
         queryParameters.add("requestResultingInstance", "false");
-        final WebResource webResource = this.createWebResource(ENTITIES_API)
-                    .path(domain + "." + className + "/" + objectId)
-                    .queryParams(queryParameters);
-        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        WebTarget webTarget = this.createWebResource(ENTITIES_API)
+                    .path(domain + "." + className + "/" + objectId);
+        
+        webTarget = addParams(webTarget, queryParameters);
+        
+        Invocation.Builder builder = this.createAuthorisationHeader(webTarget, user);
         builder = this.createMediaTypeHeaders(builder);
         if (LOG.isDebugEnabled()) {
             LOG.debug("updateMetaObject '" + objectId + "@" + classId + "@" + domain
-                        + "' (" + domain + "." + className + ") for user '" + user + "' :" + webResource.toString());
+                        + "' (" + domain + "." + className + ") for user '" + user + "' :" + webTarget.toString());
         }
 
         try {
-            builder.put(ObjectNode.class, metaObject.getBean().toJSONString(true));
+            builder.put(Entity.json(metaObject.getBean().toJSONString(true)), ObjectNode.class);
             return 1;
-        } catch (UniformInterfaceException ue) {
-            final Status status = ue.getResponse().getClientResponseStatus();
+        } catch (WebApplicationException ue) {
+            final Response.StatusType status = ue.getResponse().getStatusInfo();
             final String message = "could not update meta object '"
                         + objectId
                         + "@"
@@ -2396,8 +2483,26 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
             LOG.error(message, ue);
             if (LOG.isDebugEnabled()) {
-                LOG.debug(ue.getResponse().getEntity(String.class));
+                LOG.debug(ue.getResponse().readEntity(String.class));
             }
+            throw new RemoteException(message, ue);
+        } catch (ProcessingException ue) {
+            final String message = "could not update meta object '"
+                        + objectId
+                        + "@"
+                        + classId
+                        + "@"
+                        + domain
+                        + "' ("
+                        + domain
+                        + "."
+                        + className
+                        + ") for user '"
+                        + user
+                        + "': "
+                        + ue.getMessage();
+
+            LOG.error(message, ue);
             throw new RemoteException(message, ue);
         }
     }
@@ -2435,21 +2540,23 @@ public class RESTfulInterfaceConnector implements CallServerService {
         final String className = this.getClassNameForClassId(user, domain, classId, connectionContext);
 
         final MultivaluedMap queryParameters = this.createUserParameters(user);
-        final WebResource webResource = this.createWebResource(ENTITIES_API)
-                    .path(domain + "." + className + "/" + objectId)
-                    .queryParams(queryParameters);
-        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        WebTarget webTarget = this.createWebResource(ENTITIES_API)
+                    .path(domain + "." + className + "/" + objectId);
+        
+        webTarget = addParams(webTarget, queryParameters);
+        
+        Invocation.Builder builder = this.createAuthorisationHeader(webTarget, user);
         builder = this.createMediaTypeHeaders(builder);
         if (LOG.isDebugEnabled()) {
             LOG.debug("deleteMetaObject '" + objectId + "@" + classId + "@" + domain
-                        + "' (" + domain + "." + className + ") for user '" + user + "' :" + webResource.toString());
+                        + "' (" + domain + "." + className + ") for user '" + user + "' :" + webTarget.toString());
         }
 
         try {
             builder.delete(ObjectNode.class);
             return 1;
-        } catch (UniformInterfaceException ue) {
-            final Status status = ue.getResponse().getClientResponseStatus();
+        } catch (WebApplicationException ue) {
+            final Response.StatusType status = ue.getResponse().getStatusInfo();
             final String message = "could not delete meta object '"
                         + objectId
                         + "@"
@@ -2467,8 +2574,26 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
             LOG.error(message, ue);
             if (LOG.isDebugEnabled()) {
-                LOG.debug(ue.getResponse().getEntity(String.class));
+                LOG.debug(ue.getResponse().readEntity(String.class));
             }
+            throw new RemoteException(message, ue);
+        } catch (ProcessingException ue) {
+            final String message = "could not delete meta object '"
+                        + objectId
+                        + "@"
+                        + classId
+                        + "@"
+                        + domain
+                        + "' ("
+                        + domain
+                        + "."
+                        + className
+                        + ") for user '"
+                        + user
+                        + "': "
+                        + ue.getMessage();
+
+            LOG.error(message, ue);
             throw new RemoteException(message, ue);
         }
     }
@@ -2537,16 +2662,18 @@ public class RESTfulInterfaceConnector implements CallServerService {
         }
         queryParameters.add("fields", fieldsParameter.toString());
 
-        final WebResource webResource = this.createWebResource(ENTITIES_API)
-                    .path(domain + "." + className)
-                    .queryParams(queryParameters);
-        WebResource.Builder builder = this.createAuthorisationHeader(webResource, user);
+        WebTarget webTarget = this.createWebResource(ENTITIES_API)
+                    .path(domain + "." + className);
+        
+        webTarget = addParams(webTarget, queryParameters);
+        
+        Invocation.Builder builder = this.createAuthorisationHeader(webTarget, user);
         builder = this.createMediaTypeHeaders(builder);
         if (LOG.isDebugEnabled()) {
             LOG.debug("getAllLightweightMetaObjectsForClass for class '" + classId + "@" + domain
                         + "' (" + domain + "." + className + ") for user '" + user
                         + "' with " + representationFieldsLength + " representation fields:"
-                        + webResource.toString());
+                        + webTarget.toString());
         }
 
         try {
@@ -2629,8 +2756,8 @@ public class RESTfulInterfaceConnector implements CallServerService {
                     return null;
                 }
             }
-        } catch (UniformInterfaceException ue) {
-            final Status status = ue.getResponse().getClientResponseStatus();
+        } catch (WebApplicationException ue) {
+            final Response.StatusType status = ue.getResponse().getStatusInfo();
             final String message = "could not get lightweight meta object for class '"
                         + classId
                         + "@"
@@ -2648,8 +2775,26 @@ public class RESTfulInterfaceConnector implements CallServerService {
 
             LOG.error(message, ue);
             if (LOG.isDebugEnabled()) {
-                LOG.debug(ue.getResponse().getEntity(String.class));
+                LOG.debug(ue.getResponse().readEntity(String.class));
             }
+            throw new RemoteException(message, ue);
+        } catch (ProcessingException ue) {
+            final String message = "could not get lightweight meta object for class '"
+                        + classId
+                        + "@"
+                        + domain
+                        + "' ("
+                        + domain
+                        + "."
+                        + className
+                        + ") for user '"
+                        + user
+                        + "' with "
+                        + representationFieldsLength
+                        + " representation fields: "
+                        + ue.getMessage();
+
+            LOG.error(message, ue);
             throw new RemoteException(message, ue);
         }
 
@@ -2730,6 +2875,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  should be replaced by custom search
      */
     @Override
+    @Deprecated
     public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
             final User user,
             final String query,
@@ -2793,6 +2939,7 @@ public class RESTfulInterfaceConnector implements CallServerService {
      * @deprecated  should be replaced by custom search
      */
     @Override
+    @Deprecated
     public LightweightMetaObject[] getLightweightMetaObjectsByQuery(final int classId,
             final User user,
             final String query,

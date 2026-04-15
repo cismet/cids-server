@@ -12,11 +12,6 @@
  */
 package de.cismet.cids.utils;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.client.apache4.ApacheHttpClient4;
-import com.sun.jersey.client.apache4.ApacheHttpClient4Handler;
-import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
 
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -46,6 +41,13 @@ import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 import de.cismet.netutil.Proxy;
 
 import de.cismet.tools.collections.CircularObjectPool;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import java.util.concurrent.TimeUnit;
+import org.glassfish.jersey.apache.connector.ApacheClientProperties;
+import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 /**
  * DOCUMENT ME!
@@ -59,7 +61,7 @@ public class JerseyClientCache {
 
     private static final transient Logger LOG = Logger.getLogger(JerseyClientCache.class);
     private static final int DEFAULT_POOL_SIZE = (int)Math.ceil(Runtime.getRuntime().availableProcessors() / 2.0);
-    private static final int TIMEOUT = 10000;
+    private static final long TIMEOUT = 10000;
     private static String serverResources = null;
     private static boolean noConfiguration = false;
 
@@ -180,25 +182,9 @@ public class JerseyClientCache {
      */
     private CircularObjectPool<Client> createClientsForPath(final String path, final int poolsize) {
         final Client[] clientArray = new Client[poolsize];
-
-        for (int i = 0; i < poolsize; ++i) {
-            final ApacheHttpClient4Handler handler = createApacheHttpClient4Handler(path);
-            clientArray[i] = new ApacheHttpClient4(handler);
-        }
-
-        return new CircularObjectPool<>(Collections.unmodifiableList(Arrays.asList(clientArray)));
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   path  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private ApacheHttpClient4Handler createApacheHttpClient4Handler(final String path) {
-        // remove leading '/' if present
         final String resource;
+
+        // remove leading '/' if present
         if (path == null) {
             resource = rootResource;
         } else if ('/' == path.charAt(0)) {
@@ -207,12 +193,24 @@ public class JerseyClientCache {
             resource = rootResource + path;
         }
 
+
+        for (int i = 0; i < poolsize; ++i) {
+            final Client client = createJersey3Client(resource, proxy);
+            clientArray[i] = client;
+        }
+
+        return new CircularObjectPool<>(Collections.unmodifiableList(Arrays.asList(clientArray)));
+    }
+
+    
+    public static Client createJersey3Client(final String resource, final Proxy proxy) {
         LOG.info("create jersey http clients for (resource/path): " + resource);
-        final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+        
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
         cm.setMaxTotal(50);
         cm.setDefaultMaxPerRoute(10);
 
-        final HttpClientBuilder builder = HttpClients.custom().setConnectionManager(cm);
+        HttpClientBuilder builder = HttpClients.custom().setConnectionManager(cm);
 
         if ((proxy != null) && proxy.isEnabledFor(resource)) {
             // Proxy URI
@@ -252,16 +250,24 @@ public class JerseyClientCache {
             }
         }
 
-        final CloseableHttpClient httpClient = builder.build();
-        final ClientConfig config = new DefaultApacheHttpClient4Config();
+        CloseableHttpClient apacheClient = builder.build();
 
-        config.getProperties().put(ClientConfig.PROPERTY_CONNECT_TIMEOUT, TIMEOUT);
+        ClientConfig config = new ClientConfig();
+        config.connectorProvider(new ApacheConnectorProvider());
+        config.property(ApacheClientProperties.REQUEST_CONFIG, org.apache.hc.client5.http.config.RequestConfig.custom()
+                .setConnectionRequestTimeout(TIMEOUT, TimeUnit.MILLISECONDS)
+                .setConnectTimeout(TIMEOUT, TimeUnit.MILLISECONDS)
+                .setResponseTimeout(TIMEOUT, TimeUnit.MILLISECONDS)
+                .build());
 
-        final CookieStore cookieStore = new BasicCookieStore();
-        final boolean preemptiveBasicAuth = false;
+        config.property("jersey.apache.client.cookieStore", new BasicCookieStore());
+        config.property("jersey.apache.client.httpclient", apacheClient);
 
-        return new ApacheHttpClient4Handler(httpClient, cookieStore, preemptiveBasicAuth);
-    }
+        return ClientBuilder.newBuilder()
+                .register(MultiPartFeature.class)
+                .withConfig(config)
+                .build();
+    }    
 
     /**
      * DOCUMENT ME!
