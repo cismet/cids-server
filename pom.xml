@@ -8,7 +8,7 @@
     <parent>
         <groupId>de.cismet.cids</groupId>
         <artifactId>cids-parent</artifactId>
-        <version>10.1-SNAPSHOT</version>
+        <version>10.0</version>
     </parent>
 
     <groupId>de.cismet.cids</groupId>
