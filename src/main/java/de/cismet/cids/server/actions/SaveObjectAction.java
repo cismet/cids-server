@@ -280,18 +280,23 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
             boolean array = false;
 
             if (attribute.isForeignKey()) {
-                if ((attribute.getArrayKeyFieldName() != null) && !attribute.getArrayKeyFieldName().equals("")) {
-                    fieldname = fieldname.toLowerCase() + "Array";
-                    array = true;
-                } else if (attribute.getForeignKeyClassId() < 0) {
-                    fieldname = getClassById(classes, attribute.getForeignKeyClassId()).getTableName()
-                                + "ArrayRelationShip";
-                    array = true;
-                } else if (attribute.isArray()) {
-                    fieldname = fieldname.toLowerCase() + "Array";
-                    array = true;
-                } else {
-                    fieldname = getFieldName(classes, attribute, attrMap);
+                final JsonNode node = rootNode.get(fieldname);
+
+                if (node == null) {
+                    // otherwise, use directly the field name frok the attribute
+                    if ((attribute.getArrayKeyFieldName() != null) && !attribute.getArrayKeyFieldName().equals("")) {
+                        fieldname = fieldname.toLowerCase() + "Array";
+                        array = true;
+                    } else if (attribute.getForeignKeyClassId() < 0) {
+                        fieldname = getClassById(classes, attribute.getForeignKeyClassId()).getTableName()
+                                    + "ArrayRelationShip";
+                        array = true;
+                    } else if (attribute.isArray()) {
+                        fieldname = fieldname.toLowerCase() + "Array";
+                        array = true;
+                    } else {
+                        fieldname = getFieldName(classes, attribute, attrMap);
+                    }
                 }
             } else if (attribute.isArray()) {
                 fieldname = fieldname.toLowerCase() + "Array";
@@ -369,13 +374,27 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
                     }
                 } else if (attribute.isForeignKey()) {
                     if (node != null) {
-                        final Object value = createCidsBeanFromJson(
-                                classes,
-                                node,
-                                getClassById(classes, attribute.getForeignKeyClassId()).getTableName(),
-                                null,
-                                complete);
-                        bean.setProperty(attribute.getFieldName(), value);
+                        if (node.isNull()) {
+                            bean.setProperty(attribute.getFieldName(), null);
+                        } else if (node.isInt()) {
+                            final MetaObject mo = ms.getMetaObject(
+                                    user,
+                                    node.asInt(),
+                                    getClassById(classes, attribute.getForeignKeyClassId()).getID(),
+                                    CC);
+
+                            if (mo != null) {
+                                bean.setProperty(attribute.getFieldName(), mo.getBean());
+                            }
+                        } else {
+                            final Object value = createCidsBeanFromJson(
+                                    classes,
+                                    node,
+                                    getClassById(classes, attribute.getForeignKeyClassId()).getTableName(),
+                                    null,
+                                    complete);
+                            bean.setProperty(attribute.getFieldName(), value);
+                        }
                     }
                 } else {
                     final String javaClass = attribute.getJavaclassname();

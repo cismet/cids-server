@@ -61,11 +61,11 @@ public class ClassAttributeTest {
         builder.setConfigurationName("DynamicConfig");
 
         // Define appenders
-        final AppenderComponentBuilder socketAppender = builder.newAppender("Remote", "Socket")
-                    .addAttribute("host", "localhost")
-                    .addAttribute("port", 4445);
-        socketAppender.add(builder.newLayout("JsonLayout"));
-        builder.add(socketAppender);
+//        final AppenderComponentBuilder socketAppender = builder.newAppender("Remote", "Socket")
+//                    .addAttribute("host", "localhost")
+//                    .addAttribute("port", 4445);
+//        socketAppender.add(builder.newLayout("JsonLayout"));
+//        builder.add(socketAppender);
 
         // Define root logger
         final RootLoggerComponentBuilder rootLogger = builder.newRootLogger(Level.DEBUG);

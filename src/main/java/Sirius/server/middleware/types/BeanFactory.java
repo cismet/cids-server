@@ -479,12 +479,6 @@ public class BeanFactory {
         builder = builder.defineMethod(setterName, Void.TYPE, Visibility.PUBLIC).withParameter(propertyType)
                     .intercept(MethodDelegation.to(Interceptor.class));
 
-        // Idee falls man oldValue benoetigt: erzeuge den setter wie oben jedoch mit einem anderen Namen (z.b::
-        // stealthySetVorname) und setze den modifier auf private oder protected in dieser methode wird NICHT der
-        // propertyChangesupport aufgerufen in einer zus?tzlichen Methoden setVorname die komplett impl. wird kann man
-        // dann auf den noch nicht ver?nderten Wert zugreifen und oldvalue setzen diese Methode ruft dann die Metjode
-        // stealthy... auf
-
         return builder;
     }
 
@@ -509,14 +503,17 @@ public class BeanFactory {
         @Advice.OnMethodEnter
         public static void intercept(final Object value, @Origin final Method method, @This final CidsBean original) {
             try {
+                final String fieldName = method.getName().substring(3, 4).toLowerCase() + method.getName()
+                            .substring(4);
+
+                final Object oldValue = original.getProperty(fieldName);
+
                 original.getClass()
                         .getMethod("__" + method.getName(),
                                 new Class[] { Class.forName(method.getGenericParameterTypes()[0].getTypeName()) })
                         .invoke(original, new Object[] { value });
 
-                final String fieldName = method.getName().substring(3, 4).toLowerCase() + method.getName()
-                            .substring(4);
-                original.firePropertyChanged(fieldName, null, value);
+                original.firePropertyChanged(fieldName, oldValue, value);
             } catch (Exception e) {
                 LOG.error("Error before fire property change", e);
             }

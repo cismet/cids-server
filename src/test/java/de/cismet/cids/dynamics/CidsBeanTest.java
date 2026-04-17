@@ -313,7 +313,7 @@ public class CidsBeanTest {
                                 referenceMetaObject.getAttributeByFieldName("name").getValue().toString());
 
                         // Mockito Spy Object: verify that a certain method has been called
-                        Mockito.verify(metaObjectSpy, Mockito.times(1)).getAttributeByFieldName("name");
+                        Mockito.verify(metaObjectSpy, Mockito.times(0)).getAttributeByFieldName("name");
                         // verify that modified status is not set again!
                         Mockito.verify(metaObjectSpy, Mockito.never()).setStatus(Mockito.anyInt());
 
@@ -334,6 +334,41 @@ public class CidsBeanTest {
             });
             semaphore.acquire();
 
+            //test, when a property is set to null, the property of the meta object will also be set to null
+            Mockito.reset(metaObjectSpy);
+            referenceCidsBean.setProperty("name", null);
+            cidsBean.setProperty("name", null);
+            EventQueue.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Assert.assertEquals("Reference CidsBean and Reference MetaObject names do match after changing property again",
+                                String.valueOf(referenceCidsBean.getProperty("name")),
+                                String.valueOf(referenceMetaObject.getAttributeByFieldName("name").getValue()));
+
+                        // Mockito Spy Object: verify that a certain method has been called
+                        Mockito.verify(metaObjectSpy, Mockito.times(1)).getAttributeByFieldName("name");
+                        // verify that modified status is not set again!
+                        Mockito.verify(metaObjectSpy, Mockito.times(1)).setStatus(Mockito.anyInt());
+
+                        Assert.assertEquals("CidsBean and MetaObject names do match after changing property again",
+                                cidsBean.getProperty("name"),
+                                metaObjectSpy.getAttributeByFieldName("name").getValue());
+
+                        LOGGER.info("testSetStringProperty passed: " + cidsBean.getProperty("name"));
+                    } catch (Throwable t) {
+                        LOGGER.error(t.getMessage(), t);
+                        LOGGER.debug(referenceMetaObject.getDebugString());
+                        LOGGER.debug(metaObjectSpy.getDebugString());
+                        throwablesFromThread.add(t);
+                    } finally {
+                        semaphore.release();
+                    }
+                }
+            });
+            semaphore.acquire();
+           
+            
             Mockito.reset(metaObjectSpy);
 
             final String newName = "Lucky Casino";
