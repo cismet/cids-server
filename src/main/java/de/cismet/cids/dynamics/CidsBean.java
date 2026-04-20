@@ -432,7 +432,15 @@ public class CidsBean implements PropertyChangeListener, ConnectionContextProvid
         // without the if condition, some property change listeners will do unnecessary work,
         // when a polygon is drawn to the map
         if ((oldValue != null) || (newValue != null)) {
-            propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
+            if (((oldValue instanceof Geometry) && (newValue instanceof Geometry))
+                        || ((oldValue instanceof CidsBean) && (newValue instanceof CidsBean))) {
+                // if the existing geometry was changed, but no new geometry was assigned, then
+                // the oldValue and new value referencing to the same object, but there was still a change.
+                // And the same cdan happen with CidsBean objects
+                propertyChangeSupport.firePropertyChange(propertyName, null, newValue);
+            } else {
+                propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
+            }
         }
     }
 
