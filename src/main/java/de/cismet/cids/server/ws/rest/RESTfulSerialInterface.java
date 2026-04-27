@@ -227,7 +227,7 @@ public final class RESTfulSerialInterface {
      */
     @GET
     @Produces(MediaType.TEXT_HTML)
-    @Path("/")
+    @Path("")
     public Response getTest(@Context final HttpServletRequest hsr) throws RemoteException {
         nameTheThread(hsr, "getTest", "anonymous");
 //        try {

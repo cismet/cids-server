@@ -66,7 +66,7 @@ public final class RESTfulService {
      */
     private RESTfulService(final ServerProperties properties) throws ServerExitError {
         final Map<String, String> initParams = new HashMap<String, String>();
-        initParams.put("com.sun.jersey.config.property.packages", "de.cismet.cids.server.ws.rest"); // NOI18N
+        initParams.put("jersey.config.server.provider.packages", "de.cismet.cids.server.ws.rest"); // NOI18N
 
         final ServletHolder servlet = new ServletHolder(ServletContainer.class);
         servlet.setInitParameters(initParams);
