@@ -27,6 +27,7 @@ import java.io.InputStream;
 import de.cismet.commons.security.WebDavClient;
 
 import de.cismet.netutil.Proxy;
+import de.cismet.netutil.ProxyHandler;
 
 /**
  * DOCUMENT ME!
@@ -128,7 +129,8 @@ public class WebDavTunnelAction implements ServerAction {
                 }
             }
 
-            final WebDavClient webdavclient = new WebDavClient(proxy, username, password, useNTAuth);
+            final Proxy p = ProxyHandler.getInstance().getProxy();
+            final WebDavClient webdavclient = new WebDavClient(p, username, password, useNTAuth);
 
             if (isHead) {
                 return webdavclient.getStatusCode(path);
