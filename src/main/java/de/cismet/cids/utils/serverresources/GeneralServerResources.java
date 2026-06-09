@@ -31,7 +31,8 @@ public enum GeneralServerResources {
     CONFIG_UNCAUGHT_CLIENT_EXCEPTION_JSON(new JsonServerResource("/uce/uncaught_client_exception.json")),
     CONFIG_ACTION_UPLOAD_JSON(new JsonServerResource("/aaupload/upload.json")),
     CONFIG_ASYNC_ACTION_JSON(new JsonServerResource("/async_action/config.json")),
-    CONFIG_REST_HTTP_CLIENT_JSON(new JsonServerResource("/rest_http_client/pool_config.json"));
+    CONFIG_REST_HTTP_CLIENT_JSON(new JsonServerResource("/rest_http_client/pool_config.json")),
+    NEW_FEATURE_COLLECTION_JSON(new JsonServerResource("/new_feature_collection/config.json"));
 
     //~ Instance fields --------------------------------------------------------
 

@@ -24,12 +24,25 @@ import Sirius.server.sql.PreparableStatement;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import com.vividsolutions.jts.geom.Geometry;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 
+import org.deegree.model.crs.CRSFactory;
+import org.deegree.model.crs.CoordinateSystem;
+import org.deegree.model.crs.GeoTransformer;
+import org.deegree.model.spatialschema.JTSAdapter;
+
 import org.wololo.jts2geojson.GeoJSONReader;
+import org.wololo.jts2geojson.GeoJSONWriter;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -45,8 +58,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import de.cismet.cids.dynamics.CidsBean;
+
+import de.cismet.cids.utils.serverresources.GeneralServerResources;
+import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
+
+import de.cismet.commons.security.WebDavClient;
 
 import de.cismet.connectioncontext.ConnectionContext;
 
@@ -65,6 +84,7 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
     private static final ConnectionContext CC = ConnectionContext.create(
             ConnectionContext.Category.ACTION,
             "SaveObjectAction");
+    private static final String EMPTY_FEATURE_COLLECTION_OBJECT = "{\"type\": \"FeatureCollection\", \"features\": []}";
 
     //~ Enums ------------------------------------------------------------------
 
@@ -77,15 +97,96 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
 
         //~ Enum constants -----------------------------------------------------
 
-        className, data, complete
+        className, data, complete, geometry
     }
 
     //~ Instance fields --------------------------------------------------------
+
+    private final Map<String, String> SOURCE_LAYER_MAPPING = new HashMap<>();
+    private final Map<String, String[]> FEATURE_ATTRIBUTES = new HashMap<>();
+    private final Map<String, String> GEOMETRY_MAPPING = new HashMap<>();
+    private final List<RefreshConfig> REFRESH_CONFIGS = new ArrayList<>();
 
     private int lastNegativeId = -1;
 
     private MetaService ms;
     private User user;
+    private final ObjectMapper mapper = new ObjectMapper();
+    private String webdav;
+    private String webdavUser;
+    private String webdavPwd;
+    private String brandNewFeaturesPath;
+    private String brandNewFeaturesDigestPath;
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new SaveObjectAction object.
+     */
+    public SaveObjectAction() {
+        try {
+            final Iterator<Map.Entry<String, JsonNode>> propIt = ServerResourcesLoader.getInstance()
+                        .loadJson(GeneralServerResources.NEW_FEATURE_COLLECTION_JSON.getValue());
+            GEOMETRY_MAPPING.clear();
+            FEATURE_ATTRIBUTES.clear();
+            SOURCE_LAYER_MAPPING.clear();
+            REFRESH_CONFIGS.clear();
+
+            while (propIt.hasNext()) {
+                final Map.Entry<String, JsonNode> content = propIt.next();
+
+                final String key = content.getKey();
+                final JsonNode value = content.getValue();
+
+                if (key.equalsIgnoreCase("$webdav")) {
+                    brandNewFeaturesPath = value.get("brandNewFeaturesPath").asText();
+                    brandNewFeaturesDigestPath = value.get("brandNewFeaturesDigestPath").asText();
+                    webdav = value.get("webdav").asText();
+                    webdavUser = value.get("webdavUser").asText();
+                    webdavPwd = value.get("webdavPwd").asText();
+                } else if (key.equalsIgnoreCase("$refreshConfig")) {
+                    if (value instanceof ArrayNode) {
+                        for (final JsonNode element : (ArrayNode)value) {
+                            final String idProperty = element.get("idProperty").asText();
+                            final String sourceClassname = element.get("sourceClassname").asText();
+                            final String targetClassname = element.get("targetClassname").asText();
+                            final String query = element.get("query").asText();
+
+                            final RefreshConfig config = new RefreshConfig(
+                                    idProperty,
+                                    sourceClassname,
+                                    targetClassname,
+                                    query);
+                            REFRESH_CONFIGS.add(config);
+                        }
+                    }
+                } else {
+                    GEOMETRY_MAPPING.put(key, value.get("geometry").asText());
+
+                    final JsonNode props = value.get("properties");
+                    final List<String> propsList = new ArrayList<>();
+
+                    if (props instanceof ArrayNode) {
+                        final ArrayNode propsArray = (ArrayNode)props;
+
+                        for (final JsonNode element : propsArray) {
+                            if (element.isTextual()) {
+                                propsList.add(element.asText());
+                            }
+                        }
+                    }
+
+                    if ((propsList != null) && !propsList.isEmpty()) {
+                        FEATURE_ATTRIBUTES.put(key, propsList.toArray(new String[propsList.size()]));
+                    }
+
+                    SOURCE_LAYER_MAPPING.put(key, value.get("source_layer").asText());
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Cannot read new feature collection server resource", e);
+        }
+    }
 
     //~ Methods ----------------------------------------------------------------
 
@@ -120,6 +221,9 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
         String value = null;
         CidsBean beanToSave = null;
         Boolean complete = true;
+        JsonNode rootNode = null;
+        boolean isNewObject = false;
+        String geometry = null;
 
         for (final ServerActionParameter sap : params) {
             if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.className.toString())) {
@@ -132,6 +236,8 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
                 value = (String)sap.getValue();
             } else if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.complete.toString())) {
                 complete = (sap.getValue().toString()).equalsIgnoreCase("true");
+            } else if (sap.getKey().equalsIgnoreCase(PARAMETER_TYPE.geometry.toString())) {
+                geometry = (String)sap.getValue();
             }
         }
 
@@ -145,8 +251,7 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
             final DomainServerImpl domainServer = (DomainServerImpl)ms;
             final MetaClass[] classes = domainServer.getClasses(user, CC);
             final MetaClass clazz = getClassByTableName(classes, className);
-            final ObjectMapper mapper = new ObjectMapper();
-            final JsonNode rootNode = mapper.readTree(value);
+            rootNode = mapper.readTree(value);
 
             if (clazz == null) {
                 return "{\"Exception\": \"Class with table name " + className + " not found.\"}";
@@ -163,6 +268,7 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
                 metaObject = domainServer.getMetaObject(user, metaObject.getID(), metaObject.getClassID(), CC);
             } else if (metaObject.getStatus() == MetaObject.NEW) {
                 metaObject = domainServer.insertMetaObject(user, metaObject, CC);
+                isNewObject = true;
             }
 
             beanToSave = metaObject.getBean();
@@ -175,7 +281,63 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
             return "{\"Exception\": \"" + e.getMessage() + "\"}";
         }
 
+        final boolean brandNewFeatureEnabled = isBrandNewFeature(className, rootNode);
+
+        if (brandNewFeatureEnabled && (rootNode instanceof ObjectNode)) {
+            if (isNewObject) {
+                final SyncBrandNewFeatures thread = new SyncBrandNewFeatures(
+                        SOURCE_LAYER_MAPPING,
+                        FEATURE_ATTRIBUTES,
+                        GEOMETRY_MAPPING,
+                        REFRESH_CONFIGS,
+                        ms,
+                        user,
+                        webdav,
+                        webdavUser,
+                        webdavPwd,
+                        brandNewFeaturesPath,
+                        brandNewFeaturesDigestPath,
+                        className,
+                        rootNode,
+                        beanToSave,
+                        geometry,
+                        true);
+                thread.start();
+            } else {
+                final SyncBrandNewFeatures thread = new SyncBrandNewFeatures(
+                        SOURCE_LAYER_MAPPING,
+                        FEATURE_ATTRIBUTES,
+                        GEOMETRY_MAPPING,
+                        REFRESH_CONFIGS,
+                        ms,
+                        user,
+                        webdav,
+                        webdavUser,
+                        webdavPwd,
+                        brandNewFeaturesPath,
+                        brandNewFeaturesDigestPath,
+                        className,
+                        rootNode,
+                        beanToSave,
+                        geometry,
+                        false);
+                thread.start();
+            }
+        }
+
         return "{\"id\": \"" + String.valueOf(beanToSave.getProperty("id")) + "\"}";
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   className  DOCUMENT ME!
+     * @param   rootNode   DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private boolean isBrandNewFeature(final String className, final JsonNode rootNode) {
+        return SOURCE_LAYER_MAPPING.get(className) != null;
     }
 
     /**
@@ -600,5 +762,472 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
         }
 
         return null;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    private static class SyncBrandNewFeatures extends Thread {
+
+        //~ Static fields/initializers -----------------------------------------
+
+        private static final ObjectMapper mapper = new ObjectMapper();
+        private static int counter = 100000;
+
+        //~ Instance fields ----------------------------------------------------
+
+        private final Map<String, String> SOURCE_LAYER_MAPPING;
+        private final Map<String, String[]> FEATURE_ATTRIBUTES;
+        private final Map<String, String> GEOMETRY_MAPPING;
+        private final List<RefreshConfig> REFRESH_CONFIGS;
+        private String webdav;
+        private final User user;
+        private final String webdavUser;
+        private final String webdavPwd;
+        private final String brandNewFeaturesPath;
+        private final String brandNewFeaturesDigestPath;
+        private final String className;
+        private final String geometry;
+        private final JsonNode rootNode;
+        private final CidsBean beanToSave;
+        private final MetaService ms;
+        private final boolean isNew;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new SyncBrandNewFeatures object.
+         *
+         * @param  SOURCE_LAYER_MAPPING        DOCUMENT ME!
+         * @param  FEATURE_ATTRIBUTES          DOCUMENT ME!
+         * @param  GEOMETRY_MAPPING            DOCUMENT ME!
+         * @param  REFRESH_CONFIGS             DOCUMENT ME!
+         * @param  ms                          DOCUMENT ME!
+         * @param  user                        DOCUMENT ME!
+         * @param  webdav                      DOCUMENT ME!
+         * @param  webdavUser                  DOCUMENT ME!
+         * @param  webdavPwd                   DOCUMENT ME!
+         * @param  brandNewFeaturesPath        DOCUMENT ME!
+         * @param  brandNewFeaturesDigestPath  DOCUMENT ME!
+         * @param  className                   DOCUMENT ME!
+         * @param  rootNode                    DOCUMENT ME!
+         * @param  beanToSave                  DOCUMENT ME!
+         * @param  geometry                    DOCUMENT ME!
+         * @param  isNew                       DOCUMENT ME!
+         */
+        public SyncBrandNewFeatures(final Map<String, String> SOURCE_LAYER_MAPPING,
+                final Map<String, String[]> FEATURE_ATTRIBUTES,
+                final Map<String, String> GEOMETRY_MAPPING,
+                final List<RefreshConfig> REFRESH_CONFIGS,
+                final MetaService ms,
+                final User user,
+                final String webdav,
+                final String webdavUser,
+                final String webdavPwd,
+                final String brandNewFeaturesPath,
+                final String brandNewFeaturesDigestPath,
+                final String className,
+                final JsonNode rootNode,
+                final CidsBean beanToSave,
+                final String geometry,
+                final boolean isNew) {
+            this.SOURCE_LAYER_MAPPING = SOURCE_LAYER_MAPPING;
+            this.FEATURE_ATTRIBUTES = FEATURE_ATTRIBUTES;
+            this.GEOMETRY_MAPPING = GEOMETRY_MAPPING;
+            this.REFRESH_CONFIGS = REFRESH_CONFIGS;
+            this.ms = ms;
+            this.user = user;
+            this.webdav = webdav;
+            this.webdavUser = webdavUser;
+            this.webdavPwd = webdavPwd;
+            this.brandNewFeaturesPath = brandNewFeaturesPath;
+            this.brandNewFeaturesDigestPath = brandNewFeaturesDigestPath;
+            this.rootNode = rootNode;
+            this.beanToSave = beanToSave;
+            this.className = className;
+            this.geometry = geometry;
+            this.isNew = isNew;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void run() {
+            synchronized (SaveObjectAction.class) {
+                try {
+                    final JsonNode collection = getFeatureCollection();
+                    final JsonNode featuresNode = collection.get("features");
+
+                    refreshObject(featuresNode, beanToSave, className, geometry, isNew);
+
+                    for (final RefreshConfig config : REFRESH_CONFIGS) {
+                        if ((beanToSave.getProperty(config.getIdProperty()) != null)
+                                    && className.equals(config.getSourceClassname())) {
+                            final String query = config.getQuery();
+
+                            final MetaObject[] objects = ms.getMetaObject(
+                                    user,
+                                    query.replace(
+                                        "<id>",
+                                        String.valueOf(beanToSave.getProperty(config.getIdProperty()))),
+                                    CC);
+
+                            if ((objects != null) && (objects.length > 0)) {
+                                for (final MetaObject mo : objects) {
+                                    if (config.getSourceClassname().equals(config.getTargetClassname())) {
+                                        // if source classname and target classname are the same, then check, if the
+                                        // current object is not the source object
+                                        final CidsBean b = mo.getBean();
+
+                                        if (b.getProperty("id") != beanToSave.getProperty("id")) {
+                                            refreshObject(
+                                                featuresNode,
+                                                mo.getBean(),
+                                                config.getTargetClassname(),
+                                                geometry,
+                                                false);
+                                        }
+                                    } else {
+                                        refreshObject(
+                                            featuresNode,
+                                            mo.getBean(),
+                                            config.getTargetClassname(),
+                                            geometry,
+                                            false);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    saveFeatureCollection(collection);
+                } catch (Exception e) {
+                    LOG.error("Error while creating brand new feature collection", e);
+                }
+            }
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param   featuresNode  DOCUMENT ME!
+         * @param   beanToSave    DOCUMENT ME!
+         * @param   className     DOCUMENT ME!
+         * @param   geometry      DOCUMENT ME!
+         * @param   isNew         DOCUMENT ME!
+         *
+         * @throws  Exception  DOCUMENT ME!
+         */
+        private void refreshObject(final JsonNode featuresNode,
+                final CidsBean beanToSave,
+                final String className,
+                final String geometry,
+                final boolean isNew) throws Exception {
+            if (featuresNode instanceof ArrayNode) {
+                ObjectNode newFeature = null;
+
+                for (final JsonNode node : featuresNode) {
+                    final JsonNode idNode = node.get("id");
+                    final JsonNode props = node.get("properties");
+
+                    if ((props != null) && (props.get("_sourceLayer") != null) && props.get("_sourceLayer")
+                                .isTextual()
+                                && props.get("_sourceLayer").asText().equals(SOURCE_LAYER_MAPPING.get(className))) {
+                        if ((props.get("id") != null) && props.get("id").isInt()
+                                    && (props.get("id").asInt() == beanToSave.getPrimaryKeyValue())) {
+                            newFeature = (ObjectNode)node;
+                        }
+                    }
+
+                    if (idNode.isInt()) {
+                        final int idAsInt = idNode.asInt();
+
+                        if (idAsInt >= counter) {
+                            counter = idAsInt + 1;
+                        }
+                    }
+                }
+
+                final Geometry geom = (Geometry)beanToSave.getProperty(GEOMETRY_MAPPING.get(className));
+
+                if ((geom == null) && (geometry == null)) {
+                    // features without geometry should not be added to the feature collection
+                    return;
+                }
+
+                if (newFeature == null) {
+                    newFeature = ((ArrayNode)featuresNode).addObject();
+                    newFeature.put("type", "Feature");
+                }
+
+                newFeature.put("id", ++counter); // what ID is this
+
+                if (geometry == null) {
+                    final GeoJSONWriter writer = new GeoJSONWriter();
+                    com.vividsolutions.jts.geom.Geometry newGeom = (com.vividsolutions.jts.geom.Geometry)geom.clone();
+                    final CoordinateSystem coordSystem = CRSFactory.create("EPSG:25832");
+                    org.deegree.model.spatialschema.Geometry deegreeGeom = JTSAdapter.wrap(newGeom);
+                    final GeoTransformer transformer = new GeoTransformer("EPSG:4326");
+                    deegreeGeom = transformer.transform(deegreeGeom, coordSystem.getCRS());
+
+                    newGeom = JTSAdapter.export(deegreeGeom);
+
+                    final org.wololo.geojson.Geometry geoJson = writer.write(newGeom);
+
+                    newFeature.set("geometry", mapper.readTree(geoJson.toString()));
+                } else {
+                    newFeature.set("geometry", mapper.readTree(geometry));
+                }
+
+                final ObjectNode props = newFeature.putObject("properties");
+
+                for (final String prop : FEATURE_ATTRIBUTES.get(className)) {
+                    final String completeKey = (prop.toLowerCase().contains(" as ")
+                            ? prop.substring(0, prop.toLowerCase().indexOf(" as ")) : prop);
+                    String propName = (completeKey.contains(".")
+                            ? completeKey.substring(completeKey.lastIndexOf(".") + 1) : prop);
+
+                    if (prop.contains(" as ")) {
+                        propName = prop.substring(prop.indexOf(" as ") + " as ".length()).trim();
+                    }
+
+                    if ((completeKey != null) && completeKey.startsWith("count(")) {
+                        final String tmpKey = completeKey.substring("count(".length(),
+                                completeKey.length()
+                                        - 1);
+                        final Object o = beanToSave.getProperty(tmpKey);
+
+                        if (o instanceof Collection) {
+                            final int size = ((Collection)o).size();
+
+                            props.put(propName, size);
+                        } else {
+                            props.put(propName, 0);
+                        }
+                    } else if ((completeKey != null) && completeKey.startsWith("countCalc(")) {
+                        final String tmpKey = completeKey.substring("countCalc(".length(),
+                                completeKey.length()
+                                        - 1);
+                        final String query = tmpKey.substring(0, tmpKey.indexOf(";"));
+                        final String idKey = tmpKey.substring(tmpKey.indexOf(";") + 1);
+                        final ArrayList<ArrayList> count = ms.performCustomSearch(query.replace(
+                                    "<id>",
+                                    String.valueOf(beanToSave.getProperty(idKey))),
+                                CC);
+
+                        if (!count.isEmpty() && !count.get(0).isEmpty()
+                                    && (count.get(0).get(0) instanceof Number)) {
+                            final int size = ((Number)count.get(0).get(0)).intValue();
+
+                            props.put(propName, size);
+                        } else {
+                            props.put(propName, 0);
+                        }
+                    } else {
+                        final Object o = beanToSave.getProperty(completeKey);
+
+                        if (o instanceof Integer) {
+                            props.put(propName, (Integer)o);
+                        } else if (o instanceof Double) {
+                            props.put(propName, (Double)o);
+                        } else if (o instanceof Short) {
+                            props.put(propName, (Short)o);
+                        } else if (o instanceof Long) {
+                            props.put(propName, (Long)o);
+                        } else if (o instanceof BigInteger) {
+                            props.put(propName, (BigInteger)o);
+                        } else if (o instanceof BigDecimal) {
+                            props.put(propName, (BigDecimal)o);
+                        } else if (o instanceof Boolean) {
+                            props.put(propName, (Boolean)o);
+                        } else if (o instanceof Float) {
+                            props.put(propName, (Float)o);
+                        } else if (o != null) {
+                            props.put(propName, String.valueOf(o));
+                        }
+                    }
+                }
+
+                props.put("_sourceLayer", SOURCE_LAYER_MAPPING.get(className));
+
+                if (isNew) {
+                    props.put("brandnew", Boolean.TRUE);
+                }
+            }
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         *
+         * @throws  JsonProcessingException  DOCUMENT ME!
+         * @throws  IOException              DOCUMENT ME!
+         */
+        private JsonNode getFeatureCollection() throws JsonProcessingException, IOException {
+            // todo implement
+            final WebDavClient webdavclient = new WebDavClient(null, webdavUser, webdavPwd);
+
+            if (!webdav.endsWith("/")) {
+                webdav += "/";
+            }
+
+            InputStream is = null;
+
+            try {
+                is = webdavclient.getInputStream(webdav + brandNewFeaturesPath);
+
+                if (is != null) {
+                    return mapper.readTree(is);
+                } else {
+                    return (ObjectNode)mapper.readTree(EMPTY_FEATURE_COLLECTION_OBJECT);
+                }
+            } catch (Exception e) {
+                return (ObjectNode)mapper.readTree(EMPTY_FEATURE_COLLECTION_OBJECT);
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException e) {
+                        LOG.error("Error while closing stream", e);
+                    }
+                }
+            }
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param   rootNode  DOCUMENT ME!
+         *
+         * @throws  Exception  DOCUMENT ME!
+         */
+        private void saveFeatureCollection(final JsonNode rootNode) throws Exception {
+            final String featureCollection = mapper.writeValueAsString(rootNode);
+            final WebDavClient webdavclient = new WebDavClient(null, webdavUser, webdavPwd);
+
+            if (!webdav.endsWith("/")) {
+                webdav += "/";
+            }
+
+            webdavclient.put(webdav + brandNewFeaturesPath, new ByteArrayInputStream(featureCollection.getBytes()));
+
+            final String md5 = DigestUtils.md5Hex(featureCollection);
+
+            webdavclient.put(webdav + brandNewFeaturesDigestPath, new ByteArrayInputStream(md5.getBytes()));
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    private static class RefreshConfig {
+
+        //~ Instance fields ----------------------------------------------------
+
+        private String idProperty;
+        private String sourceClassname;
+        private String targetClassname;
+        private String query;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new RefreshConfig object.
+         *
+         * @param  idProperty       DOCUMENT ME!
+         * @param  sourceClassname  DOCUMENT ME!
+         * @param  targetClassname  DOCUMENT ME!
+         * @param  query            DOCUMENT ME!
+         */
+        public RefreshConfig(final String idProperty,
+                final String sourceClassname,
+                final String targetClassname,
+                final String query) {
+            this.idProperty = idProperty;
+            this.sourceClassname = sourceClassname;
+            this.targetClassname = targetClassname;
+            this.query = query;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  the idProperty
+         */
+        public String getIdProperty() {
+            return idProperty;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param  idProperty  the idProperty to set
+         */
+        public void setIdProperty(final String idProperty) {
+            this.idProperty = idProperty;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  the sourceClassname
+         */
+        public String getSourceClassname() {
+            return sourceClassname;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param  sourceClassname  the sourceClassname to set
+         */
+        public void setSourceClassname(final String sourceClassname) {
+            this.sourceClassname = sourceClassname;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  the targetClassname
+         */
+        public String getTargetClassname() {
+            return targetClassname;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param  targetClassname  the targetClassname to set
+         */
+        public void setTargetClassname(final String targetClassname) {
+            this.targetClassname = targetClassname;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  the query
+         */
+        public String getQuery() {
+            return query;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param  query  the query to set
+         */
+        public void setQuery(final String query) {
+            this.query = query;
+        }
     }
 }
