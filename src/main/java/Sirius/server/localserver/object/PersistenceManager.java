@@ -122,6 +122,10 @@ public final class PersistenceManager extends Shutdown {
             pool.setMinPoolSize(5);
             pool.setAcquireIncrement(5);
             pool.setMaxPoolSize(dbServer.getSystemProperties().getPoolSize());
+
+            pool.setTestConnectionOnCheckout(true);
+            pool.setIdleConnectionTestPeriod(30);
+            pool.setPreferredTestQuery("SELECT 1");
         } catch (PropertyVetoException ex) {
             throw new IllegalStateException("pool could not be initialized", ex);
         }
