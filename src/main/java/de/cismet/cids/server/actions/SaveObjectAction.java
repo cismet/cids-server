@@ -68,6 +68,7 @@ import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 import de.cismet.commons.security.WebDavClient;
 
 import de.cismet.connectioncontext.ConnectionContext;
+
 import de.cismet.netutil.ProxyHandler;
 
 /**
@@ -1071,7 +1072,9 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
          */
         private JsonNode getFeatureCollection() throws JsonProcessingException, IOException {
             // todo implement
-            final WebDavClient webdavclient = new WebDavClient(ProxyHandler.getInstance().getProxy(), webdavUser, webdavPwd);
+            final WebDavClient webdavclient = new WebDavClient(ProxyHandler.getInstance().getProxy(),
+                    webdavUser,
+                    webdavPwd);
 
             if (!webdav.endsWith("/")) {
                 webdav += "/";
@@ -1109,7 +1112,9 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
          */
         private void saveFeatureCollection(final JsonNode rootNode) throws Exception {
             final String featureCollection = mapper.writeValueAsString(rootNode);
-            final WebDavClient webdavclient = new WebDavClient(ProxyHandler.getInstance().getProxy(), webdavUser, webdavPwd);
+            final WebDavClient webdavclient = new WebDavClient(ProxyHandler.getInstance().getProxy(),
+                    webdavUser,
+                    webdavPwd);
 
             if (!webdav.endsWith("/")) {
                 webdav += "/";
