@@ -21,6 +21,7 @@ import java.util.*;
 
 import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.dynamics.CustomBeanPermissionProvider;
+import de.cismet.cids.dynamics.DefaultCustomBeanPermissionProvider;
 
 import de.cismet.cids.tools.tostring.*;
 
@@ -112,6 +113,10 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
         customPermissionProviderClass = ClassloadingHelper.getDynamicClass(
                 getMetaClass(),
                 ClassloadingHelper.CLASS_TYPE.PERMISSION_PROVIDER);
+
+        if (customPermissionProviderClass == null) {
+            customPermissionProviderClass = loadDefaultCustomPermissionProviderClass();
+        }
     }
 
     // --------------------------------------------------------------
@@ -133,6 +138,26 @@ public class DefaultMetaObject extends Sirius.server.localserver.object.DefaultO
         customPermissionProviderClass = ClassloadingHelper.getDynamicClass(
                 getMetaClass(),
                 ClassloadingHelper.CLASS_TYPE.PERMISSION_PROVIDER);
+
+        if (customPermissionProviderClass == null) {
+            customPermissionProviderClass = loadDefaultCustomPermissionProviderClass();
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private Class<?> loadDefaultCustomPermissionProviderClass() {
+        final DefaultCustomBeanPermissionProvider defaultCustomBeanPermissionProvider = Lookup.getDefault()
+                    .lookup(DefaultCustomBeanPermissionProvider.class);
+
+        if (defaultCustomBeanPermissionProvider != null) {
+            return defaultCustomBeanPermissionProvider.getClass();
+        } else {
+            return null;
+        }
     }
 
     /**
