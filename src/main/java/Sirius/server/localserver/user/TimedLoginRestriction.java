@@ -36,7 +36,15 @@ public class TimedLoginRestriction implements LoginRestriction {
         final Calendar rightNow = Calendar.getInstance();
         final float test = new Float(rightNow.get(Calendar.HOUR_OF_DAY))
                     + (new Float(rightNow.get(Calendar.MINUTE)) / 60.0f);
-        return (test >= from) && (test <= to);
+        if (from == to) {
+            return false;
+        } else if (from > to) {
+            // for example if from is 6 and to is 5, then it is open from 6 to 5 o'clock on the next day
+            // and the current time should not be between 5 and 6, because during this time, it is closed
+            return !((test >= to) && (test <= from));
+        } else {
+            return (test >= from) && (test <= to);
+        }
     }
 
     @Override
