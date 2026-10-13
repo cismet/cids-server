@@ -208,6 +208,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
     private static final String PROP__SCHEMA = "schema";
     private static final String PROP__PASSWORDCHANGE_TRIGGER_SCRIPT_BEFORE = "passwordchangeTriggerScriptBefore";
     private static final String PROP__PASSWORDCHANGE_TRIGGER_SCRIPT_AFTER = "passwordchangeTriggerScriptAfter";
+    private static final String PROP__DATASOURCE_TRIGGER_SCRIPT_AFTER = "datasourcechangeTriggerScriptAfter";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -807,6 +808,19 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
     public final String getPasswordchangeTriggerScriptAfter() {
         try {
             return this.getString(PROP__PASSWORDCHANGE_TRIGGER_SCRIPT_AFTER); // NOI18N
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public final String getDatasourcechangeTriggerScriptAfter() {
+        try {
+            return this.getString(PROP__DATASOURCE_TRIGGER_SCRIPT_AFTER); // NOI18N
         } catch (Exception e) {
             return null;
         }
