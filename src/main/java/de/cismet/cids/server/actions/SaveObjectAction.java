@@ -378,9 +378,16 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
 
                         if (subNode != null) {
                             nodeId = subNode.get("id").asInt();
+                        } else {
+                            if ((rootNode.get(mai.getFieldName()) != null)
+                                        && rootNode.get(mai.getFieldName()).isInt()) {
+                                nodeId = rootNode.get(mai.getFieldName()).asInt();
+                            }
                         }
 
-                        rootNode = subNode;
+                        if (subNode != null) {
+                            rootNode = subNode;
+                        }
                         className = getClassById(classes, mai.getForeignKeyClassId()).getTableName();
                         break;
                     }
