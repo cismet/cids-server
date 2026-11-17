@@ -41,6 +41,7 @@ import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.actions.UserAwareServerAction;
 
+import de.cismet.cids.utils.PasswordUtils;
 import de.cismet.cids.utils.serverresources.GeneralServerResources;
 import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
@@ -299,7 +300,7 @@ public class GraphqlAction implements ServerAction, MetaServiceStore, UserAwareS
 
         @Override
         public Object run() throws Exception {
-            final String hasuraSecret = config.getProperty("hasura.secret", null);
+            final String hasuraSecret = PasswordUtils.decrypt(config.getProperty("hasura.secret", null));
 
             // prepare request
             final URL url = new URL(config.getProperty("graphql.url"));
