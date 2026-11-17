@@ -449,6 +449,9 @@ public final class RESTfulSerialInterfaceConnector implements CallServerService 
 
             return getResponsePOST(builder, type, queryData);
         } catch (SocketException | ClientHandlerException e) {
+            LOG.warn("Error while sending request to " + rootResource + path
+                        + ". Recreate the connection pool and retry the request.",
+                e);
             JerseyClientCache.getInstance(rootResource, proxy).recreatePool();
             final WebResource.Builder builder = createWebResourceBuilder(path);
 

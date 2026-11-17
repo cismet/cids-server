@@ -28,6 +28,7 @@ public class RestHttpClientConfiguration {
     //~ Instance fields --------------------------------------------------------
 
     Integer defaultPoolSize;
+    Integer defaultReadTimeout;
     PathConfiguration[] config;
     String[] rootResources;
 
@@ -46,5 +47,6 @@ public class RestHttpClientConfiguration {
 
         private String path;
         private Integer poolSize;
+        private Integer readTimeout;
     }
 }
