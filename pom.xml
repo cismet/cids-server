@@ -13,7 +13,7 @@
 
     <groupId>de.cismet.cids</groupId>
     <artifactId>cids-server</artifactId>
-    <version>9.3.2</version>
+    <version>9.4</version>
     <packaging>jar</packaging>
  
     <properties>
@@ -27,7 +27,7 @@
         <connection>https://github.com/cismet/cids-server.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cids-server.git</developerConnection>
         <url>https://github.com/cismet/cids-server</url>
-        <tag>v9.3.2</tag>
+        <tag>v9.4</tag>
     </scm>
     
     <ciManagement>
@@ -55,13 +55,13 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>9.0.4</version>
+                <version>9.2</version>
                 <type>jar</type>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>9.0.4</version>
+                <version>9.2</version>
                 <type>test-jar</type>
             </dependency>
             <dependency>
@@ -242,7 +242,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.81</version>
+            <version>1.87</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>

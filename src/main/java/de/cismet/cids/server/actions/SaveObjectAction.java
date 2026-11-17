@@ -62,6 +62,7 @@ import java.util.Map;
 
 import de.cismet.cids.dynamics.CidsBean;
 
+import de.cismet.cids.utils.PasswordUtils;
 import de.cismet.cids.utils.serverresources.GeneralServerResources;
 import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
@@ -145,7 +146,7 @@ public class SaveObjectAction implements ServerAction, MetaServiceStore, UserAwa
                     brandNewFeaturesDigestPath = value.get("brandNewFeaturesDigestPath").asText();
                     webdav = value.get("webdav").asText();
                     webdavUser = value.get("webdavUser").asText();
-                    webdavPwd = value.get("webdavPwd").asText();
+                    webdavPwd = PasswordUtils.decrypt(value.get("webdavPwd").asText());
                 } else if (key.equalsIgnoreCase("$refreshConfig")) {
                     if (value instanceof ArrayNode) {
                         for (final JsonNode element : (ArrayNode)value) {
