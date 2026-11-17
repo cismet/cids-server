@@ -17,7 +17,7 @@ import java.lang.reflect.*;
 
 import java.util.*;
 
-import de.cismet.tools.PasswordEncrypter;
+import de.cismet.cids.utils.PasswordUtils;
 
 /**
  * Verwaltet Informationen zur allgemeinen Serverkonfiguration. (Local-, Call-, Translationserver). Das jeweilige
@@ -458,7 +458,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getRestServerKeystorePW() {
-        return getString(PROP__SERVER_REST_KEYSTORE_SERVER_PASSWORD); // NOI18N
+        return PasswordUtils.decrypt(getString(PROP__SERVER_REST_KEYSTORE_SERVER_PASSWORD)); // NOI18N
     }
 
     /**
@@ -467,7 +467,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getRestServerKeystoreKeyPW() {
-        return getString(PROP__SERVER_REST_KEYSTORE_SERVER_KEYPASSWORD); // NOI18N
+        return PasswordUtils.decrypt(getString(PROP__SERVER_REST_KEYSTORE_SERVER_KEYPASSWORD)); // NOI18N
     }
 
     /**
@@ -503,7 +503,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getRestClientKeystorePW() {
-        return getString(PROP__SERVER_REST_KEYSTORE_CLIENT_PASSWORD); // NOI18N
+        return PasswordUtils.decrypt(getString(PROP__SERVER_REST_KEYSTORE_CLIENT_PASSWORD)); // NOI18N
     }
 
     /**
@@ -615,7 +615,7 @@ public class ServerProperties extends java.util.PropertyResourceBundle {
      * @return  DOCUMENT ME!
      */
     public final String getDbPassword() {
-        return PasswordEncrypter.decryptString(this.getString(PROP__CONNECTION_PASSWORD)); // NOI18N
+        return PasswordUtils.decrypt(this.getString(PROP__CONNECTION_PASSWORD)); // NOI18N
     }
 
     /**

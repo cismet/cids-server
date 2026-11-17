@@ -20,15 +20,19 @@ import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpConnectionManager;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import de.cismet.cids.utils.serverresources.GeneralServerResources;
@@ -51,6 +55,10 @@ public class JerseyClientCache {
     private static final transient Logger LOG = Logger.getLogger(JerseyClientCache.class);
     private static final int DEFAULT_POOL_SIZE = (int)Math.ceil(Runtime.getRuntime().availableProcessors() / 2.0);
     private static final int TIMEOUT = 10000;
+    // without a read timeout, a request hangs forever, if the server does not respond
+    private static final int DEFAULT_READ_TIMEOUT = 10 * 60 * 1000;
+    // additional delay, before the connections of replaced clients will be closed
+    private static final int SHUTDOWN_DELAY_MARGIN = 60 * 1000;
     private static String serverResources = null;
     private static boolean noConfiguration = false;
 
@@ -59,10 +67,23 @@ public class JerseyClientCache {
     private final transient Map<String, CircularObjectPool<Client>> clientCache;
     private final transient Proxy proxy;
     private final String rootResource;
+    private final transient Map<String, List<Client>> clientLists = new HashMap<>();
+    private final transient Map<String, Integer> pathReadTimeouts = new HashMap<>();
     private int poolSize = DEFAULT_POOL_SIZE;
+    private int readTimeout = DEFAULT_READ_TIMEOUT;
     private long lastRecached = 0;
 
-    private ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+
+                @Override
+                public Thread newThread(final Runnable r) {
+                    final Thread t = new Thread(r, "JerseyClientCache-shutdown");
+                    // the scheduled shutdowns should not prevent the jvm from exiting
+                    t.setDaemon(true);
+
+                    return t;
+                }
+            });
 
     //~ Constructors -----------------------------------------------------------
 
@@ -87,9 +108,18 @@ public class JerseyClientCache {
                     poolSize = configuration.getDefaultPoolSize();
                 }
 
+                if ((configuration != null) && (configuration.getDefaultReadTimeout() != null)) {
+                    readTimeout = configuration.getDefaultReadTimeout();
+                }
+
                 if (configuration != null) {
                     for (final RestHttpClientConfiguration.PathConfiguration pathConfig : configuration.getConfig()) {
                         final String path = pathConfig.getPath();
+
+                        if (pathConfig.getReadTimeout() != null) {
+                            pathReadTimeouts.put(path, pathConfig.getReadTimeout());
+                        }
+
                         final CircularObjectPool<Client> pool = createClientsForPath(path, pathConfig.getPoolSize());
 
                         clientCache.put(path, pool);
@@ -112,7 +142,10 @@ public class JerseyClientCache {
     public synchronized void recreatePool() {
         if ((System.currentTimeMillis() - lastRecached) > 10000) {
             for (final String path : clientCache.keySet()) {
+                final List<Client> oldClients = clientLists.get(path);
+
                 clientCache.put(path, createClientsForPath(path, poolSize));
+                closeClients(path, oldClients);
             }
 
             lastRecached = System.currentTimeMillis();
@@ -212,6 +245,7 @@ public class JerseyClientCache {
         }
 
         clientConfig.getProperties().put(ClientConfig.PROPERTY_CONNECT_TIMEOUT, TIMEOUT);
+        clientConfig.getProperties().put(ClientConfig.PROPERTY_READ_TIMEOUT, getReadTimeout(path));
 
         final Client[] clientArray = new Client[poolsize];
 
@@ -219,7 +253,73 @@ public class JerseyClientCache {
             clientArray[i] = ApacheHttpClient.create(clientConfig);
         }
 
-        return new CircularObjectPool<>(Collections.unmodifiableList(Arrays.asList(clientArray)));
+        final List<Client> clients = Collections.unmodifiableList(Arrays.asList(clientArray));
+        clientLists.put(path, clients);
+
+        return new CircularObjectPool<>(clients);
+    }
+
+    /**
+     * Closes the connections of the given clients, without aborting running requests. The unused connections will be
+     * closed immediately. All other connections will be closed, after the read timeout of the path has expired, because
+     * all requests, which use these clients, should be finished or failed at this time. If the read timeout is
+     * disabled, only the unused connections will be closed.
+     *
+     * @param  path     the path of the clients
+     * @param  clients  the clients to close. Can be null
+     */
+    private void closeClients(final String path, final List<Client> clients) {
+        if (clients == null) {
+            return;
+        }
+
+        final List<HttpConnectionManager> connectionManagers = new ArrayList<>();
+
+        for (final Client client : clients) {
+            if (client instanceof ApacheHttpClient) {
+                final HttpConnectionManager connectionManager = ((ApacheHttpClient)client).getClientHandler()
+                            .getHttpClient()
+                            .getHttpConnectionManager();
+
+                // close only the unused connections, so that running requests will not be aborted
+                connectionManager.closeIdleConnections(0);
+                connectionManagers.add(connectionManager);
+            }
+        }
+
+        final int timeout = getReadTimeout(path);
+
+        if ((timeout > 0) && !connectionManagers.isEmpty()) {
+            exec.schedule(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("close the connections of the replaced jersey http clients for path: " + path);
+                        }
+
+                        for (final HttpConnectionManager connectionManager : connectionManagers) {
+                            if (connectionManager instanceof MultiThreadedHttpConnectionManager) {
+                                ((MultiThreadedHttpConnectionManager)connectionManager).shutdown();
+                            }
+                        }
+                    }
+                }, timeout + SHUTDOWN_DELAY_MARGIN, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    /**
+     * Determines the read timeout for the given path. A path specific timeout from the configuration takes precedence
+     * over the default read timeout. A value of 0 disables the timeout.
+     *
+     * @param   path  DOCUMENT ME!
+     *
+     * @return  the read timeout in milliseconds
+     */
+    private Integer getReadTimeout(final String path) {
+        final Integer pathReadTimeout = pathReadTimeouts.get(path);
+
+        return (pathReadTimeout != null) ? pathReadTimeout : readTimeout;
     }
 
     /**

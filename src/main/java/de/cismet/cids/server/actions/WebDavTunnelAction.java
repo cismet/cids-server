@@ -139,9 +139,21 @@ public class WebDavTunnelAction implements ServerAction {
                 return ServerActionHelper.asyncByteArrayHelper(IOUtils.toByteArray(is), "webdav.data");
             } else if (isPut) {
                 final InputStream data = new ByteArrayInputStream((byte[])body);
-                webdavclient.put(path, data);
+                final int statuscode = webdavclient.put(path, data);
+
+                if ((statuscode < 200) || (statuscode > 299)) {
+                    LOG.error("Error during WebDavTunnel Action (put) status code " + statuscode + " " + path);
+
+                    throw new Exception("Error during WebDavTunnel Action status code " + statuscode);
+                }
             } else if (isDelete) {
-                webdavclient.delete(path);
+                final int statuscode = webdavclient.delete(path);
+
+                if ((statuscode != 404) && ((statuscode < 200) || (statuscode > 299))) {
+                    LOG.error("Error during WebDavTunnel Action (delete) status code " + statuscode + " " + path);
+
+                    throw new Exception("Error during WebDavTunnel Action status code " + statuscode);
+                }
             } else {
                 throw new RuntimeException("Problem during WebDavTunnelAction - request have to be get, put or delete");
             }
