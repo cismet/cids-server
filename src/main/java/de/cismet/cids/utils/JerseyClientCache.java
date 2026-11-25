@@ -12,6 +12,8 @@
  */
 package de.cismet.cids.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.client.apache.ApacheHttpClient;
@@ -23,6 +25,8 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpConnectionManager;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.log4j.Logger;
+
+import java.io.InputStream;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +63,13 @@ public class JerseyClientCache {
     private static final int DEFAULT_READ_TIMEOUT = 10 * 60 * 1000;
     // additional delay, before the connections of replaced clients will be closed
     private static final int SHUTDOWN_DELAY_MARGIN = 60 * 1000;
+    // pooled connections, which were not used for this time, will be closed. Otherwise, a firewall can silently drop
+    // such a connection and the next request on it hangs until the read timeout expires
+    private static final int DEFAULT_IDLE_CONNECTION_TIMEOUT = 60 * 1000;
+    private static final int MIN_IDLE_CHECK_INTERVAL = 1000;
+    private static final int MAX_IDLE_CHECK_INTERVAL = 30 * 1000;
+    // the configuration of the client. The server uses the server resources instead
+    private static final String CLIENT_CONFIGURATION = "de/cismet/cids/client/http_pool_config.json";
     private static String serverResources = null;
     private static boolean noConfiguration = false;
 
@@ -71,14 +82,15 @@ public class JerseyClientCache {
     private final transient Map<String, Integer> pathReadTimeouts = new HashMap<>();
     private int poolSize = DEFAULT_POOL_SIZE;
     private int readTimeout = DEFAULT_READ_TIMEOUT;
+    private int idleConnectionTimeout = DEFAULT_IDLE_CONNECTION_TIMEOUT;
     private long lastRecached = 0;
 
     private ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
 
                 @Override
                 public Thread newThread(final Runnable r) {
-                    final Thread t = new Thread(r, "JerseyClientCache-shutdown");
-                    // the scheduled shutdowns should not prevent the jvm from exiting
+                    final Thread t = new Thread(r, "JerseyClientCache-connections");
+                    // the scheduled tasks should not prevent the jvm from exiting
                     t.setDaemon(true);
 
                     return t;
@@ -104,26 +116,8 @@ public class JerseyClientCache {
                             .loadJson(GeneralServerResources.CONFIG_REST_HTTP_CLIENT_JSON.getValue(),
                                 RestHttpClientConfiguration.class);
 
-                if ((configuration != null) && (configuration.getDefaultPoolSize() != null)) {
-                    poolSize = configuration.getDefaultPoolSize();
-                }
-
-                if ((configuration != null) && (configuration.getDefaultReadTimeout() != null)) {
-                    readTimeout = configuration.getDefaultReadTimeout();
-                }
-
                 if (configuration != null) {
-                    for (final RestHttpClientConfiguration.PathConfiguration pathConfig : configuration.getConfig()) {
-                        final String path = pathConfig.getPath();
-
-                        if (pathConfig.getReadTimeout() != null) {
-                            pathReadTimeouts.put(path, pathConfig.getReadTimeout());
-                        }
-
-                        final CircularObjectPool<Client> pool = createClientsForPath(path, pathConfig.getPoolSize());
-
-                        clientCache.put(path, pool);
-                    }
+                    applyConfiguration(configuration);
                 } else {
                     noConfiguration = true;
                 }
@@ -131,10 +125,122 @@ public class JerseyClientCache {
                 LOG.error("Cannot read configuration", e);
                 noConfiguration = true;
             }
+        } else if (serverResources == null) {
+            // the client has no server resources, so the configuration is read from the classpath. A missing
+            // configuration should not set noConfiguration, because the server resources can be set later
+            final RestHttpClientConfiguration configuration = loadClientConfiguration();
+
+            if (configuration != null) {
+                try {
+                    applyConfiguration(configuration);
+                } catch (Exception e) {
+                    LOG.error("Cannot apply the client configuration " + CLIENT_CONFIGURATION, e);
+                }
+            }
+        }
+
+        if (idleConnectionTimeout > 0) {
+            final long checkInterval = Math.max(
+                    MIN_IDLE_CHECK_INTERVAL,
+                    Math.min(MAX_IDLE_CHECK_INTERVAL, idleConnectionTimeout / 2));
+
+            exec.scheduleWithFixedDelay(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        closeIdleConnections();
+                    }
+                }, checkInterval, checkInterval, TimeUnit.MILLISECONDS);
         }
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * Applies the given configuration to this cache.
+     *
+     * @param  configuration  the configuration to apply
+     */
+    private void applyConfiguration(final RestHttpClientConfiguration configuration) {
+        if (configuration.getDefaultPoolSize() != null) {
+            poolSize = configuration.getDefaultPoolSize();
+        }
+
+        if (configuration.getDefaultReadTimeout() != null) {
+            readTimeout = configuration.getDefaultReadTimeout();
+        }
+
+        if (configuration.getIdleConnectionTimeout() != null) {
+            idleConnectionTimeout = configuration.getIdleConnectionTimeout();
+        }
+
+        if (configuration.getConfig() != null) {
+            for (final RestHttpClientConfiguration.PathConfiguration pathConfig : configuration.getConfig()) {
+                final String path = pathConfig.getPath();
+
+                if (pathConfig.getReadTimeout() != null) {
+                    pathReadTimeouts.put(path, pathConfig.getReadTimeout());
+                }
+
+                final int pathPoolSize = (pathConfig.getPoolSize() != null) ? pathConfig.getPoolSize() : poolSize;
+
+                clientCache.put(path, createClientsForPath(path, pathPoolSize));
+            }
+        }
+    }
+
+    /**
+     * Loads the configuration of the client from the classpath.
+     *
+     * @return  the configuration or null, if there is no valid configuration
+     */
+    private static RestHttpClientConfiguration loadClientConfiguration() {
+        try(final InputStream is = JerseyClientCache.class.getClassLoader().getResourceAsStream(
+                            CLIENT_CONFIGURATION)) {
+            if (is == null) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("No client configuration found: " + CLIENT_CONFIGURATION);
+                }
+
+                return null;
+            }
+
+            return new ObjectMapper().readValue(is, RestHttpClientConfiguration.class);
+        } catch (final Exception e) {
+            LOG.error("Cannot read the client configuration " + CLIENT_CONFIGURATION, e);
+
+            return null;
+        }
+    }
+
+    /**
+     * Closes all pooled connections of the current clients, which were not used for longer than the idle connection
+     * timeout. Connections, which are in use, will not be closed. The connections are closed without holding the lock
+     * of this cache, so that requests are not blocked, if closing a connection takes longer.
+     */
+    private void closeIdleConnections() {
+        final List<Client> clients = new ArrayList<>();
+
+        synchronized (this) {
+            for (final List<Client> pathClients : clientLists.values()) {
+                clients.addAll(pathClients);
+            }
+        }
+
+        try {
+            for (final Client client : clients) {
+                if (client instanceof ApacheHttpClient) {
+                    ((ApacheHttpClient)client).getClientHandler()
+                            .getHttpClient()
+                            .getHttpConnectionManager()
+                            .closeIdleConnections(idleConnectionTimeout);
+                }
+            }
+        } catch (final Exception e) {
+            // an exception would cancel the periodic execution
+            LOG.warn("Error while closing idle connections", e);
+        }
+    }
 
     /**
      * DOCUMENT ME!
@@ -250,7 +356,14 @@ public class JerseyClientCache {
         final Client[] clientArray = new Client[poolsize];
 
         for (int i = 0; i < poolsize; ++i) {
-            clientArray[i] = ApacheHttpClient.create(clientConfig);
+            final ApacheHttpClient client = ApacheHttpClient.create(clientConfig);
+            final HttpClient httpClient = client.getClientHandler().getHttpClient();
+            // closing a dropped tls connection should not block until the read timeout expires
+            final SafeCloseHttpConnectionManager connectionManager = new SafeCloseHttpConnectionManager();
+
+            connectionManager.setParams(httpClient.getHttpConnectionManager().getParams());
+            httpClient.setHttpConnectionManager(connectionManager);
+            clientArray[i] = client;
         }
 
         final List<Client> clients = Collections.unmodifiableList(Arrays.asList(clientArray));
@@ -263,7 +376,8 @@ public class JerseyClientCache {
      * Closes the connections of the given clients, without aborting running requests. The unused connections will be
      * closed immediately. All other connections will be closed, after the read timeout of the path has expired, because
      * all requests, which use these clients, should be finished or failed at this time. If the read timeout is
-     * disabled, only the unused connections will be closed.
+     * disabled, only the unused connections will be closed. The connections are closed asynchronously, so that the
+     * caller, which usually holds the lock of this cache, is not blocked, if closing a connection takes longer.
      *
      * @param  path     the path of the clients
      * @param  clients  the clients to close. Can be null
@@ -277,19 +391,33 @@ public class JerseyClientCache {
 
         for (final Client client : clients) {
             if (client instanceof ApacheHttpClient) {
-                final HttpConnectionManager connectionManager = ((ApacheHttpClient)client).getClientHandler()
-                            .getHttpClient()
-                            .getHttpConnectionManager();
-
-                // close only the unused connections, so that running requests will not be aborted
-                connectionManager.closeIdleConnections(0);
-                connectionManagers.add(connectionManager);
+                connectionManagers.add(((ApacheHttpClient)client).getClientHandler().getHttpClient()
+                            .getHttpConnectionManager());
             }
         }
 
+        if (connectionManagers.isEmpty()) {
+            return;
+        }
+
+        exec.execute(new Runnable() {
+
+                @Override
+                public void run() {
+                    for (final HttpConnectionManager connectionManager : connectionManagers) {
+                        try {
+                            // close only the unused connections, so that running requests will not be aborted
+                            connectionManager.closeIdleConnections(0);
+                        } catch (final Exception e) {
+                            LOG.warn("Error while closing the connections of the replaced jersey http clients", e);
+                        }
+                    }
+                }
+            });
+
         final int timeout = getReadTimeout(path);
 
-        if ((timeout > 0) && !connectionManagers.isEmpty()) {
+        if (timeout > 0) {
             exec.schedule(new Runnable() {
 
                     @Override
