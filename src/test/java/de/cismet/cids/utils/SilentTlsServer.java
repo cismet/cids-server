@@ -25,8 +25,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
 import java.security.KeyStore;
-
-import java.util.Arrays;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -34,6 +33,7 @@ import java.util.concurrent.CountDownLatch;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
@@ -86,7 +86,8 @@ public class SilentTlsServer {
         final TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         tmf.init(keyStore);
 
-        final SSLContext context = SSLContext.getInstance("TLS");
+        // Java 8 enables TLS 1.3 for client sockets only with a TLSv1.3 context
+        final SSLContext context = SSLContext.getInstance(TLS_13);
         context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
 
         serverSocket = (SSLServerSocket)context.getServerSocketFactory()
@@ -115,11 +116,15 @@ public class SilentTlsServer {
      * Checks, if the JDK supports TLS 1.3.
      *
      * @return  true, if TLS 1.3 is supported
-     *
-     * @throws  Exception  DOCUMENT ME!
      */
-    public static boolean isTls13Supported() throws Exception {
-        return Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getProtocols()).contains(TLS_13);
+    public static boolean isTls13Supported() {
+        try {
+            SSLContext.getInstance(TLS_13);
+
+            return true;
+        } catch (final NoSuchAlgorithmException e) {
+            return false;
+        }
     }
 
     /**
@@ -239,7 +244,7 @@ public class SilentTlsServer {
                 final int port,
                 final InetAddress localAddress,
                 final int localPort) throws IOException {
-            return factory.createSocket(host, port, localAddress, localPort);
+            return enableTls13(factory.createSocket(host, port, localAddress, localPort));
         }
 
         @Override
@@ -248,7 +253,7 @@ public class SilentTlsServer {
                 final InetAddress localAddress,
                 final int localPort,
                 final HttpConnectionParams params) throws IOException {
-            final Socket socket = factory.createSocket();
+            final Socket socket = enableTls13(factory.createSocket());
             socket.bind(new InetSocketAddress(localAddress, localPort));
             socket.connect(new InetSocketAddress(host, port), params.getConnectionTimeout());
 
@@ -257,13 +262,26 @@ public class SilentTlsServer {
 
         @Override
         public Socket createSocket(final String host, final int port) throws IOException {
-            return factory.createSocket(host, port);
+            return enableTls13(factory.createSocket(host, port));
         }
 
         @Override
         public Socket createSocket(final Socket socket, final String host, final int port, final boolean autoClose)
                 throws IOException {
-            return factory.createSocket(socket, host, port, autoClose);
+            return enableTls13(factory.createSocket(socket, host, port, autoClose));
+        }
+
+        /**
+         * Java 8 supports TLS 1.3, but does not enable it for client sockets by default.
+         *
+         * @param   socket  a socket, whose handshake has not been started yet
+         *
+         * @return  the given socket
+         */
+        private static Socket enableTls13(final Socket socket) {
+            ((SSLSocket)socket).setEnabledProtocols(new String[] { TLS_13 });
+
+            return socket;
         }
     }
 }
