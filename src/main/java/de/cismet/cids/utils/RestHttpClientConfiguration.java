@@ -29,6 +29,7 @@ public class RestHttpClientConfiguration {
 
     Integer defaultPoolSize;
     Integer defaultReadTimeout;
+    Integer idleConnectionTimeout;
     PathConfiguration[] config;
     String[] rootResources;
 
